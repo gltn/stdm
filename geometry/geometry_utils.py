@@ -370,7 +370,7 @@ def zoom_refresh_to_geom(geom):
 
 def zoom_to_selected(layer):
     box = layer.boundingBoxOfSelected()
-    box.scale(1.5)
+    box.scale(1.2)
     canvas = iface.mapCanvas()
     canvas.setExtent(box)
     # canvas.zoomScale(1.3)
@@ -424,7 +424,7 @@ def clear_points(point_layer):
 def point_by_distance(point_layer, selected_point_ft, selected_line, distance):
 
     location = identify_selected_point_location(selected_point_ft, selected_line)
-    print 'locat', location
+    # print 'locat', location
     added_point_feature = None
     if location == 'start':
         added_point_feature = get_point_by_distance(
@@ -707,6 +707,7 @@ def split_move_line_with_area(
                         # If split geom is over 1, continue
                         # TODO find a better solution than continue.
                         if len(split_geom0) > 1:
+                            print 'continue 0'
                             continue
                             # if multi_split_case > 3:
                             #     continue
@@ -718,10 +719,11 @@ def split_move_line_with_area(
                             split_geom = split_geom0[0]
                             main_geom = geom1
                     else:
+                        print 'continue 1'
                         continue
                 loop_index = loop_index + 1
             else:
-                print 'continue'
+                print 'continue 2'
                 continue
             # If provided area is greater than split area, increase height
             if area > split_area1:
@@ -741,7 +743,7 @@ def split_move_line_with_area(
                         add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        break
+                        return True
             # If provided area is smaller than split area, decrease height
             if area < split_area1:
                 # helps in changing height in small steps after switching from
@@ -759,10 +761,9 @@ def split_move_line_with_area(
                         add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        break
+                        return True
         else:
-            print 'Failed'
-            break
+            return False
 
 
 def split_offset_distance(
@@ -978,7 +979,7 @@ def split_rotate_line_with_area(
                         add_geom_to_layer(
                             polygon_layer, split_geom1, main_geom, feature_ids
                         )
-                        break
+                        return True
 
             if area < split_area1:
                 # helps in changing height in small steps after switching from
@@ -1016,17 +1017,17 @@ def split_rotate_line_with_area(
                         add_geom_to_layer(
                             polygon_layer, split_geom1, main_geom, feature_ids
                         )
-                        break
+                        return True
 
             if area == split_area1:
                 add_geom_to_layer(
                     polygon_layer, split_geom1, main_geom, feature_ids
                 )
-                break
+                return True
 
         else:
             print 'failed'
-            continue
+            return False
 
 
 

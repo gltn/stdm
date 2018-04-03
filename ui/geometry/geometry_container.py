@@ -22,7 +22,7 @@ from ui_move_line_area import Ui_MoveLineArea
 from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
-
+from ..progress_dialog import STDMProgressDialog
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
@@ -513,7 +513,10 @@ class GeomWidgetsBase(object):
         self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.save_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
-        # self.line_layer_connected = False
+        self.progress_dialog = STDMProgressDialog(iface.mainWindow())
+        self.progress_dialog.setMinimumWidth(400)
+        title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
+        self.progress_dialog.setWindowTitle(title)
 
     def init_signals(self):
         if not self.settings_layer_connected:
@@ -625,7 +628,7 @@ class GeomWidgetsBase(object):
 
         if iface.activeLayer().name() == POLYGON_LINES:
             return
-
+        zoom_to_selected(self.settings.layer)
         if self.settings.stdm_layer(self.settings.layer):
             if hasattr(self.widget, 'sel_features_lbl'):
                 self.feature_count = self.selected_features_count()
@@ -809,14 +812,20 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         if not result:
             return
         self.executed = True
+
         if self.settings_layer_connected:
             self.disconnect_signals()
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.progress_message(message)
+        self.progress_dialog.show()
+
 
         self.create_preview_layer()
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        split_move_line_with_area(
+        result = split_move_line_with_area(
             self.settings.layer,
             self.line_layer,
             self.preview_layer,
@@ -827,6 +836,14 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Try another method.'
+            )
+            self.progress_dialog.progress_message(fail_message)
 
 
 class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
@@ -870,6 +887,23 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
+        self.create_preview_layer()
+
+        result = split_offset_distance(
+                self.settings.layer,
+                self.line_layer,
+                self.preview_layer,
+                self.lines[0],
+                self.widget.offset_distance.value(),
+                self.feature_ids,
+                validate=True
+            )
+        if not result:
+            message = QApplication.translate(
+                'OffsetDistanceWidget', 'The offset distance is too large.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
         return True
 
     def save(self):
@@ -877,10 +911,15 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         if not result:
             return
         self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.progress_message(message)
+        self.progress_dialog.show()
+
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        self.create_preview_layer()
 
         self.settings.layer.selectByIds(self.feature_ids)
         result = split_offset_distance(
@@ -891,14 +930,17 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.widget.offset_distance.value(),
             self.feature_ids
         )
-        if not result:
-            message = QApplication.translate(
-                'OffsetDistanceWidget', 'The offset distance is too large.'
-            )
-            self.notice.insertErrorNotification(message)
+
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
-
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Reduce the offset distance or try another method.'
+            )
+            self.progress_dialog.progress_message(fail_message)
 
 
 class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
@@ -915,7 +957,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.rotation_point = None
 
     def on_point_feature_selected(self):
-        print self.settings.layer
+        # print self.settings.layer
         if self.settings.layer is None:
             return
         # print iface.activeLayer().name() , self.settings.layer
@@ -964,7 +1006,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
     def on_length_from_reference_point_changed(self, new_value):
         # if len(self.point_layer.selectedFeatures()) > 0:
-        print 'self.rotation_point ', self.rotation_point
+        # print 'self.rotation_point ', self.rotation_point
         # self.point_layer.commitChanges()
         if self.rotation_point is not None:
             with edit(self.point_layer):
@@ -1020,6 +1062,12 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         if not result:
             return
         self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.progress_message(message)
+        self.progress_dialog.show()
+
         if self.settings_layer_connected:
             self.disconnect_signals()
 
@@ -1031,7 +1079,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         self.settings.layer.selectByIds(self.feature_ids)
         selected_line_geom = self.lines[0].geometry()
-        split_rotate_line_with_area(
+        result = split_rotate_line_with_area(
             self.settings.layer,
             self.preview_layer,
             selected_line_geom,
@@ -1042,6 +1090,17 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         )
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
+
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Try another method.'
+            )
+            self.progress_dialog.progress_message(fail_message)
+
+
 
 
 class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
@@ -1176,7 +1235,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def on_length_from_reference_point_changed(self, new_value):
         # if len(self.point_layer.selectedFeatures()) > 0:
-        print 'self.rotation_point ', self.rotation_point
+        # print 'self.rotation_point ', self.rotation_point
         # self.point_layer.commitChanges()
         if self.rotation_point is not None:
             with edit(self.point_layer):
@@ -1223,6 +1282,21 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'The first two selected point will be used.'
             )
             self.notice.insertWarningNotification(message)
+        point_geoms = [f.geometry() for f in self.points]
+        self.create_preview_layer()
+        result = split_join_points(
+            self.settings.layer,
+            self.preview_layer,
+            point_geoms,
+            self.feature_ids,
+            True
+        )
+        if not result:
+            message = QApplication.translate(
+                'JoinPointsWidget',
+                'Check the selected points are not in the same line.'
+            )
+            self.notice.insertErrorNotification(message)
 
         return state
 
@@ -1231,26 +1305,41 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         if not result:
             return
         self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.progress_message(message)
+
+        self.progress_dialog.show()
+
+
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        self.create_preview_layer()
+
 
         self.settings.layer.selectByIds(self.feature_ids)
         point_geoms = [f.geometry() for f in self.points]
         result = split_join_points(
             self.settings.layer,
-            self.preview_layer, point_geoms, self.feature_ids
+            self.preview_layer,
+            point_geoms,
+            self.feature_ids
         )
-        if not result:
-            message = QApplication.translate(
-                'JoinPointsWidget', 'Unable to split polygon.\nCheck the selected points.'
-            )
-            self.notice.insertErrorNotification(message)
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
+
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Check the selected points are '
+                'not in the same line and try another method.'
+            )
+            self.progress_dialog.progress_message(fail_message)
 
 class GeometryWidgetRegistry(object):
     """

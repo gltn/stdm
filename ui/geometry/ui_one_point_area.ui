@@ -14,80 +14,45 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="6" column="0">
-    <widget class="QLabel" name="label">
+   <item row="7" column="2">
+    <widget class="QRadioButton" name="anticlockwise">
      <property name="text">
-      <string>Direction:</string>
+      <string>Anti-clockwise</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Selected features:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
+   <item row="8" column="2">
     <widget class="QPushButton" name="preview_btn">
      <property name="text">
       <string>Preview</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_18">
-     <property name="text">
-      <string>Selected line:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1" colspan="2">
+   <item row="2" column="2" colspan="2">
     <widget class="QLabel" name="line_length_lbl">
      <property name="text">
       <string>0</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
+   <item row="1" column="2" colspan="2">
     <widget class="QLabel" name="selected_line_lbl">
      <property name="text">
       <string>0</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_17">
-     <property name="text">
-      <string>Total length:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_21">
-     <property name="text">
-      <string>Split polygon area:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Selected points:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1" colspan="2">
+   <item row="5" column="2" colspan="2">
     <widget class="QDoubleSpinBox" name="split_polygon_area"/>
    </item>
-   <item row="8" column="0">
+   <item row="8" column="1">
     <widget class="QPushButton" name="cancel_btn">
      <property name="text">
       <string>Cancel</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="9" column="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -100,24 +65,31 @@
      </property>
     </spacer>
    </item>
-   <item row="8" column="2">
+   <item row="8" column="3">
     <widget class="QPushButton" name="save_btn">
      <property name="text">
       <string>Save</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_16">
+   <item row="4" column="2" colspan="2">
+    <widget class="QDoubleSpinBox" name="length_from_point"/>
+   </item>
+   <item row="3" column="2" colspan="2">
+    <widget class="QLabel" name="selected_points_lbl">
      <property name="text">
-      <string>Length from reference point:</string>
+      <string>0</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1" colspan="2">
-    <widget class="QDoubleSpinBox" name="length_from_point"/>
+   <item row="0" column="2" colspan="2">
+    <widget class="QLabel" name="sel_features_lbl">
+     <property name="text">
+      <string>0</string>
+     </property>
+    </widget>
    </item>
-   <item row="6" column="1">
+   <item row="6" column="2">
     <widget class="QRadioButton" name="clockwise">
      <property name="text">
       <string>Clockwise</string>
@@ -127,24 +99,65 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
-    <widget class="QRadioButton" name="anticlockwise">
+   <item row="8" column="0">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Anti-clockwise</string>
+      <string>Selected features:</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2">
-    <widget class="QLabel" name="selected_points_lbl">
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="label_18">
      <property name="text">
-      <string>0</string>
+      <string>Selected line:</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLabel" name="sel_features_lbl">
+   <item row="2" column="0" colspan="2">
+    <widget class="QLabel" name="label_17">
      <property name="text">
-      <string>0</string>
+      <string>Total length:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Selected points:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QLabel" name="label_16">
+     <property name="text">
+      <string>Length from reference point:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QLabel" name="label_21">
+     <property name="text">
+      <string>Split polygon area:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Direction:</string>
      </property>
     </widget>
    </item>

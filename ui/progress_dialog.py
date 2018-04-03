@@ -64,7 +64,7 @@ class STDMProgressDialog(QProgressDialog):
 
         """
         if val is None:
-            text = '{0} ...'.format(message)
+            text = '{0}...'.format(message)
         else:
             text = '{0} {1}...'.format(message, val)
         self.setLabelText(text)
