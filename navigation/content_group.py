@@ -139,7 +139,6 @@ class ContentGroup(QObject,HashableMixin):
         """
         pg_account = "postgres"   
         
-        #import pydevd; pydevd.settrace()
         if self._username == pg_account:
             for c in self.contentItems():
                 if isinstance(c,Content):
