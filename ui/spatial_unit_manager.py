@@ -534,9 +534,9 @@ class SpatialUnitManagerDockWidget(
         elif isinstance(col, SocialTenure):
             spatial_layer_item = col.view_name
 
-        elif col.layer_display_name == '':
-
-            spatial_layer_item = u'{0}'.format(col.entity.short_name)
+        # elif col.layer_display_name == '':
+        #
+        #     spatial_layer_item = u'{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
             spatial_layer_item = col.layer_display_name
@@ -563,11 +563,7 @@ class SpatialUnitManagerDockWidget(
             )
             # Message: Spatial column information
             # could not be found
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                title,
-                msg
-            )
+            QMessageBox.warning(self.iface.mainWindow(), title, msg)
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
@@ -594,18 +590,27 @@ class SpatialUnitManagerDockWidget(
                 layer_name = layer_item.layer_display()
 
             entity = self._curr_profile.entity_by_name(table_name)
-            geom_col_obj = entity.columns[spatial_column]
+            if entity is not None:
+                geom_col_obj = entity.columns[spatial_column]
 
-            srid = None
-            if geom_col_obj.srid >= 100000:
-                srid = geom_col_obj.srid
+                srid = None
+                if geom_col_obj.srid >= 100000:
+                    srid = geom_col_obj.srid
 
-            curr_layer = vector_layer(
-                table_name,
-                geom_column=spatial_column,
-                layer_name=layer_name,
-                proj_wkt=srid
-            )
+                curr_layer = vector_layer(
+                    table_name,
+                    geom_column=spatial_column,
+                    layer_name=layer_name,
+                    proj_wkt=srid
+                )
+            else:
+
+                curr_layer = vector_layer(
+                    table_name,
+                    geom_column=spatial_column,
+                    layer_name=layer_name,
+                    proj_wkt=None
+                )
         # for lookup layer.
         else:
             curr_layer = vector_layer(
