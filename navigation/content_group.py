@@ -16,10 +16,15 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import hashlib
+
 from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import pyqtSignal,QObject
 
-from sqlalchemy import Table
+from sqlalchemy import (
+        Table,
+        and_
+        )
 
 from stdm.data.database import (
     Content,
@@ -27,6 +32,7 @@ from stdm.data.database import (
     STDMDb,
     Base
 )
+
 from stdm.utils.util import randomCodeGenerator
 from stdm.utils.hashable_mixin import HashableMixin
 
@@ -122,6 +128,10 @@ class ContentGroup(QObject,HashableMixin):
             
         return allowedContent
     
+    def hash_code(self, name):
+        ht = hashlib.sha1(name)
+        return ht.hexdigest()
+
     def register(self):
         """
         Registers the content items into the database. Registration only works for a 
@@ -129,12 +139,19 @@ class ContentGroup(QObject,HashableMixin):
         """
         pg_account = "postgres"   
         
+        #import pydevd; pydevd.settrace()
         if self._username == pg_account:
             for c in self.contentItems():
                 if isinstance(c,Content):
                     cnt = Content()
                     qo = cnt.queryObject()
-                    cn = qo.filter(Content.code == c.code).first()
+
+                    if c.code is None:
+                        code = self.hash_code(c.name)
+                    else:
+                        code = c.code
+
+                    cn = qo.filter(Content.code == code).first()
                     
                     #If content not found then add
                     if cn is None:
@@ -150,6 +167,10 @@ class ContentGroup(QObject,HashableMixin):
                         else:
                             existingContents = role.contents
                             #Append new content to existing 
+                            if c.code is None:
+                                #ht = hashlib.sha1(c.name)
+                                c.code = code #ht.hexdigest()
+
                             existingContents.append(c)
                             role.contents = existingContents
                             role.update()
