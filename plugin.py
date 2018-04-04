@@ -51,7 +51,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
 from stdm.ui.options_base import OptionsDialog
-from stdm.ui.geometry.geometry_container import GeometryToolsContainer
+from stdm.ui.geometry.geometry_container import GeometryToolsDock
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
@@ -818,7 +818,7 @@ class STDMQGISLoader(object):
     def loadModules(self):
 
         self.details_tree_view = DetailsTreeView(self.iface, self)
-
+        self.geom_tools_container = GeometryToolsDock(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
@@ -972,13 +972,16 @@ class STDMQGISLoader(object):
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
         self.geom_tools_cont_act.triggered.connect(
-            self.enable_geometry_tools)
+            self.geom_tools_container.activate_geometry_tools)
 
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda: self.details_tree_view.activate_feature_details(False)
+        )
+        self.iface.mapCanvas().currentLayerChanged.connect(
+            lambda: self.geom_tools_container.activate_geometry_tools(False)
         )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
@@ -1218,7 +1221,7 @@ class STDMQGISLoader(object):
         self.profile_status_message()
 
     def enable_geometry_tools(self):
-        self.geom_tools_container = GeometryToolsContainer(self.iface, self)
+        self.geom_tools_container = GeometryToolsDock(self.iface, self)
         result = self.geom_tools_container.activate_geometry_tools()
         if result:
             if not self.geom_tools_signal_connected:

@@ -163,6 +163,9 @@ class LayerSelectionHandler(object):
         :return: True if the active layer is STDM layer or False if it is not.
         :rtype: Boolean
         """
+        # Exclude splitting layers
+        if active_layer.name() in [POLYGON_LINES, LINE_POINTS]:
+            return True
         layer_source = self.get_layer_source(active_layer)
 
         if layer_source is not None:
@@ -231,11 +234,11 @@ class LayerSelectionHandler(object):
         pass
 
 
-class GeometryToolsContainer(
+class GeometryToolsDock(
     QDockWidget, Ui_GeometryContainer, LayerSelectionHandler
 ):
     """
-    The logic for the spatial entity details dock widget.
+    The dock widget of geometry tools.
     """
     # panel_loaded = pyqtSignal()
 
@@ -256,30 +259,23 @@ class GeometryToolsContainer(
         self.setBaseSize(300, 5000)
         self.layer = None
         self.line_layer = None
-        # self.current_widget = None
+        self.widgets_added = False
+
 
     def init_dock(self):
         """
         Creates dock on right dock widget area and set window title.
         """
-
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-
         self.init_signals()
 
-
     def add_widgets(self):
-
+        self.widgets_added = True
+        # print GeometryWidgetRegistry.registered_factories
         for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
-
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
-
-            widget.init_signals()
-            # if i == 0:
-            #     self.current_widget = widget
-
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -306,8 +302,9 @@ class GeometryToolsContainer(
         tool.setChecked(False)
         self.clear_feature_selection()
         self.clear_sel_highlight()
-        self.hide()
+        # self.layer = None
         GEOM_DOCK_ON = False
+        self.close()
 
     def closeEvent(self, event):
         """
@@ -342,42 +339,35 @@ class GeometryToolsContainer(
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
+        # print 'BUT checked 1 ', self.plugin.geom_tools_cont_act.isChecked(), GEOM_DOCK_ON, button_clicked
+        if not self.plugin.geom_tools_cont_act.isChecked() and GEOM_DOCK_ON and not button_clicked:
+            self.close_dock(self.plugin.geom_tools_cont_act)
+            return False
         # No need of activation as it is activated.
-        # print 'hidden ', self.isHidden()
-        if not self.isHidden():
-            self.activate_select_tool()
-            self.plugin.geom_tools_cont_act.setChecked(True)
-            return
-        # Get and set the active layer.
-
-        self.layer = self.iface.activeLayer()
-
-        if self.layer is not None:
-            # if it is Polygon Lines layer that is selected, keep dock
-            if self.stdm_layer(self.layer):
-                self.layer = self.iface.activeLayer()
-                self.line_layer = None
-            if self.layer.name() == POLYGON_LINES:
-                self.activate_select_tool()
-                self.plugin.geom_tools_cont_act.setChecked(True)
-                self.line_layer = self.layer
-                return True
+        global GEOM_DOCK_ON
+        active_layer = self.iface.activeLayer()
         # if no active layer, show error message
         # and uncheck the feature tool
         # print self.layer.name()
-        if self.layer is None:
+        # print self.layer, 1
+        if active_layer is None:
             if button_clicked:
                 self.active_layer_check()
             self.plugin.geom_tools_cont_act.setChecked(False)
+            self.close_dock(self.plugin.geom_tools_cont_act)
             return False
+        if not button_clicked and GEOM_DOCK_ON:
+            return False
+        # print 'hidden ', self.isHidden()
+        GEOM_DOCK_ON = True
         # If the button is unchecked, close dock.
+        # print 'BUT checked ', self.plugin.geom_tools_cont_act.isChecked()
         if not self.plugin.geom_tools_cont_act.isChecked():
             self.close_dock(self.plugin.geom_tools_cont_act)
-            self.geometry_tools = None
             return False
         # if the selected layer is not an STDM layer,
         # show not feature layer.
-        if not self.stdm_layer(self.layer):
+        if not self.stdm_layer(active_layer):
             if button_clicked and self.isHidden():
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
@@ -385,21 +375,24 @@ class GeometryToolsContainer(
             return False
         # If the selected layer is feature layer, get data and
         # display geometry_tools in a dock widget
-        # else:
-        self.prepare_for_selection()
+        # print self.plugin.geom_tools_cont_act.isChecked(), 3
+        # if not self.plugin.
+        self.prepare_for_selection(active_layer)
+        # print self.plugin.geom_tools_cont_act.isChecked(), 4
+        # if not self.isHidden():
+        if not self.widgets_added:
+            self.add_widgets()
+
         return True
-            # self.panel_loaded.emit()
 
-
-
-    def prepare_for_selection(self):
+    def prepare_for_selection(self, active_layer):
         """
         Prepares the dock widget for data loading.
         """
         self.init_dock()
 
         self.activate_select_tool()
-        self.update_layer_source(self.layer)
+        self.update_layer_source(active_layer)
 
 
     def activate_select_tool(self):
@@ -432,6 +425,7 @@ class GeometryToolsContainer(
         """
         if active_layer.type() != QgsMapLayer.VectorLayer:
             return
+        self.layer = active_layer
         # set entity from active layer in the child class
         self.set_layer_entity()
         # set entity for the super class DetailModel
@@ -486,8 +480,7 @@ class GeomWidgetsBase(object):
 
     def __init__(self, layer_settings, widget):
         # QObject.__init__(self, widget)
-        global GEOM_DOCK_ON
-        GEOM_DOCK_ON = True
+
         # print 'Geom widget activated 1'
         self.settings = layer_settings
         self.current_profile = current_profile()
@@ -517,14 +510,18 @@ class GeomWidgetsBase(object):
         self.progress_dialog.setMinimumWidth(400)
         title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
         self.progress_dialog.setWindowTitle(title)
+        self.init_signals()
 
     def init_signals(self):
         if not self.settings_layer_connected:
-            # print 'Geom widget signal activated 1'
-            self.settings.layer.selectionChanged.connect(
-                self.on_feature_selected
-            )
-            self.settings_layer_connected = True
+            try:
+
+                self.settings.layer.selectionChanged.connect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = True
+            except Exception:
+                pass
 
     def set_widget(self, widget):
         self.widget = widget
@@ -550,15 +547,18 @@ class GeomWidgetsBase(object):
     def disconnect_signals(self):
         # print 'self.settings_layer_connected ', self.settings_layer_connected
         if self.settings_layer_connected:
-            self.settings.layer.selectionChanged.disconnect(
-                self.on_feature_selected
-            )
-            self.settings_layer_connected = False
+            try:
+                self.settings.layer.selectionChanged.disconnect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = False
+            except Exception:
+                pass
 
     def on_feature_selection_finished(self):
 
         self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
-        self.settings.line_layer = self.line_layer
+
         # print self.line_layer, self.line_layer_connected
         if self.line_layer is not None:
 
@@ -589,13 +589,14 @@ class GeomWidgetsBase(object):
         if len(point_layers) > 0:
             for point_layer in point_layers:
                 QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
+
         if self.settings.layer is not None:
-            if self.settings.layer.isEditable():
+            if iface.activeLayer().isEditable():
                 iface.mainWindow().findChild(
                     QAction, 'mActionToggleEditing'
                 ).trigger()
 
-        self.disconnect_signals()
+        # self.disconnect_signals()
 
     def on_line_selection_finished(self):
         # self.preview()
@@ -609,16 +610,19 @@ class GeomWidgetsBase(object):
         :return:
         :rtype:
         """
-        if self.parent().currentWidget().objectName() != self.objectName():
+        # print feature
+        if len(feature) == 0:
             return
 
+        # QMessageBox.information(self, 'Hi ', '{}'.format(feature))
+        if self.parent().currentWidget().objectName() != self.objectName():
+            return
+        # QMessageBox.information(self, 'Hi 2', '{}'.format(feature))
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
             return
 
-        if len(feature) == 0:
-            return
 
         self.feature_ids = feature
 
@@ -730,7 +734,6 @@ class GeomWidgetsBase(object):
 
     def save(self):
         pass
-
 
     def create_point_layer(self):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -857,12 +860,18 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
         self.offset_distance.valueChanged.connect(self.on_offset_distance_changed)
+
     def on_offset_distance_changed(self, new_value):
         if self.settings_layer_connected:
             self.disconnect_signals()
 
         self.create_preview_layer()
-
+        if len(self.lines) == 0:
+            message = QApplication.translate(
+                'OffsetDistanceWidget', 'You need to first select a line.'
+            )
+            self.notice.insertWarningNotification(message)
+            return 
         result = split_offset_distance(
             self.settings.layer,
             self.line_layer,
@@ -1180,7 +1189,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.create_point_layer()
         polygon_to_points(self.settings.layer, self.line_layer,
                           self.point_layer,  POLYGON_LINES)
-        self.settings.line_layer = self.line_layer
+
         # print self.line_layer, self.line_layer_connected
         if self.line_layer is not None:
 

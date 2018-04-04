@@ -518,8 +518,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         :type plugin: Object
         """
         QDockWidget.__init__(self, iface.mainWindow())
-        global DETAILS_DOCK_ON
-        DETAILS_DOCK_ON = True
+
         self.setupUi(self)
         self.plugin = plugin
         self.iface = iface
@@ -709,7 +708,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type button_clicked: Boolean
         """
         global DETAILS_DOCK_ON
+        if not button_clicked and not DETAILS_DOCK_ON:
+            return
         DETAILS_DOCK_ON = True
+        print 'Feature det act'
         if self.plugin is None:
             # Registry column widget
             # set formatter for social tenure relationship.
@@ -745,15 +747,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
                 self.non_stdm_layer_error()
                 self.plugin.feature_details_act.setChecked(False)
-                # elif not button_clicked and not self.isHidden():
-                # # show tree message if dock is open and button clicked
-                # not_feature_msg = QApplication.translate(
-                #     'FeatureDetails',
-                #     'Please select an STDM layer to view \n'
-                #     'the details.'
-                # )
-                # self.model.clear()
-                # self.treeview_error(not_feature_msg)
+
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
         else:
