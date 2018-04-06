@@ -294,6 +294,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['columns'] = column.columns
                 self.form_fields['leading_zero'] = column.leading_zero
                 self.form_fields['separator'] = column.separator
+                self.form_fields['colname'] = column.name
 
             # Decimal properties
             if hasattr(column, 'precision'):

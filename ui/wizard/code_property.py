@@ -24,7 +24,8 @@ from collections import OrderedDict
 from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
     QStandardItem, QStandardItemModel
 from stdm.utils.util import (
-    enable_drag_sort
+    enable_drag_sort,
+    code_columns
 )
 from ui_code_property import Ui_CodeProperty
 
@@ -53,12 +54,13 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self._columns = form_fields['columns']
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
+        self._parent_column_name = form_fields['colname']
         self._profile = profile
         self._entity = entity
 
         self._col_model = QStandardItemModel()
         self.column_code_view.setModel(self._col_model)
-
+        self.code_columns = code_columns(entity, self._parent_column_name)
         self._checked_columns = []
         enable_drag_sort(self.column_code_view)
         self.none = QApplication.translate('CodeProperty', 'None')
@@ -134,9 +136,25 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             none_index = self.separator_cbo.findData('')
             self.separator_cbo.setCurrentIndex(none_index)
             self.separator_cbo.setDisabled(True)
+        if current_text in self.code_columns:
+            none_index_sp = self.separator_cbo.findData('')
+            self.separator_cbo.setCurrentIndex(none_index_sp)
+            self.separator_cbo.setDisabled(True)
+
+            none_index_lo = self.leading_zero_cbo.findData('')
+            self.leading_zero_cbo.setCurrentIndex(none_index_lo)
+            self.leading_zero_cbo.setDisabled(True)
 
         enabled = current_text == self._column_name
         self.column_code_view.setEnabled(enabled)
+
+    def code_columns(self, entity):
+        code_columns = []
+        for col in entity.columns.values():
+            if col.name != self._parent_column_name:
+                if col.TYPE_INFO == 'AUTO_GENERATED':
+                    code_columns.append(col.name)
+        return code_columns
 
     def prefix_source_names(self):
         """
@@ -147,6 +165,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         names = []
         names.append(self.none)
         names.append(self._column_name)
+        names.extend(self.code_columns)
         names.append('admin_spatial_unit_set')
 
         for value_list in self._profile.value_lists():
