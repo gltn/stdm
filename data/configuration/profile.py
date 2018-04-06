@@ -47,6 +47,8 @@ from stdm.data.configuration.value_list import (
     ValueList
 )
 
+from stdm.data.configuration.auto_generate_code import AutoGenerateCode
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -88,12 +90,13 @@ class Profile(QObject):
         self._str_table_exists = False
 
         self._admin_spatial_unit = AdministrativeSpatialUnit(self)
+        self._auto_generate_code = AutoGenerateCode(self)
         self.removed_entities = []
 
         #Add default entities to the entity collection
         self.add_entity(self.supporting_document)
         self.add_entity(self._admin_spatial_unit)
-
+        self.add_entity(self._auto_generate_code)
         self.add_entity(self.social_tenure)
 
     def _prefix(self):
@@ -133,6 +136,16 @@ class Profile(QObject):
         :rtype: AdministrativeSpatialUnit
         """
         return self._admin_spatial_unit
+
+    @property
+    def auto_generate_code(self):
+
+        """
+        :return: Returns the entity corresponding to the auto generate code
+        :rtype: AutoGenerateCode
+        """
+        #versionadded in 1.7.4
+        return self._auto_generate_code
 
     @property
     def key(self):
@@ -206,7 +219,7 @@ class Profile(QObject):
         Check if the entity exsts in the profile.
         :param entity: Short name of an entity or entity object.
         :type entity: str or Entity
-        :return: Return True if the entity exists in the profile, otherwise 
+        :return: Return True if the entity exists in the profile, otherwise
         False.
         :rtype: bool
         """
@@ -231,7 +244,7 @@ class Profile(QObject):
 
         if len(items) == 0:
             return None
-        
+
         else:
             return items[0]
 
@@ -653,5 +666,4 @@ class Profile(QObject):
     @str_table_exists.setter
     def str_table_exists(self, value):
         self._str_table_exists = value
-        
-    
+

@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
 """
 import re
 from stdm.data.configuration import entity_model
-
+from stdm.settings import current_profile
 
 class CodeGenerator(object):
     """
@@ -36,6 +36,12 @@ class CodeGenerator(object):
         :type column: Object
         """
         self.entity = entity
+        self.current_profile = current_profile()
+        self.code_entity = self.current_profile.auto_generate_code
+
+        self.code_model = entity_model(self.code_entity)
+
+        self.code_model_obj = self.code_model()
         self.column = column
 
     def generate(self, prefix, separator, leading_zero):
@@ -74,7 +80,9 @@ class CodeGenerator(object):
 
         # if no match found, start with 1
         if len(record_match) == 0:
-            return '{0}{1}{2}1'.format(prefix, separator, leading_zero)
+            code = '{0}{1}{2}1'.format(prefix, separator, leading_zero)
+            self.save_code(code)
+            return code
 
         else:
             last_serial = None
@@ -109,8 +117,21 @@ class CodeGenerator(object):
             leading_zero_len = len(leading_zero) + 1
             # format again with leading 0
             formatted_serial = "%0{}d".format(leading_zero_len) % (next_serial,)
-            # add new parcel code with the formatted number
-            return '{0}{1}{2}'.format(prefix, separator, formatted_serial)
+            code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
+            self.save_code(code)
+            # add new code with the formatted number
+            return code
+
+    def save_code(self, code):
+        """
+        Saves the code to the code table.
+        :param code: The unique code generated.
+        :type code: String
+        :return:
+        :rtype:
+        """
+        self.code_model_obj.code = code
+        self.code_model_obj.save()
 
     def search_similar_code(self, prefix, separator):
         """
@@ -124,10 +145,9 @@ class CodeGenerator(object):
         :return: Matching database result
         :rtype: SQLAlchemy result proxy
         """
-        current_model = entity_model(self.entity)
-        current_model_obj = current_model()
-        column_obj = getattr(current_model, self.column.name)
-        matches = current_model_obj.queryObject([column_obj]
+
+        column_obj = getattr(self.code_model, 'code')
+        matches = self.code_model_obj.queryObject([column_obj]
                                                 ).filter(
             column_obj.op('~')(u'^{}{}[0-9]'.format(prefix, separator))
             ).order_by(column_obj.desc()).all()

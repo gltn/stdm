@@ -352,6 +352,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         if self.parent_entity is None:
             return
+
         self.submit(True)
 
         insert_pos = self._parent.tbEntity.model().rowCount() + 1

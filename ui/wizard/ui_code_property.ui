@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>354</width>
-    <height>143</height>
+    <height>269</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -61,6 +61,9 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QListView" name="column_code_view"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
