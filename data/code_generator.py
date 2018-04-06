@@ -35,6 +35,7 @@ class CodeGenerator(object):
         :param column: The column object
         :type column: Object
         """
+        #TODO disable once committed to the database
         self.entity = entity
         self.current_profile = current_profile()
         self.code_entity = self.current_profile.auto_generate_code
