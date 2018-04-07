@@ -101,4 +101,3 @@ class Ui_frmComposerSpatialColumnEditor(object):
         self.label.setText(_translate("frmComposerSpatialColumnEditor", "Specify the zoom out level of the feature relative to the fulll extent of the map", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.general), _translate("frmComposerSpatialColumnEditor", "General", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.style), _translate("frmComposerSpatialColumnEditor", "Style", None))
-
