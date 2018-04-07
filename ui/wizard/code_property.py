@@ -18,7 +18,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QApplication,  QFontMetrics, QDialog
+from PyQt4.QtCore import Qt
+from collections import OrderedDict
+
+from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
+    QStandardItem, QStandardItemModel
+from stdm.utils.util import (
+    enable_drag_sort,
+    code_columns
+)
 from ui_code_property import Ui_CodeProperty
 
 class CodeProperty(QDialog, Ui_CodeProperty):
@@ -26,13 +34,15 @@ class CodeProperty(QDialog, Ui_CodeProperty):
     Editor to create/edit Lookup column property
     """
 
-    def __init__(self, parent, form_fields, profile=None):
+    def __init__(self, parent, form_fields, entity, profile=None):
         """
         :param parent: Owner of this form
         :type parent: QWidget
         :param form_fields: form field dictionary containing values from
         the configuration file if it exists.
         :type form_fields: Dictionary
+        :param entity: The entity of the current column
+        :type entity: Entity
         :param profile: Current configuration profile
         :type profile: Profile
         """
@@ -41,10 +51,20 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         # self.in_db = form_fields['in_db']
         self._source = form_fields['prefix_source']
+        self._columns = form_fields['columns']
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
+        self._parent_column_name = form_fields['colname']
         self._profile = profile
+        self._entity = entity
+
+        self._col_model = QStandardItemModel()
+        self.column_code_view.setModel(self._col_model)
+        self.code_columns = code_columns(entity, self._parent_column_name)
+        self._checked_columns = []
+        enable_drag_sort(self.column_code_view)
         self.none = QApplication.translate('CodeProperty', 'None')
+        self._column_name = QApplication.translate('CodeProperty', 'columns')
         self.space = QApplication.translate('CodeProperty', 'Single space')
         self.hyphen = QApplication.translate('CodeProperty', 'Hyphen')
         self.forward_slash = QApplication.translate('CodeProperty', 'Forward slash')
@@ -74,12 +94,13 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.populate_source_cbo(source_names)
         self.populate_leading_zero()
         self.populate_separator()
-
+        self.populate_columns_list()
         if self._source:
             self.prefix_source_cbo.setCurrentIndex(
                 self.prefix_source_cbo.findText(self._source)
             )
-
+        if self._columns:
+            self.set_columns()
         if self._leading_zero:
             self.leading_zero_cbo.setCurrentIndex(
                 self.leading_zero_cbo.findData(self._leading_zero)
@@ -115,6 +136,25 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             none_index = self.separator_cbo.findData('')
             self.separator_cbo.setCurrentIndex(none_index)
             self.separator_cbo.setDisabled(True)
+        if current_text in self.code_columns:
+            none_index_sp = self.separator_cbo.findData('')
+            self.separator_cbo.setCurrentIndex(none_index_sp)
+            self.separator_cbo.setDisabled(True)
+
+            none_index_lo = self.leading_zero_cbo.findData('')
+            self.leading_zero_cbo.setCurrentIndex(none_index_lo)
+            self.leading_zero_cbo.setDisabled(True)
+
+        enabled = current_text == self._column_name
+        self.column_code_view.setEnabled(enabled)
+
+    def code_columns(self, entity):
+        code_columns = []
+        for col in entity.columns.values():
+            if col.name != self._parent_column_name:
+                if col.TYPE_INFO == 'AUTO_GENERATED':
+                    code_columns.append(col.name)
+        return code_columns
 
     def prefix_source_names(self):
         """
@@ -124,10 +164,38 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         names = []
         names.append(self.none)
+        names.append(self._column_name)
+        names.extend(self.code_columns)
         names.append('admin_spatial_unit_set')
+
         for value_list in self._profile.value_lists():
             names.append(value_list.short_name)
         return names
+
+    def populate_columns_list(self):
+        self._col_model.clear()
+        for i, col in enumerate(self._entity.columns.values()):
+
+            if col.name == 'id':
+                continue
+
+            column_item = QStandardItem(col.header())
+            column_item.setCheckable(True)
+            column_item.setData(col.name)
+
+            self._col_model.appendRow([column_item])
+
+    def set_columns(self):
+        """
+        Check columns from the configuration. 
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        for index in range(self._col_model.rowCount()):
+            item = self._col_model.item(index)
+            if item.data() in self._columns:
+                item.setCheckState(Qt.Checked)
 
     def populate_source_cbo(self, names):
         """
@@ -166,6 +234,17 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         self._source = unicode(self.prefix_source_cbo.currentText())
 
+    def add_columns(self):
+        """
+        Set the prefix source.
+        .. versionadded:: 1.7.5
+        """
+        self._columns[:] = []
+        for index in range(self._col_model.rowCount()):
+            item = self._col_model.item(index)
+            if item.checkState() == Qt.Checked:
+                self._columns.append(item.data())
+
     def add_leading_zero(self):
         """
         Set the prefix source.
@@ -189,6 +268,16 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         return self._source
 
+    def columns(self):
+        """
+        Returns the columns
+        rtype: List
+        """
+        current_text = self.prefix_source_cbo.currentText()
+        if current_text != self._column_name:
+            return []
+        return self._columns
+
     def leading_zero(self):
         """
         Returns the selected leading_zero
@@ -208,6 +297,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         QDialog accept event.
         """
         self.add_prefix_source()
+        self.add_columns()
         self.add_leading_zero()
         self.add_separator()
         self.done(1)

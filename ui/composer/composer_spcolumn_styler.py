@@ -49,6 +49,11 @@ class SpatialFieldMapping(object):
         self._geomType = ""
         self._zoom_level = 4
         
+        self._length_prefix = ''
+        self._area_prefix = ''
+        self._length_suffix = ''
+        self._area_suffix = ''
+        
     def setSpatialField(self,spatialField):
         """
         Set the name of the spatial field.
@@ -143,6 +148,47 @@ class SpatialFieldMapping(object):
         Set zoom out scale factor.
         """
         self._zoom_level = zoomLevel
+    
+    def area_prefix(self, area_prefix):
+        """
+        Sets area prefix.
+        :param area_prefix: Area prefix
+        :type area_prefix: String
+        :return: 
+        :rtype: 
+        """
+        self._area_prefix = area_prefix
+    
+
+    def length_prefix(self, length_prefix):
+        """
+        Sets area prefix.
+        :param length_prefix: Length prefix
+        :type length_prefix: String
+        :return: 
+        :rtype: 
+        """
+        self._length_prefix = length_prefix
+
+    def area_suffix(self, area_suffix):
+        """
+        Sets area suffix.
+        :param area_suffix: Area suffix
+        :type area_suffix: String
+        :return: 
+        :rtype: 
+        """
+        self._area_suffix = area_suffix
+
+    def length_suffix(self, length_suffix):
+        """
+        Sets area suffix.
+        :param length_suffix: Length suffix
+        :type length_suffix: String
+        :return: 
+        :rtype: 
+        """
+        self._length_suffix = length_suffix
         
     def toVectorURI(self):
         """
@@ -154,12 +200,18 @@ class SpatialFieldMapping(object):
         """
         Returns a QDomElement with the object instance settings
         """
+        print self._area_prefix, self.area_suffix()
         spColumnElement = domDocument.createElement("SpatialField")
         spColumnElement.setAttribute("name",self._spatialField)
         spColumnElement.setAttribute("labelField",self._labelField)
         spColumnElement.setAttribute("itemid",self._itemId)
         spColumnElement.setAttribute("srid",self._srid)
         spColumnElement.setAttribute("geomType",self._geomType)
+
+        spColumnElement.setAttribute("areaPrefix", self._area_prefix)
+        spColumnElement.setAttribute("lengthPrefix", self._length_prefix)
+        spColumnElement.setAttribute("areaSuffix", self._area_suffix)
+        spColumnElement.setAttribute("lengthSuffix", self._length_suffix)
 
         spColumnElement.setAttribute("zoom",str(self._zoom_level))
         symbolElement = domDocument.createElement("Symbol")
@@ -188,14 +240,22 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         
         self._symbol_editor = None
 
-        self._zoom_out_level = 16
+        self._zoom_out_level = 1.3
 
         self.sb_zoom.setValue(self._zoom_out_level)
         
         self._srid = -1
-        
+
         self._geomType = ""
-        
+
+        self._length_prefix = ''
+
+        self._area_prefix = ''
+
+        self._length_suffix = ''
+
+        self._area_suffix = ''
+
         #Load fields if the data source has been specified
         self._dsName = self._composerWrapper.selectedDataSource()
         self._loadFields()
@@ -203,8 +263,36 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         #Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
+
+        self.length_prefix_type.currentIndexChanged[str].connect(
+            self.on_length_prefix_type_changed
+        )
+        self.area_prefix_type.currentIndexChanged[str].connect(
+            self.on_area_prefix_type_changed
+        )
+
+        self.length_suffix_type.currentIndexChanged[str].connect(
+            self.on_length_suffix_type_changed
+        )
+        self.area_suffix_type.currentIndexChanged[str].connect(
+            self.on_area_suffix_type_changed
+        )
+
+        self.length_prefix.textChanged.connect(
+            self.on_length_prefix_changed
+        )
+        self.area_prefix_type.textChanged.connect(
+            self.on_area_prefix_changed
+        )
+
+        self.length_suffix_type.textChanged.connect(
+            self.on_length_suffix_changed
+        )
+        self.area_suffix_type.textChanged.connect(
+            self.on_area_suffix_changed
+        )
     
-    def onDataSourceChanged(self,dataSourceName):
+    def onDataSourceChanged(self, dataSourceName):
         """
         When the user changes the data source then update the fields.
         """
@@ -294,7 +382,96 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         if self._zoom_out_level != value:
             self._zoom_out_level = value
-        
+
+    def on_length_prefix_type_changed(self, value):
+        """
+        A slot raised when length prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._length_prefix = ''
+            self.length_prefix.clear()
+
+    def on_area_prefix_type_changed(self, value):
+        """
+        A slot raised when area prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._area_prefix = ''
+            self.area_prefix.clear()
+
+    def on_length_suffix_type_changed(self, value):
+        """
+        A slot raised when length suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._length_suffix = ''
+            self.length_suffix.clear()
+
+    def on_area_suffix_type_changed(self, value):
+        """
+        A slot raised when area suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._area_suffix = ''
+            self.area_suffix.clear()
+
+    def on_length_prefix_changed(self, value):
+        """
+        A slot raised when length prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._length_prefix = self.length_prefix.text()
+
+    def on_area_prefix_changed(self, value):
+        """
+        A slot raised when area prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._area_prefix = self.area_prefix.text()
+
+    def on_length_suffix_changed(self, value):
+        """
+        A slot raised when length suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._length_suffix = self.length_suffix.text()
+
+    def on_area_suffix_changed(self, value):
+        """
+        A slot raised when area suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._area_suffix = self.area_suffix.text()
+
+
     def _loadFields(self):
         """
         Load labeling fields/columns.

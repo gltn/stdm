@@ -47,4 +47,3 @@ class AutoGenerateCode(Entity):
 
         # Add columns
         self.add_column(self.auto_generate_code_name)
-

@@ -291,8 +291,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
             if hasattr(column, 'prefix_source'):
                 self.form_fields['prefix_source'] = column.prefix_source
+                self.form_fields['columns'] = column.columns
                 self.form_fields['leading_zero'] = column.leading_zero
                 self.form_fields['separator'] = column.separator
+                self.form_fields['colname'] = column.name
 
             # Decimal properties
             if hasattr(column, 'precision'):
@@ -327,6 +329,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['in_db'] = self.in_db
         self.form_fields['prefix_source'] = self.type_attribs.get(
             'prefix_source', none
+        )
+        self.form_fields['columns'] = self.type_attribs.get(
+            'columns', []
         )
         self.form_fields['leading_zero'] = self.type_attribs.get(
             'leading_zero', ''
@@ -485,9 +490,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.type_attribs['AUTO_GENERATED'] = {
             'mandt': {'check_state': False, 'enabled_state': True},
             'search': {'check_state': True, 'enabled_state': True},
-            'unique': {'check_state': True, 'enabled_state': False},
-            'index': {'check_state': True, 'enabled_state': False},
-            'prefix_source': '', 'leading_zero': '', 'separator':'',
+            'unique': {'check_state': True, 'enabled_state': True},
+            'index': {'check_state': True, 'enabled_state': True},
+            'prefix_source': '', 'columns':[], 'leading_zero': '', 'separator':'',
             'property': self.code_property, 'prop_set': True}
 
     def data_type_property(self):
@@ -641,10 +646,11 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Opens the code data type property editor
         """
-        editor = CodeProperty(self, self.form_fields, profile=self.profile)
+        editor = CodeProperty(self, self.form_fields, entity=self.entity, profile=self.profile)
         result = editor.exec_()
         if result == 1:
             self.form_fields['prefix_source'] = editor.prefix_source()
+            self.form_fields['columns'] = editor.columns()
             self.form_fields['leading_zero'] = editor.leading_zero()
             self.form_fields['separator'] = editor.separator()
             self.property_set()

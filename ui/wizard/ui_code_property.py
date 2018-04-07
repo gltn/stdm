@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_CodeProperty(object):
     def setupUi(self, CodeProperty):
         CodeProperty.setObjectName(_fromUtf8("CodeProperty"))
-        CodeProperty.resize(354, 143)
+        CodeProperty.resize(354, 269)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -51,6 +51,9 @@ class Ui_CodeProperty(object):
         self.prefix_source_cbo.setObjectName(_fromUtf8("prefix_source_cbo"))
         self.horizontalLayout.addWidget(self.prefix_source_cbo)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.column_code_view = QtGui.QListView(CodeProperty)
+        self.column_code_view.setObjectName(_fromUtf8("column_code_view"))
+        self.verticalLayout.addWidget(self.column_code_view)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.label_3 = QtGui.QLabel(CodeProperty)

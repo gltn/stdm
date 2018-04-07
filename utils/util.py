@@ -1143,3 +1143,20 @@ def version_from_metadata():
                 version_line = line.split('=')
                 version = version_line[1]
                 return version
+
+def code_columns(entity, current_column_name):
+    """
+    Gets the code columns in an entity.
+    :param entity: The entity object
+    :type entity: Object
+    :param current_column_name: The exclude/current column name.
+    :type current_column_name: String
+    :return: List code column names.
+    :rtype: List
+    """
+    code_columns = []
+    for col in entity.columns.values():
+        if col.name != current_column_name:
+            if col.TYPE_INFO == 'AUTO_GENERATED':
+                code_columns.append(col.name)
+    return code_columns
