@@ -71,7 +71,7 @@ def merge_polygons(polygons_list):
     return merged
 
 
-def create_temporary_layer(source_layer, type, name, show_legend=True):
+def create_temporary_layer(source_layer, type, name, show_legend=True, style=True):
 
     # create a new memory layer
     crs = source_layer.crs()
@@ -96,15 +96,17 @@ def create_temporary_layer(source_layer, type, name, show_legend=True):
     iface.mapCanvas().mapSettings().setDestinationCrs(target_crs)
 
     iface.mapCanvas().refresh()
-    if type == 'LineString':
+    if style:
+        if type == 'LineString':
 
-        symbols = v_layer.rendererV2().symbols()
-        symbol = symbols[0]
-        symbol.setWidth(2)
-    if type == 'Point':
-        symbols = v_layer.rendererV2().symbols()
-        symbol = symbols[0]
-        symbol.setSize(4)
+            symbols = v_layer.rendererV2().symbols()
+            symbol = symbols[0]
+            symbol.setWidth(2)
+
+        if type == 'Point':
+            symbols = v_layer.rendererV2().symbols()
+            symbol = symbols[0]
+            symbol.setSize(4)
 
     # show the line
     QgsMapLayerRegistry.instance().addMapLayer(
@@ -338,7 +340,7 @@ def add_geom_to_feature(layer, geom):
     return feature
 
 
-def add_geom_to_layer_with_measurement(layer, geom):
+def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
     provider = layer.dataProvider()
     feature = QgsFeature()
     if isinstance(geom, QgsPoint):
@@ -347,12 +349,18 @@ def add_geom_to_layer_with_measurement(layer, geom):
     feature.setGeometry(geom)
 
     if geom.type() == 1:
+        attr = '{} {}{}'.format(prefix, round(geom.length(), 2), suffix)
 
-        feature.setAttributes(['measurement', round(geom.length(), 2)])
+        feature.setAttributes(['measurement', attr])
 
     if geom.type() == 2:
+        if unit == 'Hectare':
+            area = geom.area() / 10000
+        else:
+            area = geom.area()
+        attr = '{} {}{}'.format(prefix, round(area, 2), suffix)
+        feature.setAttributes(['measurement', attr])
 
-        feature.setAttributes(['measurement', round(geom.area(), 2)])
     layer.updateFeature(feature)
 
     provider.addFeatures([feature])
@@ -464,24 +472,62 @@ def highlight_geom(map, layer, geom):
     sel_highlight.show()
 
 
-def show_polygon_area(layer):
-    sel_feats = layer_poly.selectedFeatures()
+def show_polygon_area(layer, prefix='', suffix='', all_features=False, unit='Meters'):
+    if not all_features:
+        sel_feats = layer.selectedFeatures()
+    else:
+        sel_feats = layer.getFeatures()
 
-    polygon_geom = sel_feats[0].geometry() #TODO make this parameter
-    add_geom_to_layer_with_measurement(layer, polygon_geom)
+    # type = layer_type(layer)
 
+    # line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
+    # if len(line_layers) == 0:
+    #     line_layer = create_temporary_layer(layer, type, layer_name, style=style)
+    # else:
+    #     line_layer = line_layers[0]
+    #     clear_layer_features(line_layer)
+    #     iface.setActiveLayer(line_layer)
     add_layer_double_field(layer)
-    label_layer_by_field(layer, 'measurement')
+    for feature in sel_feats:
 
-def polygon_to_lines(layer, layer_name, measurement=True):
+        polygon_geom = feature.geometry()
+        add_geom_to_layer_with_measurement(layer, polygon_geom, prefix, suffix, unit)
+
+        label_layer_by_field(layer, 'measurement')
+        #
+        # for feature in sel_feats:
+        #     if measurement:
+        #         add_layer_double_field(line_layer)
+        #     polygon_geom = feature.geometry()
+        #
+        #     if polygon_geom is None:
+        #         return None
+        #     if type == 'Polygon':
+        #         list_of_lines = polygon_geom.asPolygon()
+        #         for lines in list_of_lines:
+        #             line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
+        #             line_geoms.extend(line_geom_list)
+        #     if type == 'MultiPolygon':
+        #         list_of_lines_1 = polygon_geom.asMultiPolygon()
+        #         for list_of_lines in list_of_lines_1:
+        #             for lines in list_of_lines:
+        #                 line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
+        #                 line_geoms.extend(line_geom_list)
+
+
+def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', all_features=False, style=True):
     if layer.name() == layer_name:
         return None
     line_geoms = []
-    line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
-    sel_feats = layer.selectedFeatures()
 
+    if not all_features:
+        sel_feats = layer.selectedFeatures()
+    else:
+        sel_feats = layer.getFeatures()
+
+    line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
     if len(line_layers) == 0:
-        line_layer = create_temporary_layer(layer, 'LineString', layer_name)
+        line_layer = create_temporary_layer(layer, 'LineString', layer_name, style=style)
     else:
         line_layer = line_layers[0]
         clear_layer_features(line_layer)
@@ -493,20 +539,21 @@ def polygon_to_lines(layer, layer_name, measurement=True):
         if measurement:
             add_layer_double_field(line_layer)
         polygon_geom = feature.geometry()
+
         if polygon_geom is None:
             return None
         if type == 'Polygon':
             list_of_lines = polygon_geom.asPolygon()
             for lines in list_of_lines:
-                line_geom_list = add_line_features(line_layer, lines, measurement)
+                line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
                 line_geoms.extend(line_geom_list)
         if type == 'MultiPolygon':
             list_of_lines_1 = polygon_geom.asMultiPolygon()
             for list_of_lines in list_of_lines_1:
                 for lines in list_of_lines:
-                    line_geom_list = add_line_features(line_layer, lines, measurement)
+                    line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
                     line_geoms.extend(line_geom_list)
-    # line_layer.blockSignals(False)
+
     return line_layer
 
 def polygon_to_points(polygon_layer, line_layer, point_layer,
@@ -515,7 +562,7 @@ def polygon_to_points(polygon_layer, line_layer, point_layer,
 
         add_line_points_to_map(point_layer, feature.geometry(), clear=False)
 
-def add_line_features(line_layer, lines, measurement):
+def add_line_features(line_layer, lines, measurement, prefix, suffix):
     line_geom_list = []
     for i, line in enumerate(lines):
         if i != len(lines) - 1:
@@ -523,7 +570,7 @@ def add_line_features(line_layer, lines, measurement):
             line_geom = QgsGeometry.fromPolyline(line_list)
             line_geom_list.append(line_geom)
             if measurement:
-                add_geom_to_layer_with_measurement(line_layer, line_geom)
+                add_geom_to_layer_with_measurement(line_layer, line_geom, prefix, suffix)
                 label_layer_by_field(line_layer, 'measurement')
 
             else:
@@ -541,12 +588,16 @@ def label_layer_by_field(layer, field_name):
     layer.setCustomProperty("labeling", "pal")
     layer.setCustomProperty(
         "labeling/fieldName", field_name)
-    if layer.wkbType() != QGis.WKBPolygon:
+    if layer.wkbType() != QGis.WKBPolygon and layer.wkbType() != QGis.WKBMultiPolygon:
         layer.setCustomProperty(
             "labeling/placement", QgsPalLayerSettings.AboveLine
         )
-    layer.setCustomProperty("labeling/placementFlags",
+        layer.setCustomProperty("labeling/placementFlags",
                                  QgsPalLayerSettings.AboveLine)
+    else:
+        layer.setCustomProperty(
+            "labeling/placement", QgsPalLayerSettings.Free
+        )
     layer.setCustomProperty("labeling/fontSize", "10")
     layer.setCustomProperty("labeling/bufferDraw", True)
     layer.setCustomProperty("labeling/enabled", True)

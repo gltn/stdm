@@ -71,6 +71,7 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     vector_layer
 )
+from stdm.geometry.geometry_utils import polygon_to_lines, show_polygon_area
 from stdm.data.database import STDMDb
 from stdm.settings import (
     current_profile
@@ -344,6 +345,7 @@ class DocumentGenerator(QObject):
                         #self.clear_temporary_map_layers()
 
                         for spfm in spfmList:
+
                             #Use the value of the label field to name the layer
                             lbl_field = spfm.labelField()
                             spatial_field = spfm.spatialField()
@@ -373,25 +375,62 @@ class DocumentGenerator(QObject):
                                                           spatial_field)
 
                             #Create reference layer with feature
-                            ref_layer = self._build_vector_layer(layerName, geom_type, srid)
+                            ref_layer = self._build_vector_layer(
+                                layerName, geom_type, srid
+                            )
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
                             #Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
-                            bbox.scale(spfm.zoomLevel())
-
+                            if spfm.zoomLevel() != '':
+                                bbox.scale(spfm.zoomLevel())
+                            else:
+                                map_item.setNewScale(spfm.scale())
+                                # renderer = self._iface.mapCanvas().mapRenderer()
+                                # renderer.setScale(spfm.scale())
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
                                 canvas_extent = self._iface.mapCanvas().fullExtent()
                                 cnt_pnt = bbox.center()
                                 canvas_extent.scale(1.0/32, cnt_pnt)
                                 bbox = canvas_extent
+                            # Add length of a polygon line
+                            if spfm.get_length_prefix() != '' or \
+                                spfm.get_length_suffix() != '':
+                                line_layer = polygon_to_lines(
+                                    ref_layer,
+                                    'Polygon Lines',
+                                    measurement=True,
+                                    prefix=spfm.get_length_prefix(),
+                                    suffix=spfm.get_length_suffix(),
+                                    all_features=True,
+                                    style=False
+                                )
+                                self._map_memory_layers.append(line_layer)
+
+                            # Add length of a polygon line
+                            if spfm.get_area_prefix() != '' or \
+                                            spfm.get_area_suffix() != '':
+                                if spfm.get_area_suffix_type() == 'Hectare' or \
+                                    spfm.get_area_prefix_type() == 'Hectare':
+                                    unit = 'Hectare'
+                                else:
+                                    unit = ''
+                                show_polygon_area(
+                                    ref_layer,
+                                    prefix=spfm.get_area_prefix(),
+                                    suffix=spfm.get_area_suffix(),
+                                    all_features=True,
+                                    unit=unit
+                                )
 
                             #Style layer based on the spatial field mapping symbol layer
                             symbol_layer = spfm.symbolLayer()
                             if not symbol_layer is None:
                                 ref_layer.rendererV2().symbols()[0].changeSymbolLayer(0,spfm.symbolLayer())
+
+
                             '''
                             Add layer to map and ensure its always added at the top
                             '''

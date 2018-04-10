@@ -26,12 +26,13 @@ from PyQt4.QtCore import Qt
 
 from qgis.core import (
     QgsSimpleFillSymbolLayerV2,
-    QgsSymbolLayerV2Utils
-)
+    QgsSymbolLayerV2Utils,
+    QgsCoordinateReferenceSystem, QgsUnitTypes)
 
 from stdm.data.pg_utils import (
-    table_column_names
+    table_column_names, column_spatial_reference
 )
+from stdm.settings import current_profile
 
 from .ui_composer_spcolumn_styler import Ui_frmComposerSpatialColumnEditor
 
@@ -39,6 +40,7 @@ class SpatialFieldMapping(object):
     """
     Symbol and labeling configuration for an individual spatial field.
     """
+    # TODO show warning the feature will not work if it is geographic projection
     def __init__(self,spatialField="",labelField=""):
         self._spatialField = spatialField
         self._labelField = labelField
@@ -48,11 +50,17 @@ class SpatialFieldMapping(object):
         self._srid = -1
         self._geomType = ""
         self._zoom_level = 4
-        
+        self._scale = 0
         self._length_prefix = ''
         self._area_prefix = ''
         self._length_suffix = ''
         self._area_suffix = ''
+        self._crs = None
+        self._length_prefix_type = ''
+        self._area_prefix_type = ''
+        self._length_suffix_type = ''
+        self._area_suffix_type = ''
+        # self._output_crs = 0
         
     def setSpatialField(self,spatialField):
         """
@@ -122,6 +130,9 @@ class SpatialFieldMapping(object):
         """
         Set the SRID of the spatial column.
         """
+        self._crs = QgsCoordinateReferenceSystem(
+            srid, QgsCoordinateReferenceSystem.EpsgCrsId
+        )
         self._srid = srid
         
     def geometryType(self):
@@ -148,8 +159,63 @@ class SpatialFieldMapping(object):
         Set zoom out scale factor.
         """
         self._zoom_level = zoomLevel
+        self._scale = 0
+
+    def scale(self):
+        """
+        Return the zoom out scale factor that should be applied relative
+        to the extents of a spatial unit.
+        """
+        return self._scale
+
+    def set_scale(self, scale):
+        """
+        Set zoom out scale factor.
+        """
+        self._scale = scale
+        self._zoom_level = 0
+
+    def set_area_prefix_type(self, area_prefix_type):
+        """
+        Sets area prefix type.
+        :param area_prefix_type: Area prefix type
+        :type area_prefix_type: String
+        :return: 
+        :rtype: 
+        """
+        self._area_prefix_type = area_prefix_type
+
+    def set_length_prefix_type(self, length_prefix_type):
+        """
+        Sets area prefix type.
+        :param length_prefix_type: Length prefix type
+        :type length_prefix_type: String
+        :return: 
+        :rtype: 
+        """
+        self._length_prefix_type = length_prefix_type
+
+    def set_area_suffix_type(self, area_suffix_type):
+        """
+        Sets area suffix type.
+        :param area_suffix_type: Area suffix type
+        :type area_suffix_type: String
+        :return: 
+        :rtype: 
+        """
+        self._area_suffix_type = area_suffix_type
+
+    def set_length_suffix_type(self, length_suffix_type):
+        """
+        Sets area suffix type.
+        :param length_suffix_type: Length suffix type
+        :type length_suffix_type: String
+        :return: 
+        :rtype: 
+        """
+        self._length_suffix_type = length_suffix_type
     
-    def area_prefix(self, area_prefix):
+    def set_area_prefix(self, area_prefix):
         """
         Sets area prefix.
         :param area_prefix: Area prefix
@@ -158,9 +224,8 @@ class SpatialFieldMapping(object):
         :rtype: 
         """
         self._area_prefix = area_prefix
-    
 
-    def length_prefix(self, length_prefix):
+    def set_length_prefix(self, length_prefix):
         """
         Sets area prefix.
         :param length_prefix: Length prefix
@@ -170,7 +235,7 @@ class SpatialFieldMapping(object):
         """
         self._length_prefix = length_prefix
 
-    def area_suffix(self, area_suffix):
+    def set_area_suffix(self, area_suffix):
         """
         Sets area suffix.
         :param area_suffix: Area suffix
@@ -180,7 +245,8 @@ class SpatialFieldMapping(object):
         """
         self._area_suffix = area_suffix
 
-    def length_suffix(self, length_suffix):
+
+    def set_length_suffix(self, length_suffix):
         """
         Sets area suffix.
         :param length_suffix: Length suffix
@@ -189,6 +255,33 @@ class SpatialFieldMapping(object):
         :rtype: 
         """
         self._length_suffix = length_suffix
+
+    def get_length_prefix(self):
+        return self._length_prefix
+
+    def get_area_prefix(self):
+        return self._area_prefix
+
+    def get_length_suffix(self):
+        return self._length_suffix
+
+    def get_area_suffix(self):
+        return self._area_suffix
+
+    def get_length_prefix_type(self):
+        return self._length_prefix_type
+
+    def get_area_prefix_type(self):
+        return self._area_prefix_type
+
+    def get_length_suffix_type(self):
+        return self._length_suffix_type
+
+    def get_area_suffix_type(self):
+        return self._area_suffix_type
+
+    # def get_output_crs(self):
+    #     return self._output_crs
         
     def toVectorURI(self):
         """
@@ -200,7 +293,7 @@ class SpatialFieldMapping(object):
         """
         Returns a QDomElement with the object instance settings
         """
-        print self._area_prefix, self.area_suffix()
+        # print self._area_prefix, self.area_suffix()
         spColumnElement = domDocument.createElement("SpatialField")
         spColumnElement.setAttribute("name",self._spatialField)
         spColumnElement.setAttribute("labelField",self._labelField)
@@ -208,12 +301,19 @@ class SpatialFieldMapping(object):
         spColumnElement.setAttribute("srid",self._srid)
         spColumnElement.setAttribute("geomType",self._geomType)
 
+        spColumnElement.setAttribute("areaPrefixType", self._area_prefix_type)
+        spColumnElement.setAttribute("lengthPrefixType", self._length_prefix_type)
+        spColumnElement.setAttribute("areaSuffixType", self._area_suffix_type)
+        spColumnElement.setAttribute("lengthSuffixType", self._length_suffix_type)
+
         spColumnElement.setAttribute("areaPrefix", self._area_prefix)
         spColumnElement.setAttribute("lengthPrefix", self._length_prefix)
         spColumnElement.setAttribute("areaSuffix", self._area_suffix)
         spColumnElement.setAttribute("lengthSuffix", self._length_suffix)
 
         spColumnElement.setAttribute("zoom",str(self._zoom_level))
+        spColumnElement.setAttribute("scale", str(self._scale))
+
         symbolElement = domDocument.createElement("Symbol")
         
         #Append symbol properties element
@@ -233,19 +333,21 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
     def __init__(self, spColumnName, composerWrapper, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
+        self.current_profile = current_profile()
 
         self._composerWrapper = composerWrapper
-        
+        # Load fields if the data source has been specified
+        self._dsName = self._composerWrapper.selectedDataSource()
         self._spColumnName = spColumnName
         
         self._symbol_editor = None
 
         self._zoom_out_level = 1.3
-
+        self._scale = 0
         self.sb_zoom.setValue(self._zoom_out_level)
         
         self._srid = -1
-
+        self._crs = None
         self._geomType = ""
 
         self._length_prefix = ''
@@ -256,13 +358,26 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
 
         self._area_suffix = ''
 
-        #Load fields if the data source has been specified
-        self._dsName = self._composerWrapper.selectedDataSource()
         self._loadFields()
-        
+
+        self._length_prefix_type = self.length_prefix_type.currentText()
+
+        self._area_prefix_type = self.area_prefix_type.currentText()
+
+        self._length_suffix_type = self.length_suffix_type.currentText()
+
+        self._area_suffix_type = self.area_suffix_type.currentText()
+
         #Connect signals
-        self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
+        self._composerWrapper.dataSourceSelected.connect(
+            self.onDataSourceChanged
+        )
+
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
+
+        self.zoom_rad.clicked.connect(self.on_zoom_radio_clicked)
+
+        self.scale_rad.clicked.connect(self.on_scale_radio_clicked)
 
         self.length_prefix_type.currentIndexChanged[str].connect(
             self.on_length_prefix_type_changed
@@ -281,17 +396,27 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.length_prefix.textChanged.connect(
             self.on_length_prefix_changed
         )
-        self.area_prefix_type.textChanged.connect(
+        self.area_prefix.textChanged.connect(
             self.on_area_prefix_changed
         )
 
-        self.length_suffix_type.textChanged.connect(
+        self.length_suffix.textChanged.connect(
             self.on_length_suffix_changed
         )
-        self.area_suffix_type.textChanged.connect(
+        self.area_suffix.textChanged.connect(
             self.on_area_suffix_changed
         )
-    
+
+    def on_zoom_radio_clicked(self, state):
+        print state
+        self._zoom_out_level = 0
+        self._scale = 1
+
+    def on_scale_radio_clicked(self, state):
+        print state
+        self._zoom_out_level = 1
+        self._scale = 0
+
     def onDataSourceChanged(self, dataSourceName):
         """
         When the user changes the data source then update the fields.
@@ -334,6 +459,9 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         Set the SRID of the specified spatial unit.
         """
+        self._crs = QgsCoordinateReferenceSystem(
+            srid, QgsCoordinateReferenceSystem.EpsgCrsId
+        )
         self._srid = srid
         
     def srid(self):
@@ -341,18 +469,74 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         Return the SRID of the specified spatial unit.
         """
         return self._srid
-        
+
+    def set_area_prefix(self, area_prefix):
+        """
+        Sets area prefix.
+        :param area_prefix: Area prefix
+        :type area_prefix: String
+        :return:
+        :rtype:
+        """
+        self._area_prefix = area_prefix
+
+    def set_length_prefix(self, length_prefix):
+        """
+        Sets area prefix.
+        :param length_prefix: Length prefix
+        :type length_prefix: String
+        :return:
+        :rtype:
+        """
+        self._length_prefix = length_prefix
+
+    def set_area_suffix(self, area_suffix):
+        """
+        Sets area suffix.
+        :param area_suffix: Area suffix
+        :type area_suffix: String
+        :return:
+        :rtype:
+        """
+        self._area_suffix = area_suffix
+
+    def set_length_suffix(self, length_suffix):
+        """
+        Sets area suffix.
+        :param length_suffix: Length suffix
+        :type length_suffix: String
+        :return:
+        :rtype:
+        """
+        self._length_suffix = length_suffix
+
     def spatialFieldMapping(self):
         """
         Returns a SpatialFieldMapping object instance configured to the current settings.
         """
-        sp_field_mapping = SpatialFieldMapping(self._spColumnName, self.cboLabelField.currentText())
+        sp_field_mapping = SpatialFieldMapping(
+            self._spColumnName, self.cboLabelField.currentText()
+        )
 
         sp_field_mapping.setSymbolLayer(self.symbolLayer())
         sp_field_mapping.setSRID(self._srid)
         sp_field_mapping.setGeometryType(self._geomType)
-        sp_field_mapping.setZoomLevel(self.sb_zoom.value())
-        
+
+        if self.zoom_rad.isChecked():
+            sp_field_mapping.setZoomLevel(self.sb_zoom.value())
+        else:
+            sp_field_mapping.set_scale(self.sb_zoom.value())
+
+        sp_field_mapping.set_area_prefix_type(self._area_prefix_type)
+        sp_field_mapping.set_length_prefix_type(self._length_prefix_type)
+        sp_field_mapping.set_area_suffix_type(self._area_suffix_type)
+        sp_field_mapping.set_length_suffix_type(self._length_suffix_type)
+
+        sp_field_mapping.set_area_prefix(self._area_prefix)
+        sp_field_mapping.set_length_prefix(self._length_prefix)
+        sp_field_mapping.set_area_suffix(self._area_suffix)
+        sp_field_mapping.set_length_suffix(self._length_suffix)
+
         return sp_field_mapping
     
     def applyMapping(self, spatialFieldMapping):
@@ -364,7 +548,29 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.setLabelField(spatialFieldMapping.labelField())
         self._srid = spatialFieldMapping.srid()
         self._geomType = spatialFieldMapping.geometryType()
-        self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
+
+        if self.zoom_rad.isChecked():
+            self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
+        else:
+            self.sb_zoom.setValue(spatialFieldMapping.scale())
+
+        self.area_suffix.setText(spatialFieldMapping.get_area_suffix())
+        self.area_prefix.setText(spatialFieldMapping.get_area_prefix())
+        self.length_suffix.setText(spatialFieldMapping.get_length_suffix())
+        self.length_prefix.setText(spatialFieldMapping.get_length_prefix())
+
+        self.set_current_cbo_item(
+            self.area_suffix_type, spatialFieldMapping.get_area_suffix_type()
+        )
+        self.set_current_cbo_item(
+            self.area_prefix_type, spatialFieldMapping.get_area_prefix_type()
+        )
+        self.set_current_cbo_item(
+            self.length_suffix_type, spatialFieldMapping.get_length_suffix_type()
+        )
+        self.set_current_cbo_item(
+            self.length_prefix_type, spatialFieldMapping.get_length_prefix_type()
+        )
 
     def setLabelField(self,labelField):
         """
@@ -394,6 +600,20 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         if value == 'None':
             self._length_prefix = ''
             self.length_prefix.clear()
+            self.length_prefix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            unit_text = QgsUnitTypes.toString(unit).title()
+            self.length_prefix.setDisabled(False)
+            self.length_prefix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._length_prefix = ''
+            self.length_prefix.clear()
+            self.length_prefix.setDisabled(False)
+
+        self._length_prefix_type = value
 
     def on_area_prefix_type_changed(self, value):
         """
@@ -406,6 +626,27 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         if value == 'None':
             self._area_prefix = ''
             self.area_prefix.clear()
+            self.area_prefix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            area_unit = QgsUnitTypes.distanceToAreaUnit(unit)
+            unit_text = QgsUnitTypes.toString(area_unit).title()
+            self.area_prefix.setDisabled(False)
+            self.area_prefix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._area_prefix = ''
+            self.area_prefix.clear()
+            self.area_prefix.setDisabled(False)
+
+        elif value == 'Hectare':
+            self._area_prefix = 'hectare'
+            self.area_prefix.clear()
+            self.area_prefix.setDisabled(False)
+            self.area_prefix.setText(self._area_prefix)
+
+        self._area_prefix_type = value
 
     def on_length_suffix_type_changed(self, value):
         """
@@ -418,6 +659,20 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         if value == 'None':
             self._length_suffix = ''
             self.length_suffix.clear()
+            self.length_suffix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            unit_text = QgsUnitTypes.toString(unit).title()
+            self.length_suffix.setDisabled(False)
+            self.length_suffix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._length_suffix = ''
+            self.length_suffix.clear()
+            self.length_suffix.setDisabled(False)
+
+        self._length_suffix_type = value
 
     def on_area_suffix_type_changed(self, value):
         """
@@ -430,6 +685,27 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         if value == 'None':
             self._area_suffix = ''
             self.area_suffix.clear()
+            self.area_suffix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            area_unit = QgsUnitTypes.distanceToAreaUnit(unit)
+            unit_text = QgsUnitTypes.toString(area_unit).title()
+            self.area_suffix.setDisabled(False)
+            self.area_suffix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._area_suffix = ''
+            self.area_suffix.clear()
+            self.area_suffix.setDisabled(False)
+
+        elif value == 'Hectare':
+            self._area_suffix = 'hectare'
+            self.area_suffix.clear()
+            self.area_suffix.setDisabled(False)
+            self.area_suffix.setText(self._area_suffix)
+
+        self._area_suffix_type = value
 
     def on_length_prefix_changed(self, value):
         """
@@ -471,6 +747,9 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         self._area_suffix = self.area_suffix.text()
 
+    # def on_output_projection_changed(self, value):
+    #
+    #     self._output_crs = value.srsid()
 
     def _loadFields(self):
         """
@@ -493,3 +772,14 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.cboLabelField.addItem("")
         
         self.cboLabelField.addItems(nonSpatialCols)
+
+    def set_current_cbo_item(self, combo, name):
+        # Set current combo item on a combobox using name.
+
+        if name != '':
+            index = combo.findText(name, Qt.MatchFixedString)
+            if index >= 0:
+                combo.setCurrentIndex(index)
+        else:
+            if combo.count() > 0:
+                combo.setCurrentIndex(0)

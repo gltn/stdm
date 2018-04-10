@@ -23,13 +23,12 @@ from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 from ..progress_dialog import STDMProgressDialog
+from ui_show_measurements import Ui_ShowMeasurements
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
-# TODO Line count is not showing on seond time load.
-# TODO reset selected feature on toggle of geom combobox - Done partly
-# TODO on selection of polygon, clear selection of line in the UI
+
 class LayerSelectionHandler(object):
     """
      Handles all tasks related to the layer.
@@ -502,8 +501,9 @@ class GeomWidgetsBase(object):
         self.feature_ids = []
         self.executed = False
         self.preview_layer = None
+        if hasattr(self.widget, 'preview_btn'):
+            self.widget.preview_btn.clicked.connect(self.preview)
 
-        self.widget.preview_btn.clicked.connect(self.preview)
         self.widget.run_btn.clicked.connect(self.save)
         self.settings_layer_connected = False
         self.progress_dialog = STDMProgressDialog(iface.mainWindow())
@@ -591,10 +591,11 @@ class GeomWidgetsBase(object):
                 QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
 
         if self.settings.layer is not None:
-            if iface.activeLayer().isEditable():
-                iface.mainWindow().findChild(
-                    QAction, 'mActionToggleEditing'
-                ).trigger()
+            if iface.activeLayer() is not None:
+                if iface.activeLayer().isEditable():
+                    iface.mainWindow().findChild(
+                        QAction, 'mActionToggleEditing'
+                    ).trigger()
 
         # self.disconnect_signals()
 
@@ -644,7 +645,7 @@ class GeomWidgetsBase(object):
 
                 self.on_feature_selection_finished()
 
-                # print inspect.stack()
+            # print inspect.stack()
 
     def on_line_feature_selected(self):
         # print self.settings.layer
@@ -1353,6 +1354,91 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
             self.progress_dialog.progress_message(fail_message)
 
+
+
+class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
+
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+        self.setupUi(self)
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+
+    def validate_save(self):
+
+        if self.widget.selected_layer_rad.isChecked():
+            if self.settings.layer.featureCount() > 2000:
+                message = QApplication.translate(
+                    'ShowMeasurementsWidget',
+                    'The number of features is too large. Select below 2000 features.'
+                )
+                self.notice.insertErrorNotification(message)
+                return False
+        if not self.widget.selected_layer_rad.isChecked():
+            if len(self.settings.layer.selectedFeatures()) > 2000:
+                message = QApplication.translate(
+                    'ShowMeasurementsWidget',
+                    'The number of selected features is too large. Select below 2000 features.'
+                )
+                self.notice.insertErrorNotification(message)
+                return False
+            if len(self.settings.layer.selectedFeatures()) == 0:
+                message = QApplication.translate(
+                    'ShowMeasurementsWidget',
+                    'Select at least one feature. Select below 2000 features.'
+                )
+                self.notice.insertErrorNotification(message)
+                return False
+        return True
+
+    def save(self):
+        result = self.validate_save()
+        if not result:
+            return
+        self.executed = True
+
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('ShowMeasurementsWidget', 'Labelling')
+        self.progress_dialog.progress_message(message)
+        self.progress_dialog.show()
+
+
+        self.create_preview_layer()
+
+        self.settings.layer.selectByIds(self.feature_ids)
+
+        # result = split_move_line_with_area(
+        #     self.settings.layer,
+        #     self.line_layer,
+        #     self.preview_layer,
+        #     self.lines[0],
+        #     self.widget.split_polygon_area.value(),
+        #     self.feature_ids
+        # )
+        if self.widget.length_chk.isChecked():
+            polygon_to_lines(
+                self.settings.layer,
+                POLYGON_LINES,
+                style=False,
+                all_features=self.widget.selected_layer_rad.isChecked()
+            )
+        if self.widget.area_chk.isChecked():
+            show_polygon_area(
+                self.settings.layer,
+                all_features=self.widget.selected_layer_rad.isChecked(),
+                unit='Hectare'
+            )
+
+
+
+        iface.setActiveLayer(self.settings.layer)
+        self.progress_dialog.hide()
+        self.init_signals()
+
+        self.progress_dialog.hide()
+
+
 class GeometryWidgetRegistry(object):
     """
     Base container for widget factories based on column types. It is used to
@@ -1514,3 +1600,19 @@ class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
 
 JoinPointsTool.register()
 
+class ShowMeasurementsTool(GeometryWidgetRegistry, ShowMeasurementsWidget):
+    """
+    Widget factory for Text column type.
+    """
+    NAME = QApplication.translate('ShowMeasurementsTool',
+                                  'Labelling: Show Measurements')
+    OBJECT_NAME = NAME.replace(' ', '_')
+
+    @classmethod
+    def _create_widget(cls, settings, parent):
+        move_line = ShowMeasurementsWidget(settings, parent)
+        # cls.WIDGET = move_line
+        return move_line
+
+
+ShowMeasurementsTool.register()

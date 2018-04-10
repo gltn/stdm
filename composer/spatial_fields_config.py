@@ -118,15 +118,50 @@ class SpatialFieldsConfiguration(object):
             spatialField = spatialFieldMappingElement.attribute("name")
             itemId = spatialFieldMappingElement.attribute("itemid") 
             srid = int(spatialFieldMappingElement.attribute("srid"))
-            geomType = spatialFieldMappingElement.attribute("geomType") 
-            zoom = float(spatialFieldMappingElement.attribute("zoom"))
-            
+            geomType = spatialFieldMappingElement.attribute("geomType")
+
+            spFieldMapping = SpatialFieldMapping(spatialField, labelField)
+
+            if spatialFieldMappingElement.attribute("zoom") != '':
+                zoom = float(spatialFieldMappingElement.attribute("zoom"))
+                spFieldMapping.setZoomLevel(zoom)
+            else:
+                scale = float(spatialFieldMappingElement.attribute("scale"))
+                spFieldMapping.set_scale(scale)
+
+            area_prefix_type = spatialFieldMappingElement.attribute(
+                'areaPrefixType')
+            length_prefix_type = spatialFieldMappingElement.attribute(
+                'lengthPrefixType')
+            area_suffix_type = spatialFieldMappingElement.attribute(
+                'areaSuffixType')
+
+            length_suffix_type = spatialFieldMappingElement.attribute(
+                'lengthSuffixType')
+
+            area_prefix = spatialFieldMappingElement.attribute('areaPrefix')
+            length_prefix = spatialFieldMappingElement.attribute('lengthPrefix')
+            area_suffix = spatialFieldMappingElement.attribute('areaSuffix')
+            length_suffix = spatialFieldMappingElement.attribute('lengthSuffix')
+
             #Create spatial field mapping
-            spFieldMapping = SpatialFieldMapping(spatialField,labelField) 
+
             spFieldMapping.setItemId(itemId)
             spFieldMapping.setSRID(srid)
             spFieldMapping.setGeometryType(geomType)
-            spFieldMapping.setZoomLevel(zoom)
+
+
+
+            spFieldMapping.set_area_prefix_type(area_prefix_type)
+            spFieldMapping.set_length_prefix_type(length_prefix_type)
+            spFieldMapping.set_area_suffix_type(area_suffix_type)
+            spFieldMapping.set_length_suffix_type(length_suffix_type)
+
+            spFieldMapping.set_area_prefix(area_prefix)
+            spFieldMapping.set_length_prefix(length_prefix)
+            spFieldMapping.set_area_suffix(area_suffix)
+            spFieldMapping.set_length_suffix(length_suffix)
+            # spFieldMapping.set_output_crs(output_crs)
 
             symbolElement = spatialFieldMappingElement.firstChildElement("Symbol")
             if not symbolElement is None:

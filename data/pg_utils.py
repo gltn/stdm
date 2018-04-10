@@ -77,13 +77,32 @@ def spatial_tables(exclude_views=False):
 
     return spTables
 
+def column_spatial_reference(table, column):
+
+    sql_str = "SELECT Find_SRID('public', '{}', '{}')".format(table, column)
+    sql = text(sql_str)
+
+    results = _execute(sql)
+    for result in results:
+        return result[0]
+
+    #
+    # return cnt
+    # result = _execute(t, view_name=view)
+    #
+    # definition = []
+    # for row in result:
+    #     definition.append(row[0])
+    # return definition[0]
+
 def pg_tables(schema="public", exclude_lookups=False):
     """
     Returns a list of all the tables in the given schema minus the default PostGIS tables.
     Views are also excluded. See separate function for retrieving views.
     :rtype: list
     """
-    t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
+    t = text("SELECT table_name FROM information_schema.tables WHERE "
+             "table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
     result = _execute(t, tschema=schema, tbtype="BASE TABLE")
         
