@@ -1543,10 +1543,10 @@ class EntityRelationSerializer(object):
             element.attribute(EntityRelationSerializer.CHILD_COLUMN, '')
         )
         kw['show_in_parent'] = unicode(
-            element.attribute(EntityRelationSerializer.SHOW_IN_PARENT, '')
+            element.attribute(EntityRelationSerializer.SHOW_IN_PARENT, 'True')
         )
         kw['show_in_child'] = unicode(
-            element.attribute(EntityRelationSerializer.SHOW_IN_CHILD, '')
+            element.attribute(EntityRelationSerializer.SHOW_IN_CHILD, 'True')
         )
         dc_str = unicode(
             element.attribute(EntityRelationSerializer.DISPLAY_COLUMNS, '')
@@ -1589,9 +1589,9 @@ class EntityRelationSerializer(object):
         er_element.setAttribute(EntityRelationSerializer.DISPLAY_COLUMNS,
                                 ','.join(entity_relation.display_cols))
         er_element.setAttribute(EntityRelationSerializer.SHOW_IN_PARENT,
-                                entity_relation.show_in_parent)
+                                str(entity_relation.show_in_parent))
         er_element.setAttribute(EntityRelationSerializer.SHOW_IN_CHILD,
-                                entity_relation.show_in_child)
+                                str(entity_relation.show_in_child))
         parent_node.appendChild(er_element)
 
 
