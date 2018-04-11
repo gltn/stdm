@@ -562,6 +562,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             entity_records_collection = []
             for i,er in enumerate(entity_records):
+                QApplication.processEvents()
                 entity_row_info = []
                 progressDialog.setValue(i)
                 try:
@@ -569,9 +570,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         attr_val = getattr(er, attr)
                         # Check if there are display formatters and apply if
                         # one exists for the given attribute.
-                        if attr in self._cell_formatters:
-                            formatter = self._cell_formatters[attr]
-                            attr_val = formatter.format_column_value(attr_val)
+                        if attr_val is not None: # No need of formatter for None value
+                            if attr in self._cell_formatters:
+                                formatter = self._cell_formatters[attr]
+                                attr_val = formatter.format_column_value(attr_val)
                         entity_row_info.append(attr_val)
                 except Exception as ex:
                     QMessageBox.critical(
@@ -852,12 +854,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 reload=False,
                 entity_browser=self
             )
-            editor_trans = self.tr('Editor')
-            title = u'{0} {1}'.format(
-                format_name(self._entity.short_name),
-                editor_trans
-            )
-            gps_tool.setWindowTitle(title)
 
             result = gps_tool.exec_()
             result = False # a workaround to avoid duplicate model insert
@@ -1219,10 +1215,22 @@ class EntityBrowserWithEditor(EntityBrowser):
                 )
                 if len(layers) > 0:
                     layers[0].removeSelection()
+
+                    canvas = iface.mapCanvas()
+
+                    layers[0].blockSignals(True)
+                    # Get selection and extent while disabling signals of selection
+                    # especially for geometry tools.
                     layers[0].select(record_ids)
                     bounding_box = layers[0].boundingBoxOfSelected()
+
+                    layers[0].blockSignals(False)
+                    canvas.setCrsTransformEnabled(True)
+
+                    canvas.zoomToSelected(layers[0])
                     iface.mapCanvas().setExtent(bounding_box)
-                    iface.mapCanvas().refresh()
+                    layers[0].select(record_ids)
+                    canvas.refresh()
                     self.selection_layer = layers[0]
 
     def add_spatial_unit_layer(self, layer_name=None):
@@ -1257,7 +1265,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             try:
                 if self.selection_layer is not None:
                     self.selection_layer.removeSelection()
-                self.sp_unit_manager.zoom_to_layer()
+
             except RuntimeError:
                 pass
 
@@ -1272,7 +1280,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         if self._entity.has_geometry_column():
             if self.selection_layer is not None:
                 self.selection_layer.removeSelection()
-                self.sp_unit_manager.zoom_to_layer()
 
 
 class ContentGroupEntityBrowser(EntityBrowserWithEditor):

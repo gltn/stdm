@@ -441,6 +441,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':None,
+                'show_in_parent': '1', 'show_in_child': '1',
                 'property':self.fk_property, 'prop_set':False }
 
         self.type_attribs['LOOKUP'] = {
@@ -610,11 +611,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         relation['profile'] = self.profile
         relation['entity'] = self.entity
         relation['column_name'] = unicode(self.edtColName.text())
-
+        relation['show_in_parent'] = '1'
+        relation['show_in_child'] = '1'
         editor = FKProperty(self, relation)
         result = editor.exec_()
         if result == 1:
             self.form_fields['entity_relation'] = editor.entity_relation()
+            relation['show_in_parent'] = editor.show_in_parent()
+            relation['show_in_child'] = editor.show_in_child()
+
             self.property_set()
 
     def lookup_property(self):

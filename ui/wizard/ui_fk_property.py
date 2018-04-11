@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_fk_property.ui'
 #
-# Created: Wed Apr 27 11:03:02 2016
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_FKProperty(object):
     def setupUi(self, FKProperty):
         FKProperty.setObjectName(_fromUtf8("FKProperty"))
-        FKProperty.resize(343, 240)
+        FKProperty.resize(353, 283)
         self.formLayout = QtGui.QFormLayout(FKProperty)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label = QtGui.QLabel(FKProperty)
@@ -73,7 +72,13 @@ class Ui_FKProperty(object):
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        self.show_in_parent_chk = QtGui.QCheckBox(FKProperty)
+        self.show_in_parent_chk.setObjectName(_fromUtf8("show_in_parent_chk"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.show_in_parent_chk)
+        self.show_in_child_chk = QtGui.QCheckBox(FKProperty)
+        self.show_in_child_chk.setObjectName(_fromUtf8("show_in_child_chk"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.show_in_child_chk)
 
         self.retranslateUi(FKProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), FKProperty.accept)
@@ -85,4 +90,6 @@ class Ui_FKProperty(object):
         self.label.setText(_translate("FKProperty", "Primary entity", None))
         self.label_2.setText(_translate("FKProperty", "Primary unique column", None))
         self.label_3.setText(_translate("FKProperty", "Display columns", None))
+        self.show_in_parent_chk.setText(_translate("FKProperty", "Show in parent form", None))
+        self.show_in_child_chk.setText(_translate("FKProperty", "Show in child form", None))
 

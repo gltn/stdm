@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>343</width>
-    <height>240</height>
+    <width>353</width>
+    <height>283</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -83,13 +83,27 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="5" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QCheckBox" name="show_in_parent_chk">
+     <property name="text">
+      <string>Show in parent form</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="show_in_child_chk">
+     <property name="text">
+      <string>Show in child form</string>
      </property>
     </widget>
    </item>

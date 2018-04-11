@@ -122,6 +122,10 @@ class CodeProperty(QDialog, Ui_CodeProperty):
                 }
             ''' % item_width
         )
+        # Link checkbox and label
+
+        self.enable_serial_lbl.setBuddy(self.enable_serial_chk)
+        self.enable_editing_lbl.setBuddy(self.enable_editing_chk)
 
     def _on_prefix_source_selected(self):
         """
@@ -196,6 +200,24 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             item = self._col_model.item(index)
             if item.data() in self._columns:
                 item.setCheckState(Qt.Checked)
+
+    def set_enable_serial(self):
+        """
+        Check if serial is enabled from the configuration.
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        pass
+
+    def set_enable_editing(self):
+        """
+        Check if editing is enabled from the configuration.
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        pass
 
     def populate_source_cbo(self, names):
         """
