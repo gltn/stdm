@@ -110,6 +110,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         """
         self.entity_editor = EntityEditorDialog(self.entity, self.model, self)
         self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
+        self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
             if tab_text != 'no_tab':
                 self.gpx_import_tab.addTab(tab_object, str(tab_text))

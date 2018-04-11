@@ -51,6 +51,9 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.column_name = relation['column_name']
         self.in_db = relation['form_fields']['in_db']
 
+        self.show_in_parent = relation['show_in_parent']
+        self.show_in_child = relation['show_in_child']
+
         self.column_model = QStandardItemModel()
         self.lvDisplayCol.setModel(self.column_model)
 
@@ -60,7 +63,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         """
         Initializes form fields
         """
-        self.cboPrimaryEntity.currentIndexChanged.connect( \
+        self.cboPrimaryEntity.currentIndexChanged.connect(
                 self.load_entity_columns)
 
         self.load_fk_entities()
@@ -69,19 +72,20 @@ class FKProperty(QDialog, Ui_FKProperty):
             parent_column = self._entity_relation.parent_column
             display_cols = self._entity_relation.display_cols
 
-            self.cboPrimaryEntity.setCurrentIndex( \
+            self.cboPrimaryEntity.setCurrentIndex(
                     self.cboPrimaryEntity.findText(parent))
 
-            self.cboPrimaryUKey.setCurrentIndex( \
+            self.cboPrimaryUKey.setCurrentIndex(
                     self.cboPrimaryUKey.findText(parent_column))
 
             self.show_display_cols(display_cols)
+            self.set_show_in_child()
+            self.set_show_in_parent()
 
         # Disable controls if column exists in the database
         self.cboPrimaryEntity.setEnabled(not self.in_db)
         self.cboPrimaryUKey.setEnabled(not self.in_db)
-        self.lvDisplayCol.setEnabled(not self.in_db)
-            
+
     def show_display_cols(self, display_cols):
         """
         checks previously selected display columns
@@ -141,6 +145,41 @@ class FKProperty(QDialog, Ui_FKProperty):
         disp_columns = self.fk_display_columns()
         self.populate_column_listview(disp_columns)
 
+    def set_show_in_parent(self):
+        """
+        Sets the checkbox value check state based on the configuration default or
+        saved configuration value.
+        :return:
+        :rtype:
+        """
+        if self.show_in_parent == '0':
+            self.show_in_parent_chk.setCheckState(Qt.Unchecked)
+        if self.show_in_parent == '1':
+            self.show_in_parent_chk.setCheckState(Qt.Checked)
+        if self.show_in_parent is None:
+            self.show_in_parent_chk.setCheckState(Qt.Unchecked)
+        # for old versions, set checked as that is the default
+        if self.show_in_parent == '':
+            self.show_in_parent_chk.setCheckState(Qt.Checked)
+
+    def set_show_in_child(self):
+        """
+        Sets the checkbox value check state based on the configuration default or
+        saved configuration value.
+        :return:
+        :rtype:
+        """
+        if self.show_in_child == '0':
+            self.show_in_child_chk.setCheckState(Qt.Unchecked)
+        if self.show_in_child == '1':
+            self.show_in_child_chk.setCheckState(Qt.Checked)
+        if self.show_in_child is None:
+            print 'is None'
+            self.show_in_child_chk.setCheckState(Qt.Unchecked)
+        # for old versions, set checked as that is the default
+        if self.show_in_child == '':
+            self.show_in_child_chk.setCheckState(Qt.Checked)
+
     def populate_column_combobox(self, columns):
         """
         Populate combobox with column names
@@ -174,6 +213,8 @@ class FKProperty(QDialog, Ui_FKProperty):
         er_fields['display_columns'] = self.display_columns()
         er_fields['child'] = self.entity
         er_fields['child_column'] = self.column_name
+        er_fields['show_in_parent'] = self.show_in_parent()
+        er_fields['show_in_child'] = self.show_in_child()
 
         self._entity_relation = EntityRelation(self.profile, **er_fields)
 
@@ -186,6 +227,32 @@ class FKProperty(QDialog, Ui_FKProperty):
         return [unicode(self.column_model.item(row).text()) \
                 for row in range(self.column_model.rowCount()) \
                 if self.column_model.item(row).checkState()==Qt.Checked]
+
+    def show_in_parent(self):
+        """
+        Returns show in parent
+        :return: Show in parent property - 0 = no and 1 = yes.
+        :rtype: Unicode
+        """
+        if self.show_in_parent_chk.isChecked():
+            self.show_in_parent = '1'
+        else:
+            self.show_in_parent = '0'
+            
+        return self.show_in_parent
+
+    def show_in_child(self):
+        """
+        Returns show in child
+        :return: Show in child property - 0 = no and 1 = yes.
+        :rtype: Unicode
+        """
+        if self.show_in_child_chk.isChecked():
+            self.show_in_child = '1'
+        else:
+            self.show_in_child = '0'
+
+        return self.show_in_child
 
     def entity_relation(self):
         """

@@ -158,11 +158,17 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         # Set title
         editor_trans = self.tr('Editor')
-        title = u'{0} {1}'.format(
-            format_name(self._entity.short_name),
-            editor_trans
-        )
-        self.setWindowTitle(title)
+        if self._entity.label is not None:
+            if self._entity.label != '':
+                title_str = self._entity.label
+            else:
+                title_str = format_name(self._entity.short_name)
+        else:
+            title_str = format_name(self._entity.short_name)
+
+        self.title = u'{0} {1}'.format(title_str, editor_trans)
+
+        self.setWindowTitle(self.title)
 
         if isinstance(parent._parent, EntityEditorDialog):
             self.parent_entity = parent.parent_entity
@@ -493,8 +499,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
             ch_entities = self.children_entities()
 
             for col, ch in ch_entities.iteritems():
-
-                self._add_fk_browser(ch, col)
+                if hasattr(col.entity_relation, 'show_in_parent'):
+                    if col.entity_relation.show_in_parent != '0':
+                        self._add_fk_browser(ch, col)
+                else:
+                    self._add_fk_browser(ch, col)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -612,6 +621,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if ch.TYPE_INFO == Entity.TYPE_INFO:
                 for col in ch.columns.values():
                     if hasattr(col, 'entity_relation'):
+
                         if col.parent.name == self._entity.name:
                             child_columns[col] = ch
         return child_columns

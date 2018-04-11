@@ -1507,6 +1507,8 @@ class EntityRelationSerializer(object):
     CHILD = 'child'
     CHILD_COLUMN = 'childColumn'
     DISPLAY_COLUMNS = 'displayColumns'
+    SHOW_IN_PARENT = 'showInParent'
+    SHOW_IN_CHILD = 'showInChild'
 
     @staticmethod
     def read_xml(element, profile, association_elements,
@@ -1540,9 +1542,16 @@ class EntityRelationSerializer(object):
         kw['child_column'] = unicode(
             element.attribute(EntityRelationSerializer.CHILD_COLUMN, '')
         )
+        kw['show_in_parent'] = unicode(
+            element.attribute(EntityRelationSerializer.SHOW_IN_PARENT, '')
+        )
+        kw['show_in_child'] = unicode(
+            element.attribute(EntityRelationSerializer.SHOW_IN_CHILD, '')
+        )
         dc_str = unicode(
             element.attribute(EntityRelationSerializer.DISPLAY_COLUMNS, '')
         )
+
         if not dc_str:
             dc = []
         else:
@@ -1579,7 +1588,10 @@ class EntityRelationSerializer(object):
                                 entity_relation.child_column)
         er_element.setAttribute(EntityRelationSerializer.DISPLAY_COLUMNS,
                                 ','.join(entity_relation.display_cols))
-
+        er_element.setAttribute(EntityRelationSerializer.SHOW_IN_PARENT,
+                                entity_relation.show_in_parent)
+        er_element.setAttribute(EntityRelationSerializer.SHOW_IN_CHILD,
+                                entity_relation.show_in_child)
         parent_node.appendChild(er_element)
 
 
