@@ -153,7 +153,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         except AttributeError:
             self._parent._parent = None
         self._init_gui()
-        self.resize(430, 400)
+        self.adjustSize()
+
         self._get_entity_editor_widgets()
 
         # Set title
@@ -175,7 +176,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.set_parent_values()
             # make the size smaller to differentiate from parent and as it
             # only has few tabs.
-            self.resize(390, 400)
+            self.adjustSize()
 
     def _init_gui(self):
         # Setup base elements

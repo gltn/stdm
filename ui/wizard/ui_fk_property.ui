@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>353</width>
-    <height>283</height>
+    <width>439</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Primary entity</string>
+      <string>Primary entity:</string>
      </property>
     </widget>
    </item>
@@ -52,7 +52,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Primary unique column</string>
+      <string>Primary unique column:</string>
      </property>
     </widget>
    </item>
@@ -69,17 +69,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Display columns</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QListView" name="lvDisplayCol">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+      <string>Display columns:</string>
      </property>
     </widget>
    </item>
@@ -96,14 +86,38 @@
    <item row="3" column="1">
     <widget class="QCheckBox" name="show_in_parent_chk">
      <property name="text">
-      <string>Show in parent form</string>
+      <string/>
      </property>
     </widget>
    </item>
    <item row="4" column="1">
     <widget class="QCheckBox" name="show_in_child_chk">
      <property name="text">
-      <string>Show in child form</string>
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="hide_sub_form_lbl">
+     <property name="text">
+      <string>Hide sub-form in primary entity:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Hide column in form:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QListView" name="lvDisplayCol">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
     </widget>
    </item>

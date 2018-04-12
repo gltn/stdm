@@ -292,9 +292,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             if hasattr(column, 'prefix_source'):
                 self.form_fields['prefix_source'] = column.prefix_source
                 self.form_fields['columns'] = column.columns
+                self.form_fields['column_separators'] = column.column_separators
                 self.form_fields['leading_zero'] = column.leading_zero
                 self.form_fields['separator'] = column.separator
                 self.form_fields['colname'] = column.name
+                self.form_fields['enable_editing'] = column.enable_editing
+                self.form_fields['disable_auto_increment'] = column.disable_auto_increment
 
             # Decimal properties
             if hasattr(column, 'precision'):
@@ -333,11 +336,20 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['columns'] = self.type_attribs.get(
             'columns', []
         )
+        self.form_fields['column_separators'] = self.type_attribs.get(
+            'column_separators', []
+        )
         self.form_fields['leading_zero'] = self.type_attribs.get(
             'leading_zero', ''
         )
         self.form_fields['separator'] = self.type_attribs.get(
             'separator', ''
+        )
+        self.form_fields['enable_editing'] = self.type_attribs.get(
+            'enable_editing', ''
+        )
+        self.form_fields['disable_auto_increment'] = self.type_attribs.get(
+            'disable_auto_increment', ''
         )
 
         self.form_fields['precision'] = self.type_attribs.get(
@@ -441,7 +453,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 'unique':{'check_state':False, 'enabled_state':False},
                 'index':{'check_state':False, 'enabled_state':False},
                 'entity_relation':None,
-                'show_in_parent': '1', 'show_in_child': '1',
+                'show_in_parent': True, 'show_in_child': True,
                 'property':self.fk_property, 'prop_set':False }
 
         self.type_attribs['LOOKUP'] = {
@@ -493,7 +505,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'search': {'check_state': True, 'enabled_state': True},
             'unique': {'check_state': True, 'enabled_state': True},
             'index': {'check_state': True, 'enabled_state': True},
-            'prefix_source': '', 'columns':[], 'leading_zero': '', 'separator':'',
+            'prefix_source': '', 'columns':[], 'column_separators':[],
+            'leading_zero': '', 'separator':'',
+            'disable_auto_increment': False, 'enable_editing': False,
             'property': self.code_property, 'prop_set': True}
 
     def data_type_property(self):
@@ -658,6 +672,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['columns'] = editor.columns()
             self.form_fields['leading_zero'] = editor.leading_zero()
             self.form_fields['separator'] = editor.separator()
+            self.form_fields['disable_auto_increment'] = editor.disable_auto_increment()
+            self.form_fields['enable_editing'] = editor.enable_editing()
+            self.form_fields['column_separators'] = editor.column_separators()
+
             self.property_set()
 
     def create_column(self):

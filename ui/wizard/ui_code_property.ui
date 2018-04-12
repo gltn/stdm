@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>452</width>
-    <height>288</height>
+    <width>491</width>
+    <height>404</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,19 +20,10 @@
    <string>Auto Generated Code Property</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="4" column="2">
-    <widget class="QComboBox" name="leading_zero_cbo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>249</width>
-       <height>0</height>
-      </size>
+   <item row="4" column="0" colspan="2">
+    <widget class="QLabel" name="disable_auto_increment_lbl">
+     <property name="text">
+      <string>Disable auto increment number:</string>
      </property>
     </widget>
    </item>
@@ -49,34 +40,70 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0" colspan="2">
+   <item row="6" column="0" colspan="2">
+    <widget class="QLabel" name="enable_editing_lbl">
+     <property name="text">
+      <string>Enable editing:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2">
+    <widget class="QCheckBox" name="enable_editing_chk">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Serial number leading zero:</string>
+      <string>Auto increment leading zero:</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0" colspan="4">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QLabel" name="label_3">
+   <item row="4" column="2">
+    <widget class="QCheckBox" name="disable_auto_increment_chk">
      <property name="text">
-      <string>Separator:</string>
+      <string/>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="0" column="2" colspan="2">
+   <item row="5" column="2" colspan="3">
+    <widget class="QComboBox" name="leading_zero_cbo">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>249</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2" colspan="3">
+    <widget class="QComboBox" name="separator_cbo">
+     <property name="minimumSize">
+      <size>
+       <width>249</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="5">
+    <widget class="QTableView" name="column_code_view"/>
+   </item>
+   <item row="0" column="2" colspan="3">
     <widget class="QComboBox" name="prefix_source_cbo">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -98,47 +125,33 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="5">
-    <widget class="QListView" name="column_code_view"/>
+   <item row="8" column="3" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
    </item>
-   <item row="2" column="2" colspan="2">
-    <widget class="QComboBox" name="separator_cbo">
-     <property name="minimumSize">
+   <item row="8" column="0" colspan="3">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
       <size>
-       <width>249</width>
-       <height>0</height>
+       <width>40</width>
+       <height>20</height>
       </size>
      </property>
-    </widget>
-   </item>
-   <item row="5" column="2">
-    <widget class="QCheckBox" name="enable_editing_chk">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QCheckBox" name="enable_serial_chk">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+    </spacer>
    </item>
    <item row="3" column="0" colspan="2">
-    <widget class="QLabel" name="enable_serial_lbl">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Enable serial number:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="2">
-    <widget class="QLabel" name="enable_editing_lbl">
-     <property name="text">
-      <string>Enable editing:</string>
+      <string>Separtor:</string>
      </property>
     </widget>
    </item>

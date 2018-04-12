@@ -83,6 +83,7 @@ class CodeGenerator(object):
         if len(record_match) == 0:
             code = '{0}{1}{2}1'.format(prefix, separator, leading_zero)
             self.save_code(code)
+
             return code
 
         else:
@@ -120,6 +121,7 @@ class CodeGenerator(object):
             formatted_serial = "%0{}d".format(leading_zero_len) % (next_serial,)
             code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
             self.save_code(code)
+
             # add new code with the formatted number
             return code
 
@@ -146,7 +148,6 @@ class CodeGenerator(object):
         :return: Matching database result
         :rtype: SQLAlchemy result proxy
         """
-
         column_obj = getattr(self.code_model, 'code')
         matches = self.code_model_obj.queryObject([column_obj]
                                                 ).filter(
@@ -154,4 +155,22 @@ class CodeGenerator(object):
             ).order_by(column_obj.desc()).all()
 
         return matches
-
+    #
+    # def search_code(self, code):
+    #     """
+    #     Queries the database on the column to get all the values matching
+    #     the supplied prefix.
+    #     :param code: The code generated.
+    #     :type code: String
+    #     :return: Matching database result
+    #     :rtype: SQLAlchemy result proxy
+    #     """
+    #
+    #     column_obj = getattr(self.code_model, 'code')
+    #     matches = self.code_model_obj.queryObject([column_obj]
+    #                                             ).filter(
+    #         column_obj.op('~')(u'^{}'.format(code))
+    #         ).order_by(column_obj.desc()).all()
+    #
+    #     return matches
+    #

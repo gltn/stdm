@@ -147,7 +147,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         self.tvAdminUnits.setModel(self._adminUnitTreeModel)
         self.tvAdminUnits.hideColumn(2)
         self.tvAdminUnits.setColumnWidth(0,220)
-        
+        self.tvAdminUnits.expandAll()
         #Connects slots
         self.connect(self.btnAdd, SIGNAL("clicked()"), self.onCreateAdminUnit)
         self.connect(self.btnClear, SIGNAL("clicked()"), self.onClearSelection)
