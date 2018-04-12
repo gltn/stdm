@@ -127,7 +127,7 @@ class FKProperty(QDialog, Ui_FKProperty):
                 [column for column in self.fk_entities[index][1].columns.items()]
 
         columns = [column[0] for column in entity_columns \
-                if column[1].TYPE_INFO <>'SERIAL']
+                   if column[1].TYPE_INFO != 'SERIAL']
 
         return columns
 

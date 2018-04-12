@@ -1252,3 +1252,26 @@ def code_columns(entity, current_column_name):
             if col.TYPE_INFO == 'AUTO_GENERATED':
                 code_columns.append(col.name)
     return code_columns
+
+
+def string_to_boolean(string_bool, default):
+    """
+    Converts string to boolean.
+    :param string_bool: The string containing a boolean text.
+    :type string_bool: String
+    :param default: Default boolean value.
+    :type default: Boolean
+    :return: Converted boolean
+    :rtype: Boolean
+    """
+    if string_bool == '':
+        result = default
+    elif string_bool == None:
+        result = default
+    elif string_bool.lower() == 'true':
+        result = True
+    elif string_bool.lower() == 'false':
+        result = False
+    else:
+        result = default
+    return result
