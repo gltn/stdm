@@ -346,10 +346,10 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'separator', ''
         )
         self.form_fields['enable_editing'] = self.type_attribs.get(
-            'enable_editing', False
+            'enable_editing', ''
         )
         self.form_fields['disable_auto_increment'] = self.type_attribs.get(
-            'disable_auto_increment', False
+            'disable_auto_increment', ''
         )
 
         self.form_fields['precision'] = self.type_attribs.get(

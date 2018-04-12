@@ -81,7 +81,26 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.cboPrimaryEntity.setEnabled(not self.in_db)
         self.cboPrimaryUKey.setEnabled(not self.in_db)
         self.lvDisplayCol.setEnabled(not self.in_db)
-            
+        # self.cboPrimaryEntity.currentIndexChanged[str].connect(
+        #     self._on_primary_entity_changed
+        # )
+        self.show_in_parent_chk.clicked.connect(self.on_show_in_parent_clicked)
+        self.show_in_child_chk.clicked.connect(self.on_show_in_child_clicked)
+
+    # def _on_primary_entity_changed(self, value):
+    #     hide_text = QApplication.translate('FKProperty', 'Hide sub-form in')
+    #     hide_text2 = QApplication.translate('FKProperty', 'entity editor form')
+    #     new_label = u'{} {} {}'.format(hide_text, value, hide_text2)
+    #     self.hide_sub_form_lbl.setText(new_label)
+
+    def on_show_in_parent_clicked(self):
+        if self.show_in_parent_chk.isChecked():
+            self.show_in_child_chk.setChecked(False)
+
+    def on_show_in_child_clicked(self):
+        if self.show_in_child_chk.isChecked():
+            self.show_in_parent_chk.setChecked(False)
+
     def show_display_cols(self, display_cols):
         """
         checks previously selected display columns

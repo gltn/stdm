@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>353</width>
-    <height>283</height>
+    <width>439</width>
+    <height>280</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Primary entity</string>
+      <string>Primary entity:</string>
      </property>
     </widget>
    </item>
@@ -52,7 +52,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Primary unique column</string>
+      <string>Primary unique column:</string>
      </property>
     </widget>
    </item>
@@ -69,7 +69,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Display columns</string>
+      <string>Display columns:</string>
      </property>
     </widget>
    </item>
@@ -98,9 +98,9 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="hide_sub_form_lbl">
      <property name="text">
-      <string>Hide sub-form:</string>
+      <string>Hide sub-form in primary entity:</string>
      </property>
     </widget>
    </item>

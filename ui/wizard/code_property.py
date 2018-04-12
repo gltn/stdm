@@ -117,7 +117,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         if self._columns:
             self.set_columns()
 
-        self.set_enable_auto_increment()
+        self.set_disable_auto_increment()
         self.set_enable_editing()
         if self._leading_zero:
             self.leading_zero_cbo.setCurrentIndex(
@@ -153,8 +153,9 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         index = self.prefix_source_cbo.currentIndex()
         self.separator_cbo.setDisabled(False)
+        self.leading_zero_cbo.setDisabled(False)
         current_text = self.prefix_source_cbo.itemText(index)
-        if current_text == self.none:
+        if current_text == self.none or current_text == self._column_name:
             none_index = self.separator_cbo.findData('')
             self.separator_cbo.setCurrentIndex(none_index)
             self.separator_cbo.setDisabled(True)
@@ -163,6 +164,11 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             self.separator_cbo.setCurrentIndex(none_index_sp)
             self.separator_cbo.setDisabled(True)
 
+            none_index_lo = self.leading_zero_cbo.findData('')
+            self.leading_zero_cbo.setCurrentIndex(none_index_lo)
+            self.leading_zero_cbo.setDisabled(True)
+
+        if current_text == self._column_name and self.disable_auto_increment_chk.isChecked():
             none_index_lo = self.leading_zero_cbo.findData('')
             self.leading_zero_cbo.setCurrentIndex(none_index_lo)
             self.leading_zero_cbo.setDisabled(True)
@@ -235,20 +241,13 @@ class CodeProperty(QDialog, Ui_CodeProperty):
                     combo.setCurrentIndex(combo_idx)
                 item.setCheckState(Qt.Checked)
 
-    def set_enable_auto_increment(self):
+    def set_disable_auto_increment(self):
         """
         Check if serial is enabled from the configuration.
         :return:
         :rtype:
         .. versionadded:: 1.7.5
         """
-        if self._disable_auto_increment == 'True':
-            self._disable_auto_increment = True
-        elif self._disable_auto_increment == 'False':
-            self._disable_auto_increment = False
-        else:
-            self._disable_auto_increment = False
-
         self.disable_auto_increment_chk.setChecked(self._disable_auto_increment)
 
     def set_enable_editing(self):
@@ -258,13 +257,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         :rtype:
         .. versionadded:: 1.7.5
         """
-        if self._enable_editing == 'True':
-            self._enable_editing = True
-        elif self._enable_editing == 'False':
-            self._enable_editing = False
-        else:
-            self._enable_editing = False
-
         self.enable_editing_chk.setChecked(self._enable_editing)
 
     def disable_auto_increment(self):

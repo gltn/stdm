@@ -121,7 +121,7 @@ class CodeGenerator(object):
             formatted_serial = "%0{}d".format(leading_zero_len) % (next_serial,)
             code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
             self.save_code(code)
-           
+
             # add new code with the formatted number
             return code
 
