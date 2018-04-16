@@ -25,7 +25,8 @@ from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
     QStandardItem, QStandardItemModel, QComboBox, QHeaderView
 from stdm.utils.util import (
     enable_drag_sort,
-    code_columns
+    code_columns,
+    string_to_boolean
 )
 from ui_code_property import Ui_CodeProperty
 
@@ -248,6 +249,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         :rtype:
         .. versionadded:: 1.7.5
         """
+        self._disable_auto_increment = string_to_boolean(self._disable_auto_increment, False)
         self.disable_auto_increment_chk.setChecked(self._disable_auto_increment)
 
     def set_enable_editing(self):
@@ -257,6 +259,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         :rtype:
         .. versionadded:: 1.7.5
         """
+        self._enable_editing = string_to_boolean(self._enable_editing, False)
         self.enable_editing_chk.setChecked(self._enable_editing)
 
     def disable_auto_increment(self):

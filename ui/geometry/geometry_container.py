@@ -6,7 +6,7 @@ from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
     QMessageBox, QAction
 from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
-from qgis.core import QgsMapLayer, QgsFeatureRequest
+from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes
 from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
@@ -28,6 +28,7 @@ GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
+
 
 class LayerSelectionHandler(object):
     """
@@ -499,6 +500,7 @@ class GeomWidgetsBase(object):
             self.settings.notice_box
         )
         self.feature_ids = []
+
         self.executed = False
         self.preview_layer = None
         if hasattr(self.widget, 'preview_btn'):
@@ -597,10 +599,8 @@ class GeomWidgetsBase(object):
                         QAction, 'mActionToggleEditing'
                     ).trigger()
 
-        # self.disconnect_signals()
 
     def on_line_selection_finished(self):
-        # self.preview()
         pass
 
     def on_feature_selected(self, feature):
@@ -611,14 +611,12 @@ class GeomWidgetsBase(object):
         :return:
         :rtype:
         """
-        # print feature
         if len(feature) == 0:
             return
 
-        # QMessageBox.information(self, 'Hi ', '{}'.format(feature))
         if self.parent().currentWidget().objectName() != self.objectName():
             return
-        # QMessageBox.information(self, 'Hi 2', '{}'.format(feature))
+
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
@@ -1363,6 +1361,216 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
 
+        self._crs = layer_settings.layer.crs()
+
+        self._length_prefix = ''
+        self._area_prefix = ''
+        self._length_suffix = ''
+        self._area_suffix = ''
+
+        self._area_prefix_type = ''
+        self._area_suffix_type = ''
+        self._length_prefix_type = ''
+        self._length_suffix_type = ''
+
+        self.length_prefix_type.currentIndexChanged[str].connect(
+            self.on_length_prefix_type_changed
+        )
+        self.area_prefix_type.currentIndexChanged[str].connect(
+            self.on_area_prefix_type_changed
+        )
+
+        self.length_suffix_type.currentIndexChanged[str].connect(
+            self.on_length_suffix_type_changed
+        )
+        self.area_suffix_type.currentIndexChanged[str].connect(
+            self.on_area_suffix_type_changed
+        )
+
+        self.length_prefix.textChanged.connect(
+            self.on_length_prefix_changed
+        )
+        self.area_prefix.textChanged.connect(
+            self.on_area_prefix_changed
+        )
+
+        self.length_suffix.textChanged.connect(
+            self.on_length_suffix_changed
+        )
+        self.area_suffix.textChanged.connect(
+            self.on_area_suffix_changed
+        )
+        self.length_chk.clicked.connect(self.on_length_clicked)
+        self.area_chk.clicked.connect(self.on_area_clicked)
+
+    def on_length_clicked(self):
+        self.length_box.setEnabled(self.length_chk.isChecked())
+
+    def on_area_clicked(self):
+        self.area_box.setEnabled(self.area_chk.isChecked())
+
+    def on_length_prefix_type_changed(self, value):
+        """
+        A slot raised when length prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._length_prefix = ''
+            self.length_prefix.clear()
+            self.length_prefix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            unit_text = QgsUnitTypes.toString(unit).title()
+            self.length_prefix.setDisabled(False)
+            self.length_prefix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._length_prefix = ''
+            self.length_prefix.clear()
+            self.length_prefix.setDisabled(False)
+
+        self._length_prefix_type = value
+
+    def on_area_prefix_type_changed(self, value):
+        """
+        A slot raised when area prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._area_prefix = ''
+            self.area_prefix.clear()
+            self.area_prefix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            area_unit = QgsUnitTypes.distanceToAreaUnit(unit)
+            unit_text = QgsUnitTypes.toString(area_unit).title()
+            self.area_prefix.setDisabled(False)
+            self.area_prefix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._area_prefix = ''
+            self.area_prefix.clear()
+            self.area_prefix.setDisabled(False)
+
+        elif value == 'Hectares':
+            self._area_prefix = ''
+            self.area_prefix.clear()
+            self.area_prefix.setDisabled(True)
+            self._area_prefix = 'Hectares'
+            self.area_prefix.setDisabled(False)
+            self.area_prefix.setText(self._area_prefix)
+
+        self._area_prefix_type = value
+
+    def on_length_suffix_type_changed(self, value):
+        """
+        A slot raised when length suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._length_suffix = ''
+            self.length_suffix.clear()
+            self.length_suffix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            unit_text = QgsUnitTypes.toString(unit).title()
+            self.length_suffix.setDisabled(False)
+            self.length_suffix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._length_suffix = ''
+            self.length_suffix.clear()
+            self.length_suffix.setDisabled(False)
+
+        self._length_suffix_type = value
+
+    def on_area_suffix_type_changed(self, value):
+        """
+        A slot raised when area suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        if value == 'None':
+            self._area_suffix = ''
+            self.area_suffix.clear()
+            self.area_suffix.setDisabled(True)
+
+        elif value == 'Map Unit':
+            unit = self._crs.mapUnits()
+            area_unit = QgsUnitTypes.distanceToAreaUnit(unit)
+            unit_text = QgsUnitTypes.toString(area_unit).title()
+            self.area_suffix.setDisabled(False)
+            self.area_suffix.setText(unit_text)
+
+        elif value == 'Custom':
+            self._area_suffix = ''
+            self.area_suffix.clear()
+            self.area_suffix.setDisabled(False)
+
+        elif value == 'Hectares':
+            self._area_suffix = ''
+            self.area_suffix.clear()
+            self.area_suffix.setDisabled(True)
+            self._area_suffix = 'Hectares'
+            self.area_suffix.setDisabled(False)
+            self.area_suffix.setText(self._area_suffix)
+
+        self._area_suffix_type = value
+
+    def on_length_prefix_changed(self, value):
+        """
+        A slot raised when length prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._length_prefix = self.length_prefix.text()
+
+    def on_area_prefix_changed(self, value):
+        """
+        A slot raised when area prefix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._area_prefix = self.area_prefix.text()
+
+    def on_length_suffix_changed(self, value):
+        """
+        A slot raised when length suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._length_suffix = self.length_suffix.text()
+
+    def on_area_suffix_changed(self, value):
+        """
+        A slot raised when area suffix type changes.
+        :param value: The new value.
+        :type value: String
+        :return:
+        :rtype:
+        """
+        self._area_suffix = self.area_suffix.text()
+
     def validate_save(self):
 
         if self.widget.selected_layer_rad.isChecked():
@@ -1384,7 +1592,7 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
             if len(self.settings.layer.selectedFeatures()) == 0:
                 message = QApplication.translate(
                     'ShowMeasurementsWidget',
-                    'Select at least one feature. Select below 2000 features.'
+                    'Select at least one feature.'
                 )
                 self.notice.insertErrorNotification(message)
                 return False
@@ -1403,34 +1611,32 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         self.progress_dialog.progress_message(message)
         self.progress_dialog.show()
 
-
-        self.create_preview_layer()
-
         self.settings.layer.selectByIds(self.feature_ids)
 
-        # result = split_move_line_with_area(
-        #     self.settings.layer,
-        #     self.line_layer,
-        #     self.preview_layer,
-        #     self.lines[0],
-        #     self.widget.split_polygon_area.value(),
-        #     self.feature_ids
-        # )
         if self.widget.length_chk.isChecked():
             polygon_to_lines(
                 self.settings.layer,
                 POLYGON_LINES,
+                prefix=self._length_prefix,
+                suffix=self._length_suffix,
                 style=False,
                 all_features=self.widget.selected_layer_rad.isChecked()
             )
         if self.widget.area_chk.isChecked():
+            if self._area_suffix_type == 'Hectares' or \
+                            self._area_prefix_type == 'Hectares':
+                unit = 'Hectares'
+            else:
+                unit = ''
+
             show_polygon_area(
                 self.settings.layer,
+                PREVIEW_POLYGON,
+                prefix=self._area_prefix,
+                suffix=self._area_suffix,
                 all_features=self.widget.selected_layer_rad.isChecked(),
-                unit='Hectare'
+                unit=unit
             )
-
-
 
         iface.setActiveLayer(self.settings.layer)
         self.progress_dialog.hide()

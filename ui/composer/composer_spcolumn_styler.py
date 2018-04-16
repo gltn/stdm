@@ -408,12 +408,10 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         )
 
     def on_zoom_radio_clicked(self, state):
-        print state
         self._zoom_out_level = 0
         self._scale = 1
 
     def on_scale_radio_clicked(self, state):
-        print state
         self._zoom_out_level = 1
         self._scale = 0
 
@@ -640,9 +638,11 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
             self.area_prefix.clear()
             self.area_prefix.setDisabled(False)
 
-        elif value == 'Hectare':
-            self._area_prefix = 'hectare'
+        elif value == 'Hectares':
+            self._area_prefix = ''
             self.area_prefix.clear()
+            self.area_prefix.setDisabled(True)
+            self._area_prefix = 'Hectares'
             self.area_prefix.setDisabled(False)
             self.area_prefix.setText(self._area_prefix)
 
@@ -699,9 +699,11 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
             self.area_suffix.clear()
             self.area_suffix.setDisabled(False)
 
-        elif value == 'Hectare':
-            self._area_suffix = 'hectare'
+        elif value == 'Hectares':
+            self._area_suffix = ''
             self.area_suffix.clear()
+            self.area_suffix.setDisabled(True)
+            self._area_suffix = 'Hectares'
             self.area_suffix.setDisabled(False)
             self.area_suffix.setText(self._area_suffix)
 

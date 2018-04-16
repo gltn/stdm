@@ -349,16 +349,19 @@ def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
     feature.setGeometry(geom)
 
     if geom.type() == 1:
-        attr = '{} {}{}'.format(prefix, round(geom.length(), 2), suffix)
+        length = "%.2f" % round(geom.length(), 2)
+        attr = '{} {}{}'.format(prefix, length, suffix)
 
         feature.setAttributes(['measurement', attr])
 
     if geom.type() == 2:
-        if unit == 'Hectare':
+
+        if unit == 'Hectares':
             area = geom.area() / 10000
         else:
             area = geom.area()
-        attr = '{} {}{}'.format(prefix, round(area, 2), suffix)
+        area = "%.2f" % round(area, 2)
+        attr = '{} {}{}'.format(prefix, area, suffix)
         feature.setAttributes(['measurement', attr])
 
     layer.updateFeature(feature)
@@ -472,48 +475,42 @@ def highlight_geom(map, layer, geom):
     sel_highlight.show()
 
 
-def show_polygon_area(layer, prefix='', suffix='', all_features=False, unit='Meters'):
+def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_features=False, unit='Meters', style=False):
     if not all_features:
         sel_feats = layer.selectedFeatures()
     else:
         sel_feats = layer.getFeatures()
 
-    # type = layer_type(layer)
+    type = layer_type(layer)
+    if temp_layer_name is not None:
+        area_layers = QgsMapLayerRegistry.instance().mapLayersByName(temp_layer_name)
+        if len(area_layers) == 0:
+            area_layer = create_temporary_layer(layer, type, temp_layer_name, show_legend=True, style=style)
 
-    # line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
-    # if len(line_layers) == 0:
-    #     line_layer = create_temporary_layer(layer, type, layer_name, style=style)
-    # else:
-    #     line_layer = line_layers[0]
-    #     clear_layer_features(line_layer)
-    #     iface.setActiveLayer(line_layer)
-    add_layer_double_field(layer)
-    for feature in sel_feats:
+        else:
+            area_layer = area_layers[0]
+            clear_layer_features(area_layer)
+            iface.setActiveLayer(area_layer)
 
-        polygon_geom = feature.geometry()
-        add_geom_to_layer_with_measurement(layer, polygon_geom, prefix, suffix, unit)
+        QApplication.processEvents()
+        add_layer_double_field(area_layer)
+        for feature in sel_feats:
 
-        label_layer_by_field(layer, 'measurement')
-        #
-        # for feature in sel_feats:
-        #     if measurement:
-        #         add_layer_double_field(line_layer)
-        #     polygon_geom = feature.geometry()
-        #
-        #     if polygon_geom is None:
-        #         return None
-        #     if type == 'Polygon':
-        #         list_of_lines = polygon_geom.asPolygon()
-        #         for lines in list_of_lines:
-        #             line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
-        #             line_geoms.extend(line_geom_list)
-        #     if type == 'MultiPolygon':
-        #         list_of_lines_1 = polygon_geom.asMultiPolygon()
-        #         for list_of_lines in list_of_lines_1:
-        #             for lines in list_of_lines:
-        #                 line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
-        #                 line_geoms.extend(line_geom_list)
+            polygon_geom = feature.geometry()
+            add_geom_to_layer_with_measurement(
+                area_layer, polygon_geom, prefix, suffix, unit
+            )
 
+            label_layer_by_field(area_layer, 'measurement')
+
+    else:
+        add_layer_double_field(layer)
+        for feature in sel_feats:
+            polygon_geom = feature.geometry()
+            add_geom_to_layer_with_measurement(layer, polygon_geom, prefix,
+                                               suffix, unit)
+
+            label_layer_by_field(layer, 'measurement')
 
 def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', all_features=False, style=True):
     if layer.name() == layer_name:
@@ -596,7 +593,7 @@ def label_layer_by_field(layer, field_name):
                                  QgsPalLayerSettings.AboveLine)
     else:
         layer.setCustomProperty(
-            "labeling/placement", QgsPalLayerSettings.Free
+            "labeling/placement", QgsPalLayerSettings.AroundPoint
         )
     layer.setCustomProperty("labeling/fontSize", "10")
     layer.setCustomProperty("labeling/bufferDraw", True)
@@ -708,20 +705,24 @@ def split_move_line_with_area(
     height_change = 1
     loop_index = 0
     multi_split_case = 0
-
+    first_height = 0
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
         QApplication.processEvents()
         # the height/ distance from selected line
         height = height + height_change / math.pow(10, decimal_place_new)
-
+        print height
         # Get the parallel line from the selected line using the calculated height
         parallel_line_geom = get_parallel_line(
             selected_line_geom, height*-1
         )
+
         # Get one feature selected on preview layer. The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
-        sel_features = list(preview_layer.getFeatures())
+        try:
+            sel_features = list(preview_layer.getFeatures())
+        except Exception:
+            break
         # Get the geometry
         geom1 = sel_features[0].geometry()
 
@@ -731,6 +732,7 @@ def split_move_line_with_area(
         added_points = extend_line_points(parallel_line_geom, extent)
 
         parallel_line_geom2 = QgsGeometry.fromPolyline(added_points)
+        # add_geom_to_layer(line_layer, parallel_line_geom2)
         # If the line intersects the main geometry, split it
         if parallel_line_geom2.intersects(geom1):
             (res, split_geom0, topolist) = geom1.splitGeometry(
@@ -744,6 +746,7 @@ def split_move_line_with_area(
                     # it as a reference using distance to the split feature.
 
                     first_intersection = selected_line_ft.geometry()
+                    height = area/selected_line_geom.length()
 
                 if loop_index >= 1:
                     # The closest geometry to fist intersection is the split geom
@@ -776,6 +779,15 @@ def split_move_line_with_area(
             else:
                 print 'continue 2'
                 continue
+            if math.modf(split_area1)[1] - area > 50:
+                decimal_place_new = 0
+                height_change = 2
+            elif math.modf(split_area1)[1] - area > 100:
+                decimal_place_new = 0
+                height_change = 4
+            elif math.modf(split_area1)[1] - area <= 50:
+                decimal_place_new = 2
+                height_change = 1
             # If provided area is greater than split area, increase height
             if area > split_area1:
                 # helps in changing height in small steps after switching from
@@ -785,7 +797,7 @@ def split_move_line_with_area(
                     decimal_place_new = 2
 
                 height_change = 1
-                # print '2 {} {}'.format(split_area1, area)
+                print '2 {} {}'.format(split_area1, area), height_change, height
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
@@ -803,7 +815,7 @@ def split_move_line_with_area(
                 else:
                     decimal_place_new = 2
                 height_change = -1
-                # print '3 {} {}'.format(split_area1, area)
+                print '3 {} {}'.format(split_area1, area), height_change, height
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:

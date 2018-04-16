@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 from datetime import date
 from collections import OrderedDict
 
+import cProfile
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.utils import (
@@ -40,7 +41,8 @@ from stdm.data.configuration.columns import (
 from stdm.data.configuration.entity import Entity
 from stdm.data.pg_utils import(
     table_column_names,
-    qgsgeometry_from_wkbelement
+    qgsgeometry_from_wkbelement,
+    export_data
 )
 
 from stdm.data.qtmodels import (
@@ -229,6 +231,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
 
+
     def children_entities(self):
         """
         :return: Returns a list of children entities
@@ -349,6 +352,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             return
         try:
             if not self._dbmodel is None:
+                # cProfile.runctx('self._initializeData()', globals(), locals())
                 self._initializeData()
 
         except Exception as ex:
@@ -553,42 +557,55 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog = QProgressDialog(
                 progressLabel, None, 0, numRecords, self
             )
-            entity_cls = self._dbmodel()
+            QApplication.processEvents()
+            progressDialog.show()
+            progressDialog.setValue(0)
+            # entity_cls = self._dbmodel()
              # Only one filter is possible.
             if not self.load_records:
                 entity_records = self.filtered_records
             else:
-                entity_records = entity_cls.queryObject().filter().all()
+                # entity_records = entity_cls.queryObject().filter().all()
+                entity_records = export_data(self._entity.name)
             #Add records to nested list for enumeration in table model
 
             entity_records_collection = []
+            # # print dict(entity_records)
+            # print vars(entity_records)
+            # print dir(entity_records)
+
             for i,er in enumerate(entity_records):
+                # print vars(er)
+                # print dir(er)
+                # break
                 QApplication.processEvents()
                 entity_row_info = []
                 progressDialog.setValue(i)
-                try:
-                    for attr in self._entity_attrs:
-                        attr_val = getattr(er, attr)
-                        # Check if there are display formatters and apply if
-                        # one exists for the given attribute.
-                        if attr_val is not None: # No need of formatter for None value
-                            if attr in self._cell_formatters:
-                                formatter = self._cell_formatters[attr]
-                                attr_val = formatter.format_column_value(attr_val)
-                        entity_row_info.append(attr_val)
-                except Exception as ex:
-                    QMessageBox.critical(
-                        self,
-                        QApplication.translate(
-                            'EntityBrowser', 'Loading Records'
-                        ),
-                        unicode(ex.message))
-                    return
+                # try:
+                # for attr, attr_val in er.items():
+                    # print e
+                for attr in self._entity_attrs:
+                    # attr_val = getattr(er, attr)
+                    attr_val = er[attr]
+                    # Check if there are display formatters and apply if
+                    # one exists for the given attribute.
+                    if attr_val is not None: # No need of formatter for None value
+                        if attr in self._cell_formatters:
+                            formatter = self._cell_formatters[attr]
+                            attr_val = formatter.format_column_value(attr_val)
+                    entity_row_info.append(attr_val)
+                # except Exception as ex:
+                #     QMessageBox.critical(
+                #         self,
+                #         QApplication.translate(
+                #             'EntityBrowser', 'Loading Records'
+                #         ),
+                #         unicode(ex.message))
+                #     return
 
                 entity_records_collection.append(entity_row_info)
 
-            # Set maximum value of the progress dialog
-            progressDialog.setValue(numRecords)
+
 
             self._tableModel = BaseSTDMTableModel(entity_records_collection,
                                                   self._headers, self)
@@ -610,8 +627,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            self.tbEntity.setSortingEnabled(True)
-            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+            # self.tbEntity.setSortingEnabled(True)
+            # self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
@@ -628,6 +645,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             if not self._select_item is None:
                 self._select_record(self._select_item)
 
+            # Set maximum value of the progress dialog
+            progressDialog.setValue(numRecords)
+
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
 
@@ -643,6 +663,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         Set the filter column for the proxy model.
         '''
         self.set_proxy_model_filter_column(index)
+
+    def _onFilterRegExpChanged(self,text):
+        cProfile.runctx('self._onFilterRegExpChanged(text)', globals(), locals())
 
     def onFilterRegExpChanged(self,text):
         '''

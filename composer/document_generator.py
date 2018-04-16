@@ -412,9 +412,9 @@ class DocumentGenerator(QObject):
                             # Add length of a polygon line
                             if spfm.get_area_prefix() != '' or \
                                             spfm.get_area_suffix() != '':
-                                if spfm.get_area_suffix_type() == 'Hectare' or \
-                                    spfm.get_area_prefix_type() == 'Hectare':
-                                    unit = 'Hectare'
+                                if spfm.get_area_suffix_type() == 'Hectares' or \
+                                    spfm.get_area_prefix_type() == 'Hectares':
+                                    unit = 'Hectares'
                                 else:
                                     unit = ''
                                 show_polygon_area(
