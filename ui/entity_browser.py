@@ -558,7 +558,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 progressLabel, None, 0, numRecords, self
             )
             QApplication.processEvents()
-            progressDialog.show()
+            progressDialog.exec_()
             progressDialog.setValue(0)
             # entity_cls = self._dbmodel()
              # Only one filter is possible.
@@ -627,8 +627,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            # self.tbEntity.setSortingEnabled(True)
-            # self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+            if numRecords < 2000:
+                self.tbEntity.setSortingEnabled(True)
+                self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
@@ -644,9 +645,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #Select record with the given ID if specified
             if not self._select_item is None:
                 self._select_record(self._select_item)
-
-            # Set maximum value of the progress dialog
-            progressDialog.setValue(numRecords)
+            if numRecords > 0:
+                # Set maximum value of the progress dialog
+                progressDialog.setValue(numRecords)
+            else:
+                progressDialog.hide()
 
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
