@@ -797,7 +797,7 @@ def split_move_line_with_area(
                     decimal_place_new = 2
 
                 height_change = 1
-                print '2 {} {}'.format(split_area1, area), height_change, height
+                # print '2 {} {}'.format(split_area1, area), height_change, height
                 if math.modf(split_area1)[1] + 3 > area:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
@@ -815,7 +815,7 @@ def split_move_line_with_area(
                 else:
                     decimal_place_new = 2
                 height_change = -1
-                print '3 {} {}'.format(split_area1, area), height_change, height
+                # print '3 {} {}'.format(split_area1, area), height_change, height
                 if math.modf(split_area1)[1] < area + 3:
                     decimal_place_new = 4
                     if (round(split_area1, 2)) == area:
