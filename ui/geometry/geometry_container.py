@@ -4,7 +4,7 @@ from collections import OrderedDict
 import re
 from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
-    QMessageBox, QAction
+    QMessageBox, QAction, QProgressDialog
 from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
 from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes
 from qgis.utils import iface
@@ -28,7 +28,9 @@ GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
-
+# TODO after removing a layer and adding another layer and starting geometry tools, it does not work.
+# TODO qgis crash after removing the geometry temporary layers. Check if some variables are set to None.
+# TODO after closing dock and opening, selected features and lines are not set to 0.
 
 class LayerSelectionHandler(object):
     """
@@ -201,13 +203,6 @@ class LayerSelectionHandler(object):
         """
         self.plugin.feature_details_act.setChecked(False)
 
-    def clear_sel_highlight(self):
-        """
-        Removes sel_highlight from the canvas.
-        """
-        if self.sel_highlight is not None:
-            self.sel_highlight = None
-
     def refresh_layers(self):
         """
         Refresh all database layers.
@@ -260,6 +255,8 @@ class GeometryToolsDock(
         self.layer = None
         self.line_layer = None
         self.widgets_added = False
+        # self._first_widget = None
+        # iface.mainWindow().__class__.closeEvent = self.close_dock(self.plugin.geom_tools_cont_act)
 
 
     def init_dock(self):
@@ -273,9 +270,12 @@ class GeometryToolsDock(
         self.widgets_added = True
         # print GeometryWidgetRegistry.registered_factories
         for i, factory in enumerate(GeometryWidgetRegistry.registered_factories.values()):
+
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+            # if i == 0:
+            #     self._first_widget = widget
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -301,8 +301,8 @@ class GeometryToolsDock(
         self.iface.actionPan().trigger()
         tool.setChecked(False)
         self.clear_feature_selection()
-        self.clear_sel_highlight()
-        # self.layer = None
+        # if self._first_widget is not None:
+        #     self._first_widget.remove_memory_layers()
         GEOM_DOCK_ON = False
         self.close()
 
@@ -485,7 +485,7 @@ class GeomWidgetsBase(object):
         self.settings = layer_settings
         self.current_profile = current_profile()
         self.iface = iface
-
+        self.iface.mainWindow().__class__.closeEvent = self._close_event
         self.settings = layer_settings
         self.widget = widget
         self.feature_count = 0
@@ -506,12 +506,13 @@ class GeomWidgetsBase(object):
         if hasattr(self.widget, 'preview_btn'):
             self.widget.preview_btn.clicked.connect(self.preview)
 
-        self.widget.run_btn.clicked.connect(self.save)
+        self.widget.run_btn.clicked.connect(self.run)
         self.settings_layer_connected = False
-        self.progress_dialog = STDMProgressDialog(iface.mainWindow())
+        self.progress_dialog = QProgressDialog(iface.mainWindow())
         self.progress_dialog.setMinimumWidth(400)
         title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
         self.progress_dialog.setWindowTitle(title)
+        self.progress_dialog.canceled.connect(self.cancel)
         self.init_signals()
 
     def init_signals(self):
@@ -561,17 +562,27 @@ class GeomWidgetsBase(object):
 
         self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
 
-        # print self.line_layer, self.line_layer_connected
         if self.line_layer is not None:
 
             self.line_layer.selectionChanged.connect(
                 self.on_line_feature_selected
             )
 
-            # self.line_layer_connected = True
-
     def hideEvent(self, event):
         self.widget_closed = True
+        self.remove_memory_layers()
+
+    def _close_event(self, event):
+
+        self.widget_closed = True
+        self.remove_memory_layers()
+
+    def remove_memory_layers(self):
+        """
+        Removes memory layers used by the tools.
+        :return:
+        :rtype:
+        """
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             PREVIEW_POLYGON
         )
@@ -584,21 +595,18 @@ class GeomWidgetsBase(object):
         if len(line_layers) > 0:
             for line_layer in line_layers:
                 QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
-
         point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
         )
         if len(point_layers) > 0:
             for point_layer in point_layers:
                 QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
-
         if self.settings.layer is not None:
             if iface.activeLayer() is not None:
                 if iface.activeLayer().isEditable():
                     iface.mainWindow().findChild(
                         QAction, 'mActionToggleEditing'
                     ).trigger()
-
 
     def on_line_selection_finished(self):
         pass
@@ -721,7 +729,7 @@ class GeomWidgetsBase(object):
         else:
             return 0
 
-    def validate_save(self):
+    def validate_run(self):
         if self.widget.split_polygon_area.value() == 0:
             message = QApplication.translate(
                 'GeomWidgetsBase',
@@ -731,8 +739,11 @@ class GeomWidgetsBase(object):
             return False
         return True
 
-    def save(self):
+    def run(self):
         pass
+
+    def cancel(self):
+        self.remove_memory_layers()
 
     def create_point_layer(self):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -790,9 +801,6 @@ class GeomWidgetsBase(object):
                 self.notice.insertWarningNotification(ex)
             iface.mapCanvas().refresh()
 
-    def cancel(self):
-        pass
-
 
 class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
@@ -802,18 +810,25 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
 
-    def validate_save(self):
+    def validate_run(self):
         if self.widget.split_polygon_area.value() == 0:
             message = QApplication.translate(
-                'GeomWidgetsBase',
+                'MoveLineAreaWidget',
                 'The area must be greater than 0.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
+        if len(self.lines) == 0:
+            message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Select a line to split the polygon.'
             )
             self.notice.insertErrorNotification(message)
             return False
         return True
 
-    def save(self):
-        result = self.validate_save()
+    def run(self):
+        result = self.validate_run()
         if not result:
             return
         self.executed = True
@@ -822,10 +837,8 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.disconnect_signals()
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
-        self.progress_dialog.progress_message(message)
+        self.progress_dialog.setLabelText(message)
         self.progress_dialog.show()
-
-
         self.create_preview_layer()
 
         self.settings.layer.selectByIds(self.feature_ids)
@@ -842,13 +855,14 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
         if result:
-            self.progress_dialog.hide()
+            self.progress_dialog.cancel()
         else:
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. Try another method.'
             )
-            self.progress_dialog.progress_message(fail_message)
+            self.progress_dialog.setLabelText(fail_message)
+
 
 
 class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
@@ -890,7 +904,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
-    def validate_save(self):
+    def validate_run(self):
         if self.widget.offset_distance.value() == 0:
             message = QApplication.translate(
                 'GeomWidgetsBase',
@@ -917,16 +931,15 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             return False
         return True
 
-    def save(self):
-        result = self.validate_save()
+    def run(self):
+        result = self.validate_run()
         if not result:
             return
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
-        self.progress_dialog.progress_message(message)
-        self.progress_dialog.show()
+        self.progress_dialog.setLabelText(message)
 
         if self.settings_layer_connected:
             self.disconnect_signals()
@@ -951,7 +964,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. Reduce the offset distance or try another method.'
             )
-            self.progress_dialog.progress_message(fail_message)
+            self.progress_dialog.setLabelText(fail_message)
 
 
 class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
@@ -1049,7 +1062,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
 
-    def validate_save(self):
+    def validate_run(self):
         state = True
         if self.rotation_point is None:
             message = QApplication.translate(
@@ -1068,16 +1081,15 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 state = False
         return state
 
-    def save(self):
-        result = self.validate_save()
+    def run(self):
+        result = self.validate_run()
         if not result:
             return
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
-        self.progress_dialog.progress_message(message)
-        self.progress_dialog.show()
+        self.progress_dialog.setLabelText(message)
 
         if self.settings_layer_connected:
             self.disconnect_signals()
@@ -1109,7 +1121,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. Try another method.'
             )
-            self.progress_dialog.progress_message(fail_message)
+            self.progress_dialog.setLabelText(fail_message)
 
 
 
@@ -1245,9 +1257,13 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):
-        # if len(self.point_layer.selectedFeatures()) > 0:
-        # print 'self.rotation_point ', self.rotation_point
-        # self.point_layer.commitChanges()
+        if len(self.lines) == 0:
+            message = QApplication.translate(
+                'JoinPointsWidget',
+                'Select a line to create the new point on.'
+            )
+            self.notice.insertErrorNotification(message)
+            return
         if self.rotation_point is not None:
             with edit(self.point_layer):
                 point_features = [f.id() for f in self.point_layer.getFeatures()]
@@ -1278,7 +1294,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
 
-    def validate_save(self):
+    def validate_run(self):
         state = True
         if self.points_count < 2:
             message = QApplication.translate(
@@ -1289,7 +1305,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             state = False
         if self.points_count > 2:
             message = QApplication.translate(
-                'GeomWidgetsBase',
+                'OnePointAreaWidget',
                 'The first two selected point will be used.'
             )
             self.notice.insertWarningNotification(message)
@@ -1311,17 +1327,15 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
         return state
 
-    def save(self):
-        result = self.validate_save()
+    def run(self):
+        result = self.validate_run()
         if not result:
             return
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
-        self.progress_dialog.progress_message(message)
-
-        self.progress_dialog.show()
+        self.progress_dialog.setLabelText(message)
 
 
         if self.settings_layer_connected:
@@ -1350,7 +1364,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'Sorry, splitting failed. Check the selected points are '
                 'not in the same line and try another method.'
             )
-            self.progress_dialog.progress_message(fail_message)
+            self.progress_dialog.setLabelText(fail_message)
 
 
 
@@ -1571,7 +1585,7 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         """
         self._area_suffix = self.area_suffix.text()
 
-    def validate_save(self):
+    def validate_run(self):
 
         if self.widget.selected_layer_rad.isChecked():
             if self.settings.layer.featureCount() > 2000:
@@ -1598,18 +1612,17 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
                 return False
         return True
 
-    def save(self):
-        result = self.validate_save()
+    def run(self):
+        result = self.validate_run()
         if not result:
             return
         self.executed = True
 
         if self.settings_layer_connected:
             self.disconnect_signals()
-        self.progress_dialog.setRange(0, 0)
+        self.progress_dialog.setRange(0, 5)
         message = QApplication.translate('ShowMeasurementsWidget', 'Labelling')
-        self.progress_dialog.progress_message(message)
-        self.progress_dialog.show()
+        self.progress_dialog.setLabelText(message)
 
         self.settings.layer.selectByIds(self.feature_ids)
 
@@ -1639,10 +1652,8 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
             )
 
         iface.setActiveLayer(self.settings.layer)
-        self.progress_dialog.hide()
+        self.progress_dialog.setValue(5)
         self.init_signals()
-
-        self.progress_dialog.hide()
 
 
 class GeometryWidgetRegistry(object):
@@ -1740,7 +1751,7 @@ class GeometryWidgetRegistry(object):
 
 class MoveLineAreaTool(GeometryWidgetRegistry, MoveLineAreaWidget):
     """
-    Widget factory for Text column type.
+    Widget factory for Text MoveLineAreaTool.
     """
     NAME = QApplication.translate('MoveLineAreaTool',
                                   'Split Polygon: Move Line and Area')
@@ -1757,7 +1768,7 @@ MoveLineAreaTool.register()
 
 class OffsetDistanceTool(GeometryWidgetRegistry, OffsetDistanceWidget):
     """
-    Widget factory for Text column type.
+    Widget factory for OffsetDistanceTool.
     """
     NAME = QApplication.translate('OffsetDistanceTool', 'Split Polygon: Offset Distance')
     OBJECT_NAME = NAME.replace(' ', '_')
@@ -1774,7 +1785,7 @@ OffsetDistanceTool.register()
 
 class OnePointAreaTool(GeometryWidgetRegistry, OnePointAreaWidget):
     """
-    Widget factory for Text column type.
+    Widget factory for OnePointAreaTool.
     """
     NAME = QApplication.translate('OnePointAreaTool', 'Split Polygon: One Point and Area')
     OBJECT_NAME = NAME.replace(' ', '_')
@@ -1791,7 +1802,7 @@ OnePointAreaTool.register()
 
 class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
     """
-    Widget factory for Text column type.
+    Widget factory for JoinPointsTool.
     """
     NAME = QApplication.translate('JoinPointsTool',
                                   'Split Polygon: Join Points')
@@ -1808,7 +1819,7 @@ JoinPointsTool.register()
 
 class ShowMeasurementsTool(GeometryWidgetRegistry, ShowMeasurementsWidget):
     """
-    Widget factory for Text column type.
+    Widget factory for ShowMeasurementsTool.
     """
     NAME = QApplication.translate('ShowMeasurementsTool',
                                   'Labelling: Show Measurements')

@@ -14,12 +14,14 @@
 #1. add_layers(1)
 #2. Select one point
 #3. rotate_line_with_area(selected_line2, 300, 30, -1)
+from __future__ import division
 import json
 import math
 from collections import OrderedDict
 
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import QColor, QApplication
+from decimal import Decimal
 from qgis.gui import QgsHighlight, QgsLayerPropertiesWidget, QgsGenericProjectionSelector
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
@@ -29,15 +31,6 @@ from qgis.utils import iface
 from stdm.settings.registryconfig import (
     selection_color
 )
-line_start = QgsPoint(50, 125)
-line_m2 = QgsPoint(70, 70)
-line_m3 = QgsPoint(100, 100)
-line_end = QgsPoint(120, 150)
-selected_line1 = QgsGeometry.fromPolyline([line_start, line_end])
-selected_line2 = QgsGeometry.fromPolyline([line_end, line_m3])
-selected_line3 = QgsGeometry.fromPolyline([line_m3, line_m2])
-selected_line4 = QgsGeometry.fromPolyline([line_m2, line_start])
-
 
 def calculate_area(polygon_geom):
     area = polygon_geom.area()
@@ -695,6 +688,7 @@ def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
 ):
+
     # Get selected line geometry
     selected_line_geom = selected_line_ft.geometry()
 
@@ -704,14 +698,16 @@ def split_move_line_with_area(
     split_area1 = 0
     height_change = 1
     loop_index = 0
-    multi_split_case = 0
-    first_height = 0
+    # multi_split_case = 0
+    # first_height = 0
+    area_toggle = 0
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
-        QApplication.processEvents()
         # the height/ distance from selected line
-        height = height + height_change / math.pow(10, decimal_place_new)
-        print height
+        # print height, split_area1
+        # print height_change / math.pow(10, decimal_place_new)
+        height = Decimal(height) + Decimal(height_change) / Decimal(math.pow(10, decimal_place_new))
+        # print height
         # Get the parallel line from the selected line using the calculated height
         parallel_line_geom = get_parallel_line(
             selected_line_geom, height*-1
@@ -763,10 +759,6 @@ def split_move_line_with_area(
                         if len(split_geom0) > 1:
                             print 'continue 0'
                             continue
-                            # if multi_split_case > 3:
-                            #     continue
-                            #     # raise Exception(u'The area is too small.')
-                            # multi_split_case = multi_split_case + 1
 
                         else:
                             split_area1 = split_geom0[0].area()
@@ -779,48 +771,85 @@ def split_move_line_with_area(
             else:
                 print 'continue 2'
                 continue
-            if math.modf(split_area1)[1] - area > 50:
-                decimal_place_new = 0
-                height_change = 2
-            elif math.modf(split_area1)[1] - area > 100:
-                decimal_place_new = 0
-                height_change = 4
-            elif math.modf(split_area1)[1] - area <= 50:
-                decimal_place_new = 2
-                height_change = 1
+
+
             # If provided area is greater than split area, increase height
             if area > split_area1:
-                # helps in changing height in small steps after switching from
-                if height_change == -1 and math.modf(split_area1)[1] + 5 > area:
-                    decimal_place_new = 4
-                else:
-                    decimal_place_new = 2
+                if area - math.modf(split_area1)[1] > 200:
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif area - math.modf(split_area1)[1] in range(50, 200):
+                    if area_toggle == 0:
+                        decimal_place_new = 1
+
+                elif area - math.modf(split_area1)[1] in range(10, 50):
+                    if area_toggle == 0:
+                        decimal_place_new = 2
+
+                elif area - math.modf(split_area1)[1] in range(3, 10):
+                    if area_toggle == 0:
+                        decimal_place_new = 4
+
+                # helps in changing height in small steps after switching from area < split_area1
+                if height_change == -1:
+                    # print 'changed ', loop_index > 0 and area_toggle < 300
+
+                    # for large polygons
+
+                    if loop_index > 0:
+                        decimal_place_new = decimal_place_new + area_toggle
+
+                    if loop_index > 0 and area_toggle < 300:
+                        area_toggle = area_toggle + 1
 
                 height_change = 1
-                # print '2 {} {}'.format(split_area1, area), height_change, height
-                if math.modf(split_area1)[1] + 3 > area:
-                    decimal_place_new = 4
-                    if (round(split_area1, 2)) == area:
 
-                        print '2 {} {}'.format(split_area1, area)
+                # print '2 {} {}'.format(split_area1, area), height_change, height, decimal_place_new
+                if math.modf(split_area1)[1] + 3 > area:
+                    # Set decimal place to small steps if area_toggle is 0,
+                    # otherwise, use the area toggle value.
+                    if (round(split_area1, 2)) == area:
+                        # print '2 {} {}'.format(split_area1, area)
                         add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
                         return True
             # If provided area is smaller than split area, decrease height
             if area < split_area1:
-                # helps in changing height in small steps after switching from
-                if height_change == 1 and math.modf(split_area1)[1] < area + 5:
-                    decimal_place_new = 4
-                else:
-                    decimal_place_new = 2
+                if math.modf(split_area1)[1] - area > 200:
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif math.modf(split_area1)[1] - area in range(50, 200):
+                    if area_toggle == 0:
+                        decimal_place_new = 1
+
+                elif math.modf(split_area1)[1] - area in range(10, 50):
+                    if area_toggle == 0:
+                        decimal_place_new = 2
+
+                elif math.modf(split_area1)[1] - area in range(3, 10):
+                    if area_toggle == 0:
+                        decimal_place_new = 4
+
+                # helps in changing height in small steps after switching from area > split_area1
+                if height_change == 1:
+
+                    if loop_index > 0:
+                        decimal_place_new = decimal_place_new + area_toggle
+
+                    if loop_index > 0 and area_toggle < 300:
+                        area_toggle = area_toggle + 1
+
                 height_change = -1
-                # print '3 {} {}'.format(split_area1, area), height_change, height
+
+                # print '3 {} {}'.format(split_area1, area), height_change, height, decimal_place_new
                 if math.modf(split_area1)[1] < area + 3:
-                    decimal_place_new = 4
+
                     if (round(split_area1, 2)) == area:
                         # add_geom_to_layer(line_layer, parallel_line_geom2)
-                        print '3 {} {}'.format(split_area1, area)
+                        # print '3 {} {}'.format(split_area1, area)
                         add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
