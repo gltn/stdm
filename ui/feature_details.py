@@ -21,7 +21,8 @@ email                : stdm@unhabitat.org
 """
 import re
 from collections import OrderedDict
-
+import cProfile
+import inspect
 from PyQt4.QtCore import Qt, QDateTime, QDate
 from PyQt4.QtGui import (
     QDockWidget,
@@ -372,6 +373,8 @@ class DetailsDBHandler:
         """
         model = entity_model(entity)
         model_obj = model()
+        if isinstance(id, QgsFeature):
+            id = id.id()
         result = model_obj.queryObject().filter(model.id == id).all()
         if len(result) > 0:
             return result[0]
@@ -458,7 +461,7 @@ class DetailsDBHandler:
             if col.name in self.column_formatter:
                 formatter = self.column_formatter[col.name]
                 col_val = formatter.format_column_value(col_val)
-                print 'col_value  ', col_val
+
             if col.header() == QApplication.translate(
                     'DetailsDBHandler', 'Tenure Share'
             ):
@@ -608,7 +611,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
-
+        self.edit_btn_connected = False
         self.layer_table = None
         self.entity = None
         self.feature_models = {}
@@ -618,6 +621,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.removed_feature = None
         self.selected_root = None
         self.party_items = {}
+        self._selected_features = []
         self.spatial_unit_items = {}
         self.model = QStandardItemModel()
         self.view.setModel(self.model)
@@ -669,6 +673,20 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             self.treeview_error(not_feature_msg)
 
+    def zoom_to_selected(self, layer):
+        """
+        Zooms to selected features.
+        :param layer: The layer of the features.
+        :type layer: QgsVectorLayer
+        :return:
+        :rtype:
+        """
+        box = layer.boundingBoxOfSelected()
+        box.scale(1.2)
+        canvas = self.iface.mapCanvas()
+        canvas.setExtent(box)
+        canvas.refresh()
+
     def on_tree_view_item_clicked(self, current, previous):
         """
         Disables the delete button if the party node is clicked and enable it
@@ -700,6 +718,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                         self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(self.layer_table)
 
+    # def _activate_feature_details(self, button_clicked=True):
+    #     if cProfile is None:
+    #         return
+    #     cProfile.runctx('self._activate_feature_details(button_clicked)', globals(), locals())
+
     def activate_feature_details(self, button_clicked=True):
         """
         A slot raised when the feature details button is clicked.
@@ -711,7 +734,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if not button_clicked and not DETAILS_DOCK_ON:
             return
         DETAILS_DOCK_ON = True
-        print 'Feature det act'
+
         if self.plugin is None:
             # Registry column widget
             # set formatter for social tenure relationship.
@@ -744,7 +767,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if not self.stdm_layer(self.layer):
             if button_clicked and self.isHidden():
                 # show popup message if dock is hidden and button clicked
-
                 self.non_stdm_layer_error()
                 self.plugin.feature_details_act.setChecked(False)
 
@@ -757,12 +779,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Prepares the dock widget for data loading.
         """
-        # select_feature = 'Please select a feature ' \
-        #                  'to view their details.'
         self.init_dock()
         self.add_tree_view()
-        # self.model.clear()
-        # self.treeview_error(select_feature)
+
         # enable the select tool
         self.activate_select_tool()
         self.update_tree_source(self.layer)
@@ -779,29 +798,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         self.set_layer_entity()
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
-        # Registry column widget
-        self.set_formatter()
-        # set formatter for social tenure relationship.
-        self.set_formatter(self.social_tenure)
-        for party in self.social_tenure.parties:
-            self.set_formatter(party)
 
-        for spatial_unit in self.social_tenure.spatial_units:
-            self.set_formatter(spatial_unit)
-            custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-                spatial_unit
-            )
-            self.set_formatter(custom_attr_entity)
-        # pull data, show treeview
         active_layer.selectionChanged.connect(
             self.show_tree
         )
-        # active_layer.selectionChanged.connect(
-        #     lambda :self.search_party([3])
-        # )
-        # active_layer.selectionChanged.connect(
-        #     lambda : self.search_spatial_unit(self.selected_features())
-        # )
+
         self.steam_signals(self.entity)
 
     def add_tree_view(self):
@@ -856,10 +857,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Shows the treeview.
         """
+        str_records = []
         if not DETAILS_DOCK_ON:
             return
-        selected_features = self.selected_features()
-        if selected_features is None:
+        self._selected_features[:] = []
+        self._selected_features = self.selected_features()
+
+        if self._selected_features is None:
             self.reset_tree_view()
 
             not_supported = QApplication.translate(
@@ -869,14 +873,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             self.treeview_error(not_supported)
             return
 
-        if len(selected_features) < 1:
-            self.reset_tree_view(selected_features)
+        if len(self._selected_features) < 1:
+            self.reset_tree_view(self._selected_features)
             self.disable_buttons(True)
             return
         layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
         ### add non entity layer for views.
         if not self.entity is None:
-            self.reset_tree_view(selected_features)
+            self.reset_tree_view(self._selected_features)
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
             )
@@ -889,7 +893,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     id = id.id()
                 if not isinstance(id, long):
                     continue
-                str_records = self.feature_str_link(id)
+                if self.entity in self.social_tenure.spatial_units:
+                    str_records = self.feature_str_link(id)
 
                 self.spatial_unit_items[root] = self.entity
                 if len(str_records) > 0:
@@ -906,9 +911,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 self.add_root_children(db_model, root, str_records)
 
         else:
-            self.reset_tree_view(selected_features)
+            self.reset_tree_view(self._selected_features)
             self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
+
+        self.zoom_to_selected(self.layer)
 
     def search_spatial_unit(self, entity, spatial_unit_ids):
         """
@@ -1057,7 +1064,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :rtype: OrderedDict
         """
         roots = OrderedDict()
-        selected_features = self.selected_features()
+        selected_features = self._selected_features
         if selected_features is None:
             return None
         for feature_id in selected_features:
@@ -1107,7 +1114,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 if len(str_records) > 0:
                     self.add_str_child(parent, str_records, feature_id, party_query)
                 else:
-                    self.add_no_str_steam(parent)
+                    if self.entity in self.social_tenure.spatial_units:
+                        self.add_no_str_steam(parent)
         self.expand_node(parent)
 
     def add_str_steam(self, parent, str_id):
@@ -1140,8 +1148,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param parent: The root node.
         :type parent: QStandardItem
         """
-        # for spatial_unit in self.spatial_units:
-        #     if self.entity.name == spatial_unit.name:
         no_str_icon = QIcon(
             ':/plugins/stdm/images/icons/remove.png'
         )
@@ -1187,7 +1193,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             spatial_unit_id = '{}_id'.format(spatial_unit_name).lstrip('_')
             if not spatial_unit_id in record:
                 return None, None
-            if record[spatial_unit_id] != None:
+            if record[spatial_unit_id] is not None:
                 return spatial_unit, spatial_unit_id
 
     def add_str_child(self, parent, str_records, feature_id, party_query=False):
@@ -1522,17 +1528,18 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
+        if self.edit_btn_connected:
+            self.edit_btn.clicked.disconnect(self.edit_selected_steam)
+
         self.edit_btn.clicked.connect(
-            lambda: self.edit_selected_steam(
-                self.layer.selectedFeatures()
-            )
+            self.edit_selected_steam
         )
         self.delete_btn.clicked.connect(
-            lambda: self.delete_selected_item(self.layer.selectedFeatures())
+            self.delete_selected_item
         )
         self.view_document_btn.clicked.connect(
             lambda: self.view_steam_document(
-                entity, self.layer.selectedFeatures()
+                entity
             )
         )
 
@@ -1575,13 +1582,15 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 result = item.parent().data()
         return result, item
 
-    def edit_selected_steam(self, results):
+    # def edit_selected_steam(self):
+    #     cProfile.runctx('self._edit_selected_steam()', globals(), locals())
+
+    def edit_selected_steam(self):
         """
         Edits the record based on the selected item in the tree view.
-        :param results: The number of records selected/searched
-        :type results: List
         """
-        id, item = self.steam_data('edit', results)
+        self.edit_btn_connected = True
+        id, item = self.steam_data('edit', self._selected_features)
 
         feature_edit = True
         if id is None:
@@ -1639,14 +1648,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         else:
             self.update_edited_steam(self.social_tenure, id)
 
-    def delete_selected_item(self, results):
+    def delete_selected_item(self):
         """
         Deletes the selected item.
-        :param results: The number of records selected/searched
-        :type results: List
+
         """
         str_edit = False
-        id, item = self.steam_data('delete', results)
+        id, item = self.steam_data('delete', self._selected_features)
 
         if isinstance(id, str):
             data_error = QApplication.translate(
@@ -1733,6 +1741,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     del self.feature_str_model[id]
             else:
                 self.removed_feature = id
+                if isinstance(id, QgsFeature):
+                    id = id.id()
+
                 del self.feature_models[id]
 
             remaining_str = len(self.str_models)
@@ -1817,20 +1828,17 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 row = item.row()
                 item.parent().removeRow(row)
 
-    def view_steam_document(self, entity, results):
+    def view_steam_document(self, entity):
         """
         A slot raised when view document button is clicked. It opens document
         viewer and shows a document if a supporting document exists for the
         record.
         :param entity: The entity object
         :type entity: Object
-        :param results: The number of records selected/searched
-        :type results: List
+
         """
-        print entity, results
-        if results is None:
-            return
-        id, item = self.steam_data('edit', results)
+
+        id, item = self.steam_data('edit', self._selected_features)
         if isinstance(id, QgsFeature):
             id = id.id()
         if id is None:

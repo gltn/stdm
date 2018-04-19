@@ -373,8 +373,11 @@ class STDMQGISLoader(object):
             custom_entity = social_tenure.spu_custom_attribute_entity(
                 spatial_unit
             )
+            if custom_entity is None:
+                continue
             if pg_table_exists(custom_entity.name):
                 custom_ent_cols = table_column_names(custom_entity.name)
+
                 if social_tenure.CUSTOM_TENURE_DUMMY_COLUMN \
                         not in custom_ent_cols:
                     dummy_col = custom_entity.columns[
