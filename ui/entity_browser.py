@@ -622,7 +622,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            if numRecords < 2000:
+            if numRecords < 30000:
                 self.tbEntity.setSortingEnabled(True)
                 self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
@@ -1166,8 +1166,8 @@ class EntityBrowserWithEditor(EntityBrowser):
     def shift_spatial_entity_browser(self):
         """
         Shift records manager to the bottom left corner
-        :rtype: NoneType
-        :return: None
+        :rtype:
+        :return:
         """
         parent_height = self.parent().geometry().height()
         parent_width = self.parent().geometry().width()
@@ -1219,14 +1219,14 @@ class EntityBrowserWithEditor(EntityBrowser):
             )
 
             if geom_wkb is not None:
+
                 sel_lyr_name = self.sp_unit_manager. \
                     geom_col_layer_name(
                     self._entity.name, geom
                 )
 
                 self.add_spatial_unit_layer(sel_lyr_name)
-                layers = QgsMapLayerRegistry.instance().\
-                    mapLayersByName(
+                layers = QgsMapLayerRegistry.instance().mapLayersByName(
                     sel_lyr_name
                 )
                 if len(layers) > 0:

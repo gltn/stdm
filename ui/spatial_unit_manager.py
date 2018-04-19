@@ -534,9 +534,8 @@ class SpatialUnitManagerDockWidget(
         elif isinstance(col, SocialTenure):
             spatial_layer_item = col.view_name
 
-        # elif col.layer_display_name == '':
-        #
-        #     spatial_layer_item = u'{0}'.format(col.entity.short_name)
+        elif col.layer_display_name == '':
+            spatial_layer_item = u'{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
             spatial_layer_item = col.layer_display_name
