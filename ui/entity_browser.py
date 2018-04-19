@@ -557,51 +557,46 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog = QProgressDialog(
                 progressLabel, None, 0, numRecords, self
             )
+
             QApplication.processEvents()
-    
+            progressDialog.show()
             progressDialog.setValue(0)
-            # entity_cls = self._dbmodel()
-             # Only one filter is possible.
+
+            # Only one filter is possible.
             if not self.load_records:
                 entity_records = self.filtered_records
             else:
-                # entity_records = entity_cls.queryObject().filter().all()
                 entity_records = export_data(self._entity.name)
             #Add records to nested list for enumeration in table model
 
             entity_records_collection = []
-            # # print dict(entity_records)
-            # print vars(entity_records)
-            # print dir(entity_records)
 
             for i,er in enumerate(entity_records):
-                # print vars(er)
-                # print dir(er)
-                # break
+
                 QApplication.processEvents()
                 entity_row_info = []
                 progressDialog.setValue(i)
-                # try:
-                # for attr, attr_val in er.items():
-                    # print e
-                for attr in self._entity_attrs:
-                    # attr_val = getattr(er, attr)
-                    attr_val = er[attr]
-                    # Check if there are display formatters and apply if
-                    # one exists for the given attribute.
-                    if attr_val is not None: # No need of formatter for None value
-                        if attr in self._cell_formatters:
-                            formatter = self._cell_formatters[attr]
-                            attr_val = formatter.format_column_value(attr_val)
-                    entity_row_info.append(attr_val)
-                # except Exception as ex:
-                #     QMessageBox.critical(
-                #         self,
-                #         QApplication.translate(
-                #             'EntityBrowser', 'Loading Records'
-                #         ),
-                #         unicode(ex.message))
-                #     return
+                try:
+                    # for attr, attr_val in er.items():
+                        # print e
+                    for attr in self._entity_attrs:
+                        # attr_val = getattr(er, attr)
+                        attr_val = er[attr]
+                        # Check if there are display formatters and apply if
+                        # one exists for the given attribute.
+                        if attr_val is not None: # No need of formatter for None value
+                            if attr in self._cell_formatters:
+                                formatter = self._cell_formatters[attr]
+                                attr_val = formatter.format_column_value(attr_val)
+                        entity_row_info.append(attr_val)
+                except Exception as ex:
+                    QMessageBox.critical(
+                        self,
+                        QApplication.translate(
+                            'EntityBrowser', 'Loading Records'
+                        ),
+                        unicode(ex.message))
+                    return
 
                 entity_records_collection.append(entity_row_info)
 
