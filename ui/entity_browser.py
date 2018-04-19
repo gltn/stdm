@@ -558,7 +558,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 progressLabel, None, 0, numRecords, self
             )
             QApplication.processEvents()
-            progressDialog.exec_()
+    
             progressDialog.setValue(0)
             # entity_cls = self._dbmodel()
              # Only one filter is possible.
