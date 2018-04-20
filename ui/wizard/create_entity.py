@@ -85,9 +85,9 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :param message: The message of the notification.
         :type message: String
         """
-        msg = self.tr(message)
+
         self.notice_bar.clear()
-        self.notice_bar.insertErrorNotification(msg)
+        self.notice_bar.insertErrorNotification(message)
 
     def validate_text(self, text):
         """
@@ -109,11 +109,12 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         QApplication.processEvents()
         last_character = text[-1:]
         state = name_validator.validate(text, text.index(last_character))[0]
+        msg = QApplication.translate(
+            'EntityEditor', 'is not allowed at this position.'
+        )
 
         if state != QValidator.Acceptable:
-            self.show_notification(u'"{}" is not allowed at this position.'.
-                                   format(last_character)
-            )
+            self.show_notification(u'"{}" {}'.format(last_character, msg))
             text = text[:-1]
 
         # remove space and underscore at the beginning of the text
