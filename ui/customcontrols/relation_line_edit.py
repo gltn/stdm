@@ -334,10 +334,17 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
 
         admin_name = self.current_item.Name
         if self.current_item.Code:
-            admin_name = u'{0} ({1})'.format(
-                admin_name,
-                self.current_item.Code
-            )
+            if self.current_item.Code not in self.column.entity_relation.display_cols:
+                admin_name = u'{0}'.format(
+                    admin_name
+                )
+
+            else:
+                admin_name = u'{0} ({1})'.format(
+                    admin_name,
+                    self.current_item.Code
+                )
+                
         try:
             self.setText(admin_name)
         except RuntimeError:

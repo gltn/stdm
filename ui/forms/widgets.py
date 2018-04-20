@@ -696,7 +696,10 @@ class AdministrativeUnitWidgetFactory(ColumnWidgetRegistry):
                 name, code = res.name, res.code
 
         if code:
-            name = u'{0} ({1})'.format(name, code)
+            if code not in self._column.entity_relation.display_cols:
+                name = u'{0}'.format(name)
+            else:
+                u'{0} ({1})'.format(name, code)
 
         return name
 
