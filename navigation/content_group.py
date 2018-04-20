@@ -147,11 +147,12 @@ class ContentGroup(QObject,HashableMixin):
 
                     if c.code is None:
                         code = self.hash_code(c.name)
+                        cn = c
                     else:
                         code = c.code
 
                     cn = qo.filter(Content.code == code).first()
-                    
+
                     #If content not found then add
                     if cn is None:
                         #Check if the 'postgres' role is defined, if not then create one
@@ -167,12 +168,12 @@ class ContentGroup(QObject,HashableMixin):
                             existingContents = role.contents
                             #Append new content to existing 
                             if c.code is None:
-                                #ht = hashlib.sha1(c.name)
-                                c.code = code #ht.hexdigest()
+                                c.code = code 
 
-                            existingContents.append(c)
-                            role.contents = existingContents
-                            role.update()
+                            if len([e_cont for e_cont in existingContents if e_cont.name ==  c.name])==0:
+                                existingContents.append(c)
+                                role.contents = existingContents
+                                role.update()
 
             
 class TableContentGroup(ContentGroup):
