@@ -14,7 +14,7 @@ from stdm.data.pg_utils import spatial_tables, pg_views
 
 from stdm.ui.notification import NotificationBar
 from ...geometry.geometry_utils import *
-from ...geometry.geometry_map_tool import *
+
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 
