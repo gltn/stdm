@@ -860,6 +860,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         str_records = []
         if not DETAILS_DOCK_ON:
             return
+        if self._selected_features is None:
+            return
+        
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
 
