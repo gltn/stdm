@@ -478,6 +478,7 @@ def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_fea
     if temp_layer_name is not None:
         area_layers = QgsMapLayerRegistry.instance().mapLayersByName(temp_layer_name)
         if len(area_layers) == 0:
+
             area_layer = create_temporary_layer(layer, type, temp_layer_name, show_legend=True, style=style)
 
         else:
@@ -516,10 +517,12 @@ def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', 
         sel_feats = layer.getFeatures()
 
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
+  
     if len(line_layers) == 0:
         line_layer = create_temporary_layer(layer, 'LineString', layer_name, style=style)
     else:
         line_layer = line_layers[0]
+        print QgsMapLayerRegistry.mapLayer(line_layer.id())
         clear_layer_features(line_layer)
         iface.setActiveLayer(line_layer)
 
