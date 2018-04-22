@@ -168,8 +168,6 @@ class EntityImporter():
             pass
         return has_str_defined
 
-
-
     def process_social_tenure(self, ids):
         """
         Save socail tenure entity. It has to be saved separately
@@ -431,33 +429,43 @@ class Save2DB:
 
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
-            geom_provider = STDMGeometry(var)
-            if isinstance(col_prop, GeometryColumn):
-               defualt_srid = col_prop.srid
-            if defualt_srid != 0:
-                geom_provider.set_user_srid(defualt_srid)
+            if var:
+                geom_provider = STDMGeometry(var)
+                if isinstance(col_prop, GeometryColumn):
+                    defualt_srid = col_prop.srid
+                if defualt_srid != 0:
+                    geom_provider.set_user_srid(defualt_srid)
+                else:
+                    geom_provider.set_user_srid(GEOMPARAM)
+                if col_prop.geometry_type() == 'POINT':
+                    return geom_provider.point_to_Wkt()
+                if col_prop.geometry_type() == 'POLYGON':
+                    return geom_provider.polygon_to_Wkt()
             else:
-                geom_provider.set_user_srid(GEOMPARAM)
-            if col_prop.geometry_type() == 'POINT':
-                return geom_provider.point_to_Wkt()
-            if col_prop.geometry_type() == 'POLYGON':
-                return geom_provider.polygon_to_Wkt()
+                return None
         elif col_type == 'FOREIGN_KEY':
             if self.parents_ids is None or len(self.parents_ids) < 0:
-                return
+                return None
             else:
                 for code, val in self.parents_ids.iteritems():
                     if code is not None:
-                        if val[1] == GROUPCODE and col_prop.parent.name ==code:
+                        if col_prop.parent.name ==code:
                             return val[0]
                     else:
                         if col_prop.parent.name == code:
                             return val[0]
-        elif col_type == 'INT' or col_type == 'DOUBLE':
+        elif col_type == 'INT' or col_type == 'DOUBLE' or col_type == 'PERCENT':
             if var == '':
-                return 0
+                return None
             else:
                 return var
+
+        elif col_type == 'DATETIME' or col_type == 'DATE':
+            if var is None:
+                return None
+            else:
+                return var
+
         else:
             return var
 

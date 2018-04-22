@@ -349,6 +349,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
                 field_group = self.create_node(self.entity_read.default_entity())
+                if self.entity_read.on_column_show_in_parent():
+                    field_group.setAttribute('jr:template', '')
                 entity_group = self.entity_supports_documents(field_group, entity_values)
                 instance_id.appendChild(entity_group)
 
@@ -561,7 +563,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def _body_section(self):
         """
-        Method to read and check the body node in the Xform document is created
+        Method to read and populate the body node in the Xform document is created
         :return: Dom element
         """
         body_section_node = self.create_node("h:body")
@@ -574,7 +576,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def create_form_identifier(self, parent):
         """
-        Create a field for form Identifier for related field
+        Create a field as form Identifier that will help group related instance together field
         This will help in determining which parents entity and child entities
         are related.
         The user will input a unique code to identified relationship
@@ -591,7 +593,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def create_nested_entity_data(self, parent_node):
         """
-        Format the groups to hold only one entity information
+        Format each entity into group to hold only one entity information
         :return:
         """
         if isinstance(self.entities, list):
@@ -599,9 +601,12 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 self.initialize_entity_reader(entity)
                 self.entity_read.get_user_selected_entity()
                 entity_values = self.entity_read.read_attributes()
-                group_node = self.body_section_categories(
+                group_node, repeat_node = self.body_section_categories(
                     self.entity_read.default_entity())
-                self._body_section_data(entity_values,group_node)
+                if not repeat_node:
+                    self._body_section_data(entity_values, group_node)
+                else:
+                    self._body_section_data(entity_values, repeat_node)
                 parent_node.appendChild(group_node)
             return parent_node
 
@@ -611,24 +616,41 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param item:
         :return:
         """
+        repeat_node = None
+        ref = 'ref'
         if entity != 'social_tenure':
             label_txt = self.create_text_node(
-                self.profile_entity + ": " + self.entity_read.user_entity_name())
+                self.entity_read.user_entity_name())
         else:
-            label_txt = self.create_text_node(self.profile_entity + ": " + 'social_tenure')
+            label_txt = self.create_text_node('social_tenure')
 
         cate_name = self.model_category_group(self.profile_entity,
                                               entity)
         group_node = self.create_node("group")
-        group_node.setAttribute("appearance", "field-list")
-        group_node.setAttribute("ref",cate_name)
         group_label = self.create_node("label")
+
+        if not self.entity_read.on_column_show_in_parent():
+            group_node.setAttribute("appearance", "field-list")
+            group_node.setAttribute(ref, cate_name)
+            group_label.appendChild(label_txt)
+            group_node.appendChild(group_label)
+        else:
+            repeat_node = self.create_node('repeat')
+            ref = 'nodeset'
+            repeat_node.setAttribute("appearance", "field-list")
+            repeat_node.setAttribute(ref,cate_name)
+            repeat_label = self.create_node("label")
+            repeat_label.appendChild(label_txt)
+            repeat_node.appendChild(repeat_label)
+            group_label.appendChild(self.create_text_node(
+                self.entity_read.user_entity_name()
+            ))
+            group_node.appendChild(group_label)
+            group_node.appendChild(repeat_node)
+
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
-
-        group_label.appendChild(label_txt)
-        group_node.appendChild(group_label)
-        return group_node
+        return group_node, repeat_node
 
     def _body_section_data(self,entity_values, parent_node):
         """

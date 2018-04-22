@@ -42,6 +42,7 @@ from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration,
         Profile
 )
+import datetime
 
 from stdm.ui.notification import NotificationBar
 from stdm.settings import current_profile
@@ -52,6 +53,7 @@ from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
 from stdm.geoodk.importer import ImportLogger
+from stdm.geoodk.importer import Save2DB
 from stdm import resources_rc
 #from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 
@@ -201,7 +203,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return: directories
         :rtype: list
         """
-        dirs = []
         return [os.path.join(self.path, name) for name in os.listdir(self.path)
                 if os.path.isdir(os.path.join(self.path, name))
                 if name.startswith(self.profile_formater())]
@@ -289,7 +290,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def instance_entities(self):
         """
         Enumerate the entities that are in the current profile
-         and also part of the form so that we are only importing relevant entities to database
+         and also that are captured in the form so that we are only importing relevant entities to database
         :return: entities
         """
         dirs = self.xform_xpaths()
@@ -302,7 +303,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 entity_list = self.check_profile_with_custom_name()
                 for entity_name in entity_list:
                     if current_profile().entity_by_name(entity_name) is not None:
-                        current_etities.append(entity_name)
+                        if entity_name not in current_etities:
+                            current_etities.append(entity_name)
                 if len(current_etities) > 0:
                     return current_etities
 
@@ -312,7 +314,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Assumption is that there is a profile that bears that name
         :return:
         """
-        mismatch_profile = 'Please set current profile based on the data to be imported'
+        mismatch_profile = 'Nothing found to import. \n' \
+                           ' Ensure the current filter text or profile is correct'
         entity_attr = []
         if self.txt_filter.text()!= '':
             for obj in self.profiles():
@@ -322,88 +325,18 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         return
         return self.uuid_extractor.document_entities(self.profile)
 
-    def entity_attribute_to_database(self, entity_info):
-        """
-        Get the user selected entities and insert tehm into database
-        params: selected entities
-        rtype: list
-        :return:Object
-        :type: dbObject
-        """
-        cu_obj = ''
-        import_status = False
-        self.txt_feedback.clear()
-        self._notif_bar_str.clear()
-        has_relations = self.has_foreign_keys_parent(entity_info)
-        if len(self.parent_table_isselected()) > 0:
-            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
-                                       QApplication.translate('GeoODKMobileSettings',
-                                                              'Some of dependent tables (entities)'
-                                                              'which may not be part of the selected tables '
-                                                              'I.e: {} will be imported'
-                                                                      .format(self.parent_table_isselected())),
-                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
-                return
-        try:
-            parents_info = []
-            counter = 0
-            if len(self.instance_list) > 0:
-                self.pgbar.setRange(counter, len(self.instance_list))
-                self.pgbar.setValue(0)
-                for instance in self.instance_list:
-                    import_status = False
-                    counter = counter + 1
-                    self.parent_ids = {}
-                    entity_importer = EntityImporter(instance)
-                    group_identifier = entity_importer.instance_group_id()
-                    #set the geometry coordinate system
-                    entity_importer.geomsetter(self.on_projection_select())
-                    self.archive_this_import_file(counter, instance)
-                    if has_relations:
-                        #Import parents table first
-                        for parent_table in self.relations.keys():
-                            cu_obj = parent_table
-                            if parent_table in self.instance_entities():
-                                ref_id, import_status = entity_importer.process_parent_entity_import(parent_table)
-                                if group_identifier:
-                                    self.parent_ids[parent_table] = [ref_id, group_identifier]
-                                else:
-                                    self.parent_ids[parent_table] = [ref_id, parent_table]
-                                log_timestamp = '{0} -- parent table import succeeded: {1}'\
-                                    .format(parent_table, str(import_status))
-                                self.log_table_entry(log_timestamp)
-                                parents_info.append(parent_table)
-                                if parent_table[1] in entity_info:
-                                    entity_info.remove(parent_table)
-                    for table in entity_info:
-                        cu_obj = table
-                        if table not in parents_info:
-                            table_id, status = entity_importer.process_import_to_db(table, self.parent_ids)
-                            if table in self.parent_ids:
-                                continue
-                            else:
-                                self.parent_ids[table] = [table_id, group_identifier]
-                            self.log_table_entry(" -- {0} import succeeded: ".format(cu_obj)+str(status))
-                    self.txt_feedback.append(
-                        'saving record "{0}" to database'.format(counter))
-                    if self.uuid_extractor.has_str_captured_in_instance():
-                         if self.parent_ids is not None:
-                            entity_importer.process_social_tenure(self.parent_ids)
-                            self.log_table_entry(" -- saving social tenure relationship")
-                    self.pgbar.setValue(counter)
 
-                self.txt_feedback.append('Number of record successfully imported:  {}'
-                                                  .format(counter))
-            else:
-                self._notif_bar_str.insertErrorNotification("No user selected entities to import")
-                self.pgbar.setValue(0)
-                return
 
-        except Exception as ex:
-            self.log_table_entry(
-                unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
-            self.feedback_message(unicode(ex.message))
-            return
+    def user_table_filter(self):
+        """
+        Enumerate all user tables in the profile
+        :return:
+        """
+        user_entities = []
+        enit = current_profile().user_entities()
+        for en in enit:
+            user_entities.append(en.name)
+        return user_entities
 
     def has_foreign_keys_parent(self, select_entities):
         """
@@ -454,7 +387,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if self.user_selected_entities() > 0:
                 for table in self.relations.keys():
                     if table not in self.user_selected_entities():
-                        silent_list.append(table[1])
+                        silent_list.append(table)
             return silent_list
         except Exception as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
@@ -578,6 +511,99 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.current_profile_changed()
         self.check_state_on()
 
+    def entity_attribute_to_database(self, entity_info):
+        """
+        Get the user selected entities and insert them into database
+        params: selected entities
+        rtype: list
+        :return:Object
+        :type: dbObject
+        """
+        cu_obj = ''
+        import_status = False
+        self.txt_feedback.clear()
+        self._notif_bar_str.clear()
+        has_relations = self.has_foreign_keys_parent(entity_info)
+        if len(self.parent_table_isselected()) > 0:
+            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
+                                       QApplication.translate('GeoODKMobileSettings',
+                                                              'Some of dependent tables (entities)'
+                                                              'which may not be part of the selected tables '
+                                                              'I.e: {} will be imported'
+                                                                      .format(self.parent_table_isselected())),
+                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
+                return
+        #try:
+        parents_info = []
+        counter = 0
+        if len(self.instance_list) > 0:
+            self.pgbar.setRange(counter, len(self.instance_list))
+            self.pgbar.setValue(0)
+            for instance in self.instance_list:
+                import_status = False
+                counter = counter + 1
+                self.parent_ids = {}
+                entity_importer = EntityImporter(instance)
+                group_identifier = entity_importer.instance_group_id()
+                #set the geometry coordinate system
+                entity_importer.geomsetter(self.on_projection_select())
+                self.archive_this_import_file(counter, instance)
+                if has_relations:
+                    #Import parents table first
+                    for parent_table in self.relations.keys():
+                        cu_obj = parent_table
+                        if parent_table in self.instance_entities():
+                            ref_id, import_status = entity_importer.process_parent_entity_import(parent_table)
+                            if group_identifier:
+                                self.parent_ids[parent_table] = [ref_id, group_identifier]
+                            else:
+                                self.parent_ids[parent_table] = [ref_id, parent_table]
+                            log_timestamp = '{0} -- parent table import succeeded: {1}'\
+                                .format(parent_table, str(import_status))
+                            self.log_table_entry(log_timestamp)
+                            parents_info.append(parent_table)
+                            if parent_table[1] in entity_info:
+                                entity_info.remove(parent_table)
+                for table in self.check_profile_with_custom_name():
+                        if table in self.user_table_filter():
+                            cu_obj = table
+                            if table not in parents_info:
+                                table_id, status = entity_importer.process_import_to_db(table, self.parent_ids)
+                            if table in self.parent_ids:
+                                continue
+                            else:
+                                self.parent_ids[table] = [table_id, group_identifier]
+                            self.log_table_entry(" -- {0} import succeeded: ".format(cu_obj)+str(status))
+                self.txt_feedback.append(
+                    'saving record "{0}" to database'.format(counter))
+                if self.uuid_extractor.has_str_captured_in_instance():
+                     if self.parent_ids is not None:
+                        entity_importer.process_social_tenure(self.parent_ids)
+                        self.log_table_entry(" -- saving social tenure relationship")
+                self.pgbar.setValue(counter)
+
+            self.txt_feedback.append('Number of record successfully imported:  {}'
+                                              .format(counter))
+        else:
+            self._notif_bar_str.insertErrorNotification("No user selected entities to import")
+            self.pgbar.setValue(0)
+            return
+
+        # except Exception as ex:
+        #     self.log_table_entry(
+        #         unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
+        #     self.feedback_message(unicode(ex.message))
+        # #     return
+
+    def unique_counter_counter(self):
+        """
+        Keep a list of all the table imported since some table will appear in multiples
+        in the instance file.
+        Store id, and name
+        :return:
+        """
+
+
     def feedback_message(self, msg):
         """
         Create a dialog box to capture and display errrors related to db
@@ -594,23 +620,111 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.show()
         return msgbox
 
+    def save_instance_data_to_db(self, entity_info):
+        """
+                Get the user selected entities and insert them into database
+                params: selected entities
+                rtype: list
+                :return:Object
+                :type: dbObject
+                """
+        cu_obj = ''
+        import_status = False
+        self.txt_feedback.clear()
+        self._notif_bar_str.clear()
+        has_relations = self.has_foreign_keys_parent(entity_info)
+        if len(self.parent_table_isselected()) > 0:
+            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
+                                       QApplication.translate('GeoODKMobileSettings',
+                                                              'Some of dependent tables (entities)'
+                                                              'which may not be part of the selected tables '
+                                                              'I.e: {} will be imported'
+                                                                      .format(self.parent_table_isselected())),
+                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
+                return
+        try:
+            parents_info = []
+            counter = 0
+            if len(self.instance_list) > 0:
+                print len(self.instance_list)
+                self.pgbar.setRange(counter, len(self.instance_list))
+                self.pgbar.setValue(0)
+                for instance in self.instance_list:
+                    import_status = False
+                    counter = counter + 1
+                    self.parent_ids = {}
+                    entity_importer = EntityImporter(instance)
+                    group_identifier = entity_importer.instance_group_id()
+                    self.uuid_extractor.set_file_path(instance)
+                    self.archive_this_import_file(counter, instance)
+                    field_data = self.uuid_extractor.document_entities_with_data(current_profile().name,
+                                                                        self.user_selected_entities())
+                    single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(field_data)
+                    for entity, entity_data in single_occuring.iteritems():
+                        if entity in self.relations:
+                            entity_add = Save2DB(entity, entity_data)
+                            entity_add.objects_from_supporting_doc(instance)
+                            #entity_add.get_srid(GEOMPARAM)
+                            ref_id = entity_add.save_parent_to_db()
+                            import_status = True
+                            self.parent_ids[entity] = [ref_id, entity]
+                            log_timestamp = '{0} -- parent table import succeeded: {1}' \
+                                .format(entity, str(import_status))
+                            self.log_table_entry(log_timestamp)
+                            parents_info.append(entity)
+                            single_occuring.pop(entity)
+                            parents_info.append(entity)
+                        elif entity not in self.relations and entity not in parents_info:
+                            entity_add = Save2DB(entity, entity_data, self.parent_ids)
+                            entity_add.objects_from_supporting_doc(instance)
+                            child_id = entity_add.save_to_db()
+                            #entity_add.get_srid(GEOMPARAM)
+                            import_status = True
+                            if entity in self.parent_ids:
+                                continue
+                            else:
+                                self.parent_ids[entity] = [child_id, entity]
+                            self.log_table_entry(" -- {0} import succeeded: ".format(entity) + str(import_status))
+
+                    if repeated_entities:
+                        self.log_table_entry(" ----starting import of repeated tables---")
+                        print self.parent_ids
+                        for repeated_entity, entity_data in repeated_entities.iteritems():
+                            entity_add = Save2DB(repeated_entity[1:], entity_data, self.parent_ids)
+                            entity_add.objects_from_supporting_doc(instance)
+                            child_id = entity_add.save_to_db()
+                            #entity_add.get_srid(GEOMPARAM)
+                            import_status = True
+                            self.log_table_entry(" -- {0} repeated table import succeeded: ".format(repeated_entity[1:])
+                            + str(import_status))
+                    self.txt_feedback.append(
+                                    'saving record "{0}" to database'.format(counter))
+
+                    if self.uuid_extractor.has_str_captured_in_instance():
+                        if self.parent_ids is not None:
+                            entity_importer.process_social_tenure(self.parent_ids)
+                            self.log_table_entry(" -- saving social tenure relationship")
+                            self.txt_feedback.append(
+                            'saving record "{0}" to database'.format(counter))
+                    self.pgbar.setValue(counter)
+
+                self.txt_feedback.append('Number of record successfully imported:  {}'
+                                            .format(counter))
+            else:
+                self._notif_bar_str.insertErrorNotification("No user selected entities to import")
+                self.pgbar.setValue(0)
+                return
+        except Exception as ex:
+            self.log_table_entry(
+                unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
+            self.feedback_message(unicode(ex.message))
+            return
+
     def accept(self):
         """
         Execute the import dialog once the save button has been clicked
         :return:
         """
-        # if self.tab_widget.currentIndex() == 1:
-        #     host = self.txt_host.text()
-        #     passwd = self.txt_pass.text()
-        #     db = self.cbo_dbname.currentText()
-        #     user = self.txt_username.text()
-        #     port = self.txt_port.text()
-        #     json_extractor = JSONEXTRACTOR(user,passwd,host,port,db, self.profile)
-        #     json_conn = json_extractor.create_orphan_connection()
-        #     self.importlogger.onlogger_action(json_conn)
-        #     self.txt_svlog.append(json_conn)
-        #else:
-
         self.buttonBox.setEnabled(False)
         try:
             if self.lst_widget.count() < 1:
@@ -630,7 +744,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     entities = self.instance_entities()
                 else:
                     return
-            self.entity_attribute_to_database(entities)
+            self.save_instance_data_to_db(entities)
             self.buttonBox.setEnabled(True)
         except Exception as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)

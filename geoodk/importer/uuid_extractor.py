@@ -27,6 +27,7 @@ from PyQt4.QtXml import (
 )
 from stdm.geoodk import GeoODKReader
 UUID = "uuid"
+from collections import OrderedDict
 
 class InstanceUUIDExtractor():
     """
@@ -61,7 +62,7 @@ class InstanceUUIDExtractor():
 
     def on_file_passed(self):
         """
-        Pass the row file to an xml document and format the name to GeoODK standards
+        Pass the raw file to an xml document object and format the its filename to GeoODK standards
         :return:
         """
         try:
@@ -98,6 +99,51 @@ class InstanceUUIDExtractor():
                 node_list.append(node_val.nodeName())
         return node_list
 
+    def document_entities_with_data(self, profile,entities):
+        """
+        Get entities in the document
+        :return:
+        """
+        instance_data = OrderedDict()
+        self.set_document()
+        node_list = []
+        attrib_data = OrderedDict()
+        nodes = self.doc.elementsByTagName(profile)
+        entity_nodes = nodes.item(0).childNodes()
+        for attrs in range(entity_nodes.count()):
+            if entity_nodes.item(attrs).nodeName() in entities:
+                name_entity = entity_nodes.item(attrs).nodeName()
+                attr_nodes = self.doc.elementsByTagName(name_entity)
+                instance_data[attr_nodes] = name_entity
+        return instance_data
+
+    def attribute_data_from_nodelist(self, args_list):
+        """
+        proceess nodelist data before Importing  attribute data into db
+        """
+        repeat_instance_data = OrderedDict()
+        attribute_data =OrderedDict()
+        for attr_nodes, entity in args_list.iteritems():
+            '''The assuption is that there are repeated entities. handle them separately'''
+            if attr_nodes.count()>1:
+                for i in range(attr_nodes.count()):
+                    attrib_node = attr_nodes.at(i).childNodes()
+                    attr_list = OrderedDict()
+                    for j in range(attrib_node.count()):
+                        field_name = attrib_node.at(j).nodeName()
+                        field_value = attrib_node.at(j).toElement().text()
+                        attr_list[field_name] = field_value
+                    repeat_instance_data['{}'.format(i)+entity] = attr_list
+            else:
+                '''Entities must appear onces in the form'''
+                node_list_var =OrderedDict()
+                attr_node = attr_nodes.at(0).childNodes()
+                for j in range(attr_node.count()):
+                    field_name = attr_node.at(j).nodeName()
+                    field_value = attr_node.at(j).toElement().text()
+                    node_list_var[field_name] = field_value
+                attribute_data[entity] = node_list_var
+        return attribute_data, repeat_instance_data
 
     def str_definition(self):
         """
@@ -131,7 +177,7 @@ class InstanceUUIDExtractor():
         Get collected data from the entity in the document
         :return:
         """
-        pass
+
 
     def uuid_element(self):
         """

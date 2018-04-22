@@ -187,7 +187,7 @@ class EntityFormatter:
             'ADMIN_SPATIAL_UNIT': 'string',
             'FOREIGN_KEY': 'string',
             'DATE': 'date',
-            'DATETIME': 'datetime'
+            'DATETIME': 'dateTime'
         }
 
         return xform_type.get(val)
