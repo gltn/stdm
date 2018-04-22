@@ -25,7 +25,8 @@ from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
     QStandardItem, QStandardItemModel, QComboBox, QHeaderView
 from stdm.utils.util import (
     enable_drag_sort,
-    code_columns
+    code_columns,
+    string_to_boolean
 )
 from ui_code_property import Ui_CodeProperty
 
@@ -55,9 +56,12 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
         self._parent_column_name = form_fields['colname']
-        self._disable_auto_increment = form_fields['disable_auto_increment']
+        self._disable_auto_increment = string_to_boolean(
+            form_fields['disable_auto_increment'], False)
 
-        self._enable_editing = form_fields['enable_editing']
+        self._enable_editing = string_to_boolean(
+            form_fields['enable_editing'], False
+        )
         self._column_separators = form_fields['column_separators']
 
         self._profile = profile

@@ -1264,14 +1264,17 @@ def string_to_boolean(string_bool, default):
     :return: Converted boolean
     :rtype: Boolean
     """
-    if string_bool == '':
-        result = default
-    elif string_bool == None:
-        result = default
-    elif string_bool.lower() == 'true':
-        result = True
-    elif string_bool.lower() == 'false':
-        result = False
+    if not isinstance(string_bool, bool):
+        if string_bool == '':
+            result = default
+        elif string_bool == None:
+            result = default
+        elif string_bool.lower() == 'true':
+            result = True
+        elif string_bool.lower() == 'false':
+            result = False
+        else:
+            result = default
+        return result
     else:
-        result = default
-    return result
+        return string_bool
