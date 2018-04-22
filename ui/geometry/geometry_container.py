@@ -4,7 +4,8 @@ from collections import OrderedDict
 import re
 from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
-    QMessageBox, QAction, QProgressDialog, QIcon
+    QMessageBox, QAction, QProgressDialog, QIcon, QTextCharFormat, QFont, \
+    QTextCursor, QBrush
 from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
 from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes, \
     QgsMessageLog
@@ -256,6 +257,7 @@ class GeometryToolsDock(
         self._entity = None
         LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
+        self._first_widget = None
         self.layer = None
         self.line_layer = None
         self.widgets_added = False
@@ -288,6 +290,8 @@ class GeometryToolsDock(
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+            # if i == 0:
+            #     self._first_widget = widget
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -301,6 +305,7 @@ class GeometryToolsDock(
         current_widget.set_widget(current_widget)
         current_widget.init_signals()
         current_widget.clear_inputs()
+        self.help_box.clear()
 
     def close_dock(self, tool):
         """
@@ -316,6 +321,7 @@ class GeometryToolsDock(
         # if self._first_widget is not None:
         #     self._first_widget.remove_memory_layers()
         GEOM_DOCK_ON = False
+        # self.remove_memory_layers()
         self.close()
 
     def closeEvent(self, event):
@@ -331,6 +337,7 @@ class GeometryToolsDock(
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
+        # self.remove_memory_layers()
 
     def hideEvent(self, event):
         """
@@ -503,8 +510,9 @@ class GeomWidgetsBase(object):
         self.settings = layer_settings
         self.current_profile = current_profile()
         self.iface = iface
-        self.iface.mainWindow().__class__.closeEvent = self._close_event
+
         self.settings = layer_settings
+
         self.widget = widget
         self.feature_count = 0
         self.features = []
@@ -531,7 +539,63 @@ class GeomWidgetsBase(object):
         title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
         self.progress_dialog.setWindowTitle(title)
         self.progress_dialog.canceled.connect(self.cancel)
-        self.init_signals()
+        # self.help_cursor = self.settings.help_box.textCursor()
+
+    def select_feature_help(self, order):
+        msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
+        self.insert_styled_help_row(msg, order)
+
+    def insert_styled_help_row(self, msg, order):
+        self.settings.help_box.appendHtml('{}. {}\n'.format(order + 1, msg))
+        self.style_previous_current(order)
+
+    def select_line_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate('GeomWidgetsBase', 'Select a single line.')
+            self.insert_styled_help_row(msg, order)
+
+    def select_point_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate('GeomWidgetsBase', 'Select a point.')
+            self.insert_styled_help_row(msg, order)
+
+    def specify_area_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate(
+                'GeomWidgetsBase', 'Specify a desired area for the split polygon.'
+            )
+            self.insert_styled_help_row(msg, order)
+
+    def run_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate(
+                'GeomWidgetsBase', 'You are ready to split! Press the run button.'
+            )
+            self.insert_styled_help_row(msg, order)
+
+    def splitting_success_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate(
+                'GeomWidgetsBase',
+                'Your splitting is successful. '
+                'Save your splitting by pressing on the Save button in the digitizing toolbar.'
+            )
+            self.insert_styled_help_row(msg, order)
+    def style_previous_current(self, order):
+        if order - 1 >= 0:
+            prev_block = self.settings.help_box.document().findBlockByLineNumber(
+                order - 1)
+            cursor = QTextCursor(prev_block)
+            pre_format = prev_block.blockFormat()
+            pre_format.setBackground(QColor('white'))
+            cursor.setBlockFormat(pre_format)
+
+        curr_block = self.settings.help_box.document().findBlockByLineNumber(
+            order)
+        curr_cursor = QTextCursor(curr_block)
+        curr_format = curr_block.blockFormat()
+        curr_format.setBackground(QColor(98, 220, 249))
+        curr_cursor.setBlockFormat(curr_format)
 
     def init_signals(self):
         if not self.settings_layer_connected:
@@ -576,10 +640,9 @@ class GeomWidgetsBase(object):
                 pass
 
     def on_feature_selection_finished(self):
-        try:
-            self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
-        except Exception:
-            return
+        self.select_line_help(1)
+        self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
+
         if self.line_layer is not None:
 
             self.line_layer.selectionChanged.connect(
@@ -588,11 +651,7 @@ class GeomWidgetsBase(object):
 
     def hideEvent(self, event):
         self.widget_closed = True
-        self.remove_memory_layers()
 
-    def _close_event(self, event):
-
-        self.widget_closed = True
         self.remove_memory_layers()
 
     def remove_memory_layers(self):
@@ -640,6 +699,10 @@ class GeomWidgetsBase(object):
         :return:
         :rtype:
         """
+        if hasattr(self.widget, 'selected_line_lbl'):
+            self.lines_count = 0
+            self.widget.selected_line_lbl.setText(str(0))
+        self.lines[:] = []
         if len(feature) == 0:
             return
 
@@ -673,7 +736,7 @@ class GeomWidgetsBase(object):
                 self.on_feature_selection_finished()
 
     def on_line_feature_selected(self):
-
+        self.specify_area_help(2)
         if self.settings.layer is None:
             return
 
@@ -827,6 +890,13 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
+        self.select_feature_help(0)
+        self.widget.split_polygon_area.valueChanged.connect(self.on_area_changed)
+
+    def on_area_changed(self, value):
+        if value > 0:
+
+            self.run_help(3)
 
     def validate_run(self):
         if self.widget.split_polygon_area.value() == 0:
@@ -874,6 +944,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.init_signals()
         if result:
             self.progress_dialog.cancel()
+            self.splitting_success_help(4)
         else:
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
@@ -997,6 +1068,18 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
+
+    def hideEvent(self, event):
+        self.widget_closed = True
+        if self.line_layer is not None:
+            self.line_layer.selectionChanged.disconnect(
+                self.on_line_feature_selected
+            )
+        if self.point_layer is not None:
+            self.point_layer.selectionChanged.disconnect(
+                self.on_point_feature_selected
+            )
+        self.remove_memory_layers()
 
     def on_point_feature_selected(self):
 
@@ -1177,6 +1260,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         :return:
         :rtype:
         """
+
         if self.parent().currentWidget().objectName() != self.objectName():
             return
 

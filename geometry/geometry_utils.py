@@ -517,12 +517,12 @@ def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', 
         sel_feats = layer.getFeatures()
 
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
-  
+
     if len(line_layers) == 0:
         line_layer = create_temporary_layer(layer, 'LineString', layer_name, style=style)
     else:
         line_layer = line_layers[0]
-        print QgsMapLayerRegistry.mapLayer(line_layer.id())
+        # print QgsMapLayerRegistry.mapLayer(line_layer.id())
         clear_layer_features(line_layer)
         iface.setActiveLayer(line_layer)
 
@@ -662,13 +662,15 @@ def add_features_to_layer(layer, features):
 
 def feature_id_to_feature(layer, feature_ids):
     features = []
-    for f_id in feature_ids:
-        request = QgsFeatureRequest()
-        request.setFilterFid(f_id)
-        feature_itr = layer.getFeatures(request)
-        for feat in feature_itr:
-            features.append(feat)
-
+    try:
+        for f_id in feature_ids:
+            request = QgsFeatureRequest()
+            request.setFilterFid(f_id)
+            feature_itr = layer.getFeatures(request)
+            for feat in feature_itr:
+                features.append(feat)
+    except Exception:
+        pass
     return features
 
 
