@@ -262,8 +262,6 @@ class GeometryToolsDock(
         self.line_layer = None
         self.widgets_added = False
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
-        # self._first_widget = None
-        # iface.mainWindow().__class__.closeEvent = self.close_dock(self.plugin.geom_tools_cont_act)
 
 
     def write_log_message(message, tag, level):
@@ -290,8 +288,9 @@ class GeometryToolsDock(
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
-            # if i == 0:
-            #     self._first_widget = widget
+            if i == 0:
+                self._first_widget = widget
+                widget.select_feature_help(0)
 
     def init_signals(self):
         self.geom_tools_combo.currentIndexChanged.connect(
@@ -306,6 +305,8 @@ class GeometryToolsDock(
         current_widget.init_signals()
         current_widget.clear_inputs()
         self.help_box.clear()
+        if self._first_widget:
+            self._first_widget.select_feature_help(0)
 
     def close_dock(self, tool):
         """
@@ -545,7 +546,7 @@ class GeomWidgetsBase(object):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
         self.insert_styled_help_row(msg, order)
 
-    def insert_styled_help_row(self, msg, order):
+    def  insert_styled_help_row(self, msg, order):
         self.settings.help_box.appendHtml('{}. {}\n'.format(order + 1, msg))
         self.style_previous_current(order)
 
@@ -563,6 +564,13 @@ class GeomWidgetsBase(object):
         if self.settings.help_box.blockCount() < order + 1:
             msg = QApplication.translate(
                 'GeomWidgetsBase', 'Specify a desired area for the split polygon.'
+            )
+            self.insert_styled_help_row(msg, order)
+
+    def specify_offset_distance_help(self, order):
+        if self.settings.help_box.blockCount() < order + 1:
+            msg = QApplication.translate(
+                'GeomWidgetsBase', 'Specify a desired offset distance from the selected line.'
             )
             self.insert_styled_help_row(msg, order)
 
@@ -699,6 +707,7 @@ class GeomWidgetsBase(object):
         :return:
         :rtype:
         """
+
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines_count = 0
             self.widget.selected_line_lbl.setText(str(0))
@@ -890,7 +899,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
-        self.select_feature_help(0)
+
         self.widget.split_polygon_area.valueChanged.connect(self.on_area_changed)
 
     def on_area_changed(self, value):
@@ -914,6 +923,10 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.notice.insertErrorNotification(message)
             return False
         return True
+
+    def showEvent(self, QShowEvent):
+        QApplication.processEvents()
+
 
     def run(self):
         result = self.validate_run()
@@ -973,7 +986,16 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
                 'OffsetDistanceWidget', 'You need to first select a line.'
             )
             self.notice.insertWarningNotification(message)
-            return 
+            return
+        if new_value == 0:
+            message2 = QApplication.translate(
+                'OffsetDistanceWidget', 'The offset distance should be greater than 0.'
+            )
+            self.notice.insertWarningNotification(message2)
+            return
+
+        self.run_help(3)
+
         result = split_offset_distance(
             self.settings.layer,
             self.line_layer,
@@ -989,9 +1011,14 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
         else:
+
             self.notice.clear()
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
+
+    def on_line_feature_selected(self):
+        self.specify_offset_distance_help(2)
+        return GeomWidgetsBase.on_line_feature_selected(self)
 
     def validate_run(self):
         if self.widget.offset_distance.value() == 0:
@@ -1018,6 +1045,8 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
+        else:
+            self.splitting_success_help(4)
         return True
 
     def run(self):
@@ -1145,7 +1174,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         )
 
     def on_line_selection_finished(self):
-        self.rotation_point = None
+        self.rotation_point = self.points[0]
 
         line_geom = self.lines[0].geometry()
         line_length = line_geom.length()
