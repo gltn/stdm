@@ -809,7 +809,7 @@ class SpatialUnitManagerDockWidget(
 
     def _set_layer_display_name(self, layer, name):
         try:
-            layer.setLayerName(name)
+            layer.setName(name)
         except RuntimeError:
             pass
 
@@ -874,7 +874,7 @@ class SpatialUnitManagerDockWidget(
                                     idx,
                                     display_name
                                 )
-                                layer.setLayerName(display_name)
+                                layer.setName(display_name)
 
                                 # Update configuration item
                                 config_item = layer_info.get('item', None)
