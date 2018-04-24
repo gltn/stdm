@@ -394,7 +394,7 @@ class SpatialUnitManagerDockWidget(
                 QgsCoordinateReferenceSystem.EpsgCrsId
             )
 
-            self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+            self.iface.mapCanvas().mapSettings().setDestinationCrs(layer_crs)
 
     def init_spatial_form(self, spatial_column, curr_layer):
         """
