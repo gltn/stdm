@@ -1,19 +1,4 @@
-# split polygon by area
-# 0. Run this file.
-# 1. Select one polygon
-# 2. move_line_with_area(selected_line1, 400) # line 1
-# 2. move_line_with_area(selected_line2, 400) # line 2
-# 2. move_line_with_area(selected_line3, 400) # line 3
-# 2. move_line_with_area(selected_line4, 400) # line 4
 
-# add points of a line then get another point by distance along the line.
-#1. add_line_points_to_map(layer_point, selected_line2)
-#2. point_by_distance(layer_point, selected_line2, 30)
-
-# rotate line from a point with a given distance from line point end, with an angle
-#1. add_layers(1)
-#2. Select one point
-#3. rotate_line_with_area(selected_line2, 300, 30, -1)
 from __future__ import division
 import json
 import math
@@ -22,7 +7,7 @@ from collections import OrderedDict
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import QColor, QApplication
 from decimal import Decimal
-from qgis.gui import QgsHighlight, QgsLayerPropertiesWidget, QgsGenericProjectionSelector
+from qgis.gui import QgsHighlight
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
     QgsCoordinateReferenceSystem, QgsField, QgsPalLayerSettings, \
@@ -69,18 +54,17 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     # create a new memory layer
     crs = source_layer.crs()
     crs_id = crs.srsid()
-    auth_id = crs.authid()
     wkt = crs.toWkt()
     vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
                      u"index=yes".format(type, wkt)
 
 
-    iface.mainWindow().blockSignals(True)
+    # iface.mainWindow().blockSignals(True)
 
     v_layer = QgsVectorLayer(vl_geom_config, name, "memory")
 
 
-    iface.mainWindow().blockSignals(False)
+    # iface.mainWindow().blockSignals(False)
 
     target_crs = QgsCoordinateReferenceSystem(
         crs_id, QgsCoordinateReferenceSystem.InternalCrsId
@@ -92,12 +76,12 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     if style:
         if type == 'LineString':
 
-            symbols = v_layer.rendererV2().symbols()
+            symbols = v_layer.rendererV2().symbols(QgsRenderContext())
             symbol = symbols[0]
             symbol.setWidth(2)
 
         if type == 'Point':
-            symbols = v_layer.rendererV2().symbols()
+            symbols = v_layer.rendererV2().symbols(QgsRenderContext())
             symbol = symbols[0]
             symbol.setSize(4)
 
@@ -107,66 +91,6 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     )
     v_layer.updateExtents()
     return v_layer
-
-def create_memory_layer(type, name, line=1):
-    srid = 4326
-    line_start = QgsPoint(50, 125)
-
-    line_m2 = QgsPoint(70, 70)
-    line_m3 = QgsPoint(100, 100)
-    line_end = QgsPoint(120, 150)
-    # line = QgsGeometry.fromPolyline([line_start, line_end])
-
-    # create a new memory layer
-    vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
-                     u"index=yes".format(type, srid)
-    v_layer = QgsVectorLayer(vl_geom_config, name, "memory")
-    pr = v_layer.dataProvider()
-    # create a new feature
-    feature = QgsFeature()
-
-    # add the geometry to the feature,
-    if type == 'LineString':
-        if line == 1:
-            feature.setGeometry(selected_line1)
-        if line == 2:
-            feature.setGeometry(selected_line2)
-        if line == 3:
-            feature.setGeometry(selected_line3)
-        if line == 4:
-            feature.setGeometry(selected_line4)
-
-        pr.addFeatures([feature])
-    elif type == 'Polygon':
-        feature.setGeometry(
-            QgsGeometry.fromPolygon([[line_start, line_m2, line_m3, line_end]])
-        )
-        pr.addFeatures([feature])
-
-    # update extent of the layer (not necessary)
-    v_layer.updateExtents()
-    # show the line  
-    QgsMapLayerRegistry.instance().addMapLayers([v_layer])
-    return v_layer
-layer = None
-layer_poly = None
-layer_point = None
-def add_layers(line):
-    global layer
-    global layer_poly
-    global layer_point
-
-    layer = create_memory_layer('LineString', 'Line1', line)
-    layer_poly = create_memory_layer('Polygon', 'Poly1')
-    layer_point = create_memory_layer('Point', 'Point1')
-    if line == 1:
-        add_line_points_to_map(layer_point, selected_line1)
-    if line == 2:
-        add_line_points_to_map(layer_point, selected_line2)
-    if line == 3:
-        add_line_points_to_map(layer_point, selected_line3)
-    if line == 4:
-        add_line_points_to_map(layer_point, selected_line4)
 
 
 def rotate_line(point_geom, polygon_layer, line, angle):
@@ -188,7 +112,7 @@ def rotate_line(point_geom, polygon_layer, line, angle):
 
         added_points = extend_line_points(line_geom, geom.boundingBox())
         extended_geom = QgsGeometry.fromPolyline(added_points)
-        add_geom_to_layer(layer, extended_geom)
+        # add_geom_to_layer(layer, extended_geom)
     return extended_geom
 
 
@@ -334,34 +258,34 @@ def add_geom_to_feature(layer, geom):
 
 
 def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
-    provider = layer.dataProvider()
-    feature = QgsFeature()
-    if isinstance(geom, QgsPoint):
-        geom = QgsGeometry.fromPoint(geom)
-    layer.startEditing()
-    feature.setGeometry(geom)
+    with edit(layer):
+        feature = QgsFeature()
+        if isinstance(geom, QgsPoint):
+            geom = QgsGeometry.fromPoint(geom)
 
-    if geom.type() == 1:
-        length = "%.2f" % round(geom.length(), 2)
-        attr = '{} {}{}'.format(prefix, length, suffix)
+        feature.setGeometry(geom)
 
-        feature.setAttributes(['measurement', attr])
+        if geom.type() == 1:
+            length = "%.2f" % round(geom.length(), 2)
+            attr = '{} {}{}'.format(prefix, length, suffix)
 
-    if geom.type() == 2:
+            feature.setAttributes(['measurement', attr])
 
-        if unit == 'Hectares':
-            area = geom.area() / 10000
-        else:
-            area = geom.area()
-        area = "%.2f" % round(area, 2)
-        attr = '{} {}{}'.format(prefix, area, suffix)
-        feature.setAttributes(['measurement', attr])
+        if geom.type() == 2:
 
-    layer.updateFeature(feature)
+            if unit == 'Hectares':
+                area = geom.area() / 10000
+            else:
+                area = geom.area()
+            area = "%.2f" % round(area, 2)
+            attr = '{} {}{}'.format(prefix, area, suffix)
+            feature.setAttributes(['measurement', attr])
 
-    provider.addFeatures([feature])
+        # layer.updateFeature(feature)
 
-    layer.commitChanges()
+        layer.addFeature(feature)
+
+    # layer.commitChanges()
 
     # layer.selectByIds([feature.id()])
     # zoom_refresh_to_geom(geom)
@@ -476,37 +400,42 @@ def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_fea
 
     type = layer_type(layer)
     if temp_layer_name is not None:
-        area_layers = QgsMapLayerRegistry.instance().mapLayersByName(temp_layer_name)
-        if len(area_layers) == 0:
+        curr_layers = QgsMapLayerRegistry.instance().mapLayersByName(temp_layer_name)
+        if len(curr_layers) == 0:
 
-            area_layer = create_temporary_layer(layer, type, temp_layer_name, show_legend=True, style=style)
+            curr_layer = create_temporary_layer(
+                layer, type, temp_layer_name, show_legend=True, style=style)
 
         else:
-            area_layer = area_layers[0]
-            clear_layer_features(area_layer)
-            iface.setActiveLayer(area_layer)
-
-        QApplication.processEvents()
-        add_layer_double_field(area_layer)
-        for feature in sel_feats:
-
-            polygon_geom = feature.geometry()
-            add_geom_to_layer_with_measurement(
-                area_layer, polygon_geom, prefix, suffix, unit
-            )
-
-            label_layer_by_field(area_layer, 'measurement')
-
+            curr_layer = curr_layers[0]
+            clear_layer_features(curr_layer)
+            iface.setActiveLayer(curr_layer)
     else:
-        add_layer_double_field(layer)
-        for feature in sel_feats:
-            polygon_geom = feature.geometry()
-            add_geom_to_layer_with_measurement(layer, polygon_geom, prefix,
-                                               suffix, unit)
+        curr_layer = layer
+        # QApplication.processEvents()
+        # add_layer_double_field(area_layer)
+        # for feature in sel_feats:
+        #
+        #     polygon_geom = feature.geometry()
+        #     add_geom_to_layer_with_measurement(
+        #         area_layer, polygon_geom, prefix, suffix, unit
+        #     )
+        #
+        #     label_layer_by_field(area_layer, 'measurement')
 
-            label_layer_by_field(layer, 'measurement')
+    # else:
+    add_measurement_field(curr_layer)
+    for feature in sel_feats:
+        polygon_geom = feature.geometry()
+        add_geom_to_layer_with_measurement(
+            curr_layer, polygon_geom, prefix, suffix, unit
+        )
 
-def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', all_features=False, style=True):
+    label_layer_by_field(curr_layer, 'measurement')
+
+def polygon_to_lines(
+        layer, layer_name, measurement=True, prefix='', suffix='',
+        all_features=False, style=True):
     if layer.name() == layer_name:
         return None
     line_geoms = []
@@ -527,10 +456,10 @@ def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', 
         iface.setActiveLayer(line_layer)
 
     type = layer_type(layer)
-
+    if measurement:
+        add_measurement_field(line_layer)
     for feature in sel_feats:
-        if measurement:
-            add_layer_double_field(line_layer)
+
         polygon_geom = feature.geometry()
 
         if polygon_geom is None:
@@ -540,13 +469,15 @@ def polygon_to_lines(layer, layer_name, measurement=True, prefix='', suffix='', 
             for lines in list_of_lines:
                 line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
                 line_geoms.extend(line_geom_list)
+
         if type == 'MultiPolygon':
             list_of_lines_1 = polygon_geom.asMultiPolygon()
             for list_of_lines in list_of_lines_1:
                 for lines in list_of_lines:
                     line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
                     line_geoms.extend(line_geom_list)
-
+    if measurement:
+        label_layer_by_field(line_layer, 'measurement')
     return line_layer
 
 def polygon_to_points(polygon_layer, line_layer, point_layer,
@@ -563,16 +494,19 @@ def add_line_features(line_layer, lines, measurement, prefix, suffix):
             line_geom = QgsGeometry.fromPolyline(line_list)
             line_geom_list.append(line_geom)
             if measurement:
-                add_geom_to_layer_with_measurement(line_layer, line_geom, prefix, suffix)
-                label_layer_by_field(line_layer, 'measurement')
+                add_geom_to_layer_with_measurement(
+                    line_layer, line_geom, prefix, suffix
+                )
+
 
             else:
                 add_geom_to_layer(line_layer, line_geom)
+
     return line_geom_list
 
-def add_layer_double_field(layer):
+def add_measurement_field(layer):
     layer.startEditing()
-    layer.addAttribute(QgsField('measurement', QVariant.Double))
+    layer.addAttribute(QgsField('measurement', QVariant.String))
     layer.updateFields()
     layer.commitChanges()
 
@@ -652,12 +586,10 @@ def clear_layer_features(layer):
         layer.deleteFeatures(feat_ids)
 
 def add_features_to_layer(layer, features):
-
     provider = layer.dataProvider()
     layer.startEditing()
     for feat in features:
         provider.addFeatures([feat])
-
     layer.commitChanges()
 
 def feature_id_to_feature(layer, feature_ids):
@@ -685,9 +617,6 @@ def points_to_line(points):
     line_geom = QgsGeometry.fromPolyline(poly_line)
 
     return line_geom
-
-
-
 
 def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,

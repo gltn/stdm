@@ -263,15 +263,15 @@ class GeometryToolsDock(
         self.widgets_added = False
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
 
-
     def write_log_message(message, tag, level):
+
         filename = 'C:/Users/Wondim/.stdm/geometry_tools.log'
 
         with open(filename, 'a') as logfile:
             logfile.write(
                 '{tag}({level}): {message}\n'.format(tag=tag, level=level,
                                                    message=message))
-
+            # This code has nothing
 
     def init_dock(self):
         """
@@ -1315,6 +1315,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return
 
         if self.settings.stdm_layer(self.settings.layer):
+            print self.settings.layer
             if hasattr(self.widget, 'sel_features_lbl'):
                 self.feature_count = self.selected_features_count()
 
