@@ -63,25 +63,27 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
 
     v_layer = QgsVectorLayer(vl_geom_config, name, "memory")
 
-
     # iface.mainWindow().blockSignals(False)
 
     target_crs = QgsCoordinateReferenceSystem(
         crs_id, QgsCoordinateReferenceSystem.InternalCrsId
     )
+    # return v_layer
+
     v_layer.setCrs(target_crs)
+
     iface.mapCanvas().mapSettings().setDestinationCrs(target_crs)
 
     iface.mapCanvas().refresh()
     if style:
         if type == 'LineString':
 
-            symbols = v_layer.rendererV2().symbols(QgsRenderContext())
+            symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
             symbol.setWidth(2)
 
         if type == 'Point':
-            symbols = v_layer.rendererV2().symbols(QgsRenderContext())
+            symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
             symbol.setSize(4)
 
@@ -448,7 +450,10 @@ def polygon_to_lines(
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
 
     if len(line_layers) == 0:
-        line_layer = create_temporary_layer(layer, 'LineString', layer_name, style=style)
+        line_layer = create_temporary_layer(
+            layer, 'LineString', layer_name, style=style
+        )
+
     else:
         line_layer = line_layers[0]
         # print QgsMapLayerRegistry.mapLayer(line_layer.id())
@@ -467,14 +472,14 @@ def polygon_to_lines(
         if type == 'Polygon':
             list_of_lines = polygon_geom.asPolygon()
             for lines in list_of_lines:
-                line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
+                line_geom_list = add_line_features(line_layer, lines, prefix, suffix, measurement)
                 line_geoms.extend(line_geom_list)
 
         if type == 'MultiPolygon':
             list_of_lines_1 = polygon_geom.asMultiPolygon()
             for list_of_lines in list_of_lines_1:
                 for lines in list_of_lines:
-                    line_geom_list = add_line_features(line_layer, lines, measurement, prefix, suffix)
+                    line_geom_list = add_line_features(line_layer, lines, prefix, suffix, measurement)
                     line_geoms.extend(line_geom_list)
     if measurement:
         label_layer_by_field(line_layer, 'measurement')
@@ -486,7 +491,7 @@ def polygon_to_points(polygon_layer, line_layer, point_layer,
 
         add_line_points_to_map(point_layer, feature.geometry(), clear=False)
 
-def add_line_features(line_layer, lines, measurement, prefix, suffix):
+def add_line_features(line_layer, lines, prefix, suffix, measurement):
     line_geom_list = []
     for i, line in enumerate(lines):
         if i != len(lines) - 1:
@@ -505,11 +510,9 @@ def add_line_features(line_layer, lines, measurement, prefix, suffix):
     return line_geom_list
 
 def add_measurement_field(layer):
-    layer.startEditing()
-    layer.addAttribute(QgsField('measurement', QVariant.String))
-    layer.updateFields()
-    layer.commitChanges()
-
+    with edit(layer):
+        layer.addAttribute(QgsField('measurement', QVariant.String))
+        layer.updateFields()
 
 def label_layer_by_field(layer, field_name):
     layer.setCustomProperty("labeling", "pal")
@@ -562,7 +565,9 @@ def copy_layer_to_memory(layer, name, features=None, add_to_legend=True):
                 mem_layer_data.addFeatures([feat])
 
     mem_layer.commitChanges()
-    QgsMapLayerRegistry.instance().addMapLayer(mem_layer, addToLegend=add_to_legend)
+    QgsMapLayerRegistry.instance().addMapLayer(
+        mem_layer, addToLegend=add_to_legend
+    )
 
     return mem_layer
 
@@ -873,8 +878,8 @@ def split_rotate_line_with_area(
     poly_bbox = ori_poly_geom.boundingBox()
 
     decimal_place_new = 0
-    increment = 4
-
+    increment = 1
+    area_toggle = 0
     if clockwise == -1:
         angle_change = -1
     else:
@@ -896,13 +901,13 @@ def split_rotate_line_with_area(
 
     while split_area1 <= area + 140:
 
-        decimal_place = decimal_place_new
+        # decimal_place = decimal_place_new
 
         if angle_change == -1:
-            angle = angle - increment / math.pow(10, decimal_place)
+            angle = angle - increment / math.pow(10, decimal_place_new)
 
         elif angle_change == 1:
-            angle = angle + increment / math.pow(10, decimal_place)
+            angle = angle + increment / math.pow(10, decimal_place_new)
 
         if angle > 180:
             angle = 0
@@ -971,34 +976,78 @@ def split_rotate_line_with_area(
 
             if area > split_area1:
                 # helps in changing height in small steps after switching from
-                # print 'area large ', angle_change, area, split_area1
+                # print 'area large ',angle_change, decimal_place_new, increment, area, split_area1
                 # print 'area large ', decimal_place_new, increment, angle
-                if area - math.modf(split_area1)[1] > 50:
-                    decimal_place_new = 0
-                    increment = 2
-                elif area - math.modf(split_area1)[1] > 100:
-                    decimal_place_new = 0
+
+                if area - math.modf(split_area1)[1] > 200:
                     increment = 4
-                elif area - math.modf(split_area1)[1] <= 50:
-                    decimal_place_new = 2
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif area - math.modf(split_area1)[1] in range(50, 200):
+                    increment = 3
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif area - math.modf(split_area1)[1] in range(10, 50):
+                    increment = 2
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif area - math.modf(split_area1)[1] in range(5, 10):
                     increment = 1
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif area - math.modf(split_area1)[1] in range(2, 5):
+                    increment = 1
+                    if area_toggle == 0:
+                        decimal_place_new = 1
+
+                # elif area - math.modf(split_area1)[1] in range(1, 2):
+                #     increment = 1
+                #     if area_toggle == 0:
+                #         decimal_place_new = 5
+                #
+
+
+                # if area - math.modf(split_area1)[1] > 50:
+                #     decimal_place_new = 0
+                #     increment = 2
+                # elif area - math.modf(split_area1)[1] > 100:
+                #     decimal_place_new = 0
+                #     increment = 4
+                # elif area - math.modf(split_area1)[1] <= 50:
+                #     decimal_place_new = 2
+                #     increment = 1
                 # print angle_change, increase
                 if angle_change == -1:
-                    if math.modf(split_area1)[1] + 1 > area:
-                        decimal_place_new = 4
-                    if math.modf(split_area1)[1] + 7 > area:
-                        decimal_place_new = 3
-                    elif math.modf(split_area1)[1] + 50 > area:
-                        decimal_place_new = 2
-                    elif math.modf(split_area1)[1] + 100 > area:
-                        decimal_place_new = 1
+                    # decimal_place_new = decimal_place_new + area_toggle
+                    increment = 1
+                    # area_toggle = area_toggle + 1
+                    #
+                    # if math.modf(split_area1)[1] + 1 > area:
+                    #     decimal_place_new = 4
+                    # if math.modf(split_area1)[1] + 7 > area:
+                    #     decimal_place_new = 3
+                    # elif math.modf(split_area1)[1] + 50 > area:
+                    #     decimal_place_new = 2
+                    # elif math.modf(split_area1)[1] + 100 > area:
+                    #     decimal_place_new = 0
+                    if loop_index > 0:
+                        decimal_place_new = decimal_place_new + area_toggle
+
+                    if loop_index > 0 and area_toggle < 300:
+                        area_toggle = area_toggle + 1
+
                 # if bearing >= 0:
                 if clockwise == -1:
                     angle_change = -1
                 else:
                     angle_change = 1
 
-                if math.modf(split_area1)[1] + 1 > area:
+                if area - math.modf(split_area1)[1] in range(0, 1):
+                # if math.modf(split_area1)[1] + 1 > area:
                     decimal_place_new = 4
                     increment = 1
                     if (round(split_area1, 2)) == area:
@@ -1009,33 +1058,67 @@ def split_rotate_line_with_area(
 
             if area < split_area1:
                 # helps in changing height in small steps after switching from
-                # print 'area small ', angle_change, area, split_area1
+                # print 'area small ', angle_change, decimal_place_new, increment, area, split_area1
                 # print 'area small ', decimal_place_new, increment, angle
-                if math.modf(split_area1)[1] - area > 50:
-                    decimal_place_new = 0
+                if math.modf(split_area1)[1] - area > 200:
+                    # increment = 4
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif math.modf(split_area1)[1] - area in range(50, 200):
+                    increment = 3
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif math.modf(split_area1)[1] - area in range(10, 50):
                     increment = 2
-                elif math.modf(split_area1)[1] - area > 100:
-                    decimal_place_new = 0
-                    increment = 4
-                elif math.modf(split_area1)[1] - area <= 50:
-                    decimal_place_new = 2
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif math.modf(split_area1)[1] - area in range(5, 10):
                     increment = 1
-                if angle_change == 1:
-                    if math.modf(split_area1)[1] < area + 1:
-                        decimal_place_new = 4
-                    elif math.modf(split_area1)[1] < area + 7:
-                        decimal_place_new = 3
-                    elif math.modf(split_area1)[1] < area + 50:
-                        decimal_place_new = 2
-                    elif math.modf(split_area1)[1] < area + 100:
+                    if area_toggle == 0:
+                        decimal_place_new = 0
+
+                elif math.modf(split_area1)[1] - area in range(2, 5):
+                    increment = 1
+                    if area_toggle == 0:
                         decimal_place_new = 1
+
+                # elif math.modf(split_area1)[1] - area in range(0, 2):
+                #     increment = 1
+                #     if area_toggle == 0:
+                #         decimal_place_new = 5
+
+                # if math.modf(split_area1)[1] - area > 50:
+                #     decimal_place_new = 0
+                #     increment = 2
+                # elif math.modf(split_area1)[1] - area > 100:
+                #     decimal_place_new = 0
+                #     increment = 4
+                # elif math.modf(split_area1)[1] - area <= 50:
+                #     decimal_place_new = 2
+                #     increment = 1
+                # if angle_change == 1:
+                #     if math.modf(split_area1)[1] < area + 1:
+                #         decimal_place_new = 4
+                #     elif math.modf(split_area1)[1] < area + 7:
+                #         decimal_place_new = 3
+                #     elif math.modf(split_area1)[1] < area + 50:
+                #         decimal_place_new = 2
+                #     elif math.modf(split_area1)[1] < area + 100:
+                #         decimal_place_new = 1
+                if angle_change == -1:
+                    decimal_place_new = decimal_place_new + area_toggle
+                    increment = 1
+                    area_toggle = area_toggle + 1
 
                 if clockwise == -1:
                     angle_change = 1
                 else:
                     angle_change = -1
-
-                if math.modf(split_area1)[1] < area + 1:
+                if math.modf(split_area1)[1] - area in range(0, 1):
+                # if math.modf(split_area1)[1] < area + 1:
                     decimal_place_new = 4
                     increment = 1
 

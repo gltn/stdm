@@ -1,7 +1,10 @@
+import cProfile
 import inspect
 from collections import OrderedDict
 
 import re
+
+import os
 from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
     QMessageBox, QAction, QProgressDialog, QIcon, QTextCharFormat, QFont, \
@@ -264,8 +267,9 @@ class GeometryToolsDock(
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
 
     def write_log_message(message, tag, level):
-
-        filename = 'C:/Users/Wondim/.stdm/geometry_tools.log'
+        user_path = os.environ["USERPROFILE"]
+        prof_path = user_path + "/.stdm"
+        filename = '{}/geometry_tools.log'.format(prof_path)
 
         with open(filename, 'a') as logfile:
             logfile.write(
@@ -279,6 +283,8 @@ class GeometryToolsDock(
         """
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         self.init_signals()
+
+
 
     def add_widgets(self):
         self.widgets_added = True
@@ -325,6 +331,41 @@ class GeometryToolsDock(
         # self.remove_memory_layers()
         self.close()
 
+
+    def remove_memory_layers(self):
+        """
+        Removes memory layers used by the tools.
+        :return:
+        :rtype:
+        """
+        try:
+            prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                PREVIEW_POLYGON
+            )
+            if len(prev_layers) > 0:
+                for prev_layer in prev_layers:
+                    QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+            line_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                POLYGON_LINES
+            )
+            if len(line_layers) > 0:
+                for line_layer in line_layers:
+                    QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
+            point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                LINE_POINTS
+            )
+            if len(point_layers) > 0:
+                for point_layer in point_layers:
+                    QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
+            if self.settings.layer is not None:
+                if iface.activeLayer() is not None:
+                    if iface.activeLayer().isEditable():
+                        iface.mainWindow().findChild(
+                            QAction, 'mActionToggleEditing'
+                        ).trigger()
+        except Exception as ex:
+            pass
+
     def closeEvent(self, event):
         """
         On close of the dock window, this event is executed
@@ -333,13 +374,20 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
+        # self.remove_memory_layers()
+        # self.iface.mainWindow().blockSignals(True)
+        # print QgsMapLayerRegistry.instance().mapLayersByName(POLYGON_LINES)
+        if iface.activeLayer() is not None:
+            self.remove_memory_layers()
         if self.plugin is None:
             return
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
         # self.remove_memory_layers()
+        # self.iface.mainWindow().blockSignals(False)
 
+    #
     def hideEvent(self, event):
         """
         Listens to the hide event of the dock and properly close the dock
@@ -347,6 +395,8 @@ class GeometryToolsDock(
         :param event: The close event
         :type event: QCloseEvent
         """
+        if iface.activeLayer() is not None:
+            self.remove_memory_layers()
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
@@ -527,7 +577,7 @@ class GeomWidgetsBase(object):
             self.settings.notice_box
         )
         self.feature_ids = []
-
+        self.point_layer_connected = False
         self.executed = False
         self.preview_layer = None
         if hasattr(self.widget, 'preview_btn'):
@@ -541,6 +591,35 @@ class GeomWidgetsBase(object):
         self.progress_dialog.setWindowTitle(title)
         self.progress_dialog.canceled.connect(self.cancel)
         # self.help_cursor = self.settings.help_box.textCursor()
+
+    def hideEvent(self, event):
+        """
+        Listens to the hide event of the dock and properly close the dock
+        using the close_dock method.
+        :param event: The close event
+        :type event: QCloseEvent
+        """
+        if iface.activeLayer() is not None:
+            self.remove_memory_layers()
+
+    def highlight_features(self, layer):
+        h_list = []
+
+        # remove all highlight objects
+        for h in range(len(h_list)):
+            h_list.pop(h)
+
+        # create highlight geometries for selected objects
+        for i in layer.selectedFeatures():
+            h = QgsHighlight(iface.mapCanvas(), i.geometry(), layer)
+
+            # set highlight symbol properties
+            # h.setColor(QColor(255, 0, 0, 255))
+            h.setWidth(6)
+            h.setColor(QColor('#996515'))
+            # h.setFillColor(QColor('#996515'))
+            # write the object to the list
+            h_list.append(h)
 
     def select_feature_help(self, order):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
@@ -649,18 +728,15 @@ class GeomWidgetsBase(object):
 
     def on_feature_selection_finished(self):
         self.select_line_help(1)
-        self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
+        self.line_layer = polygon_to_lines(
+            self.settings.layer, POLYGON_LINES
+        )
 
         if self.line_layer is not None:
 
             self.line_layer.selectionChanged.connect(
                 self.on_line_feature_selected
             )
-
-    def hideEvent(self, event):
-        self.widget_closed = True
-
-        self.remove_memory_layers()
 
     def remove_memory_layers(self):
         """
@@ -669,6 +745,9 @@ class GeomWidgetsBase(object):
         :rtype:
         """
         try:
+            if iface.activeLayer() is None:
+                return
+
             prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
                 PREVIEW_POLYGON
             )
@@ -748,7 +827,8 @@ class GeomWidgetsBase(object):
         self.specify_area_help(2)
         if self.settings.layer is None:
             return
-
+        if iface.activeLayer() is None:
+            return
         if iface.activeLayer().name() != POLYGON_LINES:
             return
 
@@ -760,6 +840,7 @@ class GeomWidgetsBase(object):
             self.lines_count = self.selected_line_count()
 
             self.widget.selected_line_lbl.setText(str(self.lines_count))
+            self.highlight_features(self.line_layer)
             if self.lines_count > 1:
                 message = QApplication.translate(
                     'GeomWidgetsBase',
@@ -1105,9 +1186,10 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.on_line_feature_selected
             )
         if self.point_layer is not None:
-            self.point_layer.selectionChanged.disconnect(
-                self.on_point_feature_selected
-            )
+            if self.point_layer_connected:
+                self.point_layer.selectionChanged.disconnect(
+                    self.on_point_feature_selected
+                )
         self.remove_memory_layers()
 
     def on_point_feature_selected(self):
@@ -1137,7 +1219,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         if self.settings.layer is None:
             return
-
+        if iface.activeLayer() is None:
+            return
         if iface.activeLayer().name() != POLYGON_LINES:
             return
 
@@ -1165,7 +1248,13 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 point_features = [f.id() for f in self.point_layer.getFeatures()]
                 rotation_point = point_features[-1:]
                 self.point_layer.deleteFeature(rotation_point[0])
-
+        if len(self.points) == 0:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'No point is added and/or selected.'
+            )
+            self.notice.insertErrorNotification(message)
+            return
         self.rotation_point = point_by_distance(
             self.point_layer,
             self.points[0],
@@ -1174,7 +1263,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         )
 
     def on_line_selection_finished(self):
-        self.rotation_point = self.points[0]
 
         line_geom = self.lines[0].geometry()
         line_length = line_geom.length()
@@ -1184,7 +1272,10 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         # add points for the line.
         self.create_point_layer()
         add_line_points_to_map(self.point_layer, line_geom)
+
         self.points_count = self.selected_point_count()
+        if self.points_count > 0:
+            self.rotation_point = self.points[0]
 
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
@@ -1217,7 +1308,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
-
+        self.progress_dialog.show()
         if self.settings_layer_connected:
             self.disconnect_signals()
 
@@ -1238,11 +1329,20 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.feature_ids,
             clockwise
         )
+        # cProfile.runctx("""split_rotate_line_with_area(
+        #     self.settings.layer,
+        #     self.preview_layer,
+        #     selected_line_geom,
+        #     self.rotation_point.geometry(),
+        #     self.split_polygon_area.value(),
+        #     self.feature_ids,
+        #     clockwise
+        # )""", globals(), locals())
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
         if result:
-            self.progress_dialog.hide()
+            self.progress_dialog.cancel()
         else:
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
@@ -1266,6 +1366,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         )
         self.rotation_point = None
 
+
     def create_point_layer(self):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
@@ -1280,6 +1381,8 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.point_layer.selectionChanged.connect(
                 self.on_point_feature_selected
             )
+            self.point_layer_connected = True
+
 
     def on_feature_selected(self, feature):
         """
@@ -1315,7 +1418,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return
 
         if self.settings.stdm_layer(self.settings.layer):
-            print self.settings.layer
+
             if hasattr(self.widget, 'sel_features_lbl'):
                 self.feature_count = self.selected_features_count()
 
