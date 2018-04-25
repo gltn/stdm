@@ -57,7 +57,7 @@ class LayerSelectionHandler(object):
         self.layer = None
         self.iface = iface
         self.plugin = plugin
-        self.sel_highlight = None
+        self.highlight = None
         self.current_profile = current_profile()
 
     def selected_features(self):
@@ -378,9 +378,6 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
-        # self.remove_memory_layers()
-        # self.iface.mainWindow().blockSignals(True)
-        # print QgsMapLayerRegistry.instance().mapLayersByName(POLYGON_LINES)
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
         if self.plugin is None:
@@ -388,10 +385,7 @@ class GeometryToolsDock(
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
-        # self.remove_memory_layers()
-        # self.iface.mainWindow().blockSignals(False)
 
-    #
     def hideEvent(self, event):
         """
         Listens to the hide event of the dock and properly close the dock
@@ -418,7 +412,8 @@ class GeometryToolsDock(
         if self.plugin.feature_details_act.isChecked():
             self.plugin.feature_details_act.setChecked(False)
 
-        if not self.plugin.geom_tools_cont_act.isChecked() and GEOM_DOCK_ON and not button_clicked:
+        if not self.plugin.geom_tools_cont_act.isChecked() and \
+                GEOM_DOCK_ON and not button_clicked:
             self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         # No need of activation as it is activated.
@@ -594,8 +589,14 @@ class GeomWidgetsBase(object):
         title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
         self.progress_dialog.setWindowTitle(title)
         self.progress_dialog.canceled.connect(self.cancel)
-        self.sel_highlight = None
+        self.settings.geom_tools_combo.currentIndexChanged.connect(
+            self.on_geom_tools_combo_changed
+        )
+        self.highlight = None
         # self.help_cursor = self.settings.help_box.textCursor()
+
+    def on_geom_tools_combo_changed(self, index):
+        self.clear_highlights()
 
     def hideEvent(self, event):
         """
@@ -604,39 +605,32 @@ class GeomWidgetsBase(object):
         :param event: The close event
         :type event: QCloseEvent
         """
-        self.sel_highlight = None
+        self.clear_highlights()
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
 
-    def clear_sel_highlight(self):
+    def clear_highlights(self):
         """
-        Removes sel_highlight from the canvas.
+        Removes show_highlight from the canvas.
         """
-        if self.sel_highlight is not None:
-            self.sel_highlight = None
+        if self.highlight is not None:
+            self.highlight = None
 
     def highlight_features(self, layer):
-
         map = self.iface.mapCanvas()
         # remove all highlight objects
-        # for h in range(len(h_list)):
-        #     h_list.pop(h)
-
+        self.clear_highlights()
         # create highlight geometries for selected objects
-
         for feature in layer.selectedFeatures():
             # Fetch geometry
             geom = feature.geometry()
-            self.sel_highlight = QgsHighlight(map, geom, layer)
+            self.highlight = QgsHighlight(map, geom, layer)
 
-            self.sel_highlight.setFillColor(selection_color())
-            self.sel_highlight.setWidth(6)
-            self.sel_highlight.setColor(QColor(212, 95, 0, 255))
-            self.sel_highlight.show()
-            # set highlight symbol properties
-            # h.setColor(QColor(255, 0, 0, 255))
-            # write the object to the list
+            self.highlight.setFillColor(selection_color())
+            self.highlight.setWidth(9)
+            self.highlight.setColor(QColor(212, 95, 0, 255))
 
+            self.highlight.show()
 
     def select_feature_help(self, order):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
@@ -1116,7 +1110,6 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
     def on_line_feature_selected(self):
         self.specify_offset_distance_help(2)
-        self.highlight_features(self.line_layer)
         return GeomWidgetsBase.on_line_feature_selected(self)
 
     def validate_run(self):
@@ -1200,14 +1193,20 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
     def hideEvent(self, event):
         self.widget_closed = True
         if self.line_layer is not None:
-            self.line_layer.selectionChanged.disconnect(
-                self.on_line_feature_selected
-            )
+            try:
+                self.line_layer.selectionChanged.disconnect(
+                    self.on_line_feature_selected
+                )
+            except Exception:
+                pass
         if self.point_layer is not None:
             if self.point_layer_connected:
-                self.point_layer.selectionChanged.disconnect(
-                    self.on_point_feature_selected
-                )
+                try:
+                    self.point_layer.selectionChanged.disconnect(
+                        self.on_point_feature_selected
+                    )
+                except Exception:
+                    pass
         self.remove_memory_layers()
 
     def on_point_feature_selected(self):
@@ -1250,6 +1249,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.lines_count = self.selected_line_count()
 
             self.widget.selected_line_lbl.setText(str(self.lines_count))
+            self.highlight_features(self.line_layer)
             if self.lines_count > 1:
                 message = QApplication.translate(
                     'GeomWidgetsBase',
@@ -1296,6 +1296,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.rotation_point = self.points[0]
 
         self.widget.selected_points_lbl.setText(str(self.points_count))
+        # self.highlight_features(self.line_layer)
 
 
     def validate_run(self):
@@ -1497,13 +1498,16 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.lines_count = self.selected_line_count()
 
             self.widget.selected_line_lbl.setText(str(self.lines_count))
+
+            self.highlight_features(self.line_layer)
             if self.lines_count > 1:
+
                 message = QApplication.translate(
                     'GeomWidgetsBase',
                     'The first selected segment will be used.'
                 )
                 self.notice.insertWarningNotification(message)
-                self.highlight_features(self.line_layer)
+
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):

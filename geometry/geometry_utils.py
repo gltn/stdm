@@ -59,16 +59,11 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
                      u"index=yes".format(type, wkt)
 
 
-    # iface.mainWindow().blockSignals(True)
-
     v_layer = QgsVectorLayer(vl_geom_config, name, "memory")
-
-    # iface.mainWindow().blockSignals(False)
 
     target_crs = QgsCoordinateReferenceSystem(
         crs_id, QgsCoordinateReferenceSystem.InternalCrsId
     )
-    # return v_layer
 
     v_layer.setCrs(target_crs)
 
