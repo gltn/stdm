@@ -17,6 +17,8 @@ from qgis.utils import iface
 from stdm.data.pg_utils import spatial_tables, pg_views
 
 from stdm.ui.notification import NotificationBar
+
+from stdm.settings.registryconfig import selection_color
 from ...geometry.geometry_utils import *
 
 from stdm.data.configuration import entity_model
@@ -267,6 +269,8 @@ class GeometryToolsDock(
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
 
     def write_log_message(message, tag, level):
+        if os is None:
+            return
         user_path = os.environ["USERPROFILE"]
         prof_path = user_path + "/.stdm"
         filename = '{}/geometry_tools.log'.format(prof_path)
@@ -590,6 +594,7 @@ class GeomWidgetsBase(object):
         title = QApplication.translate('GeomWidgetsBase', 'Geometry Tools')
         self.progress_dialog.setWindowTitle(title)
         self.progress_dialog.canceled.connect(self.cancel)
+        self.sel_highlight = None
         # self.help_cursor = self.settings.help_box.textCursor()
 
     def hideEvent(self, event):
@@ -599,27 +604,39 @@ class GeomWidgetsBase(object):
         :param event: The close event
         :type event: QCloseEvent
         """
+        self.sel_highlight = None
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
 
-    def highlight_features(self, layer):
-        h_list = []
+    def clear_sel_highlight(self):
+        """
+        Removes sel_highlight from the canvas.
+        """
+        if self.sel_highlight is not None:
+            self.sel_highlight = None
 
+    def highlight_features(self, layer):
+
+        map = self.iface.mapCanvas()
         # remove all highlight objects
-        for h in range(len(h_list)):
-            h_list.pop(h)
+        # for h in range(len(h_list)):
+        #     h_list.pop(h)
 
         # create highlight geometries for selected objects
-        for i in layer.selectedFeatures():
-            h = QgsHighlight(iface.mapCanvas(), i.geometry(), layer)
 
+        for feature in layer.selectedFeatures():
+            # Fetch geometry
+            geom = feature.geometry()
+            self.sel_highlight = QgsHighlight(map, geom, layer)
+
+            self.sel_highlight.setFillColor(selection_color())
+            self.sel_highlight.setWidth(6)
+            self.sel_highlight.setColor(QColor(212, 95, 0, 255))
+            self.sel_highlight.show()
             # set highlight symbol properties
             # h.setColor(QColor(255, 0, 0, 255))
-            h.setWidth(6)
-            h.setColor(QColor('#996515'))
-            # h.setFillColor(QColor('#996515'))
             # write the object to the list
-            h_list.append(h)
+
 
     def select_feature_help(self, order):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
@@ -1099,6 +1116,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
     def on_line_feature_selected(self):
         self.specify_offset_distance_help(2)
+        self.highlight_features(self.line_layer)
         return GeomWidgetsBase.on_line_feature_selected(self)
 
     def validate_run(self):
@@ -1485,7 +1503,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                     'The first selected segment will be used.'
                 )
                 self.notice.insertWarningNotification(message)
-
+                self.highlight_features(self.line_layer)
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):
