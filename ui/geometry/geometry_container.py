@@ -29,7 +29,7 @@ from ui_move_line_area import Ui_MoveLineArea
 from ui_offset_distance import Ui_OffsetDistance
 from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
-
+from ui_equal_area import Ui_EqualArea
 from ui_show_measurements import Ui_ShowMeasurements
 
 GEOM_DOCK_ON = False
@@ -378,6 +378,9 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
+        if iface is None:
+            return
+
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
         if self.plugin is None:
@@ -581,7 +584,7 @@ class GeomWidgetsBase(object):
         self.preview_layer = None
         if hasattr(self.widget, 'preview_btn'):
             self.widget.preview_btn.clicked.connect(self.preview)
-
+        self.highlights = []
         self.widget.run_btn.clicked.connect(self.run)
         self.settings_layer_connected = False
         self.progress_dialog = QProgressDialog(iface.mainWindow())
@@ -613,24 +616,31 @@ class GeomWidgetsBase(object):
         """
         Removes show_highlight from the canvas.
         """
+        self.highlights[:] = []
         if self.highlight is not None:
             self.highlight = None
 
-    def highlight_features(self, layer):
+    def highlight_features(self, layer, clear_previous=True):
         map = self.iface.mapCanvas()
         # remove all highlight objects
-        self.clear_highlights()
+        if clear_previous:
+            self.clear_highlights()
+
         # create highlight geometries for selected objects
         for feature in layer.selectedFeatures():
             # Fetch geometry
             geom = feature.geometry()
-            self.highlight = QgsHighlight(map, geom, layer)
+            highlight = QgsHighlight(map, geom, layer)
 
-            self.highlight.setFillColor(selection_color())
-            self.highlight.setWidth(9)
-            self.highlight.setColor(QColor(212, 95, 0, 255))
+            highlight.setFillColor(selection_color())
+            highlight.setWidth(9)
+            highlight.setColor(QColor(212, 95, 0, 255))
 
-            self.highlight.show()
+            highlight.show()
+            if not clear_previous:
+                self.highlights.append(self.highlight)
+            else:
+                self.highlight = highlight
 
     def select_feature_help(self, order):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
@@ -928,7 +938,7 @@ class GeomWidgetsBase(object):
     def cancel(self):
         self.remove_memory_layers()
 
-    def create_point_layer(self):
+    def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
         )
@@ -1314,8 +1324,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 'The area must be greater than 0.'
             )
             self.notice.insertErrorNotification(message)
-            if state == True:
-                state = False
+            state = False
+
         return state
 
     def run(self):
@@ -1386,7 +1396,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.rotation_point = None
 
 
-    def create_point_layer(self):
+    def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
         )
@@ -1616,6 +1626,267 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. Check the selected points are '
                 'not in the same line and try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
+
+
+class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
+    line_selection_finished = pyqtSignal()
+    def __init__(self, layer_settings, parent):
+        QWidget.__init__(self)
+
+        self.setupUi(self)
+        GeomWidgetsBase.__init__(self, layer_settings, self)
+        # self.line_selection_finished.connect(self.on_line_selection_finished)
+        # self.length_from_point.valueChanged.connect(
+        #     self.on_length_from_reference_point_changed
+        # )
+        self.rotation_point = None
+        self.rotation_points = []
+        self.combined_line = None
+        self.area = None
+
+    def hideEvent(self, event):
+        self.widget_closed = True
+        if self.line_layer is not None:
+            try:
+                self.line_layer.selectionChanged.disconnect(
+                    self.on_line_feature_selected
+                )
+            except Exception:
+                pass
+        if self.point_layer is not None:
+            if self.point_layer_connected:
+                try:
+                    self.point_layer.selectionChanged.disconnect(
+                        self.on_point_feature_selected
+                    )
+                except Exception:
+                    pass
+        self.remove_memory_layers()
+
+    def on_point_feature_selected(self):
+
+        if self.settings.layer is None:
+            return
+
+        if iface.activeLayer().name() != LINE_POINTS:
+            return
+
+        if len(self.point_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_points_lbl'):
+
+            self.points_count = self.selected_point_count()
+
+            self.widget.selected_points_lbl.setText(str(self.points_count))
+            if self.points_count > 1:
+                message = QApplication.translate(
+                    'EqualAreaWidget',
+                    'The first selected point will be used.'
+                )
+                self.notice.insertWarningNotification(message)
+
+    def on_line_feature_selected(self):
+
+        if self.settings.layer is None:
+            return
+        if iface.activeLayer() is None:
+            return
+        if iface.activeLayer().name() != POLYGON_LINES:
+            return
+
+        if len(self.line_layer.selectedFeatures()) == 0:
+            return
+
+        if hasattr(self.widget, 'selected_line_lbl'):
+            self.lines[:] = []
+            self.lines_count = self.selected_line_count()
+
+            self.widget.selected_line_lbl.setText(str(self.lines_count))
+            clear_previous = True
+            if self.widget.parellel_rad.isChecked():
+
+                if self.lines_count > 1:
+                    self.notice.clear()
+                    message = QApplication.translate(
+                        'EqualAreaWidget',
+                        'The first selected segment will be used.'
+                    )
+
+                    self.notice.insertWarningNotification(message)
+                    clear_previous = True
+                # self.line_selection_finished.emit()
+            elif self.widget.equal_boundary_rad.isChecked():
+                if self.number_of_polygons.value() < 2:
+                    self.notice.clear()
+                    message = QApplication.translate(
+                        'EqualAreaWidget',
+                        'Number of polygons should be at least 2.'
+                    )
+                    self.notice.insertWarningNotification(message)
+                clear_previous = False
+                # self.highlight_features(self.line_layer, clear_previous=False)
+                self.on_line_selection_finished()
+            self.highlight_features(
+                self.line_layer, clear_previous=clear_previous
+            )
+
+    # def on_length_from_reference_point_changed(self, new_value, line_geom=None):
+    #     print new_value
+    #     if self.rotation_point is not None:
+    #         with edit(self.point_layer):
+    #             point_features = [f.id() for f in self.point_layer.getFeatures()]
+    #             rotation_point = point_features[-1:]
+    #             self.point_layer.deleteFeature(rotation_point[0])
+    #     if len(self.points) == 0:
+    #         message = QApplication.translate(
+    #             'OnePointAreaWidget',
+    #             'No point is added and/or selected.'
+    #         )
+    #         self.notice.insertErrorNotification(message)
+    #         return
+    #
+    #     if line_geom is None:
+    #         line_geom = self.lines[0].geometry()
+    #
+    #     rotation_point = point_by_distance(
+    #         self.point_layer,
+    #         self.points[0],
+    #         line_geom,
+    #         new_value
+    #     )
+    #     self.rotation_points.append(rotation_point)
+
+    def on_line_selection_finished(self):
+        # add line length for the user to see
+        geoms = merge_selected_lines_features(self.line_layer)
+        total_length = geoms.length()
+        self.combined_line = add_geom_to_feature(self.line_layer, geoms)
+        line_length = geoms.length()
+        self.line_length_lbl.setText(str(round(line_length, 2)))
+        total_area = calculate_area(self.settings.layer.selectedFeatures())
+
+        no_polygons = self.widget.number_of_polygons.value()
+        self.area = round((total_area /no_polygons), 2)
+
+        self.widget.features_area_lbl.setText(str(round(total_area, 2)))
+
+        self.widget.splitted_area_lbl.setText(str(self.area))
+
+        length = total_length/no_polygons
+        # add points for the line.
+        self.create_point_layer(show_in_legend=True)
+        # add_geom_to_layer(self.point_layer, geoms)
+        point_features = add_line_points_to_map(self.point_layer, geoms)
+
+        for i in range(1, no_polygons):
+            next_length = length * i
+            point = point_by_distance(
+                self.point_layer, point_features[0],
+                geoms, next_length
+            )
+            print point
+            self.rotation_points.append(point)
+
+            # self.on_length_from_reference_point_changed(next_length)
+        # self.points_count = self.selected_point_count()
+        # if self.points_count > 0:
+            # self.rotation_point = self.points[0]
+
+        # self.widget.selected_points_lbl.setText(str(self.points_count))
+        # self.highlight_features(self.line_layer)
+
+
+    def validate_run(self):
+        state = True
+        if len(self.rotation_points) == 0:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'The rotation point is not added.'
+            )
+            self.notice.insertErrorNotification(message)
+            state = False
+        if self.widget.number_of_polygons.value() == 0:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'The number of polygons must be greater than 1.'
+            )
+            self.notice.insertErrorNotification(message)
+            state = False
+        return state
+
+    def run(self):
+        result = self.validate_run()
+        if not result:
+            return
+        self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+        self.progress_dialog.show()
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer()
+        # if self.clockwise.isChecked():
+        #     clockwise = 1
+        # else:
+        #     clockwise = -1
+
+        self.settings.layer.selectByIds(self.feature_ids)
+
+        if self.combined_line is None:
+            line_geom = self.lines[0].geometry()
+        else:
+            line_geom = self.combined_line.geometry()
+        # print (
+        #         self.settings.layer,
+        #         self.preview_layer,
+        #         line_geom,
+        #
+        #         self.area,
+        #         self.feature_ids,
+        #
+        #     )
+        for i, point in enumerate(self.rotation_points):
+            # if i != 0:
+            print len(self.rotation_points)
+            area = self.area * (len(self.rotation_points) - i)
+            print area
+
+            # else:
+            #     area = self.area
+
+            result = split_rotate_line_with_area(
+                self.settings.layer,
+                self.preview_layer,
+                line_geom,
+                point.geometry(),
+                area,
+                self.feature_ids,
+                clockwise=1
+            )
+        # cProfile.runctx("""split_rotate_line_with_area(
+        #     self.settings.layer,
+        #     self.preview_layer,
+        #     selected_line_geom,
+        #     self.rotation_point.geometry(),
+        #     self.split_polygon_area.value(),
+        #     self.feature_ids,
+        #     clockwise
+        # )""", globals(), locals())
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+        if result:
+            self.progress_dialog.cancel()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
 
@@ -2069,6 +2340,25 @@ class JoinPointsTool(GeometryWidgetRegistry, JoinPointsWidget):
 
 
 JoinPointsTool.register()
+
+
+class EqualAreaTool(GeometryWidgetRegistry, EqualAreaWidget):
+    """
+    Widget factory for OnePointAreaTool.
+    """
+    NAME = QApplication.translate('EqualAreaTool',
+                                  'Split Polygon: Equal Area')
+    OBJECT_NAME = NAME.replace(' ', '_')
+
+    @classmethod
+    def _create_widget(cls, settings, parent):
+        widget = EqualAreaWidget(settings, parent)
+        # cls.WIDGET = move_line
+        return widget
+
+
+EqualAreaTool.register()
+
 
 class ShowMeasurementsTool(GeometryWidgetRegistry, ShowMeasurementsWidget):
     """

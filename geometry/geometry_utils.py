@@ -17,9 +17,14 @@ from stdm.settings.registryconfig import (
     selection_color
 )
 
-def calculate_area(polygon_geom):
-    area = polygon_geom.area()
-    return area
+def calculate_area(polygon_features):
+    areas = []
+    for feature in polygon_features:
+        area = feature.geometry().area()
+        areas.append(area)
+
+    total_area = sum(areas)
+    return total_area
 
 
 def calculate_parallel_line(line_geom, distance):
@@ -219,9 +224,7 @@ def extend_line_points(line_geom, polygon_extent):
     return poly_line
 
 
-def add_geom_to_layer(
-        layer, geom, main_geom=None, feature_ids=None
-):
+def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     if isinstance(geom, QgsPoint):
         geom = QgsGeometry.fromPoint(geom)
     iface.setActiveLayer(layer)
@@ -239,9 +242,7 @@ def add_geom_to_layer(
     else:
         with edit(layer):
             feature = add_geom_to_feature(layer, geom)
-
     layer.updateExtents()
-
     return feature
 
 def add_geom_to_feature(layer, geom):
@@ -334,11 +335,12 @@ def add_line_points_to_map(point_layer, line_geom, clear=True):
     if clear:
         clear_points(point_layer)
     poly_lines = line_geom.asPolyline()
-
+    point_features = []
     for point in poly_lines:
 
-        add_geom_to_layer(point_layer, point)
-    return poly_lines
+        feature = add_geom_to_layer(point_layer, point)
+        point_features.append(feature)
+    return point_features
 
 def clear_points(point_layer):
     features = point_layer.getFeatures()
@@ -605,6 +607,14 @@ def feature_id_to_feature(layer, feature_ids):
         pass
     return features
 
+def merge_selected_lines_features(line_layer):
+    features = line_layer.selectedFeatures()
+    geoms = QgsGeometry.fromWkt('GEOMETRYCOLLECTION()')
+    for feature in features:
+        geoms = geoms.combine(feature.geometry())
+
+    return geoms
+
 
 def points_to_line(points):
     poly_line = []
@@ -866,8 +876,11 @@ def split_rotate_line_with_area(
 ):
     selected_line = create_V2_line(selected_line_geom.asPolyline())
 
-    sel_features = list(preview_layer.getFeatures())
-    # Get the geometry
+    try:
+        sel_features = list(preview_layer.getFeatures())
+    except Exception:
+        return
+        # Get the geometry
     ori_poly_geom = sel_features[0].geometry()
 
     poly_bbox = ori_poly_geom.boundingBox()
@@ -899,10 +912,12 @@ def split_rotate_line_with_area(
         # decimal_place = decimal_place_new
 
         if angle_change == -1:
-            angle = angle - increment / math.pow(10, decimal_place_new)
+            angle = Decimal(angle) - Decimal(increment) / \
+                                     Decimal(math.pow(10, decimal_place_new))
 
         elif angle_change == 1:
-            angle = angle + increment / math.pow(10, decimal_place_new)
+            angle = Decimal(angle) + Decimal(increment) / \
+                                     Decimal(math.pow(10, decimal_place_new))
 
         if angle > 180:
             angle = 0
@@ -913,7 +928,11 @@ def split_rotate_line_with_area(
         line_geom.rotate(angle, rotation_point_geom.asPoint())
         # print 'result ', result
         added_points = extend_line_points(line_geom, poly_bbox)
-        sel_feats = list(preview_layer.getFeatures())
+        try:
+            sel_feats = list(preview_layer.getFeatures())
+        except Exception:
+            print 'canceled'
+            break
         geom1 = sel_feats[0].geometry()
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
 
@@ -924,11 +943,12 @@ def split_rotate_line_with_area(
             )
             if len(split_geom) > 0:
                 # print 'geom1 ', geom1.area(), 'split_geom[0] ', split_geom[0].area()
-                if clockwise == -1:
-                    angle_change = -1
+                if loop_index == 0:
+                    if clockwise == -1:
+                        angle_change = -1
 
-                else:
-                    angle_change = 1
+                    else:
+                        angle_change = 1
                 # Get first intersection coordinate
 
                 if loop_index == 0:
@@ -971,89 +991,68 @@ def split_rotate_line_with_area(
 
             if area > split_area1:
                 # helps in changing height in small steps after switching from
-                # print 'area large ',angle_change, decimal_place_new, increment, area, split_area1
+
                 # print 'area large ', decimal_place_new, increment, angle
 
                 if area - math.modf(split_area1)[1] > 200:
-                    increment = 4
+                    # increment = 4
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(50, 200):
-                    increment = 3
+                    # increment = 3
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(10, 50):
-                    increment = 2
+                    # increment = 2
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(5, 10):
-                    increment = 1
+                    # increment = 1
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(2, 5):
-                    increment = 1
+                    # increment = 1
                     if area_toggle == 0:
                         decimal_place_new = 1
-
-                # elif area - math.modf(split_area1)[1] in range(1, 2):
-                #     increment = 1
-                #     if area_toggle == 0:
-                #         decimal_place_new = 5
-                #
-
-
-                # if area - math.modf(split_area1)[1] > 50:
-                #     decimal_place_new = 0
-                #     increment = 2
-                # elif area - math.modf(split_area1)[1] > 100:
-                #     decimal_place_new = 0
-                #     increment = 4
-                # elif area - math.modf(split_area1)[1] <= 50:
-                #     decimal_place_new = 2
-                #     increment = 1
-                # print angle_change, increase
-                if angle_change == -1:
-                    # decimal_place_new = decimal_place_new + area_toggle
-                    increment = 1
-                    # area_toggle = area_toggle + 1
-                    #
-                    # if math.modf(split_area1)[1] + 1 > area:
-                    #     decimal_place_new = 4
-                    # if math.modf(split_area1)[1] + 7 > area:
-                    #     decimal_place_new = 3
-                    # elif math.modf(split_area1)[1] + 50 > area:
-                    #     decimal_place_new = 2
-                    # elif math.modf(split_area1)[1] + 100 > area:
-                    #     decimal_place_new = 0
-                    if loop_index > 0:
-                        decimal_place_new = decimal_place_new + area_toggle
-
-                    if loop_index > 0 and area_toggle < 300:
-                        area_toggle = area_toggle + 1
-
-                # if bearing >= 0:
-                if clockwise == -1:
-                    angle_change = -1
-                else:
-                    angle_change = 1
-
                 if area - math.modf(split_area1)[1] in range(0, 1):
-                # if math.modf(split_area1)[1] + 1 > area:
-                    decimal_place_new = 4
-                    increment = 1
-                    if (round(split_area1, 2)) == area:
-                        add_geom_to_layer(
-                            polygon_layer, split_geom1, main_geom, feature_ids
-                        )
-                        return True
+                    if area_toggle == 0:
+                        decimal_place_new = 2
 
-            if area < split_area1:
+                if angle_change == -1 and loop_index > 0:
+
+                    decimal_place_new = decimal_place_new + area_toggle
+
+                    if area_toggle < 288:
+                        area_toggle = area_toggle + 1
+                    else:
+                        print 'faield'
+                        break
+                    # angle_change = 1
+
+                # if loop_index == 0:
+                # if clockwise == -1:
+                #     angle_change = -1
+                # else:
+                #     angle_change = 1
+                angle_change = 1
+
+                # if math.modf(split_area1)[1] + 1 > area:
+                #     decimal_place_new = 4
+                #     increment = 1
+                if (round(split_area1, 2)) == area:
+                    add_geom_to_layer(
+                        polygon_layer, split_geom1, main_geom, feature_ids
+                    )
+                    return True
+                print 'area large ', angle_change, decimal_place_new, area_toggle, \
+                    split_area1, area, area - math.modf(split_area1)[1]
+            if split_area1 > area:
                 # helps in changing height in small steps after switching from
-                # print 'area small ', angle_change, decimal_place_new, increment, area, split_area1
+
                 # print 'area small ', decimal_place_new, increment, angle
                 if math.modf(split_area1)[1] - area > 200:
                     # increment = 4
@@ -1061,67 +1060,60 @@ def split_rotate_line_with_area(
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(50, 200):
-                    increment = 3
+                    # increment = 3
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(10, 50):
-                    increment = 2
+                    # increment = 2
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(5, 10):
-                    increment = 1
+                    # increment = 1
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(2, 5):
-                    increment = 1
+                    # increment = 1
                     if area_toggle == 0:
                         decimal_place_new = 1
-
-                # elif math.modf(split_area1)[1] - area in range(0, 2):
-                #     increment = 1
-                #     if area_toggle == 0:
-                #         decimal_place_new = 5
-
-                # if math.modf(split_area1)[1] - area > 50:
-                #     decimal_place_new = 0
-                #     increment = 2
-                # elif math.modf(split_area1)[1] - area > 100:
-                #     decimal_place_new = 0
-                #     increment = 4
-                # elif math.modf(split_area1)[1] - area <= 50:
-                #     decimal_place_new = 2
-                #     increment = 1
-                # if angle_change == 1:
-                #     if math.modf(split_area1)[1] < area + 1:
-                #         decimal_place_new = 4
-                #     elif math.modf(split_area1)[1] < area + 7:
-                #         decimal_place_new = 3
-                #     elif math.modf(split_area1)[1] < area + 50:
-                #         decimal_place_new = 2
-                #     elif math.modf(split_area1)[1] < area + 100:
-                #         decimal_place_new = 1
-                if angle_change == -1:
-                    decimal_place_new = decimal_place_new + area_toggle
-                    increment = 1
-                    area_toggle = area_toggle + 1
-
-                if clockwise == -1:
-                    angle_change = 1
-                else:
-                    angle_change = -1
                 if math.modf(split_area1)[1] - area in range(0, 1):
-                # if math.modf(split_area1)[1] < area + 1:
-                    decimal_place_new = 4
-                    increment = 1
+                    if area_toggle == 0:
+                        decimal_place_new = 2
 
-                    if (round(split_area1, 2)) == area:
-                        add_geom_to_layer(
-                            polygon_layer, split_geom1, main_geom, feature_ids
-                        )
-                        return True
+                if angle_change == 1 and loop_index > 0:
+
+                    # if loop_index > 0:
+                    decimal_place_new = decimal_place_new + area_toggle
+
+                    if area_toggle < 288:
+                        area_toggle = area_toggle + 1
+                    else:
+                        print ' failed'
+                        break
+
+                    # angle_change = -1
+                # if loop_index == 0:
+                #     if clockwise == -1:
+                #         angle_change = -1
+                #     else:
+                #         angle_change = 1
+
+                angle_change = -1
+
+                # if math.modf(split_area1)[1] - area in range(0, 1):
+                # if math.modf(split_area1)[1] < area + 1:
+                #     decimal_place_new = 4
+                    # increment = 1
+                if (round(split_area1, 2)) == area:
+                    add_geom_to_layer(
+                        polygon_layer, split_geom1, main_geom, feature_ids
+                    )
+                    return True
+
+                print 'area small ', angle_change, decimal_place_new, area_toggle, \
+                    split_area1, area, math.modf(split_area1)[1] - area
 
             if area == split_area1:
                 add_geom_to_layer(
