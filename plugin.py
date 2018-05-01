@@ -1002,7 +1002,6 @@ class STDMQGISLoader(object):
             self._moduleItems[attrs[2]] = attrs[0]
 
         for k, v in self._moduleItems.iteritems():
-
             moduleCntGroup = self._create_table_content_group(
                 k, username, 'table.png'
             )
@@ -1683,7 +1682,6 @@ class STDMQGISLoader(object):
         tbList = self._moduleItems.values()
 
         dispName = QAction.text()
-
         if dispName == QApplication.translate(
                 'STDMQGISLoader',
                 'New Social Tenure Relationship'

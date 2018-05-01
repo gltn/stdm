@@ -38,6 +38,8 @@ from stdm.utils import *
 from stdm.utils.util import getIndex
 from ui_content_auth import Ui_frmContentAuth
 
+from stdm.settings import current_profile
+
 class contentAuthDlg(QDialog, Ui_frmContentAuth):
     '''
     Content authorization dialog
@@ -143,6 +145,7 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
         self.lstRoles.setEnabled(True)
         contentName = index.data()
         self.loadRoles(contentName)
+        self.auth = Auth(contentName)
         
     def onRoleSelected(self,index):
         '''
@@ -153,6 +156,8 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
             
             item = self.roleMappingsModel.itemFromIndex(index)
             rolename = item.text()
+
+            self.auth.role = rolename
             
             #Get role object from role name
             role = Role()
@@ -163,31 +168,64 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
             #Add role to the content item if the item is selected  or remove if it was previosuly checked
             if item.checkState() == Qt.Checked:    
                 self.currentContent.roles.append(rl)             
+                self.auth.grant_rights()
                 
             elif item.checkState() == Qt.Unchecked:
                 self.currentContent.roles.remove(rl)
+                #self.auth.deny_rights()
                 
             self.currentContent.update()
                 
             self.blockSignals(False)
     
     
+
+class Auth(object):
+    def __init__(self, content_name):
+        self.content_name = content_name
+        self.fk_tables = set()
+        self.role = ''
+        self.profile = current_profile()
+        self.content_short_name =''
+        self.action = ''
+        self.set_content_name_action(self.content_name)
+        self.content_table_name = self.table_name(self.content_short_name)
+        self.fetch_fk_tables(self.content_short_name)
+
+    def fmt_name(self, name, action):
+        return name.strip(action).replace(' ','_')
+
+    def table_name(self, short_name):
+        table_name = ''
+        if short_name in self.profile.entities:
+            table_name = self.profile.entities[short_name].name
+        return table_name
+
+    def set_content_name_action(self, cnt_name):
+        if cnt_name.find('Create') == 0:
+            self.action, self.content_short_name = 'Create', self.fmt_name(cnt_name, 'Create ')
+
+        if cnt_name.find('Select') == 0:
+            self.action, self.content_short_name = 'Select', self.fmt_name(cnt_name, 'Select ')
+
+        if cnt_name.find('Update') == 0:
+            self.action, self.content_short_name = 'Update', self.fmt_name(cnt_name,'Update ')
+
+        if cnt_name.find('Delete') == 0:
+            self.action, self.content_short_name = 'Delete', self.fmt_name(cnt_name,'Delete ')
+
+    def fetch_fk_tables(self, short_name):
+        if short_name in self.profile.entities:
+            for column in self.profile.entities[short_name].columns.values():
+                if hasattr(column, 'entity_relation'):
+                    self.fk_tables.add(column.entity_relation.parent.name)
+
+    def grant_rights(self):
+        print "Grant rights to Role", self.role
+        for fkt in self.fk_tables:
+            print fkt
+
+    def grant_fk_rights(self):
+        pass
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+

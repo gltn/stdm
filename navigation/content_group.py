@@ -174,6 +174,14 @@ class ContentGroup(QObject,HashableMixin):
                                 existingContents.append(c)
                                 role.contents = existingContents
                                 role.update()
+        else:
+            for c in self.contentItems():
+                if isinstance(c,Content):
+                    cnt = Content()
+                    qo = cnt.queryObject()
+                    cn = qo.filter(Content.name == c.name).first()
+                    c.code = cn.code
+
 
             
 class TableContentGroup(ContentGroup):
