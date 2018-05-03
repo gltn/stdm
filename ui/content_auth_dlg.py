@@ -44,6 +44,8 @@ from stdm.data.pg_utils import (
        _execute
        )
 
+from stdm.security.privilege_provider import SinglePrivilegeProvider
+
 class contentAuthDlg(QDialog, Ui_frmContentAuth):
     '''
     Content authorization dialog
@@ -149,7 +151,8 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
         self.lstRoles.setEnabled(True)
         contentName = index.data()
         self.loadRoles(contentName)
-        self.auth = Auth(contentName)
+        #self.auth = Auth(contentName)
+        self.privilege_provider = SinglePrivilegeProvider(contentName, current_profile() )
         
     def onRoleSelected(self,index):
         '''
@@ -161,7 +164,7 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
             item = self.roleMappingsModel.itemFromIndex(index)
             rolename = item.text()
 
-            self.auth.role = rolename
+            self.privilege_provider.role = rolename
             
             #Get role object from role name
             role = Role()
@@ -172,11 +175,11 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
             #Add role to the content item if the item is selected  or remove if it was previosuly checked
             if item.checkState() == Qt.Checked:    
                 self.currentContent.roles.append(rl)             
-                self.auth.grant_privileges()
+                self.privilege_provider.grant_privilege()
                 
             elif item.checkState() == Qt.Unchecked:
                 self.currentContent.roles.remove(rl)
-                self.auth.revoke_privileges()
+                self.privilege_provider.revoke_privilege()
                 
             self.currentContent.update()
                 
@@ -219,11 +222,9 @@ class Auth(object):
 
     def grant_privileges(self):
         self.grant_revoke_privileges('GRANT')
-        print "Privileges granted ..."
 
     def revoke_privileges(self):
         self.grant_revoke_privileges('REVOKE')
-        print "Privileges revoked ..."
 
     def grant_revoke_privileges(self, action):
         privilege = Auth.Privileges[self.privilege]
@@ -239,8 +240,5 @@ class Auth(object):
         gr_str = 'TO' if action == 'GRANT' else 'FROM'
         stmt = '{} {} ON TABLE {} {} {}'.format(action, privilege, table, gr_str, role)
         _execute(stmt)
-
-
-
     
 

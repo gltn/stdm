@@ -42,7 +42,10 @@ from stdm.data.configuration.stdm_configuration import (
 from stdm.utils.util import enable_drag_sort
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
-from stdm.data.configuration.columns import BaseColumn
+from stdm.data.configuration.columns import (
+        BaseColumn,
+        ForeignKeyColumn
+        )
 
 from stdm.data.configuration.value_list import (
     ValueList,
@@ -94,6 +97,8 @@ from create_lookup_value import ValueEditor
 from entity_depend import EntityDepend
 from column_depend import ColumnDepend
 from copy_editor import CopyProfileEditor
+
+from stdm.security.privilege_provider import MultiPrivilegeProvider
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -191,6 +196,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
+
+        self.privileges = {}
+
         #self._str_table_exists = False
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
@@ -316,6 +324,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Event handler for the cancel button.
         If configuration has been edited, warn user before exiting.
         """
+        self.grant_privileges()
+
         self.pftableView.removeEventFilter(self)
         self.tbvColumns.removeEventFilter(self)
 
@@ -2218,6 +2228,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 midx = self.tbvColumns.model().index(row, 0)
                 profile.update_entity_row_index(editor.column.name, midx.row())
+                
+                # Update privileges for entities that already exists in the database.
+                if pg_table_exists(entity.name):
+                    if isinstance(editor.column, ForeignKeyColumn):
+                        self.update_privileges(entity, editor.column)
 
     def edit_column(self):
         """
@@ -2247,7 +2262,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = ColumnEditor(**params)
             result = editor.exec_()
 
-            if result == 1: # after successfully editing
+            if result == 1: 
 
                 model_index_name = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
@@ -2264,9 +2279,29 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 self.populate_spunit_model(profile)
 
+                if pg_table_exists(entity.name):
+                    if isinstance(editor.column, ForeignKeyColumn):
+                        self.update_privileges(entity, editor.column)
+                
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
+
+    def update_privileges(self, entity, column):
+        parent_name = column.entity_relation.parent.name
+
+        if entity.short_name not in self.privileges:
+            mpp = MultiPrivilegeProvider(entity.short_name)
+            mpp.add_related_content(parent_name)
+            self.privileges[entity.short_name] = mpp
+        else:
+            self.privileges[entity.short_name].add_related_content(
+                    parent_name)
+
+    def grant_privileges(self):
+        #mpp - MultiPrivilegeProvider
+        for mpp in self.privileges.values():
+            mpp.grant_privilege()
 
     def find_updated_value(self, lookup, text):
         cv = None
