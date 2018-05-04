@@ -8,7 +8,7 @@ class PrivilegeProvider(object):
     def __init__(self, content_name, profile=None):
         self.content_name = content_name
         self.content_short_name = self.fmt_short_name(self.content_name)
-        self.related_contents = set()    # ForeignKey tables
+        self.related_contents = {}
         self.profile = profile 
 
     def fmt_short_name(self, name):
@@ -40,7 +40,7 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         if short_name in self.profile.entities:
             for column in self.profile.entities[short_name].columns.values():
                 if hasattr(column, 'entity_relation'):
-                    self.related_contents.add(column.entity_relation.parent.name)
+                    self.related_contents[column.name] = column.entity_relation.parent.name
 
     def table_name(self, short_name):
         table_name = ''
@@ -55,7 +55,7 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         privilege = PrivilegeProvider.Privileges[self.content_name[:self.content_name.index(' ')]]
         if pg_table_exists(self.content_table_name):
             self.grant_or_revoke(operation, privilege, self.content_table_name, self.role)
-        for related_content in self.related_contents:
+        for related_content in self.related_contents.values():
             self.grant_or_revoke(operation, 'SELECT', related_content, self.role)
             if privilege <> 'SELECT':
                 self.grant_or_revoke(operation, privilege, related_content, self.role)
@@ -70,12 +70,12 @@ class MultiPrivilegeProvider(PrivilegeProvider):
     def fmt_short_name(self, name):
         return name.replace(' ','_')
 
-    def add_related_content(self, content):
-        self.related_contents.add(content)
+    def add_related_content(self, column_name, content):
+        self.related_contents[column_name] = content
 
     def populate_roles(self):
         """
-        Inherit existing privileges for a given role. This are to 
+        Inherit existing privileges for a given role. These are to be 
         granted to the new content
         Structure of the roles dictionary:
         roles['manager'] = ['Select', 'Create']
@@ -101,8 +101,11 @@ class MultiPrivilegeProvider(PrivilegeProvider):
         for role, privileges in self.roles.iteritems():
             for p in privileges:
                 privilege = PrivilegeProvider.Privileges[p]
-                for related_content in self.related_contents:
+                temp_content = ''
+                for related_content in self.related_contents.values():
+                    if temp_content == related_content:continue
                     if pg_table_exists(related_content):
+                        temp_content = related_content
                         self.grant_or_revoke(operation, privilege, related_content, role)
                         self.grant_or_revoke(operation, 'SELECT', related_content, role)
 
