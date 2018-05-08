@@ -1645,6 +1645,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.rotation_points = []
         self.combined_line = None
         self.area = None
+        self.no_polygons = 1
 
     def hideEvent(self, event):
         self.widget_closed = True
@@ -1716,10 +1717,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     )
 
                     self.notice.insertWarningNotification(message)
+
                     clear_previous = True
+
+                self.on_line_selection_finished()
                 # self.line_selection_finished.emit()
-            elif self.widget.equal_boundary_rad.isChecked():
-                if self.number_of_polygons.value() < 2:
+            else:
+                if self.widget.number_of_polygons.value() < 2:
                     self.notice.clear()
                     message = QApplication.translate(
                         'EqualAreaWidget',
@@ -1768,20 +1772,20 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         total_area = calculate_area(self.settings.layer.selectedFeatures())
 
-        no_polygons = self.widget.number_of_polygons.value()
-        self.area = round((total_area /no_polygons), 2)
+        self.no_polygons = self.widget.number_of_polygons.value()
+        self.area = round((total_area /self.no_polygons), 2)
 
         self.widget.features_area_lbl.setText(str(round(total_area, 2)))
 
         self.widget.splitted_area_lbl.setText(str(self.area))
 
-        length = total_length/no_polygons
+        length = total_length/self.no_polygons
         # add points for the line.
         self.create_point_layer(show_in_legend=True)
         # add_geom_to_layer(self.point_layer, geoms)
         point_features = add_line_points_to_map(self.point_layer, geoms)
 
-        for i in range(1, no_polygons):
+        for i in range(1, self.no_polygons):
             next_length = length * i
             point = point_by_distance(
                 self.point_layer, point_features[0],
@@ -1801,7 +1805,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
     def validate_run(self):
         state = True
-        if len(self.rotation_points) == 0:
+        if len(self.rotation_points) == 0 and not self.widget.parellel_rad.isChecked():
             message = QApplication.translate(
                 'OnePointAreaWidget',
                 'The rotation point is not added.'
@@ -1851,24 +1855,38 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         #         self.feature_ids,
         #
         #     )
-        for i, point in enumerate(self.rotation_points):
-            # if i != 0:
-            print len(self.rotation_points)
-            area = self.area * (len(self.rotation_points) - i)
-            print area
+        if self.parellel_rad.isChecked():
+            for i in range(0, self.no_polygons):
+                area = self.area * (self.no_polygons - i)
+                result = split_move_line_with_area(
+                    self.settings.layer,
+                    self.line_layer,
+                    self.preview_layer,
+                    self.lines[0],
+                    area,
+                    self.feature_ids
+                )
 
-            # else:
-            #     area = self.area
+        else:
+            for i, point in enumerate(self.rotation_points):
+                # if i != 0:
+                # print len(self.rotation_points)
+                area = self.area * (len(self.rotation_points) - i)
+                # print area
 
-            result = split_rotate_line_with_area(
-                self.settings.layer,
-                self.preview_layer,
-                line_geom,
-                point.geometry(),
-                area,
-                self.feature_ids,
-                clockwise=1
-            )
+                # else:
+                #     area = self.area
+
+                result = split_rotate_line_with_area(
+                    self.settings.layer,
+                    self.preview_layer,
+                    line_geom,
+                    point.geometry(),
+                    area,
+                    self.feature_ids,
+                    clockwise=1
+                )
+
         # cProfile.runctx("""split_rotate_line_with_area(
         #     self.settings.layer,
         #     self.preview_layer,
