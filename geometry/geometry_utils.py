@@ -233,7 +233,7 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
         layer.startEditing()
         if len(feature_ids) > 0:
             features = feature_id_to_feature(layer, feature_ids)
-
+            print features
             # TODO consider change for merge before split
             features[0].setGeometry(main_geom)
             layer.updateFeature(features[0])
@@ -245,15 +245,16 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     layer.updateExtents()
     return feature
 
-def add_geom_to_feature(layer, geom):
+def  add_geom_to_feature(layer, geom):
     feature = QgsFeature()
     attr = layer.fields().toList()
     feature.setAttributes(attr)
+
+    # feature.setAttribute(0, 10000000000)
     feature.setGeometry(geom)
     layer.addFeatures([feature])
 
     return feature
-
 
 def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
     with edit(layer):
@@ -1124,7 +1125,6 @@ def split_rotate_line_with_area(
         else:
             print 'failed'
             return False
-
 
 
 def split_join_points(
