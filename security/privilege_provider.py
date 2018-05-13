@@ -14,14 +14,14 @@ class PrivilegeProvider(object):
     def fmt_short_name(self, name):
         raise NotImplementedError
 
+    def grant_revoke_privilege(self, operation):
+        raise NotImplementedError
+
     def grant_privilege(self):
         self.grant_revoke_privilege('GRANT')
 
     def revoke_privilege(self):
         self.grant_revoke_privilege('REVOKE')
-
-    def grant_revoke_privilege(self, operation):
-        raise NotImplementedError
 
     def grant_or_revoke(self, action, privilege, table, role):
         gr_str = 'TO' if action == 'GRANT' else 'FROM'
@@ -52,7 +52,11 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         return name[name.index(' ')+1:].replace(' ','_')
 
     def grant_revoke_privilege(self, operation):
-        privilege = PrivilegeProvider.Privileges[self.content_name[:self.content_name.index(' ')]]
+        try:
+            privilege = PrivilegeProvider.Privileges[self.content_name[:self.content_name.index(' ')]]
+        except:
+            privilege = 'INSERT'
+
         if pg_table_exists(self.content_table_name):
             self.grant_or_revoke(operation, privilege, self.content_table_name, self.role)
         for related_content in self.related_contents.values():
