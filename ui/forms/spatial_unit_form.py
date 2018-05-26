@@ -85,8 +85,8 @@ from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')
 
-class WidgetWrapper(QgsEditorWidgetWrapper):
 
+class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
         super(WidgetWrapper, self).__init__(
             layer, fieldIdx, editor, parent
@@ -187,6 +187,7 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                     self.handler_obj, 'setValue'
                 )
 
+
 class QGISFieldWidgetConfig(QgsEditorConfigWidget):
     def __init__(self, layer, idx, parent):
         QgsEditorConfigWidget.__init__(
@@ -207,8 +208,8 @@ class QGISFieldWidgetConfig(QgsEditorConfigWidget):
         )
 
     def config(self):
-
         pass
+
 
 class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
     def __init__(self, name):
@@ -258,7 +259,7 @@ class STDMFieldWidget():
         :rtype: NoneTYpe
         """
         try:
-        # init form
+            # init form
             self.set_entity(table)
             self.set_widget_mapping()
             self.register_factory()
@@ -268,7 +269,7 @@ class STDMFieldWidget():
             try:
 
                 curr_layer.featureAdded.connect(
-                    lambda feature_id:self.load_stdm_form(
+                    lambda feature_id: self.load_stdm_form(
                         feature_id, spatial_column
                     )
                 )
@@ -374,7 +375,6 @@ class STDMFieldWidget():
 
                 if widget_id_name[0] not in \
                         self.widgetRegistry.factories().keys():
-
                     widget_factory = QGISFieldWidgetFactory(
                         widget_name
                     )
@@ -394,7 +394,6 @@ class STDMFieldWidget():
         self.layer = layer
         for col, widget_id_name in \
                 self.widget_mapping.iteritems():
-
             self._set_widget_type(
                 layer, col, widget_id_name[0]
             )
@@ -419,7 +418,7 @@ class STDMFieldWidget():
             return None, 0
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
         col_with_data = []
-      
+
         for col, value in mapped_data.iteritems():
             if col == 'id':
                 continue
@@ -516,7 +515,6 @@ class STDMFieldWidget():
         self.model = self.editor.model()
         self.editor.addedModel.connect(self.on_form_saved)
 
-
         # get srid with EPSG text
         full_srid = self.layer.crs().authid().split(':')
 
@@ -563,7 +561,6 @@ class STDMFieldWidget():
             geometry = feature.geometry()
             if geometry.isGeosValid():
                 if geom_type in ['MULTIPOLYGON', 'MULTILINESTRING']:
-
                     geometry.convertToMultiType()
 
                 geom_wkt = geometry.exportToWkt()
@@ -625,5 +622,11 @@ class STDMFieldWidget():
         # It will also clear all the models from
         # self.feature_models as on_feature_deleted
         # is raised when a feature is removed.
+        for f_id in self.feature_models.keys():
+            iface.mainWindow().blockSignals(True)
+            self.layer.deleteFeature(f_id)
+            self.on_feature_deleted(f_id)
+            iface.mainWindow().blockSignals(True)
+
         for i in range(len(self.feature_models)):
             self.layer.undoStack().undo()

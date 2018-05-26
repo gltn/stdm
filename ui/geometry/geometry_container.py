@@ -759,6 +759,20 @@ class GeomWidgetsBase(object):
                 self.on_line_feature_selected
             )
 
+    def remove_memory_layer(self, name):
+        try:
+            if iface.activeLayer() is None:
+                return
+
+            prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                name
+            )
+            if len(prev_layers) > 0:
+                for prev_layer in prev_layers:
+                    QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+        except Exception:
+            pass
+
     def remove_memory_layers(self):
         """
         Removes memory layers used by the tools.
@@ -959,12 +973,12 @@ class GeomWidgetsBase(object):
 
         if len(prev_layers) == 0:
             self.preview_layer = copy_layer_to_memory(
-                self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False
+                self.settings.layer, PREVIEW_POLYGON, self.feature_ids, True
             )
         else:
             add_features_to_layer(self.preview_layer, self.features)
 
-        iface.legendInterface().setLayerVisible(self.preview_layer, False)
+        iface.legendInterface().setLayerVisible(self.preview_layer, True)
 
     def remove_preview_layers(self):
         preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -978,7 +992,8 @@ class GeomWidgetsBase(object):
     def preview(self):
         self.executed = True
         self.preview_layer = copy_layer_to_memory(
-            self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False)
+            self.settings.layer, PREVIEW_POLYGON, self.feature_ids, False
+        )
 
         if len(self.lines) > 0:
             try:
@@ -1636,11 +1651,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         QWidget.__init__(self)
 
         self.setupUi(self)
+
         GeomWidgetsBase.__init__(self, layer_settings, self)
         # self.line_selection_finished.connect(self.on_line_selection_finished)
         # self.length_from_point.valueChanged.connect(
         #     self.on_length_from_reference_point_changed
         # )
+        self.main_geom = None
         self.rotation_point = None
         self.rotation_points = []
         self.combined_line = None
@@ -1791,7 +1808,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.point_layer, point_features[0],
                 geoms, next_length
             )
-            print point
+
             self.rotation_points.append(point)
 
             # self.on_length_from_reference_point_changed(next_length)
@@ -1834,13 +1851,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        self.create_preview_layer()
         # if self.clockwise.isChecked():
         #     clockwise = 1
         # else:
         #     clockwise = -1
-
-        self.settings.layer.selectByIds(self.feature_ids)
 
         if self.combined_line is None:
             line_geom = self.lines[0].geometry()
@@ -1855,37 +1869,114 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         #         self.feature_ids,
         #
         #     )
+        self.settings.layer.selectByIds(self.feature_ids)
+
+        self.create_preview_layer()
         if self.parellel_rad.isChecked():
-            for i in range(0, self.no_polygons):
-                area = self.area * (self.no_polygons - i)
-                result = split_move_line_with_area(
+
+            geom = None
+            main_geom = None
+            feature = None
+            for i in range(1, self.no_polygons):
+                area = self.area * i
+                # print area
+                if geom is None:
+                    line_ft = self.lines[0]
+                else:
+                    line_ft = geom
+                # if feature is not None:
+                #     self.feature_ids[:] = []
+                #     self.feature_ids.append(feature.id())
+                # if isinstance(main_geom, bool):
+                #     continue
+
+                # if geom is not None:
+                #     add_geom_to_layer(self.line_layer, line_ft)
+                # print area
+                feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,
                     self.preview_layer,
-                    self.lines[0],
-                    area,
+                    line_ft,
+                    self.area,
                     self.feature_ids
                 )
+                if not isinstance(feature, bool):
+                    clear_layer_features(self.preview_layer)
+                    self.settings.layer.selectByIds(self.feature_ids)
+                    poly_geom = self.settings.layer.selectedFeatures()[0].geometry()
+                    add_geom_to_layer(
+                        self.preview_layer,
+                        poly_geom
+                    )
+
+                if isinstance(line_feature, QgsGeometry):
+
+                    geom = line_feature
+                    result = True
 
         else:
+
             for i, point in enumerate(self.rotation_points):
                 # if i != 0:
                 # print len(self.rotation_points)
                 area = self.area * (len(self.rotation_points) - i)
-                # print area
+
 
                 # else:
                 #     area = self.area
+                # print area
 
+                print self.area, area
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
                     line_geom,
                     point.geometry(),
-                    area,
+                    self.area,
                     self.feature_ids,
-                    clockwise=1
+                    clockwise=-1
                 )
+                # clear_layer_features(self.preview_layer)
+                # self.remove_memory_layer(PREVIEW_POLYGON)
+                # # if result:
+                # # clear_layer_features(self.preview_layer)
+                # self.feature_ids = [f.id() for f in
+                #             self.settings.layer.selectedFeatures()]
+                #
+                # self.preview_layer = copy_layer_to_memory(
+                #     self.settings.layer, PREVIEW_POLYGON, self.feature_ids,
+                #     False
+                # )
+                try:
+                    clear_layer_features(self.preview_layer)
+                    self.settings.layer.selectByIds(self.feature_ids)
+                    poly_geom = self.settings.layer.selectedFeatures()[
+                        0].geometry()
+                    add_geom_to_layer(
+                        self.preview_layer,
+                        poly_geom
+                    )
+                except Exception:
+                    pass
+                # self.on_feature_selected(feat_ids)
+                # # print result
+                # if result:
+                #     self.remove_memory_layer(PREVIEW_POLYGON)
+                #     self.preview_layer = copy_layer_to_memory(
+                #         self.settings.layer, PREVIEW_POLYGON, self.feature_ids,
+                #         True
+                #     )
+                    # clear_layer_features(self.preview_layer)
+                    # self.settings.layer.selectByIds(self.feature_ids)
+                    # print self.settings.layer.selectedFeatures()
+                    # print self.settings.layer.selectedFeatures()[0].geometry()
+                    # poly_geom = self.settings.layer.selectedFeatures()[0].geometry()
+                    # add_geom_to_layer(
+                    #     self.preview_layer,
+                    #     poly_geom
+                    # )
+                    # print 'polygon geom'
 
         # cProfile.runctx("""split_rotate_line_with_area(
         #     self.settings.layer,

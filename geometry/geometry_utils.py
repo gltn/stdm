@@ -633,9 +633,14 @@ def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
 ):
-
-    # Get selected line geometry
-    selected_line_geom = selected_line_ft.geometry()
+    if isinstance(selected_line_ft, QgsFeature):
+        # Get selected line geometry
+        selected_line_geom = selected_line_ft.geometry()
+        # print '1', selected_line_geom
+    else:
+        selected_line_geom = selected_line_ft
+        # add_geom_to_layer(line_layer, selected_line_geom)
+        # print '2', selected_line_geom
 
     decimal_place_new = 0
 
@@ -643,7 +648,7 @@ def split_move_line_with_area(
     split_area1 = 0
     height_change = 1
     loop_index = 0
-    # multi_split_case = 0
+    # multi_split_case = 0vb
     # first_height = 0
     area_toggle = 0
     # Continuous loop until condition of split area and split polygon area is equal
@@ -651,7 +656,8 @@ def split_move_line_with_area(
         # the height/ distance from selected line
         # print height, split_area1
         # print height_change / math.pow(10, decimal_place_new)
-        height = Decimal(height) + Decimal(height_change) / Decimal(math.pow(10, decimal_place_new))
+        height = Decimal(height) + Decimal(height_change) /\
+                                   Decimal(math.pow(10, decimal_place_new))
         # print height
         # Get the parallel line from the selected line using the calculated height
         parallel_line_geom = get_parallel_line(
@@ -664,15 +670,20 @@ def split_move_line_with_area(
             sel_features = list(preview_layer.getFeatures())
         except Exception:
             break
-        # Get the geometry
+        # if previous_geom is None:
+            # Get the geometry
         geom1 = sel_features[0].geometry()
+        # else:
+        #     geom1 = previous_geom
 
         extent = geom1.boundingBox()
         # Using the extent, extend the parallel line to the selected
         # geometry bounding box to avoid failed split.
         added_points = extend_line_points(parallel_line_geom, extent)
 
-        parallel_line_geom2 = QgsGeometry.fromPolyline(added_points)
+        parallel_line_geom2 =  QgsGeometry.fromPolyline(added_points)
+        # print parallel_line_geom2
+        # parallel_line_geom3 = QgsGeometry.as
         # add_geom_to_layer(line_layer, parallel_line_geom2)
         # If the line intersects the main geometry, split it
         if parallel_line_geom2.intersects(geom1):
@@ -685,8 +696,11 @@ def split_move_line_with_area(
                 if loop_index == 0:
                     # Get the first line that intersects the geometry and use
                     # it as a reference using distance to the split feature.
+                    if isinstance(selected_line_ft, QgsFeature):
+                        first_intersection = selected_line_ft.geometry()
+                    else:
+                        first_intersection = selected_line_ft
 
-                    first_intersection = selected_line_ft.geometry()
                     height = area/selected_line_geom.length()
 
                 if loop_index >= 1:
@@ -702,7 +716,7 @@ def split_move_line_with_area(
                         # If split geom is over 1, continue
                         # TODO find a better solution than continue.
                         if len(split_geom0) > 1:
-                            print 'continue 0'
+                            # print 'continue 0'
                             continue
 
                         else:
@@ -710,11 +724,11 @@ def split_move_line_with_area(
                             split_geom = split_geom0[0]
                             main_geom = geom1
                     else:
-                        print 'continue 1'
+                        # print 'continue 1'
                         continue
                 loop_index = loop_index + 1
             else:
-                print 'continue 2'
+                # print 'continue 2'
                 continue
 
 
@@ -756,10 +770,13 @@ def split_move_line_with_area(
                     # otherwise, use the area toggle value.
                     if (round(split_area1, 2)) == area:
                         # print '2 {} {}'.format(split_area1, area)
-                        add_geom_to_layer(
+                        feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        return True
+                        # print main_geom.area(), split_geom.area()
+                        # print 'aa', parallel_line_geom
+                        return feature, parallel_line_geom2
+
             # If provided area is smaller than split area, decrease height
             if area < split_area1:
                 if math.modf(split_area1)[1] - area > 200:
@@ -795,12 +812,16 @@ def split_move_line_with_area(
                     if (round(split_area1, 2)) == area:
                         # add_geom_to_layer(line_layer, parallel_line_geom2)
                         # print '3 {} {}'.format(split_area1, area)
-                        add_geom_to_layer(
+                        feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        return True
+                        # print main_geom.area(), split_geom.area()
+                        # print 'bb', parallel_line_geom
+
+                        return feature, parallel_line_geom2
         else:
-            return False
+            # print 'failed to intersect'
+            return False, False
 
 
 def split_offset_distance(
@@ -932,7 +953,7 @@ def split_rotate_line_with_area(
         try:
             sel_feats = list(preview_layer.getFeatures())
         except Exception:
-            print 'canceled'
+            # print 'canceled'
             break
         geom1 = sel_feats[0].geometry()
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
@@ -989,7 +1010,7 @@ def split_rotate_line_with_area(
                 loop_index = loop_index + 1
             else:
                 continue
-
+            # print split_area1
             if area > split_area1:
                 # helps in changing height in small steps after switching from
 
@@ -1030,7 +1051,7 @@ def split_rotate_line_with_area(
                     if area_toggle < 288:
                         area_toggle = area_toggle + 1
                     else:
-                        print 'faield'
+                        # print 'faield'
                         break
                     # angle_change = 1
 
@@ -1049,8 +1070,8 @@ def split_rotate_line_with_area(
                         polygon_layer, split_geom1, main_geom, feature_ids
                     )
                     return True
-                print 'area large ', angle_change, decimal_place_new, area_toggle, \
-                    split_area1, area, area - math.modf(split_area1)[1]
+                # print 'area large ', angle_change, decimal_place_new, area_toggle, \
+                #     split_area1, area, area - math.modf(split_area1)[1]
             if split_area1 > area:
                 # helps in changing height in small steps after switching from
 
@@ -1091,7 +1112,7 @@ def split_rotate_line_with_area(
                     if area_toggle < 288:
                         area_toggle = area_toggle + 1
                     else:
-                        print ' failed'
+                        # print ' failed'
                         break
 
                     # angle_change = -1
@@ -1113,8 +1134,8 @@ def split_rotate_line_with_area(
                     )
                     return True
 
-                print 'area small ', angle_change, decimal_place_new, area_toggle, \
-                    split_area1, area, math.modf(split_area1)[1] - area
+                # print 'area small ', angle_change, decimal_place_new, area_toggle, \
+                #     split_area1, area, math.modf(split_area1)[1] - area
 
             if area == split_area1:
                 add_geom_to_layer(
@@ -1123,7 +1144,7 @@ def split_rotate_line_with_area(
                 return True
 
         else:
-            print 'failed'
+            # print 'failed'
             return False
 
 
