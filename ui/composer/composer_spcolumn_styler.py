@@ -163,8 +163,7 @@ class SpatialFieldMapping(object):
 
     def scale(self):
         """
-        Return the zoom out scale factor that should be applied relative
-        to the extents of a spatial unit.
+        Return the scale of the map canvas.
         """
         return self._scale
 

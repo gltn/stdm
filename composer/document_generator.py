@@ -39,6 +39,7 @@ from PyQt4.QtCore import (
     QDir
 )
 from PyQt4.QtXml import QDomDocument
+from qgis._gui import QgsScaleRangeWidget
 
 from qgis.core import (
     QgsComposerLabel,
@@ -381,20 +382,26 @@ class DocumentGenerator(QObject):
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
-                            #Add feature
-                            bbox = self._add_feature_to_layer(ref_layer, geomWKT)
-                            if spfm.zoomLevel() != '':
+                            bbox = self._add_feature_to_layer(
+                                ref_layer, geomWKT
+                            )
+
+                            if spfm.zoomLevel() > 0:
+                             
                                 bbox.scale(spfm.zoomLevel())
+                                self._iface.mapCanvas().setExtent(bbox)
                             else:
-                                map_item.setNewScale(spfm.scale())
-                                # renderer = self._iface.mapCanvas().mapRenderer()
-                                # renderer.setScale(spfm.scale())
+
+                                self._iface.mapCanvas().setExtent(bbox)
+                                self._iface.mapCanvas().zoomScale(spfm.scale())
+
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
                                 canvas_extent = self._iface.mapCanvas().fullExtent()
                                 cnt_pnt = bbox.center()
                                 canvas_extent.scale(1.0/32, cnt_pnt)
                                 bbox = canvas_extent
+                                self._iface.mapCanvas().setExtent(bbox)
                             # Add length of a polygon line
                             if spfm.get_length_prefix() != '' or \
                                 spfm.get_length_suffix() != '':
@@ -435,7 +442,7 @@ class DocumentGenerator(QObject):
                             Add layer to map and ensure its always added at the top
                             '''
                             self.map_registry.addMapLayer(ref_layer)
-                            self._iface.mapCanvas().setExtent(bbox)
+
                             self._iface.mapCanvas().refresh()
                             # Add layer to map memory layer list
                             self._map_memory_layers.append(ref_layer.id())

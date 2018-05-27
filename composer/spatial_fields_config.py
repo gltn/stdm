@@ -122,7 +122,7 @@ class SpatialFieldsConfiguration(object):
 
             spFieldMapping = SpatialFieldMapping(spatialField, labelField)
 
-            if spatialFieldMappingElement.attribute("zoom") != '':
+            if spatialFieldMappingElement.attribute("zoom") != '0':
                 zoom = float(spatialFieldMappingElement.attribute("zoom"))
                 spFieldMapping.setZoomLevel(zoom)
             else:
