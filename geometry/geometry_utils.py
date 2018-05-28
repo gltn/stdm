@@ -903,10 +903,10 @@ def split_offset_distance(
 
 
 def split_rotate_line_with_area(
-        polygon_layer, preview_layer, selected_line_geom,
-        rotation_point_geom, area, feature_ids, clockwise
+        polygon_layer, preview_layer, selected_line_ft,
+        rotation_point_ft, area, feature_ids, clockwise
 ):
-    selected_line = create_V2_line(selected_line_geom.asPolyline())
+    selected_line = create_V2_line(selected_line_ft.geometry().asPolyline())
 
     try:
         sel_features = list(preview_layer.getFeatures())
@@ -957,7 +957,7 @@ def split_rotate_line_with_area(
             angle = 0
 
         line_geom = QgsGeometry.fromWkt(selected_line.asWkt())
-        line_geom.rotate(angle, rotation_point_geom.asPoint())
+        line_geom.rotate(angle, rotation_point_ft.geometry().asPoint())
         # print 'result ', result
         added_points = extend_line_points(line_geom, poly_bbox)
         try:
@@ -988,7 +988,7 @@ def split_rotate_line_with_area(
                     inter_point = intersection.asPolyline()
 
                     for point in inter_point:
-                        distance = rotation_point_geom.distance(
+                        distance = rotation_point_ft.geometry().distance(
                             QgsGeometry.fromPoint(point)
                         )
                         if round(distance, 0) == 0:
@@ -1143,7 +1143,7 @@ def split_rotate_line_with_area(
                         polygon_layer, split_geom1, main_geom, feature_ids
                     )
                     return True
-
+                #
                 # print 'area small ', angle_change, decimal_place_new, area_toggle, \
                 #     split_area1, area, math.modf(split_area1)[1] - area
 

@@ -36,7 +36,7 @@ GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
-GEOMETRY_HOLDER = 'Geometry Holder'
+PREVIEW_POLYGON2 = 'Preview Polygon 2'
 
 # TODO after removing a layer and adding another layer and starting geometry tools, it does not work.
 # TODO qgis crash after removing the geometry temporary layers. Check if some variables are set to None.
@@ -269,7 +269,7 @@ class GeometryToolsDock(
         self.widgets_added = False
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
         self.memory_layers = [
-            PREVIEW_POLYGON, POLYGON_LINES, LINE_POINTS, GEOMETRY_HOLDER]
+            PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS]
 
     def write_log_message(message, tag, level):
         if os is None:
@@ -593,6 +593,8 @@ class GeomWidgetsBase(object):
         self.point_layer_connected = False
         self.executed = False
         self.preview_layer = None
+        self.preview_layer2 = None
+
         if hasattr(self.widget, 'preview_btn'):
             self.widget.preview_btn.clicked.connect(self.preview)
         self.highlights = []
@@ -990,6 +992,22 @@ class GeomWidgetsBase(object):
             add_features_to_layer(self.preview_layer, self.features)
 
         iface.legendInterface().setLayerVisible(self.preview_layer, visible)
+
+    def create_preview_layer2(self, visible=True):
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            PREVIEW_POLYGON2
+        )
+        for prev_layer in prev_layers:
+            clear_layer_features(prev_layer)
+
+        if len(prev_layers) == 0:
+            self.preview_layer2 = copy_layer_to_memory(
+                self.settings.layer, PREVIEW_POLYGON2, self.feature_ids, visible
+            )
+        else:
+            add_features_to_layer(self.preview_layer2, self.features)
+
+        iface.legendInterface().setLayerVisible(self.preview_layer2, visible)
 
     def remove_preview_layers(self):
         preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1435,19 +1453,19 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        self.create_preview_layer()
+        self.create_preview_layer(False)
         if self.clockwise.isChecked():
             clockwise = 1
         else:
             clockwise = -1
 
         self.settings.layer.selectByIds(self.feature_ids)
-        selected_line_geom = self.lines[0].geometry()
+
         result = split_rotate_line_with_area(
             self.settings.layer,
             self.preview_layer,
-            selected_line_geom,
-            self.rotation_point.geometry(),
+            self.lines[0],
+            self.rotation_point,
             self.split_polygon_area.value(),
             self.feature_ids,
             clockwise
@@ -1486,12 +1504,11 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         self.preview_layer.selectAll()
 
-        selected_line_geom = self.lines[0].geometry()
         result = split_rotate_line_with_area(
             self.preview_layer,
             self.preview_layer,
-            selected_line_geom,
-            self.rotation_point.geometry(),
+            self.lines[0],
+            self.rotation_point,
             self.split_polygon_area.value(),
             self.feature_ids,
             clockwise
@@ -1967,19 +1984,21 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         state = True
         if len(self.rotation_points) == 0 and not self.widget.parellel_rad.isChecked():
             message = QApplication.translate(
-                'OnePointAreaWidget',
+                'EqualAreaWidget',
                 'The rotation point is not added.'
             )
             self.notice.insertErrorNotification(message)
             state = False
         if self.widget.number_of_polygons.value() == 0:
             message = QApplication.translate(
-                'OnePointAreaWidget',
+                'EqualAreaWidget',
                 'The number of polygons must be greater than 1.'
             )
             self.notice.insertErrorNotification(message)
             state = False
         return state
+    def clear_inputs(self):
+        pass
 
     def run(self):
         result = self.validate_run()
@@ -1988,16 +2007,16 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        message = QApplication.translate('EqualAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
         self.progress_dialog.show()
         if self.settings_layer_connected:
             self.disconnect_signals()
 
         if self.combined_line is None:
-            line_geom = self.lines[0].geometry()
+            rotate_line_ft = self.lines[0]
         else:
-            line_geom = self.combined_line.geometry()
+            rotate_line_ft = self.combined_line
 
         self.settings.layer.selectByIds(self.feature_ids)
 
@@ -2040,17 +2059,17 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 result = True
 
         else:
-
-            for i, point in enumerate(self.rotation_points):
+            # Revers the rotation points list.
+            for i, point in enumerate(self.rotation_points[::-1]):
 
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
-                    line_geom,
-                    point.geometry(),
+                    rotate_line_ft,
+                    point,
                     self.area,
                     self.feature_ids,
-                    clockwise=-1
+                    clockwise=1
                 )
 
                 try:
@@ -2071,12 +2090,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
         else:
             fail_message = QApplication.translate(
-                'MoveLineAreaWidget',
+                'EqualAreaWidget',
                 'Sorry, splitting failed. Try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
 
     def preview(self):
+
         result = self.validate_run()
         if not result:
             return
@@ -2090,15 +2110,17 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.disconnect_signals()
 
         if self.combined_line is None:
-            line_geom = self.lines[0].geometry()
+            rotate_line_ft = self.lines[0]
         else:
-            line_geom = self.combined_line.geometry()
+            rotate_line_ft = self.combined_line
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer(True)
-        self.preview_layer.selectAll()
+        self.create_preview_layer()
+        # self.create_preview_layer2()
 
+        self.preview_layer.selectAll()
+        # self.preview_layer2.selectAll()
         if self.parellel_rad.isChecked():
 
             line_feature = None
@@ -2109,6 +2131,9 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     line_ft = self.lines[0]
                 else:
                     line_ft = line_feature
+                if isinstance(line_ft, bool):
+
+                    return
 
                 feature, line_feature = split_move_line_with_area(
                     self.preview_layer,
@@ -2119,39 +2144,45 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids
                 )
                 if not isinstance(feature, bool):
-                    clear_layer_features(self.preview_layer)
+                    # clear_layer_features(self.preview_layer)
                     self.settings.layer.selectByIds(self.feature_ids)
+                    # self.settings.layer.selectedFeatures()[0].geometry()
+                    if i == 0:
+                        clear_layer_features(self.preview_layer)
+                    # if i != 0:
+                    # add_geom_to_layer(
+                    #     self.preview_layer,
+                    #     feature
+                    # )
 
-                    add_geom_to_layer(
-                        self.preview_layer,
-                        self.settings.layer.selectedFeatures()[0].geometry()
-                    )
+                # if isinstance(line_feature, QgsGeometry):
+                #     geom = line_feature
 
                 result = True
 
         else:
-
-            for i, point in enumerate(self.rotation_points):
+            # Revers the rotation points list.
+            for i, point in enumerate(self.rotation_points[::-1]):
 
                 result = split_rotate_line_with_area(
                     self.preview_layer,
-                    self.preview_layer,
-                    line_geom,
-                    point.geometry(),
+                    self.preview_layer2,
+                    rotate_line_ft,
+                    point,
                     self.area,
                     self.feature_ids,
-                    clockwise=-1
+                    clockwise=1
                 )
 
                 try:
-                    clear_layer_features(self.preview_layer)
+                    # clear_layer_features(self.preview_layer)
                     self.settings.layer.selectByIds(self.feature_ids)
-
-                    add_geom_to_layer(
-                        self.preview_layer,
-                        self.settings.layer.selectedFeatures()[
-                            0].geometry()
-                    )
+                    if i == 0:
+                        clear_layer_features(self.preview_layer)
+                        add_geom_to_layer(
+                            self.preview_layer,
+                            self.settings.layer.selectedFeatures()[0].geometry()
+                        )
                 except Exception:
                     pass
 
