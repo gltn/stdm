@@ -228,33 +228,48 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     if isinstance(geom, QgsPoint):
         geom = QgsGeometry.fromPoint(geom)
     iface.setActiveLayer(layer)
+    preview_layer = False
     # refresh map canvas to see the result
     if feature_ids is not None:
         layer.startEditing()
+
         if len(feature_ids) > 0:
             features = feature_id_to_feature(layer, feature_ids)
-            print features
-            # TODO consider change for merge before split
-            features[0].setGeometry(main_geom)
+            if len(features) > 0:
+                features[0].setGeometry(main_geom)
+            else: # for preview polygon
+                preview_layer = True
+                features = list(layer.getFeatures())
+                features[0].setGeometry(main_geom)
+
             layer.updateFeature(features[0])
+
         feature = add_geom_to_feature(layer, geom)
 
     else:
         with edit(layer):
             feature = add_geom_to_feature(layer, geom)
+
     layer.updateExtents()
+    if preview_layer:
+        layer.commitChanges()
+    print feature
     return feature
 
 def  add_geom_to_feature(layer, geom):
-    feature = QgsFeature()
+    ft = QgsFeature()
     attr = layer.fields().toList()
-    feature.setAttributes(attr)
+    ft.setAttributes(attr)
 
     # feature.setAttribute(0, 10000000000)
-    feature.setGeometry(geom)
-    layer.addFeatures([feature])
+    # print layer.name(), geom
+    if isinstance(geom, QgsGeometry):
+        ft.setGeometry(geom)
+    else:
+        ft.setGeometry(geom.geometry())
+    layer.addFeatures([ft])
 
-    return feature
+    return ft
 
 def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
     with edit(layer):
@@ -633,14 +648,6 @@ def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
 ):
-    if isinstance(selected_line_ft, QgsFeature):
-        # Get selected line geometry
-        selected_line_geom = selected_line_ft.geometry()
-        # print '1', selected_line_geom
-    else:
-        selected_line_geom = selected_line_ft
-        # add_geom_to_layer(line_layer, selected_line_geom)
-        # print '2', selected_line_geom
 
     decimal_place_new = 0
 
@@ -654,17 +661,15 @@ def split_move_line_with_area(
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
         # the height/ distance from selected line
-        # print height, split_area1
-        # print height_change / math.pow(10, decimal_place_new)
+
         height = Decimal(height) + Decimal(height_change) /\
                                    Decimal(math.pow(10, decimal_place_new))
-        # print height
         # Get the parallel line from the selected line using the calculated height
         parallel_line_geom = get_parallel_line(
-            selected_line_geom, height*-1
+            selected_line_ft.geometry(), height*-1
         )
-
-        # Get one feature selected on preview layer. The preview layer has 1 feature
+        # Get one feature selected on preview layer.
+        # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
         try:
             sel_features = list(preview_layer.getFeatures())
@@ -682,6 +687,7 @@ def split_move_line_with_area(
         added_points = extend_line_points(parallel_line_geom, extent)
 
         parallel_line_geom2 =  QgsGeometry.fromPolyline(added_points)
+
         # print parallel_line_geom2
         # parallel_line_geom3 = QgsGeometry.as
         # add_geom_to_layer(line_layer, parallel_line_geom2)
@@ -701,7 +707,7 @@ def split_move_line_with_area(
                     else:
                         first_intersection = selected_line_ft
 
-                    height = area/selected_line_geom.length()
+                    height = area/selected_line_ft.geometry().length()
 
                 if loop_index >= 1:
                     # The closest geometry to fist intersection is the split geom
@@ -773,9 +779,11 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
+                        parallel_line_ft = add_geom_to_feature(
+                            line_layer, parallel_line_geom2)
                         # print main_geom.area(), split_geom.area()
                         # print 'aa', parallel_line_geom
-                        return feature, parallel_line_geom2
+                        return feature, parallel_line_ft
 
             # If provided area is smaller than split area, decrease height
             if area < split_area1:
@@ -815,10 +823,12 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
+                        parallel_line_ft = add_geom_to_feature(
+                            line_layer, parallel_line_geom2)
                         # print main_geom.area(), split_geom.area()
                         # print 'bb', parallel_line_geom
 
-                        return feature, parallel_line_geom2
+                        return feature, parallel_line_ft
         else:
             # print 'failed to intersect'
             return False, False

@@ -36,6 +36,7 @@ GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
+GEOMETRY_HOLDER = 'Geometry Holder'
 
 # TODO after removing a layer and adding another layer and starting geometry tools, it does not work.
 # TODO qgis crash after removing the geometry temporary layers. Check if some variables are set to None.
@@ -267,6 +268,8 @@ class GeometryToolsDock(
         self.line_layer = None
         self.widgets_added = False
         QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
+        self.memory_layers = [
+            PREVIEW_POLYGON, POLYGON_LINES, LINE_POINTS, GEOMETRY_HOLDER]
 
     def write_log_message(message, tag, level):
         if os is None:
@@ -343,24 +346,32 @@ class GeometryToolsDock(
         :rtype:
         """
         try:
-            prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-                PREVIEW_POLYGON
-            )
-            if len(prev_layers) > 0:
-                for prev_layer in prev_layers:
-                    QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
-            line_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-                POLYGON_LINES
-            )
-            if len(line_layers) > 0:
-                for line_layer in line_layers:
-                    QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
-            point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-                LINE_POINTS
-            )
-            if len(point_layers) > 0:
-                for point_layer in point_layers:
-                    QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
+            for memory_layer_name in self.memory_layers:
+                mem_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                    memory_layer_name
+                )
+                if len(mem_layers) > 0:
+                    for mem_layer in mem_layers:
+                        QgsMapLayerRegistry.instance().removeMapLayer(mem_layer)
+
+            # prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            #     PREVIEW_POLYGON
+            # )
+            # if len(prev_layers) > 0:
+            #     for prev_layer in prev_layers:
+            #         QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+            # line_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            #     POLYGON_LINES
+            # )
+            # if len(line_layers) > 0:
+            #     for line_layer in line_layers:
+            #         QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
+            # point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            #     LINE_POINTS
+            # )
+            # if len(point_layers) > 0:
+            #     for point_layer in point_layers:
+            #         QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
             if self.settings.layer is not None:
                 if iface.activeLayer() is not None:
                     if iface.activeLayer().isEditable():
@@ -964,7 +975,7 @@ class GeomWidgetsBase(object):
                 self.settings.layer, 'Point', LINE_POINTS, True
             )
 
-    def create_preview_layer(self):
+    def create_preview_layer(self, visible=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             PREVIEW_POLYGON
         )
@@ -973,12 +984,12 @@ class GeomWidgetsBase(object):
 
         if len(prev_layers) == 0:
             self.preview_layer = copy_layer_to_memory(
-                self.settings.layer, PREVIEW_POLYGON, self.feature_ids, True
+                self.settings.layer, PREVIEW_POLYGON, self.feature_ids, visible
             )
         else:
             add_features_to_layer(self.preview_layer, self.features)
 
-        iface.legendInterface().setLayerVisible(self.preview_layer, True)
+        iface.legendInterface().setLayerVisible(self.preview_layer, visible)
 
     def remove_preview_layers(self):
         preview_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1044,7 +1055,6 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
     def showEvent(self, QShowEvent):
         QApplication.processEvents()
 
-
     def run(self):
         result = self.validate_run()
         if not result:
@@ -1057,7 +1067,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
         self.progress_dialog.show()
-        self.create_preview_layer()
+        self.create_preview_layer(False)
 
         self.settings.layer.selectByIds(self.feature_ids)
 
@@ -1082,6 +1092,41 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             )
             self.progress_dialog.setLabelText(fail_message)
 
+    def preview(self):
+        self.executed = True
+        result = self.validate_run()
+        if not result:
+            return
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+        self.progress_dialog.show()
+        # if self.preview_layer is not None:
+        #     clear_layer_features(self.preview_layer)
+
+        self.create_preview_layer(True)
+
+        self.preview_layer.selectAll()
+        result = split_move_line_with_area(
+            self.preview_layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            self.widget.split_polygon_area.value(),
+            self.feature_ids
+        )
+        self.init_signals()
+        if result:
+            self.progress_dialog.cancel()
+            self.splitting_success_help(4)
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
 
 
 class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
@@ -1100,7 +1145,8 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.create_preview_layer()
         if len(self.lines) == 0:
             message = QApplication.translate(
-                'OffsetDistanceWidget', 'You need to first select a line.'
+                'OffsetDistanceWidget',
+                'You need to first select a line.'
             )
             self.notice.insertWarningNotification(message)
             return
@@ -1137,7 +1183,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.specify_offset_distance_help(2)
         return GeomWidgetsBase.on_line_feature_selected(self)
 
-    def validate_run(self):
+    def validate_run(self, preview_visible=False):
         if self.widget.offset_distance.value() == 0:
             message = QApplication.translate(
                 'GeomWidgetsBase',
@@ -1145,7 +1191,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
-        self.create_preview_layer()
+        self.create_preview_layer(preview_visible)
 
         result = split_offset_distance(
                 self.settings.layer,
@@ -1173,16 +1219,50 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
 
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-
         self.settings.layer.selectByIds(self.feature_ids)
+
         result = split_offset_distance(
             self.settings.layer,
+            self.line_layer,
+            self.preview_layer,
+            self.lines[0],
+            self.widget.offset_distance.value(),
+            self.feature_ids
+        )
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'OffsetDistanceWidget',
+                'Sorry, splitting failed. '
+                'Reduce the offset distance or try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
+
+    def preview(self):
+        result = self.validate_run(True)
+        if not result:
+            return
+        self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.preview_layer.selectAll()
+        result = split_offset_distance(
+            self.preview_layer,
             self.line_layer,
             self.preview_layer,
             self.lines[0],
@@ -1196,11 +1276,11 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.progress_dialog.hide()
         else:
             fail_message = QApplication.translate(
-                'MoveLineAreaWidget',
-                'Sorry, splitting failed. Reduce the offset distance or try another method.'
+                'OffsetDistanceWidget',
+                'Sorry, splitting failed. '
+                'Reduce the offset distance or try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
-
 
 class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
     line_selection_finished = pyqtSignal()
@@ -1323,7 +1403,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.widget.selected_points_lbl.setText(str(self.points_count))
         # self.highlight_features(self.line_layer)
 
-
     def validate_run(self):
         state = True
         if self.rotation_point is None:
@@ -1350,7 +1429,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        message = QApplication.translate('OnePointAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
         self.progress_dialog.show()
         if self.settings_layer_connected:
@@ -1373,15 +1452,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.feature_ids,
             clockwise
         )
-        # cProfile.runctx("""split_rotate_line_with_area(
-        #     self.settings.layer,
-        #     self.preview_layer,
-        #     selected_line_geom,
-        #     self.rotation_point.geometry(),
-        #     self.split_polygon_area.value(),
-        #     self.feature_ids,
-        #     clockwise
-        # )""", globals(), locals())
+
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
@@ -1389,12 +1460,54 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
         else:
             fail_message = QApplication.translate(
-                'MoveLineAreaWidget',
+                'OnePointAreaWidget',
                 'Sorry, splitting failed. Try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
 
+    def preview(self):
+        result = self.validate_run()
+        if not result:
+            return
+        self.executed = True
 
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('OnePointAreaWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+        self.progress_dialog.show()
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.create_preview_layer(True)
+        if self.clockwise.isChecked():
+            clockwise = 1
+        else:
+            clockwise = -1
+
+        self.preview_layer.selectAll()
+
+        selected_line_geom = self.lines[0].geometry()
+        result = split_rotate_line_with_area(
+            self.preview_layer,
+            self.preview_layer,
+            selected_line_geom,
+            self.rotation_point.geometry(),
+            self.split_polygon_area.value(),
+            self.feature_ids,
+            clockwise
+        )
+
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+        if result:
+            self.progress_dialog.cancel()
+        else:
+            fail_message = QApplication.translate(
+                'OnePointAreaWidget',
+                'Sorry, splitting failed. Try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
 
 
 class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
@@ -1409,7 +1522,6 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
-
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1436,7 +1548,6 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         :return:
         :rtype:
         """
-
         if self.parent().currentWidget().objectName() != self.objectName():
             return
 
@@ -1539,10 +1650,11 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'JoinPointsWidget',
-                'Select a line to create the new point on.'
+                'Select a line to create the new point.'
             )
-            self.notice.insertErrorNotification(message)
+            self.notice.insertWarningNotification(message)
             return
+
         if self.rotation_point is not None:
             with edit(self.point_layer):
                 point_features = [f.id() for f in self.point_layer.getFeatures()]
@@ -1565,14 +1677,12 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         self.length_from_point.setMaximum(math.modf(line_length)[1])
         # add points for the line.
-
         add_line_points_to_map(self.point_layer, line_geom, clear=False)
         self.points_count = self.selected_point_count()
 
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
-
-    def validate_run(self):
+    def validate_run(self, preview_visible=False):
         state = True
         if self.points_count < 2:
             message = QApplication.translate(
@@ -1588,7 +1698,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
             self.notice.insertWarningNotification(message)
         point_geoms = [f.geometry() for f in self.points]
-        self.create_preview_layer()
+        self.create_preview_layer(preview_visible)
         result = split_join_points(
             self.settings.layer,
             self.preview_layer,
@@ -1612,14 +1722,11 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        message = QApplication.translate('JoinPointsWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
-
 
         if self.settings_layer_connected:
             self.disconnect_signals()
-
-
 
         self.settings.layer.selectByIds(self.feature_ids)
         point_geoms = [f.geometry() for f in self.points]
@@ -1638,7 +1745,43 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.progress_dialog.hide()
         else:
             fail_message = QApplication.translate(
-                'MoveLineAreaWidget',
+                'JoinPointsWidget',
+                'Sorry, splitting failed. Check the selected points are '
+                'not in the same line and try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
+
+
+    def preview(self):
+        result = self.validate_run(True)
+        if not result:
+            return
+        self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('JoinPointsWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        self.preview_layer.selectAll()
+        point_geoms = [f.geometry() for f in self.points]
+        result = split_join_points(
+            self.preview_layer,
+            self.preview_layer,
+            point_geoms,
+            self.feature_ids
+        )
+
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+        if result:
+            self.progress_dialog.hide()
+        else:
+            fail_message = QApplication.translate(
+                'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
                 'not in the same line and try another method.'
             )
@@ -1851,48 +1994,28 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         if self.settings_layer_connected:
             self.disconnect_signals()
 
-        # if self.clockwise.isChecked():
-        #     clockwise = 1
-        # else:
-        #     clockwise = -1
-
         if self.combined_line is None:
             line_geom = self.lines[0].geometry()
         else:
             line_geom = self.combined_line.geometry()
-        # print (
-        #         self.settings.layer,
-        #         self.preview_layer,
-        #         line_geom,
-        #
-        #         self.area,
-        #         self.feature_ids,
-        #
-        #     )
+
         self.settings.layer.selectByIds(self.feature_ids)
 
         self.create_preview_layer()
         if self.parellel_rad.isChecked():
 
-            geom = None
-            main_geom = None
-            feature = None
+            line_feature = None
+
             for i in range(1, self.no_polygons):
-                area = self.area * i
-                # print area
-                if geom is None:
+
+                if line_feature is None:
                     line_ft = self.lines[0]
                 else:
-                    line_ft = geom
-                # if feature is not None:
-                #     self.feature_ids[:] = []
-                #     self.feature_ids.append(feature.id())
-                # if isinstance(main_geom, bool):
-                #     continue
+                    line_ft = line_feature
+                if isinstance(line_ft, bool):
+                    print 'false '
+                    return
 
-                # if geom is not None:
-                #     add_geom_to_layer(self.line_layer, line_ft)
-                # print area
                 feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,
@@ -1904,30 +2027,22 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 if not isinstance(feature, bool):
                     clear_layer_features(self.preview_layer)
                     self.settings.layer.selectByIds(self.feature_ids)
-                    poly_geom = self.settings.layer.selectedFeatures()[0].geometry()
+                    # self.settings.layer.selectedFeatures()[0].geometry()
+
                     add_geom_to_layer(
                         self.preview_layer,
-                        poly_geom
+                        self.settings.layer.selectedFeatures()[0]
                     )
 
-                if isinstance(line_feature, QgsGeometry):
-
-                    geom = line_feature
-                    result = True
+                # if isinstance(line_feature, QgsGeometry):
+                #
+                #     geom = line_feature
+                result = True
 
         else:
 
             for i, point in enumerate(self.rotation_points):
-                # if i != 0:
-                # print len(self.rotation_points)
-                area = self.area * (len(self.rotation_points) - i)
 
-
-                # else:
-                #     area = self.area
-                # print area
-
-                print self.area, area
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
@@ -1937,56 +2052,18 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids,
                     clockwise=-1
                 )
-                # clear_layer_features(self.preview_layer)
-                # self.remove_memory_layer(PREVIEW_POLYGON)
-                # # if result:
-                # # clear_layer_features(self.preview_layer)
-                # self.feature_ids = [f.id() for f in
-                #             self.settings.layer.selectedFeatures()]
-                #
-                # self.preview_layer = copy_layer_to_memory(
-                #     self.settings.layer, PREVIEW_POLYGON, self.feature_ids,
-                #     False
-                # )
+
                 try:
                     clear_layer_features(self.preview_layer)
                     self.settings.layer.selectByIds(self.feature_ids)
-                    poly_geom = self.settings.layer.selectedFeatures()[
-                        0].geometry()
+
                     add_geom_to_layer(
                         self.preview_layer,
-                        poly_geom
+                        self.settings.layer.selectedFeatures()[0].geometry()
                     )
                 except Exception:
                     pass
-                # self.on_feature_selected(feat_ids)
-                # # print result
-                # if result:
-                #     self.remove_memory_layer(PREVIEW_POLYGON)
-                #     self.preview_layer = copy_layer_to_memory(
-                #         self.settings.layer, PREVIEW_POLYGON, self.feature_ids,
-                #         True
-                #     )
-                    # clear_layer_features(self.preview_layer)
-                    # self.settings.layer.selectByIds(self.feature_ids)
-                    # print self.settings.layer.selectedFeatures()
-                    # print self.settings.layer.selectedFeatures()[0].geometry()
-                    # poly_geom = self.settings.layer.selectedFeatures()[0].geometry()
-                    # add_geom_to_layer(
-                    #     self.preview_layer,
-                    #     poly_geom
-                    # )
-                    # print 'polygon geom'
 
-        # cProfile.runctx("""split_rotate_line_with_area(
-        #     self.settings.layer,
-        #     self.preview_layer,
-        #     selected_line_geom,
-        #     self.rotation_point.geometry(),
-        #     self.split_polygon_area.value(),
-        #     self.feature_ids,
-        #     clockwise
-        # )""", globals(), locals())
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
@@ -1999,6 +2076,96 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             )
             self.progress_dialog.setLabelText(fail_message)
 
+    def preview(self):
+        result = self.validate_run()
+        if not result:
+            return
+        self.executed = True
+
+        self.progress_dialog.setRange(0, 0)
+        message = QApplication.translate('MoveLineAreaWidget', 'Splitting')
+        self.progress_dialog.setLabelText(message)
+        self.progress_dialog.show()
+        if self.settings_layer_connected:
+            self.disconnect_signals()
+
+        if self.combined_line is None:
+            line_geom = self.lines[0].geometry()
+        else:
+            line_geom = self.combined_line.geometry()
+
+        self.settings.layer.selectByIds(self.feature_ids)
+
+        self.create_preview_layer(True)
+        self.preview_layer.selectAll()
+
+        if self.parellel_rad.isChecked():
+
+            line_feature = None
+
+            for i in range(1, self.no_polygons):
+
+                if line_feature is None:
+                    line_ft = self.lines[0]
+                else:
+                    line_ft = line_feature
+
+                feature, line_feature = split_move_line_with_area(
+                    self.preview_layer,
+                    self.line_layer,
+                    self.preview_layer,
+                    line_ft,
+                    self.area,
+                    self.feature_ids
+                )
+                if not isinstance(feature, bool):
+                    clear_layer_features(self.preview_layer)
+                    self.settings.layer.selectByIds(self.feature_ids)
+
+                    add_geom_to_layer(
+                        self.preview_layer,
+                        self.settings.layer.selectedFeatures()[0].geometry()
+                    )
+
+                result = True
+
+        else:
+
+            for i, point in enumerate(self.rotation_points):
+
+                result = split_rotate_line_with_area(
+                    self.preview_layer,
+                    self.preview_layer,
+                    line_geom,
+                    point.geometry(),
+                    self.area,
+                    self.feature_ids,
+                    clockwise=-1
+                )
+
+                try:
+                    clear_layer_features(self.preview_layer)
+                    self.settings.layer.selectByIds(self.feature_ids)
+
+                    add_geom_to_layer(
+                        self.preview_layer,
+                        self.settings.layer.selectedFeatures()[
+                            0].geometry()
+                    )
+                except Exception:
+                    pass
+
+        iface.setActiveLayer(self.settings.layer)
+        self.init_signals()
+
+        if result:
+            self.progress_dialog.cancel()
+        else:
+            fail_message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Sorry, splitting failed. Try another method.'
+            )
+            self.progress_dialog.setLabelText(fail_message)
 
 
 class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
