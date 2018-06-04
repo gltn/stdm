@@ -244,7 +244,7 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
 
             layer.updateFeature(features[0])
 
-        feature = add_geom_to_feature(layer, geom)
+            feature = add_geom_to_feature(layer, geom, features[0])
 
     else:
         with edit(layer):
@@ -253,16 +253,17 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     layer.updateExtents()
     if preview_layer:
         layer.commitChanges()
-    print feature
+
     return feature
 
-def  add_geom_to_feature(layer, geom):
+def  add_geom_to_feature(layer, geom, original_feature=None):
     ft = QgsFeature()
     attr = layer.fields().toList()
-    ft.setAttributes(attr)
+    if original_feature is None:
+        ft.setAttributes(attr)
+    else:
+        ft.setAttributes(original_feature.attributes())
 
-    # feature.setAttribute(0, 10000000000)
-    # print layer.name(), geom
     if isinstance(geom, QgsGeometry):
         ft.setGeometry(geom)
     else:
