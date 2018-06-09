@@ -148,7 +148,7 @@ class STDMQGISLoader(object):
 
         # STDM Tables
         self.stdmTables = []
-
+        self.entity_formatters = {}
         self.stdm_config = StdmConfiguration.instance()
         self.reg_config = RegistryConfig()
         self.spatialLayerMangerDockWidget = None
