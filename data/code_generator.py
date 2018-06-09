@@ -45,7 +45,7 @@ class CodeGenerator(object):
         self.code_model_obj = self.code_model()
         self.column = column
 
-    def generate(self, prefix, separator, leading_zero):
+    def generate(self, prefix, separator, leading_zero, hide_prefix=False):
         """
         Generates the next unique code by checking what is saved in the
         database for a specific column.
@@ -119,8 +119,12 @@ class CodeGenerator(object):
             leading_zero_len = len(leading_zero) + 1
             # format again with leading 0
             formatted_serial = "%0{}d".format(leading_zero_len) % (next_serial,)
+
             code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
             self.save_code(code)
+            print hide_prefix
+            if hide_prefix:
+                code = formatted_serial
 
             # add new code with the formatted number
             return code

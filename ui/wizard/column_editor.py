@@ -298,6 +298,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['colname'] = column.name
                 self.form_fields['enable_editing'] = column.enable_editing
                 self.form_fields['disable_auto_increment'] = column.disable_auto_increment
+                self.form_fields['hide_prefix'] = column.hide_prefix
 
             # Decimal properties
             if hasattr(column, 'precision'):
@@ -351,7 +352,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['disable_auto_increment'] = self.type_attribs.get(
             'disable_auto_increment', ''
         )
-
+        self.form_fields['hide_prefix'] = self.type_attribs.get(
+            'hide_prefix', ''
+        )
         self.form_fields['precision'] = self.type_attribs.get(
             'precision', 18
         )
@@ -508,7 +511,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'prefix_source': '', 'columns':[], 'column_separators':[],
             'leading_zero': '', 'separator':'',
             'disable_auto_increment': False, 'enable_editing': False,
-            'property': self.code_property, 'prop_set': True}
+            'property': self.code_property, 'hide_prefix': False, 'prop_set': True}
 
     def data_type_property(self):
         """
@@ -675,6 +678,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['disable_auto_increment'] = editor.disable_auto_increment()
             self.form_fields['enable_editing'] = editor.enable_editing()
             self.form_fields['column_separators'] = editor.column_separators()
+            self.form_fields['hide_prefix'] = editor.hide_prefix()
 
             self.property_set()
 
