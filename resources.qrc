@@ -105,5 +105,6 @@
     <file>images/icons/code.png</file>
     <file>images/icons/clear.png</file>
     <file>images/icons/custom_tenure.png</file>
+    <file>images/icons/advanced_search.png</file>
   </qresource>
 </RCC>

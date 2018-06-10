@@ -250,7 +250,25 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     return _execute(t)
 
 def export_data(table_name):
-    sql = u"SELECT * FROM {0}".format(unicode(table_name))
+    sql = u"SELECT * FROM {0} ".format(unicode(table_name))
+
+    t = text(sql)
+
+    return _execute(t)
+
+def fetch_from_table(table_name, limit):
+    """
+    Fetches data from a table with a limit.
+    :param table_name: The table name.
+    :type table_name: String
+    :param limit: The limit.
+    :type limit: Integer
+    :return:
+    :rtype:
+    """
+    sql = u"SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
+        unicode(table_name), unicode(limit)
+    )
 
     t = text(sql)
 

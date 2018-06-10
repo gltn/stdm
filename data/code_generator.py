@@ -83,7 +83,8 @@ class CodeGenerator(object):
         if len(record_match) == 0:
             code = '{0}{1}{2}1'.format(prefix, separator, leading_zero)
             self.save_code(code)
-
+            if hide_prefix:
+                code = '{0}1'.format(leading_zero)
             return code
 
         else:
@@ -122,7 +123,7 @@ class CodeGenerator(object):
 
             code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
             self.save_code(code)
-            print hide_prefix
+
             if hide_prefix:
                 code = formatted_serial
 
