@@ -57,7 +57,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
-        self._hide_prefix = form_fields['hide_prefix']
+        self._hide_prefix =  string_to_boolean(form_fields['hide_prefix'], False)
         self._parent_column_name = form_fields['colname']
         self._disable_auto_increment = string_to_boolean(
             form_fields['disable_auto_increment'], False)

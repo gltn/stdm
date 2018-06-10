@@ -285,10 +285,11 @@ class DetailsDBHandler:
     Handles the database linkage of the spatial entity details.
     """
 
-    def __init__(self):
+    def __init__(self, plugin):
         """
         Initializes the DetailsDBHandler.
         """
+        self.plugin = plugin
         self._entity = None
         self.column_formatter = OrderedDict()
         self.formatted_columns = OrderedDict()
@@ -323,6 +324,9 @@ class DetailsDBHandler:
             entity = self._entity
         if entity is None:
             return
+        if entity.name in self.plugin.entity_formatters.keys():
+            self.column_formatter = self.plugin.entity_formatters[entity.name]
+            return
         for col in entity.columns.values():
             col_name = col.name
 
@@ -333,6 +337,7 @@ class DetailsDBHandler:
             if not widget_factory is None:
                 formatter = widget_factory(col)
                 self.column_formatter[col_name] = formatter
+        self.plugin.entity_formatters[entity.name] = self.column_formatter
 
     def display_column_object(self, entity):
         """
@@ -445,6 +450,7 @@ class DetailsDBHandler:
         self._formatted_record.clear()
 
         self.display_column_object(entity)
+
         for col in self.display_columns:
             if isinstance(model, OrderedDict):
                 if col.name in model.keys():
@@ -601,7 +607,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         from stdm.ui.entity_browser import _EntityDocumentViewerHandler
         DetailsDockWidget.__init__(self, iface, plugin)
 
-        DetailsDBHandler.__init__(self)
+        DetailsDBHandler.__init__(self, plugin)
 
         self.plugin = plugin
         if tree_view is None:
@@ -717,8 +723,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.layer_table in spatial_tables() and \
                         self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(self.layer_table)
-
-    # def _activate_feature_details(self, button_clicked=True):
+    #
+    # def activate_feature_details(self, button_clicked=True):
     #     if cProfile is None:
     #         return
     #     cProfile.runctx('self._activate_feature_details(button_clicked)', globals(), locals())
@@ -735,19 +741,20 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
         DETAILS_DOCK_ON = True
 
-        if self.plugin is None:
-            # Registry column widget
-            # set formatter for social tenure relationship.
-            self.set_formatter(self.social_tenure)
-            for party in self.social_tenure.parties:
-                self.set_formatter(party)
-            for spatial_unit in self.social_tenure.spatial_units:
-                self.set_formatter(spatial_unit)
-                custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-                    spatial_unit
-                )
-                self.set_formatter(custom_attr_entity)
-            return
+        # if self.plugin is None:
+        # Registry column widget
+        # set formatter for social tenure relationship.
+        self.set_formatter(self.social_tenure)
+        for party in self.social_tenure.parties:
+            self.set_formatter(party)
+
+        for spatial_unit in self.social_tenure.spatial_units:
+            self.set_formatter(spatial_unit)
+            custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+                spatial_unit
+            )
+            self.set_formatter(custom_attr_entity)
+            # return
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
         # if no active layer, show error message

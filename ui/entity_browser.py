@@ -172,7 +172,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     recordSelected = pyqtSignal(int)
     
-    def __init__(self, entity, parent=None, state=MANAGE, load_records=True):
+    def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
         QDialog.__init__(self,parent)
         self.setupUi(self)
 
@@ -200,6 +200,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         )
         self.load_records = load_records
         #Initialize toolbar
+        self.plugin = plugin
         self.tbActions = QToolBar()
         self.tbActions.setObjectName('eb_actions_toolbar')
         self.tbActions.setIconSize(QSize(16, 16))
@@ -412,7 +413,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         header_idx = 0
 
         #Iterate entity column and assert if they exist
+
         for c in self._entity.columns.values():
+
+
             # Exclude geometry columns
             if isinstance(c, GeometryColumn):
                 continue
@@ -542,7 +546,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 QApplication.translate('EntityBrowser', 'Entity Browser'),
                 msg
             )
-            return
 
         else:
             self._init_entity_columns()
@@ -562,49 +565,58 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.show()
             progressDialog.setValue(0)
 
-            # Only one filter is possible.
-            if not self.load_records:
-                entity_records = self.filtered_records
-            else:
-                entity_records = export_data(self._entity.name)
             #Add records to nested list for enumeration in table model
 
             entity_records_collection = []
+            load_data = True
+            if self.plugin is not None:
+                if self._entity.name in self.plugin.entity_table_model.keys():
+                    self._tableModel = self.plugin.entity_table_model[
+                        self._entity.name
+                    ]
+                    load_data = False
 
-            for i,er in enumerate(entity_records):
+            if load_data:
+                # Only one filter is possible.
+                if not self.load_records:
+                    entity_records = self.filtered_records
+                else:
+                    entity_records = export_data(self._entity.name)
 
-                QApplication.processEvents()
-                entity_row_info = []
-                progressDialog.setValue(i)
-                try:
-                    # for attr, attr_val in er.items():
-                        # print e
-                    for attr in self._entity_attrs:
-                        # attr_val = getattr(er, attr)
-                        attr_val = er[attr]
-                        # Check if there are display formatters and apply if
-                        # one exists for the given attribute.
-                        if attr_val is not None: # No need of formatter for None value
-                            if attr in self._cell_formatters:
-                                formatter = self._cell_formatters[attr]
-                                attr_val = formatter.format_column_value(attr_val)
-                        entity_row_info.append(attr_val)
-                except Exception as ex:
-                    QMessageBox.critical(
-                        self,
-                        QApplication.translate(
-                            'EntityBrowser', 'Loading Records'
-                        ),
-                        unicode(ex.message))
-                    return
+            if self._tableModel is None:
+                for i,er in enumerate(entity_records):
 
-                entity_records_collection.append(entity_row_info)
+                    QApplication.processEvents()
+                    entity_row_info = []
+                    progressDialog.setValue(i)
+                    try:
+                        # for attr, attr_val in er.items():
+                            # print e
+                        for attr in self._entity_attrs:
+                            # attr_val = getattr(er, attr)
+                            attr_val = er[attr]
+                            # Check if there are display formatters and apply if
+                            # one exists for the given attribute.
+                            if attr_val is not None: # No need of formatter for None value
+                                if attr in self._cell_formatters:
+                                    formatter = self._cell_formatters[attr]
+                                    attr_val = formatter.format_column_value(attr_val)
+                            entity_row_info.append(attr_val)
+                    except Exception as ex:
+                        QMessageBox.critical(
+                            self,
+                            QApplication.translate(
+                                'EntityBrowser', 'Loading Records'
+                            ),
+                            unicode(ex.message))
+                        return
 
+                    entity_records_collection.append(entity_row_info)
 
-
-            self._tableModel = BaseSTDMTableModel(entity_records_collection,
+                self._tableModel = BaseSTDMTableModel(entity_records_collection,
                                                   self._headers, self)
-
+                self.plugin.entity_table_model[self._entity.name] = \
+                    self._tableModel
             # Add filter columns
             for header, info in self._searchable_columns.iteritems():
                 column_name, index = info['name'], info['header_index']
@@ -768,8 +780,8 @@ class EntityBrowserWithEditor(EntityBrowser):
     Entity browser with added functionality for carrying out CRUD operations
     directly.
     """
-    def __init__(self,entity, parent=None, state=MANAGE, load_records=True):
-        EntityBrowser.__init__(self, entity, parent, state, load_records)
+    def __init__(self,entity, parent=None, state=MANAGE, load_records=True, plugin=None):
+        EntityBrowser.__init__(self, entity, parent, state, load_records, plugin)
         self.record_id = 0
 
         self.highlight = None
