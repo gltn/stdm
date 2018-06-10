@@ -42,7 +42,8 @@ from stdm.data.configuration.entity import Entity
 from stdm.data.pg_utils import(
     table_column_names,
     qgsgeometry_from_wkbelement,
-    export_data
+    export_data,
+    fetch_from_table
 )
 
 from stdm.data.qtmodels import (
@@ -54,6 +55,7 @@ from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.navigation import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.sourcedocument import (
     DocumentWidget,
     network_document_path,
@@ -228,6 +230,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
+        # self._add_advanced_search_btn()
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -281,6 +284,24 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._view_docs_act.triggered.connect(self.on_load_document_viewer)
 
         self.tbActions.addAction(self._view_docs_act)
+
+
+    def _add_advanced_search_btn(self):
+        #Add button for viewing supporting documents if supported
+        search_str = QApplication.translate(
+            'EntityBrowser',
+            'Advanced Search'
+        )
+        self._search_act = QAction(
+            QIcon(':/plugins/stdm/images/icons/advanced_search.png'),
+            search_str,
+            self
+        )
+
+        #Connect signal for showing document viewer
+        self._search_act.triggered.connect(self.on_advanced_search)
+
+        self.tbActions.addAction(self._search_act)
 
     def dateFormatter(self):
         """
@@ -499,6 +520,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 QItemSelectionModel.ClearAndSelect|QItemSelectionModel.Rows
             )
 
+    def on_advanced_search(self):
+        search = AdvancedSearch(self._entity, parent=self)
+        search.show()
+
     def on_load_document_viewer(self):
         #Slot raised to show the document viewer for the selected entity
         sel_rec_ids = self._selected_record_ids()
@@ -581,7 +606,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 if not self.load_records:
                     entity_records = self.filtered_records
                 else:
-                    entity_records = export_data(self._entity.name)
+                    entity_records = fetch_from_table(
+                        self._entity.name, limit=3000
+                    )
 
             if self._tableModel is None:
                 for i,er in enumerate(entity_records):
