@@ -49,7 +49,10 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         return table_name
 
     def fmt_short_name(self, name):
-        return name[name.index(' ')+1:].replace(' ','_')
+        if name.find(' ') > 0:
+            return name[name.index(' ')+1:].replace(' ','_')
+        else:
+            return name
 
     def grant_revoke_privilege(self, operation):
         try:
