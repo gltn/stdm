@@ -54,11 +54,19 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         else:
             return name
 
+    def grant_privilege_base_table(self, role):
+        base_tables =  ['content_base', 'content_roles', 'role']
+        for bt in base_tables:
+            self.grant_or_revoke('GRANT', 'SELECT', bt, role)
+
     def grant_revoke_privilege(self, operation):
         try:
             privilege = PrivilegeProvider.Privileges[self.content_name[:self.content_name.index(' ')]]
         except:
             privilege = 'INSERT'
+
+        if operation == 'GRANT':
+            self.grant_privilege_base_table(self.role)
 
         if pg_table_exists(self.content_table_name):
             self.grant_or_revoke(operation, privilege, self.content_table_name, self.role)

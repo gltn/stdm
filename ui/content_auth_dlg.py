@@ -186,59 +186,59 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
             self.blockSignals(False)
     
 
-class Auth(object):
-    Privileges = {'Create':'INSERT','Select':'SELECT','Update':'UPDATE','Delete':'DELETE'}
-    def __init__(self, content_name):
-        self.content_name = content_name
-        self.fk_tables = set()
-        self.role = ''
-        self.profile = current_profile()
-        self.content_short_name =''
-        self.privilege = ''
-        self.set_content_name_action(self.content_name)
-        self.content_table_name = self.table_name(self.content_short_name)
-        self.fetch_fk_tables(self.content_short_name)
+#class Auth(object):
+    #Privileges = {'Create':'INSERT','Select':'SELECT','Update':'UPDATE','Delete':'DELETE'}
+    #def __init__(self, content_name):
+        #self.content_name = content_name
+        #self.fk_tables = set()
+        #self.role = ''
+        #self.profile = current_profile()
+        #self.content_short_name =''
+        #self.privilege = ''
+        #self.set_content_name_action(self.content_name)
+        #self.content_table_name = self.table_name(self.content_short_name)
+        #self.fetch_fk_tables(self.content_short_name)
 
-    def fmt_name(self, name, privilege):
-        return name.strip(privilege).replace(' ','_')
+    #def fmt_name(self, name, privilege):
+        #return name.strip(privilege).replace(' ','_')
 
-    def table_name(self, short_name):
-        table_name = ''
-        if short_name in self.profile.entities:
-            table_name = self.profile.entities[short_name].name
-        return table_name
+    #def table_name(self, short_name):
+        #table_name = ''
+        #if short_name in self.profile.entities:
+            #table_name = self.profile.entities[short_name].name
+        #return table_name
 
-    def set_content_name_action(self,cnt_name):
-        for privilege in Auth.Privileges.keys():
-            if cnt_name.find(privilege) == 0:
-                self.privilege, self.content_short_name = privilege, self.fmt_name(cnt_name, privilege+' ')
-                break
+    #def set_content_name_action(self,cnt_name):
+        #for privilege in Auth.Privileges.keys():
+            #if cnt_name.find(privilege) == 0:
+                #self.privilege, self.content_short_name = privilege, self.fmt_name(cnt_name, privilege+' ')
+                #break
 
-    def fetch_fk_tables(self, short_name):
-        if short_name in self.profile.entities:
-            for column in self.profile.entities[short_name].columns.values():
-                if hasattr(column, 'entity_relation'):
-                    self.fk_tables.add(column.entity_relation.parent.name)
+    #def fetch_fk_tables(self, short_name):
+        #if short_name in self.profile.entities:
+            #for column in self.profile.entities[short_name].columns.values():
+                #if hasattr(column, 'entity_relation'):
+                    #self.fk_tables.add(column.entity_relation.parent.name)
 
-    def grant_privileges(self):
-        self.grant_revoke_privileges('GRANT')
+    #def grant_privileges(self):
+        #self.grant_revoke_privileges('GRANT')
 
-    def revoke_privileges(self):
-        self.grant_revoke_privileges('REVOKE')
+    #def revoke_privileges(self):
+        #self.grant_revoke_privileges('REVOKE')
 
-    def grant_revoke_privileges(self, action):
-        privilege = Auth.Privileges[self.privilege]
-        if pg_table_exists(self.content_table_name):
-            self.grant_or_revoke(action, privilege, self.content_table_name, self.role)
+    #def grant_revoke_privileges(self, action):
+        #privilege = Auth.Privileges[self.privilege]
+        #if pg_table_exists(self.content_table_name):
+            #self.grant_or_revoke(action, privilege, self.content_table_name, self.role)
 
-        for fk_table in self.fk_tables:
-            self.grant_or_revoke(action, 'SELECT', fk_table, self.role)
-            if self.privilege <> 'Select':
-                self.grant_or_revoke(action, privilege, fk_table, self.role)
+        #for fk_table in self.fk_tables:
+            #self.grant_or_revoke(action, 'SELECT', fk_table, self.role)
+            #if self.privilege <> 'Select':
+                #self.grant_or_revoke(action, privilege, fk_table, self.role)
 
-    def grant_or_revoke(self, action, privilege, table, role):
-        gr_str = 'TO' if action == 'GRANT' else 'FROM'
-        stmt = '{} {} ON TABLE {} {} {}'.format(action, privilege, table, gr_str, role)
-        _execute(stmt)
+    #def grant_or_revoke(self, action, privilege, table, role):
+        #gr_str = 'TO' if action == 'GRANT' else 'FROM'
+        #stmt = '{} {} ON TABLE {} {} {}'.format(action, privilege, table, gr_str, role)
+        #_execute(stmt)
     
 

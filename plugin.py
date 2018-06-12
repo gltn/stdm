@@ -352,10 +352,7 @@ class STDMQGISLoader(object):
                     "Error Loading Modules"
                 )
 
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+                self.reset_content_modules_id( title, pe)
 
     def minimum_table_checker(self):
 
