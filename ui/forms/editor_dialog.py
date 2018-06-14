@@ -177,6 +177,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             # make the size smaller to differentiate from parent and as it
             # only has few tabs.
             self.adjustSize()
+        self.attribute_mappers = self._attr_mapper_collection
 
     def _init_gui(self):
         # Setup base elements

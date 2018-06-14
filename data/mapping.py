@@ -430,6 +430,7 @@ class MapperMixin(object):
         triggered by save and new button.
         :type save_and_new: Boolean
         """
+        print collect_model, self.preSaveUpdate()
         if not self.preSaveUpdate():
             return
         
@@ -438,14 +439,18 @@ class MapperMixin(object):
 
         # Validate mandatory fields have been entered by the user.
         errors = []
+
         for attrMapper in self._attrMappers:
+            error = None
             if self._mode == 'SAVE':
                 error = self.validate(attrMapper)
+
             else: # update mode
                 error = self.validate(attrMapper, True)
             if error is not None:
                 self._notifBar.insertWarningNotification(error)
-                errors.append(error)
+                
+            errors.append(error)
 
         if len(errors) > 0:
             self.is_valid = False

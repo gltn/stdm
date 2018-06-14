@@ -256,6 +256,15 @@ def export_data(table_name):
 
     return _execute(t)
 
+
+def fetch_with_filter(sql_str):
+    sql = unicode(sql_str)
+
+    t = text(sql)
+
+    return _execute(t)
+
+
 def fetch_from_table(table_name, limit):
     """
     Fetches data from a table with a limit.
@@ -546,6 +555,7 @@ def _execute(sql,**kwargs):
     """
     Execute the passed in sql statement
     """
+
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
     result = conn.execute(sql,**kwargs)
