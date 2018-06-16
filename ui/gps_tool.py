@@ -38,6 +38,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.setupUi(self)
         self.iface = iface
         self.entity = entity
+        self._entity = self.entity
         self.sp_table = sp_table
         self.sp_col = sp_col
         self.model = model

@@ -35,8 +35,8 @@ from PyQt4.QtGui import (
     QVBoxLayout,
     QWidget,
     QApplication,
-    QPushButton
-)
+    QPushButton,
+    QMessageBox)
 
 from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
 
@@ -122,7 +122,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
-
+        self.do_not_check_dirty = False
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
@@ -152,11 +152,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         except AttributeError:
             self._parent._parent = None
-        self._init_gui()
-        self.adjustSize()
-
-        self._get_entity_editor_widgets()
-
         # Set title
         editor_trans = self.tr('Editor')
         if self._entity.label is not None:
@@ -170,6 +165,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.title = u'{0} {1}'.format(title_str, editor_trans)
 
         self.setWindowTitle(self.title)
+
+        self._init_gui()
+        self.adjustSize()
+
+        self._get_entity_editor_widgets()
+
 
         if isinstance(parent._parent, EntityEditorDialog):
             self.parent_entity = parent.parent_entity
@@ -351,6 +352,31 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         self.submit(True)
         self.addedModel.emit(self.model())
+
+    def closeEvent(self, event):
+        '''
+        Raised when a request to close the window is received.
+        Check the dirty state of input controls and prompt user to
+        save if dirty.
+        '''
+
+        if self.do_not_check_dirty:
+            event.accept()
+            return
+        isDirty, userResponse = self.checkDirty()
+
+        if isDirty:
+            if userResponse == QMessageBox.Yes:
+                # We need to ignore the event so that validation and
+                # saving operations can be executed
+                event.ignore()
+                self.submit()
+            elif userResponse == QMessageBox.No:
+                event.accept()
+            elif userResponse == QMessageBox.Cancel:
+                event.ignore()
+        else:
+            event.accept()
 
     def on_child_saved(self, save_and_new=False):
         """

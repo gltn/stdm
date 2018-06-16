@@ -230,7 +230,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
-        # self._add_advanced_search_btn()
+
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -872,6 +872,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             else:
                 self.parent_entity = None
 
+            self._add_advanced_search_btn()
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column() and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
@@ -1126,12 +1127,11 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             result = edit_entity_dlg.exec_()
 
-        print result == QDialog.Accepted
         if result == QDialog.Accepted:
 
             if self._entity.has_geometry_column():
                 edit_entity_dlg = gps_tool.entity_editor
-                print edit_entity_dlg.is_valid, 'hahaha'
+
             updated_model_obj = edit_entity_dlg.model()
             if not edit_entity_dlg.is_valid:
                 return
