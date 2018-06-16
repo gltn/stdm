@@ -37,7 +37,8 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         qg.QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
-        self._entity = entity
+        self.entity = entity
+        self._entity = self.entity
         self.sp_table = sp_table
         self.sp_col = sp_col
         self.model = model
@@ -108,7 +109,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype:None
         """
-        self.entity_editor = EntityEditorDialog(self._entity, self.model, self)
+        self.entity_editor = EntityEditorDialog(self.entity, self.model, self)
         self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
@@ -620,7 +621,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
 
             geometry_wkb = new_geometry.exportToWkt()
 
-            srid = self._entity.columns[self.sp_col].srid
+            srid = self.entity.columns[self.sp_col].srid
             model = self.entity_editor.model()
             setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
             self.geometry_added = True

@@ -230,7 +230,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
-        # self._add_advanced_search_btn()
+
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -556,7 +556,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 self._doc_viewer.load(docs)
 
-    def _initializeData(self):
+    def _initializeData(self, filtered_records=None):
         '''
         Set table model and load data into it.
         '''
@@ -596,21 +596,24 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
-                    self._tableModel = self.plugin.entity_table_model[
-                        self._entity.name
-                    ]
-                    load_data = False
+                    if filtered_records is None:
+                        self._tableModel = self.plugin.entity_table_model[
+                            self._entity.name
+                        ]
+                        load_data = False
+                    else:
+                        load_data = True
 
             if load_data:
                 # Only one filter is possible.
-                if not self.load_records:
-                    entity_records = self.filtered_records
+                if filtered_records is not None:
+                    entity_records = filtered_records
                 else:
                     entity_records = fetch_from_table(
                         self._entity.name, limit=3000
                     )
 
-            if self._tableModel is None:
+            # if self._tableModel is None:
                 for i,er in enumerate(entity_records):
 
                     QApplication.processEvents()
@@ -622,6 +625,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         for attr in self._entity_attrs:
                             # attr_val = getattr(er, attr)
                             attr_val = er[attr]
+
                             # Check if there are display formatters and apply if
                             # one exists for the given attribute.
                             if attr_val is not None: # No need of formatter for None value
@@ -640,8 +644,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     entity_records_collection.append(entity_row_info)
 
-                self._tableModel = BaseSTDMTableModel(entity_records_collection,
-                                                  self._headers, self)
+                self._tableModel = BaseSTDMTableModel(
+                    entity_records_collection, self._headers, self
+                )
                 self.plugin.entity_table_model[self._entity.name] = \
                     self._tableModel
             # Add filter columns
@@ -867,6 +872,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             else:
                 self.parent_entity = None
 
+            self._add_advanced_search_btn()
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column() and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
@@ -1122,6 +1128,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             result = edit_entity_dlg.exec_()
 
         if result == QDialog.Accepted:
+
             if self._entity.has_geometry_column():
                 edit_entity_dlg = gps_tool.entity_editor
 
