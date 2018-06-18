@@ -1371,6 +1371,12 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                     pass
         self.settings.remove_memory_layers()
 
+    def clear_inputs(self):
+        super(OnePointAreaWidget, self).clear_inputs()
+        self.length_from_point.setValue(0)
+        self.split_polygon_area.setValue(0)
+        self.clockwise.setChecked(True)
+
     def on_point_feature_selected(self):
 
         if self.settings.layer is None:
@@ -1598,6 +1604,9 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
             self.point_layer_connected = True
 
+    def clear_inputs(self):
+        super(JoinPointsWidget, self).clear_inputs()
+        self.length_from_point.setValue(0)
 
     def on_feature_selected(self, feature):
         """
@@ -1887,6 +1896,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 except Exception:
                     pass
         self.settings.remove_memory_layers()
+
+    def clear_inputs(self):
+        super(EqualAreaWidget, self).clear_inputs()
+        self.number_of_polygons.setValue(0)
+        self.parellel_rad.setChecked(True)
 
     def on_point_feature_selected(self):
 
@@ -2302,6 +2316,15 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
     def on_area_clicked(self):
         self.area_box.setEnabled(self.area_chk.isChecked())
 
+    def clear_inputs(self):
+        self.length_prefix_type.setCurrentIndex(0)
+        self.length_suffix_type.setCurrentIndex(0)
+        self.area_prefix_type.setCurrentIndex(0)
+        self.area_suffix_type.setCurrentIndex(0)
+        self.selected_features_rad.setChecked(True)
+        self.length_chk.setChecked(True)
+        self.area_chk.setChecked(False)
+        
     def on_length_prefix_type_changed(self, value):
         """
         A slot raised when length prefix type changes.
