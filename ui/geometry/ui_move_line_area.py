@@ -32,6 +32,7 @@ class Ui_MoveLineArea(object):
         self.cancel_btn.setObjectName(_fromUtf8("cancel_btn"))
         self.gridLayout.addWidget(self.cancel_btn, 3, 1, 1, 1)
         self.split_polygon_area = QtGui.QDoubleSpinBox(MoveLineArea)
+        self.split_polygon_area.setSuffix(_fromUtf8(""))
         self.split_polygon_area.setMaximum(9999999.0)
         self.split_polygon_area.setObjectName(_fromUtf8("split_polygon_area"))
         self.gridLayout.addWidget(self.split_polygon_area, 2, 2, 1, 3)
@@ -67,7 +68,6 @@ class Ui_MoveLineArea(object):
     def retranslateUi(self, MoveLineArea):
         MoveLineArea.setWindowTitle(_translate("MoveLineArea", "Form", None))
         self.cancel_btn.setText(_translate("MoveLineArea", "Cancel", None))
-        self.split_polygon_area.setSuffix(_translate("MoveLineArea", " Sq Meters", None))
         self.preview_btn.setText(_translate("MoveLineArea", "Preview", None))
         self.run_btn.setText(_translate("MoveLineArea", "Run", None))
         self.sel_features_lbl.setText(_translate("MoveLineArea", "0", None))

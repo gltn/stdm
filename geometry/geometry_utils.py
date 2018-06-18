@@ -7,11 +7,18 @@ from collections import OrderedDict
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import QColor, QApplication
 from decimal import Decimal
+
+from PyQt4.QtCore import QSizeF
+from PyQt4.QtGui import QColor, QTextDocument
+
+from qgis.gui import QgsTextAnnotationItem
+
+
 from qgis.gui import QgsHighlight
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
     QgsCoordinateReferenceSystem, QgsField, QgsPalLayerSettings, \
-    QgsRenderContext, QGis, QgsFeatureRequest
+    QgsRenderContext, QGis, QgsFeatureRequest, QgsFillSymbolV2
 from qgis.utils import iface
 from stdm.settings.registryconfig import (
     selection_color
@@ -229,6 +236,7 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
         geom = QgsGeometry.fromPoint(geom)
     iface.setActiveLayer(layer)
     preview_layer = False
+    feature = None
     # refresh map canvas to see the result
     if feature_ids is not None:
         layer.startEditing()
@@ -237,17 +245,22 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
             features = feature_id_to_feature(layer, feature_ids)
             if len(features) > 0:
                 features[0].setGeometry(main_geom)
+                feature = add_geom_to_feature(layer, geom, features[0])
             else: # for preview polygon
                 preview_layer = True
                 features = list(layer.getFeatures())
                 features[0].setGeometry(main_geom)
+                feature = add_geom_to_feature(
+                    layer, geom, features[0], preview_layer=True)
 
             layer.updateFeature(features[0])
 
-            feature = add_geom_to_feature(layer, geom, features[0])
+
 
     else:
+
         with edit(layer):
+
             feature = add_geom_to_feature(layer, geom)
 
     layer.updateExtents()
@@ -256,19 +269,24 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
 
     return feature
 
-def  add_geom_to_feature(layer, geom, original_feature=None):
+def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False):
     ft = QgsFeature()
     attr = layer.fields().toList()
+
     if original_feature is None:
         ft.setAttributes(attr)
     else:
+
         ft.setAttributes(original_feature.attributes())
 
     if isinstance(geom, QgsGeometry):
         ft.setGeometry(geom)
     else:
         ft.setGeometry(geom.geometry())
-    layer.addFeatures([ft])
+    if preview_layer:
+        layer.dataProvider().addFeatures([ft])
+    else:
+        layer.addFeatures([ft])
 
     return ft
 
@@ -294,11 +312,12 @@ def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
                 area = geom.area()
             area = "%.2f" % round(area, 2)
             attr = '{} {}{}'.format(prefix, area, suffix)
+
             feature.setAttributes(['measurement', attr])
 
         # layer.updateFeature(feature)
-
-        layer.addFeature(feature)
+        layer.dataProvider().addFeatures([feature])
+        # layer.addFeature(feature)
 
     # layer.commitChanges()
 
@@ -407,6 +426,16 @@ def highlight_geom(map, layer, geom):
     sel_highlight.setColor(QColor(212, 95, 0, 255))
     sel_highlight.show()
 
+def make_layer_transparent(layer):
+    myRenderer = layer.rendererV2()
+    if layer.geometryType() == QGis.Polygon:
+        mySymbol1 = QgsFillSymbolV2.createSimple({'color': '255,0,0,0',
+                                                  'color_border': '#000000',
+                                                  'width_border': '0.6'})
+
+        myRenderer.setSymbol(mySymbol1)
+        layer.triggerRepaint()
+        iface.legendInterface().refreshLayerSymbology(layer)
 
 def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_features=False, unit='Meters', style=False):
     if not all_features:
@@ -418,9 +447,9 @@ def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_fea
     if temp_layer_name is not None:
         curr_layers = QgsMapLayerRegistry.instance().mapLayersByName(temp_layer_name)
         if len(curr_layers) == 0:
-
             curr_layer = create_temporary_layer(
-                layer, type, temp_layer_name, show_legend=True, style=style)
+                layer, type, temp_layer_name, show_legend=True, style=style
+            )
 
         else:
             curr_layer = curr_layers[0]
@@ -428,26 +457,34 @@ def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_fea
             iface.setActiveLayer(curr_layer)
     else:
         curr_layer = layer
-        # QApplication.processEvents()
-        # add_layer_double_field(area_layer)
-        # for feature in sel_feats:
-        #
-        #     polygon_geom = feature.geometry()
-        #     add_geom_to_layer_with_measurement(
-        #         area_layer, polygon_geom, prefix, suffix, unit
-        #     )
-        #
-        #     label_layer_by_field(area_layer, 'measurement')
 
-    # else:
     add_measurement_field(curr_layer)
+
     for feature in sel_feats:
+
         polygon_geom = feature.geometry()
-        add_geom_to_layer_with_measurement(
-            curr_layer, polygon_geom, prefix, suffix, unit
-        )
+        if polygon_geom is not None:
+            add_geom_to_layer_with_measurement(
+                curr_layer, polygon_geom, prefix, suffix, unit
+            )
+        else:
+            print feature
 
     label_layer_by_field(curr_layer, 'measurement')
+
+def add_area(layer, area_layer_name, all_features=False):
+    show_polygon_area(
+        layer,
+        area_layer_name,
+        all_features=all_features,
+        suffix='m{}'.format(chr(0x00B2))
+    )
+    if area_layer_name is not None:
+        area_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            area_layer_name
+        )
+        if len(area_layers) > 0:
+            make_layer_transparent(area_layers[0])
 
 def polygon_to_lines(
         layer, layer_name, measurement=True, prefix='', suffix='',
@@ -477,6 +514,7 @@ def polygon_to_lines(
     type = layer_type(layer)
     if measurement:
         add_measurement_field(line_layer)
+
     for feature in sel_feats:
 
         polygon_geom = feature.geometry()
@@ -486,18 +524,40 @@ def polygon_to_lines(
         if type == 'Polygon':
             list_of_lines = polygon_geom.asPolygon()
             for lines in list_of_lines:
-                line_geom_list = add_line_features(line_layer, lines, prefix, suffix, measurement)
+                line_geom_list = add_line_features(
+                    line_layer, lines, prefix, suffix, measurement)
                 line_geoms.extend(line_geom_list)
 
         if type == 'MultiPolygon':
             list_of_lines_1 = polygon_geom.asMultiPolygon()
             for list_of_lines in list_of_lines_1:
                 for lines in list_of_lines:
-                    line_geom_list = add_line_features(line_layer, lines, prefix, suffix, measurement)
+                    line_geom_list = add_line_features(
+                        line_layer, lines, prefix, suffix, measurement)
                     line_geoms.extend(line_geom_list)
     if measurement:
         label_layer_by_field(line_layer, 'measurement')
     return line_layer
+
+def add_area_text(geometry):
+    point = geometry.centroid().asPoint()
+
+    area = geometry.area()
+    canvas = iface.mapCanvas()
+    text_annotation_item = QgsTextAnnotationItem(canvas)
+
+    text_annotation_item.setMapPosition(point)
+    text_annotation_item.setFrameSize(QSizeF(20, 20))
+    text_annotation_item.setFrameColor(QColor(0, 255, 0))
+    text_annotation_item.setFrameBackgroundColor(QColor(128, 128, 128))
+    text_document = QTextDocument()
+    html_content = "<b>{}M<sup>2</sup></b>".format(area)
+    font_color, font_family, font_size = "#123456", "Times New Roman", 16
+    text_document.setHtml('<font style="color:' + font_color +
+                          "; font-family:" + font_family + "; font-size: " +
+                          str(font_size) + 'px">' + html_content + "</font>")
+    text_annotation_item.setDocument(text_document)
+    canvas.refresh()
 
 def polygon_to_points(polygon_layer, line_layer, point_layer,
                       line_layer_name, with_measurement=True):
@@ -600,9 +660,12 @@ def layer_type(layer):
 
 
 def clear_layer_features(layer):
+    feat_ids = [feat.id() for feat in layer.getFeatures()]
     with edit(layer):
-        feat_ids = [feat.id() for feat in layer.getFeatures()]
         layer.deleteFeatures(feat_ids)
+    if len(list(layer.getFeatures())) > 0:
+        layer.dataProvider().deleteFeatures(feat_ids)
+        layer.commitChanges()
 
 def add_features_to_layer(layer, features):
     provider = layer.dataProvider()

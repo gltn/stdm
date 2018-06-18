@@ -24,7 +24,7 @@
    <item row="2" column="2" colspan="3">
     <widget class="QDoubleSpinBox" name="split_polygon_area">
      <property name="suffix">
-      <string> Sq Meters</string>
+      <string/>
      </property>
      <property name="maximum">
       <double>9999999.000000000000000</double>
