@@ -64,8 +64,9 @@ class CodeGenerator(object):
         # matches is list with tuple items.
         # To access them 0 index is used
         record_match = []
-
+        print record_match, prefix, separator
         for item in matches:
+            print item
             if len(item) > 0:
                 try:
                     # for code with prefix
@@ -99,19 +100,27 @@ class CodeGenerator(object):
                 try:
                     last_code = record_match[0].rsplit(separator, 1)
                 # if the separator is empty - '', split by numbers and letters.
-                except ValueError:
-                    match = re.match(
-                        r'([a-zA-Z]+)([0-9]+)', record_match[0], re.I
-                    )
-                    if match:
-                        text_numbers = match.groups()
-                        if len(text_numbers) == 2:
-                            last_code = text_numbers
 
-                if len(last_code) > 1:
-                    last_serial = last_code[1]
+                except ValueError:
+                    if separator == '':
+                        last_serial = record_match[0].replace(prefix, '')
+                    else:
+                        prefix_and_serial = record_match[0].split(separator)
+                        if len(prefix_and_serial) > 0:
+                            last_serial = prefix_and_serial[len(prefix_and_serial)-1]
+                    # match = re.match(
+                    #     r'([a-zA-Z]+)([0-9]+)', record_match[0], re.I
+                    # )
+                #     if match:
+                #         text_numbers = match.groups()
+                #         if len(text_numbers) == 2:
+                #             last_code = text_numbers
+                #
+                # if len(last_code) > 1:
+                #     last_serial = last_code[1]
 
             if last_serial is None:
+                # print last_serial, 'last '
                 return None
 
             # convert to integer and add 1
