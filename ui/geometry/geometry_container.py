@@ -757,6 +757,7 @@ class GeomWidgetsBase(object):
             self.widget.selected_points_lbl.setText(str(0))
 
 
+
     def disconnect_signals(self):
         if self.settings_layer_connected:
             try:
@@ -1093,6 +1094,10 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
     def showEvent(self, QShowEvent):
         QApplication.processEvents()
 
+    def clear_inputs(self):
+        super(MoveLineAreaWidget, self).clear_inputs()
+        self.split_polygon_area.setValue(0)
+
     def run(self):
         result = self.validate_run()
         if not result:
@@ -1192,12 +1197,13 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
             self.notice.insertWarningNotification(message)
             return
-        if new_value == 0:
-            message2 = QApplication.translate(
-                'OffsetDistanceWidget', 'The offset distance should be greater than 0.'
-            )
-            self.notice.insertWarningNotification(message2)
-            return
+        else:
+            if new_value == 0:
+                message2 = QApplication.translate(
+                    'OffsetDistanceWidget', 'The offset distance should be greater than 0.'
+                )
+                self.notice.insertWarningNotification(message2)
+                return
 
         self.run_help(3)
 
@@ -1254,6 +1260,10 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.splitting_success_help(4)
         return True
 
+    def clear_inputs(self):
+        super(OffsetDistanceWidget, self).clear_inputs()
+        self.offset_distance.setValue(0)
+
     def run(self):
         result = self.validate_run()
         if not result:
@@ -1266,7 +1276,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
         if self.settings_layer_connected:
             self.disconnect_signals()
-        print self.feature_ids
+
         self.settings.layer.selectByIds(self.feature_ids)
         self.remove_memory_layer(PREVIEW_POLYGON)
         self.create_preview_layer(False)
