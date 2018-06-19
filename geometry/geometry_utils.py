@@ -664,6 +664,7 @@ def clear_layer_features(layer):
     with edit(layer):
         layer.deleteFeatures(feat_ids)
     if len(list(layer.getFeatures())) > 0:
+        layer.startEditing()
         layer.dataProvider().deleteFeatures(feat_ids)
         layer.commitChanges()
 
