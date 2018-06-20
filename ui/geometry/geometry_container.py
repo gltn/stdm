@@ -485,8 +485,6 @@ class GeometryToolsDock(
         # self.iface.mapCanvas().setMapTool(self.mapTool)
         # self.mapTool.redrawActions()
 
-
-
     def disable_feature_details_btn(self):
         """
         Disables features details button.
@@ -2451,6 +2449,20 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         )
         self.length_chk.clicked.connect(self.on_length_clicked)
         self.area_chk.clicked.connect(self.on_area_clicked)
+    #
+    # def on_feature_selected(self, feature):
+    #     """
+    #     Selects a feature and load line layer which is boundary of the polygon.
+    #     :param feature: List of feature ids selected
+    #     :type feature: List
+    #     :return:
+    #     :rtype:
+    #     """
+    #     self.settings.remove_memory_layers()
+    #     zoom_to_selected(self.settings.layer)
+
+    def on_feature_selection_finished(self):
+        pass
 
     def on_length_clicked(self):
         self.length_box.setEnabled(self.length_chk.isChecked())
