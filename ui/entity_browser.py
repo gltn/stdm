@@ -225,6 +225,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.child_model = OrderedDict()
         #ID of a record to select once records have been added to the table
         self._select_item = None
+        self.current_records = 0
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -401,20 +402,26 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         """
         self._notifBar.clear()
 
-    def recomputeRecordCount(self):
+    def recomputeRecordCount(self, init_data=False):
         '''
         Get the number of records in the specified table and updates the window title.
         '''
         entity = self._dbmodel()
 
-        #Get number of records
+        # Get number of records
         numRecords = entity.queryObject().count()
+        if init_data:
+            if numRecords > 3000:
+                self.current_records = 3000
+            else:
+                self.current_records = numRecords
 
         rowStr = QApplication.translate('EntityBrowser', 'row') \
             if numRecords == 1 \
             else QApplication.translate('EntityBrowser', 'rows')
-        windowTitle = u"{0} - {1} {2}".format(
-            self.title(), numRecords, rowStr
+        showing = QApplication.translate('EntityBrowser', 'Showing')
+        windowTitle = u"{0} - {1} {2} of {3} {4}".format(
+            self.title(), showing, self.current_records, numRecords, rowStr
         )
 
         self.setWindowTitle(windowTitle)
@@ -427,6 +434,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         method also initializes the table headers, entity column and cell
         formatters.
         """
+        self._headers[:] = []
         table_name = self._entity.name
         columns = table_column_names(table_name)
         missing_columns = []
@@ -577,7 +585,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             # Load entity data. There might be a better way in future in order
             # to ensure that there is a balance between user data discovery
             # experience and performance.
-            numRecords = self.recomputeRecordCount()
+            if filtered_records is not None:
+                self.current_records = filtered_records.rowcount
+
+            numRecords = self.recomputeRecordCount(init_data=True)
             # Load progress dialog
             progressLabel = QApplication.translate(
                 "EntityBrowser", "Fetching Records..."

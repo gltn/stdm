@@ -184,6 +184,9 @@ class AdvancedSearch(EntityEditorDialog):
         result = self.search_db_raw(search_data)
         self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
         if result is not None:
+            found = QApplication.translate('AdvancedSearch', 'records found')
+            new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
+            self.setWindowTitle(new_title)
             self.parent._initializeData(result)
 
     def search_db(self, search_data):
