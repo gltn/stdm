@@ -411,10 +411,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         # Get number of records
         numRecords = entity.queryObject().count()
         if init_data:
-            if numRecords > 3000:
-                self.current_records = 3000
-            else:
-                self.current_records = numRecords
+            if self.current_records < 1:
+                if numRecords > 3000:
+                    self.current_records = 3000
+                else:
+                    self.current_records = numRecords
 
         rowStr = QApplication.translate('EntityBrowser', 'row') \
             if numRecords == 1 \
