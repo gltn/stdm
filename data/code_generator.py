@@ -64,9 +64,9 @@ class CodeGenerator(object):
         # matches is list with tuple items.
         # To access them 0 index is used
         record_match = []
-        print record_match, prefix, separator
+    
         for item in matches:
-            print item
+
             if len(item) > 0:
                 try:
                     # for code with prefix
