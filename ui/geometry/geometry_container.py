@@ -796,6 +796,7 @@ class GeomWidgetsBase(object):
             if len(prev_layers) > 0:
                 for prev_layer in prev_layers:
                     QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+            self.iface.mapCanvas().removeLayer()
         except Exception:
             pass
     #
@@ -1052,17 +1053,16 @@ class GeomWidgetsBase(object):
             iface.mapCanvas().refresh()
 
     def post_split_update(self, layer, preview=False):
-        print layer.selectedFeatures()
 
         new_features = layer.selectedFeatures()
-        if len(new_features) == 1:
+        if len(new_features) > 0:
             new_feature = layer.selectedFeatures()[0]
             self.feature_ids.append(new_feature.id())
 
             layer.selectByIds(self.feature_ids)
 
             add_area(layer, AREA_POLYGON, all_features=preview)
-            
+
         iface.setActiveLayer(self.settings.layer)
 
 
@@ -1945,34 +1945,32 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         GeomWidgetsBase.__init__(self, layer_settings, self)
         # self.line_selection_finished.connect(self.on_line_selection_finished)
-        # self.length_from_point.valueChanged.connect(
-        #     self.on_length_from_reference_point_changed
-        # )
+        self.number_of_polygons.valueChanged.connect(
+            self.on_line_feature_selected
+        )
+        self.equal_boundary_rad.clicked.connect(
+            self.on_equal_boundary_checked
+        )
+        self.parellel_rad.clicked.connect(
+            self.on_parallel_checked
+        )
         self.main_geom = None
         self.rotation_point = None
         self.rotation_points = []
         self.combined_line = None
         self.area = None
         self.no_polygons = 1
-    #
-    # def hideEvent(self, event):
-    #     self.widget_closed = True
-    #     if self.line_layer is not None:
-    #         try:
-    #             self.line_layer.selectionChanged.disconnect(
-    #                 self.on_line_feature_selected
-    #             )
-    #         except Exception:
-    #             pass
-    #     if self.point_layer is not None:
-    #         if self.point_layer_connected:
-    #             try:
-    #                 self.point_layer.selectionChanged.disconnect(
-    #                     self.on_point_feature_selected
-    #                 )
-    #             except Exception:
-    #                 pass
-    #     self.settings.remove_memory_layers()
+        self.method = 1 # parellel
+
+    def on_equal_boundary_checked(self):
+        self.method = 2
+        self.on_line_feature_selected()
+
+    def on_parallel_checked(self):
+        # self.clear_highlights()
+        self.method = 1
+        self.remove_memory_layer(LINE_POINTS)
+        self.on_line_feature_selected()
 
     def clear_inputs(self):
         super(EqualAreaWidget, self).clear_inputs()
@@ -2008,7 +2006,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             return
         if iface.activeLayer() is None:
             return
-        if iface.activeLayer().name() != POLYGON_LINES:
+        if iface.activeLayer().name() != POLYGON_LINES and \
+            iface.activeLayer().name() != LINE_POINTS:
             return
 
         if len(self.line_layer.selectedFeatures()) == 0:
@@ -2026,55 +2025,26 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.notice.clear()
                     message = QApplication.translate(
                         'EqualAreaWidget',
-                        'The first selected segment will be used.'
-                    )
-
-                    self.notice.insertWarningNotification(message)
-
-                    clear_previous = True
-
-                self.on_line_selection_finished()
-                # self.line_selection_finished.emit()
-            else:
-                if self.widget.number_of_polygons.value() < 2:
-                    self.notice.clear()
-                    message = QApplication.translate(
-                        'EqualAreaWidget',
-                        'Number of polygons should be at least 2.'
+                        'The first selected line will be used.'
                     )
                     self.notice.insertWarningNotification(message)
                 clear_previous = False
-                # self.highlight_features(self.line_layer, clear_previous=False)
-                self.on_line_selection_finished()
+            else:
+                clear_previous = True
+            if self.widget.number_of_polygons.value() < 2:
+                self.notice.clear()
+                message = QApplication.translate(
+                    'EqualAreaWidget',
+                    'Number of polygons should be at least 2.'
+                )
+                self.notice.insertWarningNotification(message)
+            else:
+                self.notice.clear()
             self.highlight_features(
-                self.line_layer, clear_previous=clear_previous
+                self.line_layer,
+                clear_previous=clear_previous
             )
-
-    # def on_length_from_reference_point_changed(self, new_value, line_geom=None):
-    #     print new_value
-    #     if self.rotation_point is not None:
-    #         with edit(self.point_layer):
-    #             point_features = [f.id() for f in self.point_layer.getFeatures()]
-    #             rotation_point = point_features[-1:]
-    #             self.point_layer.deleteFeature(rotation_point[0])
-    #     if len(self.points) == 0:
-    #         message = QApplication.translate(
-    #             'OnePointAreaWidget',
-    #             'No point is added and/or selected.'
-    #         )
-    #         self.notice.insertErrorNotification(message)
-    #         return
-    #
-    #     if line_geom is None:
-    #         line_geom = self.lines[0].geometry()
-    #
-    #     rotation_point = point_by_distance(
-    #         self.point_layer,
-    #         self.points[0],
-    #         line_geom,
-    #         new_value
-    #     )
-    #     self.rotation_points.append(rotation_point)
+            self.on_line_selection_finished()
 
     def on_line_selection_finished(self):
         # add line length for the user to see
@@ -2094,27 +2064,27 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         length = total_length/self.no_polygons
         # add points for the line.
-        self.create_point_layer(show_in_legend=True)
-        # add_geom_to_layer(self.point_layer, geoms)
-        point_features = add_line_points_to_map(self.point_layer, geoms)
-
-        for i in range(1, self.no_polygons):
-            next_length = length * i
-            point = point_by_distance(
-                self.point_layer, point_features[0],
-                geoms, next_length
-            )
-
-            self.rotation_points.append(point)
-
-            # self.on_length_from_reference_point_changed(next_length)
-        # self.points_count = self.selected_point_count()
-        # if self.points_count > 0:
-            # self.rotation_point = self.points[0]
-
-        # self.widget.selected_points_lbl.setText(str(self.points_count))
-        # self.highlight_features(self.line_layer)
-
+        clear_previous_highlight = True
+        if self.equal_boundary_rad.isChecked():
+            clear_previous_highlight = False
+            self.create_point_layer(show_in_legend=True)
+            point_features = add_line_points_to_map(self.point_layer, geoms)
+            self.rotation_points[:] = []
+            for i in range(1, self.no_polygons):
+                next_length = length * i
+                point = point_by_distance(
+                    self.point_layer, point_features[0],
+                    geoms, next_length
+                )
+                self.rotation_points.append(point)
+            self.iface.mapCanvas().refresh()
+            if self.method == 1:
+                self.clear_highlights()
+                self.method = 2
+        self.iface.setActiveLayer(self.line_layer)
+        self.highlight_features(
+            self.line_layer, clear_previous=clear_previous_highlight
+        )
 
     def validate_run(self):
         state = True
@@ -2125,7 +2095,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             state = False
-        if self.widget.number_of_polygons.value() == 0:
+        if self.widget.number_of_polygons.value() < 2:
             message = QApplication.translate(
                 'EqualAreaWidget',
                 'The number of polygons must be greater than 1.'
@@ -2138,6 +2108,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         result = self.validate_run()
         if not result:
             return
+
         self.executed = True
 
         self.progress_dialog.setRange(0, 0)
@@ -2148,13 +2119,25 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.disconnect_signals()
 
         if self.combined_line is None:
-            rotate_line_ft = self.lines[0]
+            if len(self.lines) > 0:
+                rotate_line_ft = self.lines[0]
+            else:
+
+                fail_message = QApplication.translate(
+                    'EqualAreaWidget',
+                    'A line is not selected.'
+                )
+                self.notice.insertErrorNotification(fail_message)
+                return
+
+
         else:
             rotate_line_ft = self.combined_line
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer()
+        self.create_preview_layer(False)
+
         if self.parellel_rad.isChecked():
 
             line_feature = None
@@ -2162,11 +2145,22 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             for i in range(1, self.no_polygons):
 
                 if line_feature is None:
-                    line_ft = self.lines[0]
+
+                    if len(self.lines) > 0:
+                        line_ft = self.lines[0]
+                    else:
+
+                        fail_message = QApplication.translate(
+                            'EqualAreaWidget',
+                            'A line is not selected.'
+                        )
+                        self.notice.insertErrorNotification(fail_message)
+                        return
+
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
-                    print 'false '
+
                     return
 
                 feature, line_feature = split_move_line_with_area(
@@ -2177,15 +2171,22 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
-                if not isinstance(feature, bool):
-                    clear_layer_features(self.preview_layer)
-                    self.settings.layer.selectByIds(self.feature_ids)
-                    # self.settings.layer.selectedFeatures()[0].geometry()
 
-                    add_geom_to_layer(
-                        self.preview_layer,
-                        self.settings.layer.selectedFeatures()[0]
-                    )
+                # if not isinstance(feature, bool):
+                #     clear_layer_features(self.preview_layer)
+                #     self.settings.layer.selectByIds(self.feature_ids)
+                    # self.settings.layer.selectedFeatures()[0].geometry()
+                #     print self.settings.layer.selectedFeatures(), 'settings'
+                #
+                #     add_geom_to_layer(
+                #         self.preview_layer,
+                #         self.settings.layer.selectedFeatures()[0]
+                #     )
+                # print self.preview_layer.selectedFeatures(), 'preview '
+                self.remove_memory_layer(PREVIEW_POLYGON)
+                self.preview_layer = None
+                # self.settings.layer.selectByIds(self.feature_ids)
+                self.create_preview_layer(False)
 
                 # if isinstance(line_feature, QgsGeometry):
                 #
@@ -2193,6 +2194,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 result = True
 
         else:
+            print self.rotation_points[::-1]
             # Revers the rotation points list.
             for i, point in enumerate(self.rotation_points[::-1]):
 
@@ -2205,23 +2207,28 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids,
                     clockwise=1
                 )
+                print result, 'res'
+                # try:
+                    # clear_layer_features(self.preview_layer)
+                self.remove_memory_layer(PREVIEW_POLYGON)
+                self.preview_layer = None
+                # self.settings.layer.selectByIds(self.feature_ids)
+                self.create_preview_layer(False)
 
-                try:
-                    clear_layer_features(self.preview_layer)
-                    self.settings.layer.selectByIds(self.feature_ids)
-
-                    add_geom_to_layer(
-                        self.preview_layer,
-                        self.settings.layer.selectedFeatures()[0].geometry()
-                    )
-                except Exception:
-                    pass
+                    # add_geom_to_layer(
+                    #     self.preview_layer,
+                    #     self.settings.layer.selectedFeatures()[0].geometry()
+                    # )
+                    # print self.settings.layer.selectedFeatures()[0].geometry(), list(
+                    #     self.preview_layer.getFeatures()), 'preview_features'
+                # except Exception:
+                #     pass
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
         if result:
-            self.post_split_update(self.preview_layer)
+            self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
 
         else:
@@ -2246,13 +2253,21 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.disconnect_signals()
 
         if self.combined_line is None:
-            rotate_line_ft = self.lines[0]
+            if len(self.lines) > 0:
+                rotate_line_ft = self.lines[0]
+            else:
+                fail_message = QApplication.translate(
+                    'EqualAreaWidget',
+                    'A line is not selected.'
+                )
+                self.notice.insertErrorNotification(fail_message)
+                return
         else:
             rotate_line_ft = self.combined_line
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer()
+        self.create_preview_layer(False)
         # self.create_preview_layer2()
 
         self.preview_layer.selectAll()
@@ -2264,7 +2279,16 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             for i in range(1, self.no_polygons):
 
                 if line_feature is None:
-                    line_ft = self.lines[0]
+                    if len(self.lines) > 0:
+                        line_ft = self.lines[0]
+                    else:
+
+                        fail_message = QApplication.translate(
+                            'EqualAreaWidget',
+                            'A line is not selected.'
+                        )
+                        self.notice.insertErrorNotification(fail_message)
+                        return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
@@ -2280,11 +2304,15 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids
                 )
                 if not isinstance(feature, bool):
+                    self.remove_memory_layer(PREVIEW_POLYGON2)
+
+                    # self.settings.layer.selectByIds(self.feature_ids)
+                    self.create_preview_layer(False)
                     # clear_layer_features(self.preview_layer)
-                    self.settings.layer.selectByIds(self.feature_ids)
+                    # self.settings.layer.selectByIds(self.feature_ids)
                     # self.settings.layer.selectedFeatures()[0].geometry()
-                    if i == 0:
-                        clear_layer_features(self.preview_layer)
+                    # if i == 0:
+                    #     clear_layer_features(self.preview_layer)
                     # if i != 0:
                     # add_geom_to_layer(
                     #     self.preview_layer,
@@ -2309,26 +2337,30 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids,
                     clockwise=1
                 )
+                self.remove_memory_layer(PREVIEW_POLYGON2)
 
-                try:
-                    # clear_layer_features(self.preview_layer)
-                    self.settings.layer.selectByIds(self.feature_ids)
-                    if i == 0:
-                        clear_layer_features(self.preview_layer)
-                        add_geom_to_layer(
-                            self.preview_layer,
-                            self.settings.layer.selectedFeatures()[0].geometry()
-                        )
-                except Exception:
-                    pass
+                # self.settings.layer.selectByIds(self.feature_ids)
+                self.create_preview_layer(False)
+                # try:
+                #     # clear_layer_features(self.preview_layer)
+                #     # self.settings.layer.selectByIds(self.feature_ids)
+                #     if i == 0:
+                #         clear_layer_features(self.preview_layer)
+                #         # add_geom_to_layer(
+                #         #     self.preview_layer,
+                #         #     self.settings.layer.selectedFeatures()[0].geometry()
+                #         # )
+                # except Exception:
+                #     pass
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
         if result:
-            self.progress_dialog.cancel()
 
             self.post_split_update(self.preview_layer, preview=True)
+            self.progress_dialog.cancel()
+
         else:
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',

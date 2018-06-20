@@ -244,18 +244,18 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
         if len(feature_ids) > 0:
             features = feature_id_to_feature(layer, feature_ids)
             if len(features) > 0:
-                features[0].setGeometry(main_geom)
+                if main_geom is not None:
+                    features[0].setGeometry(main_geom)
                 feature = add_geom_to_feature(layer, geom, features[0])
             else: # for preview polygon
                 preview_layer = True
                 features = list(layer.getFeatures())
-                features[0].setGeometry(main_geom)
+                if main_geom is not None:
+                    features[0].setGeometry(main_geom)
                 feature = add_geom_to_feature(
                     layer, geom, features[0], preview_layer=True)
 
             layer.updateFeature(features[0])
-
-
 
     else:
 
@@ -264,8 +264,8 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
             feature = add_geom_to_feature(layer, geom)
 
     layer.updateExtents()
-    if preview_layer:
-        layer.commitChanges()
+    # if preview_layer:
+    #     layer.commitChanges()
 
     return feature
 
@@ -285,6 +285,7 @@ def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False
         ft.setGeometry(geom.geometry())
     if preview_layer:
         layer.dataProvider().addFeatures([ft])
+        layer.commitChanges()
     else:
         layer.addFeatures([ft])
 
@@ -1126,7 +1127,7 @@ def split_rotate_line_with_area(
                     if area_toggle < 288:
                         area_toggle = area_toggle + 1
                     else:
-                        # print 'faield'
+                        print 'faield'
                         break
                     # angle_change = 1
 
@@ -1219,7 +1220,7 @@ def split_rotate_line_with_area(
                 return True
 
         else:
-            # print 'failed'
+            print 'failed'
             return False
 
 
