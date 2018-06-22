@@ -561,7 +561,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         tool.setChecked(False)
         self.clear_feature_selection()
         self.clear_sel_highlight()
-        self.hide()
+        self.close()
         DETAILS_DOCK_ON = False
 
     def closeEvent(self, event):
@@ -737,6 +737,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :type button_clicked: Boolean
         """
         global DETAILS_DOCK_ON
+
+        # self.plugin.geom_tools_container.close_dock(
+        #     self.plugin.geom_tools_cont_act
+        # )
         if not button_clicked and not DETAILS_DOCK_ON:
             return
         DETAILS_DOCK_ON = True

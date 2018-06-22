@@ -20,7 +20,7 @@ from stdm.ui.notification import NotificationBar
 
 from stdm.settings.registryconfig import selection_color
 from ...geometry.geometry_utils import *
-
+from ...geometry.geometry_map_tool import GeometryMapTool
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 
@@ -243,6 +243,7 @@ class LayerSelectionHandler(object):
 class GeometryToolsDock(
     QDockWidget, Ui_GeometryContainer, LayerSelectionHandler
 ):
+    featureClicked = pyqtSignal(list)
     """
     The dock widget of geometry tools.
     """
@@ -261,6 +262,7 @@ class GeometryToolsDock(
         self.setupUi(self)
         self.plugin = plugin
         self.iface = iface
+        self.canvas = self.iface.mapCanvas()
         self._entity = None
         LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
@@ -274,6 +276,14 @@ class GeometryToolsDock(
             PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS,
             AREA_POLYGON
         ]
+
+        # self.geometry_map_tool.geomIdentified.connect(
+        #     self.feature_clicked
+        # )
+
+    # def feature_clicked(self, feature_ids):
+    #     self.featureClicked.emit(feature_ids)
+    #     print 'emitted ', feature_ids
 
     def write_log_message(message, tag, level):
         if os is None:
@@ -305,6 +315,7 @@ class GeometryToolsDock(
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+            self.featureClicked.connect(widget.on_feature_selected)
             if i == 0:
                 self._first_widget = widget
                 widget.select_feature_help(0)
@@ -335,6 +346,7 @@ class GeometryToolsDock(
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
         tool.setChecked(False)
+
         self.clear_feature_selection()
 
         GEOM_DOCK_ON = False
@@ -348,14 +360,19 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
+
+        self.blockSignals(True)
         try:
             for memory_layer_name in self.memory_layers:
+                # print memory_layer_name
                 mem_layers = QgsMapLayerRegistry.instance().mapLayersByName(
                     memory_layer_name
                 )
+
                 if len(mem_layers) > 0:
                     for mem_layer in mem_layers:
                         QgsMapLayerRegistry.instance().removeMapLayer(mem_layer)
+
             self.widget.clear_highlights()
             if stop_editing:
                 if self.layer is not None:
@@ -366,6 +383,7 @@ class GeometryToolsDock(
                             ).trigger()
         except Exception as ex:
             pass
+        self.blockSignals(False)
 
     def closeEvent(self, event):
         """
@@ -383,6 +401,7 @@ class GeometryToolsDock(
 
         if self.plugin is None:
             return
+
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
@@ -447,7 +466,9 @@ class GeometryToolsDock(
             return False
         # If the selected layer is feature layer, get data and
         # display geometry_tools in a dock widget
-
+        # TODO remove other widgets here.
+        #
+        # print self.widget().children()
         self.prepare_for_selection(active_layer)
 
         if not self.widgets_added:
@@ -476,7 +497,8 @@ class GeometryToolsDock(
         layer_select_tool.deactivated.connect(
             self.disable_feature_details_btn
         )
-
+        # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
+        # self.canvas.setMapTool(self.geometry_map_tool)
         layer_select_tool.activate()
         # icon = QIcon(":/plugins/stdm/images/icons/edit.png")
         # self.action = QAction(icon, 'Geometry Tools', self.iface.mainWindow())
@@ -560,8 +582,10 @@ class GeomWidgetsBase(object):
         self.settings = layer_settings
         self.current_profile = current_profile()
         self.iface = iface
-
+        self.canvas = self.iface.mapCanvas()
         self.settings = layer_settings
+
+        # self.geometry_map_tool.geomIdentified.connect(self.on_feature_selected)
 
         self.widget = widget
 
@@ -627,17 +651,17 @@ class GeomWidgetsBase(object):
         if iface.activeLayer() is not None:
             self.settings.remove_memory_layers()
 
-    def closeEvent(self, event):
-        """
-        Listens to the hide event of the dock and properly close the dock
-        using the close_dock method.
-        :param event: The close event
-        :type event: QCloseEvent
-        """
-        self.clear_highlights()
-
-        if iface.activeLayer() is not None:
-            self.settings.remove_memory_layers()
+    # def closeEvent(self, event):
+    #     """
+    #     Listens to the hide event of the dock and properly close the dock
+    #     using the close_dock method.
+    #     :param event: The close event
+    #     :type event: QCloseEvent
+    #     """
+    #     self.clear_highlights()
+    #
+    #     if iface.activeLayer() is not None:
+    #         self.settings.remove_memory_layers()
     def clear_highlights(self):
         """
         Removes show_highlight from the canvas.
@@ -664,7 +688,8 @@ class GeomWidgetsBase(object):
 
             highlight.show()
             if not clear_previous:
-                self.highlights.append(self.highlight)
+                # self.highlights.append(self.highlight)
+                self.highlights.append(highlight)
             else:
                 self.highlight = highlight
 
@@ -778,15 +803,15 @@ class GeomWidgetsBase(object):
                 pass
 
     def on_feature_selection_finished(self):
-        self.select_line_help(1)
+        # self.select_line_help(1)
 
         add_area(self.settings.layer, AREA_POLYGON)
+
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES
         )
 
         if self.line_layer is not None:
-
             self.line_layer.selectionChanged.connect(
                 self.on_line_feature_selected
             )
@@ -806,44 +831,6 @@ class GeomWidgetsBase(object):
             self.iface.mapCanvas().removeLayer()
         except Exception:
             pass
-    #
-    # def remove_memory_layers(self, stop_editing=False):
-    #     """
-    #     Removes memory layers used by the tools.
-    #     :return:
-    #     :rtype:
-    #     """
-    #     try:
-    #         if iface.activeLayer() is None:
-    #             return
-    #
-    #         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-    #             PREVIEW_POLYGON
-    #         )
-    #         if len(prev_layers) > 0:
-    #             for prev_layer in prev_layers:
-    #                 QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
-    #         line_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-    #             POLYGON_LINES
-    #         )
-    #         if len(line_layers) > 0:
-    #             for line_layer in line_layers:
-    #                 QgsMapLayerRegistry.instance().removeMapLayer(line_layer)
-    #         point_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-    #             LINE_POINTS
-    #         )
-    #         if len(point_layers) > 0:
-    #             for point_layer in point_layers:
-    #                 QgsMapLayerRegistry.instance().removeMapLayer(point_layer)
-    #         if stop_editing:
-    #             if self.settings.layer is not None:
-    #                 if iface.activeLayer() is not None:
-    #                     if iface.activeLayer().isEditable():
-    #                         iface.mainWindow().findChild(
-    #                             QAction, 'mActionToggleEditing'
-    #                         ).trigger()
-    #     except Exception as ex:
-    #         pass
 
     def on_line_selection_finished(self):
         pass
@@ -856,10 +843,10 @@ class GeomWidgetsBase(object):
         :return:
         :rtype:
         """
-        if self.parent().currentWidget().objectName() != self.objectName():
+        if self.parent().currentWidget().objectName() != self.widget.objectName():
             return
         self.clear_inputs()
-        self.settings.remove_memory_layers()
+        # self.settings.remove_memory_layers()
 
         self.clear_highlights()
         if hasattr(self.widget, 'selected_line_lbl'):
@@ -872,9 +859,6 @@ class GeomWidgetsBase(object):
         if len(feature) == 0:
             return
 
-
-        self.set_widget(self.parent().currentWidget())
-
         if not GEOM_DOCK_ON:
             return
 
@@ -883,15 +867,13 @@ class GeomWidgetsBase(object):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
-
         if self.settings.layer is None:
             return
 
-        if iface.activeLayer().name() == POLYGON_LINES:
+        if iface.activeLayer().name() != self.settings.layer.name():
             return
         zoom_to_selected(self.settings.layer)
         if self.settings.stdm_layer(self.settings.layer):
-            # if hasattr(self.widget, 'sel_features_lbl'):
             self.feature_count = self.selected_features_count()
             self.on_feature_selection_finished()
 
@@ -1520,25 +1502,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.lines[0].geometry(),
             new_value
         )
-        # self.blockSignals(False)
 
-    #     def on_line_selection_finished(self):
-    #         line_geom = self.lines[0].geometry()
-    #         line_length = line_geom.length()
-    #         # add line length for the user to see
-    #         self.line_length_lbl.setText(str(round(line_length, 2)))
-    #         self.length_from_point.setMaximum(math.modf(line_length)[1])
-    #         # add points for the line.
-    #         self.create_point_layer()
-    #         add_line_points_to_map(self.point_layer, line_geom)
-    #         self.points_count = self.selected_point_count()
-    #         # print 'selected line', self.points
-    #         if self.points_count > 0:
-    #             self.rotation_point = self.points[0]
-    #
-    #         self.widget.selected_points_lbl.setText(str(self.points_count))
-    #         # self.highlight_features(self.line_layer)
-    #
     def on_line_selection_finished(self):
         self.rotation_point = None
 
@@ -2024,9 +1988,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
-
+            if self.method == 1:
+                self.clear_highlights()
+                self.method = 2
             self.widget.selected_line_lbl.setText(str(self.lines_count))
-            clear_previous = True
+            # clear_previous = True
             if self.widget.parellel_rad.isChecked():
 
                 if self.lines_count > 1:
@@ -2036,9 +2002,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                         'The first selected line will be used.'
                     )
                     self.notice.insertWarningNotification(message)
-                clear_previous = False
-            else:
                 clear_previous = True
+            else:
+                clear_previous = False
+
             if self.widget.number_of_polygons.value() < 2:
                 self.notice.clear()
                 message = QApplication.translate(
@@ -2048,6 +2015,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.notice.insertWarningNotification(message)
             else:
                 self.notice.clear()
+            print clear_previous
             self.highlight_features(
                 self.line_layer,
                 clear_previous=clear_previous
@@ -2072,9 +2040,9 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         length = total_length/self.no_polygons
         # add points for the line.
-        clear_previous_highlight = True
+        # clear_previous_highlight = True
         if self.equal_boundary_rad.isChecked():
-            clear_previous_highlight = False
+            # clear_previous_highlight = False
             self.create_point_layer(show_in_legend=True)
             point_features = add_line_points_to_map(self.point_layer, geoms)
             self.rotation_points[:] = []
@@ -2086,13 +2054,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 )
                 self.rotation_points.append(point)
             self.iface.mapCanvas().refresh()
-            if self.method == 1:
-                self.clear_highlights()
-                self.method = 2
+
         self.iface.setActiveLayer(self.line_layer)
-        self.highlight_features(
-            self.line_layer, clear_previous=clear_previous_highlight
-        )
+        # self.highlight_features(
+        #     self.line_layer, clear_previous=clear_previous_highlight
+        # )
 
     def validate_run(self):
         state = True
@@ -2193,29 +2159,16 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
                     )
-                # if not isinstance(feature, bool):
-                #     clear_layer_features(self.preview_layer)
-                #     self.settings.layer.selectByIds(self.feature_ids)
-                    # self.settings.layer.selectedFeatures()[0].geometry()
-                #     print self.settings.layer.selectedFeatures(), 'settings'
-                #
-                #     add_geom_to_layer(
-                #         self.preview_layer,
-                #         self.settings.layer.selectedFeatures()[0]
-                #     )
-                # print self.preview_layer.selectedFeatures(), 'preview '
+
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
-                # self.settings.layer.selectByIds(self.feature_ids)
+
                 self.create_preview_layer(False)
 
-                # if isinstance(line_feature, QgsGeometry):
-                #
-                #     geom = line_feature
                 result = True
 
         else:
-            print self.rotation_points[::-1]
+
             # Revers the rotation points list.
             for i, point in enumerate(self.rotation_points[::-1]):
 
@@ -2232,21 +2185,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
                     )
-                # try:
-                    # clear_layer_features(self.preview_layer)
+
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
-                # self.settings.layer.selectByIds(self.feature_ids)
                 self.create_preview_layer(False)
-
-                    # add_geom_to_layer(
-                    #     self.preview_layer,
-                    #     self.settings.layer.selectedFeatures()[0].geometry()
-                    # )
-                    # print self.settings.layer.selectedFeatures()[0].geometry(), list(
-                    #     self.preview_layer.getFeatures()), 'preview_features'
-                # except Exception:
-                #     pass
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
@@ -2449,20 +2391,6 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         )
         self.length_chk.clicked.connect(self.on_length_clicked)
         self.area_chk.clicked.connect(self.on_area_clicked)
-    #
-    # def on_feature_selected(self, feature):
-    #     """
-    #     Selects a feature and load line layer which is boundary of the polygon.
-    #     :param feature: List of feature ids selected
-    #     :type feature: List
-    #     :return:
-    #     :rtype:
-    #     """
-    #     self.settings.remove_memory_layers()
-    #     zoom_to_selected(self.settings.layer)
-
-    def on_feature_selection_finished(self):
-        pass
 
     def on_length_clicked(self):
         self.length_box.setEnabled(self.length_chk.isChecked())

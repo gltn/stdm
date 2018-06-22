@@ -107,5 +107,6 @@
     <file>images/icons/custom_tenure.png</file>
     <file>images/icons/geometry_tools.png</file>
     <file>images/icons/advanced_search.png</file>
+
   </qresource>
 </RCC>
