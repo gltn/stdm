@@ -23,7 +23,6 @@ class GeometryMapTool(QgsMapToolIdentify, QgsMapTool):
         # self.cursor = QCursor(self.cursor_pixmap, 1, 1)
         self.widget = None
         self.setCursor(Qt.PointingHandCursor)
-        print 'set '
 
     def setWidget(self, widget):
         self.widget = widget
@@ -53,17 +52,17 @@ class GeometryMapTool(QgsMapToolIdentify, QgsMapTool):
             mouseEvent.x(), mouseEvent.y(), self.ActiveLayer, self.VectorLayer
         )
         if len(results) > 0:
-            if self.feature_id != results[0].mFeature.id():
-                iface.mainWindow().blockSignals(True)
-                results[0].mLayer.selectByIds([results[0].mFeature.id()])
-                iface.mainWindow().blockSignals(False)
-                results[0].mLayer.selectionChanged.emit(
-                    [results[0].mFeature.id()],
-                    [self.feature_id],
-                    True
-                )
+            # if self.feature_id != results[0].mFeature.id():
+            iface.mainWindow().blockSignals(True)
+            results[0].mLayer.selectByIds([results[0].mFeature.id()])
+            iface.mainWindow().blockSignals(False)
+            results[0].mLayer.selectionChanged.emit(
+                [results[0].mFeature.id()],
+                [self.feature_id],
+                True
+            )
 
-                self.feature_id = results[0].mFeature.id()
+            self.feature_id = results[0].mFeature.id()
 
                 # self.widget.on_feature_selected([self.feature_id])
                 # results[0].mLayer.selectByIds(results[0].mFeature)

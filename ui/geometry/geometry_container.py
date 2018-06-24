@@ -492,14 +492,14 @@ class GeometryToolsDock(
         """
         self.iface.actionPan().trigger()
         self.iface.actionSelect().trigger()
-        layer_select_tool = self.iface.mapCanvas().mapTool()
-
-        layer_select_tool.deactivated.connect(
-            self.disable_feature_details_btn
-        )
-        # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
-        # self.canvas.setMapTool(self.geometry_map_tool)
-        layer_select_tool.activate()
+        # layer_select_tool = self.iface.mapCanvas().mapTool()
+        #
+        # layer_select_tool.deactivated.connect(
+        #     self.disable_feature_details_btn
+        # )
+        self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
+        self.canvas.setMapTool(self.geometry_map_tool)
+        # layer_select_tool.activate()
         # icon = QIcon(":/plugins/stdm/images/icons/edit.png")
         # self.action = QAction(icon, 'Geometry Tools', self.iface.mainWindow())
         # self.mapTool =GeometryMapTool(self.iface.mapCanvas(), self.iface.activeLayer())
@@ -973,6 +973,8 @@ class GeomWidgetsBase(object):
     def cancel(self):
         self.clear_highlights()
         self.settings.remove_memory_layers(stop_editing=True)
+        self.settings.layer.removeSelection()
+        self.clear_inputs()
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1053,7 +1055,7 @@ class GeomWidgetsBase(object):
             add_area(layer, AREA_POLYGON, all_features=preview)
 
         iface.setActiveLayer(self.settings.layer)
-
+        self.iface.mapCanvas().refresh()
 
 class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
@@ -1079,6 +1081,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.notice.insertErrorNotification(message)
             return False
         if len(self.lines) == 0:
+            self.notice.clear()
             message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Select a line to split the polygon.'
@@ -1345,11 +1348,34 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         GeomWidgetsBase.__init__(self, layer_settings, self)
         self.line_selection_finished.connect(
-            self.on_line_selection_finished)
+            self.on_line_selection_finished
+        )
         self.length_from_point.valueChanged.connect(
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
+
+    def selected_point_count(self):
+        if self.point_layer is None:
+            return 0
+
+        points = self.point_layer.selectedFeatures()
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
+
+            if location == 'middle':
+                return 0
+
+        # if clear_previous:
+        self.points[:] = []
+        self.points = points
+        self.rotation_point = self.points[0]
+        if self.points is not None:
+            return len(self.points)
+        else:
+            return 0
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1369,7 +1395,10 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
     def clear_inputs(self):
         super(OnePointAreaWidget, self).clear_inputs()
+        self.point_layer = None
+        self.split_polygon_area.setValue(0)
         self.length_from_point.setValue(0)
+        self.clockwise.setChecked(True)
 
     def on_feature_selected(self, feature):
         """
@@ -1414,6 +1443,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.on_feature_selection_finished()
 
     def on_feature_selection_finished(self):
+        add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(self.settings.layer,
                                            POLYGON_LINES)
@@ -1463,6 +1493,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return
 
         if hasattr(self.widget, 'selected_line_lbl'):
+
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
 
@@ -1480,6 +1511,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):
+        if self.point_layer is None:
+            return
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -1488,7 +1521,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.notice.insertWarningNotification(message)
             self.iface.setActiveLayer(self.line_layer)
             return
-        # self.blockSignals(True)
+
         if self.rotation_point is not None:
             with edit(self.point_layer):
                 point_features = [f.id() for f in
@@ -1515,6 +1548,17 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         add_line_points_to_map(self.point_layer, line_geom)
         self.points_count = self.selected_point_count()
 
+        if self.points_count > 0:
+            self.rotation_point = self.point_layer.selectedFeatures()[0]
+            # print self.rotation_point
+            # self.rotation_point = QgsGeometry(
+            #     self.point_layer.selectedFeatures()[0].geometry())
+            #
+            # if isinstance(self.rotation_point, QgsPointV2):
+            #     print 'pointv2'
+            #     self.rotation_point = QgsGeometry.fromPoint(self.rotation_point)
+            #
+            # print self.rotation_point
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
     def validate_run(self):
@@ -1555,7 +1599,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             clockwise = -1
 
         self.settings.layer.selectByIds(self.feature_ids)
-
+        # print clockwise
         result = split_rotate_line_with_area(
             self.settings.layer,
             self.preview_layer,
@@ -1598,6 +1642,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         else:
             clockwise = -1
 
+        # print clockwise
+
         self.preview_layer.selectAll()
 
         result = split_rotate_line_with_area(
@@ -1617,6 +1663,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
 
             self.post_split_update(self.preview_layer, preview=True)
+
         else:
             fail_message = QApplication.translate(
                 'OnePointAreaWidget',
@@ -1699,6 +1746,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 self.on_feature_selection_finished()
 
     def on_feature_selection_finished(self):
+        add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
         self.create_point_layer()
@@ -2015,7 +2063,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.notice.insertWarningNotification(message)
             else:
                 self.notice.clear()
-            print clear_previous
+            # print clear_previous
             self.highlight_features(
                 self.line_layer,
                 clear_previous=clear_previous

@@ -6,7 +6,8 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QVariant
 from PyQt4.QtGui import QColor, QApplication
-from decimal import Decimal
+from decimal import Decimal, getcontext, Context, ROUND_DOWN, ROUND_UP, \
+    setcontext
 
 from PyQt4.QtCore import QSizeF
 from PyQt4.QtGui import QColor, QTextDocument
@@ -138,8 +139,8 @@ def rotate_line_anti_clockwise(point_geom, polygon_layer, line, angle):
 
 def get_point_by_distance(point_layer, line_geom, distance):
     point = line_geom.interpolate(distance)
-    geom = add_geom_to_layer(point_layer, point)
-    return geom
+    feature = add_geom_to_layer(point_layer, point)
+    return feature
 
 def get_parallel_line(selected_line_geom, offset_distance):
     parallel_geom = selected_line_geom.offsetCurve(offset_distance, 1, 2, 0)
@@ -373,6 +374,7 @@ def add_line_points_to_map(point_layer, line_geom, clear=True):
         clear_points(point_layer)
     poly_lines = line_geom.asPolyline()
     point_features = []
+
     for point in poly_lines:
 
         feature = add_geom_to_layer(point_layer, point)
@@ -468,8 +470,6 @@ def show_polygon_area(layer, temp_layer_name=None, prefix='', suffix='', all_fea
             add_geom_to_layer_with_measurement(
                 curr_layer, polygon_geom, prefix, suffix, unit
             )
-        else:
-            print feature
 
     label_layer_by_field(curr_layer, 'measurement')
 
@@ -803,7 +803,6 @@ def split_move_line_with_area(
                 # print 'continue 2'
                 continue
 
-
             # If provided area is greater than split area, increase height
             if area > split_area1:
                 if area - math.modf(split_area1)[1] > 200:
@@ -968,6 +967,26 @@ def split_offset_distance(
         return False
 
 
+def get_azimuth(selected_line_ft, rotation_point_ft):
+    polyline = selected_line_ft.geometry().asPolyline()
+    selected_point = rotation_point_ft.geometry().asPoint()
+    distance_point = OrderedDict()
+    for point in polyline:
+        # Remove the rotation point and find another point
+        distance = rotation_point_ft.geometry().distance(
+            QgsGeometry.fromPoint(point)
+        )
+        distance_point[distance] = point
+
+    if len(polyline) > 0:
+
+        intersecting_point = distance_point[min(distance_point.keys())]
+        polyline.remove(intersecting_point)
+        print polyline
+    azimuth = selected_point.azimuth(polyline[0])
+    # print azimuth
+    return azimuth
+
 def split_rotate_line_with_area(
         polygon_layer, preview_layer, selected_line_ft,
         rotation_point_ft, area, feature_ids, clockwise
@@ -986,14 +1005,15 @@ def split_rotate_line_with_area(
     decimal_place_new = 0
     increment = 1
     area_toggle = 0
+    excessive_toggle = 9
     if clockwise == -1:
         angle_change = -1
     else:
         angle_change = 1
-    angle = 0
+    angle = clockwise
 
     size_calculator = QgsDistanceArea()
-
+    line_angle = round(get_azimuth(selected_line_ft, rotation_point_ft), 0)
     crs = iface.activeLayer().crs()
     size_calculator.setSourceCrs(crs)
     size_calculator.setEllipsoid(crs.description())
@@ -1001,22 +1021,67 @@ def split_rotate_line_with_area(
 
     split_area1 = 0
     loop_index = 0
+    failed_intersection = 0
     # Use this intersection point to find the first touched
     # geometry to find the split geom
     intersecting_point_pt = None
+    digits = 0.0
+    skip_angle_set = False
+    prev_toggle_index = 0
+    while split_area1 <= area + 10000040:
+        QApplication.processEvents()
+        # digits = Decimal(1) / (Decimal(math.pow(10, decimal_place_new)) * increment)
+        # increment = digits + Decimal(math.pow(10, decimal_place_new))
+        # digits = Decimal(round(digits, decimal_place_new))
+        # print digits, decimal_place_new
+        # getcontext().prec = decimal_place_new
+        # if decimal_place_new > 0:
+        # print float(digits), decimal_place_new
+        # digits = Decimal(1)/Decimal(math.pow(10, decimal_place_new))
+        # digits = digits * loop_index
+        # digits = Decimal(digits)
+        # inc = (Decimal(increment)/\
+        #       Decimal(math.pow(10, decimal_place_new))) + \
+        #        Decimal(round(1/(math.pow(10, decimal_place_new)+1), decimal_place_new))
 
-    while split_area1 <= area + 140:
 
-        # decimal_place = decimal_place_new
-
+        # inc = Decimal
+        # print inc, 'test'
+        # if not skip_angle_set:
         if angle_change == -1:
-            angle = Decimal(angle) - Decimal(increment) / \
-                                     Decimal(math.pow(10, decimal_place_new))
+
+            context = Context(prec=decimal_place_new, rounding=ROUND_DOWN)
+            # setcontext(context)
+            increment = context.create_decimal(1/math.pow(10, decimal_place_new))
+            # increment = round(increment, decimal_place_new)
+
+            if decimal_place_new == 0:
+                increment = 1
+
+            angle = Decimal(angle) - increment
+            # angle = Decimal(round(angle, decimal_place_new))
 
         elif angle_change == 1:
-            angle = Decimal(angle) + Decimal(increment) / \
-                                     Decimal(math.pow(10, decimal_place_new))
 
+            context = Context(prec=decimal_place_new, rounding=ROUND_UP)
+            # setcontext(context)
+            increment = context.create_decimal(1/math.pow(10, decimal_place_new))
+            # increment = round(increment, decimal_place_new)
+            # print increment, ' add ', round(increment, decimal_place_new)
+            if decimal_place_new == 0:
+                increment = 1
+            angle = Decimal(angle) + increment
+                # angle = Decimal(round(angle, decimal_place_new))
+    # print float(digits)
+        # else:
+        #     digits = Decimal(angle_change)
+        # if angle_change == -1:
+        #     angle = angle - digits
+        #     # print 'angle change'
+        # elif angle_change == 1:
+        #     angle = angle + digits
+
+        # print angle, decimal_place_new, area_toggle, split_area1
         if angle > 180:
             angle = 0
         if angle < -180:
@@ -1024,15 +1089,20 @@ def split_rotate_line_with_area(
 
         line_geom = QgsGeometry.fromWkt(selected_line.asWkt())
         line_geom.rotate(angle, rotation_point_ft.geometry().asPoint())
-        # print 'result ', result
+
         added_points = extend_line_points(line_geom, poly_bbox)
+
         try:
             sel_feats = list(preview_layer.getFeatures())
         except Exception:
-            # print 'canceled'
             break
+
         geom1 = sel_feats[0].geometry()
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
+        # add_geom_to_layer(
+        #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
+        #     ext_line_geom
+        # )
 
         if ext_line_geom.intersects(ori_poly_geom):
             # split with the rotated line
@@ -1040,28 +1110,29 @@ def split_rotate_line_with_area(
                 added_points, False
             )
             if len(split_geom) > 0:
-                # print 'geom1 ', geom1.area(), 'split_geom[0] ', split_geom[0].area()
-                if loop_index == 0:
-                    if clockwise == -1:
-                        angle_change = -1
-
-                    else:
-                        angle_change = 1
+                # print geom1.area(), split_geom[0].area()
                 # Get first intersection coordinate
-
                 if loop_index == 0:
                     intersection = ext_line_geom.intersection(ori_poly_geom)
+                    # print intersection
                     inter_point = intersection.asPolyline()
-
+                    # print inter_point
+                    distance_point = OrderedDict()
                     for point in inter_point:
+                        # Remove the rotation point and find another point
                         distance = rotation_point_ft.geometry().distance(
                             QgsGeometry.fromPoint(point)
                         )
-                        if round(distance, 0) == 0:
-                            inter_point.remove(point)
+                        distance_point[distance] = point
+                        # if round(distance, 0) == 0:
+                        #     inter_point.remove(point)
 
+                    # print inter_point, distance_point
                     if len(inter_point) > 0:
-                        intersecting_point = inter_point[0]
+
+                        intersecting_point = distance_point[
+                            max(distance_point.keys())
+                        ]
                         intersecting_point_pt = QgsGeometry.fromPoint(
                             intersecting_point
                         )
@@ -1072,12 +1143,15 @@ def split_rotate_line_with_area(
                 if loop_index >= 1:
                     if intersecting_point_pt is None:
                         continue
-
+                    #
+                    # print geom1.area(), split_geom[0].area(), intersecting_point_pt.distance(geom1) < \
+                    #         intersecting_point_pt.distance(split_geom[0])
                     if intersecting_point_pt.distance(geom1) < \
                             intersecting_point_pt.distance(split_geom[0]):
                         split_area1 = geom1.area()
                         split_geom1 = geom1
                         main_geom = split_geom[0]
+
                     else:
                         split_area1 = split_geom[0].area()
                         split_geom1 = split_geom[0]
@@ -1086,61 +1160,78 @@ def split_rotate_line_with_area(
                 loop_index = loop_index + 1
             else:
                 continue
-            # print split_area1
+
+            # print angle, angle_change, split_area1
+
             if area > split_area1:
                 # helps in changing height in small steps after switching from
 
                 # print 'area large ', decimal_place_new, increment, angle
 
                 if area - math.modf(split_area1)[1] > 200:
-                    # increment = 4
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(50, 200):
-                    # increment = 3
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(10, 50):
-                    # increment = 2
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(5, 10):
-                    # increment = 1
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif area - math.modf(split_area1)[1] in range(2, 5):
-                    # increment = 1
+
                     if area_toggle == 0:
                         decimal_place_new = 1
+
                 if area - math.modf(split_area1)[1] in range(0, 1):
                     if area_toggle == 0:
                         decimal_place_new = 2
 
-                if angle_change == -1 and loop_index > 0:
+                if clockwise == 1:
+                    if angle_change == -1 and loop_index > 0:
+                        # if decimal_place_new < 5:
 
-                    decimal_place_new = decimal_place_new + area_toggle
+                        # increment = increment + 1
+                        if area_toggle < 4:
+                            # do not allow loop increase if
+                            if prev_toggle_index + 1 != loop_index:
+                                decimal_place_new = decimal_place_new + 1
+                                area_toggle = area_toggle + 1
+                                prev_toggle_index = loop_index
+                        else:
+                            excessive_toggle = excessive_toggle + 1
+                            if excessive_toggle > 300:
+                                break
+                else:
+                    if angle_change == 1 and loop_index > 0:
+                        # if decimal_place_new < 5:
+                        #     increment = increment + 1
 
-                    if area_toggle < 288:
-                        area_toggle = area_toggle + 1
-                    else:
-                        print 'faield'
-                        break
-                    # angle_change = 1
+                        if area_toggle < 4:
+                            if prev_toggle_index + 1 != loop_index:
+                                decimal_place_new = decimal_place_new + 1
 
-                # if loop_index == 0:
-                # if clockwise == -1:
-                #     angle_change = -1
-                # else:
-                #     angle_change = 1
-                angle_change = 1
+                                area_toggle = area_toggle + 1
+                                prev_toggle_index = loop_index
+                        else:
+                            excessive_toggle = excessive_toggle + 1
+                            if excessive_toggle > 300:
+                                break
+                if clockwise == 1:
+                    angle_change = 1
+                else:
+                    angle_change = -1
 
-                # if math.modf(split_area1)[1] + 1 > area:
-                #     decimal_place_new = 4
-                #     increment = 1
                 if (round(split_area1, 2)) == area:
                     add_geom_to_layer(
                         polygon_layer, split_geom1, main_geom, feature_ids
@@ -1153,63 +1244,74 @@ def split_rotate_line_with_area(
 
                 # print 'area small ', decimal_place_new, increment, angle
                 if math.modf(split_area1)[1] - area > 200:
-                    # increment = 4
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(50, 200):
-                    # increment = 3
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(10, 50):
-                    # increment = 2
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(5, 10):
-                    # increment = 1
+
                     if area_toggle == 0:
                         decimal_place_new = 0
 
                 elif math.modf(split_area1)[1] - area in range(2, 5):
-                    # increment = 1
+
                     if area_toggle == 0:
                         decimal_place_new = 1
                 if math.modf(split_area1)[1] - area in range(0, 1):
                     if area_toggle == 0:
                         decimal_place_new = 2
+                if clockwise == 1:
+                    if angle_change == 1 and loop_index > 0:
+                        # if decimal_place_new < 5:
 
-                if angle_change == 1 and loop_index > 0:
+                        # increment = increment + 1
 
-                    # if loop_index > 0:
-                    decimal_place_new = decimal_place_new + area_toggle
+                        if area_toggle < 4:
+                            if prev_toggle_index + 1 != loop_index:
+                                decimal_place_new = decimal_place_new + 1
+                                area_toggle = area_toggle + 1
+                                prev_toggle_index = loop_index
 
-                    if area_toggle < 288:
-                        area_toggle = area_toggle + 1
-                    else:
-                        # print ' failed'
-                        break
+                        else:
+                            excessive_toggle = excessive_toggle + 1
+                            if excessive_toggle > 300:
+                                break
+                else:
+                    if angle_change == -1 and loop_index > 0:
+                        # if decimal_place_new < 5:
 
-                    # angle_change = -1
-                # if loop_index == 0:
-                #     if clockwise == -1:
-                #         angle_change = -1
-                #     else:
-                #         angle_change = 1
+                        # increment = increment + 1
 
-                angle_change = -1
+                        if area_toggle < 4:
+                            if prev_toggle_index + 1 != loop_index:
+                                decimal_place_new = decimal_place_new + 1
+                                area_toggle = area_toggle + 1
+                                prev_toggle_index = loop_index
+                        else:
+                            excessive_toggle = excessive_toggle + 1
+                            if excessive_toggle > 300:
+                                break
+                if clockwise == 1:
+                    angle_change = -1
+                else:
+                    angle_change = 1
 
-                # if math.modf(split_area1)[1] - area in range(0, 1):
-                # if math.modf(split_area1)[1] < area + 1:
-                #     decimal_place_new = 4
-                    # increment = 1
                 if (round(split_area1, 2)) == area:
                     add_geom_to_layer(
                         polygon_layer, split_geom1, main_geom, feature_ids
                     )
                     return True
-                #
+
                 # print 'area small ', angle_change, decimal_place_new, area_toggle, \
                 #     split_area1, area, math.modf(split_area1)[1] - area
 
@@ -1220,8 +1322,23 @@ def split_rotate_line_with_area(
                 return True
 
         else:
-            print 'failed'
-            return False
+
+            failed_intersection = failed_intersection + 1
+            # if clockwise == 1:
+            #     angle = angle - Decimal(line_angle)
+            # else:
+            #     angle = angle + Decimal(line_angle)
+
+            if angle_change == -1:
+                angle = angle - Decimal(line_angle)
+            else:
+                angle = angle + Decimal(line_angle)
+            # print 'failed intersection', failed_intersection
+            QApplication.processEvents()
+            if failed_intersection > 200:
+                return False
+            else:
+                pass
 
 
 def split_join_points(
