@@ -437,8 +437,11 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             item = model.item(row)
             if item.checkState() == Qt.Checked:
                 id_idx = model.index(row, 1)
-                row_data.append(id_idx.data(Qt.UserRole + 1))
-
+                separator = id_idx.data(Qt.UserRole + 1)
+                if separator is None:
+                    separator = ''
+                row_data.append(separator)
+       
         self._column_separators = row_data
 
     def add_leading_zero(self):
