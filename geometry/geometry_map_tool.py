@@ -18,6 +18,7 @@ class GeometryMapTool(QgsMapToolIdentify, QgsMapTool):
         # self.cursor_pixmap = QPixmap(
         #     '":/plugins/stdm/images/icons/geometry_map_tool.png'
         # )
+        self.feature_ids = []
         self.feature_id = None
         # Now we create a QCursor with the pixmap
         # self.cursor = QCursor(self.cursor_pixmap, 1, 1)
@@ -56,8 +57,10 @@ class GeometryMapTool(QgsMapToolIdentify, QgsMapTool):
             iface.mainWindow().blockSignals(True)
             results[0].mLayer.selectByIds([results[0].mFeature.id()])
             iface.mainWindow().blockSignals(False)
+            self.feature_ids.append(results[0].mFeature.id())
+            # self.feature_id = results[0].mFeature.id()
             results[0].mLayer.selectionChanged.emit(
-                [results[0].mFeature.id()],
+                self.feature_ids,
                 [self.feature_id],
                 True
             )

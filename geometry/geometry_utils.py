@@ -235,7 +235,10 @@ def extend_line_points(line_geom, polygon_extent):
 def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     if isinstance(geom, QgsPoint):
         geom = QgsGeometry.fromPoint(geom)
-    iface.setActiveLayer(layer)
+    try:
+        iface.setActiveLayer(layer)
+    except Exception:
+        pass
     preview_layer = False
     feature = None
     # refresh map canvas to see the result
@@ -267,7 +270,7 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     layer.updateExtents()
     # if preview_layer:
     #     layer.commitChanges()
-
+    # print 'added feat', feature
     return feature
 
 def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False):
@@ -388,10 +391,9 @@ def clear_points(point_layer):
         point_layer.deleteFeatures(ids)
 
 def point_by_distance(point_layer, selected_point_ft, selected_line, distance):
-
+    # print selected_point_ft, selected_line, distance
     location = identify_selected_point_location(selected_point_ft, selected_line)
-    # print 'locat', location
-    added_point_feature = None
+
     if location == 'start':
         added_point_feature = get_point_by_distance(
             point_layer, selected_line, distance
@@ -404,7 +406,11 @@ def point_by_distance(point_layer, selected_point_ft, selected_line, distance):
         added_point_feature = get_point_by_distance(
             point_layer, selected_line, distance_from_end
         )
-
+    else:
+        added_point_feature = get_point_by_distance(
+            point_layer, selected_line, distance
+        )
+    # print 'added feature ', added_point_feature
     return added_point_feature
 
 def rotate_from_distance_point(
@@ -668,6 +674,7 @@ def clear_layer_features(layer):
         layer.startEditing()
         layer.dataProvider().deleteFeatures(feat_ids)
         layer.commitChanges()
+
 
 def add_features_to_layer(layer, features):
     provider = layer.dataProvider()
@@ -982,7 +989,7 @@ def get_azimuth(selected_line_ft, rotation_point_ft):
 
         intersecting_point = distance_point[min(distance_point.keys())]
         polyline.remove(intersecting_point)
-        print polyline
+        # print polyline
     azimuth = selected_point.azimuth(polyline[0])
     # print azimuth
     return azimuth

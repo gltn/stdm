@@ -492,14 +492,14 @@ class GeometryToolsDock(
         """
         self.iface.actionPan().trigger()
         self.iface.actionSelect().trigger()
-        # layer_select_tool = self.iface.mapCanvas().mapTool()
-        #
-        # layer_select_tool.deactivated.connect(
-        #     self.disable_feature_details_btn
-        # )
-        self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
-        self.canvas.setMapTool(self.geometry_map_tool)
-        # layer_select_tool.activate()
+        layer_select_tool = self.iface.mapCanvas().mapTool()
+
+        layer_select_tool.deactivated.connect(
+            self.disable_feature_details_btn
+        )
+        # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
+        # self.canvas.setMapTool(self.geometry_map_tool)
+        layer_select_tool.activate()
         # icon = QIcon(":/plugins/stdm/images/icons/edit.png")
         # self.action = QAction(icon, 'Geometry Tools', self.iface.mainWindow())
         # self.mapTool =GeometryMapTool(self.iface.mapCanvas(), self.iface.activeLayer())
@@ -1360,13 +1360,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return 0
 
         points = self.point_layer.selectedFeatures()
-        if len(self.lines) > 0:
-            location = identify_selected_point_location(
-                points[0], self.lines[0].geometry()
-            )
 
-            if location == 'middle':
-                return 0
+        # if len(self.lines) > 0:
+        #     location = identify_selected_point_location(
+        #         points[0], self.lines[0].geometry()
+        #     )
+        #
+        #     if location == 'middle':
+        #         return 0
 
         # if clear_previous:
         self.points[:] = []
@@ -1535,6 +1536,10 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.lines[0].geometry(),
             new_value
         )
+        if hasattr(self.widget, 'selected_points_lbl'):
+            points_count = len(self.point_layer.selectedFeatures())
+
+            self.widget.selected_points_lbl.setText(str(points_count))
 
     def on_line_selection_finished(self):
         self.rotation_point = None
@@ -1689,6 +1694,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             LINE_POINTS
         )
         for prev_layer in prev_layers:
+            # QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
             clear_layer_features(prev_layer)
 
         if len(prev_layers) == 0:
@@ -1703,6 +1709,29 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
     def clear_inputs(self):
         super(JoinPointsWidget, self).clear_inputs()
         self.length_from_point.setValue(0)
+
+    def selected_point_count(self):
+        if self.point_layer is None:
+            return 0
+
+        points = self.point_layer.selectedFeatures()
+        # if len(self.lines) > 0:
+        #     location = identify_selected_point_location(
+        #         points[0], self.lines[0].geometry()
+        #     )
+        #
+        #     if location == 'middle':
+        #
+        #         return 0
+
+        # if clear_previous:
+        self.points[:] = []
+        self.points = points
+        self.rotation_point = self.points[0]
+        if self.points is not None:
+            return len(self.points)
+        else:
+            return 0
 
     def on_feature_selected(self, feature):
         """
@@ -1746,6 +1775,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 self.on_feature_selection_finished()
 
     def on_feature_selection_finished(self):
+
         add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
@@ -1761,7 +1791,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
 
     def on_point_feature_selected(self):
-
+        print 'point'
         if self.settings.layer is None:
             return
 
@@ -1823,16 +1853,23 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
         if self.rotation_point is not None:
             with edit(self.point_layer):
-                point_features = [f.id() for f in self.point_layer.getFeatures()]
+                point_features = [f.id() for f in
+                                  self.point_layer.getFeatures()]
                 rotation_point = point_features[-1:]
                 self.point_layer.deleteFeature(rotation_point[0])
-
+        # print self.points, self.lines[0].geometry(), new_value
         self.rotation_point = point_by_distance(
             self.point_layer,
-            self.points[0],
+            self.rotation_point,
             self.lines[0].geometry(),
             new_value
         )
+
+        if hasattr(self.widget, 'selected_points_lbl'):
+
+            points_count = self.selected_point_count()
+
+            self.widget.selected_points_lbl.setText(str(points_count))
 
     def on_line_selection_finished(self):
         self.rotation_point = None
@@ -1919,6 +1956,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def preview(self):
         result = self.validate_run(True)
+
         if not result:
             return
         self.executed = True
