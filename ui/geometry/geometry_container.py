@@ -1842,12 +1842,15 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):
+
         if len(self.lines) == 0:
+            self.notice.clear()
             message = QApplication.translate(
                 'JoinPointsWidget',
                 'Select a line to create the new point.'
             )
-            self.notice.insertWarningNotification(message)
+            self.notice.insertErrorNotification(message)
+            self.length_from_point.setValue(0)
             self.iface.setActiveLayer(self.line_layer)
             return
 
