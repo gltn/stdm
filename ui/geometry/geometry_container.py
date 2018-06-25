@@ -2035,8 +2035,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
     def clear_inputs(self):
         super(EqualAreaWidget, self).clear_inputs()
+        self.features_area_lbl.setText('0')
+        self.splitted_area_lbl.setText('0')
         self.number_of_polygons.setValue(0)
         self.parellel_rad.setChecked(True)
+
 
     def on_point_feature_selected(self):
 
@@ -2094,16 +2097,16 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 clear_previous = True
             else:
                 clear_previous = False
-
-            if self.widget.number_of_polygons.value() < 2:
-                self.notice.clear()
-                message = QApplication.translate(
-                    'EqualAreaWidget',
-                    'Number of polygons should be at least 2.'
-                )
-                self.notice.insertWarningNotification(message)
-            else:
-                self.notice.clear()
+            #
+            # if self.widget.number_of_polygons.value() < 2:
+            #     self.notice.clear()
+            #     message = QApplication.translate(
+            #         'EqualAreaWidget',
+            #         'Number of polygons should be at least 2.'
+            #     )
+            #     self.notice.insertWarningNotification(message)
+            # else:
+            #     self.notice.clear()
             # print clear_previous
             self.highlight_features(
                 self.line_layer,
@@ -2210,7 +2213,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.settings.layer.selectByIds(self.feature_ids)
 
         self.create_preview_layer(False)
-
+        self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
             line_feature = None
@@ -2244,6 +2247,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
+                print 'self.settings.layer.selectedFeatures()', self.settings.layer.selectedFeatures()
                 if  len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
@@ -2255,7 +2259,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.create_preview_layer(False)
 
                 result = True
-
+            print self.equal_split_features
         else:
 
             # Revers the rotation points list.
@@ -2327,12 +2331,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         self.preview_layer2.selectAll()
         # self.preview_layer2.selectAll()
+        self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
             line_feature = None
 
             for i in range(1, self.no_polygons):
-
+                print i
                 if line_feature is None:
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
@@ -2358,11 +2363,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
+                print feature, line_feature
                 if not isinstance(feature, bool):
                     self.remove_memory_layer(PREVIEW_POLYGON2)
 
                     # self.settings.layer.selectByIds(self.feature_ids)
                     self.create_preview_layer2(False)
+                    # self.preview_layer2.selectAll()
                     # clear_layer_features(self.preview_layer)
                     # self.settings.layer.selectByIds(self.feature_ids)
                     # self.settings.layer.selectedFeatures()[0].geometry()

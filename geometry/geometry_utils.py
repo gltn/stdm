@@ -753,7 +753,7 @@ def split_move_line_with_area(
         geom1 = sel_features[0].geometry()
         # else:
         #     geom1 = previous_geom
-
+        print geom1.area()
         extent = geom1.boundingBox()
         # Using the extent, extend the parallel line to the selected
         # geometry bounding box to avoid failed split.
@@ -851,6 +851,7 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
+                        print feature, 1
                         parallel_line_ft = add_geom_to_feature(
                             line_layer, parallel_line_geom2)
                         # print main_geom.area(), split_geom.area()
@@ -895,6 +896,7 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
+                        print feature, 2
                         parallel_line_ft = add_geom_to_feature(
                             line_layer, parallel_line_geom2)
                         # print main_geom.area(), split_geom.area()
