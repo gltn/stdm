@@ -231,7 +231,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
-
+        self._add_advanced_search_btn()
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
@@ -590,6 +590,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.current_records = filtered_records.rowcount
 
             numRecords = self.recomputeRecordCount(init_data=True)
+
             # Load progress dialog
             progressLabel = QApplication.translate(
                 "EntityBrowser", "Fetching Records..."
@@ -884,7 +885,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             else:
                 self.parent_entity = None
 
-            self._add_advanced_search_btn()
+
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column() and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
