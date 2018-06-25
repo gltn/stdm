@@ -1667,7 +1667,8 @@ class STDMQGISLoader(object):
             return
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(
             self.iface,
-            self.iface.mainWindow()
+            self.iface.mainWindow(),
+            plugin=self
         )
         doc_gen_wrapper.exec_()
 
