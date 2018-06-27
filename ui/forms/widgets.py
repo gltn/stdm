@@ -695,12 +695,12 @@ class AdministrativeUnitWidgetFactory(ColumnWidgetRegistry):
                 #Add result to the cache
                 self._aus_cache[res.id] = res
                 name, code = res.name, res.code
-
+        
         if code:
-            if code not in self._column.entity_relation.display_cols:
+            if 'code' not in self._column.entity_relation.display_cols:
                 name = u'{0}'.format(name)
             else:
-                u'{0} ({1})'.format(name, code)
+                name = u'{0} ({1})'.format(name, code)
 
         return name
 
