@@ -628,7 +628,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             # if self._tableModel is None:
                 for i,er in enumerate(entity_records):
-
+                    if i == 3000:
+                        break
                     QApplication.processEvents()
                     entity_row_info = []
                     progressDialog.setValue(i)

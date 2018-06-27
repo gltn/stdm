@@ -36,7 +36,7 @@ from PyQt4.QtGui import (
     QWidget,
     QApplication,
     QPushButton,
-    QLineEdit)
+    QLineEdit, QMessageBox)
 
 from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
 
@@ -49,7 +49,7 @@ from stdm.data.configuration.columns import (
 from sqlalchemy.sql.expression import text
 from stdm.data.mapping import MapperMixin
 from stdm.data.pg_utils import table_column_names, fetch_with_filter
-from stdm.utils.util import entity_display_columns, format_name
+from stdm.utils.util import entity_display_columns, format_name, simple_dialog
 from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
@@ -186,8 +186,28 @@ class AdvancedSearch(EntityEditorDialog):
         if result is not None:
             found = QApplication.translate('AdvancedSearch', 'records found')
             new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
-            self.setWindowTitle(new_title)
-            self.parent._initializeData(result)
+            if result.rowcount > 3000:
+                title = QApplication.translate(
+                        'AdvancedSearch',
+                        'Advanced Search'
+                )
+                message = QApplication.translate(
+                    'AdvancedSearch',
+                    'The search result returned {0} records, which is above the '
+                    'search result limit. <br>Would you like to see the first 3000 '
+                    'records?'.format("{:,}".format(result.rowcount ))
+                )
+
+                res, chk_result = simple_dialog(self, title, message)
+                if res:
+                    self.setWindowTitle(new_title)
+                    self.parent._initializeData(result)
+                else:
+                    return
+
+            else:
+                self.setWindowTitle(new_title)
+                self.parent._initializeData(result)
 
     def search_db(self, search_data):
         ent_model_obj = self.ent_model()
