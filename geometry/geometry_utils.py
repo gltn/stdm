@@ -250,15 +250,19 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
             if len(features) > 0:
                 if main_geom is not None:
                     features[0].setGeometry(main_geom)
+                    layer.updateFeature(features[0])
                 feature = add_geom_to_feature(layer, geom, features[0])
             else: # for preview polygon
                 preview_layer = True
                 features = list(layer.getFeatures())
                 if main_geom is not None:
                     features[0].setGeometry(main_geom)
+
+                    layer.updateFeature(features[0])
+
                 feature = add_geom_to_feature(
                     layer, geom, features[0], preview_layer=True)
-
+                layer.selectByIds([features[0].id()])
             layer.updateFeature(features[0])
 
     else:
@@ -271,6 +275,7 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     # if preview_layer:
     #     layer.commitChanges()
     # print 'added feat', feature
+
     return feature
 
 def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False):
@@ -292,7 +297,7 @@ def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False
         layer.commitChanges()
     else:
         layer.addFeatures([ft])
-
+    # layer.selectByIds([ft.id()])
     return ft
 
 def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
@@ -342,8 +347,6 @@ def zoom_to_selected(layer):
     canvas.setExtent(box)
     # canvas.zoomScale(1.3)
     canvas.refresh()
-
-
 
 def identify_selected_point_location(selected_point_ft, line_geom):
     """
@@ -723,7 +726,6 @@ def split_move_line_with_area(
 ):
 
     decimal_place_new = 0
-
     height = 1
     split_area1 = 0
     height_change = 1
@@ -753,7 +755,7 @@ def split_move_line_with_area(
         geom1 = sel_features[0].geometry()
         # else:
         #     geom1 = previous_geom
-        print geom1.area()
+
         extent = geom1.boundingBox()
         # Using the extent, extend the parallel line to the selected
         # geometry bounding box to avoid failed split.
@@ -848,13 +850,15 @@ def split_move_line_with_area(
                     # otherwise, use the area toggle value.
                     if (round(split_area1, 2)) == area:
                         # print '2 {} {}'.format(split_area1, area)
+                        parallel_line_ft = add_geom_to_feature(
+                            line_layer, parallel_line_geom2)
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        print feature, 1
-                        parallel_line_ft = add_geom_to_feature(
-                            line_layer, parallel_line_geom2)
+                        # print feature.geometry().area(), 1
+                        # polygon_layer.selectByIds([feature.id()])
                         # print main_geom.area(), split_geom.area()
+                        # polygon_layer.selectByIds([original_selected.id()])
                         # print 'aa', parallel_line_geom
                         return feature, parallel_line_ft
 
@@ -893,15 +897,16 @@ def split_move_line_with_area(
                     if (round(split_area1, 2)) == area:
                         # add_geom_to_layer(line_layer, parallel_line_geom2)
                         # print '3 {} {}'.format(split_area1, area)
+                        parallel_line_ft = add_geom_to_feature(
+                            line_layer, parallel_line_geom2)
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        print feature, 2
-                        parallel_line_ft = add_geom_to_feature(
-                            line_layer, parallel_line_geom2)
+                        # print feature.geometry().area(), 2
+                        # polygon_layer.selectByIds([feature.id()])
                         # print main_geom.area(), split_geom.area()
                         # print 'bb', parallel_line_geom
-
+                        # polygon_layer.selectByIds([original_selected.id()])
                         return feature, parallel_line_ft
         else:
             # print 'failed to intersect'

@@ -861,7 +861,6 @@ class GeomWidgetsBase(object):
 
         if not GEOM_DOCK_ON:
             return
-
         self.feature_ids = feature
 
         self.features = feature_id_to_feature(
@@ -1008,7 +1007,7 @@ class GeomWidgetsBase(object):
 
             iface.legendInterface().setLayerVisible(self.preview_layer, visible)
 
-    def create_preview_layer2(self, visible=True):
+    def create_preview_layer2(self, source_layer, feature_ids, visible=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             PREVIEW_POLYGON2
         )
@@ -1017,7 +1016,7 @@ class GeomWidgetsBase(object):
 
         if len(prev_layers) == 0:
             self.preview_layer2 = copy_layer_to_memory(
-                self.settings.layer, PREVIEW_POLYGON2, self.feature_ids, visible
+                source_layer, PREVIEW_POLYGON2, feature_ids, visible
             )
         else:
             add_features_to_layer(self.preview_layer2, self.features)
@@ -1184,10 +1183,10 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.offset_distance.valueChanged.connect(self.on_offset_distance_changed)
 
     def on_offset_distance_changed(self, new_value):
-        if self.settings_layer_connected:
-            self.disconnect_signals()
 
         self.create_preview_layer(False)
+        if len(self.settings.layer.selectedFeatures()) == 0:
+            return
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'OffsetDistanceWidget',
@@ -1205,6 +1204,8 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
                 return
 
         self.run_help(3)
+        if self.settings_layer_connected:
+            self.disconnect_signals()
 
         result = split_offset_distance(
             self.settings.layer,
@@ -1555,15 +1556,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         if self.points_count > 0:
             self.rotation_point = self.point_layer.selectedFeatures()[0]
-            # print self.rotation_point
-            # self.rotation_point = QgsGeometry(
-            #     self.point_layer.selectedFeatures()[0].geometry())
-            #
-            # if isinstance(self.rotation_point, QgsPointV2):
-            #     print 'pointv2'
-            #     self.rotation_point = QgsGeometry.fromPoint(self.rotation_point)
-            #
-            # print self.rotation_point
+
         self.widget.selected_points_lbl.setText(str(self.points_count))
 
     def validate_run(self):
@@ -1604,7 +1597,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             clockwise = -1
 
         self.settings.layer.selectByIds(self.feature_ids)
-        # print clockwise
+
         result = split_rotate_line_with_area(
             self.settings.layer,
             self.preview_layer,
@@ -1646,8 +1639,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             clockwise = 1
         else:
             clockwise = -1
-
-        # print clockwise
 
         self.preview_layer.selectAll()
 
@@ -1791,7 +1782,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
 
     def on_point_feature_selected(self):
-        print 'point'
+
         if self.settings.layer is None:
             return
 
@@ -1860,7 +1851,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                                   self.point_layer.getFeatures()]
                 rotation_point = point_features[-1:]
                 self.point_layer.deleteFeature(rotation_point[0])
-        # print self.points, self.lines[0].geometry(), new_value
+
         self.rotation_point = point_by_distance(
             self.point_layer,
             self.rotation_point,
@@ -2023,6 +2014,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.method = 1 # parellel
         self.equal_split_features = []
 
+    def on_feature_selected(self, feature):
+        super(EqualAreaWidget, self).on_feature_selected(feature)
+        total_area = calculate_area(self.settings.layer.selectedFeatures())
+
+        self.widget.features_area_lbl.setText(str(round(total_area, 2)))
+
     def on_equal_boundary_checked(self):
         self.method = 2
         self.on_line_feature_selected()
@@ -2097,17 +2094,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 clear_previous = True
             else:
                 clear_previous = False
-            #
-            # if self.widget.number_of_polygons.value() < 2:
-            #     self.notice.clear()
-            #     message = QApplication.translate(
-            #         'EqualAreaWidget',
-            #         'Number of polygons should be at least 2.'
-            #     )
-            #     self.notice.insertWarningNotification(message)
-            # else:
-            #     self.notice.clear()
-            # print clear_previous
+
             self.highlight_features(
                 self.line_layer,
                 clear_previous=clear_previous
@@ -2148,9 +2135,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.iface.mapCanvas().refresh()
 
         self.iface.setActiveLayer(self.line_layer)
-        # self.highlight_features(
-        #     self.line_layer, clear_previous=clear_previous_highlight
-        # )
 
     def validate_run(self):
         state = True
@@ -2247,8 +2231,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
-                print 'self.settings.layer.selectedFeatures()', self.settings.layer.selectedFeatures()
-                if  len(self.settings.layer.selectedFeatures()) == 1:
+
+                if len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
                     )
@@ -2259,7 +2243,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.create_preview_layer(False)
 
                 result = True
-            print self.equal_split_features
+
         else:
 
             # Revers the rotation points list.
@@ -2327,7 +2311,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.settings.layer.selectByIds(self.feature_ids)
 
         self.create_preview_layer()
-        self.create_preview_layer2(False)
+
+        self.create_preview_layer2(self.settings.layer, self.feature_ids, False)
 
         self.preview_layer2.selectAll()
         # self.preview_layer2.selectAll()
@@ -2337,7 +2322,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             line_feature = None
 
             for i in range(1, self.no_polygons):
-                print i
+
                 if line_feature is None:
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
@@ -2363,13 +2348,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
-                print feature, line_feature
+
                 if not isinstance(feature, bool):
                     self.remove_memory_layer(PREVIEW_POLYGON2)
-
-                    # self.settings.layer.selectByIds(self.feature_ids)
-                    self.create_preview_layer2(False)
-                    # self.preview_layer2.selectAll()
+                    self.create_preview_layer2(
+                        self.preview_layer,
+                        [self.preview_layer.selectedFeatures()[0].id()], False)
+                    self.preview_layer2.selectAll()
                     # clear_layer_features(self.preview_layer)
                     # self.settings.layer.selectByIds(self.feature_ids)
                     # self.settings.layer.selectedFeatures()[0].geometry()
@@ -2406,7 +2391,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.remove_memory_layer(PREVIEW_POLYGON2)
 
                 # self.settings.layer.selectByIds(self.feature_ids)
-                self.create_preview_layer2(False)
+                self.create_preview_layer2(self.preview_layer,
+                        [self.preview_layer.selectedFeatures()[0].id()], False)
+                self.preview_layer2.selectAll()
+
                 if len(self.preview_layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.preview_layer.selectedFeatures()[0]
