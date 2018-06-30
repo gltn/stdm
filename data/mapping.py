@@ -410,7 +410,6 @@ class MapperMixin(object):
         triggered by save and new button.
         :type save_and_new: Boolean
         """
-        print collect_model, self.preSaveUpdate()
         if not self.preSaveUpdate():
             return
         
