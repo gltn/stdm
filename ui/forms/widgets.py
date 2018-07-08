@@ -598,7 +598,8 @@ class RelatedEntityWidgetFactory(ColumnWidgetRegistry):
         self._p_entity_cls = entity_model(p_entity, entity_only=True)
         self._p_entity_obj = self._p_entity_cls()
 
-        res = self._p_entity_obj.queryObject().filter().all()
+        # res = self._p_entity_obj.queryObject().filter().all()
+        res = export_data(p_entity.name)
         for r in res:
             self._parent_entity_cache[r.id] = r
 
@@ -694,12 +695,12 @@ class AdministrativeUnitWidgetFactory(ColumnWidgetRegistry):
                 #Add result to the cache
                 self._aus_cache[res.id] = res
                 name, code = res.name, res.code
-
+        
         if code:
-            if code not in self._column.entity_relation.display_cols:
+            if 'code' not in self._column.entity_relation.display_cols:
                 name = u'{0}'.format(name)
             else:
-                u'{0} ({1})'.format(name, code)
+                name = u'{0} ({1})'.format(name, code)
 
         return name
 

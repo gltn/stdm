@@ -28,6 +28,7 @@ from stdm.utils.util import (
     code_columns,
     string_to_boolean
 )
+from stdm.ui.customcontrols.generic_delegate import GenericDelegate
 from ui_code_property import Ui_CodeProperty
 
 class CodeProperty(QDialog, Ui_CodeProperty):
@@ -53,8 +54,10 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         # self.in_db = form_fields['in_db']
         self._source = form_fields['prefix_source']
         self._columns = form_fields['columns']
+
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
+        self._hide_prefix =  string_to_boolean(form_fields['hide_prefix'], False)
         self._parent_column_name = form_fields['colname']
         self._disable_auto_increment = string_to_boolean(
             form_fields['disable_auto_increment'], False)
@@ -94,6 +97,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         )
 
         self._on_prefix_source_selected()
+        # self.column_code_view.__class__.dropEvent = self.drop_end
 
     def init_gui(self):
         """
@@ -123,6 +127,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         self.set_disable_auto_increment()
         self.set_enable_editing()
+        self.set_hide_prefix()
         if self._leading_zero:
             self.leading_zero_cbo.setCurrentIndex(
                 self.leading_zero_cbo.findData(self._leading_zero)
@@ -148,6 +153,14 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         # Link checkbox and label
         self.disable_auto_increment_lbl.setBuddy(self.disable_auto_increment_chk)
         self.enable_editing_lbl.setBuddy(self.enable_editing_chk)
+        self.hide_prefix_lbl.setBuddy(self.hide_prefix_chk)
+
+    def drop_end(self, event):
+        for row in range(self.column_code_view.model().rowCount()):
+            self.column_code_view.openPersistentEditor(
+                self.column_code_view.model().index(row, 1)
+            )
+        # event.accept()
 
     def _on_prefix_source_selected(self):
         """
@@ -163,16 +176,17 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             none_index = self.separator_cbo.findData('')
             self.separator_cbo.setCurrentIndex(none_index)
             self.separator_cbo.setDisabled(True)
+
         if current_text in self.code_columns:
             none_index_sp = self.separator_cbo.findData('')
             self.separator_cbo.setCurrentIndex(none_index_sp)
             self.separator_cbo.setDisabled(True)
-
             none_index_lo = self.leading_zero_cbo.findData('')
             self.leading_zero_cbo.setCurrentIndex(none_index_lo)
             self.leading_zero_cbo.setDisabled(True)
 
-        if current_text == self._column_name and self.disable_auto_increment_chk.isChecked():
+        if current_text == self._column_name and \
+                self.disable_auto_increment_chk.isChecked():
             none_index_lo = self.leading_zero_cbo.findData('')
             self.leading_zero_cbo.setCurrentIndex(none_index_lo)
             self.leading_zero_cbo.setDisabled(True)
@@ -205,24 +219,51 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         return names
 
     def populate_columns_list(self):
+        """
+        Populate the columns view.
+        :return:
+        :rtype:
+        """
+        options = {}
+        options['type'] = 'combobox'
+        delegate = GenericDelegate(
+            self.separators, options, self.column_code_view)
+        # Set delegate to add widget
+        self.column_code_view.setItemDelegate(
+            delegate
+        )
+        self.column_code_view.setItemDelegateForColumn(
+            1, delegate
+        )
+
         model = QStandardItemModel(2, 2)
-        for row, col in enumerate(self._entity.columns.values()):
-            if col.name == 'id':
-                continue
-            # Correct row by reducing by one due to removal of id
-            row = row - 1
-            column_item = QStandardItem(col.header())
+        i = 0
+        for row, col in enumerate(self._columns):
+
+            column_item = QStandardItem(self._entity.columns[col].header())
             column_item.setCheckable(True)
 
-            model.setItem(row, 0, column_item)
+            model.setItem(i, 0, column_item)
 
+            column_item.setData(col)
             self.column_code_view.setModel(model)
+            i = i + 1
 
-            combo = QComboBox()
-            self.populate_separator(combo)
-            column_item.setData([col.name, combo])
-            i = self.column_code_view.model().index(row, 1)
-            self.column_code_view.setIndexWidget(i, combo)
+        for col in self._entity.columns.values():
+            if col.name == 'id':
+                continue
+
+            if col.name not in self._columns:
+                # Correct row by reducing by one due to removal of id
+
+                column_item = QStandardItem(col.header())
+                column_item.setCheckable(True)
+
+                model.setItem(i, 0, column_item)
+
+                column_item.setData(col.name)
+                self.column_code_view.setModel(model)
+                i = i + 1
 
     def set_columns(self):
         """
@@ -232,18 +273,18 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         .. versionadded:: 1.7.5
         """
         model = self.column_code_view.model()
-        for idx in range(model.rowCount()):
-            item = model.item(idx)
 
-            if item.data()[0] in self._columns:
-                col_idx = self._columns.index(item.data()[0])
+        for row in range(model.rowCount()):
+            col_item = model.item(row, 0)
+
+            if col_item.data() in self._columns:
+                col_idx = self._columns.index(col_item.data())
                 separator = self._column_separators[col_idx]
-                combo = item.data()[1]
-                combo_idx = combo.findData(separator)
+                separator_item = QStandardItem(self.separators[separator])
+                model.setItem(row, 1, separator_item)
+                separator_item.setData(separator)
 
-                if combo_idx >= 0:
-                    combo.setCurrentIndex(combo_idx)
-                item.setCheckState(Qt.Checked)
+                col_item.setCheckState(Qt.Checked)
 
     def set_disable_auto_increment(self):
         """
@@ -253,6 +294,16 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         .. versionadded:: 1.7.5
         """
         self.disable_auto_increment_chk.setChecked(self._disable_auto_increment)
+
+
+    def set_hide_prefix(self):
+        """
+        Check if serial is enabled from the configuration.
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        self.hide_prefix_chk.setChecked(self._hide_prefix)
 
     def set_enable_editing(self):
         """
@@ -281,6 +332,17 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         return self._enable_editing
 
+
+    def hide_prefix(self):
+        """
+        Returns the state of prefix hide option.
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        return self._hide_prefix
+
+
     def add_enable_auto_increment(self):
         """
         Gets serial is enabled from the configuration.
@@ -289,6 +351,15 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         .. versionadded:: 1.7.5
         """
         self._disable_auto_increment = self.disable_auto_increment_chk.isChecked()
+
+    def add_hide_prefix(self):
+        """
+        Gets the state of hide prefix and set it to the property..
+        :return:
+        :rtype:
+        .. versionadded:: 1.7.5
+        """
+        self._hide_prefix = self.hide_prefix_chk.isChecked()
 
     def add_enable_editing(self):
         """
@@ -343,10 +414,15 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         self._columns[:] = []
         model = self.column_code_view.model()
-        for idx in range(model.rowCount()):
-            item = model.item(idx)
+
+        row_data = []
+        for row in range(model.rowCount()):
+            item = model.item(row)
             if item.checkState() == Qt.Checked:
-                self._columns.append(item.data()[0])
+                id_idx = model.index(row, 0)
+                row_data.append(id_idx.data(Qt.UserRole + 1))
+
+        self._columns = row_data
 
     def add_column_separators(self):
         """
@@ -355,14 +431,18 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         self._column_separators[:] = []
         model = self.column_code_view.model()
-        for index in range(model.rowCount()):
-            item = model.item(index)
-            if item.checkState() == Qt.Checked:
-                combo = item.data()[1]
-                cbo_idx = combo.currentIndex()
-                data = combo.itemData(cbo_idx)
 
-                self._column_separators.append(data)
+        row_data = []
+        for row in range(model.rowCount()):
+            item = model.item(row)
+            if item.checkState() == Qt.Checked:
+                id_idx = model.index(row, 1)
+                separator = id_idx.data(Qt.UserRole + 1)
+                if separator is None:
+                    separator = ''
+                row_data.append(separator)
+       
+        self._column_separators = row_data
 
     def add_leading_zero(self):
         """
@@ -432,6 +512,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.add_separator()
         self.add_enable_auto_increment()
         self.add_enable_editing()
+        self.add_hide_prefix()
         self.done(1)
 
     def reject(self):

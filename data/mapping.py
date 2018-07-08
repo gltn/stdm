@@ -188,6 +188,7 @@ class MapperMixin(object):
         self._notifBar = None
         self.is_valid = False
         self.saved_model = None
+
         # Get document objects
 
         self.entity_model = entity_model(entity)
@@ -306,35 +307,14 @@ class MapperMixin(object):
             )
             
         return isDirty,msgResponse
-    
-    def closeEvent(self,event):
-        '''
-        Raised when a request to close the window is received.
-        Check the dirty state of input controls and prompt user to
-        save if dirty.
-        ''' 
-        isDirty,userResponse = self.checkDirty()
-        
-        if isDirty:
-            if userResponse == QMessageBox.Yes:
-                # We need to ignore the event so that validation and
-                # saving operations can be executed
-                event.ignore()
-                self.submit()
-            elif userResponse == QMessageBox.No:
-                event.accept()
-            elif userResponse == QMessageBox.Cancel:
-                event.ignore()
-        else:
-            event.accept()
-    
+
     def cancel(self):
         '''
         Slot for closing the dialog.
         Checks the dirty state first before closing.
         '''
         isDirty,userResponse = self.checkDirty()
-        
+
         if isDirty:
             if userResponse == QMessageBox.Yes:
                 self.submit()
@@ -438,11 +418,15 @@ class MapperMixin(object):
 
         # Validate mandatory fields have been entered by the user.
         errors = []
+
         for attrMapper in self._attrMappers:
+
             if self._mode == 'SAVE':
                 error = self.validate(attrMapper)
+
             else: # update mode
                 error = self.validate(attrMapper, True)
+
             if error is not None:
                 self._notifBar.insertWarningNotification(error)
                 errors.append(error)

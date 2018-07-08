@@ -393,7 +393,7 @@ class SpatialUnitManagerDockWidget(
                 QgsCoordinateReferenceSystem.EpsgCrsId
             )
 
-            self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+            self.iface.mapCanvas().mapSettings().setDestinationCrs(layer_crs)
 
     def init_spatial_form(self, spatial_column, curr_layer):
         """
@@ -809,7 +809,7 @@ class SpatialUnitManagerDockWidget(
 
     def _set_layer_display_name(self, layer, name):
         try:
-            layer.setLayerName(name)
+            layer.setName(name)
         except RuntimeError:
             pass
 
@@ -874,7 +874,7 @@ class SpatialUnitManagerDockWidget(
                                     idx,
                                     display_name
                                 )
-                                layer.setLayerName(display_name)
+                                layer.setName(display_name)
 
                                 # Update configuration item
                                 config_item = layer_info.get('item', None)

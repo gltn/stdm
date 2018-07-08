@@ -141,7 +141,7 @@ class ForeignKeyMapper(QWidget):
     deletedRows = pyqtSignal(list)
 
     def __init__(self, entity, parent=None, notification_bar=None,
-                 enable_list=True, can_filter=False):
+                 enable_list=True, can_filter=False, plugin=None):
 
         QWidget.__init__(self, parent)
         self.current_profile = current_profile()
@@ -150,7 +150,7 @@ class ForeignKeyMapper(QWidget):
         self._tbFKEntity.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self._tbFKEntity.setAlternatingRowColors(True)
         self._tbFKEntity.setSelectionBehavior(QAbstractItemView.SelectRows)
-
+        self.plugin = plugin
         self._add_entity_btn = QToolButton(self)
         self._add_entity_btn.setToolTip(
             QApplication.translate("ForeignKeyMapper","Add"))
@@ -229,7 +229,8 @@ class ForeignKeyMapper(QWidget):
         self._entitySelector = EntityBrowser(
             self._entity,
             parent=self,
-            state=SELECT
+            state=SELECT,
+            plugin=self.plugin
         )
 
         # Connect signals

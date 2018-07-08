@@ -148,7 +148,8 @@ class STDMQGISLoader(object):
 
         # STDM Tables
         self.stdmTables = []
-
+        self.entity_formatters = {}
+        self.entity_table_model = {}
         self.stdm_config = StdmConfiguration.instance()
         self.reg_config = RegistryConfig()
         self.spatialLayerMangerDockWidget = None
@@ -1625,7 +1626,8 @@ class STDMQGISLoader(object):
             return
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(
             self.iface,
-            self.iface.mainWindow()
+            self.iface.mainWindow(),
+            plugin=self
         )
         doc_gen_wrapper.exec_()
 
@@ -1749,7 +1751,8 @@ class STDMQGISLoader(object):
                     )
                     self.entity_browser = EntityBrowserWithEditor(
                         sel_entity,
-                        self.iface.mainWindow()
+                        self.iface.mainWindow(),
+                        plugin=self
                     )
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()

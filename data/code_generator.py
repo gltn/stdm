@@ -45,7 +45,7 @@ class CodeGenerator(object):
         self.code_model_obj = self.code_model()
         self.column = column
 
-    def generate(self, prefix, separator, leading_zero):
+    def generate(self, prefix, separator, leading_zero, hide_prefix=False):
         """
         Generates the next unique code by checking what is saved in the
         database for a specific column.
@@ -66,6 +66,7 @@ class CodeGenerator(object):
         record_match = []
 
         for item in matches:
+
             if len(item) > 0:
                 try:
                     # for code with prefix
@@ -83,34 +84,47 @@ class CodeGenerator(object):
         if len(record_match) == 0:
             code = '{0}{1}{2}1'.format(prefix, separator, leading_zero)
             self.save_code(code)
+            if hide_prefix:
+                code = '{0}1'.format(leading_zero)
 
             return code
 
         else:
             last_serial = None
+
             if prefix == '':
                 # get the serial number
-                last_serial = record_match[0]
-
+                last_serial = record_match[len(record_match) - 1]
             else:
                 last_code = []
                 # get the serial number
                 try:
                     last_code = record_match[0].rsplit(separator, 1)
-                # if the separator is empty - '', split by numbers and letters.
-                except ValueError:
-                    match = re.match(
-                        r'([a-zA-Z]+)([0-9]+)', record_match[0], re.I
-                    )
-                    if match:
-                        text_numbers = match.groups()
-                        if len(text_numbers) == 2:
-                            last_code = text_numbers
+                  # if the separator is empty - '', split by numbers and letters.
+                    if len(last_code) > 1:
+                        last_serial = last_code[1]
 
-                if len(last_code) > 1:
-                    last_serial = last_code[1]
+                except ValueError:
+                    if separator == '':
+                        last_serial = record_match[0].replace(prefix, '')
+
+                    else:
+                        prefix_and_serial = record_match[0].split(separator)
+                        if len(prefix_and_serial) > 0:
+                            last_serial = prefix_and_serial[len(prefix_and_serial)-1]
+
+                    # match = re.match(
+                    #     r'([a-zA-Z]+)([0-9]+)', record_match[0], re.I
+                    # )
+                #     if match:
+                #         text_numbers = match.groups()
+                #         if len(text_numbers) == 2:
+                #             last_code = text_numbers
+                #
+
 
             if last_serial is None:
+                # print last_serial, 'last '
                 return None
 
             # convert to integer and add 1
@@ -119,8 +133,12 @@ class CodeGenerator(object):
             leading_zero_len = len(leading_zero) + 1
             # format again with leading 0
             formatted_serial = "%0{}d".format(leading_zero_len) % (next_serial,)
+
             code = '{0}{1}{2}'.format(prefix, separator, formatted_serial)
             self.save_code(code)
+
+            if hide_prefix:
+                code = formatted_serial
 
             # add new code with the formatted number
             return code

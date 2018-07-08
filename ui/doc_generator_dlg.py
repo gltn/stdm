@@ -153,9 +153,10 @@ class DocumentGeneratorDialogWrapper(object):
     and creates the corresponding EntityConfig objects, which are then
     added to the DocumentGeneratorDialog.
     """
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, parent=None, plugin=None):
         self._iface = iface
-        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
+
+        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent, plugin=plugin)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
 
         self.curr_profile = current_profile()
@@ -231,11 +232,12 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     Dialog that enables a user to generate documents by using configuration
     information for different entities.
     """
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, parent=None, plugin=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._iface = iface
+        self.plugin = plugin
         self._docTemplatePath = ""
         self._outputFilePath = ""
         self.curr_profile = current_profile()
@@ -396,8 +398,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             config.ds_entity,
             self.tabWidget,
             self._notif_bar,
-            True,
-            True
+            enable_list=True,
+            can_filter=True,
+            plugin=self.plugin
         )
 
         fk_mapper.setDatabaseModel(config.model())

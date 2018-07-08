@@ -444,6 +444,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
     """
     def __init__(self, initdata, headerdata, parent=None):
         QAbstractTableModel.__init__(self,parent)
+
         self._initData = initdata
         self._headerdata = headerdata
 
