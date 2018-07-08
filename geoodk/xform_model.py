@@ -21,7 +21,6 @@ class EntityFormatter:
 
     def set_xform_model_name(self, entity):
         """
-
         :return: 
         """
         self._profile = entity
@@ -54,7 +53,6 @@ class EntityFormatter:
         :return:
         """
         return self.profile_has_social_tenure().parties
-
 
     def format_photo_blob(self):
         """

@@ -401,7 +401,8 @@ class Save2DB:
 
     def attribute_formatter(self, col_type, col_prop, var=None):
         """
-
+        Format geoodk attributes collected in the field
+        to conform to STDM database contrains
         :return:
         """
         if col_type == 'BOOL':
