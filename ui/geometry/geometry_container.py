@@ -15,7 +15,7 @@ from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes, \
 from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
-
+from stdm.ui.feature_details import  DETAILS_DOCK_ON
 from stdm.ui.notification import NotificationBar
 
 from stdm.settings.registryconfig import selection_color
@@ -430,8 +430,8 @@ class GeometryToolsDock(
         global GEOM_DOCK_ON
 
         # if Feature details is checked, hide it.
-        if self.plugin.feature_details_act.isChecked():
-            self.plugin.feature_details_act.setChecked(False)
+        # if self.plugin.feature_details_act.isChecked():
+        #     self.plugin.feature_details_act.setChecked(False)
 
         if not self.plugin.geom_tools_cont_act.isChecked() and \
                 GEOM_DOCK_ON and not button_clicked:
@@ -651,17 +651,21 @@ class GeomWidgetsBase(object):
         if iface.activeLayer() is not None:
             self.settings.remove_memory_layers()
 
-    # def closeEvent(self, event):
-    #     """
-    #     Listens to the hide event of the dock and properly close the dock
-    #     using the close_dock method.
-    #     :param event: The close event
-    #     :type event: QCloseEvent
-    #     """
-    #     self.clear_highlights()
-    #
-    #     if iface.activeLayer() is not None:
-    #         self.settings.remove_memory_layers()
+
+    def create_point_layer(self, show_in_legend=True):
+        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
+            LINE_POINTS
+        )
+        for prev_layer in prev_layers:
+            # QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
+            clear_layer_features(prev_layer)
+
+        if len(prev_layers) == 0:
+            self.point_layer = create_temporary_layer(
+                self.settings.layer, 'Point', LINE_POINTS, True
+            )
+
+
     def clear_highlights(self):
         """
         Removes show_highlight from the canvas.
@@ -804,17 +808,19 @@ class GeomWidgetsBase(object):
 
     def on_feature_selection_finished(self):
         # self.select_line_help(1)
-
-        add_area(self.settings.layer, AREA_POLYGON)
-
+        # self.iface.mainWindow().blockSignals(True)
+        # add_area(self.settings.layer, AREA_POLYGON)
+        self.create_point_layer()
         self.line_layer = polygon_to_lines(
-            self.settings.layer, POLYGON_LINES
+            self.settings.layer, POLYGON_LINES, self.point_layer
         )
 
         if self.line_layer is not None:
             self.line_layer.selectionChanged.connect(
                 self.on_line_feature_selected
             )
+            self.iface.mainWindow().blockSignals(False)
+        # self.iface.setActiveLayer(self.settings.layer)
 
 
     def remove_memory_layer(self, name):
@@ -875,6 +881,10 @@ class GeomWidgetsBase(object):
         if self.settings.stdm_layer(self.settings.layer):
             self.feature_count = self.selected_features_count()
             self.on_feature_selection_finished()
+            # self.settings.plugin.details_tree_view.showTreeFinished.connect(
+            #     self.on_feature_selection_finished
+            # )
+
 
     def on_line_feature_selected(self):
         self.specify_area_help(2)
@@ -1448,7 +1458,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(self.settings.layer,
-                                           POLYGON_LINES)
+                                           POLYGON_LINES, self.point_layer)
         self.create_point_layer()
 
         if self.line_layer is not None:
@@ -1768,9 +1778,10 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
     def on_feature_selection_finished(self):
 
         add_area(self.settings.layer, AREA_POLYGON)
-
-        self.line_layer = polygon_to_lines(self.settings.layer, POLYGON_LINES)
         self.create_point_layer()
+        self.line_layer = polygon_to_lines(
+            self.settings.layer, POLYGON_LINES, self.point_layer)
+
         polygon_to_points(self.settings.layer, self.line_layer,
                           self.point_layer,  POLYGON_LINES)
 
@@ -2699,6 +2710,7 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
             polygon_to_lines(
                 self.settings.layer,
                 POLYGON_LINES,
+                self.point_layer,
                 prefix=self._length_prefix,
                 suffix=self._length_suffix,
                 style=False,

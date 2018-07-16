@@ -63,14 +63,13 @@ def merge_polygons(polygons_list):
 
 
 def create_temporary_layer(source_layer, type, name, show_legend=True, style=True):
-
+    #TODO fix crash when used with feature details
     # create a new memory layer
     crs = source_layer.crs()
     crs_id = crs.srsid()
     wkt = crs.toWkt()
     vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
                      u"index=yes".format(type, wkt)
-
 
     v_layer = QgsVectorLayer(vl_geom_config, name, "memory")
 
@@ -85,7 +84,6 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     iface.mapCanvas().refresh()
     if style:
         if type == 'LineString':
-
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
             symbol.setWidth(2)
@@ -99,7 +97,9 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     QgsMapLayerRegistry.instance().addMapLayer(
         v_layer, show_legend
     )
+
     v_layer.updateExtents()
+
     return v_layer
 
 
@@ -374,15 +374,13 @@ def identify_selected_point_location(selected_point_ft, line_geom):
 
 
 def add_line_points_to_map(point_layer, line_geom, clear=True):
-    # TODO create a radio button list to select point
-    # TODO reset line before starting
+
     if clear:
         clear_points(point_layer)
     poly_lines = line_geom.asPolyline()
     point_features = []
 
     for point in poly_lines:
-
         feature = add_geom_to_layer(point_layer, point)
         point_features.append(feature)
     return point_features
@@ -497,8 +495,9 @@ def add_area(layer, area_layer_name, all_features=False):
             make_layer_transparent(area_layers[0])
 
 def polygon_to_lines(
-        layer, layer_name, measurement=True, prefix='', suffix='',
+        layer, layer_name, point_layer, measurement=True, prefix='', suffix='',
         all_features=False, style=True):
+
     if layer.name() == layer_name:
         return None
     line_geoms = []
@@ -545,6 +544,8 @@ def polygon_to_lines(
                     line_geom_list = add_line_features(
                         line_layer, lines, prefix, suffix, measurement)
                     line_geoms.extend(line_geom_list)
+    polygon_to_points(layer, line_layer, point_layer, layer_name)
+
     if measurement:
         label_layer_by_field(line_layer, 'measurement')
     return line_layer
