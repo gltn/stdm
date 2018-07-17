@@ -1,5 +1,16 @@
 # Change Log
 All notable changes of the Social Tenure Domain Model(STDM) is documented in this file.
+## [1.7.4] - 2018-03-15
+
+### Fixed
+- **Import Data**: Added auto fixer for multi and single type geometry conflict.
+- **Configuration Wizard**: Fixed inability to remove party and spatial units.
+
+## [1.7.3] - 2018-03-15
+
+### Fixed
+- **Import Data**: Fixed import data issues.
+
 ## [1.7.2] - 2018-03-11
 
 ### Fixed

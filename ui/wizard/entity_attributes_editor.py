@@ -380,6 +380,8 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         attrs = self._get_tenure_type_attrs(tenure_type)
         col = attrs.pop(idx)
 
+        col.entity.remove_column(col.name)
+
         return self.tb_view.remove_item(attr.name)
 
     def load_attributes_from_entity(self, entity):

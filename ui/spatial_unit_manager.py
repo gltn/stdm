@@ -42,8 +42,8 @@ from qgis.core import (
    QgsVectorJoinInfo
 )
 from qgis.gui import (
-    QgsCategorizedSymbolRendererV2Widget
-)
+    QgsCategorizedSymbolRendererV2Widget,
+    QgsGenericProjectionSelector)
 from stdm.data.configuration import entity_model
 
 from stdm.data.configuration.social_tenure import SocialTenure
@@ -92,7 +92,7 @@ class SpatialUnitManagerDockWidget(
         # properties of last added layer
         self.curr_lyr_table = None
         self.curr_lyr_sp_col = None
-        self.curr_layer = None
+
         # properties of the active layer
         self.active_entity = None
         self.active_table = None
@@ -116,6 +116,14 @@ class SpatialUnitManagerDockWidget(
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+        self.iface.projectRead.connect(self.on_project_opened)
+
+    def on_project_opened(self):
+        legend_layers =  self.iface.legendInterface().layers()
+        for layer in legend_layers:
+            source = self.layer_source(layer)
+            if source is not bool and source is not None:
+                self.init_spatial_form(self.active_sp_col, layer)
 
     def get_column_config(self, config, name):
         """
@@ -393,7 +401,7 @@ class SpatialUnitManagerDockWidget(
                 QgsCoordinateReferenceSystem.EpsgCrsId
             )
 
-            self.iface.mapCanvas().mapRenderer().setDestinationCrs(layer_crs)
+            self.iface.mapCanvas().mapSettings().setDestinationCrs(layer_crs)
 
     def init_spatial_form(self, spatial_column, curr_layer):
         """
@@ -483,7 +491,14 @@ class SpatialUnitManagerDockWidget(
             icon = QIcon(
                 ':/plugins/stdm/images/icons/layer_point.png'
             )
-
+        elif geometry_typ == 'MULTIPOLYGON':
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_polygon.png'
+            )
+        elif geometry_typ == 'MULTILINESTRING':
+            icon = QIcon(
+                ':/plugins/stdm/images/icons/layer_line.png'
+            )
         else:
             icon = QIcon(
                 ':/plugins/stdm/images/icons/table.png'
@@ -528,7 +543,6 @@ class SpatialUnitManagerDockWidget(
             spatial_layer_item = col.view_name
 
         elif col.layer_display_name == '':
-
             spatial_layer_item = u'{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
@@ -556,11 +570,7 @@ class SpatialUnitManagerDockWidget(
             )
             # Message: Spatial column information
             # could not be found
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                title,
-                msg
-            )
+            QMessageBox.warning(self.iface.mainWindow(), title, msg)
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
@@ -573,12 +583,10 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[
-                0]
+            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
             self.iface.setActiveLayer(layer)
             return
 
-        # Used in gpx_table.py
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
@@ -587,15 +595,35 @@ class SpatialUnitManagerDockWidget(
                 layer_name = layer_item
             else:
                 layer_name = layer_item.layer_display()
-            curr_layer = vector_layer(
-                table_name,
-                geom_column=spatial_column,
-                layer_name=layer_name
-            )
+
+            entity = self._curr_profile.entity_by_name(table_name)
+            if entity is not None:
+                geom_col_obj = entity.columns[spatial_column]
+
+                srid = None
+                if geom_col_obj.srid >= 100000:
+                    srid = geom_col_obj.srid
+
+                curr_layer = vector_layer(
+                    table_name,
+                    geom_column=spatial_column,
+                    layer_name=layer_name,
+                    proj_wkt=srid
+                )
+            else:
+
+                curr_layer = vector_layer(
+                    table_name,
+                    geom_column=spatial_column,
+                    layer_name=layer_name,
+                    proj_wkt=None
+                )
+        # for lookup layer.
         else:
             curr_layer = vector_layer(
                 table_name, geom_column=spatial_column
             )
+
 
         if curr_layer.isValid():
             if curr_layer.name() in self._map_registry_layer_names():
@@ -789,7 +817,7 @@ class SpatialUnitManagerDockWidget(
 
     def _set_layer_display_name(self, layer, name):
         try:
-            layer.setLayerName(name)
+            layer.setName(name)
         except RuntimeError:
             pass
 
@@ -854,7 +882,7 @@ class SpatialUnitManagerDockWidget(
                                     idx,
                                     display_name
                                 )
-                                layer.setLayerName(display_name)
+                                layer.setName(display_name)
 
                                 # Update configuration item
                                 config_item = layer_info.get('item', None)
@@ -890,9 +918,19 @@ class SpatialUnitManagerDockWidget(
         :rtype: Boolean or NoneType
         """
         active_layer = self.iface.activeLayer()
-        if active_layer is None:
+        return self.layer_source(active_layer)
+
+    def layer_source(self, layer):
+        """
+        Gets the layer source.
+        :param layer: The layer
+        :type layer: Any
+        :return: Layer Source or None
+        :rtype:
+        """
+        if layer is None:
             return None
-        source = active_layer.source()
+        source = layer.source()
         if source is None:
             return False
         source_value = dict(re.findall('(\S+)="?(.*?)"? ', source))
@@ -918,7 +956,7 @@ class SpatialUnitManagerDockWidget(
                 # get all fields excluding the geometry.
                 layer_fields = [
                     field.name()
-                    for field in active_layer.pendingFields()
+                    for field in layer.pendingFields()
                 ]
                 # get the currently being used geometry column
                 active_sp_cols = [

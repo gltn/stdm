@@ -50,7 +50,8 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.entity = relation['entity']
         self.column_name = relation['column_name']
         self.in_db = relation['form_fields']['in_db']
-
+        self._show_in_parent = relation['show_in_parent']
+        self._show_in_child = relation['show_in_child']
         self.column_model = QStandardItemModel()
         self.lvDisplayCol.setModel(self.column_model)
 
@@ -81,7 +82,47 @@ class FKProperty(QDialog, Ui_FKProperty):
         self.cboPrimaryEntity.setEnabled(not self.in_db)
         self.cboPrimaryUKey.setEnabled(not self.in_db)
         self.lvDisplayCol.setEnabled(not self.in_db)
-            
+
+        self.show_in_parent_chk.clicked.connect(self.on_show_in_parent_clicked)
+        self.show_in_child_chk.clicked.connect(self.on_show_in_child_clicked)
+
+    def on_show_in_parent_clicked(self):
+        """
+        A slot raised when show in parent is clicked.
+        :return:
+        :rtype:
+        """
+        if self.show_in_parent_chk.isChecked():
+            self.show_in_child_chk.setChecked(False)
+            self._show_in_parent = True
+
+    def on_show_in_child_clicked(self):
+        """
+        A slot raised when show in child is clicked.
+        :return:
+        :rtype:
+        """
+        if self.show_in_child_chk.isChecked():
+            self.show_in_parent_chk.setChecked(False)
+            self._show_in_child = True
+
+
+    def show_in_parent(self):
+        """
+        Returns show in parent.
+        :return: Returns show in parent.
+        :rtype: Boolean
+        """
+        return self._show_in_parent
+
+    def show_in_child(self):
+        """
+        Returns show in child.
+        :return: Returns show in child.
+        :rtype: Boolean
+        """
+        return self._show_in_child
+
     def show_display_cols(self, display_cols):
         """
         checks previously selected display columns
@@ -127,7 +168,7 @@ class FKProperty(QDialog, Ui_FKProperty):
                 [column for column in self.fk_entities[index][1].columns.items()]
 
         columns = [column[0] for column in entity_columns \
-                if column[1].TYPE_INFO <>'SERIAL']
+                   if column[1].TYPE_INFO != 'SERIAL']
 
         return columns
 

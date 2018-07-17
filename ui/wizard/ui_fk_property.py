@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_fk_property.ui'
 #
-# Created: Wed Apr 27 11:03:02 2016
-#      by: PyQt4 UI code generator 4.11.3
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +25,7 @@ except AttributeError:
 class Ui_FKProperty(object):
     def setupUi(self, FKProperty):
         FKProperty.setObjectName(_fromUtf8("FKProperty"))
-        FKProperty.resize(343, 240)
+        FKProperty.resize(439, 280)
         self.formLayout = QtGui.QFormLayout(FKProperty)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label = QtGui.QLabel(FKProperty)
@@ -61,6 +60,25 @@ class Ui_FKProperty(object):
         self.label_3 = QtGui.QLabel(FKProperty)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_3)
+        self.buttonBox = QtGui.QDialogButtonBox(FKProperty)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.buttonBox)
+        self.show_in_parent_chk = QtGui.QCheckBox(FKProperty)
+        self.show_in_parent_chk.setText(_fromUtf8(""))
+        self.show_in_parent_chk.setObjectName(_fromUtf8("show_in_parent_chk"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.show_in_parent_chk)
+        self.show_in_child_chk = QtGui.QCheckBox(FKProperty)
+        self.show_in_child_chk.setText(_fromUtf8(""))
+        self.show_in_child_chk.setObjectName(_fromUtf8("show_in_child_chk"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.show_in_child_chk)
+        self.hide_sub_form_lbl = QtGui.QLabel(FKProperty)
+        self.hide_sub_form_lbl.setObjectName(_fromUtf8("hide_sub_form_lbl"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.hide_sub_form_lbl)
+        self.label_5 = QtGui.QLabel(FKProperty)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self.label_5)
         self.lvDisplayCol = QtGui.QListView(FKProperty)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
@@ -69,11 +87,6 @@ class Ui_FKProperty(object):
         self.lvDisplayCol.setSizePolicy(sizePolicy)
         self.lvDisplayCol.setObjectName(_fromUtf8("lvDisplayCol"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.lvDisplayCol)
-        self.buttonBox = QtGui.QDialogButtonBox(FKProperty)
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.buttonBox)
 
         self.retranslateUi(FKProperty)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), FKProperty.accept)
@@ -82,7 +95,9 @@ class Ui_FKProperty(object):
 
     def retranslateUi(self, FKProperty):
         FKProperty.setWindowTitle(_translate("FKProperty", "Foreign key editor", None))
-        self.label.setText(_translate("FKProperty", "Primary entity", None))
-        self.label_2.setText(_translate("FKProperty", "Primary unique column", None))
-        self.label_3.setText(_translate("FKProperty", "Display columns", None))
+        self.label.setText(_translate("FKProperty", "Primary entity:", None))
+        self.label_2.setText(_translate("FKProperty", "Primary unique column:", None))
+        self.label_3.setText(_translate("FKProperty", "Display columns:", None))
+        self.hide_sub_form_lbl.setText(_translate("FKProperty", "Hide sub-form in primary entity:", None))
+        self.label_5.setText(_translate("FKProperty", "Hide column in form:", None))
 

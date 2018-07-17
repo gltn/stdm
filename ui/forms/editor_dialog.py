@@ -35,8 +35,8 @@ from PyQt4.QtGui import (
     QVBoxLayout,
     QWidget,
     QApplication,
-    QPushButton
-)
+    QPushButton,
+    QMessageBox)
 
 from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
 
@@ -122,7 +122,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
-
+        self.do_not_check_dirty = False
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
@@ -152,24 +152,33 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         except AttributeError:
             self._parent._parent = None
-        self._init_gui()
-        self.resize(430, 400)
-        self._get_entity_editor_widgets()
-
         # Set title
         editor_trans = self.tr('Editor')
-        title = u'{0} {1}'.format(
-            format_name(self._entity.short_name),
-            editor_trans
-        )
-        self.setWindowTitle(title)
+        if self._entity.label is not None:
+            if self._entity.label != '':
+                title_str = self._entity.label
+            else:
+                title_str = format_name(self._entity.short_name)
+        else:
+            title_str = format_name(self._entity.short_name)
+
+        self.title = u'{0} {1}'.format(title_str, editor_trans)
+
+        self.setWindowTitle(self.title)
+
+        self._init_gui()
+        self.adjustSize()
+
+        self._get_entity_editor_widgets()
+
 
         if isinstance(parent._parent, EntityEditorDialog):
             self.parent_entity = parent.parent_entity
             self.set_parent_values()
             # make the size smaller to differentiate from parent and as it
             # only has few tabs.
-            self.resize(390, 400)
+            self.adjustSize()
+        self.attribute_mappers = self._attr_mapper_collection
 
     def _init_gui(self):
         # Setup base elements
@@ -241,6 +250,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 if not self.collect_model:
                     # updating existing record of the parent editor
                     self.buttonBox.accepted.connect(self.save_parent_editor)
+                else:
+                    self.buttonBox.accepted.connect(self.on_model_added)
         # Saving in child editor
         else:
             # save and new record
@@ -342,6 +353,31 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.submit(True)
         self.addedModel.emit(self.model())
 
+    def closeEvent(self, event):
+        '''
+        Raised when a request to close the window is received.
+        Check the dirty state of input controls and prompt user to
+        save if dirty.
+        '''
+
+        if self.do_not_check_dirty:
+            event.accept()
+            return
+        isDirty, userResponse = self.checkDirty()
+
+        if isDirty:
+            if userResponse == QMessageBox.Yes:
+                # We need to ignore the event so that validation and
+                # saving operations can be executed
+                event.ignore()
+                self.submit()
+            elif userResponse == QMessageBox.No:
+                event.accept()
+            elif userResponse == QMessageBox.Cancel:
+                event.ignore()
+        else:
+            event.accept()
+
     def on_child_saved(self, save_and_new=False):
         """
         A slot raised when the save or save and new button is clicked. It sets
@@ -352,6 +388,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         if self.parent_entity is None:
             return
+
         self.submit(True)
 
         insert_pos = self._parent.tbEntity.model().rowCount() + 1
@@ -490,8 +527,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
             ch_entities = self.children_entities()
 
             for col, ch in ch_entities.iteritems():
-
-                self._add_fk_browser(ch, col)
+                if hasattr(col.entity_relation, 'show_in_parent'):
+                    if col.entity_relation.show_in_parent != '0':
+                        self._add_fk_browser(ch, col)
+                else:
+                    self._add_fk_browser(ch, col)
 
         #Add tab widget if entity supports documents
         if self._entity.supports_documents:
@@ -609,6 +649,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if ch.TYPE_INFO == Entity.TYPE_INFO:
                 for col in ch.columns.values():
                     if hasattr(col, 'entity_relation'):
+
                         if col.parent.name == self._entity.name:
                             child_columns[col] = ch
         return child_columns

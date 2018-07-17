@@ -909,7 +909,8 @@ def enable_drag_sort(mv_widget):
         :return: None
         :rtype: NoneType
         """
-
+        if isinstance(mv_widget, QListWidget):
+            return
         if event.source() == mv_widget:
             view = True
             rows = set(
@@ -1234,3 +1235,46 @@ def version_from_metadata():
                 version_line = line.split('=')
                 version = version_line[1]
                 return version
+
+def code_columns(entity, current_column_name):
+    """
+    Gets the code columns in an entity.
+    :param entity: The entity object
+    :type entity: Object
+    :param current_column_name: The exclude/current column name.
+    :type current_column_name: String
+    :return: List code column names.
+    :rtype: List
+    """
+    code_columns = []
+    for col in entity.columns.values():
+        if col.name != current_column_name:
+            if col.TYPE_INFO == 'AUTO_GENERATED':
+                code_columns.append(col.name)
+    return code_columns
+
+
+def string_to_boolean(string_bool, default):
+    """
+    Converts string to boolean.
+    :param string_bool: The string containing a boolean text.
+    :type string_bool: String
+    :param default: Default boolean value.
+    :type default: Boolean
+    :return: Converted boolean
+    :rtype: Boolean
+    """
+    if not isinstance(string_bool, bool):
+        if string_bool == '':
+            result = default
+        elif string_bool == None:
+            result = default
+        elif string_bool.lower() == 'true':
+            result = True
+        elif string_bool.lower() == 'false':
+            result = False
+        else:
+            result = default
+        return result
+    else:
+        return string_bool

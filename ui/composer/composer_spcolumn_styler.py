@@ -54,102 +54,102 @@ class SpatialFieldMapping(object):
         Set the name of the spatial field.
         """
         self._spatialField = spatialField
-        
+
     def spatialField(self):
         """
         Returns the name of the currently configured spatial field.
         """
         return self._spatialField
-    
+
     def setLabelField(self,labelField):
         """
         Set the name of the field that will be used to label the feature.
         """
         self._labelField = labelField
-        
+
     def labelField(self):
         """
         Return the field for labeling the spatial feature.
         """
         return self._labelField
-        
+
     def setSymbolLayer(self, symbol):
         """
         Set the symbol layer associated with the spatial field.
         The symbol should be a subclass of QgsSymbolLayerV2.
         """
         self._symbol = symbol
-        
+
         if not self._symbol is None:
             self._layerType = self._symbol.layerType()
-        
+
     def symbolLayer(self):
         """
         Return the symbol layer configured for the spatial field.
         """
         return self._symbol
-    
+
     def setItemId(self,itemId):
         """
         Returns the composer item id (QgsComposerMap uuid) associated with the spatial field.
         """
         self._itemId = itemId
-        
+
     def itemId(self):
         """
         Returns the composer item id associated with the spatial field.
         """
         return self._itemId
-    
+
     def symbolLayerType(self):
         """
         Returns the symbol layer type associated with the the symbol layer.
         """
         return self._layerType
-    
+
     def srid(self):
         """
         Return the SRID of the referenced spatial column.
         """
         return self._srid
-    
+
     def setSRID(self,srid):
         """
         Set the SRID of the spatial column.
         """
         self._srid = srid
-        
+
     def geometryType(self):
         """
         Return the geometry type string representation of the spatial column.
         """
         return self._geomType
-    
+
     def setGeometryType(self,geomType):
         """
         Set the geometry type of the spatial column.
         """
         self._geomType = geomType
-        
+
     def zoomLevel(self):
         """
         Return the zoom out scale factor that should be applied relative
         to the extents of a spatial unit.
         """
         return self._zoom_level
-    
+
     def setZoomLevel(self,zoomLevel):
         """
         Set zoom out scale factor.
         """
         self._zoom_level = zoomLevel
-        
+
     def toVectorURI(self):
         """
         Returns a QgsVectorLayer URI using the geometry type and SRID information.
         """
         return  "{0}?crs=epsg:{1!s}".format(self._geomType,self._srid)
-    
+
     def toDomElement(self, domDocument):
         """
         Returns a QDomElement with the object instance settings
@@ -163,15 +163,15 @@ class SpatialFieldMapping(object):
 
         spColumnElement.setAttribute("zoom",str(self._zoom_level))
         symbolElement = domDocument.createElement("Symbol")
-        
+
         #Append symbol properties element
         if not self._symbol is None:
             prop = self._symbol.properties()
             QgsSymbolLayerV2Utils.saveProperties(prop,domDocument,symbolElement)
             symbolElement.setAttribute("layerType",self._layerType)
-        
+
         spColumnElement.appendChild(symbolElement)
-        
+
         return spColumnElement
 
 class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
@@ -183,77 +183,77 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.setupUi(self)
 
         self._composerWrapper = composerWrapper
-        
+
         self._spColumnName = spColumnName
-        
+
         self._symbol_editor = None
 
         self._zoom_out_level = 16
 
         self.sb_zoom.setValue(self._zoom_out_level)
-        
+
         self._srid = -1
-        
+
         self._geomType = ""
-        
+
         #Load fields if the data source has been specified
         self._dsName = self._composerWrapper.selectedDataSource()
         self._loadFields()
-        
+
         #Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
-    
+
     def onDataSourceChanged(self,dataSourceName):
         """
         When the user changes the data source then update the fields.
         """
         self._dsName = dataSourceName
-        self._loadFields()  
-        
+        self._loadFields()
+
     def setSymbolEditor(self, editor):
         """
         Set the widget's symbol editor.
         """
         self._symbol_editor = editor
         self.styleLayout.addWidget(editor)
-        
+
     def symbolEditor(self):
         """
         Returns the current symbol editor.
         """
         return self._symbol_editor
-        
+
     def symbolLayer(self):
         """
         Returns the symbol layer specified in the symbol editor.
         """
         return self._symbol_editor.symbolLayer()
-    
+
     def setGeomType(self,geomType):
         """
         Set the geometry type of the specified spatial unit.
         """
         self._geomType = geomType
-        
+
     def geomType(self):
         """
         Return the geometry type of the specified spatial unit.
         """
         return self._geomType
-    
+
     def setSrid(self,srid):
         """
         Set the SRID of the specified spatial unit.
         """
         self._srid = srid
-        
+
     def srid(self):
         """
         Return the SRID of the specified spatial unit.
         """
         return self._srid
-        
+
     def spatialFieldMapping(self):
         """
         Returns a SpatialFieldMapping object instance configured to the current settings.
@@ -264,14 +264,14 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         sp_field_mapping.setSRID(self._srid)
         sp_field_mapping.setGeometryType(self._geomType)
         sp_field_mapping.setZoomLevel(self.sb_zoom.value())
-        
+
         return sp_field_mapping
-    
+
     def applyMapping(self, spatialFieldMapping):
         """
         Configures the widget to use the specified spatial field mapping.
         """
-        #Configure widget based on the mapping 
+        #Configure widget based on the mapping
         self._spColumnName = spatialFieldMapping.spatialField()
         self.setLabelField(spatialFieldMapping.labelField())
         self._srid = spatialFieldMapping.srid()
@@ -283,7 +283,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         Select field label item.
         """
         fieldIndex = self.cboLabelField.findText(labelField)
-        
+
         if fieldIndex != -1:
             self.cboLabelField.setCurrentIndex(fieldIndex)
 
@@ -294,7 +294,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         if self._zoom_out_level != value:
             self._zoom_out_level = value
-        
+
     def _loadFields(self):
         """
         Load labeling fields/columns.

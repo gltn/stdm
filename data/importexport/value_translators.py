@@ -471,7 +471,7 @@ class LookupValueTranslator(RelatedTableTranslator):
 
         # Get corresponding lookup value record
         lookup_rec = self._db_session.query(lookup_table).filter(
-            func.lower(lk_value_column_obj) == func.lower(lookup_value)
+            func.lower(lk_value_column_obj) == func.lower(cast(lookup_value, String))
         ).first()
 
         # Use default value if record is empty

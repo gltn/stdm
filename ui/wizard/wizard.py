@@ -590,7 +590,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # Handle deselection of a party entity
         # Remove party graphic item from the view
         party_name = item.text()
-        self.dg_tenure.remove_party(party_name)
+
+        p = self.current_profile()
+        if not p is None:
+            # Remove party from the profile
+            res = p.social_tenure.remove_party(party_name)
+            if res:
+                self.dg_tenure.remove_party(party_name)
 
     def _on_spatial_unit_selected(self, item):
         # Check if the spatial unit has also been selected as a party
@@ -891,43 +897,41 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
         return index 
 
-    def check_empty_entities(self):
-        """
-        """
-        is_empty = True
+    #def check_empty_entities(self):
+        #"""
+        #"""
+        #is_empty = True
 
-        profile = self.current_profile()
-        for entity in profile.entities.values():
-            col_count = 0
-            for column in entity.columns.values():
-                if column.action <> DbItem.DROP:
-                    col_count += 1
-                    break
-            if col_count == 0:
-                self.show_message(self.tr("Entity '%s' has no columns!") % entity.short_name)
-                is_empty = False 
+        #profile = self.current_profile()
+        #for entity in profile.entities.values():
+            #col_count = 0
+            #for column in entity.columns.values():
+                #if column.action <> DbItem.DROP:
+                    #col_count += 1
+                    #break
+            #if col_count == 0:
+                #self.show_message(self.tr("Entity '%s' has no columns!") % entity.short_name)
+                #is_empty = False 
 
-        return is_empty
+        #return is_empty
 
-    def check_empty_lookups(self):
+    def find_empty_lookups(self):
         """
         Verifies that all lookups in the current profile
         have values. Returns true if all have values else false
         :rtype: bool
         """
-        valid = True
+        found_empty = False
         profile  = self.current_profile()
-        if not profile:
-            return valid
         for vl in profile.value_lists():
-            # don't check deleted entities
+            # don't bother with enities destined for deletion
             if vl.action == DbItem.DROP:
                 continue
             if vl.is_empty():
-                valid = False
+                found_empty = True
                 self.show_message(self.tr("Lookup %s has no values") % vl.short_name)
                 break
-        return valid
+        return found_empty
 
     def check_spatial_unit_tenure_mapping(self):
         """
@@ -1217,7 +1221,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.set_multi_party_checkbox(curr_profile)
 
             # verify that lookup entities have values
-            validPage = self.check_empty_lookups()
+            if self.find_empty_lookups():
+                validPage = False
 
         if self.currentId() == 4:
             validPage, msg = self.validate_STR()
@@ -1311,7 +1316,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             # compute a new asset count
             self.orig_assets_count = len(self.stdm_config)
 
-            #pause, allow user to read post saving messages
+            #pause, allow user to read post-save messages
             self.pause_wizard_dialog()
             validPage = False
 
@@ -1427,9 +1432,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             #Write config to a file
             cfs = ConfigurationFileSerializer(CONFIG_FILE)
 
-            # flag wizard has been run
-            self.reg_config.write({'WizardRun':1})
-
             try:
                 cfs.save()
 
@@ -1454,6 +1456,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.is_config_done = False
 
         self.save_update_info(self.txtHtml.toPlainText(), self.new_update_file)
+
+        # flag wizard has been run
+        self.reg_config.write({'WizardRun':1})
 
         #Exit thread
         self.updater_thread.quit()
@@ -2394,7 +2399,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def delete_column(self):
         """
-        Delete selected column butshow warning dialog if a 
+        Delete selected column but show warning dialog if a 
         column has dependencies.
         """
         row_id, column, model_item = self._get_model(self.tbvColumns)

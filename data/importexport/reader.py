@@ -163,7 +163,7 @@ class OGRReader(object):
                 if isinstance(value, str):
                     if not bool(value.strip()) or value.strip().lower() == 'null':
                         value = None
-                elif entity.columns[col_name].TYPE_INFO in float_type:
+                if entity.columns[col_name].TYPE_INFO in float_type:
                     try:
                         if value is not None:
                             value = float(value)
@@ -172,6 +172,7 @@ class OGRReader(object):
                         value = None
 
                 elif entity.columns[col_name].TYPE_INFO in int_type:
+
                     try:
                         if value is not None:
                             value = int(value)
@@ -182,7 +183,10 @@ class OGRReader(object):
                                         'FOREIGN_KEY']:
                                         value = None
                     except ValueError:
+                        #TODO show warning to the user that
+                        #  some values cannot be converted to integer.
                         value = None
+                    
         return value
 
     def auto_fix_date(self, target_table, col_name, value):
@@ -198,9 +202,11 @@ class OGRReader(object):
         :rtype: Any
         """
         entity = self._data_source_entity(target_table)
+
         date_types = ['DATE', 'DATETIME']
+
         if entity.columns[col_name].TYPE_INFO in date_types:
-            if not bool(value.strip()) or value.strip().lower() == 'null':
+            if not bool(value) or value.lower() == 'null':
                 value = None
 
         return value
@@ -219,6 +225,7 @@ class OGRReader(object):
         """
         entity = self._data_source_entity(target_table)
         yes_no_types = ['BOOL']
+       
         if entity.columns[col_name].TYPE_INFO in yes_no_types:
             if not bool(value.strip()) or value.strip().lower() == 'null':
                 value = None
@@ -253,6 +260,7 @@ class OGRReader(object):
                 if col != 'documents':
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
+
                     value = self.auto_fix_date(target_table, col, value)
                     value = self.auto_fix_yes_no(target_table, col, value)
 
@@ -266,6 +274,54 @@ class OGRReader(object):
         except:
             self._dbSession.rollback()
             raise
+
+    def auto_fix_geom_type(self, geom, source_geom_type, destination_geom_type):
+        """
+        Converts single geometry type to multi type if the destination is multi type.
+        :param geom: The OGR geometry
+        :type geom: OGRGeometry
+        :param source_geom_type: Source geometry type
+        :type source_geom_type: String
+        :param destination_geom_type: Destination geometry type
+        :type destination_geom_type: String
+        :return: WkB geometry and the output layer geometry type.
+        :rtype: Tuple
+        """
+        # Convert polygon to multipolygon if the destination table is multi-polygon.
+        if source_geom_type.lower() == 'polygon' and \
+                        destination_geom_type.lower() == 'multipolygon':
+            geom_wkb, geom_type = self.to_ogr_multi_type(geom,
+                                                            ogr.wkbMultiPolygon)
+
+        elif source_geom_type.lower() == 'linestring' and \
+                        destination_geom_type.lower() == 'multilinestring':
+            geom_wkb, geom_type = self.to_ogr_multi_type(geom,
+                                                            ogr.wkbMultiLineString)
+
+        elif source_geom_type.lower() == 'point' and \
+                        destination_geom_type.lower() == 'multipoint':
+            geom_wkb, geom_type = self.to_ogr_multi_type(geom, ogr.wkbMultiPoint)
+        else:
+            geom_wkb = geom.ExportToWkt()
+            geom_type = geom.GetGeometryName()
+
+        return geom_wkb, geom_type
+
+    def to_ogr_multi_type(self, geom, ogr_type):
+        """
+        Convert ogr geometry to multi-type when supplied the ogr.type.
+        :param geom: The ogr geometry
+        :type geom: OGRGeometry
+        :param ogr_type: The ogr geometry type
+        :type ogr_type: String
+        :return: WkB geometry and the output layer geometry type.
+        :rtype: Tuple
+        """
+        multi_geom = ogr.Geometry(ogr_type)
+        multi_geom.AddGeometry(geom)
+        geom_wkb = multi_geom.ExportToWkt()
+        geom_type = multi_geom.GetGeometryName()
+        return geom_wkb, geom_type
 
     def featToDb(self, targettable, columnmatch, append, parentdialog,
                  geomColumn=None, geomCode=-1, translator_manager=None):
@@ -410,22 +466,16 @@ class OGRReader(object):
                     # Check if the geometry types match
                     layerGeomType = geom.GetGeometryName()
                     # Convert polygon to multipolygon if the destination table is multi-polygon.
-                    if layerGeomType.lower() == 'polygon' and self._geomType.lower() == 'multipolygon':
-                        multi_polygon = ogr.Geometry(ogr.wkbMultiPolygon)
-                        multi_polygon.AddGeometry(geom)
-                        geomWkb = multi_polygon.ExportToWkt()
-                        layerGeomType = multi_polygon.GetGeometryName()
-                    else:
-                        geomWkb = geom.ExportToWkt()
-                        layerGeomType = geom.GetGeometryName()
+                    geom_wkb, geom_type = self.auto_fix_geom_type(
+                        geom, layerGeomType, self._geomType)
                     column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(
-                        self._targetGeomColSRID, geomWkb)
+                        self._targetGeomColSRID, geom_wkb)
 
-                    if layerGeomType.lower() != self._geomType.lower():
+                    if geom_type.lower() != self._geomType.lower():
                         raise TypeError(
                             "The geometries of the source and destination columns do not match.\n" \
                             "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(
-                                layerGeomType,
+                                geom_type,
                                 self._geomType))
 
             try:

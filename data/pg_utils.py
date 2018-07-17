@@ -23,8 +23,9 @@ from PyQt4.QtCore import (
     QFile,
     QIODevice,
     QRegExp,
-    QTextStream
-)
+    QTextStream,
+    QSettings)
+from qgis.utils import iface
 
 from sqlalchemy.sql.expression import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -249,7 +250,34 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     return _execute(t)
 
 def export_data(table_name):
-    sql = u"SELECT * FROM {0}".format(unicode(table_name))
+    sql = u"SELECT * FROM {0} ".format(unicode(table_name))
+
+    t = text(sql)
+
+    return _execute(t)
+
+
+def fetch_with_filter(sql_str):
+    sql = unicode(sql_str)
+
+    t = text(sql)
+
+    return _execute(t)
+
+
+def fetch_from_table(table_name, limit):
+    """
+    Fetches data from a table with a limit.
+    :param table_name: The table name.
+    :type table_name: String
+    :param limit: The limit.
+    :type limit: Integer
+    :return:
+    :rtype:
+    """
+    sql = u"SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
+        unicode(table_name), unicode(limit)
+    )
 
     t = text(sql)
 
@@ -527,6 +555,7 @@ def _execute(sql,**kwargs):
     """
     Execute the passed in sql statement
     """
+
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
     result = conn.execute(sql,**kwargs)
@@ -570,7 +599,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
+def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', proj_wkt=None):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -590,7 +619,17 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name=''):
     if not layer_name:
         layer_name = table_name
 
+    if proj_wkt is not None:
+        iface.mainWindow().blockSignals(True)
+
     v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres")
+
+    if proj_wkt is not None:
+        iface.mainWindow().blockSignals(False)
+        target_crs = QgsCoordinateReferenceSystem(
+            proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
+        )
+        v_layer.setCrs(target_crs)
 
     return v_layer
 
