@@ -124,24 +124,32 @@ class newUserDlg(QDialog, Ui_frmNewUser):
             return True
 
     def _setUser(self):
-        '''
+        """
         Create/update the user object based on the user input
-        '''
+        rtype: str
+        """
         username = self.txtUserName.text()
         password = self.txtPass.text()
 
         if self.user == None:
-            self.user = User(username,password)
-
+            self.user = User(username, password)
+            user_info = 'NEW'
         else:
             self.user.Password = password
+            user_info = 'EDIT'
 
-        #Set validity if specified
+        self.user.Validity = self.set_password_validity()
+
+        return user_info
+
+    def set_password_validity(self):
         if self.chkValidity.checkState() == Qt.Unchecked:
-            self.user.Validity = self.dtValidity.date().toPyDate()
+            password_validity = self.dtValidity.date().toPyDate()
         else:
-            #Set password to never expire
-            self.user.Validity = 'infinity'
+            password_validity = 'infinity'
+
+        return password_validity
+
 
     def acceptdlg(self):
         '''
@@ -152,15 +160,10 @@ class newUserDlg(QDialog, Ui_frmNewUser):
             member = Membership()
 
             try:
-                #Create new or update user
-                if self.user == None:
-                    self._setUser()
+                if self._setUser() == 'NEW':
                     member.createUser(self.user)
-
                 else:
-                    self._setUser()
-                    #Update user
-                    member.createUser(self.user,True)
+                    member.update_user(self.user)
 
                 self.accept()
 
@@ -168,45 +171,4 @@ class newUserDlg(QDialog, Ui_frmNewUser):
                 QMessageBox.critical(self,
                                      QApplication.translate("newUserDlg","Create User Error"), str(se))
                 self.user = None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

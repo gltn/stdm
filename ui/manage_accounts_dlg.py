@@ -161,6 +161,7 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         #Get user from the first item in the selection
         username = selItems[0].data()
         user = self.membership.getUser(username)
+
         if user != None:
             frmUserUpdate = newUserDlg(self,user)
             frmUserUpdate.exec_()
