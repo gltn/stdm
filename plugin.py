@@ -46,6 +46,8 @@ from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper,
     EntityConfig
 )
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
+
 from stdm.data.database import alchemy_table
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
@@ -169,6 +171,25 @@ class STDMQGISLoader(object):
         self.geom_tools_signal_connected = False
         copy_startup()
 
+
+    def format_columns(self, entity=None):
+        """
+        Formats the columns using the ColumnWidgetRegistry factory method.
+        :param entity: The entity of the columns to be formatted.
+        :type entity: Object
+        """
+        column_formatter = OrderedDict()
+        for col in entity.columns.values():
+            col_name = col.name
+            # Get widget factory so that we can use the value formatter
+            widget_factory = ColumnWidgetRegistry.factory(
+                col.TYPE_INFO
+            )
+            if not widget_factory is None:
+                formatter = widget_factory(col)
+                column_formatter[col_name] = formatter
+        self.entity_formatters[entity.name] = column_formatter
+
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
@@ -275,6 +296,15 @@ class STDMQGISLoader(object):
         retstatus = frmLogin.exec_()
 
         if retstatus == QDialog.Accepted:
+            prog_dlg = QProgressDialog(self.iface.mainWindow())
+            prog_dlg.setWindowModality(Qt.WindowModal)
+            prog_msg = QApplication.translate(
+                'STDMQGISLoader',
+                'Loading modules...'
+            )
+            prog_dlg.setWindowTitle('STDM')
+            prog_dlg.setMinimum(0)
+            prog_dlg.setValue(1)
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
 
@@ -338,17 +368,26 @@ class STDMQGISLoader(object):
                 self.show_change_log()
                 #Set current profile
                 self.current_profile = current_profile()
+                prog_dlg.setLabelText(prog_msg)
+
                 self._user_logged_in = True
                 if self.current_profile is None:
                     result = self.default_profile()
                     if not result:
                         return
+                prog_dlg.setMaximum(len(self.current_profile.entities))
+                for i, entity in enumerate(self.current_profile.entities.values()):
+
+                    prog_dlg.setValue(i)
+                    self.format_columns(entity)
+
                 self.create_custom_tenure_dummy_col()
 
                 self.loadModules()
                 self.default_profile()
                 self.run_wizard()
                 self.copy_designer_template()
+                prog_dlg.setValue(len(self.current_profile.entities))
 
 
             except Exception as pe:

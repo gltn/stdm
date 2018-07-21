@@ -26,7 +26,7 @@ import logging
 from decimal import Decimal
 from collections import OrderedDict
 
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import QCoreApplication, QObject, pyqtSignal
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -38,7 +38,7 @@ from qgis.core import (
     QgsFeature,
     QgsPoint,
     QgsVectorLayer,
-    QgsField)
+    QgsField, edit)
 from PyQt4.QtGui import (
     QApplication,
     QLabel,
@@ -69,9 +69,12 @@ from stdm.data.database import (
 from stdm.data.configuration import entity_model
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
-
+from stdm.geometry.geometry_utils import feature_id_to_feature, get_wkt
 from stdm.settings import (
     current_profile
+)
+from stdm.geometry.geometry_utils import (
+    zoom_to_selected, active_spatial_column, get_wkt
 )
 
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
@@ -80,11 +83,12 @@ from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     format_name
 )
+from stdm.ui.forms.spatial_forms_container import  SpatialFormsContainer
 
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')
-
+EXCLUDED_COLUMNS_TO_FETCH = ['id', 'parcel_number', 'shape_area', 'shape_length']
 
 class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
@@ -231,18 +235,26 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
         return QGISFieldWidgetConfig(layer, idx, parent)
 
 
-class STDMFieldWidget():
+class QgsFeatureId(object):
+    pass
+
+
+class STDMFieldWidget(QObject):
     # Instantiate the singleton QgsEditorWidgetRegistry
     widgetRegistry = QgsEditorWidgetRegistry.instance()
-
-    def __init__(self):
+    # onFeatureUpdated = pyqtSignal(long, str)
+    def __init__(self, plugin):
+        QObject.__init__(self, iface.mainWindow())
         self.entity = None
+        self.plugin = plugin
         self.widget_mapping = {}
         self.layer = None
+        self.spatial_column = None
         self.feature_models = OrderedDict()
         self.removed_feature_models = OrderedDict()
         self.current_feature = None
         self.editor = None
+        # self.onFeatureUpdated.connect(self.load_stdm_form)
 
     def init_form(self, table, spatial_column, curr_layer):
         """
@@ -282,6 +294,7 @@ class STDMFieldWidget():
             curr_layer.beforeCommitChanges.connect(
                 self.on_digitizing_saved
             )
+            self.spatial_column = active_spatial_column(self.entity, self.layer)
 
         except Exception as ex:
             LOGGER.debug(ex)
@@ -407,31 +420,53 @@ class STDMFieldWidget():
         :rtype: Tuple
         """
         ent_model = entity_model(self.entity)
-        model_obj = ent_model()
+        ent_model = ent_model()
+        print self.layer, 'layer'
+        geom_wkt = get_wkt(self.entity, self.layer, self.spatial_column, feature_id)
+        srid = None
+        # get srid with EPSG text
+        full_srid = self.layer.crs().authid().split(':')
+        if len(full_srid) > 0:
+            # Only extract the number
+            srid = full_srid[1]
 
         iterator = self.layer.getFeatures(
-            QgsFeatureRequest().setFilterFid(feature_id))
+            QgsFeatureRequest().setFilterFid(feature_id)
+        )
         feature = next(iterator)
+
         field_names = [field.name() for field in self.layer.pendingFields()]
         attribute = feature.attributes()
         if isinstance(attribute[0], QgsField):
             return None, 0
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
         col_with_data = []
-
+        entity_cols = [c.name for c in self.entity.columns.values()]
         for col, value in mapped_data.iteritems():
-            if col == 'id':
+            # print feature_id, col, value
+            if feature_id <= 0:
+                if col in EXCLUDED_COLUMNS_TO_FETCH:
+                    continue
+            if col not in entity_cols:
                 continue
             if value is None:
                 continue
             if value == NULL:
                 continue
-            setattr(model_obj, col, value)
+            setattr(ent_model, col, value)
             col_with_data.append(col)
+        if geom_wkt is not None:
+            # add geometry into the model
+            setattr(
+                ent_model,
+                self.spatial_column,
+                'SRID={};{}'.format(srid, geom_wkt)
+            )
+        else:
+            return ent_model, 0
+        return ent_model, len(col_with_data)
 
-        return model_obj, len(col_with_data)
-
-    def load_stdm_form(self, feature_id, spatial_column):
+    def load_stdm_form(self, feature_id, spatial_column=None, allow_saved_ft=False):
         """
         Loads STDM Form and collects the model added
         into the form so that it is saved later.
@@ -453,7 +488,7 @@ class STDMFieldWidget():
         # the featureAdded signal is called but the
         # feature ids value is over 0. Return to prevent
         # the dialog from popping up for every feature.
-        if feature_id > 0:
+        if feature_id > 0 and not allow_saved_ft:
             return
 
         # if the feature is already in the OrderedDict don't
@@ -471,101 +506,11 @@ class STDMFieldWidget():
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
-        # If the feature is not valid, geom_wkt will be None
-        # So don't launch form for invalid feature and delete feature
 
-        geom_wkt = self.get_wkt(spatial_column, feature_id)
-
-        if geom_wkt is None:
-            title = QApplication.translate(
-                'STDMFieldWidget',
-                u'Spatial Entity Form Error',
-                None,
-                QCoreApplication.UnicodeUTF8
-            )
-            msg = QApplication.translate(
-                'STDMFieldWidget',
-                u'The feature you have added is invalid. \n'
-                'To fix this issue, check if the feature '
-                'is digitized correctly.  \n'
-                'Make sure you have added a base layer to digitize on.',
-                None,
-                QCoreApplication.UnicodeUTF8
-            )
-            # Message: Spatial column information
-            # could not be found
-            QMessageBox.critical(
-                iface.mainWindow(),
-                title,
-                msg
-            )
-            return
-        # init form
         feature_model, col_with_data = self.feature_to_model(feature_id)
 
-        if col_with_data == 0:
-            feature_model = None
-        self.editor = EntityEditorDialog(
-            self.entity,
-            model=feature_model,
-            parent=iface.mainWindow(),
-            manage_documents=True,
-            collect_model=True
-        )
-        self.model = self.editor.model()
-        self.editor.addedModel.connect(self.on_form_saved)
+        self.feature_models[feature_id] = feature_model
 
-        # get srid with EPSG text
-        full_srid = self.layer.crs().authid().split(':')
-
-        if len(full_srid) > 0:
-            # Only extract the number
-            srid = full_srid[1]
-        if not geom_wkt is None:
-            # add geometry into the model
-
-            setattr(
-                self.model,
-                spatial_column,
-                'SRID={};{}'.format(srid, geom_wkt)
-            )
-
-        # open editor
-        result = self.editor.exec_()
-        if result < 1:
-            self.removed_feature_models[feature_id] = None
-            self.layer.deleteFeature(feature_id)
-
-    def get_wkt(self, spatial_column, feature_id):
-        """
-        Gets feature geometry in Well-Known Text
-        format and returns it.
-        :param spatial_column: The spatial column name.
-        :type spatial_column: String
-        :param feature_id: Feature id
-        :type feature_id: Integer
-        :return: Well-Known Text format of a geometry
-        :rtype: WKT
-        """
-        geom_wkt = None
-        fid = feature_id
-        request = QgsFeatureRequest()
-        request.setFilterFid(fid)
-        features = self.layer.getFeatures(request)
-
-        geom_col_obj = self.entity.columns[spatial_column]
-        geom_type = geom_col_obj.geometry_type()
-
-        # get the wkt of the geometry
-        for feature in features:
-            geometry = feature.geometry()
-            if geometry.isGeosValid():
-                if geom_type in ['MULTIPOLYGON', 'MULTILINESTRING']:
-                    geometry.convertToMultiType()
-
-                geom_wkt = geometry.exportToWkt()
-
-        return geom_wkt
 
     def on_form_saved(self, model):
         """
@@ -608,25 +553,52 @@ class STDMFieldWidget():
         :return: None
         :rtype: NoneType
         """
-        ent_model = entity_model(self.entity)
-        entity_obj = ent_model()
-        entity_obj.saveMany(
-            self.feature_models.values()
+
+        # if None in self.feature_models.values():
+            # title = QApplication.translate(
+            #     'SpatialFormsContainer',
+            #     u'Spatial Entity Form Error',
+            #     None,
+            #     QCoreApplication.UnicodeUTF8
+            # )
+            # msg = QApplication.translate(
+            #     'SpatialFormsContainer',
+            #     u'The feature(s) you have added is/are invalid. \n'
+            #     'To fix this issue, check if the feature '
+            #     'is added correctly.  \n'
+            #     'Make sure you have added a base layer to digitize on.',
+            #     None,
+            #     QCoreApplication.UnicodeUTF8
+            # )
+            # # Message: Spatial column information
+            # # could not be found
+            # QMessageBox.critical(
+            #     iface.mainWindow(),
+            #     title,
+            #     msg
+            # )
+            # return
+        # if len(self.feature_models) == 0:
+        #     return
+        spatial_forms = SpatialFormsContainer(
+            self.entity, self.layer, self.feature_models, self.plugin
         )
 
-        # Save child models
-        if self.editor is not None:
-            self.editor.save_children()
-        # undo each feature created so that qgis
-        # don't try to save the same feature again.
-        # It will also clear all the models from
-        # self.feature_models as on_feature_deleted
-        # is raised when a feature is removed.
-        for f_id in self.feature_models.keys():
-            iface.mainWindow().blockSignals(True)
-            self.layer.deleteFeature(f_id)
-            self.on_feature_deleted(f_id)
-            iface.mainWindow().blockSignals(True)
+        # print spatial_forms
+        result = spatial_forms.exec_()
+        # return
+        if result == 1:
 
-        for i in range(len(self.feature_models)):
-            self.layer.undoStack().undo()
+            # undo each feature created so that qgis
+            # don't try to save the same feature again.
+            # It will also clear all the models from
+            # self.feature_models as on_feature_deleted
+            # is raised when a feature is removed.
+            for f_id in self.feature_models.keys():
+                iface.mainWindow().blockSignals(True)
+                # self.layer.deleteFeature(f_id)
+                self.on_feature_deleted(f_id)
+                iface.mainWindow().blockSignals(True)
+
+            for i in range(len(self.feature_models)):
+                self.layer.undoStack().undo()
