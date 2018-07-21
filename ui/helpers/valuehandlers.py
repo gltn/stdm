@@ -455,11 +455,29 @@ class SpinBoxValueHandler(ControlValueHandler):
     
 SpinBoxValueHandler.register()
 
-class DoubleSpinBoxValueHandler(SpinBoxValueHandler):
+class DoubleSpinBoxValueHandler(ControlValueHandler):
     '''
     QDoubleSpinBox value handler.
     '''
     controlType = QDoubleSpinBox
+
+    def value(self):
+        return self.control.value()
+
+    def setValue(self, value):
+        if value != None:
+            self.control.setValue(float(value))
+        else:
+            self.control.setValue(0)
+
+    def supportsMandatory(self):
+        return False
+
+    def default(self):
+        return None
+
+    def clear(self):
+        self.control.clear()
 
 DoubleSpinBoxValueHandler.register()
 
