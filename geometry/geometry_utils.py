@@ -25,6 +25,7 @@ from stdm.settings.registryconfig import (
     selection_color
 )
 
+
 def calculate_area(polygon_features):
     areas = []
     for feature in polygon_features:
@@ -297,7 +298,13 @@ def  add_geom_to_feature(layer, geom, original_feature=None, preview_layer=False
         layer.commitChanges()
     else:
         layer.addFeatures([ft])
-    # layer.selectByIds([ft.id()])
+    #     if original_feature is not None:
+    #         from stdm.ui.forms.spatial_unit_form import (
+    #             STDMFieldWidget
+    #         )
+    #
+    #         # layer.addFeatures([original_feature])
+    # # layer.selectByIds([ft.id()])
     return ft
 
 def add_geom_to_layer_with_measurement(layer, geom, prefix, suffix, unit=''):
@@ -548,6 +555,7 @@ def polygon_to_lines(
 
     if measurement:
         label_layer_by_field(line_layer, 'measurement')
+    iface.setActiveLayer(line_layer)
     return line_layer
 
 def add_area_text(geometry):
@@ -1393,3 +1401,60 @@ def split_join_points(
     else:
         return False
 
+
+def active_spatial_column(entity, layer):
+    # get all spatial columns of the entity.
+    spatial_columns = [
+        c.name
+        for c in entity.columns.values()
+        if c.TYPE_INFO == 'GEOMETRY'
+    ]
+    # get all fields excluding the geometry.
+    layer_fields = [
+        field.name()
+        for field in layer.pendingFields()
+    ]
+    # get the currently being used geometry column
+    active_sp_cols = [
+        col
+        for col in spatial_columns
+        if col not in layer_fields
+    ]
+
+    if len(active_sp_cols) > 0:
+        return active_sp_cols[0]
+    else:
+        return None
+
+
+
+def get_wkt(entity, layer, spatial_column, feature_id):
+    """
+    Gets feature geometry in Well-Known Text
+    format and returns it.
+    :param spatial_column: The spatial column name.
+    :type spatial_column: String
+    :param feature_id: Feature id
+    :type feature_id: Integer
+    :return: Well-Known Text format of a geometry
+    :rtype: WKT
+    """
+    geom_wkt = None
+    fid = feature_id
+    request = QgsFeatureRequest()
+    request.setFilterFid(fid)
+    features = layer.getFeatures(request)
+
+    geom_col_obj = entity.columns[spatial_column]
+    geom_type = geom_col_obj.geometry_type()
+
+    # get the wkt of the geometry
+    for feature in features:
+        geometry = feature.geometry()
+        if geometry.isGeosValid():
+            if geom_type in ['MULTIPOLYGON', 'MULTILINESTRING']:
+                geometry.convertToMultiType()
+
+            geom_wkt = geometry.exportToWkt()
+
+    return geom_wkt

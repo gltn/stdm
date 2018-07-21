@@ -31,7 +31,9 @@ from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 from ui_equal_area import Ui_EqualArea
 from ui_show_measurements import Ui_ShowMeasurements
-
+from stdm.ui.forms.spatial_unit_form import (
+                STDMFieldWidget
+            )
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
@@ -276,6 +278,7 @@ class GeometryToolsDock(
             PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS,
             AREA_POLYGON
         ]
+        # self.field_widget = STDMFieldWidget(self.plugin)
 
         # self.geometry_map_tool.geomIdentified.connect(
         #     self.feature_clicked
@@ -529,6 +532,29 @@ class GeometryToolsDock(
         self.set_layer_entity()
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
+        #
+        # spatial_columns = [
+        #     c.name
+        #     for c in self.entity.columns.values()
+        #     if c.TYPE_INFO == 'GEOMETRY'
+        # ]
+        # # get all fields excluding the geometry.
+        # layer_fields = [
+        #     field.name()
+        #     for field in self.layer.pendingFields()
+        # ]
+        # # get the currently being used geometry column
+        # active_sp_cols = [
+        #     col
+        #     for col in spatial_columns
+        #     if col not in layer_fields
+        # ]
+        #
+        # self.field_widget.init_form(
+        #     self.entity.name, active_sp_cols[0], self.layer
+        # )
+
+
 
 
     def feature_model(self, entity, id):
@@ -1057,11 +1083,16 @@ class GeomWidgetsBase(object):
         new_features = layer.selectedFeatures()
         if len(new_features) > 0:
             new_feature = layer.selectedFeatures()[0]
+            self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
+                self.feature_ids[0], allow_saved_ft=True
+            )
+
             self.feature_ids.append(new_feature.id())
 
             layer.selectByIds(self.feature_ids)
 
             add_area(layer, AREA_POLYGON, all_features=preview)
+
 
         iface.setActiveLayer(self.settings.layer)
         self.iface.mapCanvas().refresh()
@@ -1122,7 +1153,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.create_preview_layer(False)
 
         self.settings.layer.selectByIds(self.feature_ids)
-
+        QApplication.processEvents()
         result = split_move_line_with_area(
             self.settings.layer,
             self.line_layer,
@@ -1175,6 +1206,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
             self.post_split_update(self.preview_layer, preview=True)
             self.splitting_success_help(4)
+
         else:
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
@@ -2168,6 +2200,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     def post_split_update(self, layer, preview=False):
 
         new_features = [f.id() for f in self.equal_split_features]
+        self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
+            self.feature_ids[0], allow_saved_ft=True
+        )
+
         new_features.extend(self.feature_ids)
         layer.selectByIds(new_features)
 
@@ -2200,8 +2236,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 )
                 self.notice.insertErrorNotification(fail_message)
                 return
-
-
         else:
             rotate_line_ft = self.combined_line
 

@@ -461,9 +461,12 @@ class MapperMixin(object):
         :type save_and_new: Boolean
         """
         try:
+
             # Persist the model to its corresponding store.
             if self._mode == SAVE:
+
                 self._model.save()
+
                 if not save_and_new:
                     QMessageBox.information(
                         self, QApplication.translate(
@@ -476,14 +479,17 @@ class MapperMixin(object):
                     )
 
             else:
+                # print 'update ', vars(self._model)
                 self._model.update()
-                QMessageBox.information(
-                    self,
-                    QApplication.translate("MappedDialog","Record Updated"),
-                    QApplication.translate(
-                        "MappedDialog",
-                        "Record has been successfully updated.")
-                )
+                if not save_and_new:
+                    QMessageBox.information(
+                        self,
+                        QApplication.translate("MappedDialog","Record Updated"),
+                        QApplication.translate(
+                            "MappedDialog",
+                            "Record has been successfully updated."
+                        )
+                    )
 
         except Exception as ex:
             QMessageBox.critical(

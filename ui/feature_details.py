@@ -324,6 +324,7 @@ class DetailsDBHandler:
             entity = self._entity
         if entity is None:
             return
+
         if entity.name in self.plugin.entity_formatters.keys():
             self.column_formatter = self.plugin.entity_formatters[entity.name]
             return
