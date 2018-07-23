@@ -2282,7 +2282,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 entity.rename_column(original_column.name, editor.column.name)
 
                 self.populate_spunit_model(profile)
-
+               
                 if pg_table_exists(entity.name):
                     self.process_privilege(entity, editor.column)
         else:
@@ -2290,10 +2290,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     "No column selected for edit!"))
 
     def process_privilege(self, entity, column):
+        # if a new column is lookup, then assign privileges to that lookup
+        new_content = None
         if self.column_has_entity_relation(column):
             new_content = column.entity_relation.parent.name
         if isinstance(column, MultipleSelectColumn):
             new_content = column.association.first_parent.name
+        if new_content is None: return
         self.update_privilege_cache(entity, column, new_content)
 
     def column_has_entity_relation(self, column):
