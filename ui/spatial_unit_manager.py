@@ -116,6 +116,14 @@ class SpatialUnitManagerDockWidget(
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+        self.iface.projectRead.connect(self.on_project_opened)
+
+    def on_project_opened(self):
+        legend_layers =  self.iface.legendInterface().layers()
+        for layer in legend_layers:
+            source = self.layer_source(layer)
+            if source is not bool and source is not None:
+                self.init_spatial_form(self.active_sp_col, layer)
 
     def get_column_config(self, config, name):
         """
@@ -910,9 +918,19 @@ class SpatialUnitManagerDockWidget(
         :rtype: Boolean or NoneType
         """
         active_layer = self.iface.activeLayer()
-        if active_layer is None:
+        return self.layer_source(active_layer)
+
+    def layer_source(self, layer):
+        """
+        Gets the layer source.
+        :param layer: The layer
+        :type layer: Any
+        :return: Layer Source or None
+        :rtype:
+        """
+        if layer is None:
             return None
-        source = active_layer.source()
+        source = layer.source()
         if source is None:
             return False
         source_value = dict(re.findall('(\S+)="?(.*?)"? ', source))
@@ -938,7 +956,7 @@ class SpatialUnitManagerDockWidget(
                 # get all fields excluding the geometry.
                 layer_fields = [
                     field.name()
-                    for field in active_layer.pendingFields()
+                    for field in layer.pendingFields()
                 ]
                 # get the currently being used geometry column
                 active_sp_cols = [

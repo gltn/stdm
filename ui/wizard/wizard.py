@@ -42,7 +42,12 @@ from stdm.data.configuration.stdm_configuration import (
 from stdm.utils.util import enable_drag_sort
 from stdm.data.configuration.entity import entity_factory, Entity
 from stdm.data.configuration.entity_relation import EntityRelation 
-from stdm.data.configuration.columns import BaseColumn
+from stdm.data.configuration.columns import (
+        BaseColumn,
+        ForeignKeyColumn,
+        AdministrativeSpatialUnitColumn,
+        MultipleSelectColumn
+        )
 
 from stdm.data.configuration.value_list import (
     ValueList,
@@ -94,6 +99,8 @@ from create_lookup_value import ValueEditor
 from entity_depend import EntityDepend
 from column_depend import ColumnDepend
 from copy_editor import CopyProfileEditor
+
+from stdm.security.privilege_provider import MultiPrivilegeProvider
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -191,6 +198,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.draft_config = False
         self.stdm_config = None
         self.new_profiles = []
+
+        self.privileges = {}
+
         #self._str_table_exists = False
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
@@ -2223,6 +2233,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 midx = self.tbvColumns.model().index(row, 0)
                 profile.update_entity_row_index(editor.column.name, midx.row())
+                
+                # Update privileges for entities that already exists in the database.
+                if pg_table_exists(entity.name):
+                    self.process_privilege(entity, editor.column)
 
     def edit_column(self):
         """
@@ -2252,7 +2266,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             editor = ColumnEditor(**params)
             result = editor.exec_()
 
-            if result == 1: # after successfully editing
+            if result == 1: 
 
                 model_index_name = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
@@ -2269,9 +2283,47 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
                 self.populate_spunit_model(profile)
 
+                if pg_table_exists(entity.name):
+                    self.process_privilege(entity, editor.column)
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                     "No column selected for edit!"))
+
+    def process_privilege(self, entity, column):
+        # if a new column is lookup, then assign privileges to that lookup
+        new_content = None
+        if self.column_has_entity_relation(column):
+            new_content = column.entity_relation.parent.name
+        if isinstance(column, MultipleSelectColumn):
+            new_content = column.association.first_parent.name
+
+        if new_content is None: return
+        self.update_privilege_cache(entity, column, new_content)
+
+    def column_has_entity_relation(self, column):
+        answer = False
+        if (isinstance(column, ForeignKeyColumn) or
+                isinstance(column, AdministrativeSpatialUnitColumn)):
+            answer = True
+        return answer
+
+    def update_privilege_cache(self, entity, column, new_content):
+        if entity.short_name not in self.privileges:
+            mpp = MultiPrivilegeProvider(entity.short_name)
+            mpp.add_related_content(column.name, new_content)
+            self.privileges[entity.short_name] = mpp
+        else:
+            self.privileges[entity.short_name].add_related_content(
+                    column.name, new_content)
+
+    def delete_privilege_cache(self, entity_name, column_name):
+        if entity_name in self.privileges:
+            self.privileges[entity_name].related_contents.pop(column_name, None)
+
+    def grant_privileges(self):
+        #mpp - MultiPrivilegeProvider
+        for mpp in self.privileges.values():
+            mpp.grant_privilege()
 
     def find_updated_value(self, lookup, text):
         cv = None
@@ -2369,6 +2421,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             model_item.delete_entity(column)
 
             self.delete_entity_from_spatial_unit_model(entity)
+
+            if self.column_has_entity_relation(column):
+                self.delete_privilege_cache(entity.short_name, column.name)
 
     def check_column_dependencies(self, column):
         """

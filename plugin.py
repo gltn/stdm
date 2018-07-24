@@ -254,7 +254,6 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.addAction(self.helpAct)
         self.stdmInitToolbar.addAction(self.aboutAct)
 
-
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
         self.stdmMenu.addSeparator()
@@ -357,10 +356,7 @@ class STDMQGISLoader(object):
                     "Error Loading Modules"
                 )
 
-                self.reset_content_modules_id(
-                    title,
-                    pe
-                )
+                self.reset_content_modules_id( title, pe)
 
     def create_custom_tenure_dummy_col(self):
         """
@@ -1031,7 +1027,6 @@ class STDMQGISLoader(object):
             self._moduleItems[attrs[2]] = attrs[0]
 
         for k, v in self._moduleItems.iteritems():
-
             moduleCntGroup = self._create_table_content_group(
                 k, username, 'table.png'
             )
@@ -1045,7 +1040,7 @@ class STDMQGISLoader(object):
             if pg_table_exists(self.current_profile.social_tenure.name):
                 # add separator to menu
                 separator_group = TableContentGroup(username, 'separator', tbSeparator)
-                separator_group.register()
+                #separator_group.register()
                 self.moduleContentGroups.append(separator_group)
 
                 moduleCntGroup = self._create_table_content_group(
@@ -1713,7 +1708,6 @@ class STDMQGISLoader(object):
         tbList = self._moduleItems.values()
 
         dispName = QAction.text()
-
         if dispName == QApplication.translate(
                 'STDMQGISLoader',
                 'New Social Tenure Relationship'

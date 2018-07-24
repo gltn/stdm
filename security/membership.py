@@ -21,6 +21,10 @@ from exception import SecurityException
 from user import User
 
 from sqlalchemy.sql.expression import text
+
+from sqlalchemy import exc
+
+
 from PyQt4.QtGui import *
 
 class Membership(object):
@@ -31,54 +35,89 @@ class Membership(object):
         self._engine = STDMDb.instance().engine
         
         #Define membership settings. In future, there will be a better way of defining these settings
-        self._minUserLength = 6
+        self._minUserLength = 4
         self._minPassLength = 6
         
-    def createUser(self,user,isupdate = False):
-        '''
+    def createUser(self, user):
+        """
         Creates a new user in the system.
-        If 'isupdate' equal to True then system will issue
-        an ALTER ROLE command 
-        '''
-        #Validate username and password
-        if len(user.UserName) < self._minUserLength:
+        """
+
+        if not self.valid_username(user.UserName):
             self._raiseUserNameException()
             return
-        if len(user.Password) < self._minPassLength:
+
+        if not self.valid_password(user.Password):
             self._raisePasswordException()
             return
         
         #Validate if the user exists only if its a new user
-        if not isupdate:            
-            similarUser = self.getUser(user.UserName)
-            if similarUser != None:
-                self._raiseUserExistsException(user.UserName)
-                return
+        #if not isupdate:            
+        similarUser = self.getUser(user.UserName)
+        if similarUser != None:
+            self._raiseUserExistsException(user.UserName)
+            return
         
-        #Build SQL statement
-        sql = []
-        if isupdate == True:
-            sql.append("ALTER")
-        else:
-            sql.append("CREATE")
-        sql.append(" ROLE %s ")
-        sql.append("WITH LOGIN PASSWORD :userpass ")
+        s1 = "CREATE ROLE {} WITH LOGIN PASSWORD '{}' ".format(
+                user.UserName, user.Password) 
                 
+        s2 = "" 
         if user.Validity != None:
-            sql.append("VALID UNTIL :uservalid ") 
+            s2 = "VALID UNTIL '{}' ".format(str(user.Validity))
         
-        sql.append("NOSUPERUSER INHERIT NOCREATEDB CREATEROLE NOREPLICATION")
-        sql.append(";")
+        s3 = "NOSUPERUSER INHERIT NOCREATEDB CREATEROLE NOREPLICATION;"
         
-        sqlStr = ''.join(sql)
+        sqlStr =  s1 + s2 + s3
+
+        try:
+            self.execute_sql(sqlStr)
+        except exc.SQLAlchemyError as db_error:
+            raise db_error
         
         #raise NameError(sqlStr + "," + str(user.Validity))
-        
         #Execute query using SQLAlchemy connection object
-        t = text(sqlStr%(user.UserName,))
+        #t = text(sqlStr%(user.UserName,))
+        #conn = self._engine.connect()
+        #result = conn.execute(t,userpass = user.Password,uservalid = str(user.Validity))
+        #conn.close()
+
+    def update_user(self, user):
+        if not self.valid_username(user.UserName):
+            self._raiseUserNameException()
+            return
+
+        if not self.valid_password(user.Password):
+            self._raisePasswordException()
+            return
+
+        validity_period = self.validity_period(user)
+
+        s1 = "ALTER ROLE {} WITH LOGIN PASSWORD '{}' ".format(user.UserName, user.Password)
+        s2 = ' NOSUPERUSER INHERIT NOCREATEDB CREATEROLE NOREPLICATION;'
+        sql = s1 + validity_period + s2
+
+        try:
+            self.execute_sql(sql)
+        except exc.SQLAlchemyError as db_error:
+            raise db_error
+
+    def valid_username(self, name):
+        return True if len(name) > self._minUserLength else False
+
+    def valid_password(self, password):
+        return True if len(password) > self._minPassLength else False
+
+    def validity_period(self, user):
+        valid = ''
+        if user.Validity is not None:
+            valid = "VALID UNTIL '{}'".format(str(user.Validity))
+        return valid
+
+    def execute_sql(self, sql_stmt):
         conn = self._engine.connect()
-        result = conn.execute(t,userpass = user.Password,uservalid = str(user.Validity))
+        conn.execute(sql_stmt)
         conn.close()
+
  
     def getUser(self,username):
         '''
@@ -91,12 +130,12 @@ class Membership(object):
         conn = self._engine.connect()
         result = conn.execute(t,uname = username).fetchone()
         
-        if result != None:
+        if result is not None:
             user = User(username)
             
             #Get the date component only - first ten characters
             valDate = result["valuntil"]
-            if valDate != None:                
+            if valDate is not None:                
                 valDate = valDate[:10]  
                           
             user.Validity = valDate
