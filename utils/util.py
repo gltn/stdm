@@ -374,7 +374,8 @@ def entity_display_columns(entity, with_header=False, exclude=[]):
         'FOREIGN_KEY',
         'MULTIPLE_SELECT',
         'PERCENT',
-        'AUTO_GENERATED'
+        'AUTO_GENERATED',
+        'EXPRESSION'
     ]
     if with_header:
         display_column = [

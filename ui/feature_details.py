@@ -363,7 +363,8 @@ class DetailsDBHandler:
                 'LOOKUP',
                 'ADMIN_SPATIAL_UNIT',
                 'PERCENT',
-                'AUTO_GENERATED'
+                'AUTO_GENERATED',
+                'EXPRESSION'
             ]
         ]
 

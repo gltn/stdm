@@ -28,35 +28,8 @@ class ExpressionProperty(QgsExpressionBuilderDialog):
         self.expression = form_fields['expression']
         self.output_data_type = form_fields['output_data_type']
         self._ref_layer = layer
-
-        btn_box = self.findChild(QDialogButtonBox)
-
-        if not btn_box is None:
-            btn_ok = btn_box.button(QDialogButtonBox.Ok)
-            if not btn_ok is None:
-                btn_ok.setText(QApplication.translate("ExpressionProperty",
-                                                  "Select"))
-
-
-    def _features_select(self):
-        """
-        Generator function that returns features based on user-defined
-        expression.
-        """
-        exp = QgsExpression(self.expressionText())
-        print exp.quotedValue(), ' test ', exp.quotedString()
-        if exp.hasParserError():
-            raise Exception(exp.parserErrorString())
-
-        exp.prepare(self._ref_layer.pendingFields())
-
-        for f in self._ref_layer.getFeatures():
-            value = exp.evaluate(f)
-            print value, f.id()
-            break
-            if bool(value):
-                yield f
-
+        self.expressionBuilder().loadRecent()
+        
     def layer(self):
         return self._ref_layer
 
@@ -94,19 +67,5 @@ class ExpressionProperty(QgsExpressionBuilderDialog):
         expression and raise record selected event for the mapper to
         capture.
         """
-        self.get_output_data_type()
-        self.expressionText()
+        self.expressionBuilder().saveToRecent()
         self.done(1)
-        # features = self._features_select()
-        # #
-        # # count = 0
-        # for f in features:
-        #     fid = -1
-        #     try:
-        #         fid = f.attribute("id")
-        #     except KeyError:
-        #         pass
-        #
-        #     if fid != -1:
-        #         self.recordSelected.emit(fid)
-
