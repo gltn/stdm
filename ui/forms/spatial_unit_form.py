@@ -85,6 +85,8 @@ from stdm.utils.util import (
 )
 from stdm.ui.forms.spatial_forms_container import  SpatialFormsContainer
 
+from stdm.ui.customcontrols.relation_line_edit import ExpressionLineEdit
+
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')

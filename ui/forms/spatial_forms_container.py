@@ -233,7 +233,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
 
         if not model is None:
             if editor.is_valid:
-                print editor.is_valid, 'is valid'
+
                 editor.accept()
 
     def on_tree_view_item_clicked(self, current, previous):
