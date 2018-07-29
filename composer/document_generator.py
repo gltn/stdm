@@ -387,7 +387,7 @@ class DocumentGenerator(QObject):
                             )
 
                             if spfm.zoomLevel() > 0:
-                             
+
                                 bbox.scale(spfm.zoomLevel())
                                 self._iface.mapCanvas().setExtent(bbox)
                             else:

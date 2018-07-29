@@ -292,7 +292,6 @@ class SpatialFieldMapping(object):
         """
         Returns a QDomElement with the object instance settings
         """
-        # print self._area_prefix, self.area_suffix()
         spColumnElement = domDocument.createElement("SpatialField")
         spColumnElement.setAttribute("name",self._spatialField)
         spColumnElement.setAttribute("labelField",self._labelField)
@@ -340,11 +339,11 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self._spColumnName = spColumnName
         
         self._symbol_editor = None
-
-        self._zoom_out_level = 1.3
+        #
+        self._zoom_out_level = 0
         self._scale = 0
-        self.sb_zoom.setValue(self._zoom_out_level)
-        
+        # self.sb_zoom.setValue(self._zoom_out_level)
+        #
         self._srid = -1
         self._crs = None
         self._geomType = ""
@@ -467,6 +466,21 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         return self._srid
 
+
+    def setZoomLevel(self,zoomLevel):
+        """
+        Set zoom out scale factor.
+        """
+        self._zoom_level = zoomLevel
+        self._scale = 0
+
+    def set_scale(self, scale):
+        """
+        Set zoom out scale factor.
+        """
+        self._scale = scale
+        self._zoom_level = 0
+
     def set_area_prefix(self, area_prefix):
         """
         Sets area prefix.
@@ -546,11 +560,15 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self._srid = spatialFieldMapping.srid()
         self._geomType = spatialFieldMapping.geometryType()
 
-        if self.zoom_rad.isChecked():
+        if spatialFieldMapping.zoomLevel() == 0:
+            self.scale_rad.setChecked(True)
+            self.sb_zoom.setValue(spatialFieldMapping.scale())
+        elif spatialFieldMapping.scale() == 0:
+            self.zoom_rad.setChecked(True)
             self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
         else:
-            self.sb_zoom.setValue(spatialFieldMapping.scale())
-
+            self.zoom_rad.setChecked(True)
+       
         self.area_suffix.setText(spatialFieldMapping.get_area_suffix())
         self.area_prefix.setText(spatialFieldMapping.get_area_prefix())
         self.length_suffix.setText(spatialFieldMapping.get_length_suffix())

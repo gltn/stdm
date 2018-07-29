@@ -245,6 +245,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
             if apply_mapping:
                 styleEditor.applyMapping(sp_field_mapping)
 
+
             self.tbFieldProperties.addTab(styleEditor, sp_column_name)
 
             #Add column name and corresponding widget to the collection
