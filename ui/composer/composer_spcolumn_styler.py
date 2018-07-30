@@ -568,7 +568,7 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
             self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
         else:
             self.zoom_rad.setChecked(True)
-       
+
         self.area_suffix.setText(spatialFieldMapping.get_area_suffix())
         self.area_prefix.setText(spatialFieldMapping.get_area_prefix())
         self.length_suffix.setText(spatialFieldMapping.get_length_suffix())

@@ -392,8 +392,8 @@ class DocumentGenerator(QObject):
                                 self._iface.mapCanvas().setExtent(bbox)
                             else:
 
-                                self._iface.mapCanvas().setExtent(bbox)
                                 self._iface.mapCanvas().zoomScale(spfm.scale())
+                                self._iface.mapCanvas().setExtent(bbox)
 
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
