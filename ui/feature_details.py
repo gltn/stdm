@@ -450,7 +450,7 @@ class DetailsDBHandler:
         :type entity: Object
         """
         self._formatted_record.clear()
-
+        self.set_formatter(entity)
         self.display_column_object(entity)
 
         for col in self.display_columns:
@@ -746,17 +746,17 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
-        self.set_formatter(self.social_tenure)
-        for party in self.social_tenure.parties:
-            self.set_formatter(party)
-
-        for spatial_unit in self.social_tenure.spatial_units:
-            self.set_formatter(spatial_unit)
-            custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-                spatial_unit
-            )
-            self.set_formatter(custom_attr_entity)
-            # return
+        # self.set_formatter(self.social_tenure)
+        # for party in self.social_tenure.parties:
+        #     self.set_formatter(party)
+        #
+        # for spatial_unit in self.social_tenure.spatial_units:
+        #     self.set_formatter(spatial_unit)
+        #     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+        #         spatial_unit
+        #     )
+        #     self.set_formatter(custom_attr_entity)
+        #     # return
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
         # if no active layer, show error message
