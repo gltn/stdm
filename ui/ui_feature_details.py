@@ -25,7 +25,7 @@ except AttributeError:
 class Ui_DetailsDock(object):
     def setupUi(self, DetailsDock):
         DetailsDock.setObjectName(_fromUtf8("DetailsDock"))
-        DetailsDock.resize(400, 320)
+        DetailsDock.resize(400, 350)
         DetailsDock.setMinimumSize(QtCore.QSize(114, 300))
         DetailsDock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
         self.dockWidgetContents = QtGui.QWidget()
@@ -70,7 +70,7 @@ class Ui_DetailsDock(object):
         self.tree_scrollArea.setWidgetResizable(True)
         self.tree_scrollArea.setObjectName(_fromUtf8("tree_scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 378, 241))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 378, 271))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.tree_scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.tree_scrollArea)
