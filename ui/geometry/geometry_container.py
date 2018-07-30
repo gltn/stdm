@@ -1,7 +1,7 @@
 import cProfile
 import inspect
 from collections import OrderedDict
-
+import inspect
 import re
 
 import os
@@ -204,7 +204,7 @@ class LayerSelectionHandler(object):
         """
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
-        layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
+        # layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
 
         layer_select_tool.activate()
 
@@ -267,7 +267,7 @@ class GeometryToolsDock(
         self.canvas = self.iface.mapCanvas()
         self._entity = None
         LayerSelectionHandler.__init__(self, iface, plugin)
-        self.setBaseSize(300, 5000)
+        self.setBaseSize(300, 400)
         self._first_widget = None
         self.layer = None
         self.groupBox.hide()
@@ -346,6 +346,7 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
+
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
         tool.setChecked(False)
@@ -416,8 +417,14 @@ class GeometryToolsDock(
         :param event: The close event
         :type event: QCloseEvent
         """
+        if iface is None:
+            return
+
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
+
+        if self.plugin is None:
+            return
 
         self.close_dock(
             self.plugin.geom_tools_cont_act
@@ -438,6 +445,7 @@ class GeometryToolsDock(
 
         if not self.plugin.geom_tools_cont_act.isChecked() and \
                 GEOM_DOCK_ON and not button_clicked:
+
             self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         # No need of activation as it is activated.
@@ -448,7 +456,7 @@ class GeometryToolsDock(
         if active_layer is None:
             if button_clicked:
                 self.active_layer_check()
-            self.plugin.geom_tools_cont_act.setChecked(False)
+            # self.plugin.geom_tools_cont_act.setChecked(False)
             self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         if not button_clicked and GEOM_DOCK_ON:
@@ -465,7 +473,7 @@ class GeometryToolsDock(
             if button_clicked and self.isHidden():
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
-                self.plugin.geom_tools_cont_act.setChecked(False)
+                # self.plugin.geom_tools_cont_act.setChecked(False)
             return False
         # If the selected layer is feature layer, get data and
         # display geometry_tools in a dock widget
@@ -497,9 +505,9 @@ class GeometryToolsDock(
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
 
-        layer_select_tool.deactivated.connect(
-            self.disable_feature_details_btn
-        )
+        # layer_select_tool.deactivated.connect(
+        #     self.disable_feature_details_btn
+        # )
         # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
         # self.canvas.setMapTool(self.geometry_map_tool)
         layer_select_tool.activate()
@@ -516,7 +524,7 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
-        self.plugin.geom_tools_cont_act.setChecked(False)
+        self.plugin.feature_details_act.setChecked(False)
 
 
     def update_layer_source(self, active_layer):
@@ -836,18 +844,21 @@ class GeomWidgetsBase(object):
         # self.select_line_help(1)
         # self.iface.mainWindow().blockSignals(True)
         # add_area(self.settings.layer, AREA_POLYGON)
-        self.create_point_layer()
-        self.line_layer = polygon_to_lines(
-            self.settings.layer, POLYGON_LINES, self.point_layer
-        )
 
+        self.line_layer = polygon_to_lines(
+            self.settings.layer, POLYGON_LINES
+        )
+        self.create_point_layer()
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer,
+            POLYGON_LINES
+        )
+        self.iface.setActiveLayer(self.line_layer)
         if self.line_layer is not None:
             self.line_layer.selectionChanged.connect(
                 self.on_line_feature_selected
             )
             self.iface.mainWindow().blockSignals(False)
-        # self.iface.setActiveLayer(self.settings.layer)
-
 
     def remove_memory_layer(self, name):
         try:
@@ -1810,13 +1821,17 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
     def on_feature_selection_finished(self):
 
         add_area(self.settings.layer, AREA_POLYGON)
-        self.create_point_layer()
+
         self.line_layer = polygon_to_lines(
-            self.settings.layer, POLYGON_LINES, self.point_layer)
+            self.settings.layer, POLYGON_LINES)
 
         polygon_to_points(self.settings.layer, self.line_layer,
                           self.point_layer,  POLYGON_LINES)
 
+        self.create_point_layer()
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer, POLYGON_LINES
+        )
 
         if self.line_layer is not None:
 

@@ -92,7 +92,7 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
         if type == 'Point':
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
-            symbol.setSize(4)
+            symbol.setSize(2.5)
 
     # show the line
     QgsMapLayerRegistry.instance().addMapLayer(
@@ -502,7 +502,7 @@ def add_area(layer, area_layer_name, all_features=False):
             make_layer_transparent(area_layers[0])
 
 def polygon_to_lines(
-        layer, layer_name, point_layer, measurement=True, prefix='', suffix='',
+        layer, layer_name, measurement=True, prefix='', suffix='',
         all_features=False, style=True):
 
     if layer.name() == layer_name:
@@ -551,7 +551,6 @@ def polygon_to_lines(
                     line_geom_list = add_line_features(
                         line_layer, lines, prefix, suffix, measurement)
                     line_geoms.extend(line_geom_list)
-    polygon_to_points(layer, line_layer, point_layer, layer_name)
 
     if measurement:
         label_layer_by_field(line_layer, 'measurement')

@@ -235,7 +235,7 @@ class LayerSelectionHandler(object):
         """
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
-        layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
+        # layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
 
         layer_select_tool.activate()
 
@@ -725,11 +725,6 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if self.layer_table in spatial_tables() and \
                         self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(self.layer_table)
-    #
-    # def activate_feature_details(self, button_clicked=True):
-    #     if cProfile is None:
-    #         return
-    #     cProfile.runctx('self._activate_feature_details(button_clicked)', globals(), locals())
 
     def activate_feature_details(self, button_clicked=True):
         """
@@ -743,25 +738,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
         DETAILS_DOCK_ON = True
 
-        # if self.plugin is None:
-        # Registry column widget
-        # set formatter for social tenure relationship.
-        # self.set_formatter(self.social_tenure)
-        # for party in self.social_tenure.parties:
-        #     self.set_formatter(party)
-        #
-        # for spatial_unit in self.social_tenure.spatial_units:
-        #     self.set_formatter(spatial_unit)
-        #     custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-        #         spatial_unit
-        #     )
-        #     self.set_formatter(custom_attr_entity)
-        #     # return
         # Get and set the active layer.
-        self.layer = self.iface.activeLayer()
+        layer = self.iface.activeLayer()
+
         # if no active layer, show error message
         # and uncheck the feature tool
-        if self.layer is None:
+        if layer is None:
             if button_clicked:
                 self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
@@ -773,7 +755,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             return
         # if the selected layer is not an STDM layer,
         # show not feature layer.
-        if not self.stdm_layer(self.layer):
+        if not self.stdm_layer(layer):
+
             if button_clicked and self.isHidden():
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
@@ -782,6 +765,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
         else:
+            self.layer = layer
             self.prepare_for_selection()
 
     def prepare_for_selection(self):

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>417</width>
-    <height>512</height>
+    <height>377</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,20 +15,17 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0" colspan="2">
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Geometry Tools Help</string>
+    <item row="2" column="0" colspan="2">
+     <widget class="QStackedWidget" name="geom_tools_widgets">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPlainTextEdit" name="help_box">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
      </widget>
     </item>
     <item row="0" column="0">
@@ -41,13 +38,6 @@
       </property>
       <property name="text">
        <string>Geometry tools:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QStackedWidget" name="geom_tools_widgets">
-      <property name="currentIndex">
-       <number>-1</number>
       </property>
      </widget>
     </item>
@@ -64,18 +54,27 @@
     <item row="1" column="0" colspan="2">
      <layout class="QVBoxLayout" name="notice_box"/>
     </item>
-    <item row="4" column="0">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
+    <item row="3" column="0" colspan="2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="maximumSize">
        <size>
-        <width>20</width>
-        <height>40</height>
+        <width>1000</width>
+        <height>10</height>
        </size>
       </property>
-     </spacer>
+      <property name="title">
+       <string>Geometry Tools Help</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPlainTextEdit" name="help_box">
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>

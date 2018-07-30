@@ -25,7 +25,8 @@ except AttributeError:
 class Ui_DetailsDock(object):
     def setupUi(self, DetailsDock):
         DetailsDock.setObjectName(_fromUtf8("DetailsDock"))
-        DetailsDock.resize(400, 300)
+        DetailsDock.resize(400, 320)
+        DetailsDock.setMinimumSize(QtCore.QSize(114, 300))
         DetailsDock.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
         self.dockWidgetContents = QtGui.QWidget()
         self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
@@ -69,7 +70,7 @@ class Ui_DetailsDock(object):
         self.tree_scrollArea.setWidgetResizable(True)
         self.tree_scrollArea.setObjectName(_fromUtf8("tree_scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 378, 221))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 378, 241))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.tree_scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.tree_scrollArea)
@@ -86,5 +87,3 @@ class Ui_DetailsDock(object):
         self.delete_btn.setText(_translate("DetailsDock", "...", None))
         self.view_document_btn.setToolTip(_translate("DetailsDock", "View record supporting documents", None))
         self.view_document_btn.setText(_translate("DetailsDock", "...", None))
-
-from stdm import resources_rc
