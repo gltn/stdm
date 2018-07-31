@@ -76,6 +76,7 @@ from stdm.utils.util import (
 )
 
 from stdm.ui.social_tenure.str_editor import EditSTREditor
+from stdm.data.pg_utils import pg_table_exists
 
 from ui_feature_details import Ui_DetailsDock
 
@@ -729,6 +730,26 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
     #         return
     #     cProfile.runctx('self._activate_feature_details(button_clicked)', globals(), locals())
 
+    def db_configuration_done(self):
+        config_done = True
+        if not pg_table_exists(self.current_profile.social_tenure.name):
+            config_done = False
+            msg = QApplication.translate(
+                "STDMQGISLoader",
+                u'The system has detected that '
+                'the required database tables are missing. \n'
+                'Please run the configuration wizard to configure the database ')
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                "STDMQGISLoader",
+                'Default Profile Error'
+                ),
+                msg
+            )
+
+        return config_done
+
     def activate_feature_details(self, button_clicked=True):
         """
         A slot raised when the feature details button is clicked.
@@ -744,6 +765,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
+
+        if not self.db_configuration_done():
+            return
+
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
             self.set_formatter(party)
