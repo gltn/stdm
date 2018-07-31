@@ -50,7 +50,7 @@ from stdm.data.configuration.db_items import (
     DbItem
 )
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.pg_utils import table_view_dependencies
+from stdm.data.pg_utils import table_view_dependencies, table_column_names
 
 LOGGER = logging.getLogger('stdm')
 
@@ -1037,4 +1037,37 @@ class PercentColumn(DoubleColumn):
 PercentColumn.register()
 
 #TODO: Include ExpressionColumn
+
+
+class ExpressionColumn(DoubleColumn, VarCharColumn, IntegerColumn):
+    """
+    Represents 2D vector types apart from GEOMETRYCOLLECTION type.
+    EPSG:4326 is the default type used if no SRID is specified.
+    """
+    TYPE_INFO = 'EXPRESSION'
+    SQL_MAX = 4000
+    SQL_MIN = 0
+    # sql_updater = base_column_updater
+
+    def __init__(self, *args, **kwargs):
+        DoubleColumn.__init__(self, *args, **kwargs)
+        VarCharColumn.__init__(self, *args, **kwargs)
+        IntegerColumn.__init__(self, *args, **kwargs)
+        self.expression = kwargs.pop('expression', '')
+        self.output_data_type = kwargs.pop('output_data_type', '')
+
+        if self.output_data_type == 'int':
+            ExpressionColumn.sql_updater = integer_updater
+        elif self.output_data_type == 'float':
+            ExpressionColumn.sql_updater = double_updater
+        else:
+            ExpressionColumn.sql_updater = varchar_updater
+
+        BaseColumn.__init__(self, *args, **kwargs)
+
+    @classmethod
+    def display_name(cls):
+        return tr('Expression')
+
+ExpressionColumn.register()
 

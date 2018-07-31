@@ -81,6 +81,8 @@ from stdm.utils.util import (
     format_name
 )
 
+from stdm.ui.customcontrols.relation_line_edit import ExpressionLineEdit
+
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')
@@ -613,6 +615,16 @@ class STDMFieldWidget():
         entity_obj.saveMany(
             self.feature_models.values()
         )
+        for model in self.feature_models.values():
+            STDMDb.instance().session.flush()
+
+            for attrMapper in self.editor._attrMappers:
+                control = attrMapper.valueHandler().control
+                if isinstance(control, ExpressionLineEdit):
+                    value = control.on_expression_triggered(model)
+                    print attrMapper._attrName, value
+                    setattr(model, attrMapper._attrName, value)
+            model.update()
 
         # Save child models
         if self.editor is not None:
