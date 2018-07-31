@@ -697,6 +697,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             import_status = True
                             self.log_table_entry(" -- {0} repeated table import succeeded: ".format(repeated_entity[1:])
                             + str(import_status))
+                    entity_add.save_foreign_key_table()
                     self.txt_feedback.append(
                                     'saving record "{0}" to database'.format(counter))
 
