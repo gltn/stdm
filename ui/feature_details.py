@@ -363,7 +363,8 @@ class DetailsDBHandler:
                 'LOOKUP',
                 'ADMIN_SPATIAL_UNIT',
                 'PERCENT',
-                'AUTO_GENERATED'
+                'AUTO_GENERATED',
+                'EXPRESSION'
             ]
         ]
 
@@ -469,13 +470,13 @@ class DetailsDBHandler:
                 formatter = self.column_formatter[col.name]
                 col_val = formatter.format_column_value(col_val)
 
-            if col.header() == QApplication.translate(
+            if col.ui_display() == QApplication.translate(
                     'DetailsDBHandler', 'Tenure Share'
             ):
-                share = '{} (%)'.format(col.header())
+                share = '{} (%)'.format(col.ui_display())
                 self._formatted_record[share] = col_val
             else:
-                self._formatted_record[col.header()] = col_val
+                self._formatted_record[col.ui_display()] = col_val
 
     def _supporting_doc_models(self, entity_table, model_obj):
         """

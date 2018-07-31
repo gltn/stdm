@@ -30,6 +30,7 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from collections import OrderedDict
 
+from stdm.data.pg_utils import vector_layer
 from ui_column_editor import Ui_ColumnEditor
 
 from stdm.data.configuration.columns import BaseColumn
@@ -45,7 +46,7 @@ from fk_property import FKProperty
 from lookup_property import LookupProperty
 from multi_select_property import MultiSelectProperty
 from code_property import CodeProperty
-
+from expression_property import ExpressionProperty
 from stdm.ui.notification import NotificationBar, INFORMATION
 
 LOGGER = logging.getLogger('stdm')
@@ -305,6 +306,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['precision'] = column.precision
                 self.form_fields['scale'] = column.scale
 
+            # Expression column
+            if hasattr(column, 'expression'):
+
+                self.form_fields['expression'] = column.expression
+                self.form_fields['output_data_type'] = column.output_data_type
+
     def bool_to_check(self, state):
         """
         Converts a boolean to a Qt checkstate.
@@ -362,6 +369,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'scale', 6
         )
 
+
         self.form_fields['entity_relation'] = \
                 self.type_attribs['FOREIGN_KEY'].get('entity_relation', None)
 
@@ -386,6 +394,12 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['max_use_current_datetime'] = \
                 self.type_attribs['DATETIME'].get('max_use_current_datetime', None)
 
+        self.form_fields['expression'] = self.type_attribs.get(
+            'expression', ''
+        )
+        self.form_fields['output_data_type'] = self.type_attribs.get(
+            'output_data_type', ''
+        )
 
     def init_type_attribs(self):
         """
@@ -512,6 +526,15 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'leading_zero': '', 'separator':'',
             'disable_auto_increment': False, 'enable_editing': False,
             'property': self.code_property, 'hide_prefix': False, 'prop_set': True}
+
+        self.type_attribs['EXPRESSION'] = {
+            'mandt': {'check_state': False, 'enabled_state': True},
+            'search': {'check_state': False, 'enabled_state': True},
+            'unique': {'check_state': False, 'enabled_state': True},
+            'index': {'check_state': False, 'enabled_state': True},
+            'output_data_type': '', 'expression':'',
+            'property': self.expression_property,
+            'prop_set': False}
 
     def data_type_property(self):
         """
@@ -681,6 +704,34 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['hide_prefix'] = editor.hide_prefix()
 
             self.property_set()
+
+    def expression_property(self):
+        """
+        Opens the code data type property editor
+        """
+        layer = self.create_layer()
+
+        editor = ExpressionProperty(layer, self.form_fields, self)
+        result = editor.exec_()
+        if result == 1:
+            self.form_fields['expression'] = editor.expression_text()
+            self.form_fields['output_data_type'] = editor.get_output_data_type()
+            self.property_set()
+
+    def create_layer(self):
+        srid = None
+        column = ''
+        if self.entity.has_geometry_column():
+            geom_cols = [col.name for col in self.entity.columns.values()
+                         if col.TYPE_INFO == 'GEOMETRY']
+            column = geom_cols[0]
+            geom_col_obj = self.entity.columns[column]
+
+            if geom_col_obj.srid >= 100000:
+                srid = geom_col_obj.srid
+        layer = vector_layer(self.entity.name, geom_column=column,
+                             proj_wkt=srid)
+        return layer
 
     def create_column(self):
         """
