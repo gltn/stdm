@@ -511,90 +511,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.current_profile_changed()
         self.check_state_on()
 
-    def entity_attribute_to_database(self, entity_info):
-        """
-        Get the user selected entities and insert them into database
-        params: selected entities
-        rtype: list
-        :return:Object
-        :type: dbObject
-        """
-        cu_obj = ''
-        import_status = False
-        self.txt_feedback.clear()
-        self._notif_bar_str.clear()
-        has_relations = self.has_foreign_keys_parent(entity_info)
-        if len(self.parent_table_isselected()) > 0:
-            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
-                                       QApplication.translate('GeoODKMobileSettings',
-                                                              'Some of dependent tables (entities)'
-                                                              'which may not be part of the selected tables '
-                                                              'I.e: {} will be imported'
-                                                                      .format(self.parent_table_isselected())),
-                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
-                return
-        #try:
-        parents_info = []
-        counter = 0
-        if len(self.instance_list) > 0:
-            self.pgbar.setRange(counter, len(self.instance_list))
-            self.pgbar.setValue(0)
-            for instance in self.instance_list:
-                import_status = False
-                counter = counter + 1
-                self.parent_ids = {}
-                entity_importer = EntityImporter(instance)
-                group_identifier = entity_importer.instance_group_id()
-                #set the geometry coordinate system
-                entity_importer.geomsetter(self.on_projection_select())
-                self.archive_this_import_file(counter, instance)
-                if has_relations:
-                    #Import parents table first
-                    for parent_table in self.relations.keys():
-                        cu_obj = parent_table
-                        if parent_table in self.instance_entities():
-                            ref_id, import_status = entity_importer.process_parent_entity_import(parent_table)
-                            if group_identifier:
-                                self.parent_ids[parent_table] = [ref_id, group_identifier]
-                            else:
-                                self.parent_ids[parent_table] = [ref_id, parent_table]
-                            log_timestamp = '{0} -- parent table import succeeded: {1}'\
-                                .format(parent_table, str(import_status))
-                            self.log_table_entry(log_timestamp)
-                            parents_info.append(parent_table)
-                            if parent_table[1] in entity_info:
-                                entity_info.remove(parent_table)
-                for table in self.check_profile_with_custom_name():
-                        if table in self.user_table_filter():
-                            cu_obj = table
-                            if table not in parents_info:
-                                table_id, status = entity_importer.process_import_to_db(table, self.parent_ids)
-                            if table in self.parent_ids:
-                                continue
-                            else:
-                                self.parent_ids[table] = [table_id, group_identifier]
-                            self.log_table_entry(" -- {0} import succeeded: ".format(cu_obj)+str(status))
-                self.txt_feedback.append(
-                    'saving record "{0}" to database'.format(counter))
-                if self.uuid_extractor.has_str_captured_in_instance():
-                     if self.parent_ids is not None:
-                        entity_importer.process_social_tenure(self.parent_ids)
-                        self.log_table_entry(" -- saving social tenure relationship")
-                self.pgbar.setValue(counter)
-
-            self.txt_feedback.append('Number of record successfully imported:  {}'
-                                              .format(counter))
-        else:
-            self._notif_bar_str.insertErrorNotification("No user selected entities to import")
-            self.pgbar.setValue(0)
-            return
-
-        # except Exception as ex:
-        #     self.log_table_entry(
-        #         unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
-        #     self.feedback_message(unicode(ex.message))
-        # #     return
-
     def unique_counter_counter(self):
         """
         Keep a list of all the table imported since some table will appear in multiples
@@ -697,7 +613,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             import_status = True
                             self.log_table_entry(" -- {0} repeated table import succeeded: ".format(repeated_entity[1:])
                             + str(import_status))
-                    entity_add.save_foreign_key_table()
+                    try:
+                        entity_add.save_foreign_key_table()
+                    except:
+                        pass
                     self.txt_feedback.append(
                                     'saving record "{0}" to database'.format(counter))
 

@@ -421,11 +421,8 @@ class Save2DB:
         if col_type == 'LOOKUP':
             if len(var) < 1 or var is None:
                 return None
-            if len(var) >= 1:
-                return entity_attr_to_id(col_prop.parent, "code", var)
-
-            if len(var) > 1:
-                if var == 'Yes' or var =='No':
+            if var <3:
+                if var == 'Yes' or var == 'No':
                     return entity_attr_to_model(col_prop.parent, 'value', var).id
                 if var != 'Yes' and var != 'No':
                     lk_code = entity_attr_to_id(col_prop.parent, "code", var)
@@ -434,15 +431,15 @@ class Save2DB:
                     else:
                         return lk_code
 
-                if len(var) > 3:
-                    if not str(entity_attr_to_id(col_prop.parent, 'code', var)).isdigit():
-                        return entity_attr_to_model(col_prop.parent, 'value', var).id
+            if len(var) > 3:
+                if not str(entity_attr_to_id(col_prop.parent, 'code', var)).isdigit():
+                    return entity_attr_to_model(col_prop.parent, 'value', var).id
+                else:
+                    lk_code = entity_attr_to_id(col_prop.parent, "code", var)
+                    if not str(lk_code).isdigit():
+                        return None
                     else:
-                        lk_code = entity_attr_to_id(col_prop.parent, "code", var)
-                        if not str(lk_code).isdigit():
-                            return None
-                        else:
-                            return lk_code
+                        return lk_code
             else:
                 return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
