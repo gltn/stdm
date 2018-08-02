@@ -548,7 +548,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         import_status = False
         self.txt_feedback.clear()
         self._notif_bar_str.clear()
-        has_relations = self.has_foreign_keys_parent(entity_info)
+        self.has_foreign_keys_parent(entity_info)
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -570,7 +570,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     counter = counter + 1
                     self.parent_ids = {}
                     entity_importer = EntityImporter(instance)
-                    group_identifier = entity_importer.instance_group_id()
+                    entity_importer.instance_group_id()
                     self.uuid_extractor.set_file_path(instance)
                     self.archive_this_import_file(counter, instance)
                     field_data = self.uuid_extractor.document_entities_with_data(current_profile().name,
@@ -580,7 +580,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         if entity in self.relations:
                             entity_add = Save2DB(entity, entity_data)
                             entity_add.objects_from_supporting_doc(instance)
-                            #entity_add.get_srid(GEOMPARAM)
                             ref_id = entity_add.save_parent_to_db()
                             import_status = True
                             self.parent_ids[entity] = [ref_id, entity]

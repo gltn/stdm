@@ -413,7 +413,7 @@ class Save2DB:
                     return None
                 if var == 'Yes' or var == True:
                     return True
-                else:
+                if var == 'No' or var == False:
                     return False
             else:
                 return None
