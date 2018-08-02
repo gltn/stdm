@@ -480,8 +480,10 @@ class MapperMixin(object):
                     )
 
             else:
-
-                self.raw_update_model()
+                if self.entity.has_geometry_column():
+                    self.raw_update_model()
+                else:
+                    self.model().update()
 
                 if not save_and_new:
                     QMessageBox.information(
@@ -494,18 +496,22 @@ class MapperMixin(object):
                     )
 
             STDMDb.instance().session.flush()
-
+            expression_cols = 0
             for attrMapper in self._attrMappers:
                 control = attrMapper.valueHandler().control
                 if isinstance(control, ExpressionLineEdit):
-
+                    expression_cols = expression_cols + 1
                     value = control.on_expression_triggered()
 
                     setattr(self.model(), attrMapper._attrName, value)
-            if self._mode == SAVE:
-                self.model().update()
-            else:
-                self.raw_update_model()
+            if expression_cols > 0:
+                if self._mode == SAVE:
+                    self.model().update()
+                else:
+                    if self.entity.has_geometry_column():
+                        self.raw_update_model()
+                    else:
+                        self.model().update()
 
         except Exception as ex:
             QMessageBox.critical(
