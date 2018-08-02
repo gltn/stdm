@@ -90,7 +90,7 @@ from stdm.ui.customcontrols.relation_line_edit import ExpressionLineEdit
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')
-EXCLUDED_COLUMNS_TO_FETCH = ['id', 'parcel_number', 'shape_area', 'shape_length']
+EXCLUDED_COLUMNS_TO_FETCH = ['parcel_number', 'shape_area', 'shape_length']
 
 class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
@@ -423,7 +423,7 @@ class STDMFieldWidget(QObject):
         """
         ent_model = entity_model(self.entity)
         ent_model = ent_model()
-        print self.layer, 'layer'
+
         geom_wkt = get_wkt(self.entity, self.layer, self.spatial_column, feature_id)
         srid = None
         # get srid with EPSG text
@@ -446,15 +446,19 @@ class STDMFieldWidget(QObject):
         entity_cols = [c.name for c in self.entity.columns.values()]
         for col, value in mapped_data.iteritems():
             # print feature_id, col, value
-            if feature_id <= 0:
-                if col in EXCLUDED_COLUMNS_TO_FETCH:
-                    continue
+            if col == 'id' and feature_id <= 0:
+                continue
+            if col == 'id' and feature_id > 0:
+                value = int(value)
+            if col in EXCLUDED_COLUMNS_TO_FETCH:
+                continue
             if col not in entity_cols:
                 continue
             if value is None:
                 continue
             if value == NULL:
                 continue
+
             setattr(ent_model, col, value)
             col_with_data.append(col)
         if geom_wkt is not None:

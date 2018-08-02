@@ -1795,7 +1795,9 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
         if len(feature) == 0:
             return
+        self.clear_inputs()
 
+        self.clear_highlights()
         self.feature_ids = feature
 
         zoom_to_selected(self.settings.layer)
@@ -1825,8 +1827,6 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES)
 
-        polygon_to_points(self.settings.layer, self.line_layer,
-                          self.point_layer,  POLYGON_LINES)
 
         self.create_point_layer()
         polygon_to_points(
@@ -1904,11 +1904,15 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return
 
         if self.rotation_point is not None:
-            with edit(self.point_layer):
-                point_features = [f.id() for f in
-                                  self.point_layer.getFeatures()]
-                rotation_point = point_features[-1:]
-                self.point_layer.deleteFeature(rotation_point[0])
+
+            try:
+                with edit(self.point_layer):
+                    point_features = [f.id() for f in
+                                      self.point_layer.getFeatures()]
+                    added_point = point_features[-1:]
+                    self.point_layer.deleteFeature(added_point[0])
+            except Exception as ex:
+                pass
 
         self.rotation_point = point_by_distance(
             self.point_layer,

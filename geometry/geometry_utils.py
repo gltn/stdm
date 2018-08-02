@@ -267,10 +267,12 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
             layer.updateFeature(features[0])
 
     else:
+        try:
+            with edit(layer):
 
-        with edit(layer):
-
-            feature = add_geom_to_feature(layer, geom)
+                feature = add_geom_to_feature(layer, geom)
+        except Exception as ex:
+            print ex
 
     layer.updateExtents()
     # if preview_layer:
@@ -401,7 +403,7 @@ def clear_points(point_layer):
 def point_by_distance(point_layer, selected_point_ft, selected_line, distance):
     # print selected_point_ft, selected_line, distance
     location = identify_selected_point_location(selected_point_ft, selected_line)
-
+    print location
     if location == 'start':
         added_point_feature = get_point_by_distance(
             point_layer, selected_line, distance
