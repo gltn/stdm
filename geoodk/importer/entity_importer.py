@@ -421,7 +421,7 @@ class Save2DB:
         if col_type == 'LOOKUP':
             if len(var) < 1 or var is None:
                 return None
-            if var <3:
+            if len(var) <4:
                 if var == 'Yes' or var == 'No':
                     return entity_attr_to_model(col_prop.parent, 'value', var).id
                 if var != 'Yes' and var != 'No':

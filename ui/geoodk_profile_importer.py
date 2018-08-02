@@ -562,82 +562,112 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             parents_info = []
             counter = 0
             if len(self.instance_list) > 0:
-                print len(self.instance_list)
+                #print len(self.instance_list)
                 self.pgbar.setRange(counter, len(self.instance_list))
                 self.pgbar.setValue(0)
+                self.importlogger.onlogger_action("Starting import...\n")
+                self.txt_feedback.append("Starting import...\n")
                 for instance in self.instance_list:
                     import_status = False
                     counter = counter + 1
                     self.parent_ids = {}
                     entity_importer = EntityImporter(instance)
-                    entity_importer.instance_group_id()
+
                     self.uuid_extractor.set_file_path(instance)
                     self.archive_this_import_file(counter, instance)
                     field_data = self.uuid_extractor.document_entities_with_data(current_profile().name,
-                                                                        self.user_selected_entities())
+                                                                                 self.user_selected_entities())
                     single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(field_data)
+
                     for entity, entity_data in single_occuring.iteritems():
+                        import_status = False
                         if entity in self.relations:
+                            self.count_import_file_step(counter, entity)
+                            log_timestamp = '======= starting import for parent table ===== : {0}' \
+                                .format(entity)
+                            self.log_table_entry(log_timestamp)
                             entity_add = Save2DB(entity, entity_data)
                             entity_add.objects_from_supporting_doc(instance)
+                            # entity_add.get_srid(GEOMPARAM)
                             ref_id = entity_add.save_parent_to_db()
                             import_status = True
                             self.parent_ids[entity] = [ref_id, entity]
-                            log_timestamp = '{0} -- parent table import succeeded: {1}' \
-                                .format(entity, str(import_status))
+                            log_timestamp = ' -------- import succeeded:        {0}' \
+                                .format(str(import_status))
                             self.log_table_entry(log_timestamp)
                             parents_info.append(entity)
                             single_occuring.pop(entity)
-                            parents_info.append(entity)
+                            #
                         elif entity not in self.relations and entity not in parents_info:
+                            import_status = False
+                            ##   .format(entity)
+                            #self.log_table_entry(log_timestamp)
+                            self.count_import_file_step(counter, entity)
                             entity_add = Save2DB(entity, entity_data, self.parent_ids)
                             entity_add.objects_from_supporting_doc(instance)
                             child_id = entity_add.save_to_db()
-                            #entity_add.get_srid(GEOMPARAM)
+                            # entity_add.get_srid(GEOMPARAM)
                             import_status = True
+                            parents_info.append(entity)
                             if entity in self.parent_ids:
                                 continue
                             else:
                                 self.parent_ids[entity] = [child_id, entity]
-                            self.log_table_entry(" -- {0} import succeeded: ".format(entity) + str(import_status))
+                            self.log_table_entry(" ---------{0}  table import succeeded:      {1} "
+                                                 .format(entity,import_status))
+                        print self.parent_ids
 
                     if repeated_entities:
-                        self.log_table_entry(" ----starting import of repeated tables---")
-                        print self.parent_ids
+                        self.log_table_entry(" ========== starting import of repeated tables ============")
+                        import_status = False
                         for repeated_entity, entity_data in repeated_entities.iteritems():
-                            entity_add = Save2DB(repeated_entity[1:], entity_data, self.parent_ids)
-                            entity_add.objects_from_supporting_doc(instance)
-                            child_id = entity_add.save_to_db()
-                            #entity_add.get_srid(GEOMPARAM)
-                            import_status = True
-                            self.log_table_entry(" -- {0} repeated table import succeeded: ".format(repeated_entity[1:])
-                            + str(import_status))
-                    try:
-                        entity_add.save_foreign_key_table()
-                    except:
-                        pass
-                    self.txt_feedback.append(
-                                    'saving record "{0}" to database'.format(counter))
+                            log_timestamp = '          child table {0} >> : {1}' \
+                                .format(repeated_entity[1:], repeated_entity[:1])
+                            self.count_import_file_step(counter, repeated_entity[1:])
+                            self.importlogger.onlogger_action(log_timestamp)
+                            if repeated_entity[1:] in self.user_table_filter():
+                                entity_add = Save2DB(repeated_entity[1:], entity_data, self.parent_ids)
+                                entity_add.objects_from_supporting_doc(instance)
+                                child_id = entity_add.save_to_db()
+                                # entity_add.get_srid(GEOMPARAM)
+                                import_status = True
+                                self.log_table_entry(" ------------- import succeeded:      {0} "
+                                                     .format(import_status))
+                            else:
+                                continue
+                        try:
+                            entity_add.save_foreign_key_table()
+                        except:
+                            pass
+                        if self.uuid_extractor.has_str_captured_in_instance():
+                            if self.parent_ids is not None:
+                                entity_importer.process_social_tenure(self.parent_ids)
+                                self.log_table_entry(" ----- saving social tenure relationship")
+                                self.txt_feedback.append(
+                                'saving record "{0}" to database'.format(counter))
+                        self.pgbar.setValue(counter)
 
-                    if self.uuid_extractor.has_str_captured_in_instance():
-                        if self.parent_ids is not None:
-                            entity_importer.process_social_tenure(self.parent_ids)
-                            self.log_table_entry(" -- saving social tenure relationship")
-                            self.txt_feedback.append(
-                            'saving record "{0}" to database'.format(counter))
-                    self.pgbar.setValue(counter)
-
-                self.txt_feedback.append('Number of record successfully imported:  {}'
-                                            .format(counter))
+                    self.txt_feedback.append('Number of record successfully imported:  {}'
+                                                .format(counter))
             else:
                 self._notif_bar_str.insertErrorNotification("No user selected entities to import")
                 self.pgbar.setValue(0)
                 return
         except Exception as ex:
             self.log_table_entry(
-                unicode(ex.message)+'-- {0} import succeeded: '.format(cu_obj)+unicode(import_status))
-            self.feedback_message(unicode(ex.message))
+                unicode(ex.message)+'----- {0} import succeeded:    '.format(cu_obj)+unicode(import_status))
+            self.feedback_message(unicode(ex.message+''.format(entity)))
             return
+
+    def count_import_file_step(self, count = None, table = None):
+        """
+        Tracking method to record the current import activity
+        :param count: int
+        :param table: string
+        :return:
+        """
+        #self.txt_feedback.append('File :  {}'.format(count))
+        self.txt_feedback.append('      Table : {}'.format(table))
 
     def accept(self):
         """
