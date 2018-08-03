@@ -178,6 +178,9 @@ class STDMQGISLoader(object):
         :param entity: The entity of the columns to be formatted.
         :type entity: Object
         """
+        if not pg_table_exists(entity.name):
+            return
+
         column_formatter = OrderedDict()
         for col in entity.columns.values():
             col_name = col.name
@@ -388,7 +391,6 @@ class STDMQGISLoader(object):
                 self.run_wizard()
                 self.copy_designer_template()
                 prog_dlg.setValue(len(self.current_profile.entities))
-
 
             except Exception as pe:
                 title = QApplication.translate(
