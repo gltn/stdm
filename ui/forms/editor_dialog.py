@@ -593,7 +593,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             child_entity,
             self,
             MANAGE,
-            False
+            False,
+            plugin=self.parent().plugin
         )
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []

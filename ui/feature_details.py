@@ -736,14 +736,14 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if not pg_table_exists(self.current_profile.social_tenure.name):
             config_done = False
             msg = QApplication.translate(
-                "STDMQGISLoader",
+                "DetailsTreeView",
                 u'The system has detected that '
                 'the required database tables are missing. \n'
                 'Please run the configuration wizard to configure the database ')
             QMessageBox.critical(
                 self,
                 QApplication.translate(
-                "STDMQGISLoader",
+                "DetailsTreeView",
                 'Default Profile Error'
                 ),
                 msg
