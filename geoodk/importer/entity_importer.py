@@ -290,30 +290,30 @@ class Save2DB:
                 self.entity
         )
 
-    def format_document_name_from_attribute(self, key_name):
+    def format_document_name_from_attribute(self, doc):
         """
         Get the type of document from attribute name
         So that supporting document class instance can save it in the right format
         :return:
         """
         formatted_doc_list = self.entity_supported_document_types()
-        # formatted_doc_list = []
-        # for doc in doc_list:
-        #     doc.replace(' ',"")
-        #     formatted_doc_list.append(doc)
+        print self.entity.short_name
+        actual_doc_name = ''
         default = 'General'
-        doc_type = str(key_name).replace('_',' ')
-        if len(doc_type) > 3:
-            if not doc_type[0].startswith('supporting') and doc_type[0] in formatted_doc_list:
-                return doc_type[0]
-            else:
-                for doc in formatted_doc_list:
-                    if not doc.startswith('supporting'):
-                        return doc
-        elif len(doc_type)<2 and key_name != default:
-            return key_name
-        else:
+        doc_type = str(doc).split('_',1)
+        if doc_type[0].startswith('supporting') and formatted_doc_list[0] == default:
             return default
+        elif doc_type[0].startswith('supporting') and formatted_doc_list[0] != default:
+            return formatted_doc_list[0]
+        elif not doc_type[0].startswith('supporting'):
+            actual_doc_name = doc_type[0].replace('#', ' ')
+            for doc_name in formatted_doc_list:
+                if doc_name.startswith(actual_doc_name):
+                    return doc_name
+            else:
+                return formatted_doc_list[0]
+        else:
+            return formatted_doc_list[0]
 
     def save_to_db(self):
         """

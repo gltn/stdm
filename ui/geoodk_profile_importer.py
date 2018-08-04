@@ -170,13 +170,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Create a path where imported instance will be kept
         :return:
         """
-        self.inst_path = self.path+"imported_instance"
+        self.inst_path = CONFIG_FILE+"imported"
         if not os.access(self.inst_path, os.F_OK):
             os.makedirs(unicode(self.inst_path))
         else:
             return self.inst_path
 
-    def instance_path(self):
+    def imported_instance_path(self):
         """
         :return:
         """
@@ -246,10 +246,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Moves the imported files to avoid repetition
         :return:
         """
-        instance_path = self.instance_path()
+        instance_path = self.imported_instance_path()
         try:
             basename = os.path.basename(os.path.dirname(file))
-            if not os.path.isdir(os.path.join(self.instance_path(), basename)):
+            if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                shutil.move(os.path.dirname(file), instance_path)
             else:
                 pass
@@ -327,8 +327,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         return
         return self.uuid_extractor.document_entities(self.profile)
 
-
-
     def user_table_filter(self):
         """
         Enumerate all user tables in the profile
@@ -381,7 +379,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def parent_table_isselected(self):
         """
         Take note that the user selected tables may or may not be imported
-        based on parent child table relationship
+        based on parent child table relationship.
+        Add those table silently so that we can show them to the user
         :return:
         """
         try:
@@ -563,7 +562,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                        QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
                 return
         try:
-            parents_info = []
             counter = 0
             if len(self.instance_list) > 0:
                 #print len(self.instance_list)
@@ -571,6 +569,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.pgbar.setValue(0)
                 self.importlogger.onlogger_action("Starting import...\n")
                 for instance in self.instance_list:
+                    parents_info = []
                     import_status = False
                     counter = counter + 1
                     self.parent_ids = {}
@@ -602,7 +601,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             parents_info.append(entity)
                             single_occuring.pop(entity)
                             #
-                        elif entity not in self.relations and entity not in parents_info:
+                        elif entity not in self.relations:
                             import_status = False
                             ##   .format(entity)
                             #self.log_table_entry(log_timestamp)
@@ -625,15 +624,21 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.log_table_entry(" ========== starting import of repeated tables ============")
                         import_status = False
                         for repeated_entity, entity_data in repeated_entities.iteritems():
+                            """We are assuming that the number of repeat table cannot exceed 99"""
+                            enum_index = repeated_entity[:2]
+                            if enum_index.isdigit():
+                                repeat_table = repeated_entity[2:]
+                            else:
+                                repeat_table = repeated_entity[1:]
                             log_timestamp = '          child table {0} >> : {1}' \
-                                .format(repeated_entity[1:], repeated_entity[:1])
-                            self.count_import_file_step(counter, repeated_entity[1:])
+                                    .format(repeated_entity[1:], repeat_table)
+                            self.count_import_file_step(counter, repeat_table)
                             self.importlogger.onlogger_action(log_timestamp)
-                            if repeated_entity[1:] in self.user_table_filter():
-                                entity_add = Save2DB(repeated_entity[1:], entity_data, self.parent_ids)
+                            if repeat_table in self.user_table_filter():
+                                entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                                 entity_add.objects_from_supporting_doc(instance)
                                 child_id = entity_add.save_to_db()
-                                cu_obj = repeated_entity[1:]
+                                cu_obj = repeat_table
                                 import_status = True
                                 self.log_table_entry(" ------------- import succeeded:      {0} "
                                                      .format(import_status))

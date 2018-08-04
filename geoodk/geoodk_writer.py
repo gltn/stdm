@@ -279,45 +279,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         doc_model.appendChild(self.model_unique_id_generator())
         return doc_model
 
-    def intro_node(self):
-        """
-        Create header introduction label
-        :return:
-        """
-        return self.create_node("intro")
-
-    def parent_child_code_identifier(self):
-        """
-        Create a node that will hold a field for grouping entities
-        User will input this code to enable idetification of related entities
-        :return:
-        """
-        return self.create_node('identity')
-
-    def create_header_intro(self, parent_node):
-        """
-        Create an introduction text available to user indicating which profile is on
-        :return:
-        """
-        intro_node = self.create_node("bind")
-        intro_node.setAttribute("readonly", "true()")
-        intro_node.setAttribute("nodeset", self.set_model_xpath("intro"))
-        intro_node.setAttribute("type", "string")
-        parent_node.appendChild(intro_node)
-        return intro_node
-
-    def create_form_identifier_field(self, parent_node):
-        """
-        Create an introduction text available to user indicating which profile is on
-        :return:
-        """
-        identifier_node = self.create_node("bind")
-        #identifier_node.setAttribute("readonly", "true()")
-        identifier_node.setAttribute("nodeset", self.set_model_xpath("identity"))
-        identifier_node.setAttribute("type", "string")
-        parent_node.appendChild(identifier_node)
-        return identifier_node
-
     def _create_model_props(self):
         """
         Method to create configuration file
@@ -336,14 +297,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         instance_id = self.create_node(self.profile_entity)
         instance_id.setAttribute("id", self.profile_entity)
-        """ add entity data into the instance node as form fields
+        """ add entity data into the instance node as form fields,
         language translation aspect of the instance child 
         has not been considered
         """
-       # intro = self.intro_node()
-       # identity = self.parent_child_code_identifier()
-        #instance_id.appendChild(intro)
-        #instance_id.appendChild(identity)
         if isinstance(self.entities, list):
             for entity in self.entities:
                 self.initialize_entity_reader(entity)
@@ -385,7 +342,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ','') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ','#') + '_' + self.supports_doc)
                     field_group.appendChild(document_node)
         else:
             for key_field in entity_values.keys():
@@ -416,7 +373,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ', '') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ', '#') + '_' + self.supports_doc)
                     group_node.appendChild(document_node)
             parent.appendChild(group_node)
 
@@ -494,7 +451,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                         continue
                     doc_bind_node = self.create_node("bind")
                     doc_bind_node.setAttribute("nodeset",
-                                               self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                               self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
                                                                     'social_tenure'))
                     doc_bind_node.setAttribute("type", 'binary')
                     base_node.appendChild(doc_bind_node)
@@ -522,7 +479,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_bind_node = self.create_node("bind")
                 doc_bind_node.setAttribute("nodeset",
-                                           self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                           self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
                                                                 self.entity_read.default_entity()))
                 doc_bind_node.setAttribute("type", 'binary')
                 parent_node.appendChild(doc_bind_node)
@@ -724,7 +681,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_node = self.create_node('upload')
                 doc_node.setAttribute('mediatype', 'image/*')
-                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
                                                                   entity_name))
                 label_doc_node = self.create_node('label')
                 label_doc_node_text = self.create_text_node(doc + '_' + self.supports_doc)

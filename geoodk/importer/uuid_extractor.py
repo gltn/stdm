@@ -59,6 +59,7 @@ class InstanceUUIDExtractor():
         self.file = QFile(self.file_path)
         if self.file.open(QIODevice.ReadOnly):
             self.doc.setContent(self.file)
+        self.file.close()
 
     def on_file_passed(self):
         """
@@ -117,12 +118,12 @@ class InstanceUUIDExtractor():
 
     def attribute_data_from_nodelist(self, args_list):
         """
-        proceess nodelist data before Importing  attribute data into db
+        process nodelist data before Importing  attribute data into db
         """
         repeat_instance_data = OrderedDict()
         attribute_data = OrderedDict()
         for attr_nodes, entity in args_list.iteritems():
-            '''The assuption is that there are repeated entities. handle them separately'''
+            '''The assuption is that there are repeated entities from mobile sub forms. handle them separately'''
             if attr_nodes.count()>1:
                 for i in range(attr_nodes.count()):
                     attrib_node = attr_nodes.at(i).childNodes()
@@ -201,6 +202,6 @@ class InstanceUUIDExtractor():
                 return isrenamed
             else:
                 self.new_list.append(self.file.fileName())
-            #print str(self.new_list)
+            self.file.close()
         else:
             return
