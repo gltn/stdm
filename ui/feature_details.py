@@ -76,6 +76,7 @@ from stdm.utils.util import (
 )
 
 from stdm.ui.social_tenure.str_editor import EditSTREditor
+from stdm.data.pg_utils import pg_table_exists
 
 from ui_feature_details import Ui_DetailsDock
 
@@ -726,6 +727,26 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                         self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(self.layer_table)
 
+    def db_configuration_done(self):
+        config_done = True
+        if not pg_table_exists(self.current_profile.social_tenure.name):
+            config_done = False
+            msg = QApplication.translate(
+                "DetailsTreeView",
+                u'The system has detected that '
+                'the required database tables are missing. \n'
+                'Please run the configuration wizard to configure the database ')
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                "DetailsTreeView",
+                'Default Profile Error'
+                ),
+                msg
+            )
+
+        return config_done
+
     def activate_feature_details(self, button_clicked=True):
         """
         A slot raised when the feature details button is clicked.
@@ -737,6 +758,25 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         if not button_clicked and not DETAILS_DOCK_ON:
             return
         DETAILS_DOCK_ON = True
+
+        # if self.plugin is None:
+        # Registry column widget
+        # set formatter for social tenure relationship.
+
+        if not self.db_configuration_done():
+            return
+
+        self.set_formatter(self.social_tenure)
+        for party in self.social_tenure.parties:
+            self.set_formatter(party)
+
+        for spatial_unit in self.social_tenure.spatial_units:
+            self.set_formatter(spatial_unit)
+            custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
+                spatial_unit
+            )
+            self.set_formatter(custom_attr_entity)
+            # return
 
         # Get and set the active layer.
         layer = self.iface.activeLayer()
