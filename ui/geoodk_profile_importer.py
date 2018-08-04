@@ -54,6 +54,8 @@ from stdm.geoodk.importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
 from stdm.geoodk.importer import ImportLogger
 from stdm.geoodk.importer import Save2DB
+
+from stdm.third_party.sqlalchemy.exc import SQLAlchemyError
 from stdm import resources_rc
 #from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 
@@ -257,7 +259,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def profile_instance_entities(self):
         """
-        Add the user entities that are in the form to be imported into database
+        Add the user entities that are in the instance file
         into a list view widget
         :return: model
         """
@@ -520,6 +522,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
 
 
+
     def feedback_message(self, msg):
         """
         Create a dialog box to capture and display errrors related to db
@@ -547,6 +550,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         cu_obj = ''
         import_status = False
         self.txt_feedback.clear()
+        self.txt_feedback.append("Starting import...\n")
         self._notif_bar_str.clear()
         self.has_foreign_keys_parent(entity_info)
         if len(self.parent_table_isselected()) > 0:
@@ -566,7 +570,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.pgbar.setRange(counter, len(self.instance_list))
                 self.pgbar.setValue(0)
                 self.importlogger.onlogger_action("Starting import...\n")
-                self.txt_feedback.append("Starting import...\n")
                 for instance in self.instance_list:
                     import_status = False
                     counter = counter + 1
@@ -585,6 +588,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             self.count_import_file_step(counter, entity)
                             log_timestamp = '======= starting import for parent table ===== : {0}' \
                                 .format(entity)
+                            cu_obj = entity
                             self.log_table_entry(log_timestamp)
                             entity_add = Save2DB(entity, entity_data)
                             entity_add.objects_from_supporting_doc(instance)
@@ -606,7 +610,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             entity_add = Save2DB(entity, entity_data, self.parent_ids)
                             entity_add.objects_from_supporting_doc(instance)
                             child_id = entity_add.save_to_db()
-                            # entity_add.get_srid(GEOMPARAM)
+                            cu_obj = entity
                             import_status = True
                             parents_info.append(entity)
                             if entity in self.parent_ids:
@@ -615,7 +619,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 self.parent_ids[entity] = [child_id, entity]
                             self.log_table_entry(" ---------{0}  table import succeeded:      {1} "
                                                  .format(entity,import_status))
-                        print self.parent_ids
+                        #print self.parent_ids
 
                     if repeated_entities:
                         self.log_table_entry(" ========== starting import of repeated tables ============")
@@ -629,34 +633,39 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 entity_add = Save2DB(repeated_entity[1:], entity_data, self.parent_ids)
                                 entity_add.objects_from_supporting_doc(instance)
                                 child_id = entity_add.save_to_db()
-                                # entity_add.get_srid(GEOMPARAM)
+                                cu_obj = repeated_entity[1:]
                                 import_status = True
                                 self.log_table_entry(" ------------- import succeeded:      {0} "
                                                      .format(import_status))
                             else:
                                 continue
-                        try:
-                            entity_add.save_foreign_key_table()
-                        except:
-                            pass
-                        if self.uuid_extractor.has_str_captured_in_instance():
-                            if self.parent_ids is not None:
-                                entity_importer.process_social_tenure(self.parent_ids)
-                                self.log_table_entry(" ----- saving social tenure relationship")
-                                self.txt_feedback.append(
-                                'saving record "{0}" to database'.format(counter))
+                    if self.uuid_extractor.has_str_captured_in_instance():
+                        if self.parent_ids is not None:
+                            entity_importer.process_social_tenure(self.parent_ids)
+                            self.log_table_entry(" ----- saving social tenure relationship")
+                            self.txt_feedback.append(
+                            'saving record "{0}" to database'.format(counter))
                         self.pgbar.setValue(counter)
 
-                    self.txt_feedback.append('Number of record successfully imported:  {}'
+                    self.txt_feedback.append('Number of records successfully imported:  {}'
                                                 .format(counter))
             else:
                 self._notif_bar_str.insertErrorNotification("No user selected entities to import")
                 self.pgbar.setValue(0)
                 return
+        except SQLAlchemyError as ae:
+            self.feedback_message(unicode(ae.message))
+            self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
+            self.txt_feedback.append(str(ae.message))
+            self.log_table_entry(unicode(ae.message))
         except Exception as ex:
+            self.txt_feedback.append("\n \n {0}  table "
+                                     "import failed...  \n".format(cu_obj)+ '\n See error '
+                                                                             'message below!\n')
+            self.txt_feedback.append(str(ex.message))
             self.log_table_entry(
-                unicode(ex.message)+'----- {0} import succeeded:    '.format(cu_obj)+unicode(import_status))
-            self.feedback_message(unicode(ex.message+''.format(entity)))
+                 unicode(ex.message)+'----- {0} import succeeded:    '.format(cu_obj)+unicode(import_status))
+            self.feedback_message(unicode(ex.message))
             return
 
     def count_import_file_step(self, count = None, table = None):
@@ -675,6 +684,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         self.buttonBox.setEnabled(False)
+
         try:
             if self.lst_widget.count() < 1:
                 msg = 'No mobile records could be found for the current profile'
@@ -692,7 +702,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                             QMessageBox.No) == QMessageBox.Ok:
                     entities = self.instance_entities()
                 else:
+                    self.buttonBox.setEnabled(True)
                     return
+
             self.save_instance_data_to_db(entities)
             self.buttonBox.setEnabled(True)
         except Exception as ex:
