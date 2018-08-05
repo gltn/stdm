@@ -288,7 +288,6 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     # refresh map canvas to see the result
     if feature_ids is not None:
         layer.startEditing()
-
         if len(feature_ids) > 0:
             features = feature_id_to_feature(layer, feature_ids)
             if len(features) > 0:
@@ -312,7 +311,6 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     else:
         try:
             with edit(layer):
-
                 feature = add_geom_to_feature(layer, geom)
         except Exception as ex:
             print ex
@@ -692,14 +690,14 @@ def copy_layer_to_memory(layer, name, features=None, add_to_legend=True):
         feats = [feat for feat in layer.getFeatures()]
         mem_layer_data.addFeatures(feats)
     else:
-
-        for f_id in features:
-
-            request = QgsFeatureRequest()
-            request.setFilterFid(f_id)
-            feature_itr = layer.getFeatures(request)
-            for feat in feature_itr:
-                mem_layer_data.addFeatures([feat])
+        feat = feature_id_to_feature(layer, features)
+        # for f_id in features:
+        #
+        #     request = QgsFeatureRequest()
+        #     request.setFilterFid(f_id)
+        #     feature_itr = layer.getFeatures(request)
+        #     for feat in feature_itr:
+        mem_layer_data.addFeatures(feat)
 
     mem_layer.commitChanges()
     QgsMapLayerRegistry.instance().addMapLayer(
@@ -772,6 +770,22 @@ def points_to_line(point_layer):
 
     return line_geom
 
+def add_geom_to_layer_bsc(layer, geom):
+    # parallel_geom = get_parallel_line(
+    #     geom, 3
+    # )
+
+    with edit(layer):
+        # line_layer.startEditing()
+        ft = QgsFeature()
+        attr = layer.fields().toList()
+        ft.setAttributes(attr)
+
+        ft.setGeometry(geom)
+        layer.addFeature(ft)
+
+    layer.updateExtents()
+
 def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
@@ -782,6 +796,8 @@ def split_move_line_with_area(
     split_area1 = 0
     height_change = 1
     loop_index = 0
+    failed_split = 0
+    distance = 0
     # multi_split_case = 0vb
     # first_height = 0
     area_toggle = 0
@@ -798,15 +814,21 @@ def split_move_line_with_area(
         # Get one feature selected on preview layer.
         # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
-        try:
-            sel_features = list(preview_layer.getFeatures())
-        except Exception:
-            break
+        # try:
+
+        sel_features = list(preview_layer.getFeatures())
+        # except Exception:
+        #     break
         # if previous_geom is None:
             # Get the geometry
         geom1 = sel_features[0].geometry()
         # else:
         #     geom1 = previous_geom
+        # This is needed for equal area split when the height needs to be positive
+        if parallel_line_geom.distance(geom1) > distance:
+            parallel_line_geom = get_parallel_line(
+                selected_line_ft.geometry(), height
+            )
 
         extent = geom1.boundingBox()
         # Using the extent, extend the parallel line to the selected
@@ -817,7 +839,8 @@ def split_move_line_with_area(
 
         # print parallel_line_geom2
         # parallel_line_geom3 = QgsGeometry.as
-        # add_geom_to_layer(line_layer, parallel_line_geom2)
+
+            # line_layer.commitChanges()
         # If the line intersects the main geometry, split it
         if parallel_line_geom2.intersects(geom1):
             (res, split_geom0, topolist) = geom1.splitGeometry(
@@ -902,6 +925,7 @@ def split_move_line_with_area(
                     # otherwise, use the area toggle value.
                     if (round(split_area1, 2)) == area:
                         # print '2 {} {}'.format(split_area1, area)
+                        # line_layer.startEditing()
                         parallel_line_ft = add_geom_to_feature(
                             line_layer, parallel_line_geom2)
                         feature = add_geom_to_layer(
@@ -912,7 +936,9 @@ def split_move_line_with_area(
                         # print main_geom.area(), split_geom.area()
                         # polygon_layer.selectByIds([original_selected.id()])
                         # print 'aa', parallel_line_geom
+                        # copy_layer_to_memory(line_layer, 'split line', [parallel_line_ft.id()])
                         return feature, parallel_line_ft
+
 
             # If provided area is smaller than split area, decrease height
             if area < split_area1:
@@ -949,11 +975,16 @@ def split_move_line_with_area(
                     if (round(split_area1, 2)) == area:
                         # add_geom_to_layer(line_layer, parallel_line_geom2)
                         # print '3 {} {}'.format(split_area1, area)
+                        # line_layer.startEditing()
                         parallel_line_ft = add_geom_to_feature(
-                            line_layer, parallel_line_geom2)
+                            line_layer, parallel_line_geom2
+                        )
+
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
+                        # copy_layer_to_memory(line_layer, 'split line',
+                        #                      [parallel_line_ft.id()])
                         # print feature.geometry().area(), 2
                         # polygon_layer.selectByIds([feature.id()])
                         # print main_geom.area(), split_geom.area()
@@ -961,8 +992,12 @@ def split_move_line_with_area(
                         # polygon_layer.selectByIds([original_selected.id()])
                         return feature, parallel_line_ft
         else:
+
             # print 'failed to intersect'
-            return False, False
+            if failed_split > 10:
+                return False, False
+            else:
+                failed_split = failed_split + 1
 
 
 def split_offset_distance(

@@ -822,13 +822,11 @@ class GeomWidgetsBase(object):
                 pass
 
     def on_feature_selection_finished(self):
-        # self.select_line_help(1)
-        # self.iface.mainWindow().blockSignals(True)
-        # add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES
         )
+
         self.create_point_layer()
         polygon_to_points(
             self.settings.layer, self.line_layer, self.point_layer,
@@ -1695,6 +1693,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
+
     def init_signals(self):
         if not self.settings_layer_connected:
             try:
@@ -1721,6 +1720,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 )
             except Exception:
                 pass
+
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
@@ -1951,7 +1951,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'The first two selected point will be used.'
             )
             self.notice.insertWarningNotification(message)
-        
+
         try:
             result = split_join_points(
                 self.settings.layer,
@@ -2080,7 +2080,35 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.method = 1 # parellel
         self.equal_split_features = []
 
+    def init_signals(self):
+        if not self.settings_layer_connected:
+            try:
+
+                self.settings.layer.selectionChanged.connect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = True
+                self.number_of_polygons.valueChanged.connect(
+                    self.on_line_feature_selected
+                )
+            except Exception:
+                pass
+
+    def disconnect_signals(self):
+        if self.settings_layer_connected:
+            try:
+                self.settings.layer.selectionChanged.disconnect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = False
+                self.number_of_polygons.valueChanged.disconnect(
+                    self.on_line_feature_selected
+                )
+            except Exception:
+                pass
     def on_feature_selected(self, feature):
+        if self.executed:
+            return
         super(EqualAreaWidget, self).on_feature_selected(feature)
         total_area = calculate_area(self.settings.layer.selectedFeatures())
 
@@ -2169,11 +2197,17 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
     def on_line_selection_finished(self):
         # add line length for the user to see
-        geoms = merge_selected_lines_features(self.line_layer)
-        total_length = geoms.length()
-        self.combined_line = add_geom_to_feature(self.line_layer, geoms)
-        line_length = geoms.length()
-        self.line_length_lbl.setText(str(round(line_length, 2)))
+        line_features = self.line_layer.selectedFeatures()
+        if len(line_features) > 1:
+            geoms = merge_selected_lines_features(self.line_layer)
+            total_length = geoms.length()
+            self.combined_line = add_geom_to_feature(self.line_layer, geoms)
+        else:
+            geoms = line_features[0].geometry()
+            total_length = geoms.length()
+            self.combined_line = line_features[0]
+
+        self.line_length_lbl.setText(str(round(total_length, 2)))
         total_area = calculate_area(self.settings.layer.selectedFeatures())
 
         self.no_polygons = self.widget.number_of_polygons.value()
@@ -2264,7 +2298,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer(False)
+        self.create_preview_layer(True)
         self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
@@ -2284,7 +2318,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                         )
                         self.notice.insertErrorNotification(fail_message)
                         return
-
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
@@ -2299,7 +2332,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
+                # self.iface.mainWindow().blockSignals(True)
 
+
+                #
+                # self.iface.mainWindow().blockSignals(False)
                 if len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
@@ -2308,7 +2345,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
 
-                self.create_preview_layer(False)
+                self.create_preview_layer(True)
 
                 result = True
 
@@ -2348,6 +2385,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 'Sorry, splitting failed. Try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
+        self.executed = False
 
     def preview(self):
 
@@ -2494,6 +2532,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             )
             self.progress_dialog.setLabelText(fail_message)
 
+        self.executed = False
 
 class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
 
