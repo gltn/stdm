@@ -2298,7 +2298,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer(True)
+        self.create_preview_layer(False)
         self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
@@ -2345,7 +2345,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
 
-                self.create_preview_layer(True)
+                self.create_preview_layer(False)
 
                 result = True
 
