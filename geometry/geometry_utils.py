@@ -19,7 +19,8 @@ from qgis.gui import QgsHighlight
 from qgis.core import QgsPoint, QgsGeometry, QgsVectorLayer, QgsFeature, \
     QgsMapLayerRegistry, QgsLineStringV2, QgsPointV2, edit, QgsDistanceArea, \
     QgsCoordinateReferenceSystem, QgsField, QgsPalLayerSettings, \
-    QgsRenderContext, QGis, QgsFeatureRequest, QgsFillSymbolV2
+    QgsRenderContext, QGis, QgsFeatureRequest, QgsFillSymbolV2, \
+    QgsSingleSymbolRendererV2, QgsSymbolV2, QgsSymbolLayerV2Registry
 from qgis.utils import iface
 from stdm.settings.registryconfig import (
     selection_color
@@ -85,6 +86,41 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
     iface.mapCanvas().refresh()
     if style:
         if type == 'LineString':
+            registry = QgsSymbolLayerV2Registry.instance()
+            lineMeta = registry.symbolLayerMetadata("SimpleLine")
+            markerMeta = registry.symbolLayerMetadata("MarkerLine")
+
+            symbol = QgsSymbolV2.defaultSymbol(v_layer.geometryType())
+
+            # Line layer
+            lineLayer = lineMeta.createSymbolLayer(
+                {'width': '0.26', 'color': '0,102,255', 'offset': '0',
+                 'penstyle': 'solid', 'use_custom_dash': '0',
+                 'joinstyle': 'bevel', 'capstyle': 'square'})
+
+            # Marker layer
+            markerLayer = markerMeta.createSymbolLayer(
+                {'width': '0.26', 'color': '0,102,255', 'interval': '1',
+                 'rotate': '1', 'placement': 'interval', 'offset': '0'})
+            subSymbol = markerLayer.subSymbol()
+            # Replace the default layer with our own SimpleMarker
+            subSymbol.deleteSymbolLayer(0)
+            triangle = registry.symbolLayerMetadata(
+                "SimpleMarker").createSymbolLayer(
+                {'name': 'square', 'color': '0,102,255',
+                 'color_border': '0,0,0', 'offset': '0,0', 'size': '1.5',
+                 'angle': '0'})
+            subSymbol.appendSymbolLayer(triangle)
+
+            # Replace the default layer with our two custom layers
+            symbol.deleteSymbolLayer(0)
+            symbol.appendSymbolLayer(lineLayer)
+            symbol.appendSymbolLayer(markerLayer)
+
+            # Replace the renderer of the current layer
+            renderer = QgsSingleSymbolRendererV2(symbol)
+            v_layer.setRendererV2(renderer)
+
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
             symbol.setWidth(2)
@@ -93,7 +129,14 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
             symbol.setSize(2.5)
-
+            color = QColor(7, 200, 139)
+            symbol.setColor(color)
+        if type == 'Polygon':
+            symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
+            symbol = symbols[0]
+            # symbol.setSize(2.5)
+            color = QColor(198, 143, 67)
+            symbol.setColor(color)
     # show the line
     QgsMapLayerRegistry.instance().addMapLayer(
         v_layer, show_legend
@@ -403,7 +446,7 @@ def clear_points(point_layer):
 def point_by_distance(point_layer, selected_point_ft, selected_line, distance):
     # print selected_point_ft, selected_line, distance
     location = identify_selected_point_location(selected_point_ft, selected_line)
-    print location
+
     if location == 'start':
         added_point_feature = get_point_by_distance(
             point_layer, selected_line, distance
@@ -441,7 +484,7 @@ def highlight_geom(map, layer, geom):
     sel_highlight = QgsHighlight(map, geom, layer)
 
     sel_highlight.setFillColor(selection_color())
-    sel_highlight.setWidth(4)
+    sel_highlight.setWidth(2.5)
     sel_highlight.setColor(QColor(212, 95, 0, 255))
     sel_highlight.show()
 
@@ -718,11 +761,10 @@ def merge_selected_lines_features(line_layer):
     return geoms
 
 
-def points_to_line(points):
+def points_to_line(point_layer):
     poly_line = []
-    for point in points:
-        if isinstance(point, QgsGeometry):
-            point = QgsGeometry.asPoint(point)
+    for point_ft in point_layer.selectedFeatures():
+        point = QgsGeometry.asPoint(point_ft.geometry())
 
         poly_line.append(point)
 
@@ -1366,7 +1408,7 @@ def split_rotate_line_with_area(
 
 
 def split_join_points(
-        polygon_layer, preview_layer, points, feature_ids=None, validate=False
+        polygon_layer, preview_layer, point_layer, feature_ids=None, validate=False
 ):
 
     # Get one feature selected on preview layer. The preview layer has 1 feature
@@ -1375,8 +1417,13 @@ def split_join_points(
     # Get the geometry
     geom1 = sel_features[0].geometry()
 
-    line_geom = points_to_line(points)
-    line_points = line_geom.asPolyline()
+    extent = geom1.boundingBox()
+    # Using the extent, extend the parallel line to the selected
+    # geometry bounding box to avoid failed split.
+
+    line_geom = points_to_line(point_layer)
+    line_points = extend_line_points(line_geom, extent)
+
     # If the line intersects the main geometry, split it
     if line_geom.intersects(geom1):
         if validate:

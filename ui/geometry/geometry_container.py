@@ -5,13 +5,18 @@ import inspect
 import re
 
 import os
+from random import randrange
+
 from PyQt4.QtCore import Qt, pyqtSlot
 from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
     QMessageBox, QAction, QProgressDialog, QIcon, QTextCharFormat, QFont, \
     QTextCursor, QBrush
 from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
 from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes, \
-    QgsMessageLog
+    QgsMessageLog, QgsConditionalStyle, QgsExpressionContext, QgsSymbolV2, \
+    QgsSymbolV2RenderContext, QgsSimpleFillSymbolLayerV2, \
+    QgsRendererCategoryV2, QgsCategorizedSymbolRendererV2, \
+    QgsSimpleLineSymbolLayerV2
 from qgis.utils import iface
 
 from stdm.data.pg_utils import spatial_tables, pg_views
@@ -264,6 +269,7 @@ class GeometryToolsDock(
         self.setupUi(self)
         self.plugin = plugin
         self.iface = iface
+        # iface.mapCanvas().setSelectionColor(QColor("Transparent"))
         self.canvas = self.iface.mapCanvas()
         self._entity = None
         LayerSelectionHandler.__init__(self, iface, plugin)
@@ -670,7 +676,7 @@ class GeomWidgetsBase(object):
         # self.help_cursor = self.settings.help_box.textCursor()
 
     def on_geom_tools_combo_changed(self, index):
-        self.clear_highlights()
+        # self.clear_highlights()
         self.settings.on_geom_tools_combo_changed(index)
 
     def hideEvent(self, event):
@@ -680,11 +686,10 @@ class GeomWidgetsBase(object):
         :param event: The close event
         :type event: QCloseEvent
         """
-        self.clear_highlights()
+        # self.clear_highlights()
 
         if iface.activeLayer() is not None:
             self.settings.remove_memory_layers()
-
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -699,7 +704,6 @@ class GeomWidgetsBase(object):
                 self.settings.layer, 'Point', LINE_POINTS, True
             )
 
-
     def clear_highlights(self):
         """
         Removes show_highlight from the canvas.
@@ -707,29 +711,6 @@ class GeomWidgetsBase(object):
         self.highlights[:] = []
         if self.highlight is not None:
             self.highlight = None
-
-    def highlight_features(self, layer, clear_previous=True):
-        map = self.iface.mapCanvas()
-        # remove all highlight objects
-        if clear_previous:
-            self.clear_highlights()
-
-        # create highlight geometries for selected objects
-        for feature in layer.selectedFeatures():
-            # Fetch geometry
-            geom = feature.geometry()
-            highlight = QgsHighlight(map, geom, layer)
-
-            highlight.setFillColor(selection_color())
-            highlight.setWidth(9)
-            highlight.setColor(QColor(212, 95, 0, 255))
-
-            highlight.show()
-            if not clear_previous:
-                # self.highlights.append(self.highlight)
-                self.highlights.append(highlight)
-            else:
-                self.highlight = highlight
 
     def select_feature_help(self, order):
         msg = QApplication.translate('GeomWidgetsBase', 'Select a feature to split.')
@@ -891,7 +872,7 @@ class GeomWidgetsBase(object):
         self.clear_inputs()
         # self.settings.remove_memory_layers()
 
-        self.clear_highlights()
+        # self.clear_highlights()
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines_count = 0
             self.widget.selected_line_lbl.setText(str(0))
@@ -918,10 +899,6 @@ class GeomWidgetsBase(object):
         if self.settings.stdm_layer(self.settings.layer):
             self.feature_count = self.selected_features_count()
             self.on_feature_selection_finished()
-            # self.settings.plugin.details_tree_view.showTreeFinished.connect(
-            #     self.on_feature_selection_finished
-            # )
-
 
     def on_line_feature_selected(self):
         self.specify_area_help(2)
@@ -940,7 +917,8 @@ class GeomWidgetsBase(object):
             self.lines_count = self.selected_line_count()
 
             self.widget.selected_line_lbl.setText(str(self.lines_count))
-            self.highlight_features(self.line_layer)
+            # self.line_layer.setFeatureBlendMode(16)
+            # self.highlight_features(self.line_layer)
             if self.lines_count > 1:
                 message = QApplication.translate(
                     'GeomWidgetsBase',
@@ -1017,22 +995,10 @@ class GeomWidgetsBase(object):
         pass
 
     def cancel(self):
-        self.clear_highlights()
+        # self.clear_highlights()
         self.settings.remove_memory_layers(stop_editing=True)
         self.settings.layer.removeSelection()
         self.clear_inputs()
-
-    def create_point_layer(self, show_in_legend=True):
-        prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
-            LINE_POINTS
-        )
-        for prev_layer in prev_layers:
-            clear_layer_features(prev_layer)
-
-        if len(prev_layers) == 0:
-            self.point_layer = create_temporary_layer(
-                self.settings.layer, 'Point', LINE_POINTS, True
-            )
 
     def create_preview_layer(self, visible=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1049,9 +1015,6 @@ class GeomWidgetsBase(object):
             self.preview_layer = copy_layer_to_memory(
                 self.settings.layer, PREVIEW_POLYGON, self.feature_ids, visible
             )
-
-            # add_features_to_layer(self.preview_layer, self.features)
-
             iface.legendInterface().setLayerVisible(self.preview_layer, visible)
 
     def create_preview_layer2(self, source_layer, feature_ids, visible=True):
@@ -1116,7 +1079,9 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
 
-        self.widget.split_polygon_area.valueChanged.connect(self.on_area_changed)
+        self.widget.split_polygon_area.valueChanged.connect(
+            self.on_area_changed
+        )
 
     def on_area_changed(self, value):
         if value > 0:
@@ -1173,8 +1138,6 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.widget.split_polygon_area.value(),
             self.feature_ids
         )
-
-
         self.init_signals()
         if result:
 
@@ -1555,7 +1518,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.widget.selected_line_lbl.setText(
                 str(self.lines_count))
 
-            self.highlight_features(self.line_layer)
+            # self.highlight_features(self.line_layer)
             if self.lines_count > 1:
                 message = QApplication.translate(
                     'GeomWidgetsBase',
@@ -1732,7 +1695,32 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
+    def init_signals(self):
+        if not self.settings_layer_connected:
+            try:
 
+                self.settings.layer.selectionChanged.connect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = True
+                self.length_from_point.valueChanged.connect(
+                    self.on_length_from_reference_point_changed
+                )
+            except Exception:
+                pass
+
+    def disconnect_signals(self):
+        if self.settings_layer_connected:
+            try:
+                self.settings.layer.selectionChanged.disconnect(
+                    self.on_feature_selected
+                )
+                self.settings_layer_connected = False
+                self.length_from_point.valueChanged.disconnect(
+                    self.on_length_from_reference_point_changed
+                )
+            except Exception:
+                pass
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
             LINE_POINTS
@@ -1752,23 +1740,26 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def clear_inputs(self):
         super(JoinPointsWidget, self).clear_inputs()
+        self.iface.mainWindow().blockSignals(True)
         self.length_from_point.setValue(0)
+        self.iface.mainWindow().blockSignals(False)
 
     def selected_point_count(self):
         if self.point_layer is None:
             return 0
 
         points = self.point_layer.selectedFeatures()
-        # if len(self.lines) > 0:
-        #     location = identify_selected_point_location(
-        #         points[0], self.lines[0].geometry()
-        #     )
-        #
-        #     if location == 'middle':
-        #
-        #         return 0
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
+
+            if location == 'middle':
+
+                return 0
 
         # if clear_previous:
+
         self.points[:] = []
         self.points = points
         self.rotation_point = self.points[0]
@@ -1797,7 +1788,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return
         self.clear_inputs()
 
-        self.clear_highlights()
+        # self.clear_highlights()
         self.feature_ids = feature
 
         zoom_to_selected(self.settings.layer)
@@ -1815,10 +1806,11 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
             if hasattr(self.widget, 'sel_features_lbl'):
                 self.feature_count = self.selected_features_count()
-
+                self.create_preview_layer(False)
                 self.widget.sel_features_lbl.setText(str(self.feature_count))
 
                 self.on_feature_selection_finished()
+
 
     def on_feature_selection_finished(self):
 
@@ -1879,7 +1871,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
             self.widget.selected_line_lbl.setText(str(self.lines_count))
 
-            self.highlight_features(self.line_layer)
+            # self.highlight_features(self.line_layer)
             if self.lines_count > 1:
 
                 message = QApplication.translate(
@@ -1891,41 +1883,44 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.line_selection_finished.emit()
 
     def on_length_from_reference_point_changed(self, new_value):
+        try:
+            if len(self.lines) == 0 and not self.executed:
+                self.notice.clear()
+                message = QApplication.translate(
+                    'JoinPointsWidget',
+                    'Select a line to create the new point.'
+                )
+                self.notice.insertErrorNotification(message)
+                self.length_from_point.setValue(0)
+                self.iface.setActiveLayer(self.line_layer)
+                return
 
-        if len(self.lines) == 0:
-            self.notice.clear()
-            message = QApplication.translate(
-                'JoinPointsWidget',
-                'Select a line to create the new point.'
+            if self.rotation_point is not None:
+
+                try:
+                    with edit(self.point_layer):
+                        point_features = [f.id() for f in
+                                          self.point_layer.getFeatures()]
+                        added_point = point_features[-1:]
+                        self.point_layer.deleteFeature(added_point[0])
+                except Exception as ex:
+                    pass
+
+            self.rotation_point = point_by_distance(
+                self.point_layer,
+                self.points[0],
+                self.lines[0].geometry(),
+                new_value
             )
-            self.notice.insertErrorNotification(message)
-            self.length_from_point.setValue(0)
-            self.iface.setActiveLayer(self.line_layer)
-            return
 
-        if self.rotation_point is not None:
+            if hasattr(self.widget, 'selected_points_lbl'):
 
-            try:
-                with edit(self.point_layer):
-                    point_features = [f.id() for f in
-                                      self.point_layer.getFeatures()]
-                    added_point = point_features[-1:]
-                    self.point_layer.deleteFeature(added_point[0])
-            except Exception as ex:
-                pass
+                points_count = self.selected_point_count()
 
-        self.rotation_point = point_by_distance(
-            self.point_layer,
-            self.rotation_point,
-            self.lines[0].geometry(),
-            new_value
-        )
+                self.widget.selected_points_lbl.setText(str(points_count))
 
-        if hasattr(self.widget, 'selected_points_lbl'):
-
-            points_count = self.selected_point_count()
-
-            self.widget.selected_points_lbl.setText(str(points_count))
+        except Exception as ex:
+            pass
 
     def on_line_selection_finished(self):
         self.rotation_point = None
@@ -1943,32 +1938,34 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def validate_run(self, preview_visible=False):
         state = True
-        if self.points_count < 2:
+        if len(self.point_layer.selectedFeatures()) < 2:
             message = QApplication.translate(
                 'OnePointAreaWidget',
                 'Two points must be selected to split.'
             )
             self.notice.insertErrorNotification(message)
             state = False
-        if self.points_count > 2:
+        if len(self.point_layer.selectedFeatures()) > 2:
             message = QApplication.translate(
                 'OnePointAreaWidget',
                 'The first two selected point will be used.'
             )
             self.notice.insertWarningNotification(message)
-        point_geoms = [f.geometry() for f in self.points]
-        self.create_preview_layer(preview_visible)
-        result = split_join_points(
-            self.settings.layer,
-            self.preview_layer,
-            point_geoms,
-            self.feature_ids,
-            True
-        )
+        
+        try:
+            result = split_join_points(
+                self.settings.layer,
+                self.preview_layer,
+                self.point_layer,
+                self.feature_ids,
+                True
+            )
+        except Exception:
+            result = False
         if not result:
             message = QApplication.translate(
                 'JoinPointsWidget',
-                'Check the selected points are not in the same line.'
+                'Check that the selected points are not in the same line.'
             )
             self.notice.insertErrorNotification(message)
 
@@ -1988,14 +1985,17 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.disconnect_signals()
 
         self.settings.layer.selectByIds(self.feature_ids)
-        point_geoms = [f.geometry() for f in self.points]
-        result = split_join_points(
-            self.settings.layer,
-            self.preview_layer,
-            point_geoms,
-            self.feature_ids
-        )
 
+        try:
+            result = split_join_points(
+                self.settings.layer,
+                self.preview_layer,
+                self.point_layer,
+                self.feature_ids
+            )
+
+        except Exception:
+            result = False
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
 
@@ -2009,6 +2009,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'not in the same line and try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
+        self.executed = False
 
     def preview(self):
         result = self.validate_run(True)
@@ -2025,13 +2026,16 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.disconnect_signals()
 
         self.preview_layer.selectAll()
-        point_geoms = [f.geometry() for f in self.points]
-        result = split_join_points(
-            self.preview_layer,
-            self.preview_layer,
-            point_geoms,
-            self.feature_ids
-        )
+
+        try:
+            result = split_join_points(
+                self.preview_layer,
+                self.preview_layer,
+                self.point_layer,
+                self.feature_ids
+            )
+        except Exception:
+            result = False
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
@@ -2047,7 +2051,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'not in the same line and try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
-
+        self.executed = False
 
 class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     line_selection_finished = pyqtSignal()
@@ -2140,7 +2144,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
             if self.method == 1:
-                self.clear_highlights()
+                # self.clear_highlights()
                 self.method = 2
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             # clear_previous = True
@@ -2157,10 +2161,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             else:
                 clear_previous = False
 
-            self.highlight_features(
-                self.line_layer,
-                clear_previous=clear_previous
-            )
+            # self.highlight_features(
+            #     self.line_layer,
+            #     clear_previous=clear_previous
+            # )
             self.on_line_selection_finished()
 
     def on_line_selection_finished(self):
