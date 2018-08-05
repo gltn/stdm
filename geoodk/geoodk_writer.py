@@ -342,7 +342,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ','#') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ','-') + '_' + self.supports_doc)
                     field_group.appendChild(document_node)
         else:
             for key_field in entity_values.keys():
@@ -373,7 +373,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ', '#') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ', '-') + '_' + self.supports_doc)
                     group_node.appendChild(document_node)
             parent.appendChild(group_node)
 
@@ -451,7 +451,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                         continue
                     doc_bind_node = self.create_node("bind")
                     doc_bind_node.setAttribute("nodeset",
-                                               self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
+                                               self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                     'social_tenure'))
                     doc_bind_node.setAttribute("type", 'binary')
                     base_node.appendChild(doc_bind_node)
@@ -479,7 +479,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_bind_node = self.create_node("bind")
                 doc_bind_node.setAttribute("nodeset",
-                                           self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
+                                           self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                 self.entity_read.default_entity()))
                 doc_bind_node.setAttribute("type", 'binary')
                 parent_node.appendChild(doc_bind_node)
@@ -681,7 +681,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_node = self.create_node('upload')
                 doc_node.setAttribute('mediatype', 'image/*')
-                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '#') + '_' + self.supports_doc,
+                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                   entity_name))
                 label_doc_node = self.create_node('label')
                 label_doc_node_text = self.create_text_node(doc + '_' + self.supports_doc)

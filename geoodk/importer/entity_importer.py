@@ -297,8 +297,6 @@ class Save2DB:
         :return:
         """
         formatted_doc_list = self.entity_supported_document_types()
-        print self.entity.short_name
-        actual_doc_name = ''
         default = 'General'
         doc_type = str(doc).split('_',1)
         if doc_type[0].startswith('supporting') and formatted_doc_list[0] == default:
@@ -306,9 +304,9 @@ class Save2DB:
         elif doc_type[0].startswith('supporting') and formatted_doc_list[0] != default:
             return formatted_doc_list[0]
         elif not doc_type[0].startswith('supporting'):
-            actual_doc_name = doc_type[0].replace('#', ' ')
+            actual_doc_name = doc_type[0].replace('-', ' ')
             for doc_name in formatted_doc_list:
-                if doc_name.startswith(actual_doc_name):
+                if actual_doc_name in doc_name or doc_name.startswith(actual_doc_name):
                     return doc_name
             else:
                 return formatted_doc_list[0]

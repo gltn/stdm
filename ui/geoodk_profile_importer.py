@@ -646,6 +646,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 continue
                     if self.uuid_extractor.has_str_captured_in_instance():
                         if self.parent_ids is not None:
+                            self.txt_feedback.append('----Creating social tenure relationship')
                             entity_importer.process_social_tenure(self.parent_ids)
                             self.log_table_entry(" ----- saving social tenure relationship")
                             self.txt_feedback.append(
