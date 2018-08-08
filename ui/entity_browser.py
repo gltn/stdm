@@ -371,6 +371,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.setWindowTitle(unicode(self.title()))
 
+
         if self._data_initialized:
             return
         try:
@@ -605,7 +606,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             #Add records to nested list for enumeration in table model
 
-            entity_records_collection = []
+
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -613,9 +614,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         self._tableModel = self.plugin.entity_table_model[
                             self._entity.name
                         ]
-                        load_data = False
-                    else:
-                        load_data = True
+                        #load_data = False
+                    #else:
+                        #load_data = True
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
 
@@ -625,12 +626,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     entity_records = filtered_records
                 else:
                     entity_records = fetch_from_table(
-                        self._entity.name, limit=3000
+                        self._entity.name, limit=10
                     )
 
             # if self._tableModel is None:
+                entity_records_collection = []
                 for i,er in enumerate(entity_records):
-                    if i == 3000:
+                    if i == 10:
                         break
                     QApplication.processEvents()
                     entity_row_info = []
