@@ -558,8 +558,8 @@ def _execute(sql,**kwargs):
 
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
-    result = conn.execute(sql,**kwargs)
     try:
+        result = conn.execute(sql,**kwargs)
         trans.commit()
         conn.close()
         return result
