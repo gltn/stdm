@@ -1266,7 +1266,6 @@ class STDMQGISLoader(object):
 
         self.profile_status_message()
 
-<<<<<<< HEAD
     def enable_geometry_tools(self):
         self.geom_tools_container = GeometryToolsDock(self.iface, self)
         result = self.geom_tools_container.activate_geometry_tools()
