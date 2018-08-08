@@ -616,6 +616,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         load_data = False
                     else:
                         load_data = True
+            if isinstance(self._parent, EntityEditorDialog):
+                load_data = True
 
             if load_data:
                 # Only one filter is possible.

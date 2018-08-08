@@ -446,7 +446,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             # Get widget factory
             column_widget = ColumnWidgetRegistry.create(
                 c,
-                self.scroll_widget_contents
+                self.scroll_widget_contents,
+                host=self
             )
             self.column_widgets[c] = column_widget
 
@@ -592,7 +593,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             child_entity,
             self,
             MANAGE,
-            False
+            False,
+            plugin=self.parent().plugin
         )
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []

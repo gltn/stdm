@@ -2333,3 +2333,53 @@ def _str_to_bool(bool_str):
         bool_str = bool_str[0]
     return unicode(bool_str).upper() == 'T'
 
+
+class ExpressionColumnSerializer(ColumnSerializerCollection):
+    """
+    (De)serializes administrative spatial unit column type.
+    """
+    COLUMN_TYPE_INFO = 'EXPRESSION'
+
+    EXPRESSION = 'expression'
+    OUTPUT_DATA_TYPE = 'outputDataType'
+    @classmethod
+    def _convert_bounds_type(cls, value):
+        return int(value)
+
+
+    @classmethod
+    def _obj_args(cls, args, kwargs, element, assoc_elements,
+                  entity_relation_elements):
+
+        exp_ele = element.firstChildElement(
+            ExpressionColumnSerializer.EXPRESSION
+        )
+        if not exp_ele.isNull():
+
+            expression = exp_ele.attribute(
+                ExpressionColumnSerializer.EXPRESSION,
+                ''
+            )
+            output_data_type = exp_ele.attribute(
+                ExpressionColumnSerializer.OUTPUT_DATA_TYPE,
+                ''
+            )
+
+
+            kwargs['expression'] = expression
+            kwargs['output_data_type'] = output_data_type
+
+        return args, kwargs
+
+    @classmethod
+    def _write_xml(cls, column, column_element, document):
+        # Append code prefix source
+        dt_element = document.createElement(
+            ExpressionColumnSerializer.EXPRESSION
+        )
+        dt_element.setAttribute('expression', column.expression)
+        dt_element.setAttribute('outputDataType', column.output_data_type)
+
+        column_element.appendChild(dt_element)
+
+ExpressionColumnSerializer.register()
