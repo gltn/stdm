@@ -40,6 +40,7 @@ HOST = 'Host'
 FIRST_LOGIN = 'FirstLogin'
 STDM_PLUGIN = 'stdm'
 STDM_VERSION = 'STDMVersion'
+ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 
 def registry_value(key_name):
     """

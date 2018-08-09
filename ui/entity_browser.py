@@ -77,9 +77,10 @@ from stdm.utils.util import (
     entity_id_to_attr
 )
 
+from stdm.settings import get_entity_browser_record_limit
+
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
-
 
 class _EntityDocumentViewerHandler(object):
     """
@@ -226,6 +227,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         #ID of a record to select once records have been added to the table
         self._select_item = None
         self.current_records = 0
+
+        self.record_limit = get_entity_browser_record_limit()
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -413,8 +416,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         numRecords = entity.queryObject().count()
         if init_data:
             if self.current_records < 1:
-                if numRecords > 3000:
-                    self.current_records = 3000
+                if numRecords > self.record_limit:
+                    self.current_records = self.record_limit
                 else:
                     self.current_records = numRecords
 
@@ -626,13 +629,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     entity_records = filtered_records
                 else:
                     entity_records = fetch_from_table(
-                        self._entity.name, limit=10
+                        self._entity.name, limit=self.record_limit
                     )
 
             # if self._tableModel is None:
                 entity_records_collection = []
                 for i,er in enumerate(entity_records):
-                    if i == 10:
+                    if i == self.record_limit:
                         break
                     QApplication.processEvents()
                     entity_row_info = []
@@ -684,7 +687,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            if numRecords < 30000:
+            if numRecords < self.record_limit:
                 self.tbEntity.setSortingEnabled(True)
                 self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 

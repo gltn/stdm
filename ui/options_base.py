@@ -39,7 +39,9 @@ from stdm.data.connection import DatabaseConnection
 from stdm.settings import (
     current_profile,
     save_configuration,
-    save_current_profile
+    save_current_profile,
+    get_entity_browser_record_limit,
+    save_entity_browser_record_limit
 )
 from stdm.settings.registryconfig import (
     composer_output_path,
@@ -60,6 +62,8 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
+
+MAX_LIMIT = 500 # Maximum records in a entity browser
 
 def pg_profile_names():
     """
@@ -144,6 +148,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         #Load directory paths
         self._load_directory_paths()
+
+        self.edtEntityRecords.setMaximum(MAX_LIMIT)
+        self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
         # Debug logging
         lvl = debug_logging()
@@ -506,6 +513,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return False
 
         self.apply_debug_logging()
+
+        # Set Entity browser record limit
+        save_entity_browser_record_limit(self.edtEntityRecords.value())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)

@@ -2,7 +2,8 @@ from PyQt4.QtGui import QDesktopServices
 
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
-    RegistryConfig
+    RegistryConfig,
+    ENTITY_BROWSER_RECORD_LIMIT
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -50,3 +51,17 @@ def save_configuration():
                       + '/.stdm/configuration.stc'
     conf_serializer = ConfigurationFileSerializer(config_path)
     conf_serializer.save()
+
+def get_entity_browser_record_limit():
+    reg_config = RegistryConfig()
+    rec_info = reg_config.read([ENTITY_BROWSER_RECORD_LIMIT])
+    rec_limit = rec_info.get(ENTITY_BROWSER_RECORD_LIMIT, 10)
+    return rec_limit
+
+def save_entity_browser_record_limit(limit):
+    """
+    type limit:int
+    """
+    reg_config = RegistryConfig()
+    reg_config.write({ENTITY_BROWSER_RECORD_LIMIT:limit})
+
