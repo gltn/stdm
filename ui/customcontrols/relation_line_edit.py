@@ -310,6 +310,7 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
         # Show entity browser dialog.
         from stdm.ui.entity_browser import EntityBrowser
         parent_entity = self.column.entity_relation.parent
+
         eb = EntityBrowser(parent_entity, parent=self.parent(), state=SELECT)
 
         # Set item to be selected once records have been loaded

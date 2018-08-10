@@ -67,7 +67,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self,
             entity,
             model=None,
-            parent=None,
+            parent=None,  
             manage_documents=True,
             collect_model=False,
             parent_entity=None,
@@ -109,7 +109,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self._entity = entity
         self.edit_model = model
         self.column_widgets = OrderedDict()
-        self._parent = parent
+        self._parent = parent 
         self.exclude_columns = exclude_columns
         self.entity_tab_widget = None
         self._disable_collections = False

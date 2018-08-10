@@ -179,6 +179,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         QDialog.__init__(self,parent)
         self.setupUi(self)
 
+        if plugin is None:
+            self.stdmTables = []
+            self.entity_formatters = {}
+            self.entity_table_model = {}
+            plugin = self
+
         # Add maximize buttons
         self.setWindowFlags(
             self.windowFlags() |
@@ -373,7 +379,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         long to load.
         '''
         self.setWindowTitle(unicode(self.title()))
-
 
         if self._data_initialized:
             return
@@ -609,7 +614,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             #Add records to nested list for enumeration in table model
 
-
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -622,6 +626,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         #load_data = True
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
+
 
             if load_data:
                 # Only one filter is possible.
