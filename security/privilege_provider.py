@@ -1,3 +1,4 @@
+import copy
 from stdm.data.pg_utils import (
        pg_table_exists,
        _execute
@@ -10,6 +11,7 @@ class PrivilegeProvider(object):
         self.content_short_name = self.fmt_short_name(self.content_name)
         self.related_contents = {}
         self.profile = profile 
+        self.base_table_roles = self.get_base_table_roles()
 
     def fmt_short_name(self, name):
         raise NotImplementedError
@@ -27,6 +29,25 @@ class PrivilegeProvider(object):
         gr_str = 'TO' if action == 'GRANT' else 'FROM'
         stmt = '{} {} ON TABLE {} {} {}'.format(action, privilege, table, gr_str, role)
         _execute(stmt)
+
+    def base_roles(self, table_name):
+        results = set()
+        sql = "Select grantee from information_schema.role_table_grants "\
+                "where table_name = '{}' ".format(table_name)
+        records = _execute(sql)
+
+        for record in records:
+            results.add(record['grantee'])
+
+        return results
+
+    def get_base_table_roles(self):
+        base_tables =  ['content_base', 'content_roles', 'role']
+        table_roles = {}
+        for bt in base_tables:
+            roles = self.base_roles(bt)
+            table_roles[bt] = copy.deepcopy(roles)
+        return table_roles
 
 
 class SinglePrivilegeProvider(PrivilegeProvider):
@@ -50,14 +71,15 @@ class SinglePrivilegeProvider(PrivilegeProvider):
 
     def fmt_short_name(self, name):
         if name.find(' ') > 0:
-            return name[name.index(' ')+1:].replace(' ','_')
+            return name[name.index(' ')+1:]  #.replace(' ','_')
         else:
             return name
 
     def grant_privilege_base_table(self, role):
         base_tables =  ['content_base', 'content_roles', 'role']
         for bt in base_tables:
-            self.grant_or_revoke('GRANT', 'SELECT', bt, role)
+            if not role in self.base_table_roles[bt]:
+                self.grant_or_revoke('GRANT', 'SELECT', bt, role)
 
     def grant_revoke_privilege(self, operation):
         try:
@@ -70,6 +92,10 @@ class SinglePrivilegeProvider(PrivilegeProvider):
 
         if pg_table_exists(self.content_table_name):
             self.grant_or_revoke(operation, privilege, self.content_table_name, self.role)
+            if privilege == 'INSERT':
+                # INSERT privilege will also trigger an issue of SELECT privilege
+                self.grant_or_revoke(operation, 'SELECT', self.content_table_name, self.role)
+
         for related_content in self.related_contents.values():
             self.grant_or_revoke(operation, 'SELECT', related_content, self.role)
             if privilege <> 'SELECT':

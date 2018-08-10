@@ -77,9 +77,10 @@ from stdm.utils.util import (
     entity_id_to_attr
 )
 
+from stdm.settings import get_entity_browser_record_limit
+
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
-
 
 class _EntityDocumentViewerHandler(object):
     """
@@ -227,6 +228,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._select_item = None
         self.current_records = 0
 
+        self.record_limit = get_entity_browser_record_limit()
+
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
@@ -371,6 +374,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.setWindowTitle(unicode(self.title()))
 
+
         if self._data_initialized:
             return
         try:
@@ -412,8 +416,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         numRecords = entity.queryObject().count()
         if init_data:
             if self.current_records < 1:
-                if numRecords > 3000:
-                    self.current_records = 3000
+                if numRecords > self.record_limit:
+                    self.current_records = self.record_limit
                 else:
                     self.current_records = numRecords
 
@@ -605,7 +609,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             #Add records to nested list for enumeration in table model
 
-            entity_records_collection = []
+
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -613,9 +617,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         self._tableModel = self.plugin.entity_table_model[
                             self._entity.name
                         ]
-                        load_data = False
-                    else:
-                        load_data = True
+                        #load_data = False
+                    #else:
+                        #load_data = True
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
 
@@ -625,12 +629,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     entity_records = filtered_records
                 else:
                     entity_records = fetch_from_table(
-                        self._entity.name, limit=3000
+                        self._entity.name, limit=self.record_limit
                     )
 
             # if self._tableModel is None:
+                entity_records_collection = []
                 for i,er in enumerate(entity_records):
-                    if i == 3000:
+                    if i == self.record_limit:
                         break
                     QApplication.processEvents()
                     entity_row_info = []
@@ -682,7 +687,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            if numRecords < 30000:
+            if numRecords < self.record_limit:
                 self.tbEntity.setSortingEnabled(True)
                 self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 

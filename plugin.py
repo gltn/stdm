@@ -121,6 +121,9 @@ from stdm.ui.social_tenure.str_editor import STREditor
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
 from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 
+from stdm.security.privilege_provider import SinglePrivilegeProvider
+from stdm.security.roleprovider import RoleProvider
+
 LOGGER = logging.getLogger('stdm')
 
 
@@ -1078,6 +1081,9 @@ class STDMQGISLoader(object):
 
         username = data.app_dbconn.User.UserName
 
+        if username == 'postgres':
+            self.grant_privilege_base_tables(username)
+
         self.moduleCntGroup = None
         self.moduleContentGroups = []
         self._moduleItems = OrderedDict()
@@ -1271,8 +1277,14 @@ class STDMQGISLoader(object):
                 self.geom_tools_signal_connected = True
             self.geom_tools_container.add_widgets()
 
+    def grant_privilege_base_tables(self, username):
+        roles = []
+        roleProvider = RoleProvider()
+        roles = roleProvider.GetSysRoles()
 
-
+        privilege_provider = SinglePrivilegeProvider('', current_profile() )
+        for role in roles:
+            privilege_provider.grant_privilege_base_table(role)
 
     def load_profiles_combobox(self):
         """

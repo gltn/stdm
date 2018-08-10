@@ -137,9 +137,9 @@ class ContentGroup(QObject,HashableMixin):
         Registers the content items into the database. Registration only works for a 
         postgres user account.
         """
-        pg_account = "postgres"   
+        PG_ACCOUNT = "postgres"   
         
-        if self._username == pg_account:
+        if self._username == PG_ACCOUNT:
             for c in self.contentItems():
                 if isinstance(c,Content):
                     cnt = Content()
@@ -158,10 +158,10 @@ class ContentGroup(QObject,HashableMixin):
                         #Check if the 'postgres' role is defined, if not then create one
                         rl = Role()
                         rolequery = rl.queryObject()
-                        role = rolequery.filter(Role.name == pg_account).first()
+                        role = rolequery.filter(Role.name == PG_ACCOUNT).first()
                         
                         if role is None:
-                            rl.name = pg_account
+                            rl.name = PG_ACCOUNT
                             rl.contents = [c]
                             rl.save()                     
                         else:
