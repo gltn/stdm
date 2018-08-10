@@ -2323,7 +2323,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 if isinstance(line_ft, bool):
 
                     return
-
+                print line_ft
                 feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,

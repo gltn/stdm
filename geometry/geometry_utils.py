@@ -808,27 +808,39 @@ def split_move_line_with_area(
         height = Decimal(height) + Decimal(height_change) /\
                                    Decimal(math.pow(10, decimal_place_new))
         # Get the parallel line from the selected line using the calculated height
+        # print selected_line_ft, selected_line_ft.geometry()
         parallel_line_geom = get_parallel_line(
             selected_line_ft.geometry(), height*-1
         )
+        print height*-1
+        print 1,  parallel_line_geom
+        # if parallel_line_geom is None:
+        #     continue
         # Get one feature selected on preview layer.
         # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
-        # try:
-
-        sel_features = list(preview_layer.getFeatures())
-        # except Exception:
-        #     break
+        try:
+            sel_features = list(preview_layer.getFeatures())
+        except Exception:
+            break
         # if previous_geom is None:
             # Get the geometry
         geom1 = sel_features[0].geometry()
         # else:
         #     geom1 = previous_geom
+
         # This is needed for equal area split when the height needs to be positive
-        if parallel_line_geom.distance(geom1) > distance:
+        if parallel_line_geom is None:
+            parallel_line_geom = get_parallel_line(
+                selected_line_ft.geometry(), height*height*-1
+            )
+        elif parallel_line_geom.distance(geom1) > distance:
             parallel_line_geom = get_parallel_line(
                 selected_line_ft.geometry(), height
             )
+        print 2, parallel_line_geom
+        # if parallel_line_geom is None:
+        #     continue
 
         extent = geom1.boundingBox()
         # Using the extent, extend the parallel line to the selected
@@ -936,7 +948,7 @@ def split_move_line_with_area(
                         # print main_geom.area(), split_geom.area()
                         # polygon_layer.selectByIds([original_selected.id()])
                         # print 'aa', parallel_line_geom
-                        # copy_layer_to_memory(line_layer, 'split line', [parallel_line_ft.id()])
+                        copy_layer_to_memory(line_layer, 'split line', [parallel_line_ft.id()])
                         return feature, parallel_line_ft
 
 
@@ -983,8 +995,8 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        # copy_layer_to_memory(line_layer, 'split line',
-                        #                      [parallel_line_ft.id()])
+                        copy_layer_to_memory(line_layer, 'split line',
+                                             [parallel_line_ft.id()])
                         # print feature.geometry().area(), 2
                         # polygon_layer.selectByIds([feature.id()])
                         # print main_geom.area(), split_geom.area()
