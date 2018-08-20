@@ -313,8 +313,9 @@ class GeometryToolsDock(
         """
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         self.init_signals()
-
-
+        if self.layer is not None:
+            self.layer.setCustomProperty("labeling/enabled", False)
+            self.layer.triggerRepaint()
 
     def add_widgets(self):
         self.widgets_added = True
@@ -360,9 +361,11 @@ class GeometryToolsDock(
         self.clear_feature_selection()
 
         GEOM_DOCK_ON = False
+        if self.layer is not None:
+            self.layer.setCustomProperty("labeling/enabled", True)
+            self.layer.triggerRepaint()
 
         self.close()
-
 
     def remove_memory_layers(self, stop_editing=False):
         """
@@ -370,7 +373,6 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
-
         self.blockSignals(True)
         try:
             for memory_layer_name in self.memory_layers:
@@ -446,9 +448,6 @@ class GeometryToolsDock(
         global GEOM_DOCK_ON
 
         # if Feature details is checked, hide it.
-        # if self.plugin.feature_details_act.isChecked():
-        #     self.plugin.feature_details_act.setChecked(False)
-
         if not self.plugin.geom_tools_cont_act.isChecked() and \
                 GEOM_DOCK_ON and not button_clicked:
 
@@ -458,11 +457,10 @@ class GeometryToolsDock(
         active_layer = self.iface.activeLayer()
         # if no active layer, show error message
         # and uncheck the feature tool
-
         if active_layer is None:
             if button_clicked:
                 self.active_layer_check()
-            # self.plugin.geom_tools_cont_act.setChecked(False)
+
             self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         if not button_clicked and GEOM_DOCK_ON:
@@ -511,18 +509,7 @@ class GeometryToolsDock(
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
 
-        # layer_select_tool.deactivated.connect(
-        #     self.disable_feature_details_btn
-        # )
-        # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
-        # self.canvas.setMapTool(self.geometry_map_tool)
         layer_select_tool.activate()
-        # icon = QIcon(":/plugins/stdm/images/icons/edit.png")
-        # self.action = QAction(icon, 'Geometry Tools', self.iface.mainWindow())
-        # self.mapTool =GeometryMapTool(self.iface.mapCanvas(), self.iface.activeLayer())
-        # self.mapTool.setAction(self.iface.actionSelect())
-        # self.iface.mapCanvas().setMapTool(self.mapTool)
-        # self.mapTool.redrawActions()
 
     def disable_feature_details_btn(self):
         """
@@ -895,6 +882,7 @@ class GeomWidgetsBase(object):
             return
         zoom_to_selected(self.settings.layer)
         if self.settings.stdm_layer(self.settings.layer):
+
             self.feature_count = self.selected_features_count()
             self.on_feature_selection_finished()
 
@@ -1067,6 +1055,7 @@ class GeomWidgetsBase(object):
 
 
         iface.setActiveLayer(self.settings.layer)
+
         self.iface.mapCanvas().refresh()
 
 class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
