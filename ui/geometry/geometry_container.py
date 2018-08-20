@@ -2257,14 +2257,15 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     def post_split_update(self, layer, preview=False):
 
         new_features = [f.id() for f in self.equal_split_features]
-        self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
-            self.feature_ids[0], allow_saved_ft=True
-        )
+        if len(self.feature_ids) > 0:
+            self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
+                self.feature_ids[0], allow_saved_ft=True
+            )
 
-        new_features.extend(self.feature_ids)
-        layer.selectByIds(new_features)
+            new_features.extend(self.feature_ids)
+            layer.selectByIds(new_features)
 
-        add_area(layer, AREA_POLYGON, all_features=preview)
+            add_area(layer, AREA_POLYGON, all_features=preview)
 
         iface.setActiveLayer(self.settings.layer)
 
@@ -2298,40 +2299,36 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer(False)
+        self.create_preview_layer(True)
         self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
             line_feature = None
-
+            move_height = None
             for i in range(1, self.no_polygons):
-
+                # print self.lines
                 if line_feature is None:
 
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
-
-                        fail_message = QApplication.translate(
-                            'EqualAreaWidget',
-                            'A line is not selected.'
-                        )
-                        self.notice.insertErrorNotification(fail_message)
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
 
                     return
-                print line_ft
-                feature, line_feature = split_move_line_with_area(
+
+                feature, line_feature, move_height = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,
                     self.preview_layer,
-                    line_ft,
+                    self.lines[0],
                     self.area,
-                    self.feature_ids
+                    self.feature_ids,
+                    move_height=move_height
                 )
+                # print i, 'split', move_height
                 # self.iface.mainWindow().blockSignals(True)
 
 
@@ -2345,7 +2342,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
 
-                self.create_preview_layer(False)
+                self.create_preview_layer(True)
 
                 result = True
 
@@ -2373,7 +2370,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.create_preview_layer(False)
 
         iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
+
 
         if result:
             self.post_split_update(self.settings.layer)
@@ -2386,6 +2383,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             )
             self.progress_dialog.setLabelText(fail_message)
         self.executed = False
+        self.init_signals()
+
 
     def preview(self):
 
@@ -2433,12 +2432,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
-
-                        fail_message = QApplication.translate(
-                            'EqualAreaWidget',
-                            'A line is not selected.'
-                        )
-                        self.notice.insertErrorNotification(fail_message)
                         return
                 else:
                     line_ft = line_feature
@@ -2518,7 +2511,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 #     pass
 
         iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
 
         if result:
 
@@ -2533,6 +2525,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.setLabelText(fail_message)
 
         self.executed = False
+        self.init_signals()
 
 class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
 

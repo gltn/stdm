@@ -55,13 +55,18 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.feature_models = feature_models
         self.custom_tenure_info_component = None
         self.column_formatters = self.plugin.entity_formatters[entity.name]
-        self._init_str_editor()
+        self._init_editor()
         self.add_tree_node()
         self.form_error = {}
         self.active_spatial_column = active_spatial_column(entity, layer)
         self.notice = NotificationBar(self.str_notification)
+        self.buttonBox.rejected.connect(self.cancel)
 
-    def _init_str_editor(self):
+    def cancel(self):
+        for i in range(len(self.feature_models)):
+            self.layer.undoStack().undo()
+
+    def _init_editor(self):
         """
         Initializes the GUI of the STR editor.
         """

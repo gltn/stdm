@@ -192,7 +192,10 @@ class STDMQGISLoader(object):
                 col.TYPE_INFO
             )
             if not widget_factory is None:
-                formatter = widget_factory(col)
+                try:
+                    formatter = widget_factory(col)
+                except Exception:
+                    continue
                 column_formatter[col_name] = formatter
         self.entity_formatters[entity.name] = column_formatter
 
@@ -394,6 +397,7 @@ class STDMQGISLoader(object):
                 self.run_wizard()
                 self.copy_designer_template()
                 prog_dlg.setValue(len(self.current_profile.entities))
+                prog_dlg.hide()
 
             except Exception as pe:
                 title = QApplication.translate(
