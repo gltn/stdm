@@ -63,8 +63,13 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.buttonBox.rejected.connect(self.cancel)
 
     def cancel(self):
+        print self.feature_models
         for i in range(len(self.feature_models)):
             self.layer.undoStack().undo()
+
+    def closeEvent(self, QCloseEvent):
+        self.cancel()
+        QCloseEvent.accept()
 
     def _init_editor(self):
         """
@@ -365,7 +370,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
                     formatter = self.column_formatters[name]
 
                     col_val = formatter.format_column_value(col_val)
-                    # print col_val
+
                 item = self.child_item(col_val, i, feature_id)
             self.add_entity_editor(model, feature_id)
             self.spatial_parent_number = self.spatial_parent_number + 1

@@ -660,6 +660,9 @@ class GeomWidgetsBase(object):
             self.widget.offset_distance.setSuffix('m')
 
         self.highlight = None
+        self.spatial_column = active_spatial_column(
+            self.settings.entity, self.settings.layer
+        )
         # self.help_cursor = self.settings.help_box.textCursor()
 
     def on_geom_tools_combo_changed(self, index):
@@ -1044,7 +1047,10 @@ class GeomWidgetsBase(object):
         if len(new_features) > 0:
             new_feature = layer.selectedFeatures()[0]
             self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
-                self.feature_ids[0], allow_saved_ft=True
+                self.feature_ids[0],
+                entity=self.settings._entity,
+                spatial_column=self.spatial_column,
+                layer=self.settings.layer, allow_saved_ft=True
             )
 
             self.feature_ids.append(new_feature.id())
@@ -2248,7 +2254,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         new_features = [f.id() for f in self.equal_split_features]
         if len(self.feature_ids) > 0:
             self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
-                self.feature_ids[0], allow_saved_ft=True
+                self.feature_ids[0],
+                entity=self.settings._entity,
+                spatial_column=self.spatial_column,
+                layer=self.settings.layer,
+                allow_saved_ft=True
             )
 
             new_features.extend(self.feature_ids)
@@ -2293,7 +2303,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         if self.parellel_rad.isChecked():
 
             line_feature = None
-            move_height = None
+
             for i in range(1, self.no_polygons):
                 # print self.lines
                 if line_feature is None:
@@ -2308,14 +2318,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
                     return
 
-                feature, line_feature, move_height = split_move_line_with_area(
+                feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,
                     self.preview_layer,
                     self.lines[0],
                     self.area,
-                    self.feature_ids,
-                    move_height=move_height
+                    self.feature_ids
                 )
                 # print i, 'split', move_height
                 # self.iface.mainWindow().blockSignals(True)

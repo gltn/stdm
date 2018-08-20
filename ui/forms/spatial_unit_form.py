@@ -272,6 +272,7 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype: NoneTYpe
         """
+
         try:
             # init form
             self.set_entity(table)
@@ -289,6 +290,7 @@ class STDMFieldWidget(QObject):
                 )
             except Exception:
                 pass
+
             curr_layer.featureDeleted.connect(
                 self.on_feature_deleted
             )
@@ -472,7 +474,8 @@ class STDMFieldWidget(QObject):
             return ent_model, 0
         return ent_model, len(col_with_data)
 
-    def load_stdm_form(self, feature_id, spatial_column=None, allow_saved_ft=False):
+    def load_stdm_form(self, feature_id, spatial_column=None, entity=None,
+                       layer=None, allow_saved_ft=False):
         """
         Loads STDM Form and collects the model added
         into the form so that it is saved later.
@@ -485,7 +488,13 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype:NoneType
         """
-
+        if entity is not None:
+            self.entity = entity
+        if layer is not None:
+            self.layer = layer
+        if spatial_column is not None:
+            self.spatial_column = spatial_column
+            
         srid = None
 
         self.current_feature = feature_id
