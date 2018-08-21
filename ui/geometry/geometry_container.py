@@ -284,6 +284,7 @@ class GeometryToolsDock(
             PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS,
             AREA_POLYGON
         ]
+        self.features = []
         # self.field_widget = STDMFieldWidget(self.plugin)
 
         # self.geometry_map_tool.geomIdentified.connect(
@@ -293,6 +294,17 @@ class GeometryToolsDock(
     # def feature_clicked(self, feature_ids):
     #     self.featureClicked.emit(feature_ids)
     #     print 'emitted ', feature_ids
+    @property
+    def original_features(self):
+        feat_ids  = []
+        features = []
+        for feat in self.features:
+            if feat.id() in feat_ids:
+                continue
+            else:
+                feat_ids.append(feat.id())
+                features.append(feat)
+        return features
 
     def write_log_message(message, tag, level):
         if os is None:
@@ -878,6 +890,9 @@ class GeomWidgetsBase(object):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+
+        self.settings.features.extend(self.features)
+
         if self.settings.layer is None:
             return
 
@@ -1436,6 +1451,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+        self.settings.extend(self.features)
 
         if self.settings.layer is None:
             return
@@ -1790,6 +1806,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+        self.settings.features.extend(self.features)
 
         if self.settings.layer is None:
             return
@@ -2274,7 +2291,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             return
 
         self.executed = True
-
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('EqualAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
@@ -2298,7 +2314,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         self.settings.layer.selectByIds(self.feature_ids)
 
-        self.create_preview_layer(True)
+        self.create_preview_layer(False)
         self.equal_split_features[:] = []
         if self.parellel_rad.isChecked():
 
@@ -2340,7 +2356,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
 
-                self.create_preview_layer(True)
+                self.create_preview_layer(False)
 
                 result = True
 

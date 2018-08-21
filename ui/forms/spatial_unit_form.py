@@ -494,7 +494,7 @@ class STDMFieldWidget(QObject):
             self.layer = layer
         if spatial_column is not None:
             self.spatial_column = spatial_column
-            
+
         srid = None
 
         self.current_feature = feature_id
