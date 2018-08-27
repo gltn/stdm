@@ -265,12 +265,8 @@ class STDMQGISLoader(object):
 
     def active_branch_name(self):
         name = 'XXXXXX'
-        try:
-            from git import Repo
-            repo = Repo('.')
-            name = repo.active_branch.name
-        except:
-            pass
+        line = [line.strip() for line in open('.branch')]
+        name = line[0]
         return name
 
     def initMenuItems(self):
