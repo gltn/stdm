@@ -790,11 +790,16 @@ def split_move_line_with_area(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, area, feature_ids=None
 ):
-
+    # if previous_properties is None:
     decimal_place_new = 0
     height = 1
-    split_area1 = 0
     height_change = 1
+    # else:
+    #     decimal_place_new = previous_properties['decimal_place_new']
+    #     height = previous_properties['height']
+    #     height_change = previous_properties['height_change']
+    split_area1 = 0
+
     loop_index = 0
     failed_split = 0
     distance = 0
@@ -804,25 +809,50 @@ def split_move_line_with_area(
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
         # the height/ distance from selected line
-
-        height = Decimal(height) + Decimal(height_change) /\
-                                   Decimal(math.pow(10, decimal_place_new))
         # Get the parallel line from the selected line using the calculated height
         # print selected_line_ft, selected_line_ft.geometry()
+        # if move_height is not None:
+        #     parallel_line_geom = get_parallel_line(
+        #         selected_line_ft.geometry(), move_height
+        #     )
+        # else:
+        # if previous_properties is not None:
+        #     decimal_place_new = previous_properties['decimal_place_new']
+        #     height = previous_properties['height']
+        #     height_change = previous_properties['height_change']
+
+        height = Decimal(height) + Decimal(height_change) / \
+                                   Decimal(math.pow(10, decimal_place_new))
         parallel_line_geom = get_parallel_line(
             selected_line_ft.geometry(), height*-1
         )
-        print height*-1
-        print 1,  parallel_line_geom
+        # print parallel_line_geom, height, height_change, decimal_place_new
+        # print height*-1
+        QApplication.processEvents()
+        # print loop_index, parallel_line_geom,  height
         # if parallel_line_geom is None:
-        #     continue
+        #     if previous_properties is not None:
+        #         decimal_place_new = previous_properties['decimal_place_new']
+        #         height = previous_properties['height']
+        #         height_change = previous_properties['height_change']
+
+            # height = Decimal(height*-1) + Decimal(height_change) / \
+            #                            Decimal(math.pow(10, decimal_place_new))
+            # print selected_line_ft.geometry(), selected_line_ft.geometry().length()
+            # parallel_line_geom = get_parallel_line(
+            #     selected_line_ft.geometry(), height*-1
+            # )
+            # if parallel_line_geom is None:
+            #     continue
+            # return False, False, False
         # Get one feature selected on preview layer.
         # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
         try:
             sel_features = list(preview_layer.getFeatures())
         except Exception:
-            break
+            return False, False, False
+            # break
         # if previous_geom is None:
             # Get the geometry
         geom1 = sel_features[0].geometry()
@@ -830,15 +860,15 @@ def split_move_line_with_area(
         #     geom1 = previous_geom
 
         # This is needed for equal area split when the height needs to be positive
-        if parallel_line_geom is None:
-            parallel_line_geom = get_parallel_line(
-                selected_line_ft.geometry(), height*height*-1
-            )
-        elif parallel_line_geom.distance(geom1) > distance:
-            parallel_line_geom = get_parallel_line(
-                selected_line_ft.geometry(), height
-            )
-        print 2, parallel_line_geom
+        # if parallel_line_geom is None:
+        #     parallel_line_geom = get_parallel_line(
+        #         selected_line_ft.geometry(), height*height*-1
+        #     )
+        # elif parallel_line_geom.distance(geom1) > distance:
+        #     parallel_line_geom = get_parallel_line(
+        #         selected_line_ft.geometry(), height
+        #     )
+        # print 2, parallel_line_geom
         # if parallel_line_geom is None:
         #     continue
 
@@ -896,7 +926,7 @@ def split_move_line_with_area(
                         continue
                 loop_index = loop_index + 1
             else:
-                # print 'continue 2'
+
                 continue
 
             # If provided area is greater than split area, increase height
@@ -939,7 +969,8 @@ def split_move_line_with_area(
                         # print '2 {} {}'.format(split_area1, area)
                         # line_layer.startEditing()
                         parallel_line_ft = add_geom_to_feature(
-                            line_layer, parallel_line_geom2)
+                            line_layer, parallel_line_geom2
+                        )
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
@@ -948,7 +979,11 @@ def split_move_line_with_area(
                         # print main_geom.area(), split_geom.area()
                         # polygon_layer.selectByIds([original_selected.id()])
                         # print 'aa', parallel_line_geom
-                        copy_layer_to_memory(line_layer, 'split line', [parallel_line_ft.id()])
+                        # copy_layer_to_memory(line_layer, 'split line', [parallel_line_ft.id()])
+                        # properties = {'height': height,
+                        #               'decimal_place_new': decimal_place_new,
+                        #               'height_change': height_change}
+
                         return feature, parallel_line_ft
 
 
@@ -995,18 +1030,21 @@ def split_move_line_with_area(
                         feature = add_geom_to_layer(
                             polygon_layer, split_geom, main_geom, feature_ids
                         )
-                        copy_layer_to_memory(line_layer, 'split line',
-                                             [parallel_line_ft.id()])
+                        # copy_layer_to_memory(line_layer, 'split line',
+                        #                      [parallel_line_ft.id()])
                         # print feature.geometry().area(), 2
                         # polygon_layer.selectByIds([feature.id()])
                         # print main_geom.area(), split_geom.area()
                         # print 'bb', parallel_line_geom
                         # polygon_layer.selectByIds([original_selected.id()])
+                        # properties = {'height': height,
+                        #               'decimal_place_new': decimal_place_new,
+                        #               'height_change': height_change}
+
                         return feature, parallel_line_ft
         else:
 
-            # print 'failed to intersect'
-            if failed_split > 10:
+            if failed_split > 100:
                 return False, False
             else:
                 failed_split = failed_split + 1

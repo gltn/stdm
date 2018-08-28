@@ -284,6 +284,7 @@ class GeometryToolsDock(
             PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS,
             AREA_POLYGON
         ]
+        self.features = []
         # self.field_widget = STDMFieldWidget(self.plugin)
 
         # self.geometry_map_tool.geomIdentified.connect(
@@ -293,6 +294,17 @@ class GeometryToolsDock(
     # def feature_clicked(self, feature_ids):
     #     self.featureClicked.emit(feature_ids)
     #     print 'emitted ', feature_ids
+    @property
+    def original_features(self):
+        feat_ids  = []
+        features = []
+        for feat in self.features:
+            if feat.id() in feat_ids:
+                continue
+            else:
+                feat_ids.append(feat.id())
+                features.append(feat)
+        return features
 
     def write_log_message(message, tag, level):
         if os is None:
@@ -313,8 +325,9 @@ class GeometryToolsDock(
         """
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         self.init_signals()
-
-
+        if self.layer is not None:
+            self.layer.setCustomProperty("labeling/enabled", False)
+            self.layer.triggerRepaint()
 
     def add_widgets(self):
         self.widgets_added = True
@@ -360,9 +373,11 @@ class GeometryToolsDock(
         self.clear_feature_selection()
 
         GEOM_DOCK_ON = False
+        if self.layer is not None:
+            self.layer.setCustomProperty("labeling/enabled", True)
+            self.layer.triggerRepaint()
 
         self.close()
-
 
     def remove_memory_layers(self, stop_editing=False):
         """
@@ -370,7 +385,6 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
-
         self.blockSignals(True)
         try:
             for memory_layer_name in self.memory_layers:
@@ -446,9 +460,6 @@ class GeometryToolsDock(
         global GEOM_DOCK_ON
 
         # if Feature details is checked, hide it.
-        # if self.plugin.feature_details_act.isChecked():
-        #     self.plugin.feature_details_act.setChecked(False)
-
         if not self.plugin.geom_tools_cont_act.isChecked() and \
                 GEOM_DOCK_ON and not button_clicked:
 
@@ -458,11 +469,10 @@ class GeometryToolsDock(
         active_layer = self.iface.activeLayer()
         # if no active layer, show error message
         # and uncheck the feature tool
-
         if active_layer is None:
             if button_clicked:
                 self.active_layer_check()
-            # self.plugin.geom_tools_cont_act.setChecked(False)
+
             self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         if not button_clicked and GEOM_DOCK_ON:
@@ -511,18 +521,7 @@ class GeometryToolsDock(
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
 
-        # layer_select_tool.deactivated.connect(
-        #     self.disable_feature_details_btn
-        # )
-        # self.geometry_map_tool = GeometryMapTool(self.iface.mapCanvas())
-        # self.canvas.setMapTool(self.geometry_map_tool)
         layer_select_tool.activate()
-        # icon = QIcon(":/plugins/stdm/images/icons/edit.png")
-        # self.action = QAction(icon, 'Geometry Tools', self.iface.mainWindow())
-        # self.mapTool =GeometryMapTool(self.iface.mapCanvas(), self.iface.activeLayer())
-        # self.mapTool.setAction(self.iface.actionSelect())
-        # self.iface.mapCanvas().setMapTool(self.mapTool)
-        # self.mapTool.redrawActions()
 
     def disable_feature_details_btn(self):
         """
@@ -673,6 +672,9 @@ class GeomWidgetsBase(object):
             self.widget.offset_distance.setSuffix('m')
 
         self.highlight = None
+        self.spatial_column = active_spatial_column(
+            self.settings.entity, self.settings.layer
+        )
         # self.help_cursor = self.settings.help_box.textCursor()
 
     def on_geom_tools_combo_changed(self, index):
@@ -888,6 +890,9 @@ class GeomWidgetsBase(object):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+
+        self.settings.features.extend(self.features)
+
         if self.settings.layer is None:
             return
 
@@ -895,6 +900,7 @@ class GeomWidgetsBase(object):
             return
         zoom_to_selected(self.settings.layer)
         if self.settings.stdm_layer(self.settings.layer):
+
             self.feature_count = self.selected_features_count()
             self.on_feature_selection_finished()
 
@@ -1056,7 +1062,10 @@ class GeomWidgetsBase(object):
         if len(new_features) > 0:
             new_feature = layer.selectedFeatures()[0]
             self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
-                self.feature_ids[0], allow_saved_ft=True
+                self.feature_ids[0],
+                entity=self.settings._entity,
+                spatial_column=self.spatial_column,
+                layer=self.settings.layer, allow_saved_ft=True
             )
 
             self.feature_ids.append(new_feature.id())
@@ -1067,6 +1076,7 @@ class GeomWidgetsBase(object):
 
 
         iface.setActiveLayer(self.settings.layer)
+
         self.iface.mapCanvas().refresh()
 
 class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
@@ -1441,6 +1451,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+        self.settings.extend(self.features)
 
         if self.settings.layer is None:
             return
@@ -1795,6 +1806,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
+        self.settings.features.extend(self.features)
 
         if self.settings.layer is None:
             return
@@ -2257,14 +2269,19 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     def post_split_update(self, layer, preview=False):
 
         new_features = [f.id() for f in self.equal_split_features]
-        self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
-            self.feature_ids[0], allow_saved_ft=True
-        )
+        if len(self.feature_ids) > 0:
+            self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
+                self.feature_ids[0],
+                entity=self.settings._entity,
+                spatial_column=self.spatial_column,
+                layer=self.settings.layer,
+                allow_saved_ft=True
+            )
 
-        new_features.extend(self.feature_ids)
-        layer.selectByIds(new_features)
+            new_features.extend(self.feature_ids)
+            layer.selectByIds(new_features)
 
-        add_area(layer, AREA_POLYGON, all_features=preview)
+            add_area(layer, AREA_POLYGON, all_features=preview)
 
         iface.setActiveLayer(self.settings.layer)
 
@@ -2274,7 +2291,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             return
 
         self.executed = True
-
         self.progress_dialog.setRange(0, 0)
         message = QApplication.translate('EqualAreaWidget', 'Splitting')
         self.progress_dialog.setLabelText(message)
@@ -2305,33 +2321,28 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             line_feature = None
 
             for i in range(1, self.no_polygons):
-
+                # print self.lines
                 if line_feature is None:
 
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
-
-                        fail_message = QApplication.translate(
-                            'EqualAreaWidget',
-                            'A line is not selected.'
-                        )
-                        self.notice.insertErrorNotification(fail_message)
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
 
                     return
-                print line_ft
+
                 feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
                     self.line_layer,
                     self.preview_layer,
-                    line_ft,
+                    self.lines[0],
                     self.area,
                     self.feature_ids
                 )
+                # print i, 'split', move_height
                 # self.iface.mainWindow().blockSignals(True)
 
 
@@ -2373,7 +2384,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.create_preview_layer(False)
 
         iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
+
 
         if result:
             self.post_split_update(self.settings.layer)
@@ -2386,6 +2397,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             )
             self.progress_dialog.setLabelText(fail_message)
         self.executed = False
+        self.init_signals()
+
 
     def preview(self):
 
@@ -2433,12 +2446,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
-
-                        fail_message = QApplication.translate(
-                            'EqualAreaWidget',
-                            'A line is not selected.'
-                        )
-                        self.notice.insertErrorNotification(fail_message)
                         return
                 else:
                     line_ft = line_feature
@@ -2518,7 +2525,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 #     pass
 
         iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
 
         if result:
 
@@ -2533,6 +2539,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.setLabelText(fail_message)
 
         self.executed = False
+        self.init_signals()
 
 class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
 

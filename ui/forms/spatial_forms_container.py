@@ -16,7 +16,7 @@ from PyQt4.QtGui import (
     QItemSelectionModel,
     QVBoxLayout,
     QDoubleSpinBox,
-    QMdiArea, QTabWidget)
+    QMdiArea, QTabWidget, QPushButton)
 
 from qgis.utils import (
     iface
@@ -55,13 +55,25 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.feature_models = feature_models
         self.custom_tenure_info_component = None
         self.column_formatters = self.plugin.entity_formatters[entity.name]
-        self._init_str_editor()
+        self._init_editor()
         self.add_tree_node()
         self.form_error = {}
         self.active_spatial_column = active_spatial_column(entity, layer)
         self.notice = NotificationBar(self.str_notification)
+        self.discard_btn.clicked.connect(self.discard)
+        self.layer.editingStopped.connect(self.discard)
 
-    def _init_str_editor(self):
+    def discard(self):
+        for i in range(len(self.feature_models)):
+            self.layer.undoStack().undo()
+
+        for feature in self.plugin.geom_tools_container.original_features:
+            self.layer.updateFeature(feature)
+            self.layer.undoStack().undo()
+        self.plugin.geom_tools_container.remove_memory_layers(True)
+        self.feature_models.clear()
+
+    def _init_editor(self):
         """
         Initializes the GUI of the STR editor.
         """
@@ -69,6 +81,14 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.splitter.isCollapsible(False)
         self.splitter.setSizes([220, 550])
         self.splitter.setChildrenCollapsible(False)
+        self.discard_btn = QPushButton(
+            QApplication.translate(
+                'SpatialFormsContainer', 'Discard'
+            )
+        )
+        self.buttonBox.addButton(
+            self.discard_btn, QDialogButtonBox.ActionRole
+        )
 
     def _init_notification(self):
         """
@@ -228,9 +248,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         :return: None
         :rtype: NoneType
         """
-
         editor = self.sender()
-
         if not model is None:
             if editor.is_valid:
 
@@ -360,7 +378,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
                     formatter = self.column_formatters[name]
 
                     col_val = formatter.format_column_value(col_val)
-                    # print col_val
+
                 item = self.child_item(col_val, i, feature_id)
             self.add_entity_editor(model, feature_id)
             self.spatial_parent_number = self.spatial_parent_number + 1
@@ -418,46 +436,6 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         """
         item = self.spatial_form_items['%s%s' % (text, sp_parent_number)]
         return item
-
-    def current_str_number(self):
-        """
-        Gets the currently selected spatial_parent_number.
-        :return: The currently selected spatial_parent_number
-        :rtype: Integer
-        """
-        item = self.current_item()
-        spatial_parent_number = item.data()
-        return spatial_parent_number
-
-    def add_custom_tenure_info_data(self, party_model, row_number,
-                                    custom_model=None):
-        """
-        Adds custom tenure info tab with editor form. It could load data if
-        the custom_model is not none.
-        :param party_model: The party model associated with custom tenure info
-        record.
-        :type party_model: Object
-        :param row_number: The row number of the party entry
-        :type row_number: Integer
-        :param custom_model: The custom tenure model that populates the tab
-        forms.
-        :type custom_model: Integer
-        """
-        custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-            self.spatial_unit
-        )
-
-        if custom_attr_entity is None:
-            return
-        store = self.current_data_store()
-        QApplication.processEvents()
-        create_result = self.custom_tenure_info_component.add_entity_editor(
-            self.party, self.spatial_unit, party_model,
-            self.spatial_parent_number, row_number, custom_model
-        )
-
-        if create_result:
-            store.custom_tenure[party_model.id] = custom_model
 
     def remove_str_tree_node(self):
         """
