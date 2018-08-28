@@ -264,9 +264,13 @@ class STDMQGISLoader(object):
                 )
 
     def active_branch_name(self):
-        name = 'XXXXXX'
-        line = [line.strip() for line in open('.branch')]
-        name = line[0]
+        name = ''
+        try:
+            home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
+            branch_file = '{}/.stdm/.branch'.format(home)
+            name = [line.strip() for line in open(branch_file)][0]
+        except:
+            pass
         return name
 
     def initMenuItems(self):
