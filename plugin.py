@@ -119,8 +119,11 @@ from stdm.ui.social_tenure.str_editor import STREditor
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
 from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 
-LOGGER = logging.getLogger('stdm')
+from stdm.security.privilege_provider import SinglePrivilegeProvider
+from stdm.security.roleprovider import RoleProvider
 
+
+LOGGER = logging.getLogger('stdm')
 
 class STDMQGISLoader(object):
 
@@ -253,6 +256,19 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.addSeparator()
         self.stdmInitToolbar.addAction(self.helpAct)
         self.stdmInitToolbar.addAction(self.aboutAct)
+
+        self.git_branch = QLabel(self.iface.mainWindow())
+        self.git_branch.setText(self.active_branch_name())
+        self.stdmInitToolbar.addWidget( self.git_branch)
+
+    def active_branch_name(self):
+        try:
+            home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
+            branch_file = '{}/.stdm/.branch'.format(home)
+            name = '('+[line.strip() for line in open(branch_file)][0]+')'
+        except:
+            name = ''
+        return name
 
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
@@ -1018,6 +1034,9 @@ class STDMQGISLoader(object):
 
         username = data.app_dbconn.User.UserName
 
+        if username == 'postgres':
+            self.grant_privilege_base_tables(username)
+
         self.moduleCntGroup = None
         self.moduleContentGroups = []
         self._moduleItems = OrderedDict()
@@ -1191,6 +1210,16 @@ class STDMQGISLoader(object):
         self.create_spatial_unit_manager()
 
         self.profile_status_message()
+
+    def grant_privilege_base_tables(self, username):
+        roles = []
+        roleProvider = RoleProvider()
+        roles = roleProvider.GetSysRoles()
+
+        privilege_provider = SinglePrivilegeProvider('', current_profile() )
+        for role in roles:
+            privilege_provider.grant_privilege_base_table(role)
+
 
     def load_profiles_combobox(self):
         """
