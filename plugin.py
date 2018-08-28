@@ -124,8 +124,8 @@ from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 
-LOGGER = logging.getLogger('stdm')
 
+LOGGER = logging.getLogger('stdm')
 
 class STDMQGISLoader(object):
 
@@ -284,6 +284,19 @@ class STDMQGISLoader(object):
         self.stdmInitToolbar.addSeparator()
         self.stdmInitToolbar.addAction(self.helpAct)
         self.stdmInitToolbar.addAction(self.aboutAct)
+
+        self.git_branch = QLabel(self.iface.mainWindow())
+        self.git_branch.setText(self.active_branch_name())
+        self.stdmInitToolbar.addWidget( self.git_branch)
+
+    def active_branch_name(self):
+        try:
+            home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
+            branch_file = '{}/.stdm/.branch'.format(home)
+            name = '('+[line.strip() for line in open(branch_file)][0]+')'
+        except:
+            name = ''
+        return name
 
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
