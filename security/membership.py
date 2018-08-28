@@ -175,6 +175,8 @@ class Membership(object):
         '''
         Define a new password for the specified username
         '''
+        import pydevd; pydevd.setrace()
+
         if len(password) >= self._minPassLength:            
             #Get the SQLAlchemy connection object
             t = text("ALTER USER %s WITH PASSWORD :userpass"%(username,))

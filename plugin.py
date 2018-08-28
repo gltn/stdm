@@ -265,7 +265,7 @@ class STDMQGISLoader(object):
         try:
             home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
             branch_file = '{}/.stdm/.branch'.format(home)
-            name = 'Branch: '+[line.strip() for line in open(branch_file)][0]
+            name = '('+[line.strip() for line in open(branch_file)][0]+')'
         except:
             name = ''
         return name
