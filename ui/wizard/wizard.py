@@ -547,7 +547,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.edtDocPath.setFocus()
         self.rbReject.setChecked(True)
-        #self.lblDesc.setText("")
         self.edtDesc.setText("")
 
         self.pftableView.setColumnWidth(0, 250)
@@ -896,24 +895,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     break
 
         return index 
-
-    #def check_empty_entities(self):
-        #"""
-        #"""
-        #is_empty = True
-
-        #profile = self.current_profile()
-        #for entity in profile.entities.values():
-            #col_count = 0
-            #for column in entity.columns.values():
-                #if column.action <> DbItem.DROP:
-                    #col_count += 1
-                    #break
-            #if col_count == 0:
-                #self.show_message(self.tr("Entity '%s' has no columns!") % entity.short_name)
-                #is_empty = False 
-
-        #return is_empty
 
     def find_empty_lookups(self):
         """
@@ -1666,8 +1647,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.insertItems(0, profiles)
 
     def set_current_profile(self, name):
-        # Set current profile on the profile combobox.
-        #cp = current_profile()
         if name <> '':
             index = self.cboProfile.findText(name, Qt.MatchFixedString)
             if index >= 0:
