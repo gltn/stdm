@@ -609,7 +609,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             #Add records to nested list for enumeration in table model
 
-
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -620,6 +619,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         #load_data = False
                     #else:
                         #load_data = True
+
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
 
@@ -665,11 +665,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     entity_records_collection.append(entity_row_info)
 
+
                 self._tableModel = BaseSTDMTableModel(
                     entity_records_collection, self._headers, self
                 )
-                self.plugin.entity_table_model[self._entity.name] = \
-                    self._tableModel
+                if self.plugin is not None:
+                    self.plugin.entity_table_model[self._entity.name] = \
+                            self._tableModel
             # Add filter columns
             for header, info in self._searchable_columns.iteritems():
                 column_name, index = info['name'], info['header_index']

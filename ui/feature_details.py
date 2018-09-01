@@ -1275,6 +1275,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                     pass
                 record_dict = record.__dict__
                 party, party_id = self.current_party(record_dict)
+                party_model = None
                 if party is not None:
                     party_model = getattr(record, party.name)
 
