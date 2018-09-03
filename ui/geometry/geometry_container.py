@@ -190,6 +190,7 @@ class LayerSelectionHandler(object):
 
         if layer_source is not None:
             return True
+
         else:
             return False
 
@@ -285,6 +286,7 @@ class GeometryToolsDock(
             AREA_POLYGON
         ]
         self.features = []
+
         # self.field_widget = STDMFieldWidget(self.plugin)
 
         # self.geometry_map_tool.geomIdentified.connect(
@@ -325,6 +327,7 @@ class GeometryToolsDock(
         """
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
         self.init_signals()
+
         if self.layer is not None:
             self.layer.setCustomProperty("labeling/enabled", False)
             self.layer.triggerRepaint()
@@ -507,11 +510,9 @@ class GeometryToolsDock(
         """
         Prepares the dock widget for data loading.
         """
-        self.init_dock()
-
         self.activate_select_tool()
         self.update_layer_source(active_layer)
-
+        self.init_dock()
 
     def activate_select_tool(self):
         """

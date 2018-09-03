@@ -58,10 +58,12 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self._init_editor()
         self.add_tree_node()
         self.form_error = {}
+        self.editing = True
         self.active_spatial_column = active_spatial_column(entity, layer)
         self.notice = NotificationBar(self.str_notification)
         self.discard_btn.clicked.connect(self.discard)
         self.layer.editingStopped.connect(self.discard)
+        self.buttonBox.accepted.connect(self.save)
 
     def discard(self):
         for i in range(len(self.feature_models)):
@@ -72,6 +74,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
             self.layer.undoStack().undo()
         self.plugin.geom_tools_container.remove_memory_layers(True)
         self.feature_models.clear()
+        self.reject()
 
     def _init_editor(self):
         """
@@ -88,6 +91,10 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         )
         self.buttonBox.addButton(
             self.discard_btn, QDialogButtonBox.ActionRole
+        )
+
+        self.setWindowFlags(
+            Qt.Window | Qt.WindowTitleHint | Qt.CustomizeWindowHint
         )
 
     def _init_notification(self):
@@ -114,7 +121,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
             if c.name in entity_display_columns(self.entity)
             if c.name != 'id'
         ]
-        # print col_headers, 1
+
         self.column_headers = OrderedDict(col_headers)
         # print self.column_headers, 2
         self.tree_view_model.setHorizontalHeaderLabels(
@@ -140,9 +147,8 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
             self.on_tree_view_item_clicked
         )
 
-    def accept(self):
+    def save(self):
         error_found = False
-
         for i in range(0, self.spatial_parent_number):
 
             widget = self.component_container.widget(i)
@@ -233,26 +239,27 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
                 )
             )
             self.done(1)
+            self.editing = False
         else:
             self.reject()
 
-    def on_form_saved(self, model):
-        """
-        A slot raised when the save button is clicked
-        in spatial unit form. It adds the feature model
-        in feature_models ordered dictionary to be saved
-        later.
-        :param model: The model holding feature geometry
-        and attributes obtained from the form
-        :type model: SQLAlchemy Model
-        :return: None
-        :rtype: NoneType
-        """
-        editor = self.sender()
-        if not model is None:
-            if editor.is_valid:
-
-                editor.accept()
+    # def on_form_saved(self, model):
+    #     """
+    #     A slot raised when the save button is clicked
+    #     in spatial unit form. It adds the feature model
+    #     in feature_models ordered dictionary to be saved
+    #     later.
+    #     :param model: The model holding feature geometry
+    #     and attributes obtained from the form
+    #     :type model: SQLAlchemy Model
+    #     :return: None
+    #     :rtype: NoneType
+    #     """
+    #     editor = self.sender()
+    #     if not model is None:
+    #         if editor.is_valid:
+    #
+    #             editor.accept()
 
     def on_tree_view_item_clicked(self, current, previous):
         """

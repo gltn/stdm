@@ -599,9 +599,9 @@ class STDMFieldWidget(QObject):
             self.entity, self.layer, self.feature_models, self.plugin
         )
 
-        # print spatial_forms
+
         result = spatial_forms.exec_()
-        # return
+
         if result == 1:
 
             # undo each feature created so that qgis
@@ -609,11 +609,12 @@ class STDMFieldWidget(QObject):
             # It will also clear all the models from
             # self.feature_models as on_feature_deleted
             # is raised when a feature is removed.
+            iface.mainWindow().blockSignals(True)
             for f_id in self.feature_models.keys():
-                iface.mainWindow().blockSignals(True)
                 # self.layer.deleteFeature(f_id)
                 self.on_feature_deleted(f_id)
-                iface.mainWindow().blockSignals(True)
+
+            iface.mainWindow().blockSignals(False)
 
             for i in range(len(self.feature_models)):
                 self.layer.undoStack().undo()

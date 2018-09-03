@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_spatial_forms_container.ui'
 #
-# Created: Wed Jul 18 23:00:44 2018
-#      by: PyQt4 UI code generator 4.10.2
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -61,7 +60,7 @@ class Ui_SpatialFormsContainer(object):
         self.verticalLayout.addWidget(self.splitter)
         self.buttonBox = QtGui.QDialogButtonBox(SpatialFormsContainer)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Save)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout.addWidget(self.buttonBox)
 
