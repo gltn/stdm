@@ -63,7 +63,7 @@ from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
-MAX_LIMIT = 500 # Maximum records in a entity browser
+MAX_LIMIT = 500 # Maximum records in entity browser
 
 def pg_profile_names():
     """
