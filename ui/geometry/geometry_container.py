@@ -1452,7 +1452,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.features = feature_id_to_feature(
             self.settings.layer, self.feature_ids
         )
-        self.settings.extend(self.features)
+        self.settings.features.extend(self.features)
 
         if self.settings.layer is None:
             return
