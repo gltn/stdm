@@ -124,6 +124,7 @@ from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 
+from stdm.ui.length_conversion import LengthConversion
 
 LOGGER = logging.getLogger('stdm')
 
@@ -212,6 +213,7 @@ class STDMQGISLoader(object):
         self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
         QApplication.translate("AboutToolbarAction","About"), self.iface.mainWindow(),
         "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
+
         #Define actions that are available to all logged in users
         self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
         QApplication.translate("LogoutToolbarAction","Logout"), self.iface.mainWindow(),
@@ -945,6 +947,25 @@ class STDMQGISLoader(object):
         geoodkBtn.setMenu(geoodkMenu)
         #Define actions
 
+
+        # Geometry tools menu and buttons
+        geom_tool_menu = QMenu(self.stdmMenu)
+        geom_tool_menu.setObjectName("GeometryToolsMenu")
+        geom_tool_menu.setIcon(QIcon(":/plugins/stdm/images/icons/geometry_tools.png"))
+        geom_tool_menu.setTitle(QApplication.translate("GeometryToolsMenu", "Geometry Tools"))
+
+        geomToolBtn = QToolButton()
+        adminObjName = QApplication.translate("GeometryToolbarSettings", "Geometry Tools")
+        # Required by module loader for those widgets that need to be inserted into the container
+        geomToolBtn.setObjectName(adminObjName)
+        geomToolBtn.setToolTip(adminObjName)
+        geomToolBtn.setIcon(QIcon(":/plugins/stdm/images/icons/geometry_tools.png"))
+        geomToolBtn.setPopupMode(QToolButton.InstantPopup)
+
+        geomToolMenu = QMenu(geomToolBtn)
+        geomToolBtn.setMenu(geomToolMenu)
+
+
         self.contentAuthAct = QAction(
             QIcon(":/plugins/stdm/images/icons/content_auth.png"),
             QApplication.translate(
@@ -1011,9 +1032,16 @@ class STDMQGISLoader(object):
             self.iface.mainWindow())
         self.geom_tools_cont_act.setCheckable(True)
 
+        self.geom_conversion_act = QAction(
+            QIcon(":/plugins/stdm/images/icons/geometry_tools.png"), \
+            QApplication.translate("STDMQGISLoader", "Metric Conversion Tool"),
+            self.iface.mainWindow())
+
+
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
                                        QApplication.translate("MobileFormGenerator", "Generate Mobile Form"),
                                        self.iface.mainWindow())
+
         self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
@@ -1032,8 +1060,11 @@ class STDMQGISLoader(object):
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+
         self.geom_tools_cont_act.triggered.connect(
             self.geom_tools_container.activate_geometry_tools)
+
+        self.geom_conversion_act.triggered.connect(self.metric_conversion)
 
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
@@ -1083,6 +1114,10 @@ class STDMQGISLoader(object):
         geom_tools_cnt = ContentGroup.contentItemFromQAction(
             self.geom_tools_cont_act)
         geom_tools_cnt.code = 'd1c67ab1-b617-4601-87dd-d20eb702a802'
+
+        geom_conversion_cnt = ContentGroup.contentItemFromQAction(
+            self.geom_conversion_act)
+        geom_conversion_cnt.code = 'd1c67ED1-b617-4601-87dd-d20eb702a802'
 
         wzdConfigCnt = ContentGroup.contentItemFromQAction(self.wzdAct)
         wzdConfigCnt.code = "F16CA4AC-3E8C-49C8-BD3C-96111EA74206"
@@ -1176,6 +1211,15 @@ class STDMQGISLoader(object):
         self.geometry_tools_cnt_group.addContentItem(geom_tools_cnt)
         self.geometry_tools_cnt_group.register()
 
+        self.geometry_conversion_group = ContentGroup(username,
+                                                      self.geom_conversion_act)
+        self.geometry_conversion_group.addContentItem(geom_conversion_cnt)
+        self.geometry_conversion_group.register()
+
+        geometryToolsGroup = []
+        geometryToolsGroup.append(self.geometry_tools_cnt_group)
+        geometryToolsGroup.append(self.geometry_conversion_group)
+
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
@@ -1248,8 +1292,10 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.adminUnitsCntGroup)
         self.menubarLoader.addContent(self.adminUnitsCntGroup)
 
-        self.toolbarLoader.addContent(self.geometry_tools_cnt_group)
-        self.menubarLoader.addContent(self.geometry_tools_cnt_group)
+        #self.toolbarLoader.addContent(self.geometry_tools_cnt_group)
+        #self.menubarLoader.addContent(self.geometry_tools_cnt_group)
+        self.menubarLoader.addContents(geometryToolsGroup, [geom_tool_menu,geom_tool_menu])
+        self.toolbarLoader.addContents(geometryToolsGroup, [geomToolMenu, geomToolBtn])
 
         self.toolbarLoader.addContent(self.importCntGroup)
         self.menubarLoader.addContent(self.importCntGroup)
@@ -1293,6 +1339,10 @@ class STDMQGISLoader(object):
                 )
                 self.geom_tools_signal_connected = True
             self.geom_tools_container.add_widgets()
+
+    def metric_conversion(self):
+        convDlg = LengthConversion(self.iface.mainWindow())
+        convDlg.exec_()
 
     def grant_privilege_base_tables(self, username):
         roles = []

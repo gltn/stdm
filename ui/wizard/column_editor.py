@@ -369,7 +369,6 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'scale', 6
         )
 
-
         self.form_fields['entity_relation'] = \
                 self.type_attribs['FOREIGN_KEY'].get('entity_relation', None)
 
