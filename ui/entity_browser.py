@@ -179,12 +179,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         QDialog.__init__(self,parent)
         self.setupUi(self)
 
-        if plugin is None:
-            self.stdmTables = []
-            self.entity_formatters = {}
-            self.entity_table_model = {}
-            plugin = self
-
         # Add maximize buttons
         self.setWindowFlags(
             self.windowFlags() |
@@ -379,6 +373,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         long to load.
         '''
         self.setWindowTitle(unicode(self.title()))
+
 
         if self._data_initialized:
             return
@@ -624,9 +619,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         #load_data = False
                     #else:
                         #load_data = True
+
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
-
 
             if load_data:
                 # Only one filter is possible.
@@ -670,11 +665,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     entity_records_collection.append(entity_row_info)
 
+
                 self._tableModel = BaseSTDMTableModel(
                     entity_records_collection, self._headers, self
                 )
-                self.plugin.entity_table_model[self._entity.name] = \
-                    self._tableModel
+                if self.plugin is not None:
+                    self.plugin.entity_table_model[self._entity.name] = \
+                            self._tableModel
             # Add filter columns
             for header, info in self._searchable_columns.iteritems():
                 column_name, index = info['name'], info['header_index']
@@ -902,7 +899,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column() and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
-                    iface, self.plugin
+                    iface
                 )
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity

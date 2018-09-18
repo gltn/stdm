@@ -536,6 +536,8 @@ class SpatialUnitManagerDockWidget(
         # Check if the geom has display name, if not,
         # get layer name with default naming.
 
+        if col is None: return
+
         if isinstance(col, str) or isinstance(col, unicode):
 
             spatial_layer_item = u'{}.{}'.format(table, col)
