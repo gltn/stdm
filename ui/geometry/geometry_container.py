@@ -368,7 +368,6 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
-
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
         tool.setChecked(False)
@@ -825,6 +824,7 @@ class GeomWidgetsBase(object):
                 pass
 
     def on_feature_selection_finished(self):
+        add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES
@@ -1223,7 +1223,8 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         else:
             if new_value == 0:
                 message2 = QApplication.translate(
-                    'OffsetDistanceWidget', 'The offset distance should be greater than 0.'
+                    'OffsetDistanceWidget',
+                    'The offset distance should be greater than 0.'
                 )
                 self.notice.insertWarningNotification(message2)
                 return
@@ -2309,6 +2310,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     'A line is not selected.'
                 )
                 self.notice.insertErrorNotification(fail_message)
+                self.init_signals()
                 return
         else:
             rotate_line_ft = self.combined_line
@@ -2328,11 +2330,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
+                        self.init_signals()
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
-
+                    self.init_signals()
                     return
 
                 feature, line_feature = split_move_line_with_area(
@@ -2424,6 +2427,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     'A line is not selected.'
                 )
                 self.notice.insertErrorNotification(fail_message)
+                self.init_signals()
                 return
         else:
             rotate_line_ft = self.combined_line
@@ -2447,11 +2451,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
+                        self.init_signals()
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
-
+                    self.init_signals()
                     return
 
                 feature, line_feature = split_move_line_with_area(
