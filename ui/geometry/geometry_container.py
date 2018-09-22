@@ -615,8 +615,6 @@ class GeometryToolsDock(
 
 
 class GeomWidgetsBase(object):
-
-
     def __init__(self, layer_settings, widget):
 
         self.settings = layer_settings
@@ -954,37 +952,37 @@ class GeomWidgetsBase(object):
             return 0
 
     def selected_line_count(self):
-        if self.line_layer is None:
-            return 0
-        self.lines = self.line_layer.selectedFeatures()
+        count = 0
+
+        if self.line_layer is not None:
+            self.lines = self.line_layer.selectedFeatures()
 
         if self.lines is not None:
-            return len(self.lines)
-        else:
-            return 0
+            count =  len(self.lines)
+
+        return count
 
     def selected_point_count(self):
-        if self.point_layer is None:
-            return 0
+        count = 0
 
-        points = self.point_layer.selectedFeatures()
-        if len(self.lines) > 0:
-            location = identify_selected_point_location(
-                points[0], self.lines[0].geometry()
-            )
+        if self.point_layer is not None:
+            points = self.point_layer.selectedFeatures()
+            if len(self.lines) > 0:
+                location = identify_selected_point_location(
+                    points[0], self.lines[0].geometry()
+                )
 
-            if location == 'middle':
+                if location == 'middle': 
+                    return 0
 
-                return 0
-
-        # if clear_previous:
-        self.points[:] = []
-        self.points = points
+            # if clear_previous:
+            self.points[:] = []
+            self.points = points
 
         if self.points is not None:
-            return len(self.points)
-        else:
-            return 0
+            count = len(self.points)
+
+        return count
 
     def validate_run(self):
         if self.widget.split_polygon_area.value() == 0:
@@ -1382,27 +1380,26 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.rotation_point = None
 
     def selected_point_count(self):
-        if self.point_layer is None:
-            return 0
+        count = 0
 
-        points = self.point_layer.selectedFeatures()
+        if self.point_layer is not None: 
+            points = self.point_layer.selectedFeatures()
 
-        # if len(self.lines) > 0:
-        #     location = identify_selected_point_location(
-        #         points[0], self.lines[0].geometry()
-        #     )
-        #
-        #     if location == 'middle':
-        #         return 0
+        #if len(self.lines) > 0:
+            #location = identify_selected_point_location(
+                    #points[0], self.lines[0].geometry()
+                    #)
+            #if location == 'middle': return 0
 
-        # if clear_previous:
-        self.points[:] = []
-        self.points = points
-        self.rotation_point = self.points[0]
-        if self.points is not None:
-            return len(self.points)
-        else:
-            return 0
+            # if clear_previous:
+            self.points[:] = []
+            self.points = points
+            self.rotation_point = self.points[0]
+
+            if self.points is not None:
+                count = len(self.points)
+
+        return count
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
