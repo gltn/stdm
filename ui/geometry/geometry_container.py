@@ -1438,7 +1438,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         """
         if self.parent().currentWidget().objectName() != self.objectName():
             return
-
+        self.clear_inputs()
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
@@ -1477,6 +1477,12 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_layer = polygon_to_lines(self.settings.layer,
                                            POLYGON_LINES, self.point_layer)
         self.create_point_layer()
+
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer,
+            POLYGON_LINES
+        )
+
 
         if self.line_layer is not None:
             self.line_layer.selectionChanged.connect(
@@ -1578,7 +1584,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         self.length_from_point.setMaximum(math.modf(line_length)[1])
         # add points for the line.
-        add_line_points_to_map(self.point_layer, line_geom)
+        add_line_points_to_map(self.point_layer, line_geom, False)
+        # self.iface.setActiveLayer(self.point_layer)
         self.points_count = self.selected_point_count()
 
         if self.points_count > 0:
@@ -1791,7 +1798,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         """
         if self.parent().currentWidget().objectName() != self.objectName():
             return
-
+        self.clear_inputs()
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:

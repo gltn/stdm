@@ -537,6 +537,7 @@ class MapperMixin(object):
         set_text = []
         where_text = None
         attribute_update = False
+
         for col in self.entity.columns.values():
 
             value = getattr(self.model(), col.name)
@@ -545,7 +546,8 @@ class MapperMixin(object):
             else:
                 quotes = False
             if col.TYPE_INFO == 'GEOMETRY':
-                if not isinstance(value, str) or not isinstance(value, unicode):
+
+                if not isinstance(value, str):
                     attribute_update = True
                     break
             if value is None:
@@ -558,11 +560,14 @@ class MapperMixin(object):
                     set_text.append("{} = {}".format(col.name, value))
             else:
                 where_text = 'WHERE id = {}'.format(value)
+
         if not attribute_update:
             sql_query = 'UPDATE {} SET {} {}'.format(
                 self.entity.name, ','.join(set_text), where_text
             )
+
             _execute(sql_query)
+
         else:
             self.model().update()
 
