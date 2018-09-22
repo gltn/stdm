@@ -1044,7 +1044,8 @@ def split_move_line_with_area(
                         return feature, parallel_line_ft
         else:
 
-            if failed_split > 100:
+            if failed_split > 1000:
+
                 return False, False
             else:
                 failed_split = failed_split + 1

@@ -368,7 +368,6 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
-
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
         tool.setChecked(False)
@@ -823,6 +822,7 @@ class GeomWidgetsBase(object):
                 pass
 
     def on_feature_selection_finished(self):
+        add_area(self.settings.layer, AREA_POLYGON)
 
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES
@@ -1221,7 +1221,8 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         else:
             if new_value == 0:
                 message2 = QApplication.translate(
-                    'OffsetDistanceWidget', 'The offset distance should be greater than 0.'
+                    'OffsetDistanceWidget',
+                    'The offset distance should be greater than 0.'
                 )
                 self.notice.insertWarningNotification(message2)
                 return
@@ -1434,7 +1435,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         """
         if self.parent().currentWidget().objectName() != self.objectName():
             return
-
+        self.clear_inputs()
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
@@ -1473,6 +1474,12 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_layer = polygon_to_lines(self.settings.layer,
                                            POLYGON_LINES, self.point_layer)
         self.create_point_layer()
+
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer,
+            POLYGON_LINES
+        )
+
 
         if self.line_layer is not None:
             self.line_layer.selectionChanged.connect(
@@ -1574,7 +1581,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         self.length_from_point.setMaximum(math.modf(line_length)[1])
         # add points for the line.
-        add_line_points_to_map(self.point_layer, line_geom)
+        add_line_points_to_map(self.point_layer, line_geom, False)
+        # self.iface.setActiveLayer(self.point_layer)
         self.points_count = self.selected_point_count()
 
         if self.points_count > 0:
@@ -1787,7 +1795,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         """
         if self.parent().currentWidget().objectName() != self.objectName():
             return
-
+        self.clear_inputs()
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
@@ -2306,6 +2314,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     'A line is not selected.'
                 )
                 self.notice.insertErrorNotification(fail_message)
+                self.init_signals()
                 return
         else:
             rotate_line_ft = self.combined_line
@@ -2325,11 +2334,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
+                        self.init_signals()
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
-
+                    self.init_signals()
                     return
 
                 feature, line_feature = split_move_line_with_area(
@@ -2421,6 +2431,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     'A line is not selected.'
                 )
                 self.notice.insertErrorNotification(fail_message)
+                self.init_signals()
                 return
         else:
             rotate_line_ft = self.combined_line
@@ -2444,11 +2455,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     if len(self.lines) > 0:
                         line_ft = self.lines[0]
                     else:
+                        self.init_signals()
                         return
                 else:
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
-
+                    self.init_signals()
                     return
 
                 feature, line_feature = split_move_line_with_area(
