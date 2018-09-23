@@ -488,6 +488,7 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype:NoneType
         """
+
         if entity is not None:
             self.entity = entity
         if layer is not None:
@@ -503,8 +504,9 @@ class STDMFieldWidget(QObject):
         # the featureAdded signal is called but the
         # feature ids value is over 0. Return to prevent
         # the dialog from popping up for every feature.
-        if feature_id > 0 and not allow_saved_ft:
-            return
+        if feature_id > 0:
+            if not allow_saved_ft:
+                return
 
         # if the feature is already in the OrderedDict don't
         # show the form as the model of the feature is
@@ -593,6 +595,7 @@ class STDMFieldWidget(QObject):
             #     msg
             # )
             # return
+
         if len(self.feature_models) == 0:
             return
         spatial_forms = SpatialFormsContainer(

@@ -851,8 +851,7 @@ def split_move_line_with_area(
         try:
             sel_features = list(preview_layer.getFeatures())
         except Exception:
-            return False, False, False
-            # break
+            return False, False
         # if previous_geom is None:
             # Get the geometry
         geom1 = sel_features[0].geometry()

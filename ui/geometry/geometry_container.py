@@ -2343,7 +2343,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     line_ft = line_feature
                 if isinstance(line_ft, bool):
                     self.init_signals()
-                    return
+                    result = False
+                    break
 
                 feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
@@ -2353,6 +2354,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.area,
                     self.feature_ids
                 )
+
                 # print i, 'split', move_height
                 # self.iface.mainWindow().blockSignals(True)
 
