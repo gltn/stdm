@@ -1386,13 +1386,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         if self.point_layer is not None: 
             points = self.point_layer.selectedFeatures()
 
-        #if len(self.lines) > 0:
-            #location = identify_selected_point_location(
-                    #points[0], self.lines[0].geometry()
-                    #)
-            #if location == 'middle': return 0
-
-            # if clear_previous:
             self.points[:] = []
             self.points = points
             self.rotation_point = self.points[0]
@@ -1408,15 +1401,16 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         )
         for prev_layer in prev_layers:
             clear_layer_features(prev_layer)
+            QgsMapLayerRegistry.instance().removeMapLayer(prev_layer)
 
-        if len(prev_layers) == 0:
-            self.point_layer = create_temporary_layer(
-                self.settings.layer, 'Point', LINE_POINTS, True
-            )
-            self.point_layer.selectionChanged.connect(
-                self.on_point_feature_selected
-            )
-            self.point_layer_connected = True
+
+        self.point_layer = create_temporary_layer(
+            self.settings.layer, 'Point', LINE_POINTS, True
+        )
+        self.point_layer.selectionChanged.connect(
+            self.on_point_feature_selected
+        )
+        self.point_layer_connected = True
 
     def clear_inputs(self):
         super(OnePointAreaWidget, self).clear_inputs()
@@ -1471,15 +1465,13 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
     def on_feature_selection_finished(self):
         add_area(self.settings.layer, AREA_POLYGON)
 
-        self.line_layer = polygon_to_lines(self.settings.layer,
-                                           POLYGON_LINES, self.point_layer)
-        self.create_point_layer()
-
-        polygon_to_points(
-            self.settings.layer, self.line_layer, self.point_layer,
-            POLYGON_LINES
+        self.line_layer = polygon_to_lines(
+            self.settings.layer, POLYGON_LINES
         )
-
+        self.create_point_layer()
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer, POLYGON_LINES
+        )
 
         if self.line_layer is not None:
             self.line_layer.selectionChanged.connect(
@@ -1581,8 +1573,13 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         self.length_from_point.setMaximum(math.modf(line_length)[1])
         # add points for the line.
-        add_line_points_to_map(self.point_layer, line_geom, False)
-        # self.iface.setActiveLayer(self.point_layer)
+        self.create_point_layer()
+        # add_line_points_to_map(self.point_layer, line_geom, clear=False)
+        polygon_to_points(
+            self.settings.layer, self.line_layer, self.point_layer,
+            POLYGON_LINES
+        )
+
         self.points_count = self.selected_point_count()
 
         if self.points_count > 0:
