@@ -411,6 +411,7 @@ class STDMQGISLoader(object):
                 self.default_profile()
                 self.run_wizard()
                 self.copy_designer_template()
+
                 prog_dlg.setValue(len(self.current_profile.entities))
                 prog_dlg.hide()
 
@@ -947,7 +948,6 @@ class STDMQGISLoader(object):
         geoodkBtn.setMenu(geoodkMenu)
         #Define actions
 
-
         # Geometry tools menu and buttons
         geom_tool_menu = QMenu(self.stdmMenu)
         geom_tool_menu.setObjectName("GeometryToolsMenu")
@@ -965,7 +965,6 @@ class STDMQGISLoader(object):
         geomToolMenu = QMenu(geomToolBtn)
         geomToolBtn.setMenu(geomToolMenu)
 
-
         self.contentAuthAct = QAction(
             QIcon(":/plugins/stdm/images/icons/content_auth.png"),
             QApplication.translate(
@@ -977,7 +976,6 @@ class STDMQGISLoader(object):
 
         self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
         QApplication.translate("ManageUsersToolbarAction","Manage Users-Roles"), self.iface.mainWindow())
-
 
         self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
                            QApplication.translate("OptionsToolbarAction", "Options"),
@@ -1014,7 +1012,6 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
         self.feature_details_act.setCheckable(True)
 
-
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
         self.iface.mainWindow())
@@ -1036,7 +1033,6 @@ class STDMQGISLoader(object):
             QIcon(":/plugins/stdm/images/icons/geometry_tools.png"), \
             QApplication.translate("STDMQGISLoader", "Metric Conversion Tool"),
             self.iface.mainWindow())
-
 
         self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
                                        QApplication.translate("MobileFormGenerator", "Generate Mobile Form"),
@@ -1078,7 +1074,6 @@ class STDMQGISLoader(object):
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
-
 
         #Create content items
         contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
