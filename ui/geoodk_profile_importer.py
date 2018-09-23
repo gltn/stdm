@@ -295,20 +295,33 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
          and also that are captured in the form so that we are only importing relevant entities to database
         :return: entities
         """
-        dirs = self.xform_xpaths()
+        instance_collection = self.instance_collection()
         current_etities = []
+        entity_collection = []
+        """We are assuming there is only one instance file"""
+        for instance_file in instance_collection:
+            print instance_file
+            self.uuid_extractor.set_file_path(instance_file)
+            entity_list = self.check_profile_with_custom_name()
+            self.uuid_extractor.unset_path()
+            for el in entity_list:
+                if el not in entity_collection:
+                    entity_collection.append(el)
+        for t_name in entity_collection:
+            if current_profile().entity_by_name(t_name) is not None:
+                current_etities.append(t_name)
+        if len(current_etities) > 0:
+            return current_etities
+
+    def instance_collection(self):
+        """Enumerate all the instances found in the instance directory"""
+        dirs = self.xform_xpaths()
+        instance_collection = []
         if len(dirs) > 0:
-            dir_f = dirs[0]
-            instance_file = [f for f in os.listdir(dir_f) if f.endswith('.xml')]
-            if len(instance_file) > 0:
-                self.uuid_extractor.set_file_path(os.path.join(dir_f, instance_file[0]))
-                entity_list = self.check_profile_with_custom_name()
-                for entity_name in entity_list:
-                    if current_profile().entity_by_name(entity_name) is not None:
-                        if entity_name not in current_etities:
-                            current_etities.append(entity_name)
-                if len(current_etities) > 0:
-                    return current_etities
+            for dir_f in dirs:
+                instance_collection = [dir_f.replace("\\", "/")+'/'+f for f in os.listdir(dir_f) if f.endswith('.xml')]
+            if len(instance_collection)>0:
+                return instance_collection
 
     def check_profile_with_custom_name(self):
         """
@@ -585,7 +598,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         import_status = False
                         if entity in self.relations:
                             self.count_import_file_step(counter, entity)
-                            log_timestamp = '======= starting import for parent table ===== : {0}' \
+                            log_timestamp = '======= parent table import  ===== : {0}' \
                                 .format(entity)
                             cu_obj = entity
                             self.log_table_entry(log_timestamp)
@@ -629,9 +642,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             if enum_index.isdigit():
                                 repeat_table = repeated_entity[2:]
                             else:
+                                enum_index = repeated_entity[:1]
                                 repeat_table = repeated_entity[1:]
                             log_timestamp = '          child table {0} >> : {1}' \
-                                    .format(repeated_entity[1:], repeat_table)
+                                    .format(repeat_table, enum_index)
                             self.count_import_file_step(counter, repeat_table)
                             self.importlogger.onlogger_action(log_timestamp)
                             if repeat_table in self.user_table_filter():

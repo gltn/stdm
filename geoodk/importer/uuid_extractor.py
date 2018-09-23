@@ -51,6 +51,10 @@ class InstanceUUIDExtractor():
         """
         self.file_path = path
 
+    def unset_path(self):
+        """Clear the current document path"""
+        self.file_path = None
+
     def set_document(self):
         """
 
