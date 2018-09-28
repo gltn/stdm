@@ -98,6 +98,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         QDialog.__init__(self, parent)
 
+        self.entity_table_model = {}
+
         self.collection_suffix = self.tr('Collection')
 
         #Set minimum width
