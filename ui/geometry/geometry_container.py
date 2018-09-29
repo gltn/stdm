@@ -2240,7 +2240,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.create_point_layer(show_in_legend=True)
             point_features = add_line_points_to_map(self.point_layer, geoms)
             self.rotation_points[:] = []
-            for i in range(1, self.no_polygons):
+            for i in range(0, self.no_polygons):
                 next_length = length * i
                 point = point_by_distance(
                     self.point_layer, point_features[0],
