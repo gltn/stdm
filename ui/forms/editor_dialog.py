@@ -67,7 +67,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self,
             entity,
             model=None,
-            parent=None,  
+            parent=None,
             manage_documents=True,
             collect_model=False,
             parent_entity=None,
@@ -111,7 +111,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self._entity = entity
         self.edit_model = model
         self.column_widgets = OrderedDict()
-        self._parent = parent 
+        self._parent = parent
         self.exclude_columns = exclude_columns
         self.entity_tab_widget = None
         self._disable_collections = False
@@ -272,11 +272,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.buttonBox.rejected.connect(self.cancel)
 
-    def save_parent_editor(self, save_and_new=False, collect_model=False):
+    def save_parent_editor(self):
         """
         Saves the parent editor and its children.
         """
-        self.submit(collect_model=collect_model, save_and_new=save_and_new)
+        self.submit()
         self.save_children()
 
     def set_parent_values(self):

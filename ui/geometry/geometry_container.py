@@ -2324,7 +2324,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
             line_feature = None
 
-            for i in range(1, self.no_polygons):
+            for i in range(0, self.no_polygons):
                 # print self.lines
                 if line_feature is None:
 
@@ -2403,6 +2403,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 'Sorry, splitting failed. Try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
+            self.progress_dialog.cancel()
+
         self.executed = False
         self.init_signals()
 
