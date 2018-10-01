@@ -135,7 +135,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        gpx_file = str(self.file_le.text()).strip()
+        gpx_file = unicode(self.file_le.text()).strip()
         if gpx_source.validate_file_path(gpx_file):
             if self.point_row_attr:
                 self._refresh_map_canvas()
@@ -258,7 +258,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        gpx_file = str(self.file_le.text()).strip()
+        gpx_file = unicode(self.file_le.text()).strip()
         feature_type = self.feature_type_cb.currentText()
         columns = 4
         headers = ["", "Point Name", "Longitude", "Latitude"]
@@ -359,7 +359,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                 check_box = self._set_checkbox_item()
                 table_widget.setItem(row, column_num, check_box)
             column_num += 1
-            if type(attr) is not str:
+            if type(attr) is not basestring:
                 attr = str(attr)
             table_widget.setItem(row, column_num, qg.QTableWidgetItem(attr))
         return check_box

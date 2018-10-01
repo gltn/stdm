@@ -98,6 +98,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         """
         QDialog.__init__(self, parent)
 
+        self.entity_table_model = {}
+
         self.collection_suffix = self.tr('Collection')
 
         #Set minimum width
@@ -594,7 +596,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self,
             MANAGE,
             False,
-            plugin=self.parent().plugin
+            plugin=self  #.parent().plugin
         )
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []

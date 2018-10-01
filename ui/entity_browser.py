@@ -608,7 +608,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.setValue(0)
 
             #Add records to nested list for enumeration in table model
-
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -707,6 +706,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #Select record with the given ID if specified
             if not self._select_item is None:
                 self._select_record(self._select_item)
+
+
             if numRecords > 0:
                 # Set maximum value of the progress dialog
                 progressDialog.setValue(numRecords)
