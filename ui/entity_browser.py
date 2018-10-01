@@ -608,7 +608,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.setValue(0)
 
             #Add records to nested list for enumeration in table model
-
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -706,6 +705,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #Select record with the given ID if specified
             if not self._select_item is None:
                 self._select_record(self._select_item)
+
+
             if numRecords > 0:
                 # Set maximum value of the progress dialog
                 progressDialog.setValue(numRecords)
@@ -949,7 +950,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.addEntityDlg = gps_tool.entity_editor
         else:
             self.addEntityDlg = self._editor_dlg(
-                self._entity, parent=self, parent_entity=self.parent_entity
+                self._entity, parent=self, parent_entity=self.parent_entity, plugin=self.plugin
             )
 
             self.addEntityDlg.addedModel.connect(self.on_save_and_new)
@@ -1145,7 +1146,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         else:
             #Load editor dialog
             edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                             parent=self, parent_entity=self.parent_entity)
+                                             parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
 
             result = edit_entity_dlg.exec_()
 

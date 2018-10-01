@@ -139,6 +139,35 @@ class OGRReader(object):
 
         return ent_model, doc_model
 
+    def auto_fix_percent(self, target_table, col_name, value):
+        """
+        Fixes percent columns if empty and with a wrong format.
+        :param target_table: The destination table name
+        :type target_table: String
+        :param col_name: The destination column name
+        :type col_name: String
+        :param value: Value to be saved to the DB
+        :type value: Any
+        :return: Converted value
+        :rtype: Any
+        """
+        entity = self._data_source_entity(target_table)
+
+        if entity.columns[col_name].TYPE_INFO == 'PERCENT':
+            if isinstance(value, str):
+                if not bool(value.strip()) or value.strip().lower() == 'null':
+                    value = None
+            if '%' in value:
+                value = value.replace('%', '')
+            try:
+                if value is not None:
+                    value = float(value)
+
+            except ValueError:
+                value = None
+
+        return value
+
     def auto_fix_float_integer(self, target_table, col_name, value):
         """
         Fixes float and integer columns if empty and with a wrong format.
@@ -153,8 +182,8 @@ class OGRReader(object):
         """
         entity = self._data_source_entity(target_table)
         integer_types = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
-                         'FOREIGN_KEY', 'DOUBLE', 'PERCENT']
-        float_type = ['DOUBLE', 'PERCENT']
+                         'FOREIGN_KEY', 'DOUBLE']
+        float_type = ['DOUBLE']
         int_type = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
                     'FOREIGN_KEY']
 
@@ -258,9 +287,10 @@ class OGRReader(object):
                 '''
                 # documents is not a column so exclude it.
                 if col != 'documents':
+
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
-
+                    value = self.auto_fix_percent(target_table, col, value)
                     value = self.auto_fix_date(target_table, col, value)
                     value = self.auto_fix_yes_no(target_table, col, value)
 

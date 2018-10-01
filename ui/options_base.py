@@ -66,7 +66,7 @@ from stdm.ui.ui_options import Ui_DlgOptions
 MAX_LIMIT = 500 # Maximum records in a entity browser
 
 def pg_profile_names():
-    """
+    """/
     :return: List containing tuple of PostgreSQL database connection names
     and full path stored by QGIS.
     :rtype: list
