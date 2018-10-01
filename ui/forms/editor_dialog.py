@@ -71,7 +71,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             manage_documents=True,
             collect_model=False,
             parent_entity=None,
-            exclude_columns=[]
+            exclude_columns=[],
+            plugin = None
     ):
         """
         Class constructor.
@@ -104,6 +105,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         #Set minimum width
         self.setMinimumWidth(450)
+
+        self.plugin = plugin
 
         #Flag for mandatory columns
         self.has_mandatory = False
@@ -596,7 +599,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self,
             MANAGE,
             False,
-            plugin=self  #.parent().plugin
+            plugin=self.plugin
         )
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []
