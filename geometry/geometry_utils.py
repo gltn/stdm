@@ -872,6 +872,7 @@ def split_move_line_with_area(
         #     continue
 
         extent = geom1.boundingBox()
+
         # Using the extent, extend the parallel line to the selected
         # geometry bounding box to avoid failed split.
         added_points = extend_line_points(parallel_line_geom, extent)
@@ -880,7 +881,7 @@ def split_move_line_with_area(
 
         # print parallel_line_geom2
         # parallel_line_geom3 = QgsGeometry.as
-
+        #
             # line_layer.commitChanges()
         # If the line intersects the main geometry, split it
         if parallel_line_geom2.intersects(geom1):
@@ -1042,7 +1043,8 @@ def split_move_line_with_area(
 
                         return feature, parallel_line_ft
         else:
-
+            print parallel_line_geom2.length()
+            add_geom_to_layer(line_layer, parallel_line_geom2)
             if failed_split > 1000:
 
                 return False, False

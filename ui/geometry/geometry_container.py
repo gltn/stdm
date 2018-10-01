@@ -2239,14 +2239,15 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             # clear_previous_highlight = False
             self.create_point_layer(show_in_legend=True)
             point_features = add_line_points_to_map(self.point_layer, geoms)
-            self.rotation_points[:] = []
-            for i in range(1, self.no_polygons):
-                next_length = length * i
-                point = point_by_distance(
-                    self.point_layer, point_features[0],
-                    geoms, next_length
-                )
-                self.rotation_points.append(point)
+            if len(point_features) > 0:
+                self.rotation_points[:] = []
+                for i in range(1, self.no_polygons):
+                    next_length = length * i
+                    point = point_by_distance(
+                        self.point_layer, point_features[0],
+                        geoms, next_length
+                    )
+                    self.rotation_points.append(point)
             self.iface.mapCanvas().refresh()
 
         self.iface.setActiveLayer(self.line_layer)
