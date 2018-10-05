@@ -204,13 +204,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         last_character = text[-1:]
         locale = QSettings().value("locale/userLocale")[0:2]
 
-        if locale == 'en':
-            state = name_validator.validate(text, text.index(last_character))[0]
-            if state != QValidator.Acceptable:
-                self.show_notification(u'"{}" is not allowed at this position.'.
-                    format(last_character)
-                )
-                text = text[:-1]
+        #if locale == 'en':
+        state = name_validator.validate(text, text.index(last_character))[0]
+        if state != QValidator.Acceptable:
+            self.show_notification(u'"{}" is not allowed at this position.'.
+                format(last_character)
+            )
+            text = text[:-1]
 
         # fix caps, _, and spaces
         if last_character.isupper():
