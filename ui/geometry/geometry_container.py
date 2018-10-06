@@ -375,10 +375,12 @@ class GeometryToolsDock(
         self.clear_feature_selection()
 
         GEOM_DOCK_ON = False
-        if self.layer is not None:
-            self.layer.setCustomProperty("labeling/enabled", True)
-            self.layer.triggerRepaint()
-
+        try:
+            if self.layer is not None:
+                self.layer.setCustomProperty("labeling/enabled", True)
+                self.layer.triggerRepaint()
+        except Exception:
+            pass
         self.close()
 
     def remove_memory_layers(self, stop_editing=False):

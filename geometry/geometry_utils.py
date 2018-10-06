@@ -307,15 +307,16 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
                     layer, geom, features[0], preview_layer=True)
                 layer.selectByIds([features[0].id()])
             layer.updateFeature(features[0])
-
+        layer.updateExtents()
     else:
         try:
             with edit(layer):
                 feature = add_geom_to_feature(layer, geom)
+            layer.updateExtents()
         except Exception as ex:
             print ex
 
-    layer.updateExtents()
+
     # if preview_layer:
     #     layer.commitChanges()
     # print 'added feat', feature
