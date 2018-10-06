@@ -2405,7 +2405,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.executed = False
         self.init_signals()
 
-
     def preview(self):
 
         result = self.validate_run()

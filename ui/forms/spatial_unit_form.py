@@ -555,7 +555,6 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype: NoneType
         """
-        print 'Deletedd', feature_id
         if feature_id in self.feature_models.keys():
             self.removed_feature_models[feature_id] = \
                 self.feature_models[feature_id]

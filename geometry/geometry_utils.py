@@ -221,6 +221,61 @@ def create_V2_line(points):
         point_v2 = QgsPointV2(point.x(), point.y())
         line.addVertex(point_v2)
     return line
+#
+# def extend_line_points(line_geom, polygon_extent):
+#     """
+#
+#     :param line_geom:
+#     :type line_geom: QgsGeometry
+#     :param x_step:
+#     :type x_step: Integer
+#     :param increase: To double or increase the x coordinate, increase should be
+#     greater than x_step. If increase = 1, x will be halved or reduced.
+#     :type increase: Integer
+#     :return:
+#     :rtype: Polyline
+#     """
+#     # x_max = polygon_extent.xMaximum()
+#     # x_min = polygon_extent.xMinimum()
+#     # #TODO take this method outside this function and put all output as inputs
+#     # line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+#     #
+#     # # x1 = x_max
+#     # # x = x_min
+#     #
+#     # # y1 = start_y + slope * (x_max - start_x)
+#     # y1 = start_y + slope * (start_x - x_min)
+#     # y = end_y = slope * (end_x - x_max)
+#     #
+#     # p4 = QgsPoint(x_max, y)
+#     # p3 = QgsPoint(end_x, end_y)
+#     # p2 = QgsPoint(start_x, start_y)
+#     # p1 = QgsPoint(x_min, y1)
+#     #
+#     # poly_line = [p1, p2, p3, p4]
+#     # print poly_line
+#     # return poly_line
+#
+#     x_max = polygon_extent.xMaximum()
+#     x_min = polygon_extent.xMinimum()
+#     # TODO fix extending vertical line.
+#     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+#     if slope is None:
+#         y_max = polygon_extent.yMaximum()
+#         y_min = polygon_extent.yMinimum()
+#         ext_end_y = y_max
+#         ent_start_y = y_min
+#     else:
+#         ext_end_y = end_y + slope * (x_max - end_x)
+#         ent_start_y = start_y + slope * (x_min - start_x)
+#
+#     p1 = QgsPoint(x_min, ent_start_y)
+#     p2 = QgsPoint(start_x, start_y)
+#     p3 = QgsPoint(x_max, ext_end_y)
+#     poly_line = [p1, p2, p3]
+#     return poly_line
+#
+
 
 def extend_line_points(line_geom, polygon_extent):
     """
@@ -235,44 +290,23 @@ def extend_line_points(line_geom, polygon_extent):
     :return:
     :rtype: Polyline
     """
-    # x_max = polygon_extent.xMaximum()
-    # x_min = polygon_extent.xMinimum()
-    # #TODO take this method outside this function and put all output as inputs
-    # line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
-    #
-    # # x1 = x_max
-    # # x = x_min
-    #
-    # # y1 = start_y + slope * (x_max - start_x)
-    # y1 = start_y + slope * (start_x - x_min)
-    # y = end_y = slope * (end_x - x_max)
-    #
-    # p4 = QgsPoint(x_max, y)
-    # p3 = QgsPoint(end_x, end_y)
-    # p2 = QgsPoint(start_x, start_y)
-    # p1 = QgsPoint(x_min, y1)
-    #
-    # poly_line = [p1, p2, p3, p4]
-    # print poly_line
-    # return poly_line
-
     x_max = polygon_extent.xMaximum()
     x_min = polygon_extent.xMinimum()
     # TODO fix extending vertical line.
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
     if slope is None:
-        y_max = polygon_extent.yMaximum()
-        y_min = polygon_extent.yMinimum()
-        ext_end_y = y_max
-        ent_start_y = y_min
-    else:
-        ext_end_y = end_y + slope * (x_max - end_x)
-        ent_start_y = start_y + slope * (x_min - start_x)
+        y_box1 = polygon_extent.yMaximum()
+        y_box2 = polygon_extent.yMinimum()
 
-    p1 = QgsPoint(x_min, ent_start_y)
+    else:
+        y_box1 = end_y - slope * (end_x - x_max)
+        y_box2 = start_y - slope * (start_x - x_min)
+
+    p1 = QgsPoint(x_min, y_box2)
     p2 = QgsPoint(start_x, start_y)
-    p3 = QgsPoint(x_max, ext_end_y)
-    poly_line = [p1, p2, p3]
+    p3 = QgsPoint(end_x, end_y)
+    p4 = QgsPoint(x_max, y_box1)
+    poly_line = [p1, p2, p3, p4]
     return poly_line
 
 
@@ -804,6 +838,7 @@ def split_move_line_with_area(
     loop_index = 0
     failed_split = 0
     distance = 0
+    # print list(preview_layer.getFeatures())[0].geometry().area()
     # multi_split_case = 0vb
     # first_height = 0
     area_toggle = 0
@@ -824,6 +859,7 @@ def split_move_line_with_area(
 
         height = Decimal(height) + Decimal(height_change) / \
                                    Decimal(math.pow(10, decimal_place_new))
+        # print height, decimal_place_new, height_change
         parallel_line_geom = get_parallel_line(
             selected_line_ft.geometry(), height*-1
         )
@@ -856,6 +892,7 @@ def split_move_line_with_area(
         # if previous_geom is None:
             # Get the geometry
         geom1 = sel_features[0].geometry()
+        # print geom1.area()
         # else:
         #     geom1 = previous_geom
 
@@ -900,7 +937,7 @@ def split_move_line_with_area(
                     else:
                         first_intersection = selected_line_ft
 
-                    height = area/selected_line_ft.geometry().length()
+                    # height = area/selected_line_ft.geometry().length()
 
                 if loop_index >= 1:
                     # The closest geometry to fist intersection is the split geom
@@ -1044,8 +1081,11 @@ def split_move_line_with_area(
 
                         return feature, parallel_line_ft
         else:
-            print parallel_line_geom2.length()
+
+            # print loop_index, failed_split
             add_geom_to_layer(line_layer, parallel_line_geom2)
+
+            # return False, False
             if failed_split > 1000:
 
                 return False, False
