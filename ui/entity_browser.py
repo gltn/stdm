@@ -896,9 +896,8 @@ class EntityBrowserWithEditor(EntityBrowser):
             else:
                 self.parent_entity = None
 
-
             # hide the add button and add layer preview for spatial entity
-            if entity.has_geometry_column() and self.parent_entity is None:
+            if entity.has_geometry_column():  # and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
                     iface
                 )
