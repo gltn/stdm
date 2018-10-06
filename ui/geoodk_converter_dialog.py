@@ -110,10 +110,14 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         for entity in profile.entities.values():
             if entity.action == DbItem.DROP:
                 continue
+            
+            if hasattr(entity, 'user_editable') and entity.TYPE_INFO <> 'VALUE_LIST':
+                if entity.user_editable == False:
+                    continue
 
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
                     'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
-                    'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY']:
+                    'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY', 'AUTO_GENERATE_CODE']:
 
                 if entity.TYPE_INFO == 'VALUE_LIST':
                     pass
