@@ -24,7 +24,7 @@ class EntityFormatter:
         :return: 
         """
         self._profile = entity
-        return self._profile
+        return self._profile.replace(' ','_')
 
     def format_foreign_key(self):
         """

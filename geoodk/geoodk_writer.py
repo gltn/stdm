@@ -208,7 +208,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.initialize_entity_reader(self.entities[0])
-        self.profile_entity = self.entity_read.profile_name()
+        self.profile_entity = self.entity_read.profile_name().replace(' ','_')
         XFORMDocument.__init__(self, self.profile_entity)
         EntityFormatter.__init__(self, self.profile_entity)
 

@@ -298,16 +298,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         instance_collection = self.instance_collection()
         current_etities = []
         entity_collection = []
-        """We are assuming there is only one instance file"""
+        """We are assuming there is more than one instance file"""
         if isinstance(instance_collection,list) or instance_collection is not None:
-            for instance_file in instance_collection:
-                self.uuid_extractor.set_file_path(instance_file)
-                entity_list = self.check_profile_with_custom_name()
-                self.uuid_extractor.unset_path()
-                for el in entity_list:
-                    if el not in entity_collection:
-                        entity_collection.append(el)
-            for t_name in entity_collection:
+            # for instance_file in instance_collection:
+            #     self.uuid_extractor.set_file_path(instance_file)
+            #     entity_list = self.check_profile_with_custom_name()
+            #     self.uuid_extractor.unset_path()
+            #     for el in entity_list:
+            #         if el not in entity_collection:
+            #             entity_collection.append(el)
+            for t_name in self.user_table_filter():
                 if current_profile().entity_by_name(t_name) is not None:
                     current_etities.append(t_name)
             if len(current_etities) > 0:
@@ -590,7 +590,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                     self.uuid_extractor.set_file_path(instance)
                     self.archive_this_import_file(counter, instance)
-                    field_data = self.uuid_extractor.document_entities_with_data(current_profile().name,
+                    field_data = self.uuid_extractor.document_entities_with_data(current_profile().name.replace(' ','_'),
                                                                                  self.user_selected_entities())
                     single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(field_data)
 
@@ -707,7 +707,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         try:
             if self.lst_widget.count() < 1:
-                msg = 'No mobile records could be found for the current profile'
+                msg = 'No mobile records found for the current profile'
                 self._notif_bar_str.insertErrorNotification(msg)
                 self.buttonBox.setEnabled(True)
                 return
