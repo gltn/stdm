@@ -547,7 +547,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.edtDocPath.setFocus()
         self.rbReject.setChecked(True)
-        #self.lblDesc.setText("")
         self.edtDesc.setText("")
 
         self.pftableView.setColumnWidth(0, 250)
@@ -619,9 +618,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             sp_unit_entity = p.entity(sp_unit_name)
             self.dg_tenure.add_spatial_unit_entity(sp_unit_entity)
 
-            # Set primary tenure type for the selected spatial unit
-            p_tenure_vl = p.social_tenure.tenure_type_collection
-            self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
+
+            t_type = self._sp_t_mapping.get(sp_unit_name, None)
+            if t_type is None:
+                # Set primary tenure type for the selected spatial unit
+                p_tenure_vl = p.social_tenure.tenure_type_collection
+                self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
 
     def _on_spatial_unit_deselected(self, item):
         # Handle deselection of a spatial unit entity
@@ -692,6 +694,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Shows dialog for specifying spatial unit tenure types.
         """
         self._notif_bar_str.clear()
+
 
         p = self.current_profile()
         can_edit = not p.str_table_exists
@@ -896,24 +899,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     break
 
         return index 
-
-    #def check_empty_entities(self):
-        #"""
-        #"""
-        #is_empty = True
-
-        #profile = self.current_profile()
-        #for entity in profile.entities.values():
-            #col_count = 0
-            #for column in entity.columns.values():
-                #if column.action <> DbItem.DROP:
-                    #col_count += 1
-                    #break
-            #if col_count == 0:
-                #self.show_message(self.tr("Entity '%s' has no columns!") % entity.short_name)
-                #is_empty = False 
-
-        #return is_empty
 
     def find_empty_lookups(self):
         """
@@ -1666,8 +1651,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.insertItems(0, profiles)
 
     def set_current_profile(self, name):
-        # Set current profile on the profile combobox.
-        #cp = current_profile()
         if name <> '':
             index = self.cboProfile.findText(name, Qt.MatchFixedString)
             if index >= 0:

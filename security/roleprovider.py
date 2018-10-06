@@ -102,6 +102,7 @@ class RoleProvider(object):
         sysRoles.append("postgres")
            
         return sysRoles
+
     
     def IsUserInRole(self,userName,roleName):
         '''
@@ -113,7 +114,7 @@ class RoleProvider(object):
         exist = False if roleIndex == -1 else True
         return exist
     
-    def GetRolesForUser(self,userName):
+    def GetRolesForUser(self, userName):
         '''
         Get all the roles that the user, with the given username, belongs to.
         '''

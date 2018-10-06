@@ -102,10 +102,10 @@ class Membership(object):
             raise db_error
 
     def valid_username(self, name):
-        return True if len(name) > self._minUserLength else False
+        return True if len(name) >= self._minUserLength else False
 
     def valid_password(self, password):
-        return True if len(password) > self._minPassLength else False
+        return True if len(password) >= self._minPassLength else False
 
     def validity_period(self, user):
         valid = ''

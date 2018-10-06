@@ -21,6 +21,8 @@ email                : stdm@unhabitat.org
 import os.path
 import re
 import logging
+
+from PyQt4.QtGui import QApplication
 from osgeo import ogr
 
 
@@ -84,7 +86,9 @@ def get_feature_layer(gpx_data_source, feature_type):
     :rtype feature_count: Integer
     """
     if feature_type:
-        if feature_type == "Track" or feature_type == "Route":
+        
+        if feature_type == QApplication.translate('Dialog', 'Track')\
+                or feature_type == QApplication.translate('Dialog', 'Route'):
             feature_type = feature_type.lower() + '_points'
         else:
             feature_type = feature_type.lower() + 's'
