@@ -2344,6 +2344,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.init_signals()
                     result = False
                     break
+                else:
+                    result = True
 
                 feature, line_feature = split_move_line_with_area(
                     self.settings.layer,
@@ -2363,8 +2365,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.preview_layer = None
 
                 self.create_preview_layer(False)
-
-                result = True
 
         else:
 
