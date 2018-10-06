@@ -299,19 +299,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         current_etities = []
         entity_collection = []
         """We are assuming there is only one instance file"""
-        for instance_file in instance_collection:
-            print instance_file
-            self.uuid_extractor.set_file_path(instance_file)
-            entity_list = self.check_profile_with_custom_name()
-            self.uuid_extractor.unset_path()
-            for el in entity_list:
-                if el not in entity_collection:
-                    entity_collection.append(el)
-        for t_name in entity_collection:
-            if current_profile().entity_by_name(t_name) is not None:
-                current_etities.append(t_name)
-        if len(current_etities) > 0:
-            return current_etities
+        if isinstance(instance_collection,list) or instance_collection is not None:
+            for instance_file in instance_collection:
+                self.uuid_extractor.set_file_path(instance_file)
+                entity_list = self.check_profile_with_custom_name()
+                self.uuid_extractor.unset_path()
+                for el in entity_list:
+                    if el not in entity_collection:
+                        entity_collection.append(el)
+            for t_name in entity_collection:
+                if current_profile().entity_by_name(t_name) is not None:
+                    current_etities.append(t_name)
+            if len(current_etities) > 0:
+                return current_etities
 
     def instance_collection(self):
         """Enumerate all the instances found in the instance directory"""
