@@ -456,7 +456,10 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
     def data(self, index, role):
         if index.row() != -1 and index.column() != -1:
-            indexData = self._initData[index.row()][index.column()]
+            try:
+                indexData = self._initData[index.row()][index.column()]
+            except:
+                return None
         else:
             return None
 
