@@ -261,17 +261,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         Add the user entities that are in the instance file
         into a list view widget
-        :return: model
         """
         self.lst_widget.clear()
-        entity_list = self.instance_entities()
-        if entity_list is not None and len(entity_list) > 0:
-            for entity in entity_list:
+        entities = self.instance_entities()
+        if len(entities) > 0:
+            for entity in entities:
                 list_widget = QListWidgetItem(
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
                 list_widget.setCheckState(Qt.Checked)
-        else:
-            return
 
     def user_selected_entities(self):
         """
@@ -295,33 +292,37 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
          and also that are captured in the form so that we are only importing relevant entities to database
         :return: entities
         """
-        instance_collection = self.instance_collection()
-        current_etities = []
-        entity_collection = []
-        """We are assuming there is more than one instance file"""
-        if isinstance(instance_collection,list) or instance_collection is not None:
+        current_entities = []
+        entity_collections = []
+        instance_collections = self.instance_collection()
+        #if isinstance(instance_collection,list) or instance_collection is not None:
+        if len(instance_collections) > 0:
             # for instance_file in instance_collection:
             #     self.uuid_extractor.set_file_path(instance_file)
             #     entity_list = self.check_profile_with_custom_name()
             #     self.uuid_extractor.unset_path()
             #     for el in entity_list:
-            #         if el not in entity_collection:
-            #             entity_collection.append(el)
+            #         if el not in entity_collections:
+            #             entity_collections.append(el)
             for t_name in self.user_table_filter():
                 if current_profile().entity_by_name(t_name) is not None:
-                    current_etities.append(t_name)
-            if len(current_etities) > 0:
-                return current_etities
+                    current_entities.append(t_name)
+            #if len(current_etities) > 0:
+        return current_entities
 
     def instance_collection(self):
-        """Enumerate all the instances found in the instance directory"""
+        """
+        Enumerate all the instances found in the instance directory
+        rtype: list
+        """
         dirs = self.xform_xpaths()
-        instance_collection = []
+        instance_collections = []
         if len(dirs) > 0:
             for dir_f in dirs:
-                instance_collection = [dir_f.replace("\\", "/")+'/'+f for f in os.listdir(dir_f) if f.endswith('.xml')]
-            if len(instance_collection)>0:
-                return instance_collection
+                #instance_collection = [dir_f.replace("\\", "/")+'/'+f for f in os.listdir(dir_f) if f.endswith('.xml')]
+                instance_collections = [dir_f.replace("\\", "/")+'/'+f for f in os.listdir(dir_f)]
+                #if len(instance_collections)>0:
+        return instance_collections
 
     def check_profile_with_custom_name(self):
         """
@@ -553,12 +554,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def save_instance_data_to_db(self, entity_info):
         """
-                Get the user selected entities and insert them into database
-                params: selected entities
-                rtype: list
-                :return:Object
-                :type: dbObject
-                """
+        Get the user selected entities and insert them into database
+        params: selected entities
+        rtype: list
+        :return:Object
+        :type: dbObject
+        """
         cu_obj = ''
         import_status = False
         self.txt_feedback.clear()
