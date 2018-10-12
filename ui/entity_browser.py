@@ -201,6 +201,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self.doc_viewer_title,
             self
         )
+        
         self.load_records = load_records
         #Initialize toolbar
         self.plugin = plugin
@@ -374,7 +375,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.setWindowTitle(unicode(self.title()))
 
-
         if self._data_initialized:
             return
         try:
@@ -473,6 +473,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
+                    continue
 
                 self._entity_attrs.append(col_name)
 
@@ -586,7 +587,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             )
 
         else:
+
             self._init_entity_columns()
+
             # Load entity data. There might be a better way in future in order
             # to ensure that there is a balance between user data discovery
             # experience and performance.
@@ -705,7 +708,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #Select record with the given ID if specified
             if not self._select_item is None:
                 self._select_record(self._select_item)
-
 
             if numRecords > 0:
                 # Set maximum value of the progress dialog
@@ -907,14 +909,17 @@ class EntityBrowserWithEditor(EntityBrowser):
                 )
 
                 self.add_spatial_unit_layer()
+
                 self.tbEntity.clicked.connect(
                     self.on_select_attribute
                 )
+
                 self.tbEntity.entered.connect(
                     self.on_select_attribute
                 )
 
                 self.shift_spatial_entity_browser()
+
                 # Hide the add button from spatial tables
                 # self._newEntityAction.setVisible(False)
 
