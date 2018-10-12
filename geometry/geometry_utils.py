@@ -1186,13 +1186,16 @@ def split_rotate_line_with_area(
         rotation_point_ft, area, feature_ids, clockwise
 ):
     selected_line = create_V2_line(selected_line_ft.geometry().asPolyline())
-
+    print polygon_layer, preview_layer, selected_line_ft, rotation_point_ft, area, feature_ids, clockwise
     try:
         sel_features = list(preview_layer.getFeatures())
     except Exception:
-        return
+        return 1
         # Get the geometry
-    ori_poly_geom = sel_features[0].geometry()
+    try:
+        ori_poly_geom = sel_features[0].geometry()
+    except Exception:
+        return 2
 
     poly_bbox = ori_poly_geom.boundingBox()
 
@@ -1204,7 +1207,7 @@ def split_rotate_line_with_area(
         angle_change = -1
     else:
         angle_change = 1
-    angle = clockwise
+    angle = clockwise * -1
 
     size_calculator = QgsDistanceArea()
     line_angle = round(get_azimuth(selected_line_ft, rotation_point_ft), 0)
@@ -1222,6 +1225,8 @@ def split_rotate_line_with_area(
     digits = 0.0
     skip_angle_set = False
     prev_toggle_index = 0
+    # print split_area1, loop_index, failed_intersection, angle, \
+    #     area_toggle, excessive_toggle, decimal_place_new
     while split_area1 <= area + 10000040:
         QApplication.processEvents()
         # digits = Decimal(1) / (Decimal(math.pow(10, decimal_place_new)) * increment)
@@ -1243,7 +1248,6 @@ def split_rotate_line_with_area(
         # print inc, 'test'
         # if not skip_angle_set:
         if angle_change == -1:
-
             context = Context(prec=decimal_place_new, rounding=ROUND_DOWN)
             # setcontext(context)
             increment = context.create_decimal(1/math.pow(10, decimal_place_new))
@@ -1256,7 +1260,6 @@ def split_rotate_line_with_area(
             # angle = Decimal(round(angle, decimal_place_new))
 
         elif angle_change == 1:
-
             context = Context(prec=decimal_place_new, rounding=ROUND_UP)
             # setcontext(context)
             increment = context.create_decimal(1/math.pow(10, decimal_place_new))
@@ -1266,7 +1269,7 @@ def split_rotate_line_with_area(
                 increment = 1
             angle = Decimal(angle) + increment
                 # angle = Decimal(round(angle, decimal_place_new))
-    # print float(digits)
+        # print float(digits)
         # else:
         #     digits = Decimal(angle_change)
         # if angle_change == -1:
@@ -1274,7 +1277,6 @@ def split_rotate_line_with_area(
         #     # print 'angle change'
         # elif angle_change == 1:
         #     angle = angle + digits
-
         # print angle, decimal_place_new, area_toggle, split_area1
         if angle > 180:
             angle = 0
@@ -1289,9 +1291,11 @@ def split_rotate_line_with_area(
         try:
             sel_feats = list(preview_layer.getFeatures())
         except Exception:
-            break
+
+            return 3
 
         geom1 = sel_feats[0].geometry()
+        original_area = round(geom1.area(), 0)
         ext_line_geom = QgsGeometry.fromPolyline(added_points)
         # add_geom_to_layer(
         #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
@@ -1300,6 +1304,12 @@ def split_rotate_line_with_area(
 
         if ext_line_geom.intersects(ori_poly_geom):
             # split with the rotated line
+            # if loop_index == 0:
+            #     intersection = ext_line_geom.intersection(ori_poly_geom)
+            #     print intersection, 1
+            #     inter_point = intersection.asPolyline()
+            #
+            #     print inter_point
             (res, split_geom, topolist) = geom1.splitGeometry(
                 added_points, False
             )
@@ -1308,12 +1318,14 @@ def split_rotate_line_with_area(
                 # Get first intersection coordinate
                 if loop_index == 0:
                     intersection = ext_line_geom.intersection(ori_poly_geom)
+
                     # print intersection
                     inter_point = intersection.asPolyline()
+
                     # print inter_point
                     distance_point = OrderedDict()
                     for point in inter_point:
-                        # Remove the rotation point and find another point
+                        # Use other than the rotation point
                         distance = rotation_point_ft.geometry().distance(
                             QgsGeometry.fromPoint(point)
                         )
@@ -1323,7 +1335,7 @@ def split_rotate_line_with_area(
 
                     # print inter_point, distance_point
                     if len(inter_point) > 0:
-
+                        # break
                         intersecting_point = distance_point[
                             max(distance_point.keys())
                         ]
@@ -1337,9 +1349,11 @@ def split_rotate_line_with_area(
                 if loop_index >= 1:
                     if intersecting_point_pt is None:
                         continue
+                    if round((geom1.area() + split_geom[0].area()), 0) != original_area:
+                        continue
+                    # print geom1.area() + split_geom[0].area(), original_area
                     #
-                    # print geom1.area(), split_geom[0].area(), intersecting_point_pt.distance(geom1) < \
-                    #         intersecting_point_pt.distance(split_geom[0])
+                    # make the geom close to intersection point to be split geom
                     if intersecting_point_pt.distance(geom1) < \
                             intersecting_point_pt.distance(split_geom[0]):
                         split_area1 = geom1.area()
@@ -1356,7 +1370,11 @@ def split_rotate_line_with_area(
                 continue
 
             # print angle, angle_change, split_area1
-
+            # if loop_index > 1:
+            #     print split_area1,  intersecting_point_pt.distance(split_geom1), \
+            #                intersecting_point_pt.distance(main_geom)
+            # else:
+            #     print geom1.area(), split_geom[0].area()
             if area > split_area1:
                 # helps in changing height in small steps after switching from
 
@@ -1398,21 +1416,26 @@ def split_rotate_line_with_area(
                         # increment = increment + 1
                         if area_toggle < 4:
                             # do not allow loop increase if
-                            if prev_toggle_index + 1 != loop_index:
+                            if prev_toggle_index + 2 != loop_index:
                                 decimal_place_new = decimal_place_new + 1
                                 area_toggle = area_toggle + 1
                                 prev_toggle_index = loop_index
                         else:
                             excessive_toggle = excessive_toggle + 1
                             if excessive_toggle > 300:
-                                break
+                                # add_geom_to_layer(
+                                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                                #         'Polygon Lines')[0],
+                                #     ext_line_geom
+                                # )
+                                return
                 else:
                     if angle_change == 1 and loop_index > 0:
                         # if decimal_place_new < 5:
                         #     increment = increment + 1
 
                         if area_toggle < 4:
-                            if prev_toggle_index + 1 != loop_index:
+                            if prev_toggle_index + 2 != loop_index:
                                 decimal_place_new = decimal_place_new + 1
 
                                 area_toggle = area_toggle + 1
@@ -1420,7 +1443,12 @@ def split_rotate_line_with_area(
                         else:
                             excessive_toggle = excessive_toggle + 1
                             if excessive_toggle > 300:
-                                break
+                                # add_geom_to_layer(
+                                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                                #         'Polygon Lines')[0],
+                                #     ext_line_geom
+                                # )
+                                return
                 if clockwise == 1:
                     angle_change = 1
                 else:
@@ -1430,6 +1458,9 @@ def split_rotate_line_with_area(
                     add_geom_to_layer(
                         polygon_layer, split_geom1, main_geom, feature_ids
                     )
+                    # parallel_line_ft = add_geom_to_feature(
+                    #     line_layer, split_geom1
+                    # )
                     return True
                 # print 'area large ', angle_change, decimal_place_new, area_toggle, \
                 #     split_area1, area, area - math.modf(split_area1)[1]
@@ -1467,11 +1498,9 @@ def split_rotate_line_with_area(
                 if clockwise == 1:
                     if angle_change == 1 and loop_index > 0:
                         # if decimal_place_new < 5:
-
                         # increment = increment + 1
-
                         if area_toggle < 4:
-                            if prev_toggle_index + 1 != loop_index:
+                            if prev_toggle_index + 2 != loop_index:
                                 decimal_place_new = decimal_place_new + 1
                                 area_toggle = area_toggle + 1
                                 prev_toggle_index = loop_index
@@ -1479,22 +1508,30 @@ def split_rotate_line_with_area(
                         else:
                             excessive_toggle = excessive_toggle + 1
                             if excessive_toggle > 300:
-                                break
+                                # add_geom_to_layer(
+                                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                                #         'Polygon Lines')[0],
+                                #     ext_line_geom
+                                # )
+                                return
                 else:
                     if angle_change == -1 and loop_index > 0:
                         # if decimal_place_new < 5:
-
                         # increment = increment + 1
-
                         if area_toggle < 4:
-                            if prev_toggle_index + 1 != loop_index:
+                            if prev_toggle_index + 2 != loop_index:
                                 decimal_place_new = decimal_place_new + 1
                                 area_toggle = area_toggle + 1
                                 prev_toggle_index = loop_index
                         else:
                             excessive_toggle = excessive_toggle + 1
                             if excessive_toggle > 300:
-                                break
+                                # add_geom_to_layer(
+                                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                                #         'Polygon Lines')[0],
+                                #     ext_line_geom
+                                # )
+                                return
                 if clockwise == 1:
                     angle_change = -1
                 else:
@@ -1504,15 +1541,22 @@ def split_rotate_line_with_area(
                     add_geom_to_layer(
                         polygon_layer, split_geom1, main_geom, feature_ids
                     )
+                    # parallel_line_ft = add_geom_to_feature(
+                    #     line_layer, split_geom1
+                    # )
                     return True
 
                 # print 'area small ', angle_change, decimal_place_new, area_toggle, \
                 #     split_area1, area, math.modf(split_area1)[1] - area
 
             if area == split_area1:
+
                 add_geom_to_layer(
                     polygon_layer, split_geom1, main_geom, feature_ids
                 )
+                # parallel_line_ft = add_geom_to_feature(
+                #     line_layer, split_geom1
+                # )
                 return True
 
         else:

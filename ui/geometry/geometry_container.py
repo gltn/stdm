@@ -2183,8 +2183,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         if iface.activeLayer().name() != POLYGON_LINES and \
             iface.activeLayer().name() != LINE_POINTS:
             return
-
-        if len(self.line_layer.selectedFeatures()) == 0:
+        if self.line_layer is not None:
+            if len(self.line_layer.selectedFeatures()) == 0:
+                return
+        else:
             return
 
         if hasattr(self.widget, 'selected_line_lbl'):
@@ -2367,10 +2369,16 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 self.create_preview_layer(False)
 
         else:
-
+            feature = None
             # Revers the rotation points list.
             for i, point in enumerate(self.rotation_points[::-1]):
-
+                # if i == 0:
+                #     use_ft = False
+                # else:
+                #     use_ft = True
+                # print point
+                QApplication.processEvents()
+                # self.point_layer.selectByIds([point.id()])
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
@@ -2380,6 +2388,14 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     self.feature_ids,
                     clockwise=1
                 )
+                feature = feature_id_to_feature(self.settings.layer, self.feature_ids)
+                # print feature[0].geometry().area()
+                # self.feature_ids[:] = []
+                # self.feature_ids = [feature.id()]
+                # self.settings.layer.removeSelection()
+                # # print self.feature_ids
+                # # print result, feature
+                # self.settings.layer.selectByIds(self.feature_ids)
                 if len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
