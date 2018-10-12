@@ -215,6 +215,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Extract the specific folder information and rename the file
         :return:
         """
+        import pydevd; pydevd.settrace()
         self.uuid_extractor.new_list = []
         if self.record_count() > 0:
             directories = self.xform_xpaths()
