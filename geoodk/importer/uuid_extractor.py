@@ -181,7 +181,6 @@ class InstanceUUIDExtractor():
         :return:
         """
 
-
     def uuid_element(self):
         """
         Format the guuid from the file

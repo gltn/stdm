@@ -99,7 +99,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.btn_refresh.setIcon(QIcon(":/plugins/stdm/images/icons/update.png"))
         self.btn_srid.setIcon(QIcon(":/plugins/stdm/images/icons/edit24.png"))
 
-        self.chk_all.stateChanged.connect(self.check_state_on)
+        self.chk_all.stateChanged.connect(self.change_check_state)
         #self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
         self.btn_chang_dir.clicked.connect(self.on_directory_search)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
@@ -107,9 +107,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.btn_refresh.clicked.connect(self.update_files_with_custom_filter)
 
         #self.load_config()
-        self.on_filepath()
+        self.init_file_path()
         self.current_profile_changed()
-        self.check_state_on()
+        self.change_check_state(self.chk_all.checkState())
         self.instance_dir()
 
     def load_config(self):
@@ -124,24 +124,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         profiles = StdmConfiguration.instance().profiles
         return profiles
 
-    def check_state_on(self):
+    def change_check_state(self, state):
         """
-        Ensure all the items in the list are checked
-        :return:
+        Change the check state of items in a list widget
         """
-        count = self.lst_widget.count()
-        if count > 0:
-            for i in range(count):
-                item = self.lst_widget.item(i)
-                if self.chk_all.isChecked():
-                    item.setCheckState(Qt.Checked)
-                else:
-                    item.setCheckState(Qt.Unchecked)
+        for i in range(self.lst_widget.count()):
+            self.lst_widget.item(i).setCheckState(state)
 
     def profiles(self):
         """
-        Get all profiles
-        :return:
+        Return a list of all profiles
+        :rtype: list
         """
         return self.load_config().values()
 
@@ -152,10 +145,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.instance_list = []
         self.active_profile()
-        self.on_filepath()
+        self.init_file_path()
         self.available_records()
         self.on_dir_path()
-        self.profile_instance_entities()
+        self.populate_entities_widget()
 
     def active_profile(self):
         """
@@ -183,20 +176,32 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.instance_dir()
         return self.inst_path
 
-    def on_filepath(self):
+
+    def init_file_path(self):
         """
-        Access the file directory with geoodk files by constructing the full path
-        :return: path
+        Initialize GeoODK file path
+        """
+        self.path = self.geoODK_file_path(self.txt_directory.text())
+        self.txt_directory.setText(self.path)
+
+    def geoODK_file_path(self, path=''):
+        """
+        Check if geoODK fike path has been configured, if not configure default 
+        and return it.
         :rtype: string
         """
-        if self.txt_directory.text() != '':
-            self.path = self.txt_directory.text()
-        else:
-            self.path = GEOODK_FORM_HOME
-            if not os.access(self.path, os.F_OK):
-                os.makedirs(unicode(self.path))
-            self.txt_directory.setText(self.path)
-        return self.path
+        if not path.strip():
+            path = self.make_path(GEOODK_FORM_HOME)
+        return path
+
+    def make_path(self, path):
+        """
+        Create and return a file path if is not available.
+        :rtype: string
+        """
+        if not os.access(path, os.F_OK):
+            os.makedirs(unicode(path))
+        return path
 
     def xform_xpaths(self):
         """
@@ -208,7 +213,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         return [os.path.join(self.path, name) for name in os.listdir(self.path)
                 if os.path.isdir(os.path.join(self.path, name))
                 if name.startswith(self.profile_formater())]
-
 
     def on_dir_path(self):
         """
@@ -251,16 +255,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             basename = os.path.basename(os.path.dirname(file))
             if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                shutil.move(os.path.dirname(file), instance_path)
-            else:
-                pass
-
         except Exception as ex:
             return ex
 
-    def profile_instance_entities(self):
+    def populate_entities_widget(self):
         """
-        Add the user entities that are in the instance file
-        into a list view widget
+        Add entities in the instance file into a list view widget
         """
         self.lst_widget.clear()
         entities = self.instance_entities()
@@ -272,19 +272,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
     def user_selected_entities(self):
         """
-
-        :return:
+        :rtype: list
         """
-        user_list= []
+        entities= []
         count = self.lst_widget.count()
         if count > 0:
             for i in range(count):
                 item = self.lst_widget.item(i)
                 if item.checkState() == Qt.Checked:
-                    user_list.append(current_profile().entity(item.text()).name)
-            return user_list
-        else:
-            return None
+                    entities.append(current_profile().entity(item.text()).name)
+        return entities
 
     def instance_entities(self):
         """
@@ -295,7 +292,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         current_entities = []
         entity_collections = []
         instance_collections = self.instance_collection()
-        #if isinstance(instance_collection,list) or instance_collection is not None:
         if len(instance_collections) > 0:
             # for instance_file in instance_collection:
             #     self.uuid_extractor.set_file_path(instance_file)
@@ -304,10 +300,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             #     for el in entity_list:
             #         if el not in entity_collections:
             #             entity_collections.append(el)
-            for t_name in self.user_table_filter():
-                if current_profile().entity_by_name(t_name) is not None:
-                    current_entities.append(t_name)
-            #if len(current_etities) > 0:
+            for entity_name in self.profile_entities_names(current_profile()):
+                if current_profile().entity_by_name(entity_name) is not None:
+                    current_entities.append(entity_name)
         return current_entities
 
     def instance_collection(self):
@@ -341,16 +336,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         return
         return self.uuid_extractor.document_entities(self.profile)
 
-    def user_table_filter(self):
+    def profile_entities_names(self, profile):
         """
-        Enumerate all user tables in the profile
-        :return:
+        Return names of all entities in a profile
+        :rtype: list
         """
-        user_entities = []
-        enit = current_profile().user_entities()
-        for en in enit:
-            user_entities.append(en.name)
-        return user_entities
+        entities_names = []
+        for entity in profile.user_entities():
+            entities_names.append(entity.name)
+        return entities_names
 
     def has_foreign_keys_parent(self, select_entities):
         """
@@ -399,9 +393,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         try:
             silent_list = []
-            if self.user_selected_entities() > 0:
+            entities = self.user_selected_entities()
+            if len(entities) > 0:
                 for table in self.relations.keys():
-                    if table not in self.user_selected_entities():
+                    if table not in entities:
                         silent_list.append(table)
             return silent_list
         except Exception as ex:
@@ -490,7 +485,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.available_records()
         self.on_dir_path()
-        self.profile_instance_entities()
+        self.populate_entities_widget()
 
     def projection_settings(self):
         """
@@ -524,7 +519,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if dir_name:
             self.txt_directory.setText(str(dir_name))
             self.current_profile_changed()
-        self.check_state_on()
+        self.change_check_state(self.chk_all.checkState())
 
     def unique_counter_counter(self):
         """
@@ -649,7 +644,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                     .format(repeat_table, enum_index)
                             self.count_import_file_step(counter, repeat_table)
                             self.importlogger.onlogger_action(log_timestamp)
-                            if repeat_table in self.user_table_filter():
+                            if repeat_table in self.profile_entities_names(current_profile()):
                                 entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                                 entity_add.objects_from_supporting_doc(instance)
                                 child_id = entity_add.save_to_db()
