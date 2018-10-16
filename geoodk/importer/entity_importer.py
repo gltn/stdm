@@ -321,10 +321,15 @@ class Save2DB:
         try:
             if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
                 str_tables = current_profile().social_tenure
-                setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
-                        self.parents_ids.get(str_tables.parties[0].name)[0])
-                setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
-                        self.parents_ids.get(str_tables.spatial_units[0].name)[0])
+                prefix = current_profile().prefix+'_'
+
+                full_party_ref_column = str_tables.parties[0].name
+                party_ref_column = str_tables.parties[0].name.lower().replace(prefix,'')+ '_id'
+                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
+
+                full_spatial_ref_column = str_tables.spatial_units[0].name
+                spatial_ref_column = str_tables.spatial_units[0].name.lower().replace(prefix,'') + '_id'
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
         except:
             pass
         for k, v in self.attributes.iteritems():
