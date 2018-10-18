@@ -167,19 +167,15 @@ class InstanceUUIDExtractor():
         Bool if the str inclusion is required based on whether is captured or not
         :return:
         """
-        str_defined = False
         count = len(self.str_definition())
-        if count > 1:
-            str_defined = True
-        else:
-            str_defined = False
-        return str_defined
+        return True if count > 1 else False
 
     def entity_atrributes(self):
         """
         Get collected data from the entity in the document
         :return:
         """
+        pass
 
     def uuid_element(self):
         """
