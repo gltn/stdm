@@ -114,7 +114,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
             if tab_text != 'no_tab':
-                self.gpx_import_tab.addTab(tab_object, str(tab_text))
+                self.gpx_import_tab.addTab(tab_object, unicode(tab_text))
             else:
                 self.gpx_import_tab.addTab(tab_object, 'Primary')
 
@@ -360,7 +360,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                 table_widget.setItem(row, column_num, check_box)
             column_num += 1
             if type(attr) is not basestring:
-                attr = str(attr)
+                attr = unicode(attr)
             table_widget.setItem(row, column_num, qg.QTableWidgetItem(attr))
         return check_box
 
