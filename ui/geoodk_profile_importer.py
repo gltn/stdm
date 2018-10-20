@@ -226,6 +226,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             directories = self.xform_xpaths()
             for directory in directories:
                 self.extract_guuid_and_rename_file(directory)
+        inst_count = len(self.instance_list)
+        rm_count = self.remove_imported_instances()
+        diff = inst_count - rm_count
+        self.txt_count.setText(unicode(diff))
 
     def extract_guuid_and_rename_file(self, path):
         """
@@ -291,18 +295,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
          and also that are captured in the form so that we are only importing relevant entities to database
         :return: entities
         """
-
         current_entities = []
         entity_collections = []
         instance_collections = self.instance_collection()
         if len(instance_collections) > 0:
-            # for instance_file in instance_collection:
-            #     self.uuid_extractor.set_file_path(instance_file)
-            #     entity_list = self.check_profile_with_custom_name()
-            #     self.uuid_extractor.unset_path()
-            #     for el in entity_list:
-            #         if el not in entity_collections:
-            #             entity_collections.append(el)
             for entity_name in self.profile_entities_names(current_profile()):
                 if current_profile().entity_by_name(entity_name) is not None:
                     current_entities.append(entity_name)
@@ -419,7 +415,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         try:
             self.importlogger.logger_sections()
             file_info = 'File instance ' + str(counter)+ ' : \n' + instance
-            self.importlogger.onlogger_action(file_info)
+            self.importlogger.log_action(file_info)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
             pass
@@ -433,7 +429,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             current_time = QDateTime()
             import_time = current_time.currentDateTime()
             log_entry = instance + ' '+ str(import_time.toPyDateTime())
-            self.importlogger.onlogger_action(log_entry)
+            self.importlogger.log_action(log_entry)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
             pass
@@ -588,7 +584,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 #print len(self.instance_list)
                 self.pgbar.setRange(counter, len(self.instance_list))
                 self.pgbar.setValue(0)
-                self.importlogger.onlogger_action("Import started ...\n")
+                self.importlogger.log_action("Import started ...\n")
 
                 for instance in self.instance_list:
 
@@ -670,7 +666,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             log_timestamp = '          child table {0} >> : {1}' \
                                     .format(repeat_table, enum_index)
                             self.count_import_file_step(counter, repeat_table)
-                            self.importlogger.onlogger_action(log_timestamp)
+                            self.importlogger.log_action(log_timestamp)
                             if repeat_table in self.profile_entities_names(current_profile()):
                                 entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                                 entity_add.objects_from_supporting_doc(instance)
@@ -691,6 +687,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     self.txt_feedback.append('Number of records successfully imported:  {}'
                                                 .format(counter))
                     QCoreApplication.processEvents()
+
+                    self.log_instance(instance)
+
             else:
                 self._notif_bar_str.insertErrorNotification("No user selected entities to import")
                 self.pgbar.setValue(0)
@@ -758,9 +757,24 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.buttonBox.setEnabled(True)
             QApplication.restoreOverrideCursor()
 
+    def log_instance(self, instance):
+        instance_short_name = self.importlogger.log_data_name(instance)
+        log_data = self.importlogger.read_log_data()
+        log_data[instance_short_name] = self.importlogger.log_date()
+        self.importlogger.write_log_data(log_data)
 
+    def remove_imported_instances(self):
+        count = 0
+        del_list = []
+        log_data = self.importlogger.read_log_data()
+        if len(log_data) > 0:
+            for instance in self.instance_list:
+                instance_short_name = self.importlogger.log_data_name(instance)
+                if instance_short_name in log_data:
+                    del_list.append(instance)
+                    count += 1
 
-
-
-
+        for inst in del_list:
+            self.instance_list.remove(inst)
+        return count
 
