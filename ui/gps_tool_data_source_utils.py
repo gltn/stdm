@@ -92,7 +92,7 @@ def get_feature_layer(gpx_data_source, feature_type):
             feature_type = feature_type.lower() + '_points'
         else:
             feature_type = feature_type.lower() + 's'
-        gpx_layer = gpx_data_source.GetLayerByName(str(feature_type))
+        gpx_layer = gpx_data_source.GetLayerByName(unicode(feature_type))
         feature_count = gpx_layer.GetFeatureCount()
         return None if feature_count == 0 else gpx_layer, feature_count
 
