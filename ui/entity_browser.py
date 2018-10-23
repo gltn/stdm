@@ -899,9 +899,10 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             # hide the add button and add layer preview for spatial entity
             if entity.has_geometry_column() and self.parent_entity is None:
-                self.sp_unit_manager = SpatialUnitManagerDockWidget(
-                    iface
-                )
+                # self.sp_unit_manager = SpatialUnitManagerDockWidget(
+                #     iface, self.plugin
+                # )
+                self.sp_unit_manager = self.plugin.spatialLayerMangerDockWidget
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
                 )
@@ -951,7 +952,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.addEntityDlg = gps_tool.entity_editor
         else:
             self.addEntityDlg = self._editor_dlg(
-                self._entity, parent=self, parent_entity=self.parent_entity
+                self._entity, parent=self, parent_entity=self.parent_entity, plugin=self.plugin
             )
 
             self.addEntityDlg.addedModel.connect(self.on_save_and_new)
@@ -1147,7 +1148,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         else:
             #Load editor dialog
             edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                             parent=self, parent_entity=self.parent_entity)
+                                             parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
 
             result = edit_entity_dlg.exec_()
 

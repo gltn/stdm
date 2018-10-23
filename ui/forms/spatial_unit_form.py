@@ -528,7 +528,6 @@ class STDMFieldWidget(QObject):
 
         self.feature_models[feature_id] = feature_model
 
-
     def on_form_saved(self, model):
         """
         A slot raised when the save button is clicked
@@ -570,32 +569,6 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype: NoneType
         """
-
-        # if None in self.feature_models.values():
-            # title = QApplication.translate(
-            #     'SpatialFormsContainer',
-            #     u'Spatial Entity Form Error',
-            #     None,
-            #     QCoreApplication.UnicodeUTF8
-            # )
-            # msg = QApplication.translate(
-            #     'SpatialFormsContainer',
-            #     u'The feature(s) you have added is/are invalid. \n'
-            #     'To fix this issue, check if the feature '
-            #     'is added correctly.  \n'
-            #     'Make sure you have added a base layer to digitize on.',
-            #     None,
-            #     QCoreApplication.UnicodeUTF8
-            # )
-            # # Message: Spatial column information
-            # # could not be found
-            # QMessageBox.critical(
-            #     iface.mainWindow(),
-            #     title,
-            #     msg
-            # )
-            # return
-
         if len(self.feature_models) == 0:
             return
         spatial_forms = SpatialFormsContainer(
