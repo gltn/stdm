@@ -2102,7 +2102,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     def init_signals(self):
         if not self.settings_layer_connected:
             try:
-
                 self.settings.layer.selectionChanged.connect(
                     self.on_feature_selected
                 )
@@ -2317,6 +2316,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     'EqualAreaWidget',
                     'A line is not selected.'
                 )
+                self.executed = False
                 self.notice.insertErrorNotification(fail_message)
                 self.init_signals()
                 return
