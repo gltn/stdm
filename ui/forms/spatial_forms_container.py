@@ -151,7 +151,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
     def save(self):
 
         error_found = False
-      
+
         for i in range(0, self.spatial_parent_number):
 
             widget = self.component_container.widget(i)

@@ -937,8 +937,8 @@ class GeomWidgetsBase(object):
             self.on_feature_selection_finished()
 
     def on_line_feature_selected(self):
-        print 'On line feature selected ', self.settings.layer, \
-            iface.activeLayer(), iface.activeLayer().name(), self.line_layer.selectedFeatures()
+        # print 'On line feature selected ', self.settings.layer, \
+        #     iface.activeLayer(), iface.activeLayer().name(), self.line_layer.selectedFeatures()
         self.specify_area_help(2)
         if self.settings.layer is None:
             return
@@ -950,11 +950,11 @@ class GeomWidgetsBase(object):
         if len(self.line_layer.selectedFeatures()) == 0:
             return
         QApplication.processEvents()
-        print hasattr(self.widget, 'selected_line_lbl')
+        # print hasattr(self.widget, 'selected_line_lbl')
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
-            print self.lines_count
+            # print self.lines_count
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             # self.line_layer.setFeatureBlendMode(16)
             # self.highlight_features(self.line_layer)
@@ -989,13 +989,13 @@ class GeomWidgetsBase(object):
 
     def selected_line_count(self):
         count = 0
-        print 'line check ', self.line_layer, self.line_layer.selectedFeatures()
+        # print 'line check ', self.line_layer, self.line_layer.selectedFeatures()
         if self.line_layer is not None:
             self.lines = self.line_layer.selectedFeatures()
 
         if self.lines is not None:
             count =  len(self.lines)
-        print 'count chcekc ', count
+        # print 'count chcekc ', count
 
         return count
 
