@@ -423,21 +423,21 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
-
         self.close_dock(
             self.plugin.geom_tools_cont_act
         )
-
-    def hideEvent(self, event):
-        """
-        Listens to the hide event of the dock and properly close the dock
-        using the close_dock method.
-        :param event: The close event
-        :type event: QCloseEvent
-        """
-        self.close_dock(
-            self.plugin.geom_tools_cont_act
-        )
+    #
+    # def hideEvent(self, event):
+    #     """
+    #     Listens to the hide event of the dock and properly close the dock
+    #     using the close_dock method.
+    #     :param event: The close event
+    #     :type event: QCloseEvent
+    #     """
+    #     print 'Hide event '
+    #     self.close_dock(
+    #         self.plugin.geom_tools_cont_act
+    #     )
 
     def activate_geometry_tools(self, button_clicked=True):
         """
