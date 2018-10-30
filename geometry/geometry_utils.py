@@ -1083,7 +1083,7 @@ def split_move_line_with_area(
         else:
 
             # print loop_index, failed_split
-            add_geom_to_layer(line_layer, parallel_line_geom2)
+            # add_geom_to_layer(line_layer, parallel_line_geom2)
 
             # return False, False
             if failed_split > 1000:

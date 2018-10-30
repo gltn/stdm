@@ -1390,7 +1390,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.points[:] = []
                 self.points = points
             self.rotation_point = points[0]
-
+            print self.rotation_point
             if self.points is not None:
                 count = len(self.points)
 
