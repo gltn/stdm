@@ -276,7 +276,7 @@ class GeometryToolsDock(
         self.groupBox.hide()
         self.line_layer = None
         self.widgets_added = False
-        # QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
+        QgsMessageLog.instance().messageReceived.connect(self.write_log_message)
         self.memory_layers = [
             PREVIEW_POLYGON, PREVIEW_POLYGON2, POLYGON_LINES, LINE_POINTS,
             AREA_POLYGON
@@ -361,6 +361,7 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
+        # print 'close_dock triggered'
         if iface is None:
             return
 
@@ -391,6 +392,7 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
+        # print self.memory_layers
         self.blockSignals(True)
         try:
             for memory_layer_name in self.memory_layers:
@@ -401,9 +403,11 @@ class GeometryToolsDock(
 
                 if len(mem_layers) > 0:
                     for mem_layer in mem_layers:
+                        # if mem_layer in iface.legendInterface().layers():
                         QgsMapLayerRegistry.instance().removeMapLayer(mem_layer)
+            # self.memory_layers[:] = []
 
-            self.widget.clear_highlights()
+            # self.widget.clear_highlights()
             if stop_editing:
                 if self.layer is not None:
                     if iface.activeLayer() is not None:
@@ -423,10 +427,36 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
-        self.close_dock(
-            self.plugin.geom_tools_cont_act
-        )
-    #
+        # print 'close Event'
+        # self.close_dock(
+        #     self.plugin.geom_tools_cont_act
+        # )
+
+        if iface is None:
+            return
+
+        if iface.activeLayer() is not None:
+            self.remove_memory_layers()
+
+        if self.plugin is None:
+            return
+
+        global GEOM_DOCK_ON
+        self.iface.actionPan().trigger()
+        self.plugin.geom_tools_cont_act.setChecked(False)
+
+        self.clear_feature_selection()
+
+        GEOM_DOCK_ON = False
+        try:
+            if self.layer is not None:
+                self.layer.setCustomProperty("labeling/enabled", True)
+                self.layer.triggerRepaint()
+        except Exception:
+            self.layer = None
+
+        event.accept()
+
     # def hideEvent(self, event):
     #     """
     #     Listens to the hide event of the dock and properly close the dock
@@ -451,8 +481,8 @@ class GeometryToolsDock(
         # if Feature details is checked, hide it.
         if not self.plugin.geom_tools_cont_act.isChecked() and \
                 GEOM_DOCK_ON and not button_clicked:
-
-            self.close_dock(self.plugin.geom_tools_cont_act)
+            self.close()
+            # self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         # No need of activation as it is activated.
         active_layer = self.iface.activeLayer()
@@ -461,8 +491,8 @@ class GeometryToolsDock(
         if active_layer is None:
             if button_clicked:
                 self.active_layer_check()
-
-            self.close_dock(self.plugin.geom_tools_cont_act)
+            self.close()
+            # self.close_dock(self.plugin.geom_tools_cont_act)
             return False
 
         if not button_clicked and GEOM_DOCK_ON:
@@ -472,7 +502,8 @@ class GeometryToolsDock(
         # If the button is unchecked, close dock.
 
         if not self.plugin.geom_tools_cont_act.isChecked():
-            self.close_dock(self.plugin.geom_tools_cont_act)
+            self.close()
+            # self.close_dock(self.plugin.geom_tools_cont_act)
             return False
         # if the selected layer is not an STDM layer,
         # show not feature layer.
@@ -674,20 +705,22 @@ class GeomWidgetsBase(object):
         # self.help_cursor = self.settings.help_box.textCursor()
 
     def on_geom_tools_combo_changed(self, index):
-        # self.clear_highlights()
+        self.clear_highlights()
         self.settings.on_geom_tools_combo_changed(index)
-
-    def hideEvent(self, event):
-        """
-        Listens to the hide event of the dock and properly close the dock
-        using the close_dock method.
-        :param event: The close event
-        :type event: QCloseEvent
-        """
-        # self.clear_highlights()
-
         if iface.activeLayer() is not None:
             self.settings.remove_memory_layers()
+
+    # def hideEvent(self, event):
+    #     """
+    #     Listens to the hide event of the dock and properly close the dock
+    #     using the close_dock method.
+    #     :param event: The close event
+    #     :type event: QCloseEvent
+    #     """
+    #     self.clear_highlights()
+    #
+    #     if iface.activeLayer() is not None:
+    #         self.settings.remove_memory_layers()
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1390,7 +1423,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.points[:] = []
                 self.points = points
             self.rotation_point = points[0]
-            print self.rotation_point
+            # print self.rotation_point
             if self.points is not None:
                 count = len(self.points)
 
