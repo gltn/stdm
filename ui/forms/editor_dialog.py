@@ -275,11 +275,11 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.buttonBox.rejected.connect(self.cancel)
 
-    def save_parent_editor(self):
+    def save_parent_editor(self, save_and_new=False, collect_model=False):
         """
         Saves the parent editor and its children.
         """
-        self.submit()
+        self.submit(collect_model=collect_model, save_and_new=save_and_new)
         self.save_children()
 
     def set_parent_values(self):

@@ -63,7 +63,8 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.notice = NotificationBar(self.str_notification)
         self.discard_btn.clicked.connect(self.discard)
         self.layer.editingStopped.connect(self.discard)
-        self.buttonBox.accepted.connect(self.save)
+        save_btn = self.buttonBox.button(QDialogButtonBox.Save)
+        save_btn.clicked.connect(self.save)
 
     def discard(self):
         for i in range(len(self.feature_models)):
@@ -148,7 +149,9 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         )
 
     def save(self):
+
         error_found = False
+      
         for i in range(0, self.spatial_parent_number):
 
             widget = self.component_container.widget(i)
@@ -168,9 +171,11 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
                 editor._mode = 2200
 
             model = editor.model()
+
             if feature_id <= 0:
                 geom_wkt = get_wkt(
-                    self.entity, self.layer, self.active_spatial_column, feature_id
+                    self.entity, self.layer,
+                    self.active_spatial_column, feature_id
                 )
 
                 if geom_wkt is None:
@@ -228,7 +233,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
                 else:
                     editor._mode = 2201
                     editor.save_parent_editor(save_and_new=True)
-                # print feature_id, vars(model), vars(widget.model)
+
         if not error_found:
             QMessageBox.information(
                 self,
