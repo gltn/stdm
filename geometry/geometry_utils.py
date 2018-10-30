@@ -1186,7 +1186,7 @@ def split_rotate_line_with_area(
         rotation_point_ft, area, feature_ids, clockwise
 ):
     selected_line = create_V2_line(selected_line_ft.geometry().asPolyline())
-    print polygon_layer, preview_layer, selected_line_ft, rotation_point_ft, area, feature_ids, clockwise
+    # print polygon_layer, preview_layer, selected_line_ft, rotation_point_ft, area, feature_ids, clockwise
     try:
         sel_features = list(preview_layer.getFeatures())
     except Exception:

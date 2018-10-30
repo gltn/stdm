@@ -46,10 +46,6 @@ LINE_POINTS = 'Line Points'
 PREVIEW_POLYGON2 = 'Preview Polygon 2'
 AREA_POLYGON = 'Polygon Area'
 
-# TODO after removing a layer and adding another layer and starting geometry tools, it does not work.
-# TODO qgis crash after removing the geometry temporary layers. Check if some variables are set to None.
-# TODO after closing dock and opening, selected features and lines are not set to 0.
-
 class LayerSelectionHandler(object):
     """
      Handles all tasks related to the layer.
@@ -1382,16 +1378,18 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.on_length_from_reference_point_changed
         )
         self.rotation_point = None
+        self.moving_point_created = False
+        self.polygon_to_point_executed = False
 
     def selected_point_count(self):
         count = 0
 
         if self.point_layer is not None: 
             points = self.point_layer.selectedFeatures()
-
-            self.points[:] = []
-            self.points = points
-            self.rotation_point = self.points[0]
+            if not self.moving_point_created:
+                self.points[:] = []
+                self.points = points
+            self.rotation_point = points[0]
 
             if self.points is not None:
                 count = len(self.points)
@@ -1471,6 +1469,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_layer = polygon_to_lines(
             self.settings.layer, POLYGON_LINES
         )
+        self.polygon_to_point_executed = True
         self.create_point_layer()
         polygon_to_points(
             self.settings.layer, self.line_layer, self.point_layer, POLYGON_LINES
@@ -1492,7 +1491,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
         if len(self.point_layer.selectedFeatures()) == 0:
             return
-
+        if self.polygon_to_point_executed:
+            return
         if hasattr(self.widget, 'selected_points_lbl'):
 
             self.points_count = self.selected_point_count()
@@ -1523,7 +1523,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
-
+            self.length_from_point.setValue(0)
             self.widget.selected_line_lbl.setText(
                 str(self.lines_count))
 
@@ -1556,12 +1556,17 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 rotation_point = point_features[-1:]
                 self.point_layer.deleteFeature(rotation_point[0])
 
+        # self.iface.mainWindow().blockSignals(True)
+        # print self.points
+        self.moving_point_created = True
         self.rotation_point = point_by_distance(
             self.point_layer,
             self.points[0],
             self.lines[0].geometry(),
             new_value
         )
+
+        # self.iface.mainWindow().blockSignals(False)
         if hasattr(self.widget, 'selected_points_lbl'):
             points_count = len(self.point_layer.selectedFeatures())
 
@@ -1576,13 +1581,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.line_length_lbl.setText(str(round(line_length, 2)))
         self.length_from_point.setMaximum(math.modf(line_length)[1])
         # add points for the line.
-        self.create_point_layer()
-        # add_line_points_to_map(self.point_layer, line_geom, clear=False)
-        polygon_to_points(
-            self.settings.layer, self.line_layer, self.point_layer,
-            POLYGON_LINES
-        )
-
+        # self.create_point_layer()
+        self.moving_point_created = False
+        self.polygon_to_point_executed = False
+        add_line_points_to_map(self.point_layer, line_geom, clear=False)
+        # polygon_to_points(
+        #     self.settings.layer, self.line_layer, self.point_layer,
+        #     POLYGON_LINES
+        # )
         self.points_count = self.selected_point_count()
 
         if self.points_count > 0:
@@ -1608,6 +1614,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             state = False
 
         return state
+
     def run(self):
         result = self.validate_run()
         if not result:
