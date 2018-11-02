@@ -1097,7 +1097,6 @@ def split_offset_distance(
         polygon_layer, line_layer, preview_layer,
         selected_line_ft, offset_distance, feature_ids=None, validate=False
 ):
-    #TODO validate if the offset distance split to size more than the total area.
     # Get selected line geometry
     selected_line_geom = selected_line_ft.geometry()
 
@@ -1144,8 +1143,7 @@ def split_offset_distance(
                 main_geom = split_geom0[0]
             elif first_intersection.distance(geom1) > \
                     first_intersection.distance(split_geom0[0]):
-                # If split geom is over 1, continue
-                # TODO find a better solution than continue.
+
                 if not len(split_geom0) > 1:
 
                     split_geom = split_geom0[0]

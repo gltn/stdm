@@ -803,7 +803,6 @@ class GeomWidgetsBase(object):
     def init_signals(self):
         if not self.settings_layer_connected:
             try:
-
                 self.settings.layer.selectionChanged.connect(
                     self.on_feature_selected
                 )
@@ -895,7 +894,6 @@ class GeomWidgetsBase(object):
             return
         self.clear_inputs()
         # self.settings.remove_memory_layers()
-
         # self.clear_highlights()
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines_count = 0
@@ -931,7 +929,7 @@ class GeomWidgetsBase(object):
             self.on_feature_selection_finished()
 
     def on_line_feature_selected(self):
-        self.specify_area_help(2)
+        # self.specify_area_help(2)
         if self.settings.layer is None:
             return
         if iface.activeLayer() is None:
@@ -1275,7 +1273,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.init_signals()
 
     def on_line_feature_selected(self):
-        self.specify_offset_distance_help(2)
+        # self.specify_offset_distance_help(2)
         return GeomWidgetsBase.on_line_feature_selected(self)
 
     def validate_run(self, preview_visible=False):
@@ -1303,13 +1301,20 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
-        else:
-            self.splitting_success_help(4)
+        # else:
+        #     self.splitting_success_help(4)
         return True
 
     def clear_inputs(self):
         super(OffsetDistanceWidget, self).clear_inputs()
+        self.offset_distance.valueChanged.disconnect(
+            self.on_offset_distance_changed
+        )
         self.offset_distance.setValue(0)
+        self.offset_distance.valueChanged.connect(
+            self.on_offset_distance_changed
+        )
+
         self.rotation_point = None
 
     def run(self):
@@ -1328,6 +1333,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.settings.layer.selectByIds(self.feature_ids)
         self.remove_memory_layer(PREVIEW_POLYGON)
         self.create_preview_layer(False)
+        
         result = split_offset_distance(
             self.settings.layer,
             self.line_layer,
