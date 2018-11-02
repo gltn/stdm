@@ -361,7 +361,6 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
-        # print 'close_dock triggered'
         if iface is None:
             return
 
@@ -392,7 +391,6 @@ class GeometryToolsDock(
         :return:
         :rtype:
         """
-        # print self.memory_layers
         self.blockSignals(True)
         try:
             for memory_layer_name in self.memory_layers:
@@ -427,10 +425,6 @@ class GeometryToolsDock(
         :type event: QCloseEvent
         :return: None
         """
-        # print 'close Event'
-        # self.close_dock(
-        #     self.plugin.geom_tools_cont_act
-        # )
 
         if iface is None:
             return
@@ -520,18 +514,18 @@ class GeometryToolsDock(
         if not self.widgets_added:
 
             self.add_widgets()
-        else:
-            # self.blockSignals(True)
-            self.geom_tools_combo.clear()
-
-            # widgets = self.geom_tools_widgets.findChildren(QWidget)
-            for widget in self.widgets:
-            #     if widget in widgets:
-                self.geom_tools_widgets.removeWidget(widget)
-            # self.blockSignals(False)
-            self.add_widgets()
-
-            # self.on_geom_tools_combo_changed(self.geom_tools_combo.currentIndex())
+        # else:
+        #     # self.blockSignals(True)
+        #     self.geom_tools_combo.clear()
+        #
+        #     # widgets = self.geom_tools_widgets.findChildren(QWidget)
+        #     for widget in self.widgets:
+        #     #     if widget in widgets:
+        #         self.geom_tools_widgets.removeWidget(widget)
+        #     # self.blockSignals(False)
+        #     self.add_widgets()
+        #
+        #     # self.on_geom_tools_combo_changed(self.geom_tools_combo.currentIndex())
         return True
 
     def prepare_for_selection(self, active_layer):
@@ -937,8 +931,6 @@ class GeomWidgetsBase(object):
             self.on_feature_selection_finished()
 
     def on_line_feature_selected(self):
-        # print 'On line feature selected ', self.settings.layer, \
-        #     iface.activeLayer(), iface.activeLayer().name(), self.line_layer.selectedFeatures()
         self.specify_area_help(2)
         if self.settings.layer is None:
             return
@@ -950,11 +942,9 @@ class GeomWidgetsBase(object):
         if len(self.line_layer.selectedFeatures()) == 0:
             return
         QApplication.processEvents()
-        # print hasattr(self.widget, 'selected_line_lbl')
         if hasattr(self.widget, 'selected_line_lbl'):
             self.lines[:] = []
             self.lines_count = self.selected_line_count()
-            # print self.lines_count
             self.widget.selected_line_lbl.setText(str(self.lines_count))
             # self.line_layer.setFeatureBlendMode(16)
             # self.highlight_features(self.line_layer)
@@ -989,13 +979,11 @@ class GeomWidgetsBase(object):
 
     def selected_line_count(self):
         count = 0
-        # print 'line check ', self.line_layer, self.line_layer.selectedFeatures()
         if self.line_layer is not None:
             self.lines = self.line_layer.selectedFeatures()
 
         if self.lines is not None:
             count =  len(self.lines)
-        # print 'count chcekc ', count
 
         return count
 
@@ -1426,7 +1414,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.points[:] = []
                 self.points = points
             self.rotation_point = points[0]
-            # print self.rotation_point
             if self.points is not None:
                 count = len(self.points)
 
@@ -1593,7 +1580,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.point_layer.deleteFeature(rotation_point[0])
 
         # self.iface.mainWindow().blockSignals(True)
-        # print self.points
         self.moving_point_created = True
         self.rotation_point = point_by_distance(
             self.point_layer,
@@ -2375,8 +2361,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             line_feature = None
 
             for i in range(0, self.no_polygons):
-                # print self.lines
-
                 if line_feature is None:
 
                     if len(self.lines) > 0:
@@ -2420,7 +2404,6 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 #     use_ft = False
                 # else:
                 #     use_ft = True
-                # print point
                 QApplication.processEvents()
                 # self.point_layer.selectByIds([point.id()])
                 result = split_rotate_line_with_area(
@@ -2433,12 +2416,9 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     clockwise=1
                 )
                 feature = feature_id_to_feature(self.settings.layer, self.feature_ids)
-                # print feature[0].geometry().area()
                 # self.feature_ids[:] = []
                 # self.feature_ids = [feature.id()]
                 # self.settings.layer.removeSelection()
-                # # print self.feature_ids
-                # # print result, feature
                 # self.settings.layer.selectByIds(self.feature_ids)
                 if len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(

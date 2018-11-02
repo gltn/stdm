@@ -2019,9 +2019,7 @@ class STDMQGISLoader(object):
             self.details_tree_view.close_dock(
                 self.feature_details_act
             )
-            self.geom_tools_container.close_dock(
-                self.geom_tools_cont_act
-            )
+            self.geom_tools_container.close()
             if not reload_plugin:
 
                 self.profile_status_label.deleteLater()
