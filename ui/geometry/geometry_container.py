@@ -1124,6 +1124,16 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
+
+        if len(self.settings.layer.selectedFeatures()) == 0:
+            self.notice.clear()
+            message = QApplication.translate(
+                'MoveLineAreaWidget',
+                'Select a feature to split.'
+            )
+            self.notice.insertErrorNotification(message)
+            return False
+
         if len(self.lines) == 0:
             self.notice.clear()
             message = QApplication.translate(
@@ -1132,6 +1142,9 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
+
+
+
         return True
 
     def showEvent(self, QShowEvent):
@@ -1320,28 +1333,29 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
     def run(self):
         result = self.validate_run()
         if not result:
-            return
-        self.executed = True
+            result = False
+        else:
+            self.executed = True
 
-        self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
-        self.progress_dialog.setLabelText(message)
+            self.progress_dialog.setRange(0, 0)
+            message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
+            self.progress_dialog.setLabelText(message)
 
-        if self.settings_layer_connected:
-            self.disconnect_signals()
+            if self.settings_layer_connected:
+                self.disconnect_signals()
 
-        self.settings.layer.selectByIds(self.feature_ids)
-        self.remove_memory_layer(PREVIEW_POLYGON)
-        self.create_preview_layer(False)
-        
-        result = split_offset_distance(
-            self.settings.layer,
-            self.line_layer,
-            self.preview_layer,
-            self.lines[0],
-            self.widget.offset_distance.value(),
-            self.feature_ids
-        )
+            self.settings.layer.selectByIds(self.feature_ids)
+            self.remove_memory_layer(PREVIEW_POLYGON)
+            self.create_preview_layer(False)
+            QApplication.processEvents()
+            result = split_offset_distance(
+                self.settings.layer,
+                self.line_layer,
+                self.preview_layer,
+                self.lines[0],
+                self.widget.offset_distance.value(),
+                self.feature_ids
+            )
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
         if result:
@@ -1358,26 +1372,27 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
     def preview(self):
         result = self.validate_run(True)
         if not result:
-            return
-        self.executed = True
+            result = False
+        else:
+            self.executed = True
 
-        self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
-        self.progress_dialog.setLabelText(message)
+            self.progress_dialog.setRange(0, 0)
+            message = QApplication.translate('OffsetDistanceWidget', 'Splitting')
+            self.progress_dialog.setLabelText(message)
 
-        if self.settings_layer_connected:
-            self.disconnect_signals()
+            if self.settings_layer_connected:
+                self.disconnect_signals()
 
-        self.create_preview_layer(True)
-        self.preview_layer.selectAll()
-        result = split_offset_distance(
-            self.preview_layer,
-            self.line_layer,
-            self.preview_layer,
-            self.lines[0],
-            self.widget.offset_distance.value(),
-            self.feature_ids
-        )
+            self.create_preview_layer(True)
+            self.preview_layer.selectAll()
+            result = split_offset_distance(
+                self.preview_layer,
+                self.line_layer,
+                self.preview_layer,
+                self.lines[0],
+                self.widget.offset_distance.value(),
+                self.feature_ids
+            )
 
         # iface.setActiveLayer(self.settings.layer)
         self.init_signals()
@@ -2028,31 +2043,32 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
     def run(self):
         result = self.validate_run()
         if not result:
-            return
-        self.executed = True
-
-        self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('JoinPointsWidget', 'Splitting')
-        self.progress_dialog.setLabelText(message)
-
-        if self.settings_layer_connected:
-            self.disconnect_signals()
-
-        self.settings.layer.selectByIds(self.feature_ids)
-
-        try:
-            result = split_join_points(
-                self.settings.layer,
-                self.preview_layer,
-                self.point_layer,
-                self.feature_ids
-            )
-
-        except Exception:
             result = False
+        else:
+            self.executed = True
+
+            self.progress_dialog.setRange(0, 0)
+            message = QApplication.translate('JoinPointsWidget', 'Splitting')
+            self.progress_dialog.setLabelText(message)
+
+            if self.settings_layer_connected:
+                self.disconnect_signals()
+
+            self.settings.layer.selectByIds(self.feature_ids)
+            QApplication.processEvents()
+            try:
+                result = split_join_points(
+                    self.settings.layer,
+                    self.preview_layer,
+                    self.point_layer,
+                    self.feature_ids
+                )
+
+            except Exception:
+                result = False
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
-
+        print 'sp res', result
         if result:
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
@@ -2069,27 +2085,28 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         result = self.validate_run(True)
 
         if not result:
-            return
-        self.executed = True
-
-        self.progress_dialog.setRange(0, 0)
-        message = QApplication.translate('JoinPointsWidget', 'Splitting')
-        self.progress_dialog.setLabelText(message)
-
-        if self.settings_layer_connected:
-            self.disconnect_signals()
-
-        self.preview_layer.selectAll()
-
-        try:
-            result = split_join_points(
-                self.preview_layer,
-                self.preview_layer,
-                self.point_layer,
-                self.feature_ids
-            )
-        except Exception:
             result = False
+        else:
+            self.executed = True
+
+            self.progress_dialog.setRange(0, 0)
+            message = QApplication.translate('JoinPointsWidget', 'Splitting')
+            self.progress_dialog.setLabelText(message)
+
+            if self.settings_layer_connected:
+                self.disconnect_signals()
+
+            self.preview_layer.selectAll()
+
+            try:
+                result = split_join_points(
+                    self.preview_layer,
+                    self.preview_layer,
+                    self.point_layer,
+                    self.feature_ids
+                )
+            except Exception:
+                result = False
 
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()

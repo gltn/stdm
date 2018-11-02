@@ -221,7 +221,7 @@ def create_V2_line(points):
         point_v2 = QgsPointV2(point.x(), point.y())
         line.addVertex(point_v2)
     return line
-#
+
 # def extend_line_points(line_geom, polygon_extent):
 #     """
 #
@@ -235,26 +235,6 @@ def create_V2_line(points):
 #     :return:
 #     :rtype: Polyline
 #     """
-#     # x_max = polygon_extent.xMaximum()
-#     # x_min = polygon_extent.xMinimum()
-#     # #TODO take this method outside this function and put all output as inputs
-#     # line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
-#     #
-#     # # x1 = x_max
-#     # # x = x_min
-#     #
-#     # # y1 = start_y + slope * (x_max - start_x)
-#     # y1 = start_y + slope * (start_x - x_min)
-#     # y = end_y = slope * (end_x - x_max)
-#     #
-#     # p4 = QgsPoint(x_max, y)
-#     # p3 = QgsPoint(end_x, end_y)
-#     # p2 = QgsPoint(start_x, start_y)
-#     # p1 = QgsPoint(x_min, y1)
-#     #
-#     # poly_line = [p1, p2, p3, p4]
-#     # print poly_line
-#     # return poly_line
 #
 #     x_max = polygon_extent.xMaximum()
 #     x_min = polygon_extent.xMinimum()
@@ -274,8 +254,8 @@ def create_V2_line(points):
 #     p3 = QgsPoint(x_max, ext_end_y)
 #     poly_line = [p1, p2, p3]
 #     return poly_line
-#
 
+#
 
 def extend_line_points(line_geom, polygon_extent):
     """
@@ -290,23 +270,37 @@ def extend_line_points(line_geom, polygon_extent):
     :return:
     :rtype: Polyline
     """
+    y_max = polygon_extent.yMaximum()
+    y_min = polygon_extent.yMinimum()
     x_max = polygon_extent.xMaximum()
     x_min = polygon_extent.xMinimum()
-    # TODO fix extending vertical line.
+
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
-    if slope is None:
-        y_box1 = polygon_extent.yMaximum()
-        y_box2 = polygon_extent.yMinimum()
 
-    else:
-        y_box1 = end_y - slope * (end_x - x_max)
-        y_box2 = start_y - slope * (start_x - x_min)
+    if slope > 0:
+        x_box_min = (y_min - start_y)/slope + start_x
+        x_box_max = (y_max - end_y) / slope + end_x
+        y_box_min = y_min
+        y_box_max = y_max
+    elif slope < 0:
+        y_box_max = slope * (x_min - start_x) + start_y
+        y_box_min = end_y - slope*(end_x - x_max)
+        x_box_min = x_min
+        x_box_max = x_max
+    elif slope == 0: # when line is straight horizontal
+        y_box_max = start_y
+        y_box_min = start_y
+        x_box_min = x_min
+        x_box_max = x_max
+    else: # when line is straight vertical, slope is None
+        y_box_max = y_max
+        y_box_min = y_min
+        x_box_min = start_x
+        x_box_max = start_x
 
-    p1 = QgsPoint(x_min, y_box2)
-    p2 = QgsPoint(start_x, start_y)
-    p3 = QgsPoint(end_x, end_y)
-    p4 = QgsPoint(x_max, y_box1)
-    poly_line = [p1, p2, p3, p4]
+    p1 = QgsPoint(x_box_min, y_box_min)
+    p2 = QgsPoint(x_box_max, y_box_max)
+    poly_line = [p1, p2]
     return poly_line
 
 
@@ -796,6 +790,7 @@ def merge_selected_lines_features(line_layer):
 
 def points_to_line(point_layer):
     poly_line = []
+    print point_layer.selectedFeatures()
     for point_ft in point_layer.selectedFeatures():
         point = QgsGeometry.asPoint(point_ft.geometry())
 
@@ -887,6 +882,8 @@ def split_move_line_with_area(
         # that copies and merges all selected feature from polygon.
         try:
             sel_features = list(preview_layer.getFeatures())
+            if len(sel_features) == 0:
+                return False, False
         except Exception:
             return False, False
         # if previous_geom is None:
@@ -1127,7 +1124,7 @@ def split_offset_distance(
         (res, split_geom0, topolist) = geom1.splitGeometry(
             added_points, False
         )
-
+        QApplication.processEvents()
         if len(split_geom0) > 0:
             # Get the first line that intersects the geometry and use
             # it as a reference using distance to the split feature.
@@ -1188,12 +1185,12 @@ def split_rotate_line_with_area(
     try:
         sel_features = list(preview_layer.getFeatures())
     except Exception:
-        return 1
+        return False
         # Get the geometry
     try:
         ori_poly_geom = sel_features[0].geometry()
     except Exception:
-        return 2
+        return False
 
     poly_bbox = ori_poly_geom.boundingBox()
 
@@ -1290,7 +1287,7 @@ def split_rotate_line_with_area(
             sel_feats = list(preview_layer.getFeatures())
         except Exception:
 
-            return 3
+            return False
 
         geom1 = sel_feats[0].geometry()
         original_area = round(geom1.area(), 0)
@@ -1352,6 +1349,7 @@ def split_rotate_line_with_area(
                     # print geom1.area() + split_geom[0].area(), original_area
                     #
                     # make the geom close to intersection point to be split geom
+                    # print intersecting_point_pt.distance(geom1), geom1.area(), intersecting_point_pt.distance(split_geom[0]), split_geom[0].area()
                     if intersecting_point_pt.distance(geom1) < \
                             intersecting_point_pt.distance(split_geom[0]):
                         split_area1 = geom1.area()
@@ -1426,7 +1424,7 @@ def split_rotate_line_with_area(
                                 #         'Polygon Lines')[0],
                                 #     ext_line_geom
                                 # )
-                                return
+                                return False
                 else:
                     if angle_change == 1 and loop_index > 0:
                         # if decimal_place_new < 5:
@@ -1446,7 +1444,7 @@ def split_rotate_line_with_area(
                                 #         'Polygon Lines')[0],
                                 #     ext_line_geom
                                 # )
-                                return
+                                return False
                 if clockwise == 1:
                     angle_change = 1
                 else:
@@ -1511,7 +1509,7 @@ def split_rotate_line_with_area(
                                 #         'Polygon Lines')[0],
                                 #     ext_line_geom
                                 # )
-                                return
+                                return False
                 else:
                     if angle_change == -1 and loop_index > 0:
                         # if decimal_place_new < 5:
@@ -1529,7 +1527,7 @@ def split_rotate_line_with_area(
                                 #         'Polygon Lines')[0],
                                 #     ext_line_geom
                                 # )
-                                return
+                                return False
                 if clockwise == 1:
                     angle_change = -1
                 else:
@@ -1586,14 +1584,14 @@ def split_join_points(
     sel_features = list(preview_layer.getFeatures())
     # Get the geometry
     geom1 = sel_features[0].geometry()
-
+    QApplication.processEvents()
     extent = geom1.boundingBox()
     # Using the extent, extend the parallel line to the selected
     # geometry bounding box to avoid failed split.
 
     line_geom = points_to_line(point_layer)
-    line_points = extend_line_points(line_geom, extent)
 
+    line_points = extend_line_points(line_geom, extent)
     # If the line intersects the main geometry, split it
     if line_geom.intersects(geom1):
         if validate:
@@ -1601,7 +1599,6 @@ def split_join_points(
         (res, split_geom0, topolist) = geom1.splitGeometry(
             line_points, False
         )
-
         if len(split_geom0) > 0:
             # Get the first line that intersects the geometry and use
             # it as a reference using distance to the split feature.
@@ -1616,8 +1613,7 @@ def split_join_points(
 
         return False
 
-    else:
-        return False
+    return False
 
 
 def active_spatial_column(entity, layer):
