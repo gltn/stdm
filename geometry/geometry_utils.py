@@ -276,30 +276,27 @@ def extend_line_points(line_geom, polygon_extent):
     x_min = polygon_extent.xMinimum()
 
     line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
-
-    if slope > 0:
-        x_box_min = (y_min - start_y)/slope + start_x
+    if slope is None: # when line is straight vertical, slope is None
+        p1 = QgsPoint(start_x, y_min)
+        p2 = QgsPoint(start_x, y_max)
+    elif slope > 0:
+        y_box_min = start_y - slope*(start_x - x_min)
         x_box_max = (y_max - end_y) / slope + end_x
-        y_box_min = y_min
-        y_box_max = y_max
-    elif slope < 0:
-        y_box_max = slope * (x_min - start_x) + start_y
-        y_box_min = end_y - slope*(end_x - x_max)
-        x_box_min = x_min
-        x_box_max = x_max
-    elif slope == 0: # when line is straight horizontal
-        y_box_max = start_y
-        y_box_min = start_y
-        x_box_min = x_min
-        x_box_max = x_max
-    else: # when line is straight vertical, slope is None
-        y_box_max = y_max
-        y_box_min = y_min
-        x_box_min = start_x
-        x_box_max = start_x
 
-    p1 = QgsPoint(x_box_min, y_box_min)
-    p2 = QgsPoint(x_box_max, y_box_max)
+        p1 = QgsPoint(x_min, y_box_min)
+        p2 = QgsPoint(x_box_max, y_max)
+    elif slope < 0:
+        y_box_min = end_y - slope * ( end_x - x_max)
+        x_box_min = start_x - (start_y - y_max)/ slope
+
+        p1 = QgsPoint(x_max, y_box_min)
+        p2 = QgsPoint(x_box_min, y_max)
+    else: # when line is straight horizontal slop is zero
+
+        p1 = QgsPoint(x_min, start_y)
+        p2 = QgsPoint(x_max, start_y)
+
+
     poly_line = [p1, p2]
     return poly_line
 
@@ -913,7 +910,10 @@ def split_move_line_with_area(
         added_points = extend_line_points(parallel_line_geom, extent)
 
         parallel_line_geom2 =  QgsGeometry.fromPolyline(added_points)
-
+        # add_geom_to_layer(
+        #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
+        #     parallel_line_geom2
+        # )
         # print parallel_line_geom2
         # parallel_line_geom3 = QgsGeometry.as
         #
@@ -963,7 +963,7 @@ def split_move_line_with_area(
             else:
 
                 continue
-
+            # print split_area1, decimal_place_new, height, height_change
             # If provided area is greater than split area, increase height
             if area > split_area1:
                 if area - math.modf(split_area1)[1] > 200:
@@ -974,13 +974,13 @@ def split_move_line_with_area(
                     if area_toggle == 0:
                         decimal_place_new = 1
 
-                elif area - math.modf(split_area1)[1] in range(10, 50):
+                elif area - math.modf(split_area1)[1] in range(5, 50):
                     if area_toggle == 0:
                         decimal_place_new = 2
 
-                elif area - math.modf(split_area1)[1] in range(3, 10):
+                elif area - math.modf(split_area1)[1] in range(3, 5):
                     if area_toggle == 0:
-                        decimal_place_new = 4
+                        decimal_place_new = 3
 
                 # helps in changing height in small steps after switching from area < split_area1
                 if height_change == -1:
@@ -1032,13 +1032,13 @@ def split_move_line_with_area(
                     if area_toggle == 0:
                         decimal_place_new = 1
 
-                elif math.modf(split_area1)[1] - area in range(10, 50):
+                elif math.modf(split_area1)[1] - area in range(5, 50):
                     if area_toggle == 0:
                         decimal_place_new = 2
 
-                elif math.modf(split_area1)[1] - area in range(3, 10):
+                elif math.modf(split_area1)[1] - area in range(3, 5):
                     if area_toggle == 0:
-                        decimal_place_new = 4
+                        decimal_place_new = 3
 
                 # helps in changing height in small steps after switching from area > split_area1
                 if height_change == 1:
@@ -1592,6 +1592,12 @@ def split_join_points(
     line_geom = points_to_line(point_layer)
 
     line_points = extend_line_points(line_geom, extent)
+    # parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
+
+    # add_geom_to_layer(
+    #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
+    #     parallel_line_geom2
+    # )
     # If the line intersects the main geometry, split it
     if line_geom.intersects(geom1):
         if validate:

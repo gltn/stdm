@@ -2068,7 +2068,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 result = False
         iface.setActiveLayer(self.settings.layer)
         self.init_signals()
-        print 'sp res', result
+
         if result:
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
