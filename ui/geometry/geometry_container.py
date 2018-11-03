@@ -411,8 +411,7 @@ class GeometryToolsDock(
                     if iface.activeLayer() is not None:
                         if iface.activeLayer().isEditable():
                             iface.mainWindow().findChild(
-                                QAction, 'mActionToggleEditing'
-                            ).trigger()
+                                QAction, 'mActionToggleEditing').trigger()
         except Exception as ex:
             pass
         self.blockSignals(False)

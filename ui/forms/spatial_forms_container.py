@@ -67,13 +67,14 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         save_btn.clicked.connect(self.save)
 
     def discard(self):
+
         for i in range(len(self.feature_models)):
             self.layer.undoStack().undo()
 
         for feature in self.plugin.geom_tools_container.original_features:
             self.layer.updateFeature(feature)
             self.layer.undoStack().undo()
-        self.plugin.geom_tools_container.remove_memory_layers(True)
+        self.plugin.geom_tools_container.remove_memory_layers()
         self.feature_models.clear()
         self.reject()
 
