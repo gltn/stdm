@@ -924,7 +924,7 @@ def split_move_line_with_area(
                 added_points, False
             )
 
-            if len(split_geom0) > 0:
+            if len(split_geom0) ==  1:
 
                 if loop_index == 0:
                     # Get the first line that intersects the geometry and use
@@ -960,8 +960,9 @@ def split_move_line_with_area(
                         # print 'continue 1'
                         continue
                 loop_index = loop_index + 1
+            elif len(split_geom0) > 1:
+                return False, False
             else:
-
                 continue
             # print split_area1, decimal_place_new, height, height_change
             # If provided area is greater than split area, increase height
@@ -1219,6 +1220,7 @@ def split_rotate_line_with_area(
     intersecting_point_pt = None
     digits = 0.0
     skip_angle_set = False
+    rotation = 0
     prev_toggle_index = 0
     # print split_area1, loop_index, failed_intersection, angle, \
     #     area_toggle, excessive_toggle, decimal_place_new
@@ -1275,9 +1277,12 @@ def split_rotate_line_with_area(
         # print angle, decimal_place_new, area_toggle, split_area1
         if angle > 180:
             angle = 0
+            rotation = rotation + 1
         if angle < -180:
             angle = 0
-
+            rotation = rotation + 1
+        if rotation > 50:
+            return False
         line_geom = QgsGeometry.fromWkt(selected_line.asWkt())
         line_geom.rotate(angle, rotation_point_ft.geometry().asPoint())
 
