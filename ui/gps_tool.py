@@ -259,7 +259,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         gpx_file = unicode(self.file_le.text()).strip()
-        feature_type = self.feature_type_cb.currentText()
+        feature_type = self.feature_type_cb.currentIndex()
         columns = 4
         headers = ["", "Point Name", "Longitude", "Latitude"]
         if feature_type:

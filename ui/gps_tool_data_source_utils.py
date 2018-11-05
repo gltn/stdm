@@ -27,7 +27,7 @@ from osgeo import ogr
 
 
 LOGGER = logging.getLogger('stdm')
-
+FEATURE_TYPES = ['waypoint', 'track', 'route']
 
 def validate_file_path(gpx_file):
     """
@@ -86,13 +86,12 @@ def get_feature_layer(gpx_data_source, feature_type):
     :rtype feature_count: Integer
     """
     if feature_type:
-        
-        if feature_type == QApplication.translate('Dialog', 'Track')\
-                or feature_type == QApplication.translate('Dialog', 'Route'):
-            feature_type = feature_type.lower() + '_points'
+        if FEATURE_TYPES[feature_type] == 'track' or \
+                        FEATURE_TYPES[feature_type] == 'route':
+            feature_type = '{}_points'.format(FEATURE_TYPES[feature_type])
         else:
-            feature_type = feature_type.lower() + 's'
-        gpx_layer = gpx_data_source.GetLayerByName(feature_type.encode('utf-8'))
+            feature_type = '{}s'.format(FEATURE_TYPES[feature_type])
+        gpx_layer = gpx_data_source.GetLayerByName(feature_type)
         feature_count = gpx_layer.GetFeatureCount()
         return None if feature_count == 0 else gpx_layer, feature_count
 
