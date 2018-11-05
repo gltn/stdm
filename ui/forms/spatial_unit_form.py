@@ -237,7 +237,7 @@ class STDMFieldWidget():
     # Instantiate the singleton QgsEditorWidgetRegistry
     widgetRegistry = QgsEditorWidgetRegistry.instance()
 
-    def __init__(self):
+    def __init__(self, plugin):
         self.entity = None
         self.widget_mapping = {}
         self.layer = None
@@ -245,6 +245,7 @@ class STDMFieldWidget():
         self.removed_feature_models = OrderedDict()
         self.current_feature = None
         self.editor = None
+        self.plugin = plugin
 
     def init_form(self, table, spatial_column, curr_layer):
         """
@@ -512,7 +513,8 @@ class STDMFieldWidget():
             model=feature_model,
             parent=iface.mainWindow(),
             manage_documents=True,
-            collect_model=True
+            collect_model=True,
+            plugin=self.plugin
         )
         self.model = self.editor.model()
         self.editor.addedModel.connect(self.on_form_saved)
