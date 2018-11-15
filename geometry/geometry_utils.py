@@ -948,20 +948,24 @@ def split_move_line_with_area(
                             first_intersection.distance(split_geom0[0]):
                         # If split geom is over 1, continue
                         # TODO find a better solution than continue.
-                        if len(split_geom0) > 1:
-                            # print 'continue 0'
-                            continue
-
-                        else:
-                            split_area1 = split_geom0[0].area()
-                            split_geom = split_geom0[0]
-                            main_geom = geom1
+                        # if len(split_geom0) > 1:
+                        #     # print 'continue 0'
+                        #     continue
+                        #
+                        # else:
+                        split_area1 = split_geom0[0].area()
+                        split_geom = split_geom0[0]
+                        main_geom = geom1
                     else:
                         # print 'continue 1'
                         continue
                 loop_index = loop_index + 1
             elif len(split_geom0) > 1:
-                return False, False
+                if failed_split > 1000:
+
+                    return False, False
+                else:
+                    failed_split = failed_split + 1
             else:
                 continue
             # print split_area1, decimal_place_new, height, height_change
