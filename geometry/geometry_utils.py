@@ -787,7 +787,7 @@ def merge_selected_lines_features(line_layer):
 
 def points_to_line(point_layer):
     poly_line = []
-    print point_layer.selectedFeatures()
+    # print point_layer.selectedFeatures()
     for point_ft in point_layer.selectedFeatures():
         point = QgsGeometry.asPoint(point_ft.geometry())
 
@@ -1600,13 +1600,14 @@ def split_join_points(
 
     line_geom = points_to_line(point_layer)
 
-    line_points = extend_line_points(line_geom, extent)
+    # line_points = extend_line_points(line_geom, extent)
     # parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
 
     # add_geom_to_layer(
     #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
     #     parallel_line_geom2
     # )
+    line_points = line_geom.asPolyline()
     # If the line intersects the main geometry, split it
     if line_geom.intersects(geom1):
         if validate:
