@@ -7,19 +7,54 @@ import re
 import os
 from random import randrange
 
-from PyQt4.QtCore import Qt, pyqtSlot
-from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
-    QMessageBox, QAction, QProgressDialog, QIcon, QTextCharFormat, QFont, \
-    QTextCursor, QBrush
-from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
-from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes, \
-    QgsMessageLog, QgsConditionalStyle, QgsExpressionContext, QgsSymbolV2, \
-    QgsSymbolV2RenderContext, QgsSimpleFillSymbolLayerV2, \
-    QgsRendererCategoryV2, QgsCategorizedSymbolRendererV2, \
-    QgsSimpleLineSymbolLayerV2
+from PyQt4.QtCore import (
+        Qt, 
+        pyqtSlot
+        )
+
+from PyQt4.QtGui import (
+        QDockWidget, 
+        QApplication, 
+        QStatusBar, 
+        QWidget,
+        QMessageBox, 
+        QAction, 
+        QProgressDialog, 
+        QIcon, 
+        QTextCharFormat, 
+        QFont,
+        QTextCursor, 
+        QBrush
+        )
+
+from qgis.PyQt.QtCore import (
+        NULL, 
+        pyqtSignal, 
+        QObject
+        )
+
+from qgis.core import (
+        QgsMapLayer, 
+        QgsFeatureRequest, 
+        QgsUnitTypes,
+        QgsMessageLog, 
+        QgsConditionalStyle, 
+        QgsExpressionContext, 
+        QgsSymbolV2,
+        QgsSymbolV2RenderContext, 
+        QgsSimpleFillSymbolLayerV2,
+        QgsRendererCategoryV2, 
+        QgsCategorizedSymbolRendererV2,
+        QgsSimpleLineSymbolLayerV2
+        )
+
 from qgis.utils import iface
 
-from stdm.data.pg_utils import spatial_tables, pg_views
+from stdm.data.pg_utils import (
+        spatial_tables, 
+        pg_views
+        )
+
 from stdm.ui.feature_details import  DETAILS_DOCK_ON
 from stdm.ui.notification import NotificationBar
 
@@ -36,9 +71,11 @@ from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 from ui_equal_area import Ui_EqualArea
 from ui_show_measurements import Ui_ShowMeasurements
+
 from stdm.ui.forms.spatial_unit_form import (
                 STDMFieldWidget
             )
+
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
@@ -131,11 +168,15 @@ class LayerSelectionHandler(object):
         """
         if layer is None:
             return None
+
         source = layer.source()
+
         if source is None:
             return None
-        if re is None:
-            return None
+
+        #if re is None:
+            #return None
+
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
             table = vals['table'].split('.')
@@ -184,11 +225,12 @@ class LayerSelectionHandler(object):
             return True
         layer_source = self.get_layer_source(active_layer)
 
-        if layer_source is not None:
-            return True
+        return False if layer_source is None else True
 
-        else:
-            return False
+        #if layer_source is not None:
+            #return True
+        #else:
+            #return False
 
     def clear_feature_selection(self):
         """
@@ -2043,6 +2085,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
         except Exception:
             result = False
+            state = False
         if not result:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -2054,9 +2097,9 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def run(self):
         result = self.validate_run()
-        if not result:
-            result = False
-        else:
+        #if not result:
+            #result = False
+        if result:
             self.executed = True
 
             self.progress_dialog.setRange(0, 0)
