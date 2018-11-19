@@ -1062,7 +1062,8 @@ class GeomWidgetsBase(object):
         # self.clear_highlights()
         # self.failed_split_feature = self.feature_ids
         for feat_id in self.feature_ids:
-            del self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models[feat_id]
+            if feat_id in self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models.keys():
+                del self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models[feat_id]
         self.settings.remove_memory_layers(stop_editing=True)
         self.settings.layer.removeSelection()
         self.clear_inputs()
