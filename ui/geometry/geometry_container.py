@@ -3,9 +3,9 @@ import inspect
 from collections import OrderedDict
 import inspect
 import re
-
 import os
 from random import randrange
+from time import sleep
 
 from PyQt4.QtCore import (
         Qt, 
@@ -1606,6 +1606,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
                 self.on_line_feature_selected
             )
             self.iface.setActiveLayer(self.line_layer)
+        
+            print "***** :"+iface.activeLayer().name()
 
     def on_point_feature_selected(self):
 
@@ -1666,6 +1668,8 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
     def on_length_from_reference_point_changed(self, new_value):
         if self.point_layer is None:
             return
+
+        # -----
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -1691,11 +1695,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             new_value
         )
 
+        # -----
+
         # self.iface.mainWindow().blockSignals(False)
         if hasattr(self.widget, 'selected_points_lbl'):
             points_count = len(self.point_layer.selectedFeatures())
 
             self.widget.selected_points_lbl.setText(str(points_count))
+        sleep(0.05)
 
     def on_line_selection_finished(self):
         self.rotation_point = None
@@ -1720,6 +1727,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.rotation_point = self.point_layer.selectedFeatures()[0]
 
         self.widget.selected_points_lbl.setText(str(self.points_count))
+
 
     def validate_run(self):
         state = True

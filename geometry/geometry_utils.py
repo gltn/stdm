@@ -892,6 +892,7 @@ def split_move_line_with_area(
         )
         # print parallel_line_geom, height, height_change, decimal_place_new
         # print height*-1
+
         QApplication.processEvents()
         # print loop_index, parallel_line_geom,  height
         # if parallel_line_geom is None:
@@ -997,7 +998,6 @@ def split_move_line_with_area(
                 loop_index = loop_index + 1
             elif len(split_geom0) > 1:
                 if failed_split > 1000:
-
                     return False, False
                 else:
                     failed_split = failed_split + 1
@@ -1124,7 +1124,6 @@ def split_move_line_with_area(
 
             # return False, False
             if failed_split > 1000:
-
                 return False, False
             else:
                 failed_split = failed_split + 1
