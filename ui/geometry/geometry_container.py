@@ -697,6 +697,7 @@ class GeomWidgetsBase(object):
         self.notice = NotificationBar(
             self.settings.notice_box
         )
+        self.failed_split_feature = []
         self.feature_ids = []
         self.point_layer_connected = False
         self.executed = False
@@ -1127,6 +1128,9 @@ class GeomWidgetsBase(object):
             iface.mapCanvas().refresh()
 
     def post_split_update(self, layer, preview=False):
+        if len(self.feature_ids) > 0:
+            if self.feature_ids[0] in self.failed_split_feature:
+                return
         new_features = layer.selectedFeatures()
         if len(new_features) > 0:
             new_feature = layer.selectedFeatures()[0]
@@ -1239,7 +1243,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
             # self.splitting_success_help(4)
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1284,7 +1288,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.post_split_update(self.preview_layer, preview=True)
             # self.splitting_success_help(4)
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1442,7 +1446,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
                 'The split method is not suitable for this polygon shape.'
@@ -1482,7 +1486,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.progress_dialog.cancel()
             self.post_split_update(self.preview_layer, preview=True)
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
                 'The split method is not suitable for this polygon shape.'
@@ -1787,7 +1791,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
             self.post_split_update(self.settings.layer)
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'OnePointAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1835,7 +1839,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.post_split_update(self.preview_layer, preview=True)
 
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'OnePointAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -2169,7 +2173,8 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
+            self.settings.layer.removeSelection()
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
@@ -2214,7 +2219,8 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
             self.post_split_update(self.preview_layer, preview=True)
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
+
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
@@ -2427,7 +2433,9 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         return state
 
     def post_split_update(self, layer, preview=False):
-
+        if len(self.feature_ids) > 0:
+            if self.feature_ids[0] in self.failed_split_feature:
+                return
         new_features = [f.id() for f in self.equal_split_features]
         if len(self.feature_ids) > 0:
             self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
@@ -2570,7 +2578,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
 
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'EqualAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -2715,7 +2723,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
 
         else:
-            self.feature_ids[:] = []
+            self.failed_split_feature = self.feature_ids
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'

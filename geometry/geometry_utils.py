@@ -1644,7 +1644,8 @@ def split_join_points(
     # geometry bounding box to avoid failed split.
 
     line_geom = points_to_line(point_layer)
-
+    # print line_geom
+    # print line_geom.length()
     # line_points = extend_line_points(line_geom, extent)
     # parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
 
@@ -1654,12 +1655,14 @@ def split_join_points(
     # )
     line_points = line_geom.asPolyline()
     # If the line intersects the main geometry, split it
+    # print 'inter ', line_geom.intersects(geom1)
     if line_geom.intersects(geom1):
         if validate:
             return True
         (res, split_geom0, topolist) = geom1.splitGeometry(
             line_points, False
         )
+        print split_geom0
         if len(split_geom0) > 0:
             # Get the first line that intersects the geometry and use
             # it as a reference using distance to the split feature.
