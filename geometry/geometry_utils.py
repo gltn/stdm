@@ -868,19 +868,6 @@ def split_move_line_with_area(
     # print list(preview_layer.getFeatures())[0].geometry().area()
     # multi_split_case = 0vb
     # first_height = 0
-
-    try:
-        sel_features = list(preview_layer.getFeatures())
-        if len(sel_features) == 0:
-            return False, False
-    except Exception:
-        return False, False
-
-    g1 = sel_features[0].geometry()
-    
-    #cpy_g1 =  Copier(sel_features[0].geometry())
-    #cpy_g2 =  Copier(sel_features[0].geometry())
-    
     area_toggle = 0
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
@@ -905,11 +892,7 @@ def split_move_line_with_area(
         )
         # print parallel_line_geom, height, height_change, decimal_place_new
         # print height*-1
-
-
-        #QApplication.processEvents()
-
-
+        QApplication.processEvents()
         # print loop_index, parallel_line_geom,  height
         # if parallel_line_geom is None:
         #     if previous_properties is not None:
@@ -929,25 +912,16 @@ def split_move_line_with_area(
         # Get one feature selected on preview layer.
         # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
-
-        # ------
-        #try:
-            #sel_features = list(preview_layer.getFeatures())
-            #if len(sel_features) == 0:
-                #return False, False
-        #except Exception:
-            #return False, False
+        try:
+            sel_features = list(preview_layer.getFeatures())
+            if len(sel_features) == 0:
+                return False, False
+        except Exception:
+            return False, False
+        # if previous_geom is None:
+            # Get the geometry
         geom1 = sel_features[0].geometry()
-
-        #copier =  Copier(cpy_g1.geometry())
-        #geom1 = copier.geometry()
-
-        # ------
-
-        print geom1.area()
-        print ">>>>>>"
-        print g1.area()
-
+        # print geom1.area()
         # else:
         #     geom1 = previous_geom
 
@@ -1023,14 +997,6 @@ def split_move_line_with_area(
                 loop_index = loop_index + 1
             elif len(split_geom0) > 1:
                 if failed_split > 1000:
-
-                    print "******************************"
-                    print len(split_geom0)
-                    print "******************************"
-                    print split_geom0[0].area()
-                    print split_geom0[1].area()
-                    print "Points Added: ",added_points
-
 
                     return False, False
                 else:

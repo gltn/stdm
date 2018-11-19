@@ -1096,6 +1096,17 @@ class GeomWidgetsBase(object):
 
         iface.legendInterface().setLayerVisible(self.preview_layer2, visible)
 
+    def remove_invalid_feature(self):
+        if len(self.feature_ids) > len(self.settings.layer.selectedFeatures()):
+            bad_feat_id = None
+            for feat_id in self.feature_ids:
+                if feat_id != self.settings.layer.selectedFeatures()[0].id():
+                    bad_feat_id = feat_id
+                    break
+
+            if bad_feat_id is not None:
+                self.feature_ids.remove(bad_feat_id)
+
     def preview(self):
         self.executed = True
         self.preview_layer = copy_layer_to_memory(
@@ -1192,6 +1203,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.rotation_point = None
 
     def run(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             return
@@ -1216,7 +1228,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.feature_ids
         )
         if isinstance(line_feature, bool):
-            self.init_signals()
+            # self.init_signals()
             result = False
         else:
             result = True
@@ -1235,8 +1247,10 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.progress_dialog.setLabelText(fail_message)
 
     def preview(self):
+        self.remove_invalid_feature()
         self.executed = True
         result = self.validate_run()
+
         if not result:
             return
         if self.settings_layer_connected:
@@ -1259,7 +1273,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.feature_ids
         )
         if isinstance(line_feature, bool):
-            self.init_signals()
+            # self.init_signals()
             result = False
         else:
             result = True
@@ -1268,8 +1282,7 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         if result:
             self.progress_dialog.cancel()
             self.post_split_update(self.preview_layer, preview=True)
-            self.splitting_success_help(4)
-
+            # self.splitting_success_help(4)
         else:
             self.feature_ids[:] = []
             fail_message = QApplication.translate(
@@ -1396,6 +1409,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.rotation_point = None
 
     def run(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             result = False
@@ -1437,6 +1451,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.progress_dialog.setLabelText(fail_message)
 
     def preview(self):
+        self.remove_invalid_feature()
         result = self.validate_run(True)
         if not result:
             result = False
@@ -1726,6 +1741,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         return state
 
     def run(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             return
@@ -1771,6 +1787,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.progress_dialog.setLabelText(fail_message)
 
     def preview(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             return
@@ -2111,6 +2128,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         return state
 
     def run(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         #if not result:
             #result = False
@@ -2153,6 +2171,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         self.executed = False
 
     def preview(self):
+        self.remove_invalid_feature()
         result = self.validate_run(True)
 
         if not result:
@@ -2419,6 +2438,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         iface.setActiveLayer(self.settings.layer)
 
     def run(self):
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             return
@@ -2554,7 +2574,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.init_signals()
 
     def preview(self):
-
+        self.remove_invalid_feature()
         result = self.validate_run()
         if not result:
             return
