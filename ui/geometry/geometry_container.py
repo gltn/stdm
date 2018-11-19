@@ -1098,6 +1098,7 @@ class GeomWidgetsBase(object):
 
         self.iface.mapCanvas().refresh()
 
+
 class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
     def __init__(self, layer_settings, parent):
@@ -1142,8 +1143,6 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
             self.notice.insertErrorNotification(message)
             return False
 
-
-
         return True
 
     def showEvent(self, QShowEvent):
@@ -1186,11 +1185,11 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
 
         self.init_signals()
         if result:
-
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
-            self.splitting_success_help(4)
+            # self.splitting_success_help(4)
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1230,11 +1229,11 @@ class MoveLineAreaWidget(QWidget, Ui_MoveLineArea, GeomWidgetsBase):
         self.init_signals()
         if result:
             self.progress_dialog.cancel()
-
             self.post_split_update(self.preview_layer, preview=True)
             self.splitting_success_help(4)
 
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1374,6 +1373,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
                 'Sorry, splitting failed. '
@@ -1410,9 +1410,9 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         self.init_signals()
         if result:
             self.progress_dialog.cancel()
-
             self.post_split_update(self.preview_layer, preview=True)
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
                 'Sorry, splitting failed. '
@@ -1708,6 +1708,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
             self.post_split_update(self.settings.layer)
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OnePointAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -1754,6 +1755,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             self.post_split_update(self.preview_layer, preview=True)
 
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OnePointAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -2085,6 +2087,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.post_split_update(self.settings.layer)
             self.progress_dialog.cancel()
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
@@ -2128,6 +2131,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
             self.post_split_update(self.preview_layer, preview=True)
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
@@ -2440,7 +2444,12 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 # else:
                 #     use_ft = True
                 QApplication.processEvents()
-                # self.point_layer.selectByIds([point.id()])
+                self.point_layer.selectByIds([point.id()])
+                if i == 0:
+                    clockwise = 1
+                else:
+                    clockwise = -1
+
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
@@ -2448,20 +2457,23 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     point,
                     self.area,
                     self.feature_ids,
-                    clockwise=1
+                    clockwise=clockwise
                 )
                 feature = feature_id_to_feature(
                     self.settings.layer, self.feature_ids
                 )
-                # self.feature_ids[:] = []
-                # self.feature_ids = [feature.id()]
-                # self.settings.layer.removeSelection()
-                # self.settings.layer.selectByIds(self.feature_ids)
+
                 if len(self.settings.layer.selectedFeatures()) == 1:
                     self.equal_split_features.append(
                         self.settings.layer.selectedFeatures()[0]
                     )
-
+                # self.feature_ids[:] = []
+                # for feat in feature:
+                #     self.feature_ids.append(feat.id())
+                #
+                # self.settings.layer.removeSelection()
+                # self.settings.layer.selectByIds(self.feature_ids)
+                #
                 self.remove_memory_layer(PREVIEW_POLYGON)
                 self.preview_layer = None
                 self.create_preview_layer(False)
@@ -2474,6 +2486,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
 
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'EqualAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
@@ -2618,6 +2631,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             self.progress_dialog.cancel()
 
         else:
+            self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'MoveLineAreaWidget',
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'

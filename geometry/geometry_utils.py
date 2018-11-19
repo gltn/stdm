@@ -1318,6 +1318,11 @@ def split_rotate_line_with_area(
                 added_points, False
             )
             if len(split_geom) > 0:
+                # add_geom_to_layer(
+                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                #         'Polygon Lines')[0],
+                #     ext_line_geom
+                # )
                 # print geom1.area(), split_geom[0].area()
                 # Get first intersection coordinate
                 if loop_index == 0:
@@ -1576,7 +1581,7 @@ def split_rotate_line_with_area(
                 angle = angle - Decimal(line_angle)
             else:
                 angle = angle + Decimal(line_angle)
-            # print 'failed intersection', failed_intersection
+            print 'failed intersection', failed_intersection
             QApplication.processEvents()
             if failed_intersection > 200:
                 return False
