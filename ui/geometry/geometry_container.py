@@ -7,19 +7,54 @@ import re
 import os
 from random import randrange
 
-from PyQt4.QtCore import Qt, pyqtSlot
-from PyQt4.QtGui import QDockWidget, QApplication, QStatusBar, QWidget, \
-    QMessageBox, QAction, QProgressDialog, QIcon, QTextCharFormat, QFont, \
-    QTextCursor, QBrush
-from qgis.PyQt.QtCore import NULL, pyqtSignal, QObject
-from qgis.core import QgsMapLayer, QgsFeatureRequest, QgsUnitTypes, \
-    QgsMessageLog, QgsConditionalStyle, QgsExpressionContext, QgsSymbolV2, \
-    QgsSymbolV2RenderContext, QgsSimpleFillSymbolLayerV2, \
-    QgsRendererCategoryV2, QgsCategorizedSymbolRendererV2, \
-    QgsSimpleLineSymbolLayerV2
+from PyQt4.QtCore import (
+        Qt, 
+        pyqtSlot
+        )
+
+from PyQt4.QtGui import (
+        QDockWidget, 
+        QApplication, 
+        QStatusBar, 
+        QWidget,
+        QMessageBox, 
+        QAction, 
+        QProgressDialog, 
+        QIcon, 
+        QTextCharFormat, 
+        QFont,
+        QTextCursor, 
+        QBrush
+        )
+
+from qgis.PyQt.QtCore import (
+        NULL, 
+        pyqtSignal, 
+        QObject
+        )
+
+from qgis.core import (
+        QgsMapLayer, 
+        QgsFeatureRequest, 
+        QgsUnitTypes,
+        QgsMessageLog, 
+        QgsConditionalStyle, 
+        QgsExpressionContext, 
+        QgsSymbolV2,
+        QgsSymbolV2RenderContext, 
+        QgsSimpleFillSymbolLayerV2,
+        QgsRendererCategoryV2, 
+        QgsCategorizedSymbolRendererV2,
+        QgsSimpleLineSymbolLayerV2
+        )
+
 from qgis.utils import iface
 
-from stdm.data.pg_utils import spatial_tables, pg_views
+from stdm.data.pg_utils import (
+        spatial_tables, 
+        pg_views
+        )
+
 from stdm.ui.feature_details import  DETAILS_DOCK_ON
 from stdm.ui.notification import NotificationBar
 
@@ -36,9 +71,11 @@ from ui_one_point_area import Ui_OnePointArea
 from ui_join_points import Ui_JoinPoints
 from ui_equal_area import Ui_EqualArea
 from ui_show_measurements import Ui_ShowMeasurements
+
 from stdm.ui.forms.spatial_unit_form import (
                 STDMFieldWidget
             )
+
 GEOM_DOCK_ON = False
 PREVIEW_POLYGON = 'Preview Polygon'
 POLYGON_LINES = 'Polygon Lines'
@@ -131,11 +168,15 @@ class LayerSelectionHandler(object):
         """
         if layer is None:
             return None
+
         source = layer.source()
+
         if source is None:
             return None
-        if re is None:
-            return None
+
+        #if re is None:
+            #return None
+
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
             table = vals['table'].split('.')
@@ -184,11 +225,7 @@ class LayerSelectionHandler(object):
             return True
         layer_source = self.get_layer_source(active_layer)
 
-        if layer_source is not None:
-            return True
-
-        else:
-            return False
+        return False if layer_source is None else True
 
     def clear_feature_selection(self):
         """
@@ -407,11 +444,12 @@ class GeometryToolsDock(
 
             # self.widget.clear_highlights()
             if stop_editing:
-                if self.layer is not None:
-                    if iface.activeLayer() is not None:
-                        if iface.activeLayer().isEditable():
-                            iface.mainWindow().findChild(
-                                QAction, 'mActionToggleEditing').trigger()
+                if (self.layer and iface.activeLayer()) is not None:
+                #if self.layer is not None:
+                    #if iface.activeLayer() is not None:
+                    if iface.activeLayer().isEditable():
+                        iface.mainWindow().findChild(
+                            QAction, 'mActionToggleEditing').trigger()
         except Exception as ex:
             pass
         self.blockSignals(False)
@@ -1248,7 +1286,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
 
         self.setupUi(self)
         GeomWidgetsBase.__init__(self, layer_settings, self)
-        self.offset_distance.valueChanged.connect(self.on_offset_distance_changed)
+        #self.offset_distance.valueChanged.connect(self.on_offset_distance_changed)
 
     def on_offset_distance_changed(self, new_value):
 
@@ -1301,6 +1339,15 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
         return GeomWidgetsBase.on_line_feature_selected(self)
 
     def validate_run(self, preview_visible=False):
+        if len(self.lines) == 0:
+            message = QApplication.translate(
+                'OffsetDistanceWidget',
+                'You need to first select a line.'
+            )
+
+            self.notice.insertWarningNotification(message)
+            return False
+
         if self.widget.offset_distance.value() == 0:
             message = QApplication.translate(
                 'GeomWidgetsBase',
@@ -1308,36 +1355,43 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             return False
-        self.create_preview_layer(preview_visible)
 
-        result = split_offset_distance(
-                self.settings.layer,
-                self.line_layer,
-                self.preview_layer,
-                self.lines[0],
-                self.widget.offset_distance.value(),
-                self.feature_ids,
-                validate=True
-            )
-        if not result:
-            message = QApplication.translate(
-                'OffsetDistanceWidget', 'The offset distance is too large.'
-            )
-            self.notice.insertErrorNotification(message)
-            return False
+        # ------------
+        #self.create_preview_layer(preview_visible)
+
+        #result = split_offset_distance(
+                #self.settings.layer,
+                #self.line_layer,
+                #self.preview_layer,
+                #self.lines[0],
+                #self.widget.offset_distance.value(),
+                #self.feature_ids,
+                #validate=True
+            #)
+        #if not result:
+            #message = QApplication.translate(
+                #'OffsetDistanceWidget', 'The offset distance is too large.'
+            #)
+            #self.notice.insertErrorNotification(message)
+            #return False
+
+            # ------------
         # else:
         #     self.splitting_success_help(4)
         return True
 
     def clear_inputs(self):
         super(OffsetDistanceWidget, self).clear_inputs()
-        self.offset_distance.valueChanged.disconnect(
-            self.on_offset_distance_changed
-        )
+
+        #self.offset_distance.valueChanged.disconnect(
+            #self.on_offset_distance_changed
+        #)
+
         self.offset_distance.setValue(0)
-        self.offset_distance.valueChanged.connect(
-            self.on_offset_distance_changed
-        )
+
+        #self.offset_distance.valueChanged.connect(
+            #self.on_offset_distance_changed
+        #)
 
         self.rotation_point = None
 
@@ -1359,6 +1413,7 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.remove_memory_layer(PREVIEW_POLYGON)
             self.create_preview_layer(False)
             QApplication.processEvents()
+
             result = split_offset_distance(
                 self.settings.layer,
                 self.line_layer,
@@ -2045,6 +2100,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             )
         except Exception:
             result = False
+            state = False
         if not result:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -2056,9 +2112,9 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def run(self):
         result = self.validate_run()
-        if not result:
-            result = False
-        else:
+        #if not result:
+            #result = False
+        if result:
             self.executed = True
 
             self.progress_dialog.setRange(0, 0)
