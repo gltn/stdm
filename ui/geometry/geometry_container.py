@@ -1445,9 +1445,9 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
-                'Sorry, splitting failed. '
-                'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
+                'The split method is not suitable for this polygon shape.'
             )
+            self.notice.insertErrorNotification(fail_message)
             self.progress_dialog.setLabelText(fail_message)
 
     def preview(self):
@@ -1485,9 +1485,9 @@ class OffsetDistanceWidget(QWidget, Ui_OffsetDistance, GeomWidgetsBase):
             self.feature_ids[:] = []
             fail_message = QApplication.translate(
                 'OffsetDistanceWidget',
-                'Sorry, splitting failed. '
-                'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
+                'The split method is not suitable for this polygon shape.'
             )
+            self.notice.insertErrorNotification(fail_message)
             self.progress_dialog.setLabelText(fail_message)
 
 class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):

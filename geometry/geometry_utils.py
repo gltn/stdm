@@ -1132,7 +1132,7 @@ def split_move_line_with_area(
 
 def split_offset_distance(
         polygon_layer, line_layer, preview_layer,
-        selected_line_ft, offset_distance, feature_ids=None, validate=False
+        selected_line_ft, offset_distance, feature_ids=None
 ):
     # Get selected line geometry
     selected_line_geom = selected_line_ft.geometry()
@@ -1159,13 +1159,16 @@ def split_offset_distance(
     parallel_line_geom2 = QgsGeometry.fromPolyline(added_points)
     # If the line intersects the main geometry, split it
     if parallel_line_geom2.intersects(geom1):
-        if validate:
-            return True
+
         (res, split_geom0, topolist) = geom1.splitGeometry(
             added_points, False
         )
+
+        if len(split_geom0) > 2:
+            return False
+
         QApplication.processEvents()
-        if len(split_geom0) > 0:
+        if len(split_geom0) == 2:
             # Get the first line that intersects the geometry and use
             # it as a reference using distance to the split feature.
             split_geom = None
@@ -1189,9 +1192,12 @@ def split_offset_distance(
                 add_geom_to_layer(
                     polygon_layer, split_geom, main_geom, feature_ids
                 )
+                return True
             else:
                 return False
-        return True
+        else:
+            return False
+
     else:
         return False
 
