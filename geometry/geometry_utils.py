@@ -868,7 +868,6 @@ def split_move_line_with_area(
     # print list(preview_layer.getFeatures())[0].geometry().area()
     # multi_split_case = 0vb
     # first_height = 0
-    
     area_toggle = 0
     # Continuous loop until condition of split area and split polygon area is equal
     while split_area1 >= 0:
@@ -895,7 +894,6 @@ def split_move_line_with_area(
         # print height*-1
 
         QApplication.processEvents()
-
         # print loop_index, parallel_line_geom,  height
         # if parallel_line_geom is None:
         #     if previous_properties is not None:
@@ -915,15 +913,16 @@ def split_move_line_with_area(
         # Get one feature selected on preview layer.
         # The preview layer has 1 feature
         # that copies and merges all selected feature from polygon.
-
         try:
             sel_features = list(preview_layer.getFeatures())
             if len(sel_features) == 0:
                 return False, False
         except Exception:
             return False, False
+        # if previous_geom is None:
+            # Get the geometry
         geom1 = sel_features[0].geometry()
-
+        # print geom1.area()
         # else:
         #     geom1 = previous_geom
 
@@ -1353,6 +1352,11 @@ def split_rotate_line_with_area(
                 added_points, False
             )
             if len(split_geom) > 0:
+                # add_geom_to_layer(
+                #     QgsMapLayerRegistry.instance().mapLayersByName(
+                #         'Polygon Lines')[0],
+                #     ext_line_geom
+                # )
                 # print geom1.area(), split_geom[0].area()
                 # Get first intersection coordinate
                 if loop_index == 0:
@@ -1611,7 +1615,7 @@ def split_rotate_line_with_area(
                 angle = angle - Decimal(line_angle)
             else:
                 angle = angle + Decimal(line_angle)
-            # print 'failed intersection', failed_intersection
+            print 'failed intersection', failed_intersection
             QApplication.processEvents()
             if failed_intersection > 200:
                 return False
