@@ -1636,10 +1636,13 @@ def split_join_points(
     # Get one feature selected on preview layer. The preview layer has 1 feature
     # that copies and merges all selected feature from polygon.
     sel_features = list(preview_layer.getFeatures())
+    if sel_features > 1:
+        sel_features = polygon_layer.selectedFeatures()
     # Get the geometry
     geom1 = sel_features[0].geometry()
     QApplication.processEvents()
-    extent = geom1.boundingBox()
+
+    # extent = geom1.boundingBox()
     # Using the extent, extend the parallel line to the selected
     # geometry bounding box to avoid failed split.
 
@@ -1655,14 +1658,14 @@ def split_join_points(
     # )
     line_points = line_geom.asPolyline()
     # If the line intersects the main geometry, split it
-    # print 'inter ', line_geom.intersects(geom1)
+
     if line_geom.intersects(geom1):
         if validate:
             return True
         (res, split_geom0, topolist) = geom1.splitGeometry(
             line_points, False
         )
-        print split_geom0
+
         if len(split_geom0) > 0:
             # Get the first line that intersects the geometry and use
             # it as a reference using distance to the split feature.

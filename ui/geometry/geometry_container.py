@@ -2174,7 +2174,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.progress_dialog.cancel()
         else:
             self.failed_split_feature = self.feature_ids
-            self.settings.layer.removeSelection()
+           
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
