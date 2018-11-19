@@ -1060,9 +1060,13 @@ class GeomWidgetsBase(object):
 
     def cancel(self):
         # self.clear_highlights()
+        # self.failed_split_feature = self.feature_ids
+        for feat_id in self.feature_ids:
+            del self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models[feat_id]
         self.settings.remove_memory_layers(stop_editing=True)
         self.settings.layer.removeSelection()
         self.clear_inputs()
+
 
     def create_preview_layer(self, visible=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1140,11 +1144,8 @@ class GeomWidgetsBase(object):
                 spatial_column=self.spatial_column,
                 layer=self.settings.layer, allow_saved_ft=True
             )
-
             self.feature_ids.append(new_feature.id())
-
             layer.selectByIds(self.feature_ids)
-
             add_area(layer, AREA_POLYGON, all_features=preview)
 
         iface.setActiveLayer(self.settings.layer)
@@ -1611,7 +1612,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             )
             self.iface.setActiveLayer(self.line_layer)
         
-            print "***** :"+iface.activeLayer().name()
+            # print "***** :"+iface.activeLayer().name()
 
     def on_point_feature_selected(self):
 
@@ -2174,7 +2175,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.progress_dialog.cancel()
         else:
             self.failed_split_feature = self.feature_ids
-           
+
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
