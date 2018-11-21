@@ -2506,7 +2506,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
             line_feature = None
 
-            for i in range(0, self.no_polygons):
+            for i in range(0, self.no_polygons-1):
                 if line_feature is None:
 
                     if len(self.lines) > 0:
