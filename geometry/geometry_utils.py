@@ -1162,38 +1162,36 @@ def split_offset_distance(
         (res, split_geom0, topolist) = geom1.splitGeometry(
             added_points, False
         )
-
+        # print res, split_geom0
         if len(split_geom0) > 2:
             return False
 
         QApplication.processEvents()
-        if len(split_geom0) == 2:
-            # Get the first line that intersects the geometry and use
-            # it as a reference using distance to the split feature.
-            split_geom = None
-            main_geom = None
-            first_intersection = selected_line_ft.geometry()
 
-            # The closest geometry to fist intersection is the split geom
-            if first_intersection.distance(geom1) < \
-                    first_intersection.distance(split_geom0[0]):
+        # Get the first line that intersects the geometry and use
+        # it as a reference using distance to the split feature.
+        split_geom = None
+        main_geom = None
+        first_intersection = selected_line_ft.geometry()
 
-                split_geom = geom1
-                main_geom = split_geom0[0]
-            elif first_intersection.distance(geom1) > \
-                    first_intersection.distance(split_geom0[0]):
+        # The closest geometry to fist intersection is the split geom
+        if first_intersection.distance(geom1) < \
+                first_intersection.distance(split_geom0[0]):
 
-                if not len(split_geom0) > 1:
+            split_geom = geom1
+            main_geom = split_geom0[0]
+        elif first_intersection.distance(geom1) > \
+                first_intersection.distance(split_geom0[0]):
 
-                    split_geom = split_geom0[0]
-                    main_geom = geom1
-            if split_geom is not None and main_geom is not None:
-                add_geom_to_layer(
-                    polygon_layer, split_geom, main_geom, feature_ids
-                )
-                return True
-            else:
-                return False
+            if not len(split_geom0) > 1:
+
+                split_geom = split_geom0[0]
+                main_geom = geom1
+        if split_geom is not None and main_geom is not None:
+            add_geom_to_layer(
+                polygon_layer, split_geom, main_geom, feature_ids
+            )
+            return True
         else:
             return False
 
