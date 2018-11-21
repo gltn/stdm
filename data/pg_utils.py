@@ -626,6 +626,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
         return None
 
     conn = stdm.data.app_dbconn
+
     if conn is None:
         return None
 

@@ -374,7 +374,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.setWindowTitle(unicode(self.title()))
 
-
         if self._data_initialized:
             return
         try:
@@ -861,7 +860,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                 QApplication.translate("EntityBrowserWithEditor", "edit_tool")
             )
 
-
             self.connect(self._editEntityAction,SIGNAL("triggered()"),self.onEditEntity)
 
             self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
@@ -908,6 +906,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 )
 
                 self.add_spatial_unit_layer()
+
                 self.tbEntity.clicked.connect(
                     self.on_select_attribute
                 )

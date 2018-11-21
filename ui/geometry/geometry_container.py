@@ -1699,8 +1699,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             new_value
         )
 
-        # -----
-
         # self.iface.mainWindow().blockSignals(False)
         if hasattr(self.widget, 'selected_points_lbl'):
             points_count = len(self.point_layer.selectedFeatures())
