@@ -16,7 +16,7 @@ from PyQt4.QtGui import (
     QItemSelectionModel,
     QVBoxLayout,
     QDoubleSpinBox,
-    QMdiArea, QTabWidget, QPushButton)
+    QMdiArea, QTabWidget, QPushButton, QItemSelection)
 
 from qgis.utils import (
     iface
@@ -396,6 +396,13 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
             self.add_entity_editor(model, feature_id)
             self.spatial_parent_number = self.spatial_parent_number + 1
                 # self._formatted_record[header] = self.feature_models[]
+        self.tree_view.selectionModel().select(
+            QItemSelection(
+                self.tree_view.model().index(0, 0),
+                self.tree_view.model().index(
+                    0, self.tree_view.model().columnCount() - 1)),
+            QItemSelectionModel.Select
+        )
         self.tree_view.expandAll()
 
     def child_item(self, name, column, feature_id):

@@ -1060,9 +1060,14 @@ class GeomWidgetsBase(object):
 
     def cancel(self):
         # self.clear_highlights()
+        # self.failed_split_feature = self.feature_ids
+        for feat_id in self.feature_ids:
+            if feat_id in self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models.keys():
+                del self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.feature_models[feat_id]
         self.settings.remove_memory_layers(stop_editing=True)
         self.settings.layer.removeSelection()
         self.clear_inputs()
+
 
     def create_preview_layer(self, visible=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1140,11 +1145,8 @@ class GeomWidgetsBase(object):
                 spatial_column=self.spatial_column,
                 layer=self.settings.layer, allow_saved_ft=True
             )
-
             self.feature_ids.append(new_feature.id())
-
             layer.selectByIds(self.feature_ids)
-
             add_area(layer, AREA_POLYGON, all_features=preview)
 
         iface.setActiveLayer(self.settings.layer)
@@ -1513,18 +1515,28 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.polygon_to_point_executed = False
 
     def selected_point_count(self):
-        count = 0
+        if self.point_layer is None:
+            return 0
 
-        if self.point_layer is not None: 
-            points = self.point_layer.selectedFeatures()
-            if not self.moving_point_created:
-                self.points[:] = []
-                self.points = points
-            self.rotation_point = points[0]
-            if self.points is not None:
-                count = len(self.points)
+        points = self.point_layer.selectedFeatures()
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
 
-        return count
+            if location == 'middle':
+
+                return 0
+
+        # if clear_previous:
+
+        self.points[:] = []
+        self.points = points
+        self.rotation_point = self.points[0]
+        if self.points is not None:
+            return len(self.points)
+        else:
+            return 0
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1611,7 +1623,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             )
             self.iface.setActiveLayer(self.line_layer)
         
-            print "***** :"+iface.activeLayer().name()
+            # print "***** :"+iface.activeLayer().name()
 
     def on_point_feature_selected(self):
 
@@ -1625,6 +1637,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return
         if self.polygon_to_point_executed:
             return
+
         if hasattr(self.widget, 'selected_points_lbl'):
 
             self.points_count = self.selected_point_count()
@@ -1673,7 +1686,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         if self.point_layer is None:
             return
 
-        # -----
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -1684,11 +1696,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return
 
         if self.rotation_point is not None:
-            with edit(self.point_layer):
-                point_features = [f.id() for f in
-                                  self.point_layer.getFeatures()]
-                rotation_point = point_features[-1:]
-                self.point_layer.deleteFeature(rotation_point[0])
+            try:
+                with edit(self.point_layer):
+                    point_features = [f.id() for f in
+                                      self.point_layer.getFeatures()]
+                    rotation_point = point_features[-1:]
+                    self.point_layer.deleteFeature(rotation_point[0])
+            except Exception as ex:
+                pass
 
         # self.iface.mainWindow().blockSignals(True)
         self.moving_point_created = True
@@ -2172,7 +2187,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             self.progress_dialog.cancel()
         else:
             self.failed_split_feature = self.feature_ids
-           
+
             fail_message = QApplication.translate(
                 'JoinPointsWidget',
                 'Sorry, splitting failed. Check the selected points are '
@@ -2489,7 +2504,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
             line_feature = None
 
-            for i in range(0, self.no_polygons):
+            for i in range(0, self.no_polygons-1):
                 if line_feature is None:
 
                     if len(self.lines) > 0:
