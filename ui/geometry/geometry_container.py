@@ -1515,18 +1515,28 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         self.polygon_to_point_executed = False
 
     def selected_point_count(self):
-        count = 0
+        if self.point_layer is None:
+            return 0
 
-        if self.point_layer is not None: 
-            points = self.point_layer.selectedFeatures()
-            if not self.moving_point_created:
-                self.points[:] = []
-                self.points = points
-            self.rotation_point = points[0]
-            if self.points is not None:
-                count = len(self.points)
+        points = self.point_layer.selectedFeatures()
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
 
-        return count
+            if location == 'middle':
+
+                return 0
+
+        # if clear_previous:
+
+        self.points[:] = []
+        self.points = points
+        self.rotation_point = self.points[0]
+        if self.points is not None:
+            return len(self.points)
+        else:
+            return 0
 
     def create_point_layer(self, show_in_legend=True):
         prev_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -1627,6 +1637,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return
         if self.polygon_to_point_executed:
             return
+
         if hasattr(self.widget, 'selected_points_lbl'):
 
             self.points_count = self.selected_point_count()
@@ -1675,7 +1686,6 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
         if self.point_layer is None:
             return
 
-        # -----
         if len(self.lines) == 0:
             message = QApplication.translate(
                 'JoinPointsWidget',
@@ -1686,11 +1696,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             return
 
         if self.rotation_point is not None:
-            with edit(self.point_layer):
-                point_features = [f.id() for f in
-                                  self.point_layer.getFeatures()]
-                rotation_point = point_features[-1:]
-                self.point_layer.deleteFeature(rotation_point[0])
+            try:
+                with edit(self.point_layer):
+                    point_features = [f.id() for f in
+                                      self.point_layer.getFeatures()]
+                    rotation_point = point_features[-1:]
+                    self.point_layer.deleteFeature(rotation_point[0])
+            except Exception as ex:
+                pass
 
         # self.iface.mainWindow().blockSignals(True)
         self.moving_point_created = True
