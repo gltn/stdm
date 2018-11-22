@@ -2568,10 +2568,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
                 QApplication.processEvents()
                 self.point_layer.selectByIds([point.id()])
-                if i == 0:
-                    clockwise = 1
-                else:
-                    clockwise = -1
+                # if i == 0:
+                #     clockwise = 1
+                # else:
+                #     clockwise = -1
                 rotation_line = [l for l in self.lines
                                  if round(l.geometry().distance(point.geometry()), 2)==0]
                 # print self.lines,  rotation_line, ' rot line'
@@ -2585,7 +2585,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                     point,
                     self.area,
                     self.feature_ids,
-                    clockwise=clockwise
+                    clockwise=1
                 )
                 feature = feature_id_to_feature(
                     self.settings.layer, self.feature_ids
