@@ -82,6 +82,7 @@ POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
 PREVIEW_POLYGON2 = 'Preview Polygon 2'
 AREA_POLYGON = 'Polygon Area'
+import inspect
 
 class LayerSelectionHandler(object):
     """
@@ -2390,6 +2391,8 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
     def on_line_selection_finished(self):
         # add line length for the user to see
         line_features = self.line_layer.selectedFeatures()
+        self.split_lines = line_features
+
         if len(line_features) > 1:
             geoms = merge_selected_lines_features(self.line_layer)
             total_length = geoms.length()
@@ -2398,7 +2401,11 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
             geoms = line_features[0].geometry()
             total_length = geoms.length()
             self.combined_line = line_features[0]
-
+        # add_geom_to_layer(
+        #     QgsMapLayerRegistry.instance().mapLayersByName(
+        #         'Polygon Lines')[0],
+        #     self.combined_line.geometry()
+        # )
         self.line_length_lbl.setText(str(round(total_length, 2)))
         total_area = calculate_area(self.settings.layer.selectedFeatures())
 
@@ -2424,7 +2431,13 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                         self.point_layer, point_features[0],
                         geoms, next_length
                     )
+
                     self.rotation_points.append(point)
+                # print self.rotation_points
+                # for i, p in enumerate(self.rotation_points):
+                #     if i != len(self.rotation_point) - 1:
+                #         print p.geometry().distance(self.rotation_points[i+1])
+
             self.iface.mapCanvas().refresh()
 
         self.iface.setActiveLayer(self.line_layer)
@@ -2544,23 +2557,33 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
 
         else:
             feature = None
+            # print self.lines
+            # for i, point in enumerate(self.rotation_points[::-1]):
+            #     rotation_line = [l.geometry().distance(point.geometry()) for l in self.lines]
+            #     # print rotation_line
             # Revers the rotation points list.
             for i, point in enumerate(self.rotation_points[::-1]):
                 # if i == 0:
                 #     use_ft = False
                 # else:
                 #     use_ft = True
+
                 QApplication.processEvents()
                 self.point_layer.selectByIds([point.id()])
                 if i == 0:
                     clockwise = 1
                 else:
                     clockwise = -1
-
+                rotation_line = [l for l in self.lines
+                                 if round(l.geometry().distance(point.geometry()), 2)==0]
+                # print self.lines,  rotation_line, ' rot line'
+                if len(rotation_line) == 0:
+                    result = False
+                    break
                 result = split_rotate_line_with_area(
                     self.settings.layer,
                     self.preview_layer,
-                    rotate_line_ft,
+                    rotation_line[0],
                     point,
                     self.area,
                     self.feature_ids,

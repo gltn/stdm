@@ -1,60 +1,50 @@
 
 from __future__ import division
-import json
+
 import math
 from collections import OrderedDict
-import copy
-
-from PyQt4.QtCore import QVariant
-
-from PyQt4.QtGui import (
-        QColor, 
-        QApplication,
-        QTextDocument
-        )
-
 from decimal import (
-        Decimal, 
-        getcontext, 
-        Context, 
-        ROUND_DOWN, 
-        ROUND_UP,
-        setcontext
-        )
+    Decimal,
+    Context,
+    ROUND_DOWN,
+    ROUND_UP
+)
 
 from PyQt4.QtCore import QSizeF
-
-from qgis.gui import QgsTextAnnotationItem
-
-from qgis.gui import QgsHighlight
-
+from PyQt4.QtCore import QVariant
+from PyQt4.QtGui import (
+    QColor,
+    QApplication,
+    QTextDocument
+)
 from qgis.core import (
-        QgsPoint, 
-        QgsGeometry, 
-        QgsVectorLayer, 
-        QgsFeature,
-        QgsMapLayerRegistry, 
-        QgsLineStringV2, 
-        QgsPointV2, 
-        edit, 
-        QgsDistanceArea,
-        QgsCoordinateReferenceSystem, 
-        QgsField, 
-        QgsPalLayerSettings,
-        QgsRenderContext, 
-        QGis, 
-        QgsFeatureRequest, 
-        QgsFillSymbolV2,
-        QgsSingleSymbolRendererV2, 
-        QgsSymbolV2, 
-        QgsSymbolLayerV2Registry
-        )
-
+    QgsPoint,
+    QgsGeometry,
+    QgsVectorLayer,
+    QgsFeature,
+    QgsMapLayerRegistry,
+    QgsLineStringV2,
+    QgsPointV2,
+    edit,
+    QgsDistanceArea,
+    QgsCoordinateReferenceSystem,
+    QgsField,
+    QgsPalLayerSettings,
+    QgsRenderContext,
+    QGis,
+    QgsFeatureRequest,
+    QgsFillSymbolV2,
+    QgsSingleSymbolRendererV2,
+    QgsSymbolV2,
+    QgsSymbolLayerV2Registry
+)
+from qgis.gui import QgsHighlight
+from qgis.gui import QgsTextAnnotationItem
 from qgis.utils import iface
-
 from stdm.settings.registryconfig import (
     selection_color
 )
+
 
 class Copier(object):
     def __init__(self, geometry):
@@ -1223,6 +1213,7 @@ def split_rotate_line_with_area(
         polygon_layer, preview_layer, selected_line_ft,
         rotation_point_ft, area, feature_ids, clockwise
 ):
+    # print rotation_point_ft, 'rottt'
     selected_line = create_V2_line(selected_line_ft.geometry().asPolyline())
     # print polygon_layer, preview_layer, selected_line_ft, rotation_point_ft, area, feature_ids, clockwise
     try:
@@ -1264,6 +1255,7 @@ def split_rotate_line_with_area(
     skip_angle_set = False
     rotation = 0
     prev_toggle_index = 0
+
     # print split_area1, loop_index, failed_intersection, angle, \
     #     area_toggle, excessive_toggle, decimal_place_new
     while split_area1 <= area + 10000040:
@@ -1355,18 +1347,40 @@ def split_rotate_line_with_area(
             (res, split_geom, topolist) = geom1.splitGeometry(
                 added_points, False
             )
+
             if len(split_geom) > 0:
+                # if loop_index == 10 * loop_index:
                 # add_geom_to_layer(
                 #     QgsMapLayerRegistry.instance().mapLayersByName(
                 #         'Polygon Lines')[0],
                 #     ext_line_geom
                 # )
                 # print geom1.area(), split_geom[0].area()
+
+                # print split_geom_distance, main_geom_distance
+
                 # Get first intersection coordinate
+
+                # Used to identify irregular polygon. Attempts to rotate by 10 degrees
+                # to make sure the first split polygon to be the split polygon
                 if loop_index == 0:
+                    split_geom_distance = rotation_point_ft.geometry().distance(
+                        split_geom[0]
+                    )
+                    main_geom_distance = rotation_point_ft.geometry().distance(
+                        geom1
+                    )
+
+                    if Decimal(split_geom_distance) > Decimal(main_geom_distance):
+
+                        angle = angle + (10 * angle_change)
+                        loop_index = loop_index + 1
+                        continue
+
+                if loop_index == 1:
                     intersection = ext_line_geom.intersection(ori_poly_geom)
 
-                    # print intersection
+                    # print intersection, loop_index
                     inter_point = intersection.asPolyline()
 
                     # print inter_point
@@ -1376,24 +1390,23 @@ def split_rotate_line_with_area(
                         distance = rotation_point_ft.geometry().distance(
                             QgsGeometry.fromPoint(point)
                         )
-                        distance_point[distance] = point
+                        distance_point[Decimal(distance)] = point
                         # if round(distance, 0) == 0:
                         #     inter_point.remove(point)
 
                     # print inter_point, distance_point
                     if len(inter_point) > 0:
-                        # break
+
                         intersecting_point = distance_point[
-                            max(distance_point.keys())
+                            Decimal(max(distance_point.keys()))
                         ]
                         intersecting_point_pt = QgsGeometry.fromPoint(
                             intersecting_point
                         )
-
                     else:
                         continue
 
-                if loop_index >= 1:
+                if loop_index > 1:
                     if intersecting_point_pt is None:
                         continue
                     if round((geom1.area() + split_geom[0].area()), 0) != original_area:
@@ -1416,8 +1429,8 @@ def split_rotate_line_with_area(
                 loop_index = loop_index + 1
             else:
                 continue
-
-            # print angle, angle_change, split_area1
+            # print angle, decimal_place_new, area_toggle, split_area1
+            # print angle, decimal_place_new, area_toggle, split_area1
             # if loop_index > 1:
             #     print split_area1,  intersecting_point_pt.distance(split_geom1), \
             #                intersecting_point_pt.distance(main_geom)
@@ -1619,7 +1632,7 @@ def split_rotate_line_with_area(
                 angle = angle - Decimal(line_angle)
             else:
                 angle = angle + Decimal(line_angle)
-            print 'failed intersection', failed_intersection
+            # print 'failed intersection', failed_intersection
             QApplication.processEvents()
             if failed_intersection > 200:
                 return False
