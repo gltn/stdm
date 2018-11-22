@@ -43,6 +43,7 @@ from stdm.settings import (
     get_entity_browser_record_limit,
     save_entity_browser_record_limit
 )
+
 from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
@@ -57,6 +58,7 @@ from stdm.settings.registryconfig import (
     CONFIG_UPDATED,
     WIZARD_RUN
 )
+
 from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
