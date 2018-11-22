@@ -24,6 +24,10 @@ import platform
 import shutil
 from collections import OrderedDict
 
+import Queue
+import threading
+from time import sleep
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -174,6 +178,10 @@ class STDMQGISLoader(object):
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
         self.geom_tools_signal_connected = False
         copy_startup()
+
+    def prepare_columns(self):
+        for i, entity in enumerate(self.current_profile.entities.values()):
+            self.format_columns(entity)
 
 
     def format_columns(self, entity=None):
@@ -329,6 +337,8 @@ class STDMQGISLoader(object):
             prog_dlg.setWindowTitle('STDM')
             prog_dlg.setMinimum(0)
             prog_dlg.setValue(1)
+
+
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
 
@@ -387,7 +397,6 @@ class STDMQGISLoader(object):
             #Exit if the load failed
             if not config_load_status:
                 return
-
             try:
                 self.show_change_log()
                 #Set current profile
@@ -399,11 +408,16 @@ class STDMQGISLoader(object):
                     result = self.default_profile()
                     if not result:
                         return
-                prog_dlg.setMaximum(len(self.current_profile.entities))
-                for i, entity in enumerate(self.current_profile.entities.values()):
 
-                    prog_dlg.setValue(i)
-                    self.format_columns(entity)
+                prog_dlg.setMaximum(len(self.current_profile.entities))
+
+                #for i, entity in enumerate(self.current_profile.entities.values()):
+                    #prog_dlg.setValue(i)
+                    #self.format_columns(entity)
+
+                thread = threading.Thread(target=self.prepare_columns)
+                thread.start()
+                sleep(0.5)
 
                 self.create_custom_tenure_dummy_col()
 
