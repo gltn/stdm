@@ -1749,6 +1749,14 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
 
     def validate_run(self):
         state = True
+        if len(self.lines) < 1:
+            message = QApplication.translate(
+                'OnePointAreaWidget',
+                'The rotation line is not selected.'
+            )
+            self.notice.insertErrorNotification(message)
+            state = False
+
         if self.rotation_point is None:
             message = QApplication.translate(
                 'OnePointAreaWidget',
@@ -1756,6 +1764,7 @@ class OnePointAreaWidget(QWidget, Ui_OnePointArea, GeomWidgetsBase):
             )
             self.notice.insertErrorNotification(message)
             state = False
+
         if self.widget.split_polygon_area.value() == 0:
             message = QApplication.translate(
                 'OnePointAreaWidget',
