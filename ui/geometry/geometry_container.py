@@ -2576,7 +2576,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 #     use_ft = True
 
                 QApplication.processEvents()
-                self.point_layer.selectByIds([point.id()])
+                try:
+                    self.point_layer.selectByIds([point.id()])
+                except Exception:
+                    break
                 # if i == 0:
                 #     clockwise = 1
                 # else:
