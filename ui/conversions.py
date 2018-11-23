@@ -2,9 +2,6 @@
 from collections import OrderedDict
 import math
 
-#import sys
-#sys.path.append('..')
-
 from stdm.utils.conversion_tables import (
         ropani_conv_table,
         bigaha_conv_table,
@@ -46,20 +43,21 @@ class Conversion(object):
         self.results.clear()
         self._intl_to_local(value, 0, conv_table, self.results) 
         rop = Ropani()
-        rop.ropani = self.results['ropani']
-        rop.aana = self.results['aana']
-        rop.paisa = self.results['paisa']
-        rop.daam = self.results['daam']
+
+        rop.ropani = math.floor(self.results['ropani'])
+        rop.aana = math.floor(self.results['aana'])
+        rop.paisa = math.floor(self.results['paisa'])
+        rop.daam = round(self.results['daam'], 2)
         return rop
 
     def to_bigaha(self, value, conv_table):
         self.results.clear()
         self._intl_to_local(value, 0, conv_table, self.results) 
         big = Bigaha()
-        big.bigaha = self.results['bigaha']
-        big.kattha = self.results['kattha']
-        big.dhur = self.results['dhur']
-        big.kanuwa = self.results['kanuwa'] 
+        big.bigaha = math.floor(self.results['bigaha'])
+        big.kattha = math.floor(self.results['kattha'])
+        big.dhur = math.floor(self.results['dhur'])
+        big.kanuwa = round(self.results['kanuwa'], 2)
         return big
 
     def ropani_to_local(self, ropani, conv_table):
@@ -91,8 +89,11 @@ class Conversion(object):
         remain = sqmtr
 
         if sqmtr > v:
-            ans = math.floor(sqmtr/v)
-            remain = sqmtr - (ans * v)
+            ans = sqmtr/v
+            remain = sqmtr - (math.floor(round(ans, 2)) * v)
+
+        if index == len(conv_table):
+            ans = sqmtr/v
 
         results[k] = ans
         self._intl_to_local(round(remain, 2), index, conv_table, results)

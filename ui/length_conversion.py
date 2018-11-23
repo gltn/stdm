@@ -97,7 +97,6 @@ class LengthConversion(QDialog, Ui_LengthConversion):
         self.edtKanuwa.valueChanged.connect(self.conversion_func_router)
         self.edtKanuwa.setMaximum(999999999)
 
-
     def change_from(self, index):
         self.swFrom.setCurrentIndex(index)
 
