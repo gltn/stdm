@@ -1152,7 +1152,7 @@ def split_offset_distance(
         (res, split_geom0, topolist) = geom1.splitGeometry(
             added_points, False
         )
-       
+
         if len(split_geom0) > 1:
             return False
 
