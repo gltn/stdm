@@ -2576,7 +2576,10 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 #     use_ft = True
 
                 QApplication.processEvents()
-                self.point_layer.selectByIds([point.id()])
+                try:
+                    self.point_layer.selectByIds([point.id()])
+                except Exception:
+                    break
                 # if i == 0:
                 #     clockwise = 1
                 # else:
@@ -2629,7 +2632,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
                 'Sorry, splitting failed. The split method is not suitable for this polygon shape.'
             )
             self.progress_dialog.setLabelText(fail_message)
-            self.progress_dialog.cancel()
+            # self.progress_dialog.cancel()
 
         self.executed = False
         self.init_signals()
