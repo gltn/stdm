@@ -27,7 +27,7 @@ class GeoODKReader:
     """
     def __init__(self, entity):
         """
-
+        Iniatialize the class variables
         """
 
         self.entity_name = None
@@ -40,22 +40,25 @@ class GeoODKReader:
     def profile(self):
         """
 
-        :return:
+        :return:profile object
+        :rtype: Object
         """
         return current_profile()
 
     def user_entity_name(self):
         """
-
-        :return:
+        :return: Entity
+        :rtype: str
         """
         return self.user_entity
 
     def set_user_entity_name(self, ent_name):
         """
-
         :param name:
-        :return:
+        :type: string
+        :return:entity
+        :return entity_name
+        :rtype:str
         """
         self.entity_name = self.profile().entity(ent_name).name
         self.user_entity_name()
@@ -74,7 +77,8 @@ class GeoODKReader:
     def entity_object(self):
         """
         Get the entity object from the table name
-        :return:
+        :return:Entity object
+        :rtype: Object
         """
         return self.profile().entity(self.user_entity)
 
@@ -227,9 +231,8 @@ class GeoODKReader:
 
     def entity_lookup(self):
         """
-        
         :param lookup: 
-        :return: 
+        :return: list
         """
         return self.lookup
 
@@ -282,7 +285,7 @@ class GeoODKReader:
     def on_column_show_in_parent(self):
         """
         Check whether the foreign key column has flag show in parent.
-        required to enable geoodk for subform creation
+        required to enable geoodk subform creation
         :return:
         """
         cols_obj = self.profile_entity_attribute().values()

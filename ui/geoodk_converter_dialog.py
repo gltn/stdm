@@ -181,25 +181,25 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Generate mobile form based on the selected entities.
         :return:
         """
-        try:
-            self._notif_bar_str.clear()
+        #try:
+        self._notif_bar_str.clear()
 
-            if len(selected_entities) == 0:
-                self._notif_bar_str.insertErrorNotification(
-                    'No entity selected. Please select at least one entity...'
-                )
-                return
-            if len(selected_entities) > 0:
-                geoodk_writer = GeoodkWriter(selected_entities, self.str_supported)
-                geoodk_writer.write_data_to_xform()
-                msg = 'File saved ' \
-                      'in: {}'
-                self._notif_bar_str.insertInformationNotification(
-                    msg.format(FORM_HOME))
-        except Exception as ex:
-            self._notif_bar_str.insertErrorNotification(ex.message +
-                                                        ': Unable to generate Mobile Form')
+        if len(selected_entities) == 0:
+            self._notif_bar_str.insertErrorNotification(
+                'No entity selected. Please select at least one entity...'
+            )
             return
+        if len(selected_entities) > 0:
+            geoodk_writer = GeoodkWriter(selected_entities, self.str_supported)
+            geoodk_writer.write_data_to_xform()
+            msg = 'File saved ' \
+                  'in: {}'
+            self._notif_bar_str.insertInformationNotification(
+                msg.format(FORM_HOME))
+# except Exception as ex:
+        #     self._notif_bar_str.insertErrorNotification(ex.message +
+        #                                                 ': Unable to generate Mobile Form')
+        #     return
 
     def accept(self):
         """
