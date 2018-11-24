@@ -1938,14 +1938,14 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return 0
 
         points = self.point_layer.selectedFeatures()
-        if len(self.lines) > 0:
-            location = identify_selected_point_location(
-                points[0], self.lines[0].geometry()
-            )
+        # if len(self.lines) > 0:
+        #     location = identify_selected_point_location(
+        #         points[0], self.lines[0].geometry()
+        #     )
 
-            if location == 'middle':
-
-                return 0
+            # if location == 'middle':
+            #
+            #     return 0
 
         # if clear_previous:
 
@@ -1967,7 +1967,13 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
         """
         if self.parent().currentWidget().objectName() != self.objectName():
             return
+        self.length_from_point.valueChanged.disconnect(
+            self.on_length_from_reference_point_changed
+        )
         self.clear_inputs()
+        self.length_from_point.valueChanged.connect(
+            self.on_length_from_reference_point_changed
+        )
         self.set_widget(self.parent().currentWidget())
 
         if not GEOM_DOCK_ON:
@@ -2128,6 +2134,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def validate_run(self, preview_visible=False):
         state = True
+
         if len(self.point_layer.selectedFeatures()) < 2:
             message = QApplication.translate(
                 'OnePointAreaWidget',
@@ -2164,9 +2171,10 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def run(self):
         self.remove_invalid_feature()
+
         result = self.validate_run()
-        #if not result:
-            #result = False
+        if not result:
+            result = False
         if result:
             self.executed = True
 

@@ -281,7 +281,6 @@ def create_V2_line(points):
 #     return poly_line
 
 #
-
 def extend_line_points(line_geom, polygon_extent):
     """
 
@@ -325,6 +324,50 @@ def extend_line_points(line_geom, polygon_extent):
     poly_line = [p1, p2]
     return poly_line
 
+def extend_line_by_distance(line_geom, distance):
+    """
+    Extend a line by a distance from x axis in both directions.
+    :param line_geom: The line to be extended
+    :type line_geom: QgsGeometry
+    :param distance: The distance from the start and end points.
+    :type distance: Double
+    :return: The extended polyline
+    :rtype: QgsPolyline
+    """
+    line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+    constant = start_y - (slope * start_x)
+    if slope is None:  # when line is straight vertical, slope is None
+        x_ext1 = start_x
+        y_ext1 = start_y - distance
+        x_ext2 = end_x
+        y_ext2 = end_y + distance
+
+    elif slope > 0 or slope < 0:
+        if start_x < end_x:
+            x_ext1 = start_x - distance
+            y_ext1 = (slope * x_ext1) + constant
+
+            x_ext2 = end_x + distance
+            y_ext2 = (slope * x_ext2) + constant
+
+        else:
+            x_ext1 = start_x + distance
+            y_ext1 = (slope * x_ext1) + constant
+
+            x_ext2 = end_x - distance
+            y_ext2 = (slope * x_ext2) + constant
+
+    else:  # when line is straight horizontal slop is zero
+        x_ext1 = start_x - distance
+        y_ext1 = start_y
+        x_ext2 = end_x + distance
+        y_ext2 = end_y
+
+    p1 = QgsPoint(x_ext1, y_ext1)
+    p2 = QgsPoint(x_ext2, y_ext2)
+
+    poly_line = [p1, p2]
+    return poly_line
 
 def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     if isinstance(geom, QgsPoint):
@@ -357,16 +400,14 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
                     layer, geom, features[0], preview_layer=True)
                 layer.selectByIds([features[0].id()])
             layer.updateFeature(features[0])
-        layer.updateExtents()
     else:
         try:
             with edit(layer):
                 feature = add_geom_to_feature(layer, geom)
-            layer.updateExtents()
         except Exception as ex:
-            print ex
+            pass
 
-
+    layer.updateExtents()
     # if preview_layer:
     #     layer.commitChanges()
     # print 'added feat', feature
@@ -811,14 +852,14 @@ def merge_selected_lines_features(line_layer):
 
 def points_to_line(point_layer):
     poly_line = []
-    # print point_layer.selectedFeatures()
+    # print 'points_to_line ', point_layer.selectedFeatures()
     for point_ft in point_layer.selectedFeatures():
         point = QgsGeometry.asPoint(point_ft.geometry())
 
         poly_line.append(point)
-
+        # print point_ft, point
     line_geom = QgsGeometry.fromPolyline(poly_line)
-
+    # print line_geom
     return line_geom
 
 def add_geom_to_layer_bsc(layer, geom):
@@ -1659,18 +1700,15 @@ def split_join_points(
 
     line_geom = points_to_line(point_layer)
     # print line_geom
-    # print line_geom.length()
-    # line_points = extend_line_points(line_geom, extent)
-    # parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
+    line_points = extend_line_by_distance(line_geom, 1)
+    # print 'line_points', line_points
+    parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
+    # print parallel_line_geom2.length()
 
-    # add_geom_to_layer(
-    #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
-    #     parallel_line_geom2
-    # )
-    line_points = line_geom.asPolyline()
+    # line_points = parallel_line_geom2.asPolyline()
     # If the line intersects the main geometry, split it
 
-    if line_geom.intersects(geom1):
+    if parallel_line_geom2.intersects(geom1):
         if validate:
             return True
         (res, split_geom0, topolist) = geom1.splitGeometry(
@@ -1682,7 +1720,10 @@ def split_join_points(
             # it as a reference using distance to the split feature.
             split_geom = split_geom0[0]
             main_geom = geom1
-
+            add_geom_to_layer(
+                QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
+                line_geom
+            )
             add_geom_to_layer(
                 polygon_layer, split_geom, main_geom, feature_ids
             )
