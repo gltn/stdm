@@ -1296,7 +1296,7 @@ def split_rotate_line_with_area(
     skip_angle_set = False
     rotation = 0
     prev_toggle_index = 0
-
+    irregular = 0
     # print split_area1, loop_index, failed_intersection, angle, \
     #     area_toggle, excessive_toggle, decimal_place_new
     while split_area1 <= area + 10000040:
@@ -1445,12 +1445,18 @@ def split_rotate_line_with_area(
                             intersecting_point
                         )
                     else:
+                        # print 'c1 ', 1
                         continue
 
                 if loop_index > 1:
                     if intersecting_point_pt is None:
+                        # print 'c1 ', 2
                         continue
+                    # Irregular geometry flag. Tolerate for 300 times and break after.
                     if round((geom1.area() + split_geom[0].area()), 0) != original_area:
+                        if irregular == 1000:
+                            return False
+                        irregular = irregular + 1
                         continue
                     # print geom1.area() + split_geom[0].area(), original_area
                     #
@@ -1469,6 +1475,7 @@ def split_rotate_line_with_area(
 
                 loop_index = loop_index + 1
             else:
+                # print 'c1 ', 4
                 continue
             # print angle, decimal_place_new, area_toggle, split_area1
             # print angle, decimal_place_new, area_toggle, split_area1
@@ -1678,6 +1685,7 @@ def split_rotate_line_with_area(
             if failed_intersection > 200:
                 return False
             else:
+                # print 'p1 ', 1
                 pass
 
 
