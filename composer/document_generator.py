@@ -39,7 +39,7 @@ from PyQt4.QtCore import (
     QDir
 )
 from PyQt4.QtXml import QDomDocument
-from qgis._gui import QgsScaleRangeWidget
+from qgis._gui import QgsScaleRangeWidget, QgsScaleWidget
 
 from qgis.core import (
     QgsComposerLabel,
@@ -52,8 +52,8 @@ from qgis.core import (
     QgsMapLayer,
     QgsMapLayerRegistry,
     QgsProject,
-    QgsVectorLayer
-)
+    QgsVectorLayer,
+    QgsMapRenderer)
 from qgis.utils import (
     iface
 )
@@ -233,7 +233,16 @@ class DocumentGenerator(QObject):
             return None, msg
 
         return composer_ds, ""
-        
+    #
+    # def forcedScale(self, scale):
+    #     def zoomToScale(self, scale):
+    #         self._iface.mapCanvas().scaleChanged.disconnect(zoomToScale)
+    #
+    #         self._iface.mapCanvas().zoomScale(scale)
+    #         self._iface.mapCanvas().scaleChanged.connect(zoomToScale)
+    #
+    #     zoomToScale(self, scale)
+
     def run(self, *args, **kwargs):
         """
         :param templatePath: The file path to the user-defined template.
@@ -391,9 +400,9 @@ class DocumentGenerator(QObject):
                                 bbox.scale(spfm.zoomLevel())
                                 self._iface.mapCanvas().setExtent(bbox)
                             else:
-
-                                self._iface.mapCanvas().zoomScale(spfm.scale())
                                 self._iface.mapCanvas().setExtent(bbox)
+                                self._iface.mapCanvas().zoomScale(spfm.scale())
+                                # self._iface.mapCanvas().setExtent(bbox)
 
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
