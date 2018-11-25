@@ -82,7 +82,6 @@ POLYGON_LINES = 'Polygon Lines'
 LINE_POINTS = 'Line Points'
 PREVIEW_POLYGON2 = 'Preview Polygon 2'
 AREA_POLYGON = 'Polygon Area'
-import inspect
 
 class LayerSelectionHandler(object):
     """
@@ -439,15 +438,11 @@ class GeometryToolsDock(
 
                 if len(mem_layers) > 0:
                     for mem_layer in mem_layers:
-                        # if mem_layer in iface.legendInterface().layers():
                         QgsMapLayerRegistry.instance().removeMapLayer(mem_layer)
-            # self.memory_layers[:] = []
 
-            # self.widget.clear_highlights()
             if stop_editing:
                 if (self.layer and iface.activeLayer()) is not None:
-                #if self.layer is not None:
-                    #if iface.activeLayer() is not None:
+
                     if iface.activeLayer().isEditable():
                         iface.mainWindow().findChild(
                             QAction, 'mActionToggleEditing').trigger()
@@ -1938,14 +1933,14 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
             return 0
 
         points = self.point_layer.selectedFeatures()
-        # if len(self.lines) > 0:
-        #     location = identify_selected_point_location(
-        #         points[0], self.lines[0].geometry()
-        #     )
+        if len(self.lines) > 0:
+            location = identify_selected_point_location(
+                points[0], self.lines[0].geometry()
+            )
 
-            # if location == 'middle':
-            #
-            #     return 0
+            if location == 'middle':
+
+                return len(points)
 
         # if clear_previous:
 
@@ -2216,6 +2211,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
 
     def preview(self):
         self.remove_invalid_feature()
+        self.line_selection_finished.disconnect(self.on_line_selection_finished)
         result = self.validate_run(True)
 
         if not result:
@@ -2243,11 +2239,11 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 result = False
 
         iface.setActiveLayer(self.settings.layer)
-        self.init_signals()
 
+        self.init_signals()
+        self.line_selection_finished.connect(self.on_line_selection_finished)
         if result:
             self.progress_dialog.cancel()
-
             self.post_split_update(self.preview_layer, preview=True)
         else:
             self.failed_split_feature = self.feature_ids
@@ -2258,6 +2254,7 @@ class JoinPointsWidget(QWidget, Ui_JoinPoints, GeomWidgetsBase):
                 'not in the same line and try another method.'
             )
             self.progress_dialog.setLabelText(fail_message)
+
         self.executed = False
 
 class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
@@ -3061,7 +3058,7 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
             polygon_to_lines(
                 self.settings.layer,
                 POLYGON_LINES,
-                self.point_layer,
+                # self.point_layer,
                 prefix=self._length_prefix,
                 suffix=self._length_suffix,
                 style=False,

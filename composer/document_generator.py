@@ -53,7 +53,7 @@ from qgis.core import (
     QgsMapLayerRegistry,
     QgsProject,
     QgsVectorLayer,
-    QgsMapRenderer)
+    QgsMapRenderer, QgsCoordinateReferenceSystem)
 from qgis.utils import (
     iface
 )
@@ -106,7 +106,7 @@ class DocumentGenerator(QObject):
         QObject.__init__(self,parent)
         self._iface = iface
         self._map_renderer = self._iface.mapCanvas().mapRenderer()
-        
+
         self._dbSession = STDMDb.instance().session
         
         self._attr_value_formatters = {}
@@ -268,7 +268,7 @@ class DocumentGenerator(QObject):
         dataFields = kwargs.get("dataFields", [])
         fileExtension = kwargs.get("fileExtension", "")
         data_source = kwargs.get("data_source", "")
-        
+        # geometry_tool_activated = False
         templateFile = QFile(templatePath)
         
         if not templateFile.open(QIODevice.ReadOnly):
@@ -379,14 +379,13 @@ class DocumentGenerator(QObject):
 
                             geom_func = geom_value.ST_AsText()
                             geomWKT = self._dbSession.scalar(geom_func)
-
+                            crs = self._iface.mapCanvas().mapRenderer().destinationCrs()
                             #Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
                                                           spatial_field)
-
-                            #Create reference layer with feature
+                            # Create reference layer with feature
                             ref_layer = self._build_vector_layer(
-                                layerName, geom_type, srid
+                                layerName, geom_type, crs
                             )
 
                             if ref_layer is None or not ref_layer.isValid():
@@ -411,19 +410,32 @@ class DocumentGenerator(QObject):
                                 canvas_extent.scale(1.0/32, cnt_pnt)
                                 bbox = canvas_extent
                                 self._iface.mapCanvas().setExtent(bbox)
+
                             # Add length of a polygon line
                             if spfm.get_length_prefix() != '' or \
                                 spfm.get_length_suffix() != '':
+
+                                ref_layer.selectAll()
+                                # if not self._plugin.geom_tools_cont_act.isChecked():
+                                    # geometry_tool_activated = True
+                                    # self._plugin.geom_tools_container.set_entity(
+                                    #     self._current_profile.entity_by_name(
+                                    #         composerDS.name()
+                                    #     )
+                                    # )
+                                    # self._plugin.geom_tools_cont_act.setChecked(True)
+
                                 line_layer = polygon_to_lines(
                                     ref_layer,
                                     'Polygon Lines',
-                                    measurement=True,
+                                    # measurement=True,
                                     prefix=spfm.get_length_prefix(),
                                     suffix=spfm.get_length_suffix(),
-                                    all_features=True,
-                                    style=False
+                                    style=False,
+                                    all_features=False
                                 )
-                                self._map_memory_layers.append(line_layer)
+
+                                self._map_memory_layers.append(line_layer.id())
 
                             # Add length of a polygon line
                             if spfm.get_area_prefix() != '' or \
@@ -494,6 +506,8 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
+            # if geometry_tool_activated:
+            #     self._plugin.geom_tools_cont_act.setChecked(False)
 
             return True, "Success"
 
@@ -570,12 +584,13 @@ class DocumentGenerator(QObject):
             layer, False
         )
 
-    def _build_vector_layer(self, layer_name, geom_type, srid):
+    def _build_vector_layer(self, layer_name, geom_type, crs):
         """
         Builds a memory vector layer based on the spatial field mapping properties.
         """
-        vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
-                         u"index=yes".format(geom_type, srid)
+        wkt = crs.toWkt()
+        vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
+                         u"index=yes".format(geom_type, wkt)
 
         ref_layer = QgsVectorLayer(vl_geom_config, unicode(layer_name), "memory")
         return ref_layer

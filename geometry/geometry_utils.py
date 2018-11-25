@@ -90,7 +90,6 @@ def merge_polygons(polygons_list):
 
 
 def create_temporary_layer(source_layer, type, name, show_legend=True, style=True):
-    #TODO fix crash when used with feature details
     # create a new memory layer
     crs = source_layer.crs()
     crs_id = crs.srsid()
@@ -159,7 +158,6 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
         if type == 'Polygon':
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
-            # symbol.setSize(2.5)
             color = QColor(198, 143, 67)
             symbol.setColor(color)
     # show the line
@@ -652,13 +650,14 @@ def polygon_to_lines(
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
 
     if len(line_layers) == 0:
+
         line_layer = create_temporary_layer(
             layer, 'LineString', layer_name, style=style
         )
 
     else:
         line_layer = line_layers[0]
-        # print QgsMapLayerRegistry.mapLayer(line_layer.id())
+
         clear_layer_features(line_layer)
         iface.setActiveLayer(line_layer)
 
@@ -858,6 +857,7 @@ def points_to_line(point_layer):
 
         poly_line.append(point)
         # print point_ft, point
+
     line_geom = QgsGeometry.fromPolyline(poly_line)
     # print line_geom
     return line_geom
@@ -1707,7 +1707,7 @@ def split_join_points(
     # geometry bounding box to avoid failed split.
 
     line_geom = points_to_line(point_layer)
-    # print line_geom
+
     line_points = extend_line_by_distance(line_geom, 1)
     # print 'line_points', line_points
     parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
@@ -1728,10 +1728,12 @@ def split_join_points(
             # it as a reference using distance to the split feature.
             split_geom = split_geom0[0]
             main_geom = geom1
+
             add_geom_to_layer(
                 QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
                 line_geom
             )
+
             add_geom_to_layer(
                 polygon_layer, split_geom, main_geom, feature_ids
             )
