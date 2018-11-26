@@ -182,7 +182,7 @@ class STDMQGISLoader(object):
     def prepare_columns(self):
         for i, entity in enumerate(self.current_profile.entities.values()):
             self.format_columns(entity)
-
+        self.feature_details_act.setEnabled(True)
 
     def format_columns(self, entity=None):
         """
@@ -1025,6 +1025,7 @@ class STDMQGISLoader(object):
         self.feature_details_act = QAction(QIcon(":/plugins/stdm/images/icons/feature_details.png"), \
         QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
         self.feature_details_act.setCheckable(True)
+        self.feature_details_act.setEnabled(False)
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
