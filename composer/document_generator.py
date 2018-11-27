@@ -342,8 +342,8 @@ class DocumentGenerator(QObject):
                 self._set_table_data(composition, table_config_collection, rec)
 
                 # Refresh non-custom map composer items
-                self._refresh_composer_maps(composition,
-                                            spatialFieldsConfig.spatialFieldsMapping().keys())
+                # self._refresh_composer_maps(composition,
+                #                             spatialFieldsConfig.spatialFieldsMapping().keys())
 
                 # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
@@ -399,9 +399,24 @@ class DocumentGenerator(QObject):
                                 bbox.scale(spfm.zoomLevel())
                                 self._iface.mapCanvas().setExtent(bbox)
                             else:
-                                self._iface.mapCanvas().setExtent(bbox)
-                                self._iface.mapCanvas().zoomScale(spfm.scale())
+                                # map_item.setNewScale(spfm.scale())
+                                # bbox.scale(spfm.scale())
+                                # map_item.setAtlasScalingMode(QgsComposerMap.Fixed)
+                                canvas = self._iface.mapCanvas()
+                                canvas.setExtent(bbox) # bbox is feature extent
+                                canvas.zoomScale(spfm.scale())
+
+                                map_item.setNewScale(canvas.scale())
                                 # self._iface.mapCanvas().setExtent(bbox)
+                                # self._iface.mapCanvas().setExtent(bbox)
+                                # self._iface.mapCanvas().refresh()
+                                # self._iface.mapCanvas().zoomScale(spfm.scale())
+                                # map_item.zoomToExtent(bbox)
+                                # self._iface.mapCanvas().refresh()
+                                # map_item.setMapCanvas(self._iface.mapCanvas())
+
+                                # map_item.zoomToExtent(bbox)
+
 
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
@@ -526,7 +541,24 @@ class DocumentGenerator(QObject):
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
-            map_item.zoomToExtent(self._map_renderer.extent())
+            # print map_item.scale()
+            bbox = self._iface.mapCanvas().extent()
+            # bbox.scale(self._iface.mapCanvas().scale())
+            # map_item.setNewScale(self._iface.mapCanvas().scale())
+            # map_item.zoomToExtent(bbox)
+            # map_item.setMapCanvas(self._iface.mapCanvas())
+            # print map_item.scale()
+            # map_item.setAtlasScalingMode('Fixed')
+            # map_item.setMapCanvas(self._iface.mapCanvas())
+
+            moveX = map_item.extent().center().x() - self._iface.mapCanvas().extent().center().x()
+            moveY = map_item.extent().center().y() - self._iface.mapCanvas().extent().center().y()
+            unitCon = map_item.mapUnitsToMM()
+            map_item.moveContent(-moveX * unitCon,
+                                 moveY * unitCon)
+            print map_item.scale()
+
+
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """
