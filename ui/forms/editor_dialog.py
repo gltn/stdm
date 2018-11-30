@@ -275,6 +275,14 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.buttonBox.rejected.connect(self.cancel)
 
+    @property
+    def notification_bar(self):
+        """
+        :return: Returns the dialog's notification bar.
+        :rtype: NotificationBar
+        """
+        return self._notifBar
+
     def save_parent_editor(self):
         """
         Saves the parent editor and its children.
