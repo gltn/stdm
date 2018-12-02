@@ -411,13 +411,13 @@ class STDMQGISLoader(object):
 
                 prog_dlg.setMaximum(len(self.current_profile.entities))
 
-                #for i, entity in enumerate(self.current_profile.entities.values()):
-                    #prog_dlg.setValue(i)
-                    #self.format_columns(entity)
+                for i, entity in enumerate(self.current_profile.entities.values()):
+                    prog_dlg.setValue(i)
+                    self.format_columns(entity)
 
-                thread = threading.Thread(target=self.prepare_columns)
-                thread.start()
-                sleep(0.5)
+                #thread = threading.Thread(target=self.prepare_columns)
+                #thread.start()
+                #sleep(0.5)
 
                 self.create_custom_tenure_dummy_col()
 
@@ -1025,7 +1025,6 @@ class STDMQGISLoader(object):
         self.feature_details_act = QAction(QIcon(":/plugins/stdm/images/icons/feature_details.png"), \
         QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
         self.feature_details_act.setCheckable(True)
-        self.feature_details_act.setEnabled(False)
 
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
@@ -1976,7 +1975,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.changePasswordAct)
             self.stdmInitToolbar.removeAction(self.wzdAct)
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
-            self.feature_details_act.setChecked(False)
+            #self.feature_details_act.setChecked(False)
             self.stdmInitToolbar.removeAction(self.feature_details_act)
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)

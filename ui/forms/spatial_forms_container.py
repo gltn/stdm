@@ -66,6 +66,8 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         save_btn = self.buttonBox.button(QDialogButtonBox.Save)
         save_btn.clicked.connect(self.save)
 
+        QApplication.restoreOverrideCursor()
+
     def discard(self):
 
         for i in range(len(self.feature_models)):
