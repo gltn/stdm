@@ -153,10 +153,10 @@ class DocumentGeneratorDialogWrapper(object):
     and creates the corresponding EntityConfig objects, which are then
     added to the DocumentGeneratorDialog.
     """
-    def __init__(self, iface, parent=None, plugin=None):
+    def __init__(self, iface, parent=None):
         self._iface = iface
 
-        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent, plugin=plugin)
+        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
 
         self.curr_profile = current_profile()

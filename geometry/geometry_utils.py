@@ -90,7 +90,6 @@ def merge_polygons(polygons_list):
 
 
 def create_temporary_layer(source_layer, type, name, show_legend=True, style=True):
-    #TODO fix crash when used with feature details
     # create a new memory layer
     crs = source_layer.crs()
     crs_id = crs.srsid()
@@ -159,7 +158,6 @@ def create_temporary_layer(source_layer, type, name, show_legend=True, style=Tru
         if type == 'Polygon':
             symbols = v_layer.rendererV2().symbols2(QgsRenderContext())
             symbol = symbols[0]
-            # symbol.setSize(2.5)
             color = QColor(198, 143, 67)
             symbol.setColor(color)
     # show the line
@@ -281,7 +279,6 @@ def create_V2_line(points):
 #     return poly_line
 
 #
-
 def extend_line_points(line_geom, polygon_extent):
     """
 
@@ -325,6 +322,50 @@ def extend_line_points(line_geom, polygon_extent):
     poly_line = [p1, p2]
     return poly_line
 
+def extend_line_by_distance(line_geom, distance):
+    """
+    Extend a line by a distance from x axis in both directions.
+    :param line_geom: The line to be extended
+    :type line_geom: QgsGeometry
+    :param distance: The distance from the start and end points.
+    :type distance: Double
+    :return: The extended polyline
+    :rtype: QgsPolyline
+    """
+    line, slope, start_x, start_y, end_x, end_y = line_slope(line_geom)
+    constant = start_y - (slope * start_x)
+    if slope is None:  # when line is straight vertical, slope is None
+        x_ext1 = start_x
+        y_ext1 = start_y - distance
+        x_ext2 = end_x
+        y_ext2 = end_y + distance
+
+    elif slope > 0 or slope < 0:
+        if start_x < end_x:
+            x_ext1 = start_x - distance
+            y_ext1 = (slope * x_ext1) + constant
+
+            x_ext2 = end_x + distance
+            y_ext2 = (slope * x_ext2) + constant
+
+        else:
+            x_ext1 = start_x + distance
+            y_ext1 = (slope * x_ext1) + constant
+
+            x_ext2 = end_x - distance
+            y_ext2 = (slope * x_ext2) + constant
+
+    else:  # when line is straight horizontal slop is zero
+        x_ext1 = start_x - distance
+        y_ext1 = start_y
+        x_ext2 = end_x + distance
+        y_ext2 = end_y
+
+    p1 = QgsPoint(x_ext1, y_ext1)
+    p2 = QgsPoint(x_ext2, y_ext2)
+
+    poly_line = [p1, p2]
+    return poly_line
 
 def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
     if isinstance(geom, QgsPoint):
@@ -357,16 +398,14 @@ def add_geom_to_layer(layer, geom, main_geom=None, feature_ids=None):
                     layer, geom, features[0], preview_layer=True)
                 layer.selectByIds([features[0].id()])
             layer.updateFeature(features[0])
-        layer.updateExtents()
     else:
         try:
             with edit(layer):
                 feature = add_geom_to_feature(layer, geom)
-            layer.updateExtents()
         except Exception as ex:
-            print ex
+            pass
 
-
+    layer.updateExtents()
     # if preview_layer:
     #     layer.commitChanges()
     # print 'added feat', feature
@@ -611,13 +650,14 @@ def polygon_to_lines(
     line_layers = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
 
     if len(line_layers) == 0:
+
         line_layer = create_temporary_layer(
             layer, 'LineString', layer_name, style=style
         )
 
     else:
         line_layer = line_layers[0]
-        # print QgsMapLayerRegistry.mapLayer(line_layer.id())
+
         clear_layer_features(line_layer)
         iface.setActiveLayer(line_layer)
 
@@ -811,14 +851,15 @@ def merge_selected_lines_features(line_layer):
 
 def points_to_line(point_layer):
     poly_line = []
-    # print point_layer.selectedFeatures()
+    # print 'points_to_line ', point_layer.selectedFeatures()
     for point_ft in point_layer.selectedFeatures():
         point = QgsGeometry.asPoint(point_ft.geometry())
 
         poly_line.append(point)
+        # print point_ft, point
 
     line_geom = QgsGeometry.fromPolyline(poly_line)
-
+    # print line_geom
     return line_geom
 
 def add_geom_to_layer_bsc(layer, geom):
@@ -1255,7 +1296,7 @@ def split_rotate_line_with_area(
     skip_angle_set = False
     rotation = 0
     prev_toggle_index = 0
-
+    irregular = 0
     # print split_area1, loop_index, failed_intersection, angle, \
     #     area_toggle, excessive_toggle, decimal_place_new
     while split_area1 <= area + 10000040:
@@ -1404,12 +1445,18 @@ def split_rotate_line_with_area(
                             intersecting_point
                         )
                     else:
+                        # print 'c1 ', 1
                         continue
 
                 if loop_index > 1:
                     if intersecting_point_pt is None:
+                        # print 'c1 ', 2
                         continue
+                    # Irregular geometry flag. Tolerate for 300 times and break after.
                     if round((geom1.area() + split_geom[0].area()), 0) != original_area:
+                        if irregular == 1000:
+                            return False
+                        irregular = irregular + 1
                         continue
                     # print geom1.area() + split_geom[0].area(), original_area
                     #
@@ -1428,6 +1475,7 @@ def split_rotate_line_with_area(
 
                 loop_index = loop_index + 1
             else:
+                # print 'c1 ', 4
                 continue
             # print angle, decimal_place_new, area_toggle, split_area1
             # print angle, decimal_place_new, area_toggle, split_area1
@@ -1637,6 +1685,7 @@ def split_rotate_line_with_area(
             if failed_intersection > 200:
                 return False
             else:
+                # print 'p1 ', 1
                 pass
 
 
@@ -1658,19 +1707,16 @@ def split_join_points(
     # geometry bounding box to avoid failed split.
 
     line_geom = points_to_line(point_layer)
-    # print line_geom
-    # print line_geom.length()
-    # line_points = extend_line_points(line_geom, extent)
-    # parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
 
-    # add_geom_to_layer(
-    #     QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
-    #     parallel_line_geom2
-    # )
-    line_points = line_geom.asPolyline()
+    line_points = extend_line_by_distance(line_geom, 1)
+    # print 'line_points', line_points
+    parallel_line_geom2 = QgsGeometry.fromPolyline(line_points)
+    # print parallel_line_geom2.length()
+
+    # line_points = parallel_line_geom2.asPolyline()
     # If the line intersects the main geometry, split it
 
-    if line_geom.intersects(geom1):
+    if parallel_line_geom2.intersects(geom1):
         if validate:
             return True
         (res, split_geom0, topolist) = geom1.splitGeometry(
@@ -1682,6 +1728,11 @@ def split_join_points(
             # it as a reference using distance to the split feature.
             split_geom = split_geom0[0]
             main_geom = geom1
+
+            add_geom_to_layer(
+                QgsMapLayerRegistry.instance().mapLayersByName('Polygon Lines')[0],
+                line_geom
+            )
 
             add_geom_to_layer(
                 polygon_layer, split_geom, main_geom, feature_ids
