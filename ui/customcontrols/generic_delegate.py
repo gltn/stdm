@@ -20,8 +20,14 @@ email                : stdm@unhabitat.org
 """
 from PyQt4.QtCore import Qt, QTimer
 
-from PyQt4.QtGui import QItemDelegate, QComboBox, QDoubleSpinBox, \
-    QAbstractItemDelegate, QStandardItem
+from PyQt4.QtGui import (
+        QItemDelegate, 
+        QComboBox, 
+        QSpinBox,
+        QDoubleSpinBox,
+        QAbstractItemDelegate, 
+        QStandardItem
+        )
 
 class GenericDelegate(QItemDelegate):
     """
@@ -61,6 +67,10 @@ class GenericDelegate(QItemDelegate):
             widget = self.create_combobox(parent, index)
         elif self.options['type'] == 'double_spinbox':
             widget = self.create_double_spinbox(parent, index)
+        elif self.options['type'] == 'spinbox':
+            widget = self.create_spinbox(parent, index)
+        elif self.options['type'] == 'padcombobox':
+            widget = self.create_padcombobox(parent, index)
         return widget
 
     def create_combobox(self, parent, index):
@@ -82,8 +92,24 @@ class GenericDelegate(QItemDelegate):
             lambda index, editor=editor: self._view.closeEditor(
                 editor, QAbstractItemDelegate.NoHint)
         )
-        QTimer.singleShot(10, editor.showPopup)
+        #QTimer.singleShot(10, editor.showPopup)
         return combo
+
+    def create_spinbox(self, parent, index):
+        """
+        """
+        spinbox = QSpinBox(parent)
+        spinbox.setObjectName('sb'+unicode(index.row()))
+        return spinbox
+
+
+    def create_padcombobox(self, parent, index):
+        """
+        Create combobox for padding direction
+        """
+        cb = QComboBox(parent)
+        cb.setObjectName('padCB'+unicode(index.row()))
+        return cb
 
     def create_double_spinbox(self, parent, index):
         """
@@ -97,7 +123,6 @@ class GenericDelegate(QItemDelegate):
         """
         spinbox = QDoubleSpinBox(parent)
         spinbox.setObjectName(unicode(index.row()))
-
         return spinbox
 
     def setEditorData(self, widget, index):
@@ -127,6 +152,27 @@ class GenericDelegate(QItemDelegate):
                 widget.setCurrentIndex(value[0])
                 widget.blockSignals(False)
 
+        if self.options['type'] == 'spinbox':
+            widget.blockSignals(True)
+            item = index.model().data(index, Qt.DisplayRole)
+            if item is not None:
+                widget.setValue(item)
+            widget.blockSignals(False)
+
+        if self.options['type'] == 'padcombobox':
+            if widget.count() > 0:
+                return
+            for id, text in self.data.iteritems():
+                widget.addItem(text, id)
+            list_item_index = None
+            if not index.model() is None:
+                list_item_index = index.model().data(index, Qt.DisplayRole)
+            if list_item_index is not None and not isinstance(list_item_index, (unicode,str)):
+                value = list_item_index.toInt()
+                widget.blockSignals(True)
+                widget.setCurrentIndex(value[0])
+                widget.blockSignals(False)
+
     def setModelData(self, editor, model, index):
         """
         Gets data from the editor widget and stores
@@ -139,6 +185,7 @@ class GenericDelegate(QItemDelegate):
         to be inserted.
         :type index: QModelIndex
         """
+        editor.blockSignals(False)
         if self.options['type'] == 'combobox':
             value = editor.currentIndex()
             data = editor.itemData(editor.currentIndex())
@@ -150,6 +197,22 @@ class GenericDelegate(QItemDelegate):
                 index,
                 editor.itemData(value, Qt.DisplayRole)
             )
+
+        if self.options['type'] == 'spinbox':
+            value = editor.value()
+            char_length_item = QStandardItem(value)
+            model.setItem(index.row(), index.column(), char_length_item)
+            model.setData( index, value)
+
+        if self.options['type'] == 'padcombobox':
+            value = editor.currentIndex()
+            data = editor.itemData(editor.currentIndex())
+
+            pad_dir_item = QStandardItem(value)
+            model.setItem(index.row(), index.column(), pad_dir_item)
+            pad_dir_item.setData(data)
+            model.setData( index, editor.itemData(value, Qt.DisplayRole))
+
 
     def updateEditorGeometry(self, editor, option, index):
         """

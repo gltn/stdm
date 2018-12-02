@@ -21,8 +21,17 @@ email                : stdm@unhabitat.org
 from PyQt4.QtCore import Qt
 from collections import OrderedDict
 
-from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
-    QStandardItem, QStandardItemModel, QComboBox, QHeaderView
+from PyQt4.QtGui import (
+        QApplication, 
+        QFontMetrics, 
+        QDialog, 
+        QListWidgetItem,
+        QStandardItem, 
+        QStandardItemModel, 
+        QComboBox, 
+        QHeaderView
+        )
+
 from stdm.utils.util import (
     enable_drag_sort,
     code_columns,
@@ -90,6 +99,12 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             '_':'{} (_)'.format(self.underscore), ' ':self.space
         }
 
+        self.char_length = 0    # to be dynamically loaded
+        self._char_lengths = form_fields['char_lengths']
+
+        self._pad_dirs = form_fields['pad_dir']
+        self.pad_dir = {0:'PAD_LEFT', 1:'PAD_RIGHT'}
+
         self.zeros = [self.none, '0', '00', '000', '0000', '00000']
         self.init_gui()
         self.prefix_source_cbo.currentIndexChanged.connect(
@@ -111,12 +126,18 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.populate_columns_list()
         column_header = QApplication.translate('CodeProperty', 'Columns')
         separator_header = QApplication.translate('CodeProperty', 'Separator')
+        char_length = QApplication.translate('CodeProperty', 'Char Length')
+        pad_dir = QApplication.translate('CodeProperty', 'Padding Direction')
+
         self.column_code_view.model().setHorizontalHeaderLabels(
-            [column_header, separator_header]
+            [column_header, separator_header, char_length, pad_dir]
         )
+
         header = self.column_code_view.horizontalHeader()
         header.setResizeMode(0, QHeaderView.Stretch)
         header.setResizeMode(1, QHeaderView.ResizeToContents)
+        header.setResizeMode(2, QHeaderView.ResizeToContents)
+        header.setResizeMode(3, QHeaderView.ResizeToContents)
 
         if self._source:
             self.prefix_source_cbo.setCurrentIndex(
@@ -236,6 +257,23 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             1, delegate
         )
 
+        # char length spin box
+        opts = {}
+        opts['type'] = 'spinbox'
+        delegate2 = GenericDelegate(
+                self.char_length, opts, self.column_code_view)
+        self.column_code_view.setItemDelegateForColumn(
+            2, delegate2
+        )
+
+        # padding direction combobox
+        opts = {}
+        opts['type'] = 'padcombobox'
+        delegate3 = GenericDelegate(
+                self.pad_dir, opts, self.column_code_view)
+        self.column_code_view.setItemDelegateForColumn(3, delegate3)
+
+
         model = QStandardItemModel(2, 2)
         i = 0
         for row, col in enumerate(self._columns):
@@ -274,17 +312,36 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         model = self.column_code_view.model()
 
+        i = 0
+
         for row in range(model.rowCount()):
             col_item = model.item(row, 0)
 
             if col_item.data() in self._columns:
                 col_idx = self._columns.index(col_item.data())
+
                 separator = self._column_separators[col_idx]
                 separator_item = QStandardItem(self.separators[separator])
                 model.setItem(row, 1, separator_item)
                 separator_item.setData(separator)
 
                 col_item.setCheckState(Qt.Checked)
+
+                # padding direction
+                if len(self._pad_dirs) > 0:
+                    pad_dir = self._pad_dirs[col_idx]
+                    pad_dir_item = QStandardItem(pad_dir)
+                    model.setItem(row, 3, pad_dir_item)
+                    pad_dir_item.setData(pad_dir)
+
+            if len(self._char_lengths) > 0 and i < len(self._char_lengths):
+                char_len_item = model.item(row,1)
+                value = self._char_lengths[i]
+                if int(value) > 0:
+                    char_length_item = QStandardItem(value)
+                    model.setItem(row, 2, char_length_item)
+                    char_length_item.setData(value)
+                i += 1
 
     def set_disable_auto_increment(self):
         """
@@ -444,6 +501,35 @@ class CodeProperty(QDialog, Ui_CodeProperty):
        
         self._column_separators = row_data
 
+    def add_char_lengths(self):
+        """
+        """
+        self._char_lengths = []
+        model = self.column_code_view.model()
+
+        for row in range(model.rowCount()):
+            item = model.item(row)
+            if item.checkState() == Qt.Checked:
+                id_idx = model.index(row, 2)
+                char_length = id_idx.data()
+                if char_length is None:
+                    char_length = -1
+                self._char_lengths.append(char_length)
+
+    def add_pad_dirs(self):
+        """
+        """
+        self._pad_dirs = []
+        model = self.column_code_view.model()
+        for row in range(model.rowCount()):
+            item = model.item(row)
+            if item.checkState() == Qt.Checked:
+                id_idx = model.index(row, 3)
+                pad_dir = id_idx.data()
+                if pad_dir is None:
+                    pad_dir = ''
+                self._pad_dirs.append(pad_dir)
+
     def add_leading_zero(self):
         """
         Set the prefix source.
@@ -487,6 +573,19 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             return []
         return self._column_separators
 
+    def char_lengths(self):
+        current_text = self.prefix_source_cbo.currentText()
+        if current_text != self._column_name:
+            return []
+        return self._char_lengths
+
+    def pad_dirs(self):
+        current_text = self.prefix_source_cbo.currentText()
+        if current_text != self._column_name:
+            return []
+        return self._pad_dirs
+
+
     def leading_zero(self):
         """
         Returns the selected leading_zero
@@ -508,11 +607,14 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.add_prefix_source()
         self.add_columns()
         self.add_column_separators()
+        self.add_char_lengths()
+        self.add_pad_dirs()
         self.add_leading_zero()
         self.add_separator()
         self.add_enable_auto_increment()
         self.add_enable_editing()
         self.add_hide_prefix()
+
         self.done(1)
 
     def reject(self):
