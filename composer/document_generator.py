@@ -39,7 +39,7 @@ from PyQt4.QtCore import (
     QDir
 )
 from PyQt4.QtXml import QDomDocument
-from qgis._gui import QgsScaleRangeWidget
+from qgis._gui import QgsScaleRangeWidget, QgsScaleWidget
 
 from qgis.core import (
     QgsComposerLabel,
@@ -52,8 +52,8 @@ from qgis.core import (
     QgsMapLayer,
     QgsMapLayerRegistry,
     QgsProject,
-    QgsVectorLayer
-)
+    QgsVectorLayer,
+    QgsMapRenderer, QgsCoordinateReferenceSystem)
 from qgis.utils import (
     iface
 )
@@ -106,7 +106,7 @@ class DocumentGenerator(QObject):
         QObject.__init__(self,parent)
         self._iface = iface
         self._map_renderer = self._iface.mapCanvas().mapRenderer()
-        
+
         self._dbSession = STDMDb.instance().session
         
         self._attr_value_formatters = {}
@@ -233,7 +233,16 @@ class DocumentGenerator(QObject):
             return None, msg
 
         return composer_ds, ""
-        
+    #
+    # def forcedScale(self, scale):
+    #     def zoomToScale(self, scale):
+    #         self._iface.mapCanvas().scaleChanged.disconnect(zoomToScale)
+    #
+    #         self._iface.mapCanvas().zoomScale(scale)
+    #         self._iface.mapCanvas().scaleChanged.connect(zoomToScale)
+    #
+    #     zoomToScale(self, scale)
+
     def run(self, *args, **kwargs):
         """
         :param templatePath: The file path to the user-defined template.
@@ -259,7 +268,7 @@ class DocumentGenerator(QObject):
         dataFields = kwargs.get("dataFields", [])
         fileExtension = kwargs.get("fileExtension", "")
         data_source = kwargs.get("data_source", "")
-        
+        # geometry_tool_activated = False
         templateFile = QFile(templatePath)
         
         if not templateFile.open(QIODevice.ReadOnly):
@@ -333,8 +342,8 @@ class DocumentGenerator(QObject):
                 self._set_table_data(composition, table_config_collection, rec)
 
                 # Refresh non-custom map composer items
-                self._refresh_composer_maps(composition,
-                                            spatialFieldsConfig.spatialFieldsMapping().keys())
+                # self._refresh_composer_maps(composition,
+                #                             spatialFieldsConfig.spatialFieldsMapping().keys())
 
                 # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
@@ -370,14 +379,13 @@ class DocumentGenerator(QObject):
 
                             geom_func = geom_value.ST_AsText()
                             geomWKT = self._dbSession.scalar(geom_func)
-
+                            crs = self._iface.mapCanvas().mapRenderer().destinationCrs()
                             #Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
                                                           spatial_field)
-
-                            #Create reference layer with feature
+                            # Create reference layer with feature
                             ref_layer = self._build_vector_layer(
-                                layerName, geom_type, srid
+                                layerName, geom_type, crs
                             )
 
                             if ref_layer is None or not ref_layer.isValid():
@@ -391,9 +399,24 @@ class DocumentGenerator(QObject):
                                 bbox.scale(spfm.zoomLevel())
                                 self._iface.mapCanvas().setExtent(bbox)
                             else:
+                                # map_item.setNewScale(spfm.scale())
+                                # bbox.scale(spfm.scale())
+                                # map_item.setAtlasScalingMode(QgsComposerMap.Fixed)
+                                canvas = self._iface.mapCanvas()
+                                canvas.setExtent(bbox) # bbox is feature extent
+                                canvas.zoomScale(spfm.scale())
 
-                                self._iface.mapCanvas().zoomScale(spfm.scale())
-                                self._iface.mapCanvas().setExtent(bbox)
+                                map_item.setNewScale(canvas.scale())
+                                # self._iface.mapCanvas().setExtent(bbox)
+                                # self._iface.mapCanvas().setExtent(bbox)
+                                # self._iface.mapCanvas().refresh()
+                                # self._iface.mapCanvas().zoomScale(spfm.scale())
+                                # map_item.zoomToExtent(bbox)
+                                # self._iface.mapCanvas().refresh()
+                                # map_item.setMapCanvas(self._iface.mapCanvas())
+
+                                # map_item.zoomToExtent(bbox)
+
 
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
@@ -402,19 +425,32 @@ class DocumentGenerator(QObject):
                                 canvas_extent.scale(1.0/32, cnt_pnt)
                                 bbox = canvas_extent
                                 self._iface.mapCanvas().setExtent(bbox)
+
                             # Add length of a polygon line
                             if spfm.get_length_prefix() != '' or \
                                 spfm.get_length_suffix() != '':
+
+                                ref_layer.selectAll()
+                                # if not self._plugin.geom_tools_cont_act.isChecked():
+                                    # geometry_tool_activated = True
+                                    # self._plugin.geom_tools_container.set_entity(
+                                    #     self._current_profile.entity_by_name(
+                                    #         composerDS.name()
+                                    #     )
+                                    # )
+                                    # self._plugin.geom_tools_cont_act.setChecked(True)
+
                                 line_layer = polygon_to_lines(
                                     ref_layer,
                                     'Polygon Lines',
-                                    measurement=True,
+                                    # measurement=True,
                                     prefix=spfm.get_length_prefix(),
                                     suffix=spfm.get_length_suffix(),
-                                    all_features=True,
-                                    style=False
+                                    style=False,
+                                    all_features=False
                                 )
-                                self._map_memory_layers.append(line_layer)
+
+                                self._map_memory_layers.append(line_layer.id())
 
                             # Add length of a polygon line
                             if spfm.get_area_prefix() != '' or \
@@ -485,6 +521,8 @@ class DocumentGenerator(QObject):
 
                     absDocPath = u"{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
+            # if geometry_tool_activated:
+            #     self._plugin.geom_tools_cont_act.setChecked(False)
 
             return True, "Success"
 
@@ -503,7 +541,24 @@ class DocumentGenerator(QObject):
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
-            map_item.zoomToExtent(self._map_renderer.extent())
+            # print map_item.scale()
+            bbox = self._iface.mapCanvas().extent()
+            # bbox.scale(self._iface.mapCanvas().scale())
+            # map_item.setNewScale(self._iface.mapCanvas().scale())
+            # map_item.zoomToExtent(bbox)
+            # map_item.setMapCanvas(self._iface.mapCanvas())
+            # print map_item.scale()
+            # map_item.setAtlasScalingMode('Fixed')
+            # map_item.setMapCanvas(self._iface.mapCanvas())
+
+            moveX = map_item.extent().center().x() - self._iface.mapCanvas().extent().center().x()
+            moveY = map_item.extent().center().y() - self._iface.mapCanvas().extent().center().y()
+            unitCon = map_item.mapUnitsToMM()
+            map_item.moveContent(-moveX * unitCon,
+                                 moveY * unitCon)
+            print map_item.scale()
+
+
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """
@@ -561,12 +616,13 @@ class DocumentGenerator(QObject):
             layer, False
         )
 
-    def _build_vector_layer(self, layer_name, geom_type, srid):
+    def _build_vector_layer(self, layer_name, geom_type, crs):
         """
         Builds a memory vector layer based on the spatial field mapping properties.
         """
-        vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
-                         u"index=yes".format(geom_type, srid)
+        wkt = crs.toWkt()
+        vl_geom_config = u"{0}?crs={1}&field=name:string(20)&" \
+                         u"index=yes".format(geom_type, wkt)
 
         ref_layer = QgsVectorLayer(vl_geom_config, unicode(layer_name), "memory")
         return ref_layer
