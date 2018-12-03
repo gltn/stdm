@@ -571,6 +571,7 @@ class STDMFieldWidget(QObject):
         """
         if len(self.feature_models) == 0:
             return
+
         spatial_forms = SpatialFormsContainer(
             self.entity, self.layer, self.feature_models, self.plugin
         )

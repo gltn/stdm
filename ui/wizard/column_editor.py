@@ -294,6 +294,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
                 self.form_fields['prefix_source'] = column.prefix_source
                 self.form_fields['columns'] = column.columns
                 self.form_fields['column_separators'] = column.column_separators
+                self.form_fields['char_lengths'] = column.char_lengths
+                self.form_fields['pad_dir'] = column.pad_dir
                 self.form_fields['leading_zero'] = column.leading_zero
                 self.form_fields['separator'] = column.separator
                 self.form_fields['colname'] = column.name
@@ -347,6 +349,13 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.form_fields['column_separators'] = self.type_attribs.get(
             'column_separators', []
         )
+        self.form_fields['char_lengths'] =  self.type_attribs.get(
+                'char_lengths', []
+        )
+        self.form_fields['pad_dir'] =  self.type_attribs.get(
+                'pad_dir', []
+        )
+
         self.form_fields['leading_zero'] = self.type_attribs.get(
             'leading_zero', ''
         )
@@ -522,6 +531,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             'unique': {'check_state': True, 'enabled_state': True},
             'index': {'check_state': True, 'enabled_state': True},
             'prefix_source': '', 'columns':[], 'column_separators':[],
+            'char_lengths':[], 'pad_dir':[],
             'leading_zero': '', 'separator':'',
             'disable_auto_increment': False, 'enable_editing': False,
             'property': self.code_property, 'hide_prefix': False, 'prop_set': True}
@@ -700,8 +710,9 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
             self.form_fields['disable_auto_increment'] = editor.disable_auto_increment()
             self.form_fields['enable_editing'] = editor.enable_editing()
             self.form_fields['column_separators'] = editor.column_separators()
+            self.form_fields['char_lengths'] = editor.char_lengths()
+            self.form_fields['pad_dir'] = editor.pad_dirs()
             self.form_fields['hide_prefix'] = editor.hide_prefix()
-
             self.property_set()
 
     def expression_property(self):
