@@ -23,6 +23,7 @@ from PyQt4.QtGui import (
     QWidget
 )
 from PyQt4.QtCore import Qt
+from qgis._gui import QgsGenericProjectionSelector
 
 from qgis.core import (
     QgsSimpleFillSymbolLayerV2,
@@ -130,9 +131,18 @@ class SpatialFieldMapping(object):
         """
         Set the SRID of the spatial column.
         """
-        self._crs = QgsCoordinateReferenceSystem(
-            srid, QgsCoordinateReferenceSystem.EpsgCrsId
+        self._crs = QgsCoordinateReferenceSystem()
+        # target_crs.createFromId(crsId,
+        #                         QgsCoordinateReferenceSystem.InternalCrsId)
+        # self._composerWrapper._iface.mapCanvas().setDestinationCrs(target_crs)
+        # print crsId
+
+        self._crs.createFromId(
+            srid, QgsCoordinateReferenceSystem.InternalCrsId
         )
+        # self._crs = QgsCoordinateReferenceSystem(
+        #     srid, QgsCoordinateReferenceSystem.EpsgCrsId
+        # )
         self._srid = srid
         
     def geometryType(self):
@@ -451,15 +461,16 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         """
         return self._geomType
     
-    def setSrid(self,srid):
+    def setSrid(self, srid):
         """
         Set the SRID of the specified spatial unit.
         """
-        self._crs = QgsCoordinateReferenceSystem(
-            srid, QgsCoordinateReferenceSystem.EpsgCrsId
+        self._crs = QgsCoordinateReferenceSystem()
+        self._crs.createFromId(
+            srid, QgsCoordinateReferenceSystem.InternalCrsId
         )
-        self._srid = srid
-        
+        self._srid = self._crs.srsid()
+
     def srid(self):
         """
         Return the SRID of the specified spatial unit.

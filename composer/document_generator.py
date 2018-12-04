@@ -379,10 +379,16 @@ class DocumentGenerator(QObject):
 
                             geom_func = geom_value.ST_AsText()
                             geomWKT = self._dbSession.scalar(geom_func)
-                            crs = self._iface.mapCanvas().mapRenderer().destinationCrs()
+                            # crs = self._iface.mapCanvas().mapRenderer().destinationCrs()
                             #Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
                                                           spatial_field)
+
+                            crs = QgsCoordinateReferenceSystem()
+                            crs.createFromId(
+                                srid,
+                                QgsCoordinateReferenceSystem.InternalCrsId
+                            )
                             # Create reference layer with feature
                             ref_layer = self._build_vector_layer(
                                 layerName, geom_type, crs
@@ -403,12 +409,15 @@ class DocumentGenerator(QObject):
                                 # bbox.scale(spfm.scale())
                                 # map_item.setAtlasScalingMode(QgsComposerMap.Fixed)
                                 canvas = self._iface.mapCanvas()
+                                # bbox.scale(1)
+                                # map_item.zoomToExtent(bbox)
+                                # self._iface.mapCanvas().setExtent(bbox)
                                 canvas.setExtent(bbox) # bbox is feature extent
                                 canvas.zoomScale(spfm.scale())
 
-                                map_item.setNewScale(canvas.scale())
+                                # map_item.setNewScale(canvas.scale())
                                 # self._iface.mapCanvas().setExtent(bbox)
-                                # self._iface.mapCanvas().setExtent(bbox)
+                                #
                                 # self._iface.mapCanvas().refresh()
                                 # self._iface.mapCanvas().zoomScale(spfm.scale())
                                 # map_item.zoomToExtent(bbox)
@@ -542,21 +551,25 @@ class DocumentGenerator(QObject):
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
             # print map_item.scale()
-            bbox = self._iface.mapCanvas().extent()
+
+            # bbox = self._iface.mapCanvas().extent()
+            # map_item.zoomToExtent(self._map_renderer.extent())
             # bbox.scale(self._iface.mapCanvas().scale())
-            # map_item.setNewScale(self._iface.mapCanvas().scale())
             # map_item.zoomToExtent(bbox)
+            # map_item.setMapCanvas(self._iface.mapCanvas())
+            # map_item.setNewScale(self._iface.mapCanvas().scale())
+            #
             # map_item.setMapCanvas(self._iface.mapCanvas())
             # print map_item.scale()
             # map_item.setAtlasScalingMode('Fixed')
             # map_item.setMapCanvas(self._iface.mapCanvas())
-
+            print map_item.extent().center().x(), self._iface.mapCanvas().extent().center().x()
             moveX = map_item.extent().center().x() - self._iface.mapCanvas().extent().center().x()
             moveY = map_item.extent().center().y() - self._iface.mapCanvas().extent().center().y()
             unitCon = map_item.mapUnitsToMM()
             map_item.moveContent(-moveX * unitCon,
                                  moveY * unitCon)
-            print map_item.scale()
+            # print map_item.scale()
 
 
 
