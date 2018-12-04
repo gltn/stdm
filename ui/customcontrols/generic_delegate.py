@@ -86,14 +86,17 @@ class GenericDelegate(QItemDelegate):
         combo = QComboBox(parent)
         combo.setObjectName(unicode(index.row()))
         editor = combo
-        editor.activated.connect(
+
+        editor.currentIndexChanged.connect(
             lambda index, editor=editor: self._view.commitData(editor))
-        editor.activated.connect(
-            lambda index, editor=editor: self._view.closeEditor(
-                editor, QAbstractItemDelegate.NoHint)
-        )
+
+        #editor.activated.connect(
+            #lambda index, editor=editor: self._view.closeEditor(
+                #editor, QAbstractItemDelegate.NoHint)
+        #)
         #QTimer.singleShot(10, editor.showPopup)
         return combo
+        
 
     def create_spinbox(self, parent, index):
         """
@@ -108,7 +111,15 @@ class GenericDelegate(QItemDelegate):
         Create combobox for padding direction
         """
         cb = QComboBox(parent)
+        editor = cb
+        editor.activated.connect(
+            lambda index, editor=editor: self._view.commitData(editor))
+        #editor.activated.connect(
+            #lambda index, editor=editor: self._view.closeEditor(
+                #editor, QAbstractItemDelegate.NoHint)
+        #)
         cb.setObjectName('padCB'+unicode(index.row()))
+        #QTimer.singleShot(10, editor.showPopup)
         return cb
 
     def create_double_spinbox(self, parent, index):
@@ -123,6 +134,15 @@ class GenericDelegate(QItemDelegate):
         """
         spinbox = QDoubleSpinBox(parent)
         spinbox.setObjectName(unicode(index.row()))
+        editor = spinbox
+        editor.activated.connect(
+            lambda index, editor=editor: self._view.commitData(editor))
+        #editor.activated.connect(
+            #lambda index, editor=editor: self._view.closeEditor(
+                #editor, QAbstractItemDelegate.NoHint)
+        #)
+        spinbox.setObjectName('sb'+unicode(index.row()))
+        #QTimer.singleShot(10, editor.showPopup)
         return spinbox
 
     def setEditorData(self, widget, index):
@@ -133,17 +153,21 @@ class GenericDelegate(QItemDelegate):
         :param index: The model index
         :type index: QModelIndex
         """
+
         if self.options['type'] == 'combobox':
-            if widget.count() > 0:
+            if widget.count() > 0: 
                 return
+
             widget.insertItem(0, " ")
                 #, len(self.str_type_set_data())
             for id, text in self.data.iteritems():
                 widget.addItem(text, id)
 
             list_item_index = None
+
             if not index.model() is None:
                 list_item_index = index.model().data(index, Qt.DisplayRole)
+
             if list_item_index is not None and \
                     not isinstance(list_item_index, (unicode, str)):
 
@@ -153,11 +177,11 @@ class GenericDelegate(QItemDelegate):
                 widget.blockSignals(False)
 
         if self.options['type'] == 'spinbox':
-            widget.blockSignals(True)
             item = index.model().data(index, Qt.DisplayRole)
             if item is not None:
+                widget.blockSignals(True)
                 widget.setValue(item)
-            widget.blockSignals(False)
+                widget.blockSignals(False)
 
         if self.options['type'] == 'padcombobox':
             if widget.count() > 0:
@@ -173,6 +197,7 @@ class GenericDelegate(QItemDelegate):
                 widget.setCurrentIndex(value[0])
                 widget.blockSignals(False)
 
+
     def setModelData(self, editor, model, index):
         """
         Gets data from the editor widget and stores
@@ -185,23 +210,21 @@ class GenericDelegate(QItemDelegate):
         to be inserted.
         :type index: QModelIndex
         """
-        editor.blockSignals(False)
+
         if self.options['type'] == 'combobox':
             value = editor.currentIndex()
             data = editor.itemData(editor.currentIndex())
 
             separator_item = QStandardItem(value)
-            model.setItem(index.row(), index.column(), separator_item)
             separator_item.setData(data)
-            model.setData(
-                index,
-                editor.itemData(value, Qt.DisplayRole)
-            )
+            model.setData(index, editor.itemData(value, Qt.DisplayRole))
+            #model.setItem(index.row(), index.column(), separator_item)
 
         if self.options['type'] == 'spinbox':
+            print "setModel: spinbox"
             value = editor.value()
             char_length_item = QStandardItem(value)
-            model.setItem(index.row(), index.column(), char_length_item)
+            #model.setItem(index.row(), index.column(), char_length_item)
             model.setData( index, value)
 
         if self.options['type'] == 'padcombobox':
@@ -209,7 +232,7 @@ class GenericDelegate(QItemDelegate):
             data = editor.itemData(editor.currentIndex())
 
             pad_dir_item = QStandardItem(value)
-            model.setItem(index.row(), index.column(), pad_dir_item)
+            #model.setItem(index.row(), index.column(), pad_dir_item)
             pad_dir_item.setData(data)
             model.setData( index, editor.itemData(value, Qt.DisplayRole))
 

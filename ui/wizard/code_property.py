@@ -96,7 +96,8 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             '':self.none, '/':'{} (/)'.format(self.forward_slash),
             '\\':'{} (\\)'.format(self.backward_slash),
             '-':'{} (-)'.format(self.hyphen),
-            '_':'{} (_)'.format(self.underscore), ' ':self.space
+            '_':'{} (_)'.format(self.underscore),
+            ' ':self.space
         }
 
         self.char_length = 0    # to be dynamically loaded
@@ -250,21 +251,14 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         delegate = GenericDelegate(
             self.separators, options, self.column_code_view)
         # Set delegate to add widget
-        self.column_code_view.setItemDelegate(
-            delegate
-        )
-        self.column_code_view.setItemDelegateForColumn(
-            1, delegate
-        )
+        self.column_code_view.setItemDelegateForColumn(1, delegate)
 
         # char length spin box
         opts = {}
         opts['type'] = 'spinbox'
         delegate2 = GenericDelegate(
                 self.char_length, opts, self.column_code_view)
-        self.column_code_view.setItemDelegateForColumn(
-            2, delegate2
-        )
+        self.column_code_view.setItemDelegateForColumn( 2, delegate2)
 
         # padding direction combobox
         opts = {}
@@ -276,6 +270,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         model = QStandardItemModel(2, 2)
         i = 0
+
         for row, col in enumerate(self._columns):
 
             column_item = QStandardItem(self._entity.columns[col].header())
@@ -293,9 +288,9 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
             if col.name not in self._columns:
                 # Correct row by reducing by one due to removal of id
-
                 column_item = QStandardItem(col.header())
                 column_item.setCheckable(True)
+                column_item.setEditable(False)
 
                 model.setItem(i, 0, column_item)
 
@@ -331,17 +326,24 @@ class CodeProperty(QDialog, Ui_CodeProperty):
                 if len(self._pad_dirs) > 0:
                     pad_dir = self._pad_dirs[col_idx]
                     pad_dir_item = QStandardItem(pad_dir)
-                    model.setItem(row, 3, pad_dir_item)
-                    pad_dir_item.setData(pad_dir)
+                else:
+                    pad_dir_item = QStandardItem()
+
+                    #model.setItem(row, 3, pad_dir_item)
+                    #pad_dir_item.setData(pad_dir)
 
             if len(self._char_lengths) > 0 and i < len(self._char_lengths):
                 char_len_item = model.item(row,1)
                 value = self._char_lengths[i]
-                if int(value) > 0:
-                    char_length_item = QStandardItem(value)
-                    model.setItem(row, 2, char_length_item)
-                    char_length_item.setData(value)
+                #if int(value) > 0:
+                char_length_item = QStandardItem(value)
                 i += 1
+
+            model.setItem(row, 2, char_length_item)
+            char_length_item.setData(value)
+
+            model.setItem(row, 3, pad_dir_item)
+            pad_dir_item.setData(pad_dir)
 
     def set_disable_auto_increment(self):
         """
@@ -481,6 +483,14 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         self._columns = row_data
 
+    def key_from_val(self, value):
+        found_key = None
+        for k, v in self.separators.items():
+            if v == value:
+                found_key = k
+                break
+        return found_key
+
     def add_column_separators(self):
         """
         Set column separators.
@@ -494,7 +504,8 @@ class CodeProperty(QDialog, Ui_CodeProperty):
             item = model.item(row)
             if item.checkState() == Qt.Checked:
                 id_idx = model.index(row, 1)
-                separator = id_idx.data(Qt.UserRole + 1)
+                #separator = id_idx.data(Qt.UserRole + 1)
+                separator = self.key_from_val(id_idx.data())
                 if separator is None:
                     separator = ''
                 row_data.append(separator)
@@ -584,7 +595,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         if current_text != self._column_name:
             return []
         return self._pad_dirs
-
 
     def leading_zero(self):
         """
