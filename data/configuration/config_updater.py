@@ -91,9 +91,6 @@ class ConfigurationSchemaUpdater(QObject):
             return
 
         try:
-            self.update_completed.emit(True)
-            return
-
             #Iterate through removed profiles first
             for rp in self.config.removed_profiles:
                 self.remove_profile(rp)

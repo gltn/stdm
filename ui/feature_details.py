@@ -68,6 +68,7 @@ from stdm.data.supporting_documents import (
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
+
 from stdm.utils.util import (
     format_name,
     entity_id_to_model,
