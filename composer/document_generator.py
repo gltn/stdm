@@ -268,6 +268,7 @@ class DocumentGenerator(QObject):
         dataFields = kwargs.get("dataFields", [])
         fileExtension = kwargs.get("fileExtension", "")
         data_source = kwargs.get("data_source", "")
+        skip_write = kwargs.get('skip_write', '')
         # geometry_tool_activated = False
         templateFile = QFile(templatePath)
         
@@ -342,8 +343,8 @@ class DocumentGenerator(QObject):
                 self._set_table_data(composition, table_config_collection, rec)
 
                 # Refresh non-custom map composer items
-                # self._refresh_composer_maps(composition,
-                #                             spatialFieldsConfig.spatialFieldsMapping().keys())
+                self._refresh_composer_maps(composition,
+                                            spatialFieldsConfig.spatialFieldsMapping().keys())
 
                 # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
@@ -389,6 +390,7 @@ class DocumentGenerator(QObject):
                                 srid,
                                 QgsCoordinateReferenceSystem.InternalCrsId
                             )
+
                             # Create reference layer with feature
                             ref_layer = self._build_vector_layer(
                                 layerName, geom_type, crs
@@ -404,27 +406,24 @@ class DocumentGenerator(QObject):
 
                                 bbox.scale(spfm.zoomLevel())
                                 self._iface.mapCanvas().setExtent(bbox)
+                                map_item.zoomToExtent(bbox)
                             else:
-                                # map_item.setNewScale(spfm.scale())
-                                # bbox.scale(spfm.scale())
-                                # map_item.setAtlasScalingMode(QgsComposerMap.Fixed)
-                                canvas = self._iface.mapCanvas()
-                                # bbox.scale(1)
-                                # map_item.zoomToExtent(bbox)
-                                # self._iface.mapCanvas().setExtent(bbox)
-                                canvas.setExtent(bbox) # bbox is feature extent
-                                canvas.zoomScale(spfm.scale())
 
-                                # map_item.setNewScale(canvas.scale())
-                                # self._iface.mapCanvas().setExtent(bbox)
-                                #
-                                # self._iface.mapCanvas().refresh()
-                                # self._iface.mapCanvas().zoomScale(spfm.scale())
-                                # map_item.zoomToExtent(bbox)
-                                # self._iface.mapCanvas().refresh()
-                                # map_item.setMapCanvas(self._iface.mapCanvas())
+                                bbox.scale(spfm.scale())
+                                self._iface.mapCanvas().setExtent(bbox) # bbox is feature extent
+                                self._iface.mapCanvas().zoomScale(spfm.scale())
 
-                                # map_item.zoomToExtent(bbox)
+                                self._iface.mapCanvas().refresh()
+
+                                moveX = map_item.extent().center().x() - self._iface.mapCanvas().extent().center().x()
+                                moveY = map_item.extent().center().y() - self._iface.mapCanvas().extent().center().y()
+                                unitCon = map_item.mapUnitsToMM()
+                                map_item.moveContent(-moveX * unitCon,
+                                                     moveY * unitCon)
+
+                                self._iface.mapCanvas().refresh()
+                                map_item.setMapCanvas(self._iface.mapCanvas())
+                                self._iface.mapCanvas().refresh()
 
 
                             #Workaround for zooming to single point extent
@@ -486,18 +485,25 @@ class DocumentGenerator(QObject):
                             '''
                             Add layer to map and ensure its always added at the top
                             '''
-                            self.map_registry.addMapLayer(ref_layer)
 
+                            self.map_registry.addMapLayer(ref_layer)
+                            ref_layer.updateExtents()
                             self._iface.mapCanvas().refresh()
+
                             # Add layer to map memory layer list
                             self._map_memory_layers.append(ref_layer.id())
-                            self._hide_layer(ref_layer)
+
+                            # self._hide_layer(ref_layer)
                         '''
                         Use root layer tree to get the correct ordering of layers
                         in the legend
                         '''
+                        QApplication.processEvents()
                         self._refresh_map_item(map_item)
-
+                # composition.refreshZList()
+                # composition.refreshItems()
+                if skip_write:
+                    return False, "Skipped writing"
                 #Extract chart information and generate chart
                 self._generate_charts(composition, chart_config_collection, rec)
 
@@ -550,28 +556,6 @@ class DocumentGenerator(QObject):
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
-            # print map_item.scale()
-
-            # bbox = self._iface.mapCanvas().extent()
-            # map_item.zoomToExtent(self._map_renderer.extent())
-            # bbox.scale(self._iface.mapCanvas().scale())
-            # map_item.zoomToExtent(bbox)
-            # map_item.setMapCanvas(self._iface.mapCanvas())
-            # map_item.setNewScale(self._iface.mapCanvas().scale())
-            #
-            # map_item.setMapCanvas(self._iface.mapCanvas())
-            # print map_item.scale()
-            # map_item.setAtlasScalingMode('Fixed')
-            # map_item.setMapCanvas(self._iface.mapCanvas())
-            print map_item.extent().center().x(), self._iface.mapCanvas().extent().center().x()
-            moveX = map_item.extent().center().x() - self._iface.mapCanvas().extent().center().x()
-            moveY = map_item.extent().center().y() - self._iface.mapCanvas().extent().center().y()
-            unitCon = map_item.mapUnitsToMM()
-            map_item.moveContent(-moveX * unitCon,
-                                 moveY * unitCon)
-            # print map_item.scale()
-
-
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """
@@ -836,15 +820,16 @@ class DocumentGenerator(QObject):
         if not isinstance(vlayer, QgsVectorLayer):
             return
         dp = vlayer.dataProvider()
-        
+
         feat = QgsFeature()
         g = QgsGeometry.fromWkt(geom_wkb)
         feat.setGeometry(g)
-        
+        dp.addFeatures([feat])
+        vlayer.commitChanges()
         dp.addFeatures([feat])
         self._feature_ids.append(feat.id())
         vlayer.updateExtents()
-        
+
         return g.boundingBox()
     
     def _write_output(self,composition,outputMode,filePath):
