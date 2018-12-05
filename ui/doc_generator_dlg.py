@@ -631,8 +631,20 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                 if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
                     status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
                                                   record.id, outputMode,
-                                                  filePath = self._outputFilePath)
+                                                  filePath = self._outputFilePath,
+                                                         skip_write=True
+                                                         )
+                    temp_layers = self._doc_generator._map_memory_layers
+                    status, msg = self._doc_generator.run(
+                        self._docTemplatePath, entity_field_name,
+                        record.id, outputMode,
+                        filePath=self._outputFilePath,
+                        skip_write=False
+                    )
                     self._doc_generator.clear_temporary_layers()
+                    temp_layers.extend(self._doc_generator._map_memory_layers)
+                    self._doc_generator._clear_layers(temp_layers)
+
                 #Output folder location using custom naming
                 else:
 
@@ -640,8 +652,21 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                                                     record.id, outputMode,
                                                     dataFields = documentNamingAttrs,
                                                     fileExtension = fileExtension,
-                                                    data_source = self.ds_entity.name)
-                    self._doc_generator.clear_temporary_layers()
+                                                    data_source = self.ds_entity.name,
+                                                    skip_write=True
+                                                    )
+                    temp_layers = self._doc_generator._map_memory_layers
+                    status, msg = self._doc_generator.run(
+                        self._docTemplatePath, entity_field_name,
+                        record.id, outputMode,
+                        dataFields=documentNamingAttrs,
+                        fileExtension=fileExtension,
+                        data_source=self.ds_entity.name,
+                        skip_write=False
+                    )
+
+                    temp_layers.extend(self._doc_generator._map_memory_layers)
+                    self._doc_generator._clear_layers(temp_layers)
 
                 if not status:
                     result = QMessageBox.warning(self,
