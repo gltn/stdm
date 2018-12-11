@@ -32,6 +32,7 @@ class Ui_OffsetDistance(object):
         self.sel_features_lbl.setObjectName(_fromUtf8("sel_features_lbl"))
         self.gridLayout.addWidget(self.sel_features_lbl, 0, 2, 1, 1)
         self.offset_distance = QtGui.QDoubleSpinBox(OffsetDistance)
+        self.offset_distance.setMaximum(999999999.0)
         self.offset_distance.setObjectName(_fromUtf8("offset_distance"))
         self.gridLayout.addWidget(self.offset_distance, 2, 2, 1, 2)
         self.selected_line_lbl = QtGui.QLabel(OffsetDistance)
