@@ -579,17 +579,17 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.close_dock(
             self.plugin.feature_details_act
         )
-
-    def hideEvent(self, event):
-        """
-        Listens to the hide event of the dock and properly close the dock
-        using the close_dock method.
-        :param event: The close event
-        :type event: QCloseEvent
-        """
-        self.close_dock(
-            self.plugin.feature_details_act
-        )
+    #
+    # def hideEvent(self, event):
+    #     """
+    #     Listens to the hide event of the dock and properly close the dock
+    #     using the close_dock method.
+    #     :param event: The close event
+    #     :type event: QCloseEvent
+    #     """
+    #     self.close_dock(
+    #         self.plugin.feature_details_act
+    #     )
 
 
 class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
