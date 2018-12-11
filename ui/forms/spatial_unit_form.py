@@ -540,10 +540,9 @@ class STDMFieldWidget(QObject):
         :return: None
         :rtype: NoneType
         """
-        if not model is None:
+        if model is not None and self.editor.is_valid:
             self.feature_models[self.current_feature] = model
-            if self.editor.is_valid:
-                self.editor.accept()
+            self.editor.accept()
 
     def on_feature_deleted(self, feature_id):
         """
@@ -560,6 +559,11 @@ class STDMFieldWidget(QObject):
                 self.feature_models[feature_id]
             del self.feature_models[feature_id]
 
+    def clear_split_parcel_key(self):
+        for k, model in self.feature_models.iteritems():
+            if model.id is None:
+                model.parcel_key = ''
+
     def on_digitizing_saved(self):
         """
         A slot raised when the save button is clicked
@@ -571,6 +575,11 @@ class STDMFieldWidget(QObject):
         """
         if len(self.feature_models) == 0:
             return
+
+        # Very serious work-around: to be removed after shipping the first version 
+        ###################
+        self.clear_split_parcel_key()
+        #####################
 
         spatial_forms = SpatialFormsContainer(
             self.entity, self.layer, self.feature_models, self.plugin
