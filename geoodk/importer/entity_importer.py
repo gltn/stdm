@@ -168,8 +168,6 @@ class EntityImporter():
             pass
         return has_str_defined
 
-
-
     def process_social_tenure(self, ids):
         """
         Save socail tenure entity. It has to be saved separately
@@ -219,7 +217,10 @@ class Save2DB:
         Check if the entity has supporting document before importing
         :return: Bool
         """
-        return self.entity.supports_documents
+        if self.entity.supports_documents:
+            return self.entity.supports_documents
+        else:
+            return None
 
     def entity_supported_document_types(self):
         """
@@ -289,27 +290,28 @@ class Save2DB:
                 self.entity
         )
 
-    def format_document_name_from_attribute(self, key_name):
+    def format_document_name_from_attribute(self, doc):
         """
         Get the type of document from attribute name
         So that supporting document class instance can save it in the right format
         :return:
         """
-        doc_list = self.entity_supported_document_types()
+        formatted_doc_list = self.entity_supported_document_types()
         default = 'General'
-        doc_type = str(key_name).split('_')
-
-        if len(doc_type) > 2:
-            if doc_type[0] in doc_list:
-                return doc_type[0]
-            else:
-                for doc in doc_list:
-                    if doc.startswith(doc_type[0]):
-                        return doc
-        elif len(doc_type)<2 and key_name != default:
-            return key_name
-        else:
+        doc_type = str(doc).split('_',1)
+        if doc_type[0].startswith('supporting') and formatted_doc_list[0] == default:
             return default
+        elif doc_type[0].startswith('supporting') and formatted_doc_list[0] != default:
+            return formatted_doc_list[0]
+        elif not doc_type[0].startswith('supporting'):
+            actual_doc_name = doc_type[0].replace('-', ' ')
+            for doc_name in formatted_doc_list:
+                if actual_doc_name in doc_name or doc_name.startswith(actual_doc_name):
+                    return doc_name
+            else:
+                return formatted_doc_list[0]
+        else:
+            return formatted_doc_list[0]
 
     def save_to_db(self):
         """
@@ -319,10 +321,15 @@ class Save2DB:
         try:
             if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
                 str_tables = current_profile().social_tenure
-                setattr(self.model, str_tables.parties[0].short_name.lower() + '_id',
-                        self.parents_ids.get(str_tables.parties[0].name)[0])
-                setattr(self.model, str_tables.spatial_units[0].short_name.lower() + '_id',
-                        self.parents_ids.get(str_tables.spatial_units[0].name)[0])
+                prefix = current_profile().prefix+'_'
+
+                full_party_ref_column = str_tables.parties[0].name
+                party_ref_column = str_tables.parties[0].name.lower().replace(prefix,'')+ '_id'
+                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
+
+                full_spatial_ref_column = str_tables.spatial_units[0].name
+                spatial_ref_column = str_tables.spatial_units[0].name.lower().replace(prefix,'') + '_id'
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
         except:
             pass
         for k, v in self.attributes.iteritems():
@@ -335,7 +342,7 @@ class Save2DB:
             self.model.documents = self._doc_manager.model_objects()
         self.model.save()
         return self.model.id
-        #self.cleanup()
+        self.cleanup()
 
     def save_parent_to_db(self):
         """
@@ -355,7 +362,17 @@ class Save2DB:
         self.key = self.model.id
         return self.key
 
-    #def model_object_formatter(self):
+    def save_foreign_key_table(self):
+        """
+        Get the table with foreign keys only
+        :return:
+        """
+        for col, type_info in self.column_info().iteritems():
+            col_prop = self.entity.columns[col]
+            var = self.attribute_formatter(type_info, col_prop, None)
+            setattr(self.model, col, var)
+        self.model.save()
+        self.cleanup()
 
     def column_info(self):
         """
@@ -385,22 +402,38 @@ class Save2DB:
         """
         return obj.id
 
-    def attribute_formatter(self, col_type, col_prop, var):
+    def attribute_formatter(self, col_type, col_prop, var=None):
         """
-
+        Format geoodk attributes collected in the field
+        to conform to STDM database contrains
         :return:
         """
-        if col_type == 'LOOKUP':
-            if var == '' or var is None:
+        if col_type == 'BOOL':
+            if len(var) < 1:
                 return None
-            if var == 'Yes' or var =='No':
-                return entity_attr_to_model(col_prop.parent, 'value', var).id
-            if not len(var) > 3 and var != 'Yes' and var != 'No':
-                lk_code = entity_attr_to_id(col_prop.parent, "code", var)
-                if not str(lk_code).isdigit():
+            if len(var)>1:
+                if var == '' or var is None:
                     return None
-                else:
-                    return lk_code
+                if var == 'Yes' or var == True:
+                    return True
+                if var == 'No' or var == False:
+                    return False
+            else:
+                return None
+
+        if col_type == 'LOOKUP':
+            if len(var) < 1 or var is None:
+                return None
+            if len(var) <4:
+                if var == 'Yes' or var == 'No':
+                    return entity_attr_to_model(col_prop.parent, 'value', var).id
+                if var != 'Yes' and var != 'No':
+                    lk_code = entity_attr_to_id(col_prop.parent, "code", var)
+                    if not str(lk_code).isdigit():
+                        return None
+                    else:
+                        return lk_code
+
             if len(var) > 3:
                 if not str(entity_attr_to_id(col_prop.parent, 'code', var)).isdigit():
                     return entity_attr_to_model(col_prop.parent, 'value', var).id
@@ -416,7 +449,10 @@ class Save2DB:
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.parent, "code", var)
             else:
-                return entity_attr_to_id(col_prop.parent, "name", var)
+                if entity_attr_to_id(col_prop.parent, "name", var) is None:
+                    return entity_attr_to_id(col_prop.parent, "code", var)
+                else:
+                    return entity_attr_to_id(col_prop.parent, "name", var)
 
         elif col_type == 'MULTIPLE_SELECT':
             if var == '' or var is None:
@@ -424,40 +460,52 @@ class Save2DB:
             if not len(var) > 3:
                 return entity_attr_to_id(col_prop.association.first_parent, "code", var)
             elif len(var) > 3:
-                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", var)).isdigit():
-                    return entity_attr_to_model(col_prop.association.first_parent,'value', var).id
+                var0 = var.split(',')
+                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", var0)).isdigit():
+                    return entity_attr_to_model(col_prop.association.first_parent,'value', var0).id
                 else:
-                    return entity_attr_to_id(col_prop.association.first_parent, "code", var)
+                    return entity_attr_to_id(col_prop.association.first_parent, "code", var0)
 
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
-            geom_provider = STDMGeometry(var)
-            if isinstance(col_prop, GeometryColumn):
-               defualt_srid = col_prop.srid
-            if defualt_srid != 0:
-                geom_provider.set_user_srid(defualt_srid)
+            if var:
+                geom_provider = STDMGeometry(var)
+                if isinstance(col_prop, GeometryColumn):
+                    defualt_srid = col_prop.srid
+                if defualt_srid != 0:
+                    geom_provider.set_user_srid(defualt_srid)
+                else:
+                    geom_provider.set_user_srid(GEOMPARAM)
+                if col_prop.geometry_type() == 'POINT':
+                    return geom_provider.point_to_Wkt()
+                if col_prop.geometry_type() == 'POLYGON':
+                    return geom_provider.polygon_to_Wkt()
             else:
-                geom_provider.set_user_srid(GEOMPARAM)
-            if col_prop.geometry_type() == 'POINT':
-                return geom_provider.point_to_Wkt()
-            if col_prop.geometry_type() == 'POLYGON':
-                return geom_provider.polygon_to_Wkt()
+                return None
         elif col_type == 'FOREIGN_KEY':
             if self.parents_ids is None or len(self.parents_ids) < 0:
-                return
+                return None
             else:
                 for code, val in self.parents_ids.iteritems():
                     if code is not None:
-                        if val[1] == GROUPCODE and col_prop.parent.name ==code:
-                            return val[0]
-                    else:
                         if col_prop.parent.name == code:
                             return val[0]
-        elif col_type == 'INT' or col_type == 'DOUBLE':
+                    else:
+                        return None
+        elif col_type == 'INT' or col_type == 'DOUBLE' or col_type == 'PERCENT':
             if var == '':
-                return 0
+                return None
             else:
                 return var
+
+        elif col_type == 'DATETIME' or col_type == 'DATE':
+            if var is None:
+                return None
+            if var == '':
+                return None
+            else:
+                return var
+
         else:
             return var
 

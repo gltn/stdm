@@ -427,11 +427,11 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
             column_name = qt_widget.horizontalHeaderItem(column_index).text()
             cell_item = qt_widget.item(row_index, column_index)
             if cell_item:
-                if str(column_name) == checkbox_col:
+                if unicode(column_name) == checkbox_col:
                     checkbox_state = cell_item.checkState()
-                elif str(column_name) == lon_col:
+                elif unicode(column_name) == lon_col:
                     lon_value = cell_item.text().strip()
-                elif str(column_name) == lat_col:
+                elif unicode(column_name) == lat_col:
                     lat_value = cell_item.text().strip()
         lon_value = _valid_number(lon_value)
         lat_value = _valid_number(lat_value)

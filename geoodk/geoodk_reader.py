@@ -279,6 +279,17 @@ class GeoODKReader:
             str_lk_values[val.value] = val.code
         return str_lk_values
 
+    def on_column_show_in_parent(self):
+        """
+        Check whether the foreign key column has flag show in parent.
+        required to enable geoodk for subform creation
+        :return:
+        """
+        cols_obj = self.profile_entity_attribute().values()
+        for col in cols_obj:
+            if col.TYPE_INFO == 'FOREIGN_KEY':
+                relations = col.entity_relation
+                return relations.show_in_parent
 
 
 

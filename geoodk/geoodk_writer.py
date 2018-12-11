@@ -208,7 +208,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.initialize_entity_reader(self.entities[0])
-        self.profile_entity = self.entity_read.profile_name()
+        self.profile_entity = self.entity_read.profile_name().replace(' ','_')
         XFORMDocument.__init__(self, self.profile_entity)
         EntityFormatter.__init__(self, self.profile_entity)
 
@@ -272,51 +272,12 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         doc_model = self.create_node("model")
         doc_model.appendChild(self._create_model_props())
-        self.create_header_intro(doc_model)
-        self.create_form_identifier_field(doc_model)
+        #self.create_header_intro(doc_model)
+        #self.create_form_identifier_field(doc_model)
         self.bind_default_parameters(doc_model)
         self.create_model_bind_attributes(doc_model)
         doc_model.appendChild(self.model_unique_id_generator())
         return doc_model
-
-    def intro_node(self):
-        """
-        Create header introduction label
-        :return:
-        """
-        return self.create_node("intro")
-
-    def parent_child_code_identifier(self):
-        """
-        Create a node that will hold a field for grouping entities
-        User will input this code to enable idetification of related entities
-        :return:
-        """
-        return self.create_node('identity')
-
-    def create_header_intro(self, parent_node):
-        """
-        Create an introduction text available to user indicating which profile is on
-        :return:
-        """
-        intro_node = self.create_node("bind")
-        intro_node.setAttribute("readonly", "true()")
-        intro_node.setAttribute("nodeset", self.set_model_xpath("intro"))
-        intro_node.setAttribute("type", "string")
-        parent_node.appendChild(intro_node)
-        return intro_node
-
-    def create_form_identifier_field(self, parent_node):
-        """
-        Create an introduction text available to user indicating which profile is on
-        :return:
-        """
-        identifier_node = self.create_node("bind")
-        #identifier_node.setAttribute("readonly", "true()")
-        identifier_node.setAttribute("nodeset", self.set_model_xpath("identity"))
-        identifier_node.setAttribute("type", "string")
-        parent_node.appendChild(identifier_node)
-        return identifier_node
 
     def _create_model_props(self):
         """
@@ -336,19 +297,17 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         instance_id = self.create_node(self.profile_entity)
         instance_id.setAttribute("id", self.profile_entity)
-        """ add entity data into the instance node as form fields
+        """ add entity data into the instance node as form fields,
         language translation aspect of the instance child 
         has not been considered
         """
-        intro = self.intro_node()
-        identity = self.parent_child_code_identifier()
-        instance_id.appendChild(intro)
-        instance_id.appendChild(identity)
         if isinstance(self.entities, list):
             for entity in self.entities:
                 self.initialize_entity_reader(entity)
                 entity_values = self.entity_read.read_attributes()
                 field_group = self.create_node(self.entity_read.default_entity())
+                if self.entity_read.on_column_show_in_parent():
+                    field_group.setAttribute('jr:template', '')
                 entity_group = self.entity_supports_documents(field_group, entity_values)
                 instance_id.appendChild(entity_group)
 
@@ -383,7 +342,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ','') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ','-') + '_' + self.supports_doc)
                     field_group.appendChild(document_node)
         else:
             for key_field in entity_values.keys():
@@ -414,10 +373,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ', '') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ', '-') + '_' + self.supports_doc)
                     group_node.appendChild(document_node)
             parent.appendChild(group_node)
-        return parent
 
     def entity_with_supporting_documents(self):
         """
@@ -493,7 +451,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                         continue
                     doc_bind_node = self.create_node("bind")
                     doc_bind_node.setAttribute("nodeset",
-                                               self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                               self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                     'social_tenure'))
                     doc_bind_node.setAttribute("type", 'binary')
                     base_node.appendChild(doc_bind_node)
@@ -521,7 +479,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_bind_node = self.create_node("bind")
                 doc_bind_node.setAttribute("nodeset",
-                                           self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                                           self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                 self.entity_read.default_entity()))
                 doc_bind_node.setAttribute("type", 'binary')
                 parent_node.appendChild(doc_bind_node)
@@ -561,12 +519,12 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def _body_section(self):
         """
-        Method to read and check the body node in the Xform document is created
+        Method to read and populate the body node in the Xform document is created
         :return: Dom element
         """
         body_section_node = self.create_node("h:body")
         #body_section_node.appendChild(self.create_nested_entity_data
-        self.create_form_identifier(body_section_node)
+        #self.create_form_identifier(body_section_node)
         self.create_nested_entity_data(body_section_node)
         if self.supports_str:
             self.social_tenure_label(body_section_node)
@@ -574,7 +532,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def create_form_identifier(self, parent):
         """
-        Create a field for form Identifier for related field
+        Create a field as form Identifier that will help group related instance together field
         This will help in determining which parents entity and child entities
         are related.
         The user will input a unique code to identified relationship
@@ -591,17 +549,21 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
     def create_nested_entity_data(self, parent_node):
         """
-        Format the groups to hold only one entity information
+        Format each entity into group to hold only one entity information
         :return:
         """
         if isinstance(self.entities, list):
             for entity in self.entities:
+                print entity
                 self.initialize_entity_reader(entity)
                 self.entity_read.get_user_selected_entity()
                 entity_values = self.entity_read.read_attributes()
-                group_node = self.body_section_categories(
+                group_node, repeat_node = self.body_section_categories(
                     self.entity_read.default_entity())
-                self._body_section_data(entity_values,group_node)
+                if not repeat_node:
+                    self._body_section_data(entity_values, group_node)
+                else:
+                    self._body_section_data(entity_values, repeat_node)
                 parent_node.appendChild(group_node)
             return parent_node
 
@@ -611,24 +573,54 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param item:
         :return:
         """
+        repeat_node = None
+        ref = 'ref'
         if entity != 'social_tenure':
             label_txt = self.create_text_node(
-                self.profile_entity + ": " + self.entity_read.user_entity_name())
+                self.entity_read.user_entity_name())
         else:
-            label_txt = self.create_text_node(self.profile_entity + ": " + 'social_tenure')
+
+            label_txt = self.create_text_node('social_tenure')
 
         cate_name = self.model_category_group(self.profile_entity,
                                               entity)
+
         group_node = self.create_node("group")
-        group_node.setAttribute("appearance", "field-list")
-        group_node.setAttribute("ref",cate_name)
+
         group_label = self.create_node("label")
+
+        if entity != 'socail_tenure' and not self.entity_read.on_column_show_in_parent():
+            group_node.setAttribute("appearance", "field-list")
+            group_node.setAttribute(ref, cate_name)
+            group_label.appendChild(label_txt)
+            group_node.appendChild(group_label)
+
+        elif entity == 'social_tenure':
+            cate_name = self.model_category_group(self.profile_entity,
+                                                  'social_tenure')
+            group_node.setAttribute("appearance", "field-list")
+            group_node.setAttribute(ref, cate_name)
+            group_labele = self.create_node("label")
+            group_labele.appendChild(self.create_text_node('social_tenure'))
+            group_node.removeChild(group_label)
+            group_node.appendChild(group_labele)
+
+        else:
+            repeat_node = self.create_node('repeat')
+            ref = 'nodeset'
+            repeat_node.setAttribute("appearance", "field-list")
+            repeat_node.setAttribute(ref,cate_name)
+            repeat_label = self.create_node("label")
+            repeat_label.appendChild(label_txt)
+            repeat_node.appendChild(repeat_label)
+            group_label.appendChild(self.create_text_node(
+                self.entity_read.user_entity_name()
+            ))
+            group_node.appendChild(group_label)
+            group_node.appendChild(repeat_node)
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
-
-        group_label.appendChild(label_txt)
-        group_node.appendChild(group_label)
-        return group_node
+        return group_node, repeat_node
 
     def _body_section_data(self,entity_values, parent_node):
         """
@@ -689,7 +681,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                     continue
                 doc_node = self.create_node('upload')
                 doc_node.setAttribute('mediatype', 'image/*')
-                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '') + '_' + self.supports_doc,
+                doc_node.setAttribute('ref', self.set_model_xpath(doc.replace(' ', '-') + '_' + self.supports_doc,
                                                                   entity_name))
                 label_doc_node = self.create_node('label')
                 label_doc_node_text = self.create_text_node(doc + '_' + self.supports_doc)
@@ -704,7 +696,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         parent_path = self.profile_entity + "/" + 'social_tenure'
         entity_values = self.entity_read.social_tenure_attributes()
-        group_node = self.body_section_categories('social_tenure')
+        group_node, rp_node = self.body_section_categories('social_tenure')
         for key in entity_values.keys():
             if self.entity_read.social_tenure_lookup(key):
                 self.lookup_for_social_tenure(key, group_node)
@@ -712,7 +704,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref", self.model_category_group(parent_path, key))
-                label_text_info = 'social_tenure' + ' ' + key.replace("_", " ").title()
+                label_text_info = key.replace("_", " ").title()
                 label_txt = self.create_text_node(label_text_info)
                 # label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
@@ -809,7 +801,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.setAttribute("ref", self.set_model_xpath(key, 'social_tenure'))
         lk_node_label = self.create_node("label")
         lk_node_label_txt = self.create_text_node(
-            'social_tenure' + " " +
             key.replace("_", " ").title().replace("Id", ""))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)

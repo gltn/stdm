@@ -67,8 +67,7 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views, \
-    lookup_id_to_value, entity_id_to_display_col
+from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
@@ -102,7 +101,7 @@ class SpatialUnitManagerDockWidget(
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
-        self.stdm_fields = STDMFieldWidget(self._plugin)
+        self.stdm_fields = STDMFieldWidget(plugin)
         self._populate_layers()
         self._adjust_layer_drop_down_width()
         self.spatial_unit = None
