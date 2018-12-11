@@ -1378,6 +1378,7 @@ class AssociationEntitySerializer(EntitySerializerCollection):
                                           association_entity.name)
         assoc_entity_element.setAttribute(EntitySerializer.SHORT_NAME,
                                           association_entity.short_name)
+
         assoc_entity_element.setAttribute(AssociationEntitySerializer.FIRST_PARENT,
                                           association_entity.first_parent.short_name)
         assoc_entity_element.setAttribute(AssociationEntitySerializer.SECOND_PARENT,

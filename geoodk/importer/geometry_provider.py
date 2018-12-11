@@ -183,6 +183,15 @@ class STDMGeometry(GeometryProvider):
         """
         GeometryProvider.__init__(self, geomlist)
 
+    def has_geom_list(self):
+        """
+        Check if there are enough points for geometry creation
+        """
+        if len(self.point_list)>0:
+            return True
+        else:
+            return False
+
     def user_srid(self):
         """
         Set the srid to the one selected by the user

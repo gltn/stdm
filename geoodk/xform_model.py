@@ -21,11 +21,10 @@ class EntityFormatter:
 
     def set_xform_model_name(self, entity):
         """
-
         :return: 
         """
         self._profile = entity
-        return self._profile
+        return self._profile.replace(' ','_')
 
     def format_foreign_key(self):
         """
@@ -54,7 +53,6 @@ class EntityFormatter:
         :return:
         """
         return self.profile_has_social_tenure().parties
-
 
     def format_photo_blob(self):
         """
@@ -187,7 +185,7 @@ class EntityFormatter:
             'ADMIN_SPATIAL_UNIT': 'string',
             'FOREIGN_KEY': 'string',
             'DATE': 'date',
-            'DATETIME': 'datetime'
+            'DATETIME': 'dateTime'
         }
 
         return xform_type.get(val)

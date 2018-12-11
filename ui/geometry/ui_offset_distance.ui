@@ -22,7 +22,11 @@
     </widget>
    </item>
    <item row="2" column="2" colspan="2">
-    <widget class="QDoubleSpinBox" name="offset_distance"/>
+    <widget class="QDoubleSpinBox" name="offset_distance">
+     <property name="maximum">
+      <double>999999999.000000000000000</double>
+     </property>
+    </widget>
    </item>
    <item row="1" column="2">
     <widget class="QLabel" name="selected_line_lbl">

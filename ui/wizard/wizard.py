@@ -618,9 +618,12 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             sp_unit_entity = p.entity(sp_unit_name)
             self.dg_tenure.add_spatial_unit_entity(sp_unit_entity)
 
-            # Set primary tenure type for the selected spatial unit
-            p_tenure_vl = p.social_tenure.tenure_type_collection
-            self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
+
+            t_type = self._sp_t_mapping.get(sp_unit_name, None)
+            if t_type is None:
+                # Set primary tenure type for the selected spatial unit
+                p_tenure_vl = p.social_tenure.tenure_type_collection
+                self._sp_t_mapping[sp_unit_name] = p_tenure_vl.short_name
 
     def _on_spatial_unit_deselected(self, item):
         # Handle deselection of a spatial unit entity
@@ -691,6 +694,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         Shows dialog for specifying spatial unit tenure types.
         """
         self._notif_bar_str.clear()
+
 
         p = self.current_profile()
         can_edit = not p.str_table_exists
