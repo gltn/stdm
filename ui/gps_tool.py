@@ -262,7 +262,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         feature_type = self.feature_type_cb.currentIndex()
         columns = 4
         headers = ["", "Point Name", "Longitude", "Latitude"]
-        if feature_type:
+        if feature_type >= 0:
             gpx_data_source = gpx_source.open_gpx_file(gpx_file)
             self.gpx_layer, feature_count = gpx_source.get_feature_layer(gpx_data_source, feature_type)
             self.uncheck_counter = feature_count
