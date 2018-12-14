@@ -2834,7 +2834,44 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         )
         self.length_chk.clicked.connect(self.on_length_clicked)
         self.area_chk.clicked.connect(self.on_area_clicked)
+        iface.mainWindow().findChild(
+            QAction, 'mActionToggleEditing').trigger()
+        self.settings.layer.featureAdded.connect(
+            lambda feature_id: self.post_split_update2(
+                feature_id, self.settings.layer
+            )
+        )
 
+        self.general_editing.clicked.connect(self.disable_enable_auto_measurements)
+
+    def disable_enable_auto_measurements(self):
+        if self.general_editing.isChecked():
+            self.settings.layer.selectionChanged.connect(
+                self.on_feature_selected
+            )
+
+        else:
+            self.settings.layer.selectionChanged.disconnect(
+                self.on_feature_selected
+            )
+
+
+    def canvas_released(self, event):
+        if event.button() == Qt.RightButton:
+            self.settings.activate_geometry_tools(False)
+
+
+    def on_feature_selected(self, feature):
+        self.feature_ids[:] = []
+        try:
+            self.on_feature_selection_finished()
+        except Exception:
+            pass
+        self.iface.setActiveLayer(self.settings.layer)
+        if len(self.settings.layer.selectedFeatures()) > 0:
+            self.feature_ids.append(self.settings.layer.selectedFeatures()[0].id())
+            zoom_to_selected(self.settings.layer)
+            
     def on_length_clicked(self):
         self.length_box.setEnabled(self.length_chk.isChecked())
 
@@ -3039,6 +3076,28 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
                 self.notice.insertErrorNotification(message)
                 return False
         return True
+
+    def post_split_update2(self, feature_id, layer):
+
+        if len(self.feature_ids) > 0:
+            if self.feature_ids[0] in self.failed_split_feature:
+                return
+        # new_features = [f.id() for f in self.equal_split_features]
+        if len(self.feature_ids) > 0:
+            self.settings.plugin.spatialLayerMangerDockWidget.stdm_fields.load_stdm_form(
+                self.feature_ids[0],
+                entity=self.settings._entity,
+                spatial_column=self.spatial_column,
+                layer=self.settings.layer,
+                allow_saved_ft=True
+            )
+
+            self.feature_ids.append(feature_id)
+            layer.selectByIds(self.feature_ids)
+
+            # add_area(layer, AREA_POLYGON, all_features=False)
+
+        iface.setActiveLayer(self.settings.layer)
 
     def run(self):
         result = self.validate_run()
