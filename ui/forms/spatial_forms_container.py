@@ -41,6 +41,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         Initializes the STR editor.
         """
         QDialog.__init__(self, iface.mainWindow())
+
         self.setupUi(self)
         self.iface = iface
         self.spatial_parent_number = 0
@@ -287,14 +288,17 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         )
 
     def select_feature(self, selected_item):
-        self.iface.setActiveLayer(self.layer)
-        self.layer.setSelectedFeatures([selected_item.data()])
-        if selected_item.data() in self.form_error.keys():
-            errors = self.form_error[selected_item.data()]
-            for error in errors:
-                self.notice.insertErrorNotification(error)
 
-        zoom_to_selected(self.layer)
+        if self.plugin.geom_tools_cont_act.isChecked():
+            self.iface.setActiveLayer(self.layer)
+
+            self.layer.setSelectedFeatures([selected_item.data()])
+            if selected_item.data() in self.form_error.keys():
+                errors = self.form_error[selected_item.data()]
+                for error in errors:
+                    self.notice.insertErrorNotification(error)
+
+            zoom_to_selected(self.layer)
 
     def add_entity_editor(self, model, feature_id):
         """

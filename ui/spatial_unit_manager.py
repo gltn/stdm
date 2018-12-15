@@ -419,6 +419,7 @@ class SpatialUnitManagerDockWidget(
                 self.stdm_fields.init_form(
                     table, spatial_column, curr_layer
                 )
+
             except Exception as ex:
                 LOGGER.debug(unicode(ex))
 
@@ -653,6 +654,8 @@ class SpatialUnitManagerDockWidget(
 
             entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
             fk_fields = self.join_fk_layer(curr_layer, entity)
+
+
             if entity is not None:
                 self.sort_joined_columns(curr_layer, fk_fields)
                 self.set_field_alias(curr_layer, entity, fk_fields)

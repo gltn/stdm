@@ -430,6 +430,7 @@ class GeometryToolsDock(
         """
         self.blockSignals(True)
         try:
+
             for memory_layer_name in self.memory_layers:
                 
                 mem_layers = QgsMapLayerRegistry.instance().mapLayersByName(
@@ -2863,21 +2864,22 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
 
     def on_feature_selected(self, feature):
         self.feature_ids[:] = []
-
-        try:
-            self.on_feature_selection_finished()
-        except Exception:
-            pass
-        self.iface.setActiveLayer(self.settings.layer)
         if len(self.settings.layer.selectedFeatures()) > 0:
-            self.feature_ids.append(
-                self.settings.layer.selectedFeatures()[0].id()
-            )
-            self.features = feature_id_to_feature(
-                self.settings.layer, self.feature_ids
-            )
-            self.settings.features.extend(self.features)
-            zoom_to_selected(self.settings.layer)
+
+            try:
+                self.on_feature_selection_finished()
+            except Exception:
+                pass
+            self.iface.setActiveLayer(self.settings.layer)
+            if len(self.settings.layer.selectedFeatures()) > 0:
+                self.feature_ids.append(
+                    self.settings.layer.selectedFeatures()[0].id()
+                )
+                self.features = feature_id_to_feature(
+                    self.settings.layer, self.feature_ids
+                )
+                self.settings.features.extend(self.features)
+                zoom_to_selected(self.settings.layer)
 
     def on_length_clicked(self):
         self.length_box.setEnabled(self.length_chk.isChecked())
