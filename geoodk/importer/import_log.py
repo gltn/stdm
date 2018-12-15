@@ -21,6 +21,10 @@ email                : stdm@unhabitat.org
 """
 import ConfigParser
 import os
+import json
+from datetime import datetime
+
+
 from PyQt4.QtCore import QDir
 
 HOME = QDir.home().path()
@@ -137,17 +141,48 @@ class ImportLogger:
             self.config_logger.write(f)
             f.close()
 
-    def onlogger_action(self, log_entry):
+    def log_action(self, action):
         """"
         Ensure the logger information is written to the file
         """
         log_file = self.open_logger()
         with open(log_file, 'a') as f:
             f.write('\n')
-            f.write(log_entry)
+            f.write(action)
             f.close()
 
+    def write_log_data(self, data):
+        """
+        :param: data
+        :type: dictionary
+        """
+        raw_file = LOGGER_HOME + '/log_file.json'
+        with open(raw_file, "w") as write_file:
+            json.dump(data, write_file)
+            write_file.close()
 
+    def read_log_data(self):
+        """
+        rtype: dictionary
+        """
+        data = {}
+        raw_file = LOGGER_HOME + '/log_file.json'
+        if os.path.isfile(raw_file):
+            with open(raw_file, "r") as read_file:
+                data = json.load(read_file)
+                read_file.close()
+        return data
+    
+    def log_data_name(self, full_name):
+        """
+        rtype: str
+        """
+        base = os.path.basename(full_name)
+        short_name = os.path.splitext(base)[0]
+        return short_name
 
-
-
+    def log_date(self):
+        """
+        rtype: str
+        """
+        return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
