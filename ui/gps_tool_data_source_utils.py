@@ -85,7 +85,7 @@ def get_feature_layer(gpx_data_source, feature_type):
     :rtype gpx_layer: Layer object
     :rtype feature_count: Integer
     """
-    if feature_type:
+    if feature_type >= 0:
         if FEATURE_TYPES[feature_type] == 'track' or \
                         FEATURE_TYPES[feature_type] == 'route':
             feature_type = '{}_points'.format(FEATURE_TYPES[feature_type])
