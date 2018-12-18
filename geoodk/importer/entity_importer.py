@@ -342,7 +342,7 @@ class Save2DB:
             self.model.documents = self._doc_manager.model_objects()
         self.model.save()
         return self.model.id
-        self.cleanup()
+        #self.cleanup()
 
     def save_parent_to_db(self):
         """
@@ -436,7 +436,10 @@ class Save2DB:
 
             if len(var) > 3:
                 if not str(entity_attr_to_id(col_prop.parent, 'code', var)).isdigit():
-                    return entity_attr_to_model(col_prop.parent, 'value', var).id
+                    id_value = entity_attr_to_model(col_prop.parent, 'value', var)
+                    if id_value is not None:
+                        return id_value.id
+                    #return entity_attr_to_model(col_prop.parent, 'value', var).id
                 else:
                     lk_code = entity_attr_to_id(col_prop.parent, "code", var)
                     if not str(lk_code).isdigit():

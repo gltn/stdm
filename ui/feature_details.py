@@ -1206,11 +1206,13 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         parties = self.social_tenure.parties
 
         for party in parties:
-            party_name = party.short_name.lower()
+            party_name = party.short_name.lower().replace(' ', '_')
             party_id = '{}_id'.format(party_name)
+
             if not party_id in record:
                 return None, None
-            if record[party_id] != None:
+
+            if record[party_id] is not None:
                 return party, party_id
 
     def current_spatial_unit(self, record):
@@ -1277,6 +1279,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 record_dict = record.__dict__
                 party, party_id = self.current_party(record_dict)
                 party_model = None
+
                 if party is not None:
                     party_model = getattr(record, party.name)
 
@@ -1298,6 +1301,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                             custom_attr_root = self.add_custom_attr_child(
                                 str_root, custom_attr_entity, custom_attr_model
                             )
+                  
                     if not party_query:
                         if party_model is not None:
                             party_root = self.add_party_child(
