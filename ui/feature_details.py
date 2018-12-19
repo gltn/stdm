@@ -191,6 +191,7 @@ class LayerSelectionHandler(object):
         a message box to select a feature layer.
         """
         active_layer = self.iface.activeLayer()
+
         if active_layer is None:
             no_layer_msg = QApplication.translate(
                 'LayerSelectionHandler',
@@ -220,23 +221,12 @@ class LayerSelectionHandler(object):
         else:
             return False
 
-    def clear_feature_selection(self):
-        """
-        Clears selection of layer(s).
-        """
-        map = self.iface.mapCanvas()
-        for layer in map.layers():
-            if layer.type() == layer.VectorLayer:
-                layer.removeSelection()
-        map.refresh()
-
     def activate_select_tool(self):
         """
         Enables the select tool to be used to select features.
         """
         self.iface.actionSelect().trigger()
         layer_select_tool = self.iface.mapCanvas().mapTool()
-        layer_select_tool.deactivated.connect(self.disable_feature_details_btn)
 
         layer_select_tool.activate()
 
@@ -281,12 +271,12 @@ class LayerSelectionHandler(object):
         pass
 
 
-class DetailsDBHandler:
+class DetailsDBHandler(LayerSelectionHandler):
     """
     Handles the database linkage of the spatial entity details.
     """
 
-    def __init__(self, plugin):
+    def __init__(self, iface, plugin):
         """
         Initializes the DetailsDBHandler.
         """
@@ -298,6 +288,7 @@ class DetailsDBHandler:
         self._formatted_record = OrderedDict()
         self.display_columns = None
         self._entity_supporting_doc_tables = {}
+        LayerSelectionHandler.__init__(self, iface, plugin)
 
     def set_entity(self, entity):
         """
@@ -515,11 +506,10 @@ class DetailsDBHandler:
         )
 
 
-class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
+class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
     """
     The logic for the spatial entity details dock widget.
     """
-
     def __init__(self, iface, plugin):
         """
         Initializes the DetailsDockWidget.
@@ -533,11 +523,15 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         self.setupUi(self)
         self.plugin = plugin
         self.iface = iface
+
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
         self.view_document_btn.setDisabled(True)
-        LayerSelectionHandler.__init__(self, iface, plugin)
+        # LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
+        plugin.feature_details_act.toggled.connect(
+            self.handle_dock
+        )
 
     def init_dock(self):
         """
@@ -551,18 +545,41 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
             )
         )
 
-    def close_dock(self, tool):
+    def handle_dock(self, checked):
+        """
+        Closes or opens dock.
+        :param checked: True if the tool for feature detail is checked
+        :type tool: Boolean
+        :return:
+        :rtype:
+        """
+        if checked:
+            self.init_dock()
+        else:
+            self.close_dock()
+
+
+    def clear_feature_selection(self):
+        """
+        Clears selection of layer(s).
+        """
+        map = self.iface.mapCanvas()
+        for layer in map.layers():
+            if layer.type() == layer.VectorLayer:
+                layer.removeSelection()
+        map.refresh()
+
+    def close_dock(self):
         """
         Closes the dock by replacing select tool with pan tool,
         clearing feature selection, and hiding the dock.
-        :param tool: Feature detail tool button
-        :type tool: QAction
+
         """
         global DETAILS_DOCK_ON
         self.iface.actionPan().trigger()
-        tool.setChecked(False)
+        self.plugin.feature_details_act.setChecked(False)
         self.clear_feature_selection()
-        self.clear_sel_highlight()
+        # self.clear_sel_highlight()
         self.hide()
         DETAILS_DOCK_ON = False
 
@@ -576,9 +593,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
         """
         if self.plugin is None:
             return
-        self.close_dock(
-            self.plugin.feature_details_act
-        )
+        self.close_dock()
     #
     # def hideEvent(self, event):
     #     """
@@ -592,13 +607,13 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock, LayerSelectionHandler):
     #     )
 
 
-class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
+class DetailsTreeView(DetailsDBHandler):
     """
     Avails the treeview dock widget. This class must be called
     to add the widget.
     """
 
-    def __init__(self, iface, plugin=None, tree_view=None):
+    def __init__(self, iface, plugin=None, container=None):
         """
         The method initializes the dockwidget.
         :param iface: QGIS user interface class
@@ -606,19 +621,17 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param plugin: The STDM plugin
         :type plugin: class
         """
-        from stdm.ui.entity_browser import _EntityDocumentViewerHandler
-        DetailsDockWidget.__init__(self, iface, plugin)
-
-        DetailsDBHandler.__init__(self, plugin)
+        from .entity_browser import _EntityDocumentViewerHandler
+        DetailsDBHandler.__init__(self, iface, plugin)
 
         self.plugin = plugin
-        if tree_view is None:
-            self.view = QTreeView()
-        else:
-            self.view = tree_view
+
+        self.view = QTreeView(container)
+
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
+        self.container_widget = container
         self.edit_btn_connected = False
         self.layer_table = None
         self.entity = None
@@ -707,10 +720,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         selected_item = self.model.itemFromIndex(current)
         if selected_item is None:
             return
-        if selected_item in self.party_items.keys():
-            self.delete_btn.setEnabled(False)
-        else:
-            self.delete_btn.setEnabled(True)
+        if hasattr(self.container_widget, 'delete_btn'):
+            if selected_item in self.party_items.keys():
+                self.container_widget.delete_btn.setEnabled(False)
+            else:
+                self.container_widget.delete_btn.setEnabled(True)
 
     def set_layer_entity(self):
         """
@@ -758,10 +772,9 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
-        global DETAILS_DOCK_ON
-        if not button_clicked and not DETAILS_DOCK_ON:
+
+        if not button_clicked:
             return
-        DETAILS_DOCK_ON = True
 
         # if self.plugin is None:
         # Registry column widget
@@ -783,22 +796,21 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             # return
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
+
+        QApplication.processEvents()
         # if no active layer, show error message
         # and uncheck the feature tool
+
         if self.layer is None:
             if button_clicked:
                 self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
             return
-        # If the button is unchecked, close dock.
-        if not self.plugin.feature_details_act.isChecked():
-            self.close_dock(self.plugin.feature_details_act)
-            self.feature_details = None
-            return
+
         # if the selected layer is not an STDM layer,
         # show not feature layer.
         if not self.stdm_layer(self.layer):
-            if button_clicked and self.isHidden():
+            if button_clicked:
                 # show popup message if dock is hidden and button clicked
                 self.non_stdm_layer_error()
                 self.plugin.feature_details_act.setChecked(False)
@@ -812,7 +824,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Prepares the dock widget for data loading.
         """
-        self.init_dock()
+        # self.init_dock()
+        # if self.container_widget is not None:
         self.add_tree_view()
 
         # enable the select tool
@@ -842,7 +855,8 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         Adds tree view to the dock widget and sets style.
         """
-        self.tree_scrollArea.setWidget(self.view)
+        if self.container_widget is not None:
+            self.container_widget.tree_scrollArea.setWidget(self.view)
 
     def reset_tree_view(self, features=None):
         """
@@ -871,9 +885,10 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
             )
         if features is None:
             return
-        # if there is at least one selected feature
+        # # if there is at least one selected feature
         if len(features) > 0:
-            self.add_tree_view()
+            if self.container_widget is None:
+                self.add_tree_view()
 
     def disable_buttons(self, bool):
         """
@@ -882,20 +897,22 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param bool: A boolean setting the disabled status. True disables it.
         :type bool: Boolean
         """
-        self.edit_btn.setDisabled(bool)
-        self.delete_btn.setDisabled(bool)
-        self.view_document_btn.setDisabled(bool)
+        if hasattr(self.container_widget, 'edit_btn'):
+            self.container_widget.edit_btn.setDisabled(bool)
+        if hasattr(self.container_widget, 'delete_btn'):
+            self.container_widget.delete_btn.setDisabled(bool)
+        if hasattr(self.container_widget, 'view_document_btn'):
+            self.container_widget.view_document_btn.setDisabled(bool)
 
     def show_tree(self):
         """
         Shows the treeview.
         """
         str_records = []
-        if not DETAILS_DOCK_ON:
-            return
+
         if self._selected_features is None:
             return
-        
+
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
 
@@ -981,6 +998,12 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
 
             self.add_root_children(db_model, root, str_records)
 
+
+        self.layer.selectByIds(
+            self.feature_models.keys()
+        )
+        self.zoom_to_selected(self.layer)
+
     def search_party(self, entity, party_ids):
         """
         Shows the treeview.
@@ -1004,6 +1027,11 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 db_model = self.feature_model(entity, spu_id)
 
             self.add_root_children(db_model, root, str_records, True)
+
+        self.layer.selectByIds(
+            self.feature_models.keys()
+        )
+        self.zoom_to_selected(self.layer)
 
     def add_non_entity_parent(self, layer_icon):
         """
@@ -1150,6 +1178,7 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
                 if len(str_records) > 0:
                     self.add_str_child(parent, str_records, feature_id, party_query)
                 else:
+
                     if self.entity in self.social_tenure.spatial_units:
                         self.add_no_str_steam(parent)
         self.expand_node(parent)
@@ -1520,38 +1549,40 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         """
         map = self.iface.mapCanvas()
         try:
-
             # Get the selected item text using the index
             selected_item = self.model.itemFromIndex(index)
             # Use multi-select only when more than 1 items are selected.
-            if self.layer.selectedFeatures() < 2:
-                return
+            if self.iface.activeLayer() is not None:
+                if self.layer.selectedFeatures() < 2:
+                    return
             self.selected_root = selected_item
             # Split the text to get the key and value.
             selected_item_text = selected_item.text()
 
             selected_value = selected_item.data()
             # If the first word is feature, expand & highlight.
+
             if selected_item_text == format_name(self.entity.short_name):
                 self.view.expand(index)  # expand the item
                 # Clear any existing highlight
                 self.clear_sel_highlight()
                 # Insert highlight
                 # Create expression to target the selected feature
+
                 expression = QgsExpression(
-                    "\"id\"='" + str(selected_value) + "'"
+                    "\"id\"='" + str(selected_value.id()) + "'"
                 )
                 # Get feature iteration based on the expression
                 ft_iteration = self.layer.getFeatures(
                     QgsFeatureRequest(expression)
                 )
 
+
                 # Retrieve geometry and attributes
                 for feature in ft_iteration:
                     # Fetch geometry
                     geom = feature.geometry()
                     self.sel_highlight = QgsHighlight(map, geom, self.layer)
-
                     self.sel_highlight.setFillColor(selection_color())
                     self.sel_highlight.setWidth(4)
                     self.sel_highlight.setColor(QColor(212, 95, 0, 255))
@@ -1569,20 +1600,28 @@ class DetailsTreeView(DetailsDBHandler, DetailsDockWidget):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
-        if self.edit_btn_connected:
-            self.edit_btn.clicked.disconnect(self.edit_selected_steam)
+        if self.container_widget is not None:
+            if hasattr(self.container_widget, 'edit_btn'):
+                if self.edit_btn_connected:
+                    self.container_widget.edit_btn.clicked.disconnect(
+                        self.edit_selected_steam
+                    )
 
-        self.edit_btn.clicked.connect(
-            self.edit_selected_steam
-        )
-        self.delete_btn.clicked.connect(
-            self.delete_selected_item
-        )
-        self.view_document_btn.clicked.connect(
-            lambda: self.view_steam_document(
-                entity
-            )
-        )
+            if hasattr(self.container_widget, 'edit_btn'):
+                self.container_widget.edit_btn.clicked.connect(
+                    self.edit_selected_steam
+                )
+            if hasattr(self.container_widget, 'delete_btn'):
+                self.container_widget.delete_btn.clicked.connect(
+                    self.delete_selected_item
+                )
+
+            if hasattr(self.container_widget, 'view_document_btn'):
+                self.container_widget.view_document_btn.clicked.connect(
+                    lambda: self.view_steam_document(
+                        entity
+                    )
+                )
 
     def steam_data(self, mode, results):
         """
