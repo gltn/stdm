@@ -80,8 +80,7 @@ from stdm.utils.util import (
 
 from stdm.settings import get_entity_browser_record_limit
 
-__all__ = ["EntityBrowser", "EntityBrowserWithEditor",
-           "ContentGroupEntityBrowser"]
+__all__ = ["EntityBrowser", "EntityBrowserWithEditor", "ContentGroupEntityBrowser"]
 
 class _EntityDocumentViewerHandler(object):
     """
