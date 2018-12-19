@@ -837,11 +837,11 @@ class MultipleSelectWidgetFactory(LookupWidgetFactory):
         :return: Selected user values separated by the given separator.
         :rtype: str
         """
-        if value is None:
-            return ''
-        else:
-            if len(value) == 0:
-                return ''
+        if value is None: return ''
+
+        if isinstance(value, int): return str(value)
+
+        if len(value) == 0: return ''
 
         #Get list of selected lookup values
         selection = []
