@@ -19,6 +19,8 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 import uuid
+import sys
+
 from PyQt4.QtCore import (
     Qt,
     pyqtSignal
@@ -38,6 +40,11 @@ from PyQt4.QtGui import (
     QPushButton,
     QMessageBox)
 
+from qgis.utils import (
+    iface,
+    showException
+)
+
 from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
 
 from stdm.data.configuration import entity_model
@@ -56,6 +63,8 @@ from stdm.ui.forms.widgets import (
 
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
+from stdm.ui.forms import entity_dlg_extension
+
 
 class EntityEditorDialog(QDialog, MapperMixin):
     """
@@ -123,7 +132,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.child_models = OrderedDict()
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
-        #Set notification layout bar
+        # Set notification layout bar
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
@@ -145,6 +154,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.ent_model = entity_model(self._entity)
         if not model is None:
             self.ent_model = model
+
         MapperMixin.__init__(self, self.ent_model, entity)
 
         self.collect_model = collect_model
@@ -176,14 +186,24 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self._get_entity_editor_widgets()
 
-
         if isinstance(parent._parent, EntityEditorDialog):
             self.parent_entity = parent.parent_entity
             self.set_parent_values()
             # make the size smaller to differentiate from parent and as it
             # only has few tabs.
             self.adjustSize()
+
         self.attribute_mappers = self._attr_mapper_collection
+
+        # Exception title for editor extension exceptions
+        self._ext_exc_msg = self.tr(
+            'An error has occured while executing Python code in the editor extension:'
+        )
+
+        # Register custom editor extension if specified
+        self._editor_ext = entity_dlg_extension(self)
+        if not self._editor_ext is None:
+            self._editor_ext.post_init()
 
     def _init_gui(self):
         # Setup base elements
@@ -691,10 +711,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         return self.doc_widget.source_document_manager
 
     def _highlight_asterisk(self, text):
-        #Highlight asterisk in red
+        # Highlight asterisk in red
         c = '*'
 
-        #Do not format if there is no asterisk
+        # Do not format if there is no asterisk
         if text.find(c) == -1:
             return text
 
@@ -702,6 +722,29 @@ class EntityEditorDialog(QDialog, MapperMixin):
         text = text.replace(c, asterisk_highlight)
 
         return u'<html><head/><body><p>{0}</p></body></html>'.format(text)
+
+    def _custom_validate(self):
+        """
+        Override of the MapperMixin which enables custom editor extensions to
+        inject additional validation before saving form data.
+        :return: Return True if the validation was successful,
+        otherwise False.
+        :rtype: bool
+        """
+        if not self._editor_ext is None:
+            return self._editor_ext.validate()
+
+        # Return True if there is no custom editor extension specified
+        return True
+
+    def _post_save(self, model):
+        """
+        Include additional post-save logic by custom extensions.
+        :param model: SQLAlchemy model
+        :type model: object
+        """
+        if not self._editor_ext is None:
+            self._editor_ext.post_save(model)
 
     def _get_entity_editor_widgets(self):
         """

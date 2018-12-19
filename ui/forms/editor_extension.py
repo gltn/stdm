@@ -25,8 +25,66 @@ from PyQt4.QtGui import (
     QWidget
 )
 
+from stdm.ui.forms import REG_EDITOR_CLS_EXTENSIONS
+
 
 LOGGER = logging.getLogger('stdm')
+
+
+def data_context(profile, entity):
+    """
+    A decorator function for registering custom extension classes that are
+    subclasses of AbstractEditorExtension class.
+    :param profile: Profile name.
+    :type profile: str
+    :param entity: Entity name.
+    :type entity: str
+    """
+    def register_ext(cls):
+        if issubclass(cls, AbstractEditorExtension):
+            REG_EDITOR_CLS_EXTENSIONS[(profile, entity)] = cls
+        else:
+            LOGGER.debug(
+                'Cannot register editor extension for %s entity '
+                'in %s profile.',
+                profile,
+                entity
+            )
+
+        return cls
+
+    return register_ext
+
+
+def cascading_field_ctx(src_lk, target_lk, src_values, target_values):
+    """
+    Creates a CascadingFieldContext object and adds the corresponding
+    mapping for source and target values respectively.
+    :param src_lk: Name of the source lookup column.
+    :type src_lk: str
+    :param target_lk: Name of the target lookup column whose corresponding
+    widget will filter its values based on the selected value in the source
+    combobox.
+    :type target_lk: str
+    :param src_values: A list of string values representing codes in the
+    source lookup table which will be paired with the corresponding target
+    values.
+    :type src_values: list
+    :param target_values: A list of tuples where each tuple contains the
+    codes of the values in the target lookup table. For correct pairing, the
+    index of each tuple in the list needs to match with that of the list of
+    the source values.
+    :type target_values: list
+    :return: Returns a CascadingFieldContext object whose source values have
+    been mapped to the corresponding target values.
+    :rtype: CascadingFieldContext
+    """
+    cf_ctx = CascadingFieldContext(src_lk, target_lk)
+    idx_clc = zip(src_values, target_values)
+    for i in idx_clc:
+        cf_ctx.add_mapping(i[0], i[1])
+
+    return cf_ctx
 
 
 class CascadingFieldContext(object):
@@ -37,19 +95,29 @@ class CascadingFieldContext(object):
     as specified in the configuration. These codes will be used to specify
     the source-target value mapping.
     """
-    def __init__(self, source_combo, target_combo):
+    class _TargetCodeIdx(object):
         """
-        :param source_combo: Name of the lookup column in an entity whose
+        Container for an item including text, code value and original index
+        in the target combo.
+        """
+        def __init__(self, text, code_value, idx):
+            self.text = text
+            self.cd = code_value
+            self.idx = idx
+
+    def __init__(self, source_lookup_col, target_lookup_col):
+        """
+        :param source_lookup_col: Name of the lookup column in an entity whose
         corresponding lookup values will be used to filter items in the
         target combobox.
-        :type source_combo: str
-        :param target_combo: Name of the lookup column whose corresponding
+        :type source_lookup_col: str
+        :param target_lookup_col: Name of the lookup column whose corresponding
         lookup values will be filtered based on the selected item in the
         source combobox.
-        :type target_combo: str
+        :type target_lookup_col: str
         """
-        self._src_cbo_str = source_combo
-        self._target_cbo_str = target_combo
+        self._src_cbo_str = source_lookup_col
+        self._target_cbo_str = target_lookup_col
         self._id = hash(
             (self._src_cbo_str, self._target_cbo_str)
         )
@@ -58,6 +126,31 @@ class CascadingFieldContext(object):
         self._target_cbo = None
         self._ext_editor = None
         self._is_sig_connected = False
+
+        # Store the index of the code values in the target combobox
+        self._target_cd_idx = {}
+
+        # Container for items that have been temporarily removed
+        self._rem_items = []
+
+    @property
+    def source_attribute(self):
+        """
+        :return: Returns the name of the lookup column in an entity whose
+        corresponding lookup values will be used to filter items in the
+        target combobox.
+        :rtype: str
+        """
+        return self._src_cbo_str
+
+    @property
+    def target_attribute(self):
+        """
+        :return: Name of the lookup column whose corresponding lookup values
+        will be filtered based on the selected item in the source combobox.
+        :rtype: str
+        """
+        return self._target_cbo_str
 
     @property
     def extension_editor(self):
@@ -77,9 +170,46 @@ class CascadingFieldContext(object):
         :param ext_editor: Custom extension editor
         :type ext_editor: AbstractEditorExtension
         """
-        self._ext_editor = ext_editor
-        self._src_cbo = self._ext_editor.widget(self._src_cbo_str)
-        self._target_cbo = self._ext_editor.widget(self._target_cbo_str)
+        if self._ext_editor is None:
+            self._ext_editor = ext_editor
+            self._src_cbo = self._ext_editor.widget(self._src_cbo_str)
+            self._target_cbo = self._ext_editor.widget(self._target_cbo_str)
+
+            # Update cache of code/idx in target combo
+            self._update_target_code_idx()
+        else:
+            LOGGER.debug(
+                'Extension editor has already been set.'
+            )
+
+    def _update_target_code_idx(self):
+        # Update the cache of code values in the target combobox.
+        for i in range(self.target_combobox.count()):
+            cd = self.target_combobox.itemData(i)
+            text = self.target_combobox.itemText(i)
+            if cd:
+                cd_idx_obj = CascadingFieldContext._TargetCodeIdx(
+                    text,
+                    cd,
+                    i
+                )
+                self._target_cd_idx[cd] = cd_idx_obj
+
+    def restore_target_values(self):
+        """
+        Restore those items in the target combobox that had been removed
+        during the filtering process.
+        """
+        for i, cd in enumerate(self._rem_items):
+            tci = self._target_cd_idx[cd]
+            self.target_combobox.insertItem(
+                tci.idx,
+                tci.text,
+                tci.cd
+            )
+
+        # Reset container
+        self._rem_items = []
 
     @property
     def source_combobox(self):
@@ -139,12 +269,94 @@ class CascadingFieldContext(object):
         """
         self._src_target_mapping[src_value] = target_values
 
+    def target_values(self, source_value):
+        """
+        Fetches the collection of target code values mapped to the specified
+        source code value.
+        :param source_value: Source code value.
+        :type source_value: str
+        :return: Returns the collection of target code values mapped to the
+        specified source code value, otherwise None if there is no source
+        code value existing in the collection.
+        :rtype: tuple
+        """
+        return self._src_target_mapping.get(source_value, None)
+
     def connect(self):
         """
         Connect the source combo's currentIndexChanged signal to filter the
         items in the target combobox based on the source-target value mapping.
         """
+        if self.source_combobox is None:
+            LOGGER.debug(
+                'Source combobox for %s attribute is None.',
+                self.source_attribute
+            )
+            return
+
+        if self.target_combobox is None:
+            LOGGER.debug(
+                'Target combobox for %s attribute is None.',
+                self.target_attribute
+            )
+            return
+
+        self.source_combobox.currentIndexChanged.connect(
+            self._on_source_idx_changed
+        )
+
         self._is_sig_connected = True
+
+    def _on_source_idx_changed(self, idx):
+        # Slot raised when the currentIndex in the source combo changes
+        # Restore previously removed values regardless
+        self.restore_target_values()
+
+        if idx < 0:
+            return
+
+        # Get code stored in the combo's item data
+        cd = self.source_combobox.itemData(idx)
+        if not cd:
+            LOGGER.debug(
+                'Code for lookup value %s is missing.',
+                self.source_combobox.itemText(idx)
+            )
+            return
+
+        self.filter_target_values(cd)
+
+    def filter_target_values(self, source_value):
+        """
+        Filter target values based on selected source code value. Target
+        values not related to the source value will not be removed.
+        :param source_value: Source code value.
+        :type source_value: str
+        """
+        if not source_value:
+            LOGGER.debug(
+                'Source code value is empty, cannot filter target values.'
+            )
+            return
+
+        if source_value in self._src_target_mapping:
+            target_items = self._src_target_mapping[source_value]
+
+            # Collection of target codes to be removed
+            rem_cd_items = set(self._target_cd_idx.keys()) - set(target_items)
+
+            # Remove the unreferenced codes in the target combobox
+            for rc in rem_cd_items:
+                r_idx = self.target_combobox.findData(rc)
+                if r_idx != -1:
+                    self.target_combobox.removeItem(r_idx)
+                    # Store code of the item that has been removed
+                    self._rem_items.append(rc)
+        else:
+            LOGGER.debug(
+                'No mapping defined for %s source value.',
+                source_value
+            )
 
     def disconnect(self):
         """
@@ -152,6 +364,13 @@ class CascadingFieldContext(object):
         no filtering will be applied when the currentIndex of the source
         combo changes.
         """
+        self.source_combobox.currentIndexChanged.disconnect(
+            self._on_source_idx_changed
+        )
+
+        # Restore target values
+        self.restore_target_values()
+
         self._is_sig_connected = False
 
     @property
@@ -167,7 +386,7 @@ class CascadingFieldContext(object):
 class CascadingFieldContextManager(object):
     """
     Container for managing one or more cascading field contexts.
-    Used internally by the AbstractEditorExtension to
+    Used internally by the AbstractEditorExtension.
     """
     def __init__(self, ext_editor):
         self._ext_editor = ext_editor
@@ -213,14 +432,14 @@ class CascadingFieldContextManager(object):
 
     def __len__(self):
         """
-        :return: Returns the number of contexts in the collection.
+        :return: Returns the number of contexts in the context manager.
         :rtype: int
         """
         return len(self._cf_ctxts)
 
     def contexts(self):
         """
-        :return: Returns a list of contexts in the collection.
+        :return: Returns a list of contexts in the context manager.
         :rtype: list
         """
         return self._cf_ctxts.values()
@@ -289,6 +508,14 @@ class AbstractEditorExtension(object):
         :type context: CascadingFieldContext
         """
         self._cfc_mgr.add_cascading_field_ctx(context)
+
+    def is_update_mode(self):
+        """
+        :return: Returns True if the parent form is in UPDATE mode,
+        otherwise False if in SAVE mode when creating a new record.
+        :rtype: bool
+        """
+        return self._entity_dlg.is_update_mode()
 
     def insert_error_notification(self, message):
         """
@@ -363,26 +590,30 @@ class AbstractEditorExtension(object):
         Enables custom extension classes to specify additional validation
         logic before form data is saved or updated.
         To be overridden by subclasses.
-        The default implementation returns True
+        The default implementation returns True.
         :return: Return True if the validation is successful, else False.
         :rtype: bool
         """
         return True
 
-    def pre_init(self):
+    def post_init(self):
         """
-        Eanbles custom extension classes to insert custom logic before the
-        editor dialog's initialization in its constructor.
+        Enables custom extension classes to insert custom logic after the
+        editor dialog's initialization is complete in the constructor.
         To be overridden by subclasses.
         The default implementation does nothing.
         """
         pass
 
-    def post_init(self):
+    def post_save(self, model):
         """
-        Eanbles custom extension classes to insert custom logic after the
-        editor dialog's initialization in its constructor.
-        To be overridden by subclasses.
-        The default implementation does nothing.
+        Custom extension classes can incorporate additional logic once form
+        data has been saved based on the information contained in the model
+        object.
+        Default implementation does nothing.
+        :param model: SQALchemy model containing information about the
+        saved record.
+        :type model: object
         """
         pass
+
