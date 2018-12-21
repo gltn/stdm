@@ -13,7 +13,7 @@ from stdm.ui.forms.editor_extension import (
 class PersonEditorExtension(AbstractEditorExtension):
     def post_init(self):
         # Override method which is called immediately after the
-        # parent’s __init__ has been executed
+        # parent __init__ has been executed
         income_widget = self.widget('income')
         # Add dollar sign to show currency
         income_widget.setPrefix('$')
