@@ -236,6 +236,17 @@ class MapperMixin(object):
         '''
         return self._mode
 
+    def is_update_mode(self):
+        """
+        :return: Returns True if the form is in UPDATE mode, otherwise False
+        if in SAVE mode when creating a new record.
+        :rtype: bool
+        """
+        if self._mode == UPDATE:
+            return True
+
+        return False
+
     def attribute_mapper(self, attribute_name):
         """
         Returns attribute mapper object corresponding to the the given
@@ -340,6 +351,14 @@ class MapperMixin(object):
         Executed once a record has been saved or updated. 
         '''
         self.saved_model = dbmodel
+        self._post_save(self.saved_model)
+
+    def _post_save(self, model):
+        """
+        Enables sub-classes to incorporate additional logic after form data
+        has been saved.
+        """
+        pass
 
     def validate_all(self):
         """
@@ -400,6 +419,10 @@ class MapperMixin(object):
                 error = u'{} {}'.format(field, msg)
 
         return error
+
+    def _custom_validate(self):
+        # Sub-classes can implement custom validation logic.
+        return True
     
     def submit(self, collect_model=False, save_and_new=False):
         """
@@ -433,7 +456,7 @@ class MapperMixin(object):
                 self._notifBar.insertWarningNotification(error)
                 errors.append(error)
 
-        if len(errors) > 0:
+        if len(errors) > 0 or not self._custom_validate():
             self.is_valid = False
 
         if not self.is_valid:
