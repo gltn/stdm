@@ -742,7 +742,7 @@ class LookupWidgetFactory(ColumnWidgetRegistry):
 
         self._lookups = {}
 
-        #Query all lookups on initializing so as to reduce db roundtrips
+        # Query all lookups on initializing so as to reduce db roundtrips
         lookup = self._column.value_list
         # lk_cls = entity_model(lookup, entity_only=True)
         # lk_obj = lk_cls()
@@ -780,11 +780,11 @@ class LookupWidgetFactory(ColumnWidgetRegistry):
         cbo = QComboBox(parent)
         cbo.setObjectName(u'{0}_{1}'.format(cls._TYPE_PREFIX, c.name))
 
-        #Create a new instance of the class so that we can get the ids
+        # Create a new instance of the class so that we can get the ids
         cls_obj = cls(c)
         lookups = cls_obj.lookups()
         cbo.addItem('', None)
-        #Populate combobox
+        # Populate combobox
         for id, cd_val in lookups.iteritems():
             cbo.addItem(cd_val[0], id)
 

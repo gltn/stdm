@@ -197,13 +197,17 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         # Exception title for editor extension exceptions
         self._ext_exc_msg = self.tr(
-            'An error has occured while executing Python code in the editor extension:'
+            'An error has occured while executing Python code in the editor '
+            'extension:'
         )
 
         # Register custom editor extension if specified
         self._editor_ext = entity_dlg_extension(self)
         if not self._editor_ext is None:
             self._editor_ext.post_init()
+
+            # Initialize CascadingFieldContext objects
+            self._editor_ext.connect_cf_contexts()
 
     def _init_gui(self):
         # Setup base elements
