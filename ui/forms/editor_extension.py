@@ -94,16 +94,20 @@ class CascadingFieldContext(object):
     The values in the source and target comboboxes must have codes defined
     as specified in the configuration. These codes will be used to specify
     the source-target value mapping.
+    The target combobox is empty when no item has been selected in the
+    source combobox or if there are no matching code values specified for
+    the target items.
     """
     class _TargetCodeIdx(object):
         """
-        Container for an item including text, code value and original index
-        in the target combo.
+        Container for an item including text, code value, original index and
+        database primary key in the target combo.
         """
-        def __init__(self, text, code_value, idx):
+        def __init__(self, text, code_value, idx, db_idx):
             self.text = text
             self.cd = code_value
             self.idx = idx
+            self.db_idx = db_idx
 
     def __init__(self, source_lookup_col, target_lookup_col):
         """
@@ -125,13 +129,13 @@ class CascadingFieldContext(object):
         self._src_cbo = None
         self._target_cbo = None
         self._ext_editor = None
+        self._entity = None
+        self._src_vl = None
+        self._target_vl = None
         self._is_sig_connected = False
 
         # Store the index of the code values in the target combobox
         self._target_cd_idx = {}
-
-        # Container for items that have been temporarily removed
-        self._rem_items = []
 
     @property
     def source_attribute(self):
@@ -174,9 +178,17 @@ class CascadingFieldContext(object):
             self._ext_editor = ext_editor
             self._src_cbo = self._ext_editor.widget(self._src_cbo_str)
             self._target_cbo = self._ext_editor.widget(self._target_cbo_str)
+            self._entity = self._ext_editor.entity_dialog.entity
+            self._src_vl = self._entity.column(self._src_cbo_str).value_list
+            self._target_vl = self._entity.column(
+                self._target_cbo_str
+            ).value_list
 
             # Update cache of code/idx in target combo
             self._update_target_code_idx()
+
+            # Remove all items in the target combobox
+            self._target_cbo.clear()
         else:
             LOGGER.debug(
                 'Extension editor has already been set.'
@@ -185,31 +197,31 @@ class CascadingFieldContext(object):
     def _update_target_code_idx(self):
         # Update the cache of code values in the target combobox.
         for i in range(self.target_combobox.count()):
-            cd = self.target_combobox.itemData(i)
+            db_idx = self.target_combobox.itemData(i)
             text = self.target_combobox.itemText(i)
+            cv = self._target_vl.code_value(text)
+            cd = ''
+            if cv:
+                cd = cv.code
             if cd:
                 cd_idx_obj = CascadingFieldContext._TargetCodeIdx(
                     text,
                     cd,
-                    i
+                    i,
+                    db_idx
                 )
                 self._target_cd_idx[cd] = cd_idx_obj
 
     def restore_target_values(self):
         """
-        Restore those items in the target combobox that had been removed
-        during the filtering process.
+        Restore all items in the target combobox.
         """
-        for i, cd in enumerate(self._rem_items):
-            tci = self._target_cd_idx[cd]
+        for tci in self._target_cd_idx.values():
             self.target_combobox.insertItem(
                 tci.idx,
                 tci.text,
-                tci.cd
+                tci.db_idx
             )
-
-        # Reset container
-        self._rem_items = []
 
     @property
     def source_combobox(self):
@@ -309,27 +321,28 @@ class CascadingFieldContext(object):
 
     def _on_source_idx_changed(self, idx):
         # Slot raised when the currentIndex in the source combo changes
-        # Restore previously removed values regardless
-        self.restore_target_values()
+        # Remove all items in target combobox
+        self._target_cbo.clear()
 
         if idx < 0:
             return
 
-        # Get code stored in the combo's item data
-        cd = self.source_combobox.itemData(idx)
-        if not cd:
+        src_val = self.source_combobox.itemText(idx)
+
+        # Get code stored in the source value list
+        cd = self._src_vl.code_value(src_val)
+        if cd is None:
             LOGGER.debug(
-                'Code for lookup value %s is missing.',
-                self.source_combobox.itemText(idx)
+                'Code for lookup value %s could not be found.',
+                src_val
             )
             return
 
-        self.filter_target_values(cd)
+        self.filter_target_values(cd.code)
 
     def filter_target_values(self, source_value):
         """
-        Filter target values based on selected source code value. Target
-        values not related to the source value will not be removed.
+        Filter target values based on selected source code value.
         :param source_value: Source code value.
         :type source_value: str
         """
@@ -342,16 +355,18 @@ class CascadingFieldContext(object):
         if source_value in self._src_target_mapping:
             target_items = self._src_target_mapping[source_value]
 
-            # Collection of target codes to be removed
-            rem_cd_items = set(self._target_cd_idx.keys()) - set(target_items)
+            # Add an empty item
+            self.target_combobox.addItem('', None)
 
-            # Remove the unreferenced codes in the target combobox
-            for rc in rem_cd_items:
-                r_idx = self.target_combobox.findData(rc)
-                if r_idx != -1:
-                    self.target_combobox.removeItem(r_idx)
-                    # Store code of the item that has been removed
-                    self._rem_items.append(rc)
+            # Populate the target combobox while maintaining the order in
+            # the cache
+            for ti in self._target_cd_idx.values():
+                if ti.cd in target_items:
+                    self.target_combobox.insertItem(
+                        ti.idx,
+                        ti.text,
+                        ti.db_idx
+                    )
         else:
             LOGGER.debug(
                 'No mapping defined for %s source value.',
@@ -473,6 +488,15 @@ class AbstractEditorExtension(object):
         self._notif_bar = self._entity_dlg.notification_bar
         self._cfc_mgr = CascadingFieldContextManager(self)
 
+    @property
+    def entity_dialog(self):
+        """
+        :return: Returns an instance of the EntityEditorDialog associated
+        with the editor extension.
+        :rtype: EntityEditorDialog
+        """
+        return self._entity_dlg
+
     def widget(self, attribute):
         """
         Get the widget corresponding to the given attribute or entity column.
@@ -500,6 +524,18 @@ class AbstractEditorExtension(object):
         :rtype: CascadingFieldContextManager
         """
         return self._cfc_mgr
+
+    def connect_cf_contexts(self):
+        """
+        Connect cascading field contexts.
+        """
+        self._cfc_mgr.connect()
+
+    def disconnect_cf_contexts(self):
+        """
+        Disconnect all cascading field contexts in the collection.
+        """
+        self._cfc_mgr.disconnect()
 
     def add_cascading_field_ctx(self, context):
         """
@@ -616,4 +652,5 @@ class AbstractEditorExtension(object):
         :type model: object
         """
         pass
+
 

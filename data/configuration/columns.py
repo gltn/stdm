@@ -67,6 +67,7 @@ def tr(text=''):
     """
     return QCoreApplication.translate('BaseColumn', text)
 
+
 class BaseColumn(ColumnItem):
     """
     Represents a column which is appended to an Entity. All column types are
@@ -531,6 +532,7 @@ class DoubleColumn(BoundsColumn):
     def display_name(cls):
         return tr('Decimal Number')
 
+
 DoubleColumn.register()
 
 
@@ -611,6 +613,7 @@ class DateTimeColumn(BoundsColumn):
     def display_name(cls):
         return tr('Date with time')
 
+
 DateTimeColumn.register()
 
 
@@ -674,6 +677,7 @@ class GeometryColumn(BaseColumn):
     def display_name(cls):
         return tr('Geometry')
 
+
 GeometryColumn.register()
 
 
@@ -687,6 +691,7 @@ class BooleanColumn(BaseColumn):
     @classmethod
     def display_name(cls):
         return tr('Yes/No')
+
 
 BooleanColumn.register()
 
@@ -846,6 +851,7 @@ class ForeignKeyColumn(IntegerColumn):
 
         # Rename FK reference
         self.entity_relation.child_column = self.name
+
 
 ForeignKeyColumn.register()
 

@@ -100,7 +100,7 @@ class ValueList(Entity):
         :param short_name: New short name of the value list.
         :type short_name: str
         """
-        #Remove the object then re-insert so as to update index
+        # Remove the object then re-insert so as to update index
         self.profile.entities.pop(self.short_name)
 
         check_short_name = self._append_check(short_name)
@@ -224,14 +224,15 @@ class ValueList(Entity):
         :rtype: CodeValue
         """
         cv = None
-
-        if value in self.values.keys():
-            cv = self.values[value]
+        digest = self.value_hash(value)
+        if digest in self.values.keys():
+            cv = self.values[digest]
         else:
             remapped_code_values = self._values_by_updates()
 
-            if value in remapped_code_values:
-                cv = remapped_code_values[value]
+            if digest in remapped_code_values:
+                cv = remapped_code_values[digest]
+
         return cv
 
     def _values_by_updates(self):
@@ -241,7 +242,8 @@ class ValueList(Entity):
         for v, cv in self.values.iteritems():
             uv = cv.updated_value
             if uv:
-                updated_values[cv.updated_value] = cv
+                digest = self.value_hash(uv)
+                updated_values[digest] = cv
 
         return updated_values
 
