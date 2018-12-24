@@ -24,3 +24,6 @@ ui.make.bat
 
 *.chm
 .branch
+
+#sample form extension file
+ui/forms/ext/sample_extensions.py
