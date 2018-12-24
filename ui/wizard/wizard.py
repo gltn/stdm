@@ -2569,6 +2569,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         for v in entity.values:
             cv = entity.code_value(v)
+            print cv
+            if cv is None: continue
             if cv.updated_value == '':
                 txt = cv.value
             else:
