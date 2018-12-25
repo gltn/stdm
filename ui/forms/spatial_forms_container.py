@@ -66,7 +66,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         self.layer.editingStopped.connect(self.discard)
         save_btn = self.buttonBox.button(QDialogButtonBox.Save)
         save_btn.clicked.connect(self.save)
-
+        # self.buttonBox.accepted.connect(self.save)
         QApplication.restoreOverrideCursor()
 
     def discard(self):
@@ -155,7 +155,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
     def save(self):
 
         error_found = False
-
+       
         for i in range(0, self.spatial_parent_number):
 
             widget = self.component_container.widget(i)
@@ -292,7 +292,7 @@ class SpatialFormsContainer(QDialog, Ui_SpatialFormsContainer):
         if self.plugin.geom_tools_cont_act.isChecked():
             self.iface.setActiveLayer(self.layer)
 
-            self.layer.setSelectedFeatures([selected_item.data()])
+            self.layer.selectByIds([selected_item.data()])
             if selected_item.data() in self.form_error.keys():
                 errors = self.form_error[selected_item.data()]
                 for error in errors:
