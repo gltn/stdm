@@ -228,9 +228,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.child_model = OrderedDict()
         #ID of a record to select once records have been added to the table
         self._select_item = None
-        self.current_records = 0
+        self.total_records = 0
+        self.displayed_records = 0
 
-        self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
+        self.record_limit = self.get_records_limit() 
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -386,8 +387,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         try:
             if not self._dbmodel is None:
                 # cProfile.runctx('self._initializeData()', globals(), locals())
+                self.total_records = pg_table_count(self.entity.name)
                 self._initializeData()
-
         except Exception as ex:
             pass
 
@@ -412,32 +413,34 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         """
         self._notifBar.clear()
 
-    def recomputeRecordCount(self, init_data=False):
+    def entity_total_records(self):
+        entity = self._dbmodel()
+        tot_records = entity.queryObject().count()
+        return tot_records
+
+    def update_total_records(self, value):
+        self.total_records =+ value
+        self.set_window_title(self.displayed_records, self.total_records)
+
+    def recomputeRecordCount(self):
         '''
         Get the number of records in the specified table and updates the window title.
         '''
         entity = self._dbmodel()
+        record_count = entity.queryObject().limit(self.record_limit).count()
+        return record_count
 
-        # Get number of records
-        numRecords = entity.queryObject().count()
-        if init_data:
-            if self.current_records < 1:
-                if numRecords > self.record_limit:
-                    self.current_records = self.record_limit
-                else:
-                    self.current_records = numRecords
-
-        rowStr = QApplication.translate('EntityBrowser', 'row') \
-            if numRecords == 1 \
-            else QApplication.translate('EntityBrowser', 'rows')
+    def set_window_title(self, displayed_records=0, total_records=0):
+        row_str = QApplication.translate('EntityBrowser', 'row(s)')
         showing = QApplication.translate('EntityBrowser', 'Showing')
         windowTitle = u"{0} - {1} {2} of {3} {4}".format(
-            self.title(), showing, self.current_records, numRecords, rowStr
+            self.title(), showing, displayed_records, total_records, row_str
         )
-
         self.setWindowTitle(windowTitle)
 
-        return numRecords
+    def reset_browse_window(self):
+        self.set_window_title(0, self.total_records)
+        self._tableModel.removeRows(0, self._tableModel.rowCount())
 
     def _init_entity_columns(self):
         """
@@ -456,7 +459,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         for c in self._entity.columns.values():
 
-
             # Exclude geometry columns
             if isinstance(c, GeometryColumn):
                 continue
@@ -464,18 +466,16 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #Do not include virtual columns in list of missing columns
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 missing_columns.append(c.name)
-
             else:
                 header = c.ui_display()
                 self._headers.append(header)
 
                 col_name = c.name
 
-                '''
-                If it is a virtual column then use column name as the header
-                but fully qualified column name (created by SQLAlchemy
-                relationship) as the entity attribute name.
-                '''
+                
+                #If it is a virtual column then use column name as the header
+                #but fully qualified column name (created by SQLAlchemy
+                #relationship) as the entity attribute name.
 
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
@@ -576,156 +576,145 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 self._doc_viewer.load(docs)
 
-    def _initializeData(self, filtered_records=None):
+    def get_table_model(self, plugin, ent_name):
+        tab_model = None
+        if plugin is not None:
+            if ent_name in plugin.entity_table_model.keys():
+                tab_model = plugin.entity_table_model[ent_name]
+        return tab_model
+
+    def get_entity_records(self, filtered_records):
+        if filtered_records is None:
+            entity_records = fetch_from_table(
+                self._entity.name, limit=self.record_limit
+            )
+        else:
+            entity_records = self.filtered_records
+        return entity_records
+
+    def set_proxy_model(self):
+        self._proxyModel = VerticalHeaderSortFilterProxyModel()
+        self._proxyModel.setDynamicSortFilter(True)
+        self._proxyModel.setSourceModel(self._tableModel)
+        self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
+        #USe first column in the combo for filtering
+        if self.cboFilterColumn.count() > 0:
+            self.set_proxy_model_filter_column(0)
+
+    def set_table_entity(self):
+        self.tbEntity.setModel(self._proxyModel)
+        if self.displayed_records < self.record_limit:
+            self.tbEntity.setSortingEnabled(True)
+            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+        #First (ID) column will always be hidden
+        self.tbEntity.hideColumn(0)
+        self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+        self.tbEntity.resizeColumnsToContents()
+
+    def set_plugin_table_model(self, collection, headers):
+        if self.plugin is not None:
+            self._tableModel = BaseSTDMTableModel(
+                collection, headers, self)
+            self.plugin.entity_table_model[self._entity.name] = \
+                    self._tableModel
+
+    def add_column_filter(self):
+        for header, info in self._searchable_columns.iteritems():
+            column_name, index = info['name'], info['header_index']
+            if column_name != 'id':
+                self.cboFilterColumn.addItem(header, info)
+
+    def connect_table_signals(self):
+        self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
+        self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
+
+    def start_init_data(self, data):
+        self._init_entity_columns()
+        self._tableModel = self.get_table_model(self.plugin, self._entity.name)
+
+        if data is None:
+            self.displayed_records = self.recomputeRecordCount()
+        else:
+            self.displayed_records = data.rowcount 
+
+        self.set_window_title(self.displayed_records, self.total_records)
+
+    def get_entity_records(self, data, ent_name):
+        ent_records = None 
+        if data is None:
+            ent_records = fetch_from_table(ent_name, limit=self.record_limit)
+        else:
+            ent_records = data
+        return ent_records
+
+    def finish_init_data(self):
+        self.add_column_filter()
+        #Use sortfilter proxy model for the view
+        self.set_proxy_model()
+        self.set_table_entity()
+        self.connect_table_signals()
+        #Select record with the given ID if specified
+        #if not self._select_item is None:
+            #self._select_record(self._select_item)
+
+    def make_progress_dlg(self, count):
+        plbl = QApplication.translate(
+            "EntityBrowser", "Fetching Records..."
+        )
+        pdlg = QProgressDialog(plbl, None, 0, count, self)
+        QApplication.processEvents()
+        pdlg.setValue(0)
+        pdlg.show()
+        
+        return pdlg;
+
+    def format_entity_columns(self, entity):
+        fmtd_entity_columns = []
+        for col_name in self._entity_attrs:
+            col_value = getattr(entity, col_name)
+            fmtd_column_value = col_value
+            if col_value is not None:
+                if col_name in self._cell_formatters:
+                    col_formatter = self._cell_formatters[col_name]
+                    fmtd_column_value = col_formatter.format_column_value(col_value)
+            fmtd_entity_columns.append(fmtd_column_value)
+        return fmtd_entity_columns
+
+    def _initializeData(self, data=None):
         '''
         Set table model and load data into it.
         '''
-        if self._dbmodel is None:
-            msg = QApplication.translate(
-                'EntityBrowser',
-                'The data model for the entity could not be loaded, \n'
-                'please contact your database administrator.'
-            )
-            QMessageBox.critical(
-                self,
-                QApplication.translate('EntityBrowser', 'Entity Browser'),
-                msg
-            )
+        if self._dbmodel is None: return
 
-        else:
+        self.start_init_data(data)
 
-            self._init_entity_columns()
+        entity_records = self.get_entity_records(data, self._entity.name)
 
-            # Load entity data. There might be a better way in future in order
-            # to ensure that there is a balance between user data discovery
-            # experience and performance.
+        progress_dlg = self.make_progress_dlg(entity_records.rowcount)
 
-            if filtered_records is not None:
-                self.current_records = filtered_records.rowcount
-
-            numRecords = self.recomputeRecordCount(init_data=True)
-
-            # Load progress dialog
-            progressLabel = QApplication.translate(
-                "EntityBrowser", "Fetching Records..."
-            )
-            progressDialog = QProgressDialog(
-                progressLabel, None, 0, numRecords, self
-            )
-
+    # if self._tableModel is None:
+        entity_records_collection = []
+        for i, entity in enumerate(entity_records):
+            #if i == self.record_limit: break
+            entity_row_info = []
+            progress_dlg.setValue(i)
             QApplication.processEvents()
-            progressDialog.show()
-            progressDialog.setValue(0)
+            # try
+            fmtd_columns = self.format_entity_columns(entity)
+            entity_row_info.extend(fmtd_columns)
+            # catch
+            entity_records_collection.append(entity_row_info)
 
-            #Add records to nested list for enumeration in table model
-            load_data = True
-            if self.plugin is not None:
-                if self._entity.name in self.plugin.entity_table_model.keys():
-                    if filtered_records is None:
-                        self._tableModel = self.plugin.entity_table_model[
-                            self._entity.name
-                        ]
-                        #load_data = False
-                    #else:
-                        #load_data = True
-            if isinstance(self._parent, EntityEditorDialog):
-                load_data = True
+        self.set_plugin_table_model(entity_records_collection, self._headers)
 
-            if load_data:
-                # Only one filter is possible.
-                if len(self.filtered_records) > 0:
-                    entity_records = self.filtered_records
-                else:
-                    entity_records = fetch_from_table(
-                        self._entity.name, limit=self.record_limit
-                    )
+        self.finish_init_data()
 
-            # if self._tableModel is None:
-                entity_records_collection = []
-                for i, er in enumerate(entity_records):
-                    if i == self.record_limit:
-                        break
-                    QApplication.processEvents()
-                    entity_row_info = []
-                    progressDialog.setValue(i)
-                    try:
-                        # for attr, attr_val in er.items():
-                        for attr in self._entity_attrs:
-                            attr_val = getattr(er, attr)
-                            #attr_val = er[attr]
+        progress_dlg.setValue(self.displayed_records)
+        progress_dlg.hide()
 
-                            # Check if there are display formatters and apply if
-                            # one exists for the given attribute.
-                            if attr_val is not None: # No need of formatter for None value
-                                if attr in self._cell_formatters:
-                                    formatter = self._cell_formatters[attr]
-                                    attr_val = formatter.format_column_value(attr_val)
-                            entity_row_info.append(attr_val)
-                    except Exception as ex:
-                        QMessageBox.critical(
-                            self,
-                            QApplication.translate(
-                                'EntityBrowser', 'Loading Records'
-                            ),
-                            unicode(ex.message))
-                        return
-
-                    entity_records_collection.append(entity_row_info)
-
-
-                self._tableModel = BaseSTDMTableModel(
-                    entity_records_collection, self._headers, self
-                )
-
-                if self.plugin is not None:
-                    self.plugin.entity_table_model[self._entity.name] = \
-                            self._tableModel
-
-            # Add filter columns
-            for header, info in self._searchable_columns.iteritems():
-                column_name, index = info['name'], info['header_index']
-                if column_name != 'id':
-                    self.cboFilterColumn.addItem(header, info)
-
-            #Use sortfilter proxy model for the view
-            self._proxyModel = VerticalHeaderSortFilterProxyModel()
-            self._proxyModel.setDynamicSortFilter(True)
-            self._proxyModel.setSourceModel(self._tableModel)
-            self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
-
-            #USe first column in the combo for filtering
-            if self.cboFilterColumn.count() > 0:
-                self.set_proxy_model_filter_column(0)
-
-            self.tbEntity.setModel(self._proxyModel)
-            if numRecords < self.record_limit:
-                self.tbEntity.setSortingEnabled(True)
-                self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
-
-            #First (ID) column will always be hidden
-            self.tbEntity.hideColumn(0)
-
-            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
-
-            self.tbEntity.resizeColumnsToContents()
-
-            #Connect signals
-            self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
-            self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
-
-            #Select record with the given ID if specified
-            if not self._select_item is None:
-                self._select_record(self._select_item)
-
-            if numRecords > 0:
-                # Set maximum value of the progress dialog
-                progressDialog.setValue(numRecords)
-            else:
-                progressDialog.hide()
 
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
-
         return col_info['name'], col_info['header_index']
 
     def set_proxy_model_filter_column(self, index):
@@ -975,7 +964,8 @@ class EntityBrowserWithEditor(EntityBrowser):
             if self.addEntityDlg.is_valid:
                 if self.parent_entity is None:
                     self.addModelToView(model_obj)
-                    self.recomputeRecordCount()
+                    self.update_total_records(1)
+                    #self.recomputeRecordCount()
 
     def on_save_and_new(self, model):
         """
@@ -987,7 +977,8 @@ class EntityBrowserWithEditor(EntityBrowser):
         if model is not None:
             insert_position = self.addModelToView(model)
             self.set_child_model(model, insert_position + 1)
-            self.recomputeRecordCount()
+            #self.recomputeRecordCount(1)
+            self.update_total_records(1)
 
     def _can_add_edit(self):
         """
@@ -1104,6 +1095,8 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             #Delete record
             result = self._delete_record(record_id, row_number)
+            #self.recomputeRecordCount()
+            self.update_total_records(-1)
 
             if not result:
                 title = QApplication.translate(
@@ -1197,7 +1190,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             self._tableModel.removeRows(row_number, 1)
             # Update number of records
-            self.recomputeRecordCount()
+            #self.recomputeRecordCount()
 
             #Clear previous notifications
             self._notifBar.clear()
@@ -1229,7 +1222,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._notifBar.insertInformationNotification(delMsg)
 
             #Update number of records
-            self.recomputeRecordCount()
+            #self.recomputeRecordCount()
 
         return del_result
 

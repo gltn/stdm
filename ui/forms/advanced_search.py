@@ -48,8 +48,15 @@ from stdm.data.configuration.columns import (
 )
 from sqlalchemy.sql.expression import text
 from stdm.data.mapping import MapperMixin
-from stdm.data.pg_utils import table_column_names, fetch_with_filter
-from stdm.utils.util import entity_display_columns, format_name, simple_dialog
+from stdm.data.pg_utils import (
+        table_column_names, 
+        fetch_with_filter,
+        pg_table_count
+        )
+from stdm.utils.util import (
+        entity_display_columns, 
+        format_name, simple_dialog
+        )
 from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
@@ -60,11 +67,14 @@ from stdm.ui.notification import NotificationBar
 
 from editor_dialog import EntityEditorDialog
 
+from stdm.settings import get_entity_browser_record_limit
+
 class AdvancedSearch(EntityEditorDialog):
     def __init__(self, entity, parent):
 
         EntityEditorDialog.__init__(self, entity, parent=parent)
         self.parent = parent
+        self.record_limit = self.get_records_limit() 
 
     def _init_gui(self):
         # Setup base elements
@@ -125,8 +135,8 @@ class AdvancedSearch(EntityEditorDialog):
             self.search, QDialogButtonBox.ActionRole
         )
         self.buttonBox.setStandardButtons(
-            QDialogButtonBox.Cancel
-        )
+            QDialogButtonBox.Close)
+
         self.search.clicked.connect(self.on_search)
         #
         #
@@ -169,45 +179,53 @@ class AdvancedSearch(EntityEditorDialog):
         #
         self.buttonBox.rejected.connect(self.cancel)
 
-    def on_search(self):
+    def get_search_data(self):
+        '''
+        rtype: dict
+        '''
         search_data = {}
         for column in self._entity.columns.values():
+            if column.name == 'id': continue
             if column.name in entity_display_columns(self._entity):
-                if column.name == 'id':
-                    continue
                 handler = self.attribute_mappers[
                     column.name].valueHandler()
                 value = handler.value()
                 if value != handler.default() and bool(value):
                     search_data[column.name] = value
-        # self.search_db(search_data)
-        result = self.search_db_raw(search_data)
-        self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
-        if result is not None:
+
+        return search_data
+
+    def on_search(self):
+        self.parent.reset_browse_window()
+        #self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
+
+        search_data = self.get_search_data()
+        if len(search_data) == 0: return
+        results = self.search_db_raw(search_data)
+
+        if results.rowcount > 0: #is not None:
             found = QApplication.translate('AdvancedSearch', 'records found')
-            new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
-            if result.rowcount > 3000:
+            new_title = '{} - {} {}'.format(self.title, results.rowcount, found)
+
+            if results.rowcount > self.record_limit: # results will always be within the record limit
                 title = QApplication.translate(
                         'AdvancedSearch',
                         'Advanced Search'
                 )
                 message = QApplication.translate(
                     'AdvancedSearch',
-                    'The search result returned {0} records, which is above the '
-                    'search result limit. <br>Would you like to see the first 3000 '
-                    'records?'.format("{:,}".format(result.rowcount ))
+                    'The search results returned {0} records, which is above the '
+                    'search results limit. <br>Would you like to see the first 3000 '
+                    'records?'.format("{:,}".format(results.rowcount ))
                 )
 
                 res, chk_result = simple_dialog(self, title, message)
                 if res:
                     self.setWindowTitle(new_title)
-                    self.parent._initializeData(result)
-                else:
-                    return
-
+                    self.parent._initializeData(results)
             else:
                 self.setWindowTitle(new_title)
-                self.parent._initializeData(result)
+                self.parent._initializeData(results)
 
     def search_db(self, search_data):
         ent_model_obj = self.ent_model()
@@ -225,14 +243,13 @@ class AdvancedSearch(EntityEditorDialog):
         sql = u"SELECT * FROM {} WHERE ".format(self._entity.name)
         # query = ent_model_obj.queryObject()
         param = []
-        if len(search_data) == 0:
-            return None
         for attr, value in search_data.iteritems():
             if isinstance(value, (int, float)):
                 param.append(u'{} = {}'.format(unicode(attr), unicode(value)))
             if isinstance(value, (unicode, str)):
                 param.append(u"{} = '{}'".format(unicode(attr), unicode(value)))
-        final_sql = u'{} {}'.format(sql, ' AND '.join(param))
+
+        final_sql = u'{} {}'.format(sql, ' AND '.join(param)) + ' LIMIT '+str(self.record_limit)
         # sql_text = text(final_sql)
         results = fetch_with_filter(final_sql)
         # now we can run the query
@@ -324,3 +341,11 @@ class AdvancedSearch(EntityEditorDialog):
         Checks the dirty state first before closing.
         '''
         self.reject()
+
+    def get_records_limit(self):
+        records = get_entity_browser_record_limit()
+        if records == 0:
+            records = pg_table_count(self.entity.name)
+        return records
+
+    
