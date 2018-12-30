@@ -385,10 +385,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self._data_initialized:
             return
         try:
-            if not self._dbmodel is None:
-                # cProfile.runctx('self._initializeData()', globals(), locals())
-                self.total_records = pg_table_count(self.entity.name)
-                self._initializeData()
+            if self._dbmodel is not None:
+                self.set_total_records(pg_table_count(self.entity.name))
+                self.set_displayed_records(self.record_limit)
+                self.set_table_model(self.get_table_model(self.plugin, self._entity.name))
+                entity_records = fetch_from_table(self._entity.name, limit=self.record_limit)
+                self.show_entity_records(entity_records)
         except Exception as ex:
             pass
 
@@ -418,8 +420,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         tot_records = entity.queryObject().count()
         return tot_records
 
-    def update_total_records(self, value):
-        self.total_records =+ value
+    def incr_total_records(self):
+        self.total_records =+ 1
+        self.set_window_title(self.displayed_records, self.total_records)
+
+    def decr_total_records(self):
+        self.total_records =- 1
         self.set_window_title(self.displayed_records, self.total_records)
 
     def recomputeRecordCount(self):
@@ -583,14 +589,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 tab_model = plugin.entity_table_model[ent_name]
         return tab_model
 
-    def get_entity_records(self, filtered_records):
-        if filtered_records is None:
-            entity_records = fetch_from_table(
-                self._entity.name, limit=self.record_limit
-            )
-        else:
-            entity_records = self.filtered_records
-        return entity_records
 
     def set_proxy_model(self):
         self._proxyModel = VerticalHeaderSortFilterProxyModel()
@@ -628,26 +626,21 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
         self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
 
-    def start_init_data(self, data):
+    def set_displayed_records(self, value):
+        self.displayed_records = value
+
+    def set_total_records(self, value):
+        self.total_records = value
+
+    def set_table_model(self, model):
+        self._tableModel = model
+
+    def before_show_data(self, data_count):
+        self.set_displayed_records(data_count) 
         self._init_entity_columns()
-        self._tableModel = self.get_table_model(self.plugin, self._entity.name)
-
-        if data is None:
-            self.displayed_records = self.recomputeRecordCount()
-        else:
-            self.displayed_records = data.rowcount 
-
         self.set_window_title(self.displayed_records, self.total_records)
 
-    def get_entity_records(self, data, ent_name):
-        ent_records = None 
-        if data is None:
-            ent_records = fetch_from_table(ent_name, limit=self.record_limit)
-        else:
-            ent_records = data
-        return ent_records
-
-    def finish_init_data(self):
+    def after_show_data(self):
         self.add_column_filter()
         #Use sortfilter proxy model for the view
         self.set_proxy_model()
@@ -680,20 +673,16 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             fmtd_entity_columns.append(fmtd_column_value)
         return fmtd_entity_columns
 
-    def _initializeData(self, data=None):
+    def show_entity_records(self, entity_records):
         '''
         Set table model and load data into it.
         '''
-        if self._dbmodel is None: return
-
-        self.start_init_data(data)
-
-        entity_records = self.get_entity_records(data, self._entity.name)
-
-        progress_dlg = self.make_progress_dlg(entity_records.rowcount)
-
-    # if self._tableModel is None:
+        #if self._dbmodel is None: return
         entity_records_collection = []
+        count = entity_records.rowcount
+        self.before_show_data(count)
+        progress_dlg = self.make_progress_dlg(count)
+
         for i, entity in enumerate(entity_records):
             #if i == self.record_limit: break
             entity_row_info = []
@@ -706,10 +695,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             entity_records_collection.append(entity_row_info)
 
         self.set_plugin_table_model(entity_records_collection, self._headers)
+        self.after_show_data()
 
-        self.finish_init_data()
-
-        progress_dlg.setValue(self.displayed_records)
+        progress_dlg.setValue(count)
         progress_dlg.hide()
 
 
@@ -964,7 +952,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             if self.addEntityDlg.is_valid:
                 if self.parent_entity is None:
                     self.addModelToView(model_obj)
-                    self.update_total_records(1)
+                    self.incr_total_records()
                     #self.recomputeRecordCount()
 
     def on_save_and_new(self, model):
@@ -977,8 +965,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         if model is not None:
             insert_position = self.addModelToView(model)
             self.set_child_model(model, insert_position + 1)
-            #self.recomputeRecordCount(1)
-            self.update_total_records(1)
+            self.incr_total_records()
 
     def _can_add_edit(self):
         """
@@ -1095,8 +1082,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             #Delete record
             result = self._delete_record(record_id, row_number)
-            #self.recomputeRecordCount()
-            self.update_total_records(-1)
+            self.decr_total_records()
 
             if not result:
                 title = QApplication.translate(

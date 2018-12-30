@@ -225,7 +225,7 @@ class AdvancedSearch(EntityEditorDialog):
                     self.parent._initializeData(results)
             else:
                 self.setWindowTitle(new_title)
-                self.parent._initializeData(results)
+                self.parent.show_entity_records(results)
 
     def search_db(self, search_data):
         ent_model_obj = self.ent_model()
