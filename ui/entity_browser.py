@@ -231,7 +231,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.total_records = 0
         self.displayed_records = 0
 
-        self.record_limit = self.get_records_limit() 
+        self.display_record_limit = self.get_records_limit() 
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -387,9 +387,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         try:
             if self._dbmodel is not None:
                 self.set_total_records(pg_table_count(self.entity.name))
-                self.set_displayed_records(self.record_limit)
+                self.set_displayed_records(self.display_record_limit)
                 self.set_table_model(self.get_table_model(self.plugin, self._entity.name))
-                entity_records = fetch_from_table(self._entity.name, limit=self.record_limit)
+                entity_records = fetch_from_table(self._entity.name, limit=self.display_record_limit)
                 self.show_entity_records(entity_records)
         except Exception as ex:
             pass
@@ -433,7 +433,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         Get the number of records in the specified table and updates the window title.
         '''
         entity = self._dbmodel()
-        record_count = entity.queryObject().limit(self.record_limit).count()
+        record_count = entity.queryObject().limit(self.display_record_limit).count()
         return record_count
 
     def set_window_title(self, displayed_records=0, total_records=0):
@@ -601,7 +601,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     def set_table_entity(self):
         self.tbEntity.setModel(self._proxyModel)
-        if self.displayed_records < self.record_limit:
+        if self.displayed_records < self.display_record_limit:
             self.tbEntity.setSortingEnabled(True)
             self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
         #First (ID) column will always be hidden
@@ -675,16 +675,19 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     def show_entity_records(self, entity_records):
         '''
+        :param entity_records: SqlAlchmey ResultProxy
         Set table model and load data into it.
         '''
-        #if self._dbmodel is None: return
+        if entity_records is None: return
+
         entity_records_collection = []
         count = entity_records.rowcount
+
         self.before_show_data(count)
         progress_dlg = self.make_progress_dlg(count)
 
         for i, entity in enumerate(entity_records):
-            #if i == self.record_limit: break
+            #if i == self.display_record_limit: break
             entity_row_info = []
             progress_dlg.setValue(i)
             QApplication.processEvents()

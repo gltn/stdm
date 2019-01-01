@@ -1523,15 +1523,15 @@ class STDMQGISLoader(object):
         self.remove_spatial_unit_mgr()
         if self.check_spatial_tables():
             self.spatialLayerMangerDockWidget = \
-                SpatialUnitManagerDockWidget(
-                    self.iface, self
-                )
+                SpatialUnitManagerDockWidget(self.iface, self)
+
             self.spatialLayerMangerDockWidget.setWindowTitle(
                 QApplication.translate(
                     "STDMQGISLoader",
                     'Spatial Unit Manager'
                 )
             )
+
             self.iface.addDockWidget(
                 Qt.LeftDockWidgetArea,
                 self.spatialLayerMangerDockWidget
