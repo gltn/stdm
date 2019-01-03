@@ -185,8 +185,7 @@ class loginDlg(QDialog, Ui_frmLogin):
                 dbconn = self.dbConn
 
             #Whatever the outcome of the database settings definition process
-            if dbconn is None:
-                return
+            if dbconn is None: return
 
             dbconn.User = self.User
 

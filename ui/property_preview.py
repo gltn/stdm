@@ -257,8 +257,9 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         source = layer.source()
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
-            table = vals['table'].split('.')
-            table_name = table[1].strip('"')
+            #table = vals['table'].split('.')
+            #table_name = table[1].strip('"')
+            table_name = layer.shortName()
             return table_name
         except KeyError:
             return None

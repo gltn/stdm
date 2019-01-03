@@ -338,7 +338,6 @@ class STDMQGISLoader(object):
             prog_dlg.setMinimum(0)
             prog_dlg.setValue(1)
 
-
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
 
@@ -1082,9 +1081,11 @@ class STDMQGISLoader(object):
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda: self.details_tree_view.activate_feature_details(False)
         )
+
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda: self.geom_tools_container.activate_geometry_tools(False)
         )
+
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)

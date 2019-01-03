@@ -622,19 +622,20 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
-    if not table_name:
-        return None
+    if not table_name: return None
 
     conn = stdm.data.app_dbconn
 
-    if conn is None:
-        return None
+    if conn is None: return None
 
     if not geom_column:
         geom_column = None
 
     ds_uri = conn.toQgsDataSourceUri()
-    ds_uri.setDataSource("public", table_name, geom_column, sql, key)
+    if sql == '':
+        ds_uri.setDataSource("public", table_name, geom_column, sql, key)
+    else:
+        ds_uri.setDataSource("",  sql, geom_column, "", "id")
 
     if not layer_name:
         layer_name = table_name
@@ -642,7 +643,9 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
     if proj_wkt is not None:
         iface.mainWindow().blockSignals(True)
 
-    v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres")
+    uri = ds_uri.uri()
+    print "URI: ",uri
+    v_layer = QgsVectorLayer(uri, layer_name, "postgres")
 
     if proj_wkt is not None:
         iface.mainWindow().blockSignals(False)

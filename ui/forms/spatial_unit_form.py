@@ -136,8 +136,9 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                 re.findall('(\S+)="?(.*?)"? ', source)
             )
             try:
-                table = vals['table'].split('.')
-                table_name = table[1].strip('"')
+                #table = vals['table'].split('.')
+                #table_name = table[1].strip('"')
+                table_name = self.layer.shortName()
                 return table_name
             except KeyError:
                 return None

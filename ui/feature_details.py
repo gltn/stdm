@@ -173,9 +173,11 @@ class LayerSelectionHandler(object):
             return
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
-            table = vals['table'].split('.')
+            #table = vals['table'].split('.')
+            #table_name = table[1].strip('"')
 
-            table_name = table[1].strip('"')
+            table_name = layer.shortName()
+
             if table_name in pg_views():
                 return table_name
 

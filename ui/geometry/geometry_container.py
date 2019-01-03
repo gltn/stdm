@@ -179,9 +179,11 @@ class LayerSelectionHandler(object):
 
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
         try:
-            table = vals['table'].split('.')
+            #table = vals['table'].split('.')
+            #table_name = table[1].strip('"')
 
-            table_name = table[1].strip('"')
+            table_name = layer.shortName()
+
             if table_name in pg_views():
                 return table_name
 
@@ -364,11 +366,14 @@ class GeometryToolsDock(
 
             widget = factory.create(self, self.geom_tools_widgets.widget(i))
             self.geom_tools_widgets.addWidget(widget)
+
             self.geom_tools_combo.addItem(factory.NAME, factory.OBJECT_NAME)
+
             # self.featureClicked.connect(widget.on_feature_selected)
             self.widgets.append(widget)
             if i == 0:
                 self._first_widget = widget
+
                 # widget.select_feature_help(0)
     # def init_feature_click_signal(self):
     #     for widget in self.widgets:
@@ -398,14 +403,13 @@ class GeometryToolsDock(
         :param tool: Feature detail tool button
         :type tool: QAction
         """
-        if iface is None:
-            return
+        if iface is None: return
 
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
 
-        if self.plugin is None:
-            return
+
+        if self.plugin is None: return
 
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
@@ -460,14 +464,12 @@ class GeometryToolsDock(
         :return: None
         """
 
-        if iface is None:
-            return
+        if iface is None: return
 
         if iface.activeLayer() is not None:
             self.remove_memory_layers()
 
-        if self.plugin is None:
-            return
+        if self.plugin is None: return
 
         global GEOM_DOCK_ON
         self.iface.actionPan().trigger()
@@ -560,6 +562,7 @@ class GeometryToolsDock(
         #     self.add_widgets()
         #
         #     # self.on_geom_tools_combo_changed(self.geom_tools_combo.currentIndex())
+
         return True
 
     def prepare_for_selection(self, active_layer):
@@ -595,13 +598,15 @@ class GeometryToolsDock(
         :param active_layer: The active layer on the canvas.
         :type active_layer: QgsVectorLayer
         """
-        if active_layer.type() != QgsMapLayer.VectorLayer:
-            return
+        if active_layer.type() != QgsMapLayer.VectorLayer: return
+
         self.layer = active_layer
         # set entity from active layer in the child class
         self.set_layer_entity()
+
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
+
         #
         # spatial_columns = [
         #     c.name
@@ -652,8 +657,8 @@ class GeometryToolsDock(
         self.layer_table = self.get_layer_source(
             self.iface.activeLayer()
         )
-        if self.layer_table is None:
-            return
+
+        if self.layer_table is None: return
 
         if self.layer_table in spatial_tables() and \
                         self.layer_table not in pg_views():
@@ -2276,6 +2281,7 @@ class EqualAreaWidget(QWidget, Ui_EqualArea, GeomWidgetsBase):
         self.parellel_rad.clicked.connect(
             self.on_parallel_checked
         )
+        
         self.main_geom = None
         self.rotation_point = None
         self.rotation_points = []
@@ -2835,8 +2841,10 @@ class  ShowMeasurementsWidget(QWidget, Ui_ShowMeasurements, GeomWidgetsBase):
         )
         self.length_chk.clicked.connect(self.on_length_clicked)
         self.area_chk.clicked.connect(self.on_area_clicked)
+
         iface.mainWindow().findChild(
             QAction, 'mActionToggleEditing').trigger()
+
         self.settings.layer.featureAdded.connect(
             lambda feature_id: self.post_split_update2(
                 feature_id, self.settings.layer

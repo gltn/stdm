@@ -819,7 +819,6 @@ def clear_layer_features(layer):
         layer.dataProvider().deleteFeatures(feat_ids)
         layer.commitChanges()
 
-
 def add_features_to_layer(layer, features):
     provider = layer.dataProvider()
     layer.startEditing()

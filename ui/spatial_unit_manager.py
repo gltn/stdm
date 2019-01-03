@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- PostgisEditorDialog
-                                 A QGIS plugin
- Plugin enables loading editing and saving layers back to PostGIS
-                             -------------------
-        begin                : 2015-04-08
-        git sha              : $Format:%H$
-        copyright            : (C) 2015 by Erick Opiyo
-        email                : e.omwandho@gmail.com
- ***************************************************************************/
+Name             : Spatial Unit Manager
+Description      : Module enables loading, editing and saving layers
+                   into STDM
+Date             : 18/February/2014 
+copyright        : (C) 2015 by UN-Habitat and implementing partners.
+                   See the accompanying file CONTRIBUTORS.txt in the root
+email            : stdm@unhabitat.org
+***************************************************************************/
 
 /***************************************************************************
  *                                                                         *
@@ -58,7 +57,8 @@ from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
     table_column_names,
-    vector_layer
+    vector_layer,
+    pg_table_count
 )
 from stdm.data.pg_utils import (
     pg_views
@@ -67,13 +67,19 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
+from stdm.utils.util import (
+        profile_and_user_views, 
+        lookup_id_to_value, 
+        entity_id_to_display_col
+        )
+
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 LOGGER = logging.getLogger('stdm')
 
+from stdm.settings import get_entity_browser_record_limit
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
@@ -117,6 +123,7 @@ class SpatialUnitManagerDockWidget(
             self.on_add_to_canvas_button_clicked
         )
         self.iface.projectRead.connect(self.on_project_opened)
+
 
     def on_project_opened(self):
         legend_layers =  self.iface.legendInterface().layers()
@@ -454,9 +461,7 @@ class SpatialUnitManagerDockWidget(
             if index >= 0:
                 self.stdm_layers_combo.setCurrentIndex(index)
 
-    def _layer_info_from_table_column(
-            self, table, column
-    ):
+    def _layer_info_from_table_column(self, table, column):
         # Returns the index and item
         # data from the given table and column name
         idx, layer_info = -1, None
@@ -552,16 +557,29 @@ class SpatialUnitManagerDockWidget(
             spatial_layer_item = col.layer_display_name
         return spatial_layer_item
 
+    def get_records_limit(self, entity_name):
+        records = get_entity_browser_record_limit()
+        if records == 0:
+            records = pg_table_count(entity_name)
+        return records
+
+    def make_sql(self, entity_name):
+        limit = self.get_records_limit(entity_name)
+        sql = '(Select * from {} LIMIT {})'.format(entity_name, limit) 
+        return sql
+        
+        #return sql
+
     def on_add_to_canvas_button_clicked(self):
         """
         Add STDM layer to map canvas.
         """
-        if self.stdm_layers_combo.count() == 0:
-            return
+        if self.stdm_layers_combo.count() == 0: return
 
         sp_col_info = self.stdm_layers_combo.itemData(
             self.stdm_layers_combo.currentIndex()
         )
+
         if sp_col_info is None:
             title = QApplication.translate(
                 'SpatialUnitManagerDockWidget',
@@ -574,6 +592,7 @@ class SpatialUnitManagerDockWidget(
             # Message: Spatial column information
             # could not be found
             QMessageBox.warning(self.iface.mainWindow(), title, msg)
+            return
 
         table_name, spatial_column = sp_col_info["table_name"], \
                                      sp_col_info["column_name"]
@@ -581,9 +600,7 @@ class SpatialUnitManagerDockWidget(
         # Check if the layer has already been
         layer_item = sp_col_info.get('item', None)
 
-        layer_name = self.geom_col_layer_name(
-            table_name, layer_item
-        )
+        layer_name = self.geom_col_layer_name(table_name, layer_item)
 
         if layer_name in self._map_registry_layer_names():
             layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
@@ -593,13 +610,16 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
+        sql_stmt = self.make_sql(table_name)
+
         if not layer_item is None:
-            if isinstance(layer_item, str) or isinstance(layer_item, unicode):
-                layer_name = layer_item
-            else:
-                layer_name = layer_item.layer_display()
+            #if isinstance(layer_item, str) or isinstance(layer_item, unicode):
+                #layer_name = layer_item
+            #else:
+                #layer_name = layer_item.layer_display()
 
             entity = self._curr_profile.entity_by_name(table_name)
+
             if entity is not None:
                 geom_col_obj = entity.columns[spatial_column]
 
@@ -609,6 +629,7 @@ class SpatialUnitManagerDockWidget(
 
                 curr_layer = vector_layer(
                     table_name,
+                    sql = sql_stmt,
                     geom_column=spatial_column,
                     layer_name=layer_name,
                     proj_wkt=srid
@@ -617,6 +638,7 @@ class SpatialUnitManagerDockWidget(
 
                 curr_layer = vector_layer(
                     table_name,
+                    sql = sql_stmt,
                     geom_column=spatial_column,
                     layer_name=layer_name,
                     proj_wkt=None
@@ -624,17 +646,18 @@ class SpatialUnitManagerDockWidget(
         # for lookup layer.
         else:
             curr_layer = vector_layer(
-                table_name, geom_column=spatial_column
+                table_name, 
+                sql = sql_stmt,
+                geom_column=spatial_column
             )
 
 
         if curr_layer.isValid():
-            if curr_layer.name() in self._map_registry_layer_names():
-                return
+            curr_layer.setShortName(table_name)
 
-            QgsMapLayerRegistry.instance().addMapLayer(
-                curr_layer
-            )
+            if curr_layer.name() in self._map_registry_layer_names(): return
+
+            QgsMapLayerRegistry.instance().addMapLayer(curr_layer)
             self.zoom_to_layer()
 
             self.onLayerAdded.emit(spatial_column, curr_layer)
@@ -654,7 +677,6 @@ class SpatialUnitManagerDockWidget(
 
             entity = self._curr_profile.entity_by_name(self.curr_lyr_table)
             fk_fields = self.join_fk_layer(curr_layer, entity)
-
 
             if entity is not None:
                 self.sort_joined_columns(curr_layer, fk_fields)
