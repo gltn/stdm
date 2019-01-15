@@ -177,6 +177,10 @@ class STDMQGISLoader(object):
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
         self.geom_tools_signal_connected = False
+
+        self.parcel_filters = {}
+        self.current_parcel_filter = ''
+
         copy_startup()
 
     def prepare_columns(self):
@@ -190,8 +194,7 @@ class STDMQGISLoader(object):
         :param entity: The entity of the columns to be formatted.
         :type entity: Object
         """
-        if not pg_table_exists(entity.name):
-            return
+        if not pg_table_exists(entity.name): return
 
         column_formatter = OrderedDict()
         for col in entity.columns.values():
@@ -394,8 +397,7 @@ class STDMQGISLoader(object):
             )
 
             #Exit if the load failed
-            if not config_load_status:
-                return
+            if not config_load_status: return
             try:
                 self.show_change_log()
                 #Set current profile
@@ -405,14 +407,13 @@ class STDMQGISLoader(object):
                 self._user_logged_in = True
                 if self.current_profile is None:
                     result = self.default_profile()
-                    if not result:
-                        return
+                    if not result: return
 
                 prog_dlg.setMaximum(len(self.current_profile.entities))
 
-                for i, entity in enumerate(self.current_profile.entities.values()):
-                    prog_dlg.setValue(i)
-                    self.format_columns(entity)
+                #for i, entity in enumerate(self.current_profile.entities.values()):
+                    #prog_dlg.setValue(i)
+                    #self.format_columns(entity)
 
                 #thread = threading.Thread(target=self.prepare_columns)
                 #thread.start()
@@ -1751,8 +1752,8 @@ class STDMQGISLoader(object):
             )
             frmAdminUnitSelector.setManageMode(True)
             frmAdminUnitSelector.exec_()
-        else:
-            return
+        #else:
+            #return
 
 
     def onDocumentDesigner(self):
@@ -1894,7 +1895,6 @@ class STDMQGISLoader(object):
             if database_status:
                 self.newSTR()
 
-
         else:
             table_name = self._moduleItems[dispName]
             if self.current_profile is None:
@@ -1913,11 +1913,13 @@ class STDMQGISLoader(object):
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
+
                     self.entity_browser = EntityBrowserWithEditor(
                         sel_entity,
                         self.iface.mainWindow(),
                         plugin=self
                     )
+
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()
                     else:

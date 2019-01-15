@@ -80,6 +80,8 @@ from stdm.utils.util import (
 
 from stdm.settings import get_entity_browser_record_limit
 
+from stdm.ui.vdc_selector import VdcSelector
+
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor",
            "ContentGroupEntityBrowser"]
 
@@ -374,6 +376,20 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self._cell_formatters[attributeName] = formatterFunc
 
+    def make_parcel_filter(self):
+        """
+        Open AdminSpatialUnit selection dialog
+        :rtype: str
+        """
+        parcel_filter = ''
+
+        selector = VdcSelector(self)
+        result = selector.exec_()
+        if result == 1:
+            parcel_filter = selector.parcel_filter()
+        return parcel_filter
+
+
     def showEvent(self,showEvent):
         '''
         Override event for loading the database records once the dialog is visible.
@@ -382,14 +398,19 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.setWindowTitle(unicode(self.title()))
 
-        if self._data_initialized:
-            return
+        if self._data_initialized: return
+
+        if iface.activeLayer() is not None:
+            self.plugin.current_parcel_filter =\
+                    self.plugin.parcel_filters.get(iface.activeLayer().id(), '')
+
         try:
             if self._dbmodel is not None:
                 self.set_total_records(pg_table_count(self.entity.name))
                 self.set_displayed_records(self.display_record_limit)
                 self.set_table_model(self.get_table_model(self.plugin, self._entity.name))
-                entity_records = fetch_from_table(self._entity.name, limit=self.display_record_limit)
+                entity_records = fetch_from_table(self._entity.name,
+                        limit=self.display_record_limit, filter_str=self.plugin.current_parcel_filter)
                 self.show_entity_records(entity_records)
         except Exception as ex:
             pass
@@ -523,8 +544,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     def _select_record(self, id):
         #Selects record with the given ID.
-        if id is None:
-            return
+        if id is None: return
 
         m = self.tbEntity.model()
         s = self.tbEntity.selectionModel()
@@ -1271,11 +1291,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: None
         :rtype: NoneType
         """
-        if len(record_ids) < 1:
-            return
+        if len(record_ids) < 1: return
 
         for geom in self.geom_cols:
-
             geom_wkb = entity_id_to_attr(
                 self._entity,
                 geom.name,
@@ -1283,16 +1301,15 @@ class EntityBrowserWithEditor(EntityBrowser):
             )
 
             if geom_wkb is not None:
-
                 sel_lyr_name = self.sp_unit_manager. \
                     geom_col_layer_name(
                     self._entity.name, geom
                 )
 
                 self.add_spatial_unit_layer(sel_lyr_name)
-                layers = QgsMapLayerRegistry.instance().mapLayersByName(
-                    sel_lyr_name
-                )
+
+                layers = QgsMapLayerRegistry.instance().mapLayersByName(sel_lyr_name)
+
                 if len(layers) > 0:
                     layers[0].removeSelection()
 
@@ -1330,8 +1347,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                         self._entity.name,
                         self.geom_cols[0]
                 )
-                self.sp_unit_manager.\
-                    add_layer_by_name(layer_name_item)
+
+                self.sp_unit_manager.add_layer_by_name(layer_name_item)
 
     def closeEvent(self, event):
         """

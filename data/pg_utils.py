@@ -235,7 +235,7 @@ def pg_table_count(table_name):
     :type table_name: str
     :rtype: int
     """
-    sql_str = "Select COUNT(*) cnt from {0}".format(table_name)
+    sql_str = "Select COUNT(*) cnt from {}".format(table_name)
     sql = text(sql_str)
 
     results = _execute(sql)
@@ -243,6 +243,22 @@ def pg_table_count(table_name):
         cnt = result['cnt']
 
     return cnt
+
+def get_admin_unit_details(parent_id, code):
+    """
+    :param p_id: int
+    :param code: str
+    """
+    sql_str = "Select id From admin_spatial_unit_set\
+                where parent_id = {} and code ='{}' ".format(parent_id, code)
+    sql = text(sql_str)
+
+    results = _execute(sql)
+    id = -1
+    for result in results:
+        id = result['id']
+    return id
+
 
 def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     #Process the report builder filter
@@ -284,7 +300,7 @@ def fetch_with_filter(sql_str):
     return _execute(t)
 
 
-def fetch_from_table(table_name, limit):
+def fetch_from_table(table_name, limit, filter_str):
     """
     Fetches data from a table with a limit.
     :param table_name: The table name.
@@ -294,8 +310,11 @@ def fetch_from_table(table_name, limit):
     :return:
     :rtype:
     """
-    sql = u"SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
-        unicode(table_name), unicode(limit)
+    if filter_str == '':
+        filter_str = '1=0'
+
+    sql = u"SELECT * FROM {0} WHERE {1} ORDER BY id DESC LIMIT {2} ".format(
+        unicode(table_name), unicode(filter_str), unicode(limit)
     )
 
     t = text(sql)
@@ -618,7 +637,7 @@ def safely_delete_tables(tables):
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
 
-def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', proj_wkt=None):
+def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', proj_wkt=None, filter_str=''):
     """
     Returns a QgsVectorLayer based on the specified table name.
     """
@@ -633,7 +652,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
 
     ds_uri = conn.toQgsDataSourceUri()
     if sql == '':
-        ds_uri.setDataSource("public", table_name, geom_column, sql, key)
+        ds_uri.setDataSource("public", table_name, geom_column, filter_str, key)
     else:
         ds_uri.setDataSource("",  sql, geom_column, "", "id")
 
@@ -644,7 +663,6 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
         iface.mainWindow().blockSignals(True)
 
     uri = ds_uri.uri()
-    print "URI: ",uri
     v_layer = QgsVectorLayer(uri, layer_name, "postgres")
 
     if proj_wkt is not None:

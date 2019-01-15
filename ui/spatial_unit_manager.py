@@ -58,15 +58,15 @@ from stdm.data.pg_utils import (
     spatial_tables,
     table_column_names,
     vector_layer,
-    pg_table_count
+    pg_table_count,
+    get_admin_unit_details
 )
 from stdm.data.pg_utils import (
     pg_views
 )
 
-from stdm.ui.forms.spatial_unit_form import (
-    STDMFieldWidget
-)
+from stdm.ui.forms.spatial_unit_form import STDMFieldWidget
+
 from stdm.utils.util import (
         profile_and_user_views, 
         lookup_id_to_value, 
@@ -81,19 +81,20 @@ LOGGER = logging.getLogger('stdm')
 
 from stdm.settings import get_entity_browser_record_limit
 
+from stdm.ui.vdc_selector import VdcSelector
+
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
 ):
     onLayerAdded = pyqtSignal(str, object)
 
     def __init__(self, iface, plugin=None):
-        """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
         self.setupUi(self)
 
         self.iface = iface
-        self._plugin = plugin
+        self.plugin = plugin
         self.gps_tool_dialog = None
         # properties of last added layer
         self.curr_lyr_table = None
@@ -112,6 +113,8 @@ class SpatialUnitManagerDockWidget(
         self._adjust_layer_drop_down_width()
         self.spatial_unit = None
 
+        self.show_advance_search = True
+
         self.iface.currentLayerChanged.connect(
             self.control_digitize_toolbar
         )
@@ -119,9 +122,16 @@ class SpatialUnitManagerDockWidget(
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
+        
+        QgsMapLayerRegistry.instance().layerRemoved.connect(self.onRemoveLayer)
+
         self.add_to_canvas_button.clicked.connect(
-            self.on_add_to_canvas_button_clicked
+            self.on_addto_canvas_button_clicked
         )
+        self.add_to_canvas_button.released.connect(
+                self.set_show_advance_search
+                )
+
         self.iface.projectRead.connect(self.on_project_opened)
 
 
@@ -419,6 +429,8 @@ class SpatialUnitManagerDockWidget(
         :return: None
         :rtype: NoneType
         """
+        self.plugin.parcel_filters[curr_layer.id()] = self.plugin.current_parcel_filter
+
         table, column = self._layer_table_column(curr_layer)
 
         if table not in pg_views() and not curr_layer is None:
@@ -526,7 +538,7 @@ class SpatialUnitManagerDockWidget(
         if index >= 0:
             self.stdm_layers_combo.setCurrentIndex(index)
             # add spatial unit layer.
-            self.on_add_to_canvas_button_clicked()
+            self.on_addto_canvas_button_clicked()
 
     def geom_col_layer_name(self, table, col):
         """
@@ -567,10 +579,59 @@ class SpatialUnitManagerDockWidget(
         limit = self.get_records_limit(entity_name)
         sql = '(Select * from {} LIMIT {})'.format(entity_name, limit) 
         return sql
-        
-        #return sql
 
-    def on_add_to_canvas_button_clicked(self):
+    def reset_browse_window(self):
+        pass
+
+    def show_entity_records(self, records):
+        pass
+
+    def format_search_params(self, search_filter):
+        params = self.make_search_params(search_filter)
+        pstr = str('{}'.join(params))
+        return pstr
+
+    def make_search_sql(self, search_filter):
+        params = self.make_search_params(search_filter)
+        sql = u'{}'.format(' AND '.join(params))
+        return sql
+
+
+    def make_search_params(self, search_filter):
+        params = []
+        for attr, value in search_filter.iteritems():
+            if isinstance(value, (int, float)):
+                params.append(u'{} = {}'.format(unicode(attr), unicode(value)))
+            if isinstance(value, (unicode, str)):
+                params.append(u"{} = '{}'".format(unicode(attr), unicode(value)))
+        return params
+
+    def set_show_advance_search(self):
+        self.show_advance_search = True
+
+    def onRemoveLayer(self, layer_id):
+        self.plugin.current_parcel_filter = ''
+        if layer_id in self.plugin.parcel_filters:
+            self.plugin.parcel_filters.pop(layer_id)
+
+    def onLayerNameChanged(self):
+        self.plugin.current_parcel_filter = ''
+        
+    def make_parcel_filter(self):
+        """
+        Open AdminSpatialUnit selection dialog
+        :rtype: str
+        """
+        parcel_filter = ''
+
+        selector = VdcSelector(self)
+        result = selector.exec_()
+        if result == 1:
+            parcel_filter = selector.parcel_filter()
+        return parcel_filter
+
+
+    def on_addto_canvas_button_clicked(self):
         """
         Add STDM layer to map canvas.
         """
@@ -610,9 +671,9 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
-        sql_stmt = self.make_sql(table_name)
+        sql_stmt = '' #self.make_sql(table_name)
 
-        if not layer_item is None:
+        if layer_item is not None:
             #if isinstance(layer_item, str) or isinstance(layer_item, unicode):
                 #layer_name = layer_item
             #else:
@@ -623,6 +684,12 @@ class SpatialUnitManagerDockWidget(
             if entity is not None:
                 geom_col_obj = entity.columns[spatial_column]
 
+                #parcel_filter = ''
+                #fmtd_filter='vdc={} and ward_number={}'.format(2, 20)
+                if self.plugin.current_parcel_filter == '':
+                    self.plugin.current_parcel_filter = self.make_parcel_filter()
+                    if self.plugin.current_parcel_filter == '': return
+
                 srid = None
                 if geom_col_obj.srid >= 100000:
                     srid = geom_col_obj.srid
@@ -632,7 +699,8 @@ class SpatialUnitManagerDockWidget(
                     sql = sql_stmt,
                     geom_column=spatial_column,
                     layer_name=layer_name,
-                    proj_wkt=srid
+                    proj_wkt=srid,
+                    filter_str=self.plugin.current_parcel_filter
                 )
             else:
 
@@ -641,7 +709,8 @@ class SpatialUnitManagerDockWidget(
                     sql = sql_stmt,
                     geom_column=spatial_column,
                     layer_name=layer_name,
-                    proj_wkt=None
+                    proj_wkt=None,
+                    filter_str=self.plugin.current_parcel_filter
                 )
         # for lookup layer.
         else:
@@ -653,7 +722,8 @@ class SpatialUnitManagerDockWidget(
 
 
         if curr_layer.isValid():
-            curr_layer.setShortName(table_name)
+
+            curr_layer.layerNameChanged.connect(self.onLayerNameChanged)
 
             if curr_layer.name() in self._map_registry_layer_names(): return
 
@@ -816,8 +886,8 @@ class SpatialUnitManagerDockWidget(
         # Include layers for toggling whose entity
         # has more than one geometry
 
-        if len(layer_lists) < 1:
-            return
+        if len(layer_lists) < 1: return
+
         # if the layer_list is the
         # parent of selected layer
         for layer_name in layer_lists[0]:
@@ -1072,4 +1142,4 @@ class SpatialUnitManagerDockWidget(
         :type QCloseEvent
         :return: None
         """
-        self._plugin.spatialLayerManager.setChecked(False)
+        self.plugin.spatialLayerManager.setChecked(False)

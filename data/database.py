@@ -347,8 +347,8 @@ class Role(Model,Base):
     name = Column(String(100), unique = True)
     description = Column(String)
 
-#Table for mapping the many-to-many association of content item to system roles  
-content_roles_table = Table("content_roles", Base.metadata,
+    #Table for mapping the many-to-many association of content item to system roles  
+    content_roles_table = Table("content_roles", Base.metadata,
     Column('content_base_id',Integer, ForeignKey('content_base.id'), primary_key = True),
     Column('role_id',Integer, ForeignKey('role.id'), primary_key = True)
 )

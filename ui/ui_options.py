@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Thu Aug 09 08:43:38 2018
+# Created: Wed Jan 09 19:06:49 2019
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 600)
+        DlgOptions.resize(626, 583)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,7 +43,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 545))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 528))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
@@ -115,6 +115,12 @@ class Ui_DlgOptions(object):
         self.edtEntityRecords.setMinimumSize(QtCore.QSize(0, 30))
         self.edtEntityRecords.setObjectName(_fromUtf8("edtEntityRecords"))
         self.gridLayout_6.addWidget(self.edtEntityRecords, 1, 1, 1, 1)
+        self.vdclabel = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.vdclabel.setObjectName(_fromUtf8("vdclabel"))
+        self.gridLayout_6.addWidget(self.vdclabel, 2, 0, 1, 1)
+        self.edtVdc = QtGui.QLineEdit(self.scrollAreaWidgetContents)
+        self.edtVdc.setObjectName(_fromUtf8("edtVdc"))
+        self.gridLayout_6.addWidget(self.edtVdc, 2, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_6, 7, 0, 1, 5)
         self.groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -226,6 +232,7 @@ class Ui_DlgOptions(object):
         self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))
         self.btn_supporting_docs.setText(_translate("DlgOptions", "...", None))
         self.label_10.setText(_translate("DlgOptions", "Entity browser records limit", None))
+        self.vdclabel.setText(_translate("DlgOptions", "VDC Codes", None))
         self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
         self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
         self.label_3.setText(_translate("DlgOptions", "Port", None))
@@ -237,4 +244,3 @@ class Ui_DlgOptions(object):
         self.btn_test_db_connection.setToolTip(_translate("DlgOptions", "Test database connection", None))
         self.btn_test_db_connection.setText(_translate("DlgOptions", "Test connection...", None))
         self.label.setText(_translate("DlgOptions", "Set current profile", None))
-

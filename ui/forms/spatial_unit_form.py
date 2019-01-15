@@ -26,7 +26,12 @@ import logging
 from decimal import Decimal
 from collections import OrderedDict
 
-from PyQt4.QtCore import QCoreApplication, QObject, pyqtSignal
+from PyQt4.QtCore import (
+        QCoreApplication, 
+        QObject, 
+        pyqtSignal
+        )
+
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -39,6 +44,7 @@ from qgis.core import (
     QgsPoint,
     QgsVectorLayer,
     QgsField, edit)
+
 from PyQt4.QtGui import (
     QApplication,
     QLabel,
@@ -60,21 +66,25 @@ from qgis.utils import (
 )
 from sqlalchemy import func
 
-from sqlalchemy.sql import (
-    select
-)
-from stdm.data.database import (
-    STDMDb
-)
+from sqlalchemy.sql import select
+
+from stdm.data.database import STDMDb
+
 from stdm.data.configuration import entity_model
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
-from stdm.geometry.geometry_utils import feature_id_to_feature, get_wkt
-from stdm.settings import (
-    current_profile
-)
+
 from stdm.geometry.geometry_utils import (
-    zoom_to_selected, active_spatial_column, get_wkt
+        feature_id_to_feature, 
+        get_wkt
+        )
+
+from stdm.settings import current_profile
+
+from stdm.geometry.geometry_utils import (
+    zoom_to_selected, 
+    active_spatial_column, 
+    get_wkt
 )
 
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
@@ -136,9 +146,8 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                 re.findall('(\S+)="?(.*?)"? ', source)
             )
             try:
-                #table = vals['table'].split('.')
-                #table_name = table[1].strip('"')
-                table_name = self.layer.shortName()
+                table = vals['table'].split('.')
+                table_name = table[1].strip('"')
                 return table_name
             except KeyError:
                 return None

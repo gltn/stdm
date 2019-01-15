@@ -3,7 +3,8 @@ from PyQt4.QtGui import QDesktopServices
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
     RegistryConfig,
-    ENTITY_BROWSER_RECORD_LIMIT
+    ENTITY_BROWSER_RECORD_LIMIT,
+    VDC_CODES
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -64,4 +65,19 @@ def save_entity_browser_record_limit(limit):
     """
     reg_config = RegistryConfig()
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT:limit})
+
+def get_vdc_codes():
+    reg_config = RegistryConfig()
+    rec_info = reg_config.read([VDC_CODES])
+    vdc_codes = rec_info.get(VDC_CODES, '')
+    return vdc_codes
+
+def save_vdc_codes(vdc_codes):
+    """
+    vdc_codes comma separated string
+    type vdc_codes: str
+    """
+    reg_config = RegistryConfig()
+    reg_config.write({VDC_CODES:vdc_codes})
+
 

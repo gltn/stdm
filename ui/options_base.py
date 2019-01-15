@@ -41,7 +41,8 @@ from stdm.settings import (
     save_configuration,
     save_current_profile,
     get_entity_browser_record_limit,
-    save_entity_browser_record_limit
+    save_entity_browser_record_limit,
+    get_vdc_codes
 )
 
 from stdm.settings.registryconfig import (
@@ -153,6 +154,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
+
+        self.edtVdc.setText(get_vdc_codes())
+
 
         # Debug logging
         lvl = debug_logging()

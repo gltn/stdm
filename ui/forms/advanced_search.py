@@ -138,6 +138,7 @@ class AdvancedSearch(EntityEditorDialog):
             QDialogButtonBox.Close)
 
         self.search.clicked.connect(self.on_search)
+
         #
         #
         # # edit model, collect model
@@ -179,7 +180,7 @@ class AdvancedSearch(EntityEditorDialog):
         #
         self.buttonBox.rejected.connect(self.cancel)
 
-    def get_search_data(self):
+    def get_search_filter(self):
         '''
         rtype: dict
         '''
@@ -195,13 +196,32 @@ class AdvancedSearch(EntityEditorDialog):
 
         return search_data
 
+    
+    def make_search_params(self, search_filter):
+        params = []
+        for attr, value in search_filter.iteritems():
+            if isinstance(value, (int, float)):
+                params.append(u'{} = {}'.format(unicode(attr), unicode(value)))
+            if isinstance(value, (unicode, str)):
+                params.append(u"{} = '{}'".format(unicode(attr), unicode(value)))
+        return params
+
+    def make_search_sql(self, search_filter):
+        params = self.make_search_params(search_filter)
+        sql = u'{}'.format(' AND '.join(params))
+        return sql
+
     def on_search(self):
         self.parent.reset_browse_window()
         #self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
 
-        search_data = self.get_search_data()
-        if len(search_data) == 0: return
-        results = self.search_db_raw(search_data)
+        search_filter = self.get_search_filter()
+
+        # cache forl later use
+        self.parent.plugin.current_parcel_filter = self.make_search_sql(search_filter)
+
+        if len(search_filter) == 0: return
+        results = self.search_db_raw(search_filter)
 
         if results.rowcount > 0: #is not None:
             found = QApplication.translate('AdvancedSearch', 'records found')
@@ -222,7 +242,7 @@ class AdvancedSearch(EntityEditorDialog):
                 res, chk_result = simple_dialog(self, title, message)
                 if res:
                     self.setWindowTitle(new_title)
-                    self.parent._initializeData(results)
+                    self.parent.show_entity_records(results)
             else:
                 self.setWindowTitle(new_title)
                 self.parent.show_entity_records(results)
