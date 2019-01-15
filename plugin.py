@@ -411,9 +411,9 @@ class STDMQGISLoader(object):
 
                 prog_dlg.setMaximum(len(self.current_profile.entities))
 
-                #for i, entity in enumerate(self.current_profile.entities.values()):
-                    #prog_dlg.setValue(i)
-                    #self.format_columns(entity)
+                for i, entity in enumerate(self.current_profile.entities.values()):
+                    prog_dlg.setValue(i)
+                    self.format_columns(entity)
 
                 #thread = threading.Thread(target=self.prepare_columns)
                 #thread.start()
