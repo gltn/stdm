@@ -46,19 +46,21 @@ class VdcSelector(QDialog, Ui_VdcSelection):
     def open_admin_unit_selection(self):
         sel_admin_unit = AdminUnitSelector(self)
         sel_admin_unit.setManageMode(False)
+        label = ''
         if sel_admin_unit.exec_() == QDialog.Accepted:
             self.admin_unit = sel_admin_unit.selectedAdminUnit
-            label = self.admin_unit.Parent.Code+' '+\
-                            self.admin_unit.Parent.Name+' / '+\
-                            self.admin_unit.Code
-            self.edtVdc.setText(label)
+            if self.admin_unit.Parent is not None:
+                label = self.admin_unit.Parent.Code+' '+\
+                                self.admin_unit.Parent.Name+' / '+\
+                                self.admin_unit.Code
+        self.edtVdc.setText(label)
 
     def parcel_filter(self):
         """
         :param admin_unit: AdminSpatialUnitSet 
         :rtype: str
         """
-        if self.admin_unit is None:
+        if self.admin_unit is None or self.admin_unit.Parent is None:
             return ''
         id = get_admin_unit_details(\
                 self.admin_unit.Parent.id,
