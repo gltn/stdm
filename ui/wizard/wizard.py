@@ -2567,10 +2567,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :param entity: ValueList(a.k.a Lookup)
         :type entity: Entity of TYPE_INFO - VALUE_LIST
         """
-        for v in entity.values:
-            cv = entity.code_value(v)
-            print cv
-            if cv is None: continue
+        for cv in entity.values.values():
             if cv.updated_value == '':
                 txt = cv.value
             else:
