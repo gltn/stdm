@@ -102,8 +102,8 @@ class DocumentGenerator(QObject):
     Image = 0
     PDF = 1
     
-    def __init__(self, iface, parent = None):
-        QObject.__init__(self,parent)
+    def __init__(self, iface, parent=None):
+        QObject.__init__(self, parent)
         self._iface = iface
         self._map_renderer = self._iface.mapCanvas().mapRenderer()
 

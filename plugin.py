@@ -1788,12 +1788,15 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             self.default_profile()
             return
+
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
+
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(
             self.iface,
-            self.iface.mainWindow()
+            self.iface.mainWindow(),
+            self
         )
         doc_gen_wrapper.exec_()
 

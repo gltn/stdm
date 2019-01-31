@@ -153,10 +153,10 @@ class DocumentGeneratorDialogWrapper(object):
     and creates the corresponding EntityConfig objects, which are then
     added to the DocumentGeneratorDialog.
     """
-    def __init__(self, iface, parent=None):
+    def __init__(self, iface, parent=None, plugin=None):
         self._iface = iface
 
-        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent)
+        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent, plugin)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
 
         self.curr_profile = current_profile()
@@ -237,7 +237,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self.setupUi(self)
 
         self._iface = iface
+        self.parent = parent
         self.plugin = plugin
+
         self._docTemplatePath = ""
         self._outputFilePath = ""
         self.curr_profile = current_profile()
@@ -246,7 +248,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         
         self._notif_bar = NotificationBar(self.vlNotification)
 
-        self._doc_generator = DocumentGenerator(self._iface, self)
+        self._doc_generator = DocumentGenerator(self._iface, self.parent)
 
         self._data_source = ""
 

@@ -592,8 +592,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         attr = u'{0}_collection'.format(child_entity.name)
 
         # Return if the attribute does not exist
-        if not hasattr(self._model, attr):
-            return
+        if not hasattr(self._model, attr): return
+
         entity_browser = EntityBrowserWithEditor(
             child_entity,
             self,
@@ -644,7 +644,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 if parent_entity == self._entity:
                     return col
 
-
     def children_entities(self):
         """
         :return: Returns a list of children entities
@@ -656,7 +655,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if ch.TYPE_INFO == Entity.TYPE_INFO:
                 for col in ch.columns.values():
                     if hasattr(col, 'entity_relation'):
-
                         if col.parent.name == self._entity.name:
                             child_columns[col] = ch
         return child_columns

@@ -128,7 +128,6 @@ class BaseColumn(ColumnItem):
 
         self.reset_updated_attrs()
 
-
         LOGGER.debug('%s column initialized in %s entity.',self.name, self.entity.name)
 
     def reset_updated_attrs(self):

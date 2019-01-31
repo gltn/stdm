@@ -217,10 +217,11 @@ class AdvancedSearch(EntityEditorDialog):
 
         search_filter = self.get_search_filter()
 
-        # cache forl later use
+        if len(search_filter) == 0: return
+
+        # cache for later use
         self.parent.plugin.current_parcel_filter = self.make_search_sql(search_filter)
 
-        if len(search_filter) == 0: return
         results = self.search_db_raw(search_filter)
 
         if results.rowcount > 0: #is not None:
