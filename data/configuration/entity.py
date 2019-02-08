@@ -738,7 +738,7 @@ class EntitySupportingDocument(Entity):
         """
         non_hex_values = []
         for v in self._doc_types_value_list.values:
-            cv = self._doc_types_value_list.code_value(v)
+            cv = self._doc_types_value_list.values[v]
             if cv.updated_value == '':
                 txt = cv.value
             else:
