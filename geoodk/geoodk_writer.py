@@ -554,7 +554,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         if isinstance(self.entities, list):
             for entity in self.entities:
-                print entity
                 self.initialize_entity_reader(entity)
                 self.entity_read.get_user_selected_entity()
                 entity_values = self.entity_read.read_attributes()
