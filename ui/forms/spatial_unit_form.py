@@ -102,6 +102,9 @@ from stdm.ui.helpers import valueHandler
 LOGGER = logging.getLogger('stdm')
 EXCLUDED_COLUMNS_TO_FETCH = ['parcel_number', 'shape_area', 'shape_length']
 
+PARCEL_NUMBER = 'parcel_number'
+PARENT_PARCEL_NUMBER = 'parent_parcel_number'
+
 class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
         super(WidgetWrapper, self).__init__(
@@ -454,7 +457,10 @@ class STDMFieldWidget(QObject):
         if isinstance(attribute[0], QgsField):
             return None, 0
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
+
         col_with_data = []
+        parcel_number_value = 0
+
         entity_cols = [c.name for c in self.entity.columns.values()]
         for col, value in mapped_data.iteritems():
             # print feature_id, col, value
@@ -462,6 +468,10 @@ class STDMFieldWidget(QObject):
                 continue
             if col == 'id' and feature_id > 0:
                 value = int(value)
+
+            if col == PARCEL_NUMBER:
+                parcel_number_value = value
+
             if col in EXCLUDED_COLUMNS_TO_FETCH:
                 continue
             if col not in entity_cols:
@@ -482,6 +492,9 @@ class STDMFieldWidget(QObject):
             )
         else:
             return ent_model, 0
+
+        setattr(ent_model, PARENT_PARCEL_NUMBER, parcel_number_value)
+
         return ent_model, len(col_with_data)
 
     def load_stdm_form(self, feature_id, spatial_column=None, entity=None,
@@ -533,6 +546,7 @@ class STDMFieldWidget(QObject):
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
             return
+
 
         feature_model, col_with_data = self.feature_to_model(feature_id)
 
@@ -590,6 +604,7 @@ class STDMFieldWidget(QObject):
         ###################
         self.clear_split_parcel_key()
         #####################
+
 
         spatial_forms = SpatialFormsContainer(
             self.entity, self.layer, self.feature_models, self.plugin
