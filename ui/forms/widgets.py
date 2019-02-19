@@ -667,7 +667,7 @@ class AdministrativeUnitWidgetFactory(ColumnWidgetRegistry):
 
     @classmethod
     def _create_widget(cls, c, parent, host=None):
-        aule = AdministrativeUnitLineEdit(c, parent)
+        aule = AdministrativeUnitLineEdit(c, parent, host)
         aule.setObjectName(u'{0}_{1}'.format(cls._TYPE_PREFIX, c.name))
 
         return aule
