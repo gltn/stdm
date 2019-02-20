@@ -129,7 +129,7 @@ class ContentGroup(QObject,HashableMixin):
         return allowedContent
     
     def hash_code(self, name):
-        ht = hashlib.sha1(name)
+        ht = hashlib.sha1(name.encode('utf-8'))
         return ht.hexdigest()
 
     def register(self):
