@@ -371,9 +371,12 @@ class DetailsDBHandler(LayerSelectionHandler):
         """
         model = entity_model(entity)
         model_obj = model()
+
         if isinstance(id, QgsFeature):
             id = id.id()
-        result = model_obj.queryObject().filter(model.id == id).all()
+
+        #result = model_obj.queryObject().filter(model.id == id).all()
+        result = model_obj.queryObject().all()
         if len(result) > 0:
             return result[0]
         else:
@@ -940,23 +943,26 @@ class DetailsTreeView(DetailsDBHandler):
 
             if roots is None:
                 return
-            for id, root in roots.iteritems():
 
-                if isinstance(id, QgsFeature):
-                    id = id.id()
+            for feature, root in roots.iteritems():
+
+                if isinstance(feature, QgsFeature):
+                    id = feature.id()
+
                 if not isinstance(id, long):
                     continue
+
                 if self.entity in self.social_tenure.spatial_units:
                     str_records = self.feature_str_link(id)
 
                 self.spatial_unit_items[root] = self.entity
                 if len(str_records) > 0:
                     db_model = getattr(str_records[0], self.entity.name)
-
                 else:
                     data = self.features_data(id)
 
-                    if len(self.features_data(id)) > 0:
+                    #if len(self.features_data(id)) > 0:
+                    if len(data[id]) > 0:
                         db_model = data[0]
                     else:
                         db_model = self.feature_model(self.entity, id)
@@ -1021,6 +1027,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.set_bold(root)
             self.model.appendRow(root)
 
+
             if len(str_records) > 0:
                 db_model = getattr(str_records[0], entity.name)
             else:
@@ -1059,7 +1066,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.set_bold(parent)
             self.expand_node(parent)
 
-    def features_data(self, feature_id=None):
+    def features_data(self, feature_id=-1):
         """
         Gets data column and value of a feature from
         the selected layer and features.
@@ -1074,7 +1081,7 @@ class DetailsTreeView(DetailsDBHandler):
         feature_data = []
 
         for elem in selected_features:
-            if not feature_id is None:
+            if feature_id <> -1:
                 if elem.id() == feature_id:
                     feature_map = OrderedDict(
                         zip(field_names, elem.attributes())
@@ -1149,9 +1156,10 @@ class DetailsTreeView(DetailsDBHandler):
         :param str_records: STR record models linked to the spatial unit.
         :type str_records: List
         """
-        if model is None:
-            return
+        if model is None: return
+
         if isinstance(model, OrderedDict):
+            #if len(model) == 0: return
             feature_id = model['id']
         else:
             feature_id = model.id
