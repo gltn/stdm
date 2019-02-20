@@ -365,7 +365,6 @@ class STDMQGISLoader(object):
                 self.run_wizard()
                 self.copy_designer_template()
 
-
             except Exception as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
