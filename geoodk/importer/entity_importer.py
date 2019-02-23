@@ -390,6 +390,7 @@ class Save2DB:
 
             if var == '' or var is None:
                 return None
+
             mlt_list = var.split(' ')
 
             if not len(var) > 1:
