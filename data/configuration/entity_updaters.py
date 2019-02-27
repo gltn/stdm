@@ -239,11 +239,8 @@ def value_list_updater(value_list, engine, metadata):
     # Remove redundant values in the database
     for db_val in db_values:
         lookup_val = db_val.value
-
         # Check if it exists in the lookup collection
-        hashed_vt = value_list.value_hash(lookup_val)
-        code_value = value_list.code_value(hashed_vt)
-
+        code_value = value_list.code_value(lookup_val)
         model_obj = model()
 
         # Delete if it does not exist in the configuration collection
@@ -251,5 +248,5 @@ def value_list_updater(value_list, engine, metadata):
             lookup_obj = model_obj.queryObject().filter(
                 model.value == lookup_val
             ).one()
-            if lookup_obj is None:
+            if not lookup_obj is None:
                 lookup_obj.delete()

@@ -280,7 +280,7 @@ class ValueList(Entity):
         :return: Returns a list of lookup string values.
         :rtype: list
         """
-        return self.values.keys()
+        return [cv.value for cv in self.values.values()]
 
 
 
