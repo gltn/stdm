@@ -962,7 +962,7 @@ class DetailsTreeView(DetailsDBHandler):
                     data = self.features_data(id)
 
                     #if len(self.features_data(id)) > 0:
-                    if len(data[id]) > 0:
+                    if len(data[0]) > 0:
                         db_model = data[0]
                     else:
                         db_model = self.feature_model(self.entity, id)

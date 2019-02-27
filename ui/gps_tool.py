@@ -258,6 +258,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
+        # no need to continue if layer is None
+        if self.active_layer is None:
+            return
+
         gpx_file = unicode(self.file_le.text()).strip()
         feature_type = self.feature_type_cb.currentIndex()
         columns = 4
