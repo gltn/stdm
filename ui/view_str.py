@@ -396,8 +396,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Slot that searches for matching items for
         the specified entity and corresponding STR entities.
         """
-
-
         entityWidget = self.tbSTREntity.currentWidget()
 
         entity_name = entityWidget.config.data_source_name
