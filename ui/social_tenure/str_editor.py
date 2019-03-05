@@ -978,7 +978,7 @@ class STREditor(QDialog, Ui_STREditor):
 
         count = pg_table_count(self.social_tenure.name)
 
-        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
+        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+unicode(count)+' rows')))
 
         self.party_count = OrderedDict()
 
