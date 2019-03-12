@@ -22,6 +22,7 @@ from decimal import (
     Decimal,
     InvalidOperation
 )
+
 import math
 
 from PyQt4 import QtGui
@@ -34,7 +35,6 @@ from PyQt4.QtGui import (
 )
 
 from ui_double_property import Ui_DoubleProperty
-
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """
