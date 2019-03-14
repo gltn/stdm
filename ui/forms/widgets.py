@@ -843,12 +843,13 @@ class MultipleSelectWidgetFactory(LookupWidgetFactory):
 
         if len(value) == 0: return ''
 
-        #Get list of selected lookup values
+        # Get list of selected lookup values
         selection = []
         for lk in value:
             selection.append(lk.value)
 
         return self.SEPARATOR.join(selection)
+
 
 MultipleSelectWidgetFactory.register()
 
