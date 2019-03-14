@@ -1893,14 +1893,13 @@ class STDMQGISLoader(object):
 
             #Remove STDM layers
             self.removeSTDMLayers()
+
             # Remove Spatial Unit Manager
             self.remove_spatial_unit_mgr()
 
-            self.details_tree_view.close_dock(
-                self.feature_details_act
-            )
-            if not reload_plugin:
+            self.details_dock.close_dock()
 
+            if not reload_plugin:
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
                 # Clear current profile combobox

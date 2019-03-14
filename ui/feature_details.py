@@ -758,7 +758,7 @@ class DetailsTreeView(DetailsDBHandler):
                 'the required database tables are missing. \n'
                 'Please run the configuration wizard to configure the database ')
             QMessageBox.critical(
-                self,
+                self.iface.mainWindow(),
                 QApplication.translate(
                 "DetailsTreeView",
                 'Default Profile Error'
