@@ -248,19 +248,22 @@ class Save2DB:
         :return:
         """
         if self.entity.short_name == 'social_tenure_relationship':
+
             prefix = current_profile().prefix+'_'
 
             full_party_ref_column = self.attributes.get('party')
             party_ref_column = full_party_ref_column+ '_id'
-            setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
+            if hasattr(self.model, party_ref_column):
+                setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
 
-            self.attributes.pop('party')
+                self.attributes.pop('party')
 
             full_spatial_ref_column = self.attributes.get('spatial_unit')
             spatial_ref_column = full_spatial_ref_column+ '_id'
-            setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
+            if hasattr(self.model, spatial_ref_column):
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
 
-            self.attributes.pop('spatial_unit')
+                self.attributes.pop('spatial_unit')
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.column_info().get(k)
@@ -391,15 +394,17 @@ class Save2DB:
             if var == '' or var is None:
                 return None
 
-            mlt_list = var.split(' ')
+            col_parent = col_prop.association.first_parent
+            lk_val_list = col_parent.values.values()
+            choices_list = []
+            for code in lk_val_list:
+                choices_list.append(entity_attr_to_id(
+                    col_parent.association.first_parent, 'value', code.value))
 
-            if not len(var) > 1:
-                return entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list)
+            if len(choices_list) > 1:
+                return choices_list
             else:
-                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list[0])).isdigit():
-                    return entity_attr_to_model(col_prop.association.first_parent,'value', mlt_list[0]).id
-                else:
-                    return entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list[0])
+                return None
 
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
