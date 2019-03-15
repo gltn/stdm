@@ -57,29 +57,13 @@ class EntityImporter():
 
     def set_instance_document(self, file_p):
         """
-
-        :return:
+        :param file_p: str
+        :return: file
+        :rtype QFile
         """
         file_path = QFile(file_p)
         if file_path.open(QIODevice.ReadOnly):
             self.instance_doc.setContent(file_path)
-
-    def geomsetter(self, val):
-        """
-        Get user preferred geometry
-        :param val:
-        :return:int
-        """
-        global GEOMPARAM
-        GEOMPARAM = val
-        return GEOMPARAM
-
-    def geom(self):
-        """
-        Return the geometry value
-        :return:
-        """
-        return GEOMPARAM
 
     def entity_attributes_from_instance(self, entity):
         """
@@ -99,60 +83,6 @@ class EntityImporter():
                 attributes[node_val.nodeName()] = node_val.text().rstrip()
         return attributes
 
-    def instance_group_id(self):
-        """
-        Get the unique identifier in the the current instance
-        for group identification of related instance
-        :param: node name
-        :type: String
-        :return: identifier code
-        :rtype: string
-        """
-        global GROUPCODE
-        gp_code = self.instance_doc.elementsByTagName('identity')
-        if gp_code:
-            user_code = gp_code.at(0).toElement().text()
-            if user_code != '' or user_code is not None:
-                GROUPCODE = user_code
-                return user_code
-            else:
-                return None
-
-    def process_import_to_db(self, entity,ids):
-        """
-        Save the object data to the database, object saved here
-        does not form parent to any other entity
-        :return:
-        """
-        success = False
-        if self.instance_doc is not None:
-            attributes = self.entity_attributes_from_instance(entity)
-            entity_add = Save2DB(entity, attributes,ids)
-            entity_add.objects_from_supporting_doc(self.instance)
-            child_id = entity_add.save_to_db()
-            entity_add.get_srid(GEOMPARAM)
-            self.key_watch = entity_add.key
-            success = True
-        return child_id, success
-
-    def process_parent_entity_import(self, entity):
-        """
-        Save entities that are parent to child tables first returning their iDS
-        :param entity:
-        :return:boool
-        :return: gid
-        :rtype: string
-        """
-        success = False
-        if self.instance_doc is not None:
-            attributes = self.entity_attributes_from_instance(entity)
-            entity_add = Save2DB(entity, attributes)
-            entity_add.objects_from_supporting_doc(self.instance)
-            entity_add.get_srid(GEOMPARAM)
-            ref_id = entity_add.save_parent_to_db()
-            success = True
-        return ref_id, success
-
     def social_tenure_definition_captured(self):
         """
         Let find find out if str is defined for the particular data collection
@@ -168,20 +98,16 @@ class EntityImporter():
             pass
         return has_str_defined
 
-    def process_social_tenure(self, ids):
+    def process_social_tenure(self, attributes, ids):
         """
-        Save socail tenure entity. It has to be saved separately
+        Save social tenure entity. It has to be saved separately
         because its need to be saved last and its handled differently
         :return:
         """
-        if self.social_tenure_definition_captured():
-            attributes = self.entity_attributes_from_instance('social_tenure')
-            if attributes:
-                entity_add = Save2DB('social_tenure', attributes, ids)
-                entity_add.objects_from_supporting_doc(self.instance)
-                entity_add.save_to_db()
-        else:
-            return None
+        if attributes and ids:
+            entity_add = Save2DB('social_tenure', attributes, ids)
+            entity_add.objects_from_supporting_doc(self.instance)
+            entity_add.save_to_db()
 
 class Save2DB:
     """
@@ -271,6 +197,9 @@ class Save2DB:
 
     def supporting_document_model(self,doc_path,doc):
         """
+        :param doc_path: absolute document path
+        :param doc: document name
+        :type: str
         Construct supporting document model instance to add into the db
         :return:
         """
@@ -318,20 +247,20 @@ class Save2DB:
         Format object attribute data from entity and save them into database
         :return:
         """
-        try:
-            if self.parents_ids is not None and self.entity.short_name == 'social_tenure_relationship':
-                str_tables = current_profile().social_tenure
-                prefix = current_profile().prefix+'_'
+        if self.entity.short_name == 'social_tenure_relationship':
+            prefix = current_profile().prefix+'_'
 
-                full_party_ref_column = str_tables.parties[0].name
-                party_ref_column = str_tables.parties[0].name.lower().replace(prefix,'')+ '_id'
-                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
+            full_party_ref_column = self.attributes.get('party')
+            party_ref_column = full_party_ref_column+ '_id'
+            setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
 
-                full_spatial_ref_column = str_tables.spatial_units[0].name
-                spatial_ref_column = str_tables.spatial_units[0].name.lower().replace(prefix,'') + '_id'
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
-        except:
-            pass
+            self.attributes.pop('party')
+
+            full_spatial_ref_column = self.attributes.get('spatial_unit')
+            spatial_ref_column = full_spatial_ref_column+ '_id'
+            setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
+
+            self.attributes.pop('spatial_unit')
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.column_info().get(k)
@@ -458,16 +387,19 @@ class Save2DB:
                     return entity_attr_to_id(col_prop.parent, "name", var)
 
         elif col_type == 'MULTIPLE_SELECT':
+
             if var == '' or var is None:
                 return None
-            if not len(var) > 3:
-                return entity_attr_to_id(col_prop.association.first_parent, "code", var)
-            elif len(var) > 3:
-                var0 = var.split(',')
-                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", var0)).isdigit():
-                    return entity_attr_to_model(col_prop.association.first_parent,'value', var0).id
+
+            mlt_list = var.split(' ')
+
+            if not len(var) > 1:
+                return entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list)
+            else:
+                if not str(entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list[0])).isdigit():
+                    return entity_attr_to_model(col_prop.association.first_parent,'value', mlt_list[0]).id
                 else:
-                    return entity_attr_to_id(col_prop.association.first_parent, "code", var0)
+                    return entity_attr_to_id(col_prop.association.first_parent, "code", mlt_list[0])
 
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
@@ -490,9 +422,8 @@ class Save2DB:
                 return None
             else:
                 for code, val in self.parents_ids.iteritems():
-                    if code is not None:
-                        if col_prop.parent.name == code:
-                            return val[0]
+                    if col_prop.parent.name == code:
+                        return val[0]
                     else:
                         return None
         elif col_type == 'INT' or col_type == 'DOUBLE' or col_type == 'PERCENT':

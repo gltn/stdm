@@ -113,7 +113,7 @@ from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
-from stdm.ui.feature_details import DetailsTreeView
+from stdm.ui.feature_details import DetailsTreeView, DetailsDockWidget
 from stdm.ui.social_tenure.str_editor import STREditor
 
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
@@ -349,30 +349,30 @@ class STDMQGISLoader(object):
             if not config_load_status:
                 return
 
-            try:
-                self.show_change_log()
-                #Set current profile
-                self.current_profile = current_profile()
-                self._user_logged_in = True
-                if self.current_profile is None:
-                    result = self.default_profile()
-                    if not result:
-                        return
-                self.create_custom_tenure_dummy_col()
+            # try:
+            self.show_change_log()
+            #Set current profile
+            self.current_profile = current_profile()
+            self._user_logged_in = True
+            if self.current_profile is None:
+                result = self.default_profile()
+                if not result:
+                    return
+            self.create_custom_tenure_dummy_col()
 
-                self.loadModules()
-                self.default_profile()
-                self.run_wizard()
-                self.copy_designer_template()
+            self.loadModules()
+            self.default_profile()
+            self.run_wizard()
+            self.copy_designer_template()
 
 
-            except Exception as pe:
-                title = QApplication.translate(
-                    "STDMQGISLoader",
-                    "Error Loading Modules"
-                )
-
-                self.reset_content_modules_id( title, pe)
+            # except Exception as pe:
+            #     title = QApplication.translate(
+            #         "STDMQGISLoader",
+            #         "Error Loading Modules"
+            #     )
+            #
+            #     self.reset_content_modules_id( title, pe)
 
     def create_custom_tenure_dummy_col(self):
         """
@@ -832,7 +832,6 @@ class STDMQGISLoader(object):
 
     def loadModules(self):
 
-        self.details_tree_view = DetailsTreeView(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
@@ -966,7 +965,11 @@ class STDMQGISLoader(object):
 
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
+        self.details_dock = DetailsDockWidget(self.iface, self)
 
+        self.details_tree_view = DetailsTreeView(
+            self.iface, self, self.details_dock
+        )
         #Connect the slots for the actions above
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
         self.usersAct.triggered.connect(self.manageAccounts)
@@ -977,17 +980,21 @@ class STDMQGISLoader(object):
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
-        self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+        self.feature_details_act.toggled.connect(
+            self.details_tree_view.activate_feature_details
+        )
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
         self.iface.mapCanvas().currentLayerChanged.connect(
             lambda :self.details_tree_view.activate_feature_details(False)
         )
+        self.iface.mapCanvas().currentLayerChanged.connect(
+            self.details_tree_view.clear_sel_highlight
+        )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
-
 
         #Create content items
         contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)

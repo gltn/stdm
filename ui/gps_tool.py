@@ -114,7 +114,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
             if tab_text != 'no_tab':
-                self.gpx_import_tab.addTab(tab_object, str(tab_text))
+                self.gpx_import_tab.addTab(tab_object, unicode(tab_text))
             else:
                 self.gpx_import_tab.addTab(tab_object, 'Primary')
 
@@ -259,10 +259,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :rtype: None
         """
         gpx_file = unicode(self.file_le.text()).strip()
-        feature_type = self.feature_type_cb.currentText()
+        feature_type = self.feature_type_cb.currentIndex()
         columns = 4
         headers = ["", "Point Name", "Longitude", "Latitude"]
-        if feature_type:
+        if feature_type >= 0:
             gpx_data_source = gpx_source.open_gpx_file(gpx_file)
             self.gpx_layer, feature_count = gpx_source.get_feature_layer(gpx_data_source, feature_type)
             self.uncheck_counter = feature_count
@@ -360,7 +360,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                 table_widget.setItem(row, column_num, check_box)
             column_num += 1
             if type(attr) is not basestring:
-                attr = str(attr)
+                attr = unicode(attr)
             table_widget.setItem(row, column_num, qg.QTableWidgetItem(attr))
         return check_box
 

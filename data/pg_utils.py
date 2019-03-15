@@ -626,11 +626,13 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
 
     if proj_wkt is not None:
         iface.mainWindow().blockSignals(False)
-        target_crs = QgsCoordinateReferenceSystem(
-            proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
-        )
-        v_layer.setCrs(target_crs)
-
+        try:
+            target_crs = QgsCoordinateReferenceSystem(
+                proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
+            )
+            v_layer.setCrs(target_crs)
+        except Exception:
+            pass
     return v_layer
 
 def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):

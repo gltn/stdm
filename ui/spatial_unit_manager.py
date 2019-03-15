@@ -101,7 +101,7 @@ class SpatialUnitManagerDockWidget(
         self.setMaximumHeight(300)
         self._curr_profile = current_profile()
         self._profile_spatial_layers = []
-        self.stdm_fields = STDMFieldWidget()
+        self.stdm_fields = STDMFieldWidget(plugin)
         self._populate_layers()
         self._adjust_layer_drop_down_width()
         self.spatial_unit = None
