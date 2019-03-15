@@ -107,34 +107,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             each_geom_col = self.sp_unit_manager.geom_columns(spatial_unit)
             self.geom_cols.extend(each_geom_col)
 
-        self.toolBox.setStyleSheet(
-            '''
-            QToolBox::tab {
-                background: qlineargradient(
-                    x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #EDEDED, stop: 0.4 #EDEDED,
-                    stop: 0.5 #EDEDED, stop: 1.0 #D3D3D3
-                );
-                border-radius: 2px;
-                border-style: outset;
-                border-width: 2px;
-                height: 100px;
-                border-color: #C3C3C3;
-            }
-
-            QToolBox::tab:selected {
-                font: italic;
-            }
-            '''
-        )
-        self.tvSTRResults.setStyleSheet(
-            '''
-            QTreeView:!active {
-                selection-background-color: #72a6d9;
-            }
-            '''
-        )
-
         # Configure notification bar
         self._notif_search_config = NotificationBar(
             self.vl_notification
@@ -174,12 +146,51 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._source_doc_manager.setEditPermissions(False)
 
         self.initGui()
-        self.details_tree_view = DetailsTreeView(iface, None, self.tvSTRResults)
-        self.details_tree_view.activate_feature_details(False)
+        # if self._plugin.details_tree_view is None:
+        # self._plugin.details_dock.init_dock()
+        self.add_spatial_unit_layer()
+        self.details_tree_view = DetailsTreeView(iface, self._plugin, self)
+        # else:
+        #     self.details_tree_view = self._plugin.details_tree_view
+        self.details_tree_view.activate_feature_details(True)
+        self.details_tree_view.add_tree_view()
+        self.details_tree_view.model.clear()
 
         count = pg_table_count(self.curr_profile.social_tenure.name)
-        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
-        
+        self.setWindowTitle(
+            self.tr(u'{}{}'.format(
+                self.windowTitle(), '- ' + str(count) +' rows'
+            ))
+        )
+
+        self.toolBox.setStyleSheet(
+            '''
+            QToolBox::tab {
+                background: qlineargradient(
+                    x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #EDEDED, stop: 0.4 #EDEDED,
+                    stop: 0.5 #EDEDED, stop: 1.0 #D3D3D3
+                );
+                border-radius: 2px;
+                border-style: outset;
+                border-width: 2px;
+                height: 100px;
+                border-color: #C3C3C3;
+            }
+
+            QToolBox::tab:selected {
+                font: italic;
+            }
+            '''
+        )
+
+        self.details_tree_view.view.setStyleSheet(
+            '''
+            QTreeView:!active {
+                selection-background-color: #72a6d9;
+            }
+            '''
+        )
 
     def add_tool_buttons(self):
         """
@@ -459,11 +470,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         selection model.
         """
 
-        if len(self.tvSTRResults.selectedIndexes()) < 1:
+        if len(self.details_tree_view.view.selectedIndexes()) < 1:
             self.disable_buttons()
             return
         self.search_done = True
-        index = self.tvSTRResults.selectedIndexes()[0]
+        index = self.details_tree_view.view.selectedIndexes()[0]
         item = self.details_tree_view.model.itemFromIndex(index)
 
         QApplication.processEvents()
@@ -582,7 +593,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def init_mirror_map(self):
         self._notify_no_base_layers()
         # Add spatial unit layer if it doesn't exist
-        self.add_spatial_unit_layer()
         self.tbPropertyPreview.refresh_canvas_layers()
         self.tbPropertyPreview.load_web_map()
 
@@ -624,8 +634,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         Clears the results tree view.
         """
         #Reset tree view
-        strModel = self.tvSTRResults.model()
-        resultsSelModel = self.tvSTRResults.selectionModel()
+        strModel = self.details_tree_view.view.model()
+        resultsSelModel = self.details_tree_view.view.selectionModel()
 
         if strModel:
             strModel.clear()

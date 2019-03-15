@@ -35,6 +35,7 @@ from PyQt4.QtCore import (
 from stdm.utils.util import PLUGIN_DIR, version_from_metadata
 from ui_about_stdm import Ui_frmAbout
 
+
 class AboutSTDMDialog(QDialog,Ui_frmAbout):
     def __init__(self,parent=None, metadata=None):
         QDialog.__init__(self, parent)

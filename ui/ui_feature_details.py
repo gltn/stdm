@@ -71,6 +71,8 @@ class Ui_DetailsDock(object):
         self.scrollAreaWidgetContents = QtGui.QWidget()
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 378, 221))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.tree_scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.tree_scrollArea)
         DetailsDock.setWidget(self.dockWidgetContents)
@@ -86,5 +88,3 @@ class Ui_DetailsDock(object):
         self.delete_btn.setText(_translate("DetailsDock", "...", None))
         self.view_document_btn.setToolTip(_translate("DetailsDock", "View record supporting documents", None))
         self.view_document_btn.setText(_translate("DetailsDock", "...", None))
-
-from stdm import resources_rc

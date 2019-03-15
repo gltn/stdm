@@ -43,7 +43,8 @@ from stdm.data.pg_utils import(
     table_column_names,
     qgsgeometry_from_wkbelement,
     export_data,
-    fetch_from_table
+    fetch_from_table,
+    pg_table_count
 )
 
 from stdm.data.qtmodels import (
@@ -79,8 +80,7 @@ from stdm.utils.util import (
 
 from stdm.settings import get_entity_browser_record_limit
 
-__all__ = ["EntityBrowser", "EntityBrowserWithEditor",
-           "ContentGroupEntityBrowser"]
+__all__ = ["EntityBrowser", "EntityBrowserWithEditor", "ContentGroupEntityBrowser"]
 
 class _EntityDocumentViewerHandler(object):
     """
@@ -229,7 +229,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._select_item = None
         self.current_records = 0
 
-        self.record_limit = get_entity_browser_record_limit()
+        self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -240,6 +240,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
 
+    def get_records_limit(self):
+        records = get_entity_browser_record_limit()
+        if records == 0:
+            records = pg_table_count(self.entity.name)
+        return records
 
     def children_entities(self):
         """

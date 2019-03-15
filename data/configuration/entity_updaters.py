@@ -251,5 +251,5 @@ def value_list_updater(value_list, engine, metadata):
             lookup_obj = model_obj.queryObject().filter(
                 model.value == lookup_val
             ).one()
-            if not lookup_obj is None:
+            if lookup_obj is None:
                 lookup_obj.delete()
