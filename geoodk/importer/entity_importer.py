@@ -250,19 +250,17 @@ class Save2DB:
         if self.entity.short_name == 'social_tenure_relationship':
 
             prefix = current_profile().prefix+'_'
+            if hasattr(self.attributes, 'party'):
+                full_party_ref_column = self.attributes.get('party')
+                party_ref_column = full_party_ref_column+ '_id'
 
-            full_party_ref_column = self.attributes.get('party')
-            party_ref_column = full_party_ref_column+ '_id'
-            if hasattr(self.model, party_ref_column):
                 setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
 
                 self.attributes.pop('party')
-
-            full_spatial_ref_column = self.attributes.get('spatial_unit')
-            spatial_ref_column = full_spatial_ref_column+ '_id'
-            if hasattr(self.model, spatial_ref_column):
+            if hasattr(self.attributes, 'spatial_unit'):
+                full_spatial_ref_column = self.attributes.get('spatial_unit')
+                spatial_ref_column = full_spatial_ref_column+ '_id'
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
-
                 self.attributes.pop('spatial_unit')
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
@@ -381,30 +379,42 @@ class Save2DB:
             else:
                 return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
-            if not len(var) > 3:
-                return entity_attr_to_id(col_prop.parent, "code", var)
+            var_code = None
+            if len(var) < 1 or var is None:
+                return None
+            elif not len(var) > 3:
+                var_code = entity_attr_to_id(col_prop.parent, "code", var)
+                if var_code is not None:
+                    return var_code
+                elif entity_attr_to_id(col_prop.parent, "name", var) is not None:
+                    return entity_attr_to_id(col_prop.parent, "name", var)
+                else:
+                    return None
+
             else:
                 if entity_attr_to_id(col_prop.parent, "name", var) is None:
-                    return entity_attr_to_id(col_prop.parent, "code", var)
-                else:
-                    return entity_attr_to_id(col_prop.parent, "name", var)
+                    var_code = entity_attr_to_id(col_prop.parent, "code", var)
+                    if not var_code:
+                        return None
 
         elif col_type == 'MULTIPLE_SELECT':
-
+            print 'multiple select {}'.format(var)
             if var == '' or var is None:
                 return None
-
-            col_parent = col_prop.association.first_parent
-            lk_val_list = col_parent.values.values()
-            choices_list = []
-            for code in lk_val_list:
-                choices_list.append(entity_attr_to_id(
-                    col_parent.association.first_parent, 'value', code.value))
-
-            if len(choices_list) > 1:
-                return choices_list
             else:
-                return None
+                print var
+                col_parent = col_prop.association.first_parent
+                lk_val_list = col_parent.values.values()
+                choices_list = []
+                for code in lk_val_list:
+                    choices_list.append(entity_attr_to_id(
+                        col_parent.association.first_parent, 'value', code.value))
+                print choices_list
+
+                if len(choices_list) > 1:
+                    return choices_list
+                else:
+                    return None
 
         elif col_type == 'GEOMETRY':
             defualt_srid = 0
