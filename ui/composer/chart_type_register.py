@@ -71,6 +71,7 @@ class ChartTypeUISettings(object):
         """
         raise NotImplementedError
 
+
 class VerticalBarChartSettings(ChartTypeUISettings):
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/chart_bar.png")

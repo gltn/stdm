@@ -331,6 +331,16 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
     Custom implementation for selecting and displaying administrative areas
     using the name and corresponding code.
     """
+    def __init__(self, column, parent, host):
+        # Use a different pixmap
+        px = QPixmap(':/plugins/stdm/images/icons/hierarchy.png')
+        kwargs = {}
+        kwargs['parent'] = parent
+        kwargs['pixmap'] = px
+        kwargs['host'] = host
+
+        ForeignKeyLineEdit.__init__(self, column, **kwargs)
+
     def format_display(self):
         if self.current_item is None:
             return
@@ -377,7 +387,7 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
         if model.hasChildren(parent_index):
             row_count = model.rowCount(parent_index)
             for i in range(row_count):
-                #Check value from previous iteration
+                # Check value from previous iteration
                 if not current_item_idx is None:
                     break
 
@@ -385,13 +395,13 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
                 node = c_idx.internalPointer()
                 id = node.data(2)
 
-                #Item found
+                # Item found
                 if id == self.current_item.id:
                     current_item_idx = c_idx
                     break
 
                 else:
-                    #Search children indices
+                    # Search children indices
                     current_item_idx = self._search_current_item_index(
                         model,
                         c_idx
@@ -400,17 +410,17 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
         return current_item_idx
 
     def _select_current_item(self, model, selection_model, tv):
-        #Selects the row corresponding to the current item
+        # Selects the row corresponding to the current item
         if self._current_item is None:
             return
 
         root_idx = QModelIndex()
         current_item_idx = self._search_current_item_index(model, root_idx)
 
-        #Expand items at the current item index
+        # Expand items at the current item index
         self._expand_parent_indices(current_item_idx, tv)
 
-        #Select item
+        # Select item
         selection_model.select(
             current_item_idx,
             QItemSelectionModel.ClearAndSelect|QItemSelectionModel.Rows
@@ -427,14 +437,14 @@ class AdministrativeUnitLineEdit(ForeignKeyLineEdit):
             parent_idx = parent_idx.parent()
 
     def on_load_foreign_key_browser(self):
-        #Show the selector for administrative units
+        # Show the selector for administrative units
         au_selector = AdminUnitSelector(self.parent())
         au_selector.setManageMode(False)
 
         item_model = au_selector.adminUnitManager.model()
         selection_model = au_selector.adminUnitManager.selection_model()
 
-        #Highlight previously selected item
+        # Highlight previously selected item
         self._select_current_item(
             item_model,
             selection_model,

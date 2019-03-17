@@ -36,6 +36,7 @@ from qgis.core import (
 __all__ = ['ItemConfigBase', 'ConfigurationCollectionBase',
            'LinkedTableItemConfiguration']
 
+
 class ItemConfigBase(object):
     """
     Base class for composer item configuration.
@@ -101,6 +102,7 @@ class ItemConfigBase(object):
         :rtype: ItemConfigBase
         """
         raise NotImplementedError
+
 
 class LinkedTableItemConfiguration(ItemConfigBase):
     """
@@ -228,6 +230,7 @@ class LinkedTableItemConfiguration(ItemConfigBase):
                                               source_field=source_field,
                                               linked_field=linked_field)
 
+
 class ItemConfigValueHandler(object):
     """
     Base class for setting the value of composer items based on the
@@ -269,6 +272,7 @@ class ItemConfigValueHandler(object):
         :type record: object
         """
         pass
+
 
 class LinkedTableValueHandler(ItemConfigValueHandler):
     """
@@ -326,10 +330,11 @@ def col_values(cols, results):
 
         return col_values
 
+
 class ConfigurationCollectionBase(object):
-    #Name of the root node of the collection element.
+    # Name of the root node of the collection element.
     collection_root = ""
-    #Editor widget type to match against when creating Dom elements.
+    # Editor widget type to match against when creating Dom elements.
     editor_type = None
     config_root = ""
     item_config = None
@@ -431,7 +436,7 @@ class ConfigurationCollectionBase(object):
 
         collection_element = dom_document.createElement(cls.collection_root)
 
-        #Get configuration items
+        # Get configuration items
         for uuid,item_editor in composer_wrapper.widgetMappings().iteritems():
             composerItem = composer_wrapper.composition().getComposerItemByUuid(uuid)
 
@@ -464,7 +469,7 @@ class ConfigurationCollectionBase(object):
         config_collection = cls()
         config_collec_el = data_source_el.firstChildElement(cls.collection_root)
 
-        #Get config elements
+        # Get config elements
         conf_el_list = config_collec_el.elementsByTagName(cls.config_root)
         num_items = conf_el_list.length()
 
