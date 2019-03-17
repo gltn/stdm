@@ -256,7 +256,7 @@ class GeoODKReader:
             str_attributes[obj.name] = obj.TYPE_INFO
         return str_attributes
 
-    def social_tenure_lookup(self, cur_col):
+    def field_is_social_tenure_lookup(self, cur_col):
         """
         Check if the social tenure column is a lookup
         :return:bool

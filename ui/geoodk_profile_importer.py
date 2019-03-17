@@ -382,7 +382,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 for sp_tbl in sp_tbls:
                     self.relations[sp_tbl.name] = ['social_tenure_relationship',
                                                   sp_tbl.short_name.lower() + '_id']
-            print self.relations
+           # print self.relations
 
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
@@ -572,7 +572,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self._notif_bar_str.clear()
         mobile_field_data = self.read_instance_data()
         self.has_foreign_keys_parent(entities)
-        print self.relations
+        #print self.relations
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -719,7 +719,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :param table: string
         :return:
         """
-        #self.txt_feedback.append('File :  {}'.format(count))
         self.txt_feedback.append('      Table : {}'.format(table))
 
     def accept(self):
@@ -730,36 +729,37 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.buttonBox.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        try:
-            if self.lst_widget.count() < 1:
-                msg = 'No mobile records found for the current profile'
-                self._notif_bar_str.insertErrorNotification(msg)
-                self.buttonBox.setEnabled(True)
-                QApplication.restoreOverrideCursor()
-                return
-            entities = self.user_selected_entities()
-            if len(entities) < 1:
-                if QMessageBox.information(self,
-                        QApplication.translate('MobileForms', 'Import Warning'),
-                        QApplication.translate('MobileForms',
-                        'You have not '
-                        'selected any entity for import. All entities '
-                        'will be imported'), QMessageBox.Ok |
-                                            QMessageBox.No) == QMessageBox.Ok:
-                    entities = self.instance_entities()
-                else:
-                    self.buttonBox.setEnabled(True)
-                    return
-
-            self.save_instance_data_to_db(entities)
-            self.buttonBox.setEnabled(True)
-            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
-            QApplication.restoreOverrideCursor()
-        except Exception as ex:
-            self.feedback_message(ex.message)
+        # try:
+        if self.lst_widget.count() < 1:
+            msg = 'No mobile records found for the current profile'
+            self._notif_bar_str.insertErrorNotification(msg)
             self.buttonBox.setEnabled(True)
             QApplication.restoreOverrideCursor()
             return
+        entities = self.user_selected_entities()
+        if len(entities) < 1:
+            if QMessageBox.information(self,
+                    QApplication.translate('MobileForms', 'Import Warning'),
+                    QApplication.translate('MobileForms',
+                    'You have not '
+                    'selected any entity for import. All entities '
+                    'will be imported'), QMessageBox.Ok |
+                                        QMessageBox.No) == QMessageBox.Ok:
+                entities = self.instance_entities()
+            else:
+                self.buttonBox.setEnabled(True)
+                return
+
+        self.save_instance_data_to_db(entities)
+        self.buttonBox.setEnabled(True)
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
+        QApplication.restoreOverrideCursor()
+        # except Exception as ex:
+        #     self.feedback_message(ex.message)
+        #     self.log_table_entry(unicode(ex.message))
+        #     self.buttonBox.setEnabled(True)
+        #     QApplication.restoreOverrideCursor()
+        #     return
 
     def log_instance(self, instance):
         instance_short_name = self.importlogger.log_data_name(instance)
