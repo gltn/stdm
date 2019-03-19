@@ -591,7 +591,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.importlogger.log_action("Import started ...\n")
 
                 for instance_obj, instance_obj_data in mobile_field_data.iteritems():
-
+                    self.importlogger.log_action("File {} ...\n".format(instance_obj))
                     parents_info = []
                     import_status = False
                     counter = counter + 1
