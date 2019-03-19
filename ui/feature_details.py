@@ -758,7 +758,7 @@ class DetailsTreeView(DetailsDBHandler):
                 'the required database tables are missing. \n'
                 'Please run the configuration wizard to configure the database ')
             QMessageBox.critical(
-                self,
+                self.iface.mainWindow(),
                 QApplication.translate(
                 "DetailsTreeView",
                 'Default Profile Error'
@@ -962,7 +962,7 @@ class DetailsTreeView(DetailsDBHandler):
                     data = self.features_data(id)
 
                     #if len(self.features_data(id)) > 0:
-                    if len(data[id]) > 0:
+                    if len(data[0]) > 0:
                         db_model = data[0]
                     else:
                         db_model = self.feature_model(self.entity, id)
@@ -1004,11 +1004,10 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records)
 
-
         self.layer.selectByIds(
             self.feature_models.keys()
         )
-        self.zoom_to_selected(self.layer)
+        #self.zoom_to_selected(self.layer)
 
     def search_party(self, entity, party_ids):
         """
@@ -1027,7 +1026,6 @@ class DetailsTreeView(DetailsDBHandler):
             self.set_bold(root)
             self.model.appendRow(root)
 
-
             if len(str_records) > 0:
                 db_model = getattr(str_records[0], entity.name)
             else:
@@ -1035,10 +1033,10 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records, True)
 
-        self.layer.selectByIds(
-            self.feature_models.keys()
-        )
-        self.zoom_to_selected(self.layer)
+        #self.layer.selectByIds(
+            #self.feature_models.keys()
+        #)
+        #self.zoom_to_selected(self.layer)
 
     def add_non_entity_parent(self, layer_icon):
         """

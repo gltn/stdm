@@ -251,27 +251,27 @@ class ValueList(Entity):
         """
         Remove the given lookup value from the collection.
         :param value: Value to be removed.
-        :type value: str
+        :type value: str or CodeValue
         :returns: True if the value was successfully removed, else False.
         :rtype: bool
         """
-        if isinstance(value, unicode):
-            digest = self.value_hash(value)
+        if isinstance(value, basestring):
+            cv = self.code_value(value)
         else:
-            digest = self.value_hash(value.value)
-        cv = self.code_value(digest)
+            cv = value
 
         if cv is None:
-            LOGGER.debug('%s lookup value could not be found in the %s value '
-                         'list.', value, self.name)
+            LOGGER.debug('Lookup value could not be found in the %s value '
+                         'list.', self.name)
 
             return False
-        val = self.value_hash(cv.value)
 
-        del self.values[val]
+        digest = self.value_hash(cv.value)
+
+        del self.values[digest]
 
         LOGGER.debug('%s lookup value removed from the %s value list.',
-                     value, self.name)
+                     cv.value, self.name)
 
         return True
 
@@ -280,7 +280,7 @@ class ValueList(Entity):
         :return: Returns a list of lookup string values.
         :rtype: list
         """
-        return self.values.keys()
+        return [cv.value for cv in self.values.values()]
 
 
 

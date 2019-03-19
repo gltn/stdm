@@ -43,7 +43,7 @@
        <item>
         <widget class="QRadioButton" name="rbCSV">
          <property name="text">
-          <string>CSV</string>
+          <string>Textual - CSV format</string>
          </property>
         </widget>
        </item>
@@ -344,13 +344,6 @@
         </layout>
        </item>
       </layout>
-      <zorder>groupBox_5</zorder>
-      <zorder>groupBox_6</zorder>
-      <zorder>txtWhereQuery</zorder>
-      <zorder>btnClearQuery</zorder>
-      <zorder>btnQueryVerify</zorder>
-      <zorder>label</zorder>
-      <zorder>label_2</zorder>
      </widget>
     </item>
    </layout>

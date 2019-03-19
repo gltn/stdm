@@ -397,7 +397,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         the specified entity and corresponding STR entities.
         """
 
-
         entityWidget = self.tbSTREntity.currentWidget()
 
         entity_name = entityWidget.config.data_source_name
@@ -442,7 +441,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 self.details_tree_view.search_spatial_unit(
                     entity, result_ids
                 )
-            # self._load_root_node(entity_name, formattedNode)
+            #self._load_root_node(entity_name, formattedNode)
 
     def clearSearch(self):
         """

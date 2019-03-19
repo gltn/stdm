@@ -460,14 +460,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             if isinstance(c, GeometryColumn):
                 continue
 
-            #Do not include virtual columns in list of missing columns
+            # Do not include virtual columns in list of missing columns
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 missing_columns.append(c.name)
 
             else:
                 header = c.ui_display()
                 self._headers.append(header)
-
                 col_name = c.name
 
                 '''
@@ -478,7 +477,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
-                    continue
 
                 self._entity_attrs.append(col_name)
 
@@ -488,7 +486,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     formatter = w_factory(c)
                     self._cell_formatters[col_name] = formatter
 
-                #Set searchable columns
+                # Set searchable columns
                 if c.searchable:
                     self._searchable_columns[c.ui_display()] = {
                         'name': c.name,
@@ -616,7 +614,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.show()
             progressDialog.setValue(0)
 
-            #Add records to nested list for enumeration in table model
+            # Add records to nested list for enumeration in table model
             load_data = True
             if self.plugin is not None:
                 if self._entity.name in self.plugin.entity_table_model.keys():
@@ -624,9 +622,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         self._tableModel = self.plugin.entity_table_model[
                             self._entity.name
                         ]
-                        #load_data = False
-                    #else:
-                        #load_data = True
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
 
@@ -635,9 +630,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 if len(self.filtered_records) > 0:
                     entity_records = self.filtered_records
                 else:
-                    entity_records = fetch_from_table(
-                        self._entity.name, limit=self.record_limit
-                    )
+                    entity_cls = self._dbmodel()
+                    entity_records = entity_cls.queryObject().filter().limit(
+                        self.record_limit
+                    ).all()
 
             # if self._tableModel is None:
                 entity_records_collection = []
@@ -648,10 +644,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     entity_row_info = []
                     progressDialog.setValue(i)
                     try:
-                        # for attr, attr_val in er.items():
                         for attr in self._entity_attrs:
                             attr_val = getattr(er, attr)
-                            #attr_val = er[attr]
 
                             # Check if there are display formatters and apply if
                             # one exists for the given attribute.

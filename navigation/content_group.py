@@ -146,7 +146,7 @@ class ContentGroup(QObject,HashableMixin):
                     qo = cnt.queryObject()
 
                     if c.code is None:
-                        code = self.hash_code(c.name)
+                        code = self.hash_code(unicode(c.name))
                         cn = c
                     else:
                         code = c.code
