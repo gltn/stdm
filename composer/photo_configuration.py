@@ -28,6 +28,7 @@ from .configuration_collection_base import (
     LinkedTableItemConfiguration
 )
 
+
 class PhotoConfiguration(LinkedTableItemConfiguration):
     tag_name = "Source"
 
@@ -78,6 +79,7 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
             document_type=document_type,
             document_type_id=document_type_id
         )
+
 
 class PhotoConfigurationCollection(ConfigurationCollectionBase):
     """

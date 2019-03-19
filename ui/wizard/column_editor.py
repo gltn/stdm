@@ -572,6 +572,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if result == 1:
             self.form_fields['minimum'] = editor.min_val()
             self.form_fields['maximum'] = editor.max_val()
+            self.form_fields['precision'] = editor.precision
+            self.form_fields['scale'] = editor.scale
 
     def date_property(self):
         """

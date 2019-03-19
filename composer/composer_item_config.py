@@ -49,6 +49,7 @@ from .item_formatter import (
     LineFormatter,
     MapFormatter,
     PhotoFormatter,
+    QRCodeFormatter,
     TableFormatter
  )
 
@@ -348,6 +349,7 @@ class PhotoConfig(ComposerItemConfig):
 
 PhotoConfig.register()
 
+
 class ChartConfig(ComposerItemConfig):
     """
     Chart composer item which uses the QgsComposerPicture item for
@@ -385,7 +387,25 @@ class ChartConfig(ComposerItemConfig):
         chart_item = sel_items[0]
         self._itemFormatter.apply(chart_item, self.composerWrapper())
 
+
 ChartConfig.register()
+
+
+class QRCodeConfig(PhotoConfig):
+    """Composer item for QR codes."""
+    def __init__(self,composerWrapper):
+        ComposerItemConfig.__init__(self, composerWrapper)
+        self._itemFormatter = QRCodeFormatter()
+
+    def action(self):
+        qrcode_act = QAction(QIcon(":/plugins/stdm/images/icons/qrcode.png"), \
+        QApplication.translate("QRCodeConfig","Add QR Code"), self.composerView())
+
+        return qrcode_act
+
+
+QRCodeConfig.register()
+
 
 class SeparatorConfig(ComposerItemConfig):
     """

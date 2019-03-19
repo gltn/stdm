@@ -107,5 +107,7 @@
     <file>images/icons/custom_tenure.png</file>
     <file>images/icons/advanced_search.png</file>
     <file>images/icons/expression.png</file>
+	<file>images/icons/qrcode.png</file>
+	<file>images/icons/qrcode_512.png</file>
   </qresource>
 </RCC>

@@ -188,6 +188,11 @@ class PhotoFormatter(BaseComposerItemFormatter):
     """
     Add widget for formatting composer picture items.
     """
+    def __init__(self):
+        self.default_photo = PLUGIN_DIR + "/images/icons/photo_512.png"
+        self.has_frame = True
+        self._item_editor_cls = ComposerPhotoDataSourceEditor
+
     def apply(self, photo_item, composerWrapper, fromTemplate=False):
         if not isinstance(photo_item, QgsComposerPicture):
             return
@@ -198,24 +203,25 @@ class PhotoFormatter(BaseComposerItemFormatter):
             self._configure_picture_editor_properties(picture_editor)
 
         if not fromTemplate:
-            #Enable outline in map composer item
-            frame_width = 0.15
-            photo_item.setFrameEnabled(True)
-            photo_item.setFrameOutlineWidth(frame_width)
+            if self.has_frame:
+                # Enable outline in map composer item
+                frame_width = 0.15
+                photo_item.setFrameEnabled(True)
+                photo_item.setFrameOutlineWidth(frame_width)
+
             photo_item.setResizeMode(QgsComposerPicture.ZoomResizeFrame)
 
             #Create data properties editor and it to the dock widget
-            photo_data_source_editor = ComposerPhotoDataSourceEditor(composerWrapper)
+            photo_data_source_editor = self._item_editor_cls(composerWrapper)
             stdmDock = composerWrapper.stdmItemDock()
             stdmDock.setWidget(photo_data_source_editor)
 
             #Add widget to the composer wrapper widget mapping collection
             composerWrapper.addWidgetMapping(photo_item.uuid(), photo_data_source_editor)
 
-        #Set default photo properties
-        default_photo = PLUGIN_DIR + "/images/icons/photo_512.png"
-        if QFile.exists(default_photo):
-            photo_item.setPictureFile(default_photo)
+        # Set default photo properties
+        if QFile.exists(self.default_photo):
+            photo_item.setPictureFile(self.default_photo)
 
         #Set ID to match UUID
         photo_item.setId(photo_item.uuid())
@@ -243,6 +249,7 @@ class PhotoFormatter(BaseComposerItemFormatter):
             item_id_groupboxes = contents_widget.findChildren(QGroupBox, "groupBox")
             for gp in item_id_groupboxes:
                 gp.setVisible(False)
+
 
 class TableFormatter(BaseComposerItemFormatter):
     """
@@ -386,6 +393,14 @@ class ChartFormatter(PhotoFormatter):
 
         #Set ID to match UUID
         chart_item.setId(chart_item.uuid())
+
+
+class QRCodeFormatter(PhotoFormatter):
+    """Add composer widget for editing QRCode properties"""
+    def __init__(self):
+        self.default_photo = PLUGIN_DIR + "/images/icons/qrcode_512.png"
+        self.has_frame = False
+        self._item_editor_cls = ComposerPhotoDataSourceEditor
         
         
         

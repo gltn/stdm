@@ -31,7 +31,7 @@ class EntityModelItem(QStandardItem):
 
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.short_name)
-        description = self._create_item(str(self._entity.description))
+        description = self._create_item(unicode(self._entity.description))
 
         self.appendRow([name_item, description])
 
@@ -109,7 +109,7 @@ class BaseEntitySelectionMixin(object):
         return [entities[name] for name in selected_names if name in entities]
 
     def _names_from_indexes(self, model, selected_indexes):
-        return [str(model.itemFromIndex(idx).text()) for idx in selected_indexes if idx.isValid()]
+        return [unicode(model.itemFromIndex(idx).text()) for idx in selected_indexes if idx.isValid()]
        
     def _selected_names(self, model):
         raise NotImplementedError('Please use the sub-class object of <BaseEntitySelectionMixin>')
@@ -128,7 +128,7 @@ class EntityListSelectionMixin(BaseEntitySelectionMixin):
 
 class EntityComboBoxSelectionMixin(BaseEntitySelectionMixin):
     def _selected_names(self, model):
-        return [str(self.currentText())]
+        return [unicode(self.currentText())]
 
     def current_entity(self):
         entities = self.selected_entities()
