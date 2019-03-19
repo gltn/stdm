@@ -579,13 +579,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         group_node = self.create_node("group")
 
         group_label = self.create_node("label")
-        if not self.entity_read.on_column_show_in_parent():
-            group_node.setAttribute("appearance", "field-list")
-            group_node.setAttribute(ref, cate_name)
-            group_label.appendChild(label_txt)
-            group_node.appendChild(group_label)
-
-        else:
+        if self.entity_read.on_column_show_in_parent():
             repeat_node = self.create_node('repeat')
             ref = 'nodeset'
             repeat_node.setAttribute("appearance", "field-list")
@@ -598,8 +592,15 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             ))
             group_node.appendChild(group_label)
             group_node.appendChild(repeat_node)
+
+        else:
+            group_node.setAttribute("appearance", "field-list")
+            group_node.setAttribute(ref, cate_name)
+            group_label.appendChild(label_txt)
+            group_node.appendChild(group_label)
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
+        #print repeat_node
         return group_node, repeat_node
 
     def social_tenure_nodes(self):
