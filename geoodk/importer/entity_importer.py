@@ -126,6 +126,7 @@ class Save2DB:
         self.key = 0
         self.parents_ids = ids
         self.geom = 4326
+        self.entity_mapping = {}
 
     def object_from_entity_name(self, entity):
         """
@@ -247,24 +248,35 @@ class Save2DB:
         Format object attribute data from entity and save them into database
         :return:
         """
-        if self.entity.short_name == 'social_tenure_relationship':
+        try:
+            if self.entity.short_name == 'social_tenure_relationship':
 
-            prefix = current_profile().prefix+'_'
-            if hasattr(self.attributes, 'party'):
-                full_party_ref_column = self.attributes.get('party')
-                party_ref_column = full_party_ref_column+ '_id'
+                prefix = current_profile().prefix+'_'
+                if hasattr(self.attributes, 'party'):
+                    full_party_ref_column = self.attributes.get('party')
+                    party_ref_column = full_party_ref_column+ '_id'
+                    self.attributes.pop('party')
+                else:
+                    full_party_ref_column = current_profile().social_tenure.parties[0].name
+                    party_ref_column = full_party_ref_column + '_id'
 
                 setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
 
-                self.attributes.pop('party')
-            if hasattr(self.attributes, 'spatial_unit'):
-                full_spatial_ref_column = self.attributes.get('spatial_unit')
-                spatial_ref_column = full_spatial_ref_column+ '_id'
+                if hasattr(self.attributes, 'spatial_unit'):
+                    full_spatial_ref_column = self.attributes.get('spatial_unit')
+                    spatial_ref_column = full_spatial_ref_column+ '_id'
+                    self.attributes.pop('spatial_unit')
+                else:
+                    full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
+                    spatial_ref_column = full_spatial_ref_column + '_id'
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
-                self.attributes.pop('spatial_unit')
+        except Exception as ex:
+            print ex.message
+
+        self.column_info()
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
-                col_type = self.column_info().get(k)
+                col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
@@ -272,7 +284,6 @@ class Save2DB:
             self.model.documents = self._doc_manager.model_objects()
         self.model.save()
         return self.model.id
-        #self.cleanup()
 
     def save_parent_to_db(self):
         """
@@ -280,10 +291,12 @@ class Save2DB:
         attribute
         :return:
         """
+        self.column_info()
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
-                col_type = self.column_info().get(k)
+                col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
+                print "property{0}....  and type.{1}".format(col_prop, col_type)
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
@@ -309,11 +322,10 @@ class Save2DB:
 
         :return:
         """
-        type_mapping = {}
+        self.entity_mapping = {}
         cols = self.entity.columns.values()
         for c in cols:
-            type_mapping[c.name] = c.TYPE_INFO
-        return type_mapping
+            self.entity_mapping[c.name] = c.TYPE_INFO
 
     def get_srid(self, srid):
         """
@@ -387,7 +399,9 @@ class Save2DB:
                 if var_code is not None:
                     return var_code
                 elif entity_attr_to_id(col_prop.parent, "name", var) is not None:
-                    return entity_attr_to_id(col_prop.parent, "name", var)
+                    var_code = entity_attr_to_id(col_prop.parent, "name", var)
+                    if var_code is not None:
+                        return var_code
                 else:
                     return None
 
