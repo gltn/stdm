@@ -68,6 +68,7 @@ from .chart_configuration import ChartConfigurationCollection
 from .composer_item_config import ComposerItemConfig
 from .composer_data_source import ComposerDataSource
 from .photo_configuration import PhotoConfigurationCollection
+from .qr_code_configuration import QRCodeConfigurationCollection
 from .spatial_fields_config import SpatialFieldsConfiguration
 from .table_configuration import TableConfigurationCollection
 from .item_formatter import (
@@ -76,6 +77,7 @@ from .item_formatter import (
     LineFormatter,
     MapFormatter,
     PhotoFormatter,
+    QRCodeFormatter,
     TableFormatter
 )
 
@@ -578,13 +580,17 @@ class ComposerWrapper(QObject):
             chart_config_collection = ChartConfigurationCollection.create(templateDoc)
             self._configure_chart_editors(chart_config_collection)
 
+            # Load QR code property editors
+            qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
+            self._configure_qr_code_editors(qrc_config_collection)
+
             self._sync_ids_with_uuids()
 
     def saveTemplate(self):
         """
         Creates and saves a new document template.
         """
-        #Validate if the user has specified the data source
+        # Validate if the user has specified the data source
         if not self.selectedDataSource():
             QMessageBox.critical(self.composerView(),
                                  QApplication.translate("ComposerWrapper","Error"),
@@ -592,7 +598,7 @@ class ComposerWrapper(QObject):
                                             "data source name for the document composition."))
             return
 
-        #Assert if the referenced table name has been set
+        # Assert if the referenced table name has been set
         if not self.selected_referenced_table():
             QMessageBox.critical(self.composerView(),
                                  QApplication.translate("ComposerWrapper","Error"),
@@ -600,7 +606,7 @@ class ComposerWrapper(QObject):
                                             "referenced table name for the selected data source."))
             return
 
-        #If it is a new unsaved document template then prompt for the document name.
+        # If it is a new unsaved document template then prompt for the document name.
         docFile = self.documentFile()
 
         if docFile is None:
@@ -681,7 +687,21 @@ class ComposerWrapper(QObject):
 
         templateDoc = QDomDocument()
         template_name = docFileInfo.completeBaseName()
-        self._writeXML(templateDoc, template_name)
+
+        # Catch exception raised when writing items' elements
+        try:
+            self._writeXML(templateDoc, template_name)
+        except Exception as exc:
+            msg = unicode(exc)
+            QMessageBox.critical(
+                self.composerView(),
+                QApplication.translate("ComposerWrapper", "Save Error"),
+                msg
+            )
+            docFile.close()
+            docFile.remove()
+
+            return
 
         if docFile.write(templateDoc.toByteArray()) == -1:
             QMessageBox.critical(self.composerView(),
@@ -721,8 +741,8 @@ class ComposerWrapper(QObject):
         dataSourceElement.appendChild(spatialColumnsElement)
 
         #Write photo configuration
-        tables_element = PhotoConfigurationCollection.dom_element(self, xml_doc)
-        dataSourceElement.appendChild(tables_element)
+        photos_element = PhotoConfigurationCollection.dom_element(self, xml_doc)
+        dataSourceElement.appendChild(photos_element)
 
         #Write table configuration
         tables_element = TableConfigurationCollection.dom_element(self, xml_doc)
@@ -731,6 +751,10 @@ class ComposerWrapper(QObject):
         #Write chart configuration
         charts_element = ChartConfigurationCollection.dom_element(self, xml_doc)
         dataSourceElement.appendChild(charts_element)
+
+        # Write QRCode configuration
+        qr_codes_element = QRCodeConfigurationCollection.dom_element(self, xml_doc)
+        dataSourceElement.appendChild(qr_codes_element)
 
     def _configure_data_controls(self, composer_data_source):
         """
@@ -830,6 +854,25 @@ class ComposerWrapper(QObject):
 
                 self.addWidgetMapping(table_item.uuid(), table_editor)
 
+    def _configure_qr_code_editors(self, qr_code_config_collection):
+        """
+        Creates widgets for editing QR code properties.
+        :param qr_code_config_collection: QRCodeConfigurationCollection instance.
+        :type qr_code_config_collection: QRCodeConfigurationCollection
+        """
+        if self.stdmDataSourceDock().widget() is None:
+            return
+
+        for item_id, qrc_config in qr_code_config_collection.mapping().iteritems():
+            qrc_item = self.composition().getComposerItemById(item_id)
+
+            if not qrc_item is None:
+                qrc_editor_cls = qr_code_config_collection.editor_type
+                qrc_editor = qrc_editor_cls(self, self.composerView())
+                qrc_editor.set_configuration(qrc_config)
+
+                self.addWidgetMapping(qrc_item.uuid(), qrc_editor)
+
     def _sync_ids_with_uuids(self):
         """
         Matches IDs of custom STDM items with the corresponding UUIDs. This
@@ -922,6 +965,9 @@ class ComposerWrapper(QObject):
 
                     elif isinstance(editor_widget, ComposerChartConfigEditor):
                         itemFormatter = ChartFormatter()
+
+                    elif isinstance(editor_widget, QRCodeConfigurationCollection.editor_type):
+                        itemFormatter = QRCodeFormatter()
 
                 elif isinstance(composer_item, QgsComposerAttributeTableV2):
                     itemFormatter = TableFormatter()
