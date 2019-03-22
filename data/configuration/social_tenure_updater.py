@@ -134,8 +134,10 @@ def _create_primary_entity_view(
 
     party_columns, party_join = [], []
 
+
     # Omit party entities in the spatial unit join
     #### Create party views
+
     if not pe_is_spatial:
         party_columns, party_join = _entity_select_column(
             primary_entity, True, True, True,
@@ -276,6 +278,8 @@ def _entity_select_column(
         custom_tenure = False
 
     i = 0
+    parents = []
+
     for c in columns:
         if c.TYPE_INFO not in _exclude_view_column_types:
             normalized_entity_sname = entity.short_name.replace(' ', '_').lower()
@@ -458,10 +462,20 @@ def _entity_select_column(
                 #         join_statements.append(join_statement)
                 # else:
 
-                    join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
-                        join_type, parent_table, col_select_name,
-                        c.entity_relation.parent_column
-                    )
+                    # This fix needs to be tested more ...
+                    if parent_table in foreign_key_parents and 'relationship' not in entity.name:
+                        parent_table_alias = foreign_key_parents[parent_table][0]
+                        join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                            join_type, parent_table, parent_table_alias, col_select_name,
+                            c.entity_relation.parent_column
+                        )
+                    else:
+                        join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
+                            join_type, parent_table, col_select_name,
+                            c.entity_relation.parent_column
+                        )
+                        parents.append(parent_table)
+
                     join_statements.append(join_statement)
 
 
