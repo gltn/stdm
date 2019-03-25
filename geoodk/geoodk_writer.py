@@ -666,8 +666,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref",self.model_category_group(parent_path, key))
-                #label = "jr:itext('{0}:label')".format(self.set_model_xpath(key))
-                #label_text_info = self.entity_read.user_entity_name() + ' ' +key.replace("_", " ").title()
+
                 label_text_info = key.replace("_", " ").title()
                 label_txt= self.create_text_node(label_text_info)
                 #label_node.setAttribute("ref", label)

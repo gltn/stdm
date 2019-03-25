@@ -243,37 +243,62 @@ class Save2DB:
         else:
             return formatted_doc_list[0]
 
+    def extract_social_tenure_entities(self):
+        '''
+        We want to extract social tenure enities so that we know if it has multiple or single
+        entities in the list
+        :return:
+        '''
+        party_ref_column = ''
+        spatial_ref_column = ''
+        if self.parents_ids is not None:
+            print self.parents_ids
+            if self.attributes.has_key('party'):
+                full_party_ref_column = self.attributes.get('party')
+
+                party_ref_column = full_party_ref_column + '_id'
+                print 'party{}.'.format(party_ref_column)
+                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
+
+            if self.attributes.has_key('spatial_unit'):
+                full_spatial_ref_column = self.attributes.get('spatial_unit')
+                spatial_ref_column = full_spatial_ref_column + '_id'
+                print 'sp.{}.'.format(spatial_ref_column)
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
+            return party_ref_column, spatial_ref_column
+
     def save_to_db(self):
         """
         Format object attribute data from entity and save them into database
         :return:
         """
+        self.column_info()
         try:
             if self.entity.short_name == 'social_tenure_relationship':
+                #try:
 
-                prefix = current_profile().prefix+'_'
-                if hasattr(self.attributes, 'party'):
+                prefix = current_profile().prefix + '_'
+                if self.attributes.has_key('party'):
                     full_party_ref_column = self.attributes.get('party')
-                    party_ref_column = full_party_ref_column+ '_id'
+                    party_ref_column = full_party_ref_column + '_id'
                     self.attributes.pop('party')
                 else:
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
                     party_ref_column = full_party_ref_column + '_id'
 
-                setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_column)[0])
+                setattr(self.model, party_ref_column, self.parents_ids.get(prefix + full_party_ref_column)[0])
 
-                if hasattr(self.attributes, 'spatial_unit'):
+                if self.attributes.has_key('spatial_unit'):
                     full_spatial_ref_column = self.attributes.get('spatial_unit')
-                    spatial_ref_column = full_spatial_ref_column+ '_id'
+                    spatial_ref_column = full_spatial_ref_column + '_id'
                     self.attributes.pop('spatial_unit')
                 else:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
                     spatial_ref_column = full_spatial_ref_column + '_id'
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_column)[0])
-        except Exception as ex:
-            print ex.message
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix + full_spatial_ref_column)[0])
+        except:
+            pass
 
-        self.column_info()
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
@@ -296,7 +321,7 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
-                print "property{0}....  and type.{1}".format(col_prop, col_type)
+                #print "property{0}....  and type.{1}".format(col_prop, col_type)
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
@@ -392,24 +417,29 @@ class Save2DB:
                 return None
         elif col_type == 'ADMIN_SPATIAL_UNIT':
             var_code = None
-            if len(var) < 1 or var is None:
-                return None
-            elif not len(var) > 3:
-                var_code = entity_attr_to_id(col_prop.parent, "code", var)
-                if var_code is not None:
-                    return var_code
-                elif entity_attr_to_id(col_prop.parent, "name", var) is not None:
+            try:
+                if len(var) < 1 or var is None:
+                    return None
+                elif not len(var) > 3:
+                    var_code = entity_attr_to_id(col_prop.parent, "code", var)
+                    if var_code and var_code == var:
+                        return None
+                    else:
+                        return var_code
+
+                elif len(var) > 3 and entity_attr_to_id(col_prop.parent, "name", var) is not None:
                     var_code = entity_attr_to_id(col_prop.parent, "name", var)
-                    if var_code is not None:
+                    if var_code and var_code == var:
+                        return None
+                    else:
                         return var_code
                 else:
-                    return None
-
-            else:
-                if entity_attr_to_id(col_prop.parent, "name", var) is None:
-                    var_code = entity_attr_to_id(col_prop.parent, "code", var)
-                    if not var_code:
-                        return None
+                    if entity_attr_to_id(col_prop.parent, "name", var) is None:
+                        var_code = entity_attr_to_id(col_prop.parent, "code", var)
+                        if not var_code or var_code == var:
+                            return None
+            except:
+                pass
 
         elif col_type == 'MULTIPLE_SELECT':
             print 'multiple select {}'.format(var)
