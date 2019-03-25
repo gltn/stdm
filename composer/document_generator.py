@@ -86,6 +86,7 @@ from .composer_wrapper import load_table_layers
 from .chart_configuration import ChartConfigurationCollection
 from .spatial_fields_config import SpatialFieldsConfiguration
 from .photo_configuration import PhotoConfigurationCollection
+from .qr_code_configuration import QRCodeConfigurationCollection
 from .table_configuration import TableConfigurationCollection
 
 LOGGER = logging.getLogger('stdm')
@@ -297,6 +298,9 @@ class DocumentGenerator(QObject):
             #Create chart configuration collection object
             chart_config_collection = ChartConfigurationCollection.create(templateDoc)
 
+            # Create QR code configuration collection object
+            qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
+
             #Load the layers required by the table composer items
             self._table_mem_layers = load_table_layers(table_config_collection)
             
@@ -407,8 +411,11 @@ class DocumentGenerator(QObject):
                         '''
                         self._refresh_map_item(map_item)
 
-                #Extract chart information and generate chart
+                # Extract chart information and generate chart
                 self._generate_charts(composition, chart_config_collection, rec)
+
+                # Extract QR code information in order to generate QR codes
+                self._generate_qr_codes(composition, qrc_config_collection,rec)
 
                 #Build output path and generate composition
                 if not filePath is None and len(dataFields) == 0:
@@ -595,6 +602,25 @@ class DocumentGenerator(QObject):
         for cc in chart_configs:
             chart_handler = cc.create_handler(composition, self._exec_query)
             chart_handler.set_data_source_record(record)
+
+    def _generate_qr_codes(self, composition, config_collection, record):
+        """
+        Extract QR code information and use it to generate QR codes, which are
+        exported as images then embedded in the composition as pictures.
+        :param composition: Map composition
+        :type composition: QgsComposition
+        :param config_collection: QR code configuration collection specified
+        in template file.
+        :type config_collection: QRCodeConfigurationCollection
+        :param record: Matching record from the result set.
+        :type record: object
+        """
+
+        qrc_configs = config_collection.items().values()
+
+        for qrc in qrc_configs:
+            qrc_handler = qrc.create_handler(composition, self._exec_query)
+            qrc_handler.set_data_source_record(record)
 
     def _extract_photo_info(self, composition, config_collection, record):
         """

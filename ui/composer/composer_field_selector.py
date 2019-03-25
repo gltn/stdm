@@ -26,32 +26,78 @@ from stdm.data.pg_utils import table_column_names
 
 from .ui_composer_data_field import Ui_frmComposerFieldEditor
 
-class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
+
+class BaseComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
     """
-    Widget for selecting the field from a database table or view. 
+    Base widget for enabling the selection of a field from a database table
+    or view.
     """
-    def __init__(self, composerWrapper, label, parent = None):
-        QWidget.__init__(self,parent)
+    def __init__(self, composerWrapper, label, parent=None):
+        QWidget.__init__(self, parent)
         self.setupUi(self)
-        
+
         self._composerWrapper = composerWrapper
         self._label = label
-        
-        #Load fields if the data source has been specified
+
+        # Load fields if the data source has been specified
         dsName = self._composerWrapper.selectedDataSource()
         self._loadFields(dsName)
-        
-        #Connect signals
+
+        # Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
         self.cboDataField.currentIndexChanged[str].connect(self.onFieldNameChanged)
-        
-    def onDataSourceChanged(self,dataSourceName):
+
+    def onDataSourceChanged(self, dataSourceName):
         """
         When the user changes the data source then update the fields.
         """
         self._loadFields(dataSourceName)
-        
-    def onFieldNameChanged(self,fieldName):
+
+    def onFieldNameChanged(self, fieldName):
+        """
+        Slot raised when the field selection changes. To be overridden by
+        sub-classes.
+        """
+        pass
+
+    def fieldName(self):
+        """
+        Return the name of the selected field.
+        """
+        return self.cboDataField.currentText()
+
+    def selectFieldName(self, fieldName):
+        """
+        Select the specified field name from the items in the combobox.
+        """
+        fieldIndex = self.cboDataField.findText(fieldName)
+
+        if fieldIndex != -1:
+            self.cboDataField.setCurrentIndex(fieldIndex)
+
+    def _loadFields(self, dataSourceName):
+        """
+        Load fields/columns of the given data source.
+        """
+        if dataSourceName == "":
+            self.cboDataField.clear()
+            return
+
+        columnsNames = table_column_names(dataSourceName)
+        if len(columnsNames) == 0:
+            return
+
+        self.cboDataField.clear()
+        self.cboDataField.addItem("")
+
+        self.cboDataField.addItems(columnsNames)
+
+
+class ComposerFieldSelector(BaseComposerFieldSelector):
+    """
+    Widget for selecting the field from a database table or view. 
+    """
+    def onFieldNameChanged(self, fieldName):
         """
         Slot raised when the field selection changes.
         """
@@ -70,35 +116,3 @@ class ComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
             )
 
         self._composerWrapper.composition().update()
-        
-    def fieldName(self):
-        """
-        Return the name of the selected field.
-        """
-        return self.cboDataField.currentText()
-    
-    def selectFieldName(self,fieldName):
-        """
-        Select the specified field name from the items in the combobox.
-        """
-        fieldIndex = self.cboDataField.findText(fieldName)
-        
-        if fieldIndex != -1:
-            self.cboDataField.setCurrentIndex(fieldIndex)
-        
-    def _loadFields(self,dataSourceName):
-        """
-        Load fields/columns of the given data source.
-        """
-        if dataSourceName == "":
-            self.cboDataField.clear()
-            return
-        
-        columnsNames = table_column_names(dataSourceName)
-        if len(columnsNames) == 0:
-            return
-        
-        self.cboDataField.clear()
-        self.cboDataField.addItem("")
-        
-        self.cboDataField.addItems(columnsNames)

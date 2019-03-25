@@ -48,3 +48,6 @@ from .chart_configuration import (
     legend_positions,
     VerticalBarConfiguration
 )
+from .qr_code_configuration import (
+    QRCodeConfiguration
+)

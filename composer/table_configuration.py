@@ -36,6 +36,7 @@ from qgis.core import (
 
 from .photo_configuration import PhotoConfiguration
 
+
 class TableConfiguration(PhotoConfiguration):
 
     def vector_layer(self):
@@ -81,6 +82,7 @@ class TableConfiguration(PhotoConfiguration):
         """
         return TableItemValueHandler(composition, self, query_handler)
 
+
 class TableConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing multiple instances of TableConfiguration objects.
@@ -91,6 +93,7 @@ class TableConfigurationCollection(ConfigurationCollectionBase):
     editor_type = ComposerTableDataSourceEditor
     config_root = TableConfiguration.tag_name
     item_config = TableConfiguration
+
 
 class TableItemValueHandler(ItemConfigValueHandler):
     """
@@ -108,7 +111,6 @@ class TableItemValueHandler(ItemConfigValueHandler):
             return
         if isinstance(table_item, QgsComposerFrame):
             table_item = table_item.multiFrame()
-
 
         '''
         Capture saved column settings since we are about to reset the vector

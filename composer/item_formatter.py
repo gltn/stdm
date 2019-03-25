@@ -55,11 +55,13 @@ from stdm.ui.composer import (
     ComposerChartConfigEditor,
     ComposerFieldSelector,
     ComposerPhotoDataSourceEditor,
+    ComposerQREditor,
     ComposerSymbolEditor,
     ComposerTableDataSourceEditor
 )
 from stdm.utils.util import PLUGIN_DIR
-                     
+
+
 class BaseComposerItemFormatter(object):
     """
     Defines the abstract interface for implementation by subclasses.
@@ -69,7 +71,8 @@ class BaseComposerItemFormatter(object):
         Subclasses to implement this method for formatting composer items.
         """
         raise NotImplementedError
-    
+
+
 class LineFormatter(BaseComposerItemFormatter):
     """
     Removes the marker in an arrow composer item to depict a line.
@@ -151,7 +154,7 @@ class MapFormatter(BaseComposerItemFormatter):
             return
         
         if not fromTemplate:
-            #Enable outline in map composer item
+            # Enable outline in map composer item
             frameWidth = 0.3
             templateMap.setFrameEnabled(True)
             templateMap.setFrameOutlineWidth(frameWidth)
@@ -183,6 +186,7 @@ class MapFormatter(BaseComposerItemFormatter):
 
         #Set ID to match UUID
         templateMap.setId(templateMap.uuid())
+
 
 class PhotoFormatter(BaseComposerItemFormatter):
     """
@@ -400,7 +404,7 @@ class QRCodeFormatter(PhotoFormatter):
     def __init__(self):
         self.default_photo = PLUGIN_DIR + "/images/icons/qrcode_512.png"
         self.has_frame = False
-        self._item_editor_cls = ComposerPhotoDataSourceEditor
+        self._item_editor_cls = ComposerQREditor
         
         
         

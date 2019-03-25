@@ -26,6 +26,7 @@ from datetime import (
     date,
     datetime
 )
+import re
 
 from PyQt4.QtCore import (
     QDir,
@@ -820,44 +821,6 @@ def entity_attr_to_id(entity, col_name, attr_val, lower=False):
 
     return attr_id
 
-#
-# def entity_attr_to_id(entity, attr_obj, attr_val, lower=False):
-#     """
-#     Coverts other column values to id value
-#     of the same table.
-#     :param entity: Entity
-#     :type entity: Class
-#     :param attr_obj: The source column object
-#     :type attr_obj: Object
-#     :param attr_val: Any value of a source column
-#     :type attr_val: Any
-#     :return: The Id of the entity or the attribute
-#     value if no id is found or the attribute is not valid.
-#     :rtype: Integer or NoneType
-#     """
-#     doc_type_model = entity_model(entity)
-#     doc_type_obj = doc_type_model()
-#     if lower:
-#
-#         result = doc_type_obj.queryObject().filter(
-#             func.lower(attr_obj) == func.lower(attr_val)
-#         ).first()
-#
-#     else:
-#         result = doc_type_obj.queryObject().filter(
-#             attr_obj == attr_val
-#         ).first()
-#     if result is not None:
-#         attr_id = getattr(
-#             result,
-#             'id',
-#             None
-#         )
-#     else:
-#         attr_id = attr_val
-#
-#     return attr_id
-
 
 def profile_entities(profile):
     """
@@ -1279,3 +1242,8 @@ def string_to_boolean(string_bool, default):
         return result
     else:
         return string_bool
+
+
+def is_ascii(s):
+    """Checks if a string contains non ASCII characters."""
+    return bool(re.match(r'[\x00-\x7F]+$', s))
