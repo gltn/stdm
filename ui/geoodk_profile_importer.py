@@ -581,10 +581,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         try:
             counter = 0
             if len(self.instance_list) > 0:
-                #print len(self.instance_list)
                 self.pgbar.setRange(counter, len(self.instance_list))
                 self.pgbar.setValue(0)
                 self.importlogger.log_action("Import started ...\n")
+                QCoreApplication.processEvents()
 
                 for instance in self.instance_list:
 
@@ -597,7 +597,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     self.uuid_extractor.set_file_path(instance)
                     self.archive_this_import_file(counter, instance)
 
-                    field_data = self.uuid_extractor.document_entities_with_data(current_profile().name.replace(' ','_'),
+                    curr_profile = current_profile().name.replace(' ','_')
+                    entity_nodes = self.uuid_extractor.profile_entity_nodes(curr_profile)
+
+                    if len(entity_nodes) == 0:
+                        self.txt_feedback.append('No entities found for profile: {}. Profile skipped.'.format(curr_profile))
+                        QCoreApplication.processEvents()
+                        continue
+
+                    field_data = self.uuid_extractor.document_entities_with_data(entity_nodes,
                                                                                  self.user_selected_entities())
                     single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(field_data)
 

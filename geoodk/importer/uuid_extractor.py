@@ -57,7 +57,6 @@ class InstanceUUIDExtractor():
 
     def set_document(self):
         """
-
         :return:
         """
         self.file = QFile(self.file_path)
@@ -104,20 +103,29 @@ class InstanceUUIDExtractor():
                 node_list.append(node_val.nodeName())
         return node_list
 
-    def document_entities_with_data(self, profile,entities):
-        """
-        Get entities in the document
-        :return:
-        """
-        instance_data = OrderedDict()
+    def profile_entity_nodes(self, profile):
+        '''
+        Fetch and return QDomNodeList for entities of a
+        profile
+        :rtype: QDomNodeList
+        '''
         self.set_document()
         nodes = self.doc.elementsByTagName(profile)
-        entity_nodes = nodes.item(0).childNodes()
+        return nodes.item(0).childNodes()
+
+    def document_entities_with_data(self, entity_nodes, selected_entities):
+        """
+        Get entities in the dom document matching user
+        selected entities
+        :rtype: OrderedDict
+        """
+        instance_data = OrderedDict()
+
         for attrs in range(entity_nodes.count()):
-            if entity_nodes.item(attrs).nodeName() in entities:
-                name_entity = entity_nodes.item(attrs).nodeName()
-                attr_nodes = self.doc.elementsByTagName(name_entity)
-                instance_data[attr_nodes] = name_entity
+            node_name = entity_nodes.item(attrs).nodeName()
+            if node_name in selected_entities:
+                attr_nodes = self.doc.elementsByTagName(node_name)
+                instance_data[attr_nodes] = node_name
         return instance_data
 
     def attribute_data_from_nodelist(self, args_list):

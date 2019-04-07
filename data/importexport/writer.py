@@ -9,12 +9,15 @@ import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-try:
-    from osgeo import gdal
-    from osgeo import ogr
-except:
-    import gdal
-    import ogr
+import gdal
+import ogr
+
+#try:
+    #from osgeo import gdal
+    #from osgeo import ogr
+#except:
+    #import gdal
+    #import ogr
 
 from stdm.data.pg_utils import (
     columnType,
@@ -129,6 +132,8 @@ class OGRWriter():
             #Create OGR Feature
             feat = ogr.Feature(lyr.GetLayerDefn())
 
+            #import pydevd; pydevd.settrace()
+
             for i in range(len(columns)):
                 colName = columns[i]
 
@@ -146,11 +151,12 @@ class OGRWriter():
                     if isinstance(r[i], decimal.Decimal):
 
                         value = int(r[i])
-                        feat.setField(i, value)
+                        feat.SetField(i, value)
 
                     elif self.is_date(r[i]):
-                        date = datetime.datetime.strptime(r[i], "%Y-%m-%d").date()
-                        feat.setField(i, date)
+                        date_str = r[i].strftime('%d/%m/%Y')
+                        d = datetime.datetime.strptime(date_str, "%d/%m/%Y").date()
+                        feat.SetField(i, d)
                     else:
                         feat.SetField(i, r[i])
 
@@ -170,12 +176,14 @@ class OGRWriter():
 
     @staticmethod
     def is_date(string):
-        try:
-            date = datetime.datetime.strptime(string, "%Y-%m-%d").date()
+        return True if isinstance(string, datetime.date) else False
 
-            return True
-        except Exception:
-            return False
+        #try:
+            #date = datetime.datetime.strptime(string, "%Y-%m-%d").date()
+
+            #return True
+        #except Exception:
+            #return False
 
     def is_decimal(self, number):
         try:
