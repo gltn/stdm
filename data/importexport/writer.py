@@ -9,15 +9,12 @@ import datetime
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-import gdal
-import ogr
-
-#try:
-    #from osgeo import gdal
-    #from osgeo import ogr
-#except:
-    #import gdal
-    #import ogr
+try:
+    from osgeo import gdal
+    from osgeo import ogr
+except:
+    import gdal
+    import ogr
 
 from stdm.data.pg_utils import (
     columnType,
@@ -154,8 +151,8 @@ class OGRWriter():
                         feat.SetField(i, value)
 
                     elif self.is_date(r[i]):
-                        date_str = r[i].strftime('%d/%m/%Y')
-                        d = datetime.datetime.strptime(date_str, "%d/%m/%Y").date()
+                        date_str = r[i].strftime('%Y-%m-%d')
+                        d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
                         feat.SetField(i, d)
                     else:
                         feat.SetField(i, r[i])
