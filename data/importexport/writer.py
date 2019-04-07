@@ -32,6 +32,9 @@ from stdm.settings import (
 from enums import *
 
 class OGRWriter():
+
+    OGR_STRING_TYPE = 4
+    OGR_DATE_TYPE = 9
    
     def __init__(self,targetFile): 
         self._ds=None 
@@ -60,6 +63,10 @@ class OGRWriter():
         colType = columnType(table, field)
         #Get OGR type
         ogrType = ogrTypes[colType]
+
+        #OGR date handling is broken! Convert Date type to STR type
+        if ogrType == OGRWriter.OGR_DATE_TYPE: 
+            ogrType = OGRWriter.OGR_STRING_TYPE
 
         field_defn = ogr.FieldDefn(field.encode('utf-8'), ogrType)
 
@@ -129,8 +136,6 @@ class OGRWriter():
             #Create OGR Feature
             feat = ogr.Feature(lyr.GetLayerDefn())
 
-            #import pydevd; pydevd.settrace()
-
             for i in range(len(columns)):
                 colName = columns[i]
 
@@ -151,9 +156,9 @@ class OGRWriter():
                         feat.SetField(i, value)
 
                     elif self.is_date(r[i]):
-                        date_str = r[i].strftime('%Y-%m-%d')
-                        d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
-                        feat.SetField(i, d)
+                        date_str = r[i].strftime('%d/%m/%Y')
+                        #d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+                        feat.SetField(i, date_str)
                     else:
                         feat.SetField(i, r[i])
 
