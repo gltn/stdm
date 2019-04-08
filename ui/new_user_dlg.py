@@ -37,8 +37,15 @@ class newUserDlg(QDialog, Ui_frmNewUser):
 
         self.user = User
 
+        self.txtUserName.textChanged.connect(self.validate_username)
+
         #Initialize the dialog
         self.initGui()
+
+    def validate_username(self, text):
+        text_edit = self.sender()
+        text_edit.setText(text.lower())
+        
 
     def initGui(self):
         '''

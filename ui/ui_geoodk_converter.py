@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_geoodk_converter.ui'
 #
-# Created: Sun Apr 07 22:34:25 2019
+# Created: Sun Apr 07 23:15:58 2019
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,17 +35,17 @@ class Ui_Dialog(object):
         self.label_3 = QtGui.QLabel(Dialog)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.verticalLayout.addWidget(self.label_3)
-        self.formLayout = QtGui.QFormLayout()
-        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.formLayout.setHorizontalSpacing(200)
-        self.formLayout.setObjectName(_fromUtf8("formLayout"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.chk_all = QtGui.QCheckBox(Dialog)
         self.chk_all.setObjectName(_fromUtf8("chk_all"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.chk_all)
+        self.horizontalLayout.addWidget(self.chk_all)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
         self.btnShowOutputFolder = QtGui.QPushButton(Dialog)
         self.btnShowOutputFolder.setObjectName(_fromUtf8("btnShowOutputFolder"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.btnShowOutputFolder)
-        self.verticalLayout.addLayout(self.formLayout)
+        self.horizontalLayout.addWidget(self.btnShowOutputFolder)
+        self.verticalLayout.addLayout(self.horizontalLayout)
         self.trentities = QtGui.QTreeView(Dialog)
         self.trentities.setObjectName(_fromUtf8("trentities"))
         self.verticalLayout.addWidget(self.trentities)
@@ -69,6 +69,6 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "GeoODK Form Generator", None))
         self.label_3.setText(_translate("Dialog", "Select entities that will be exported to generated GeoODK form", None))
         self.chk_all.setText(_translate("Dialog", "Check all", None))
-        self.btnShowOutputFolder.setText(_translate("Dialog", "Open output folder ...", None))
+        self.btnShowOutputFolder.setText(_translate("Dialog", "Output folder ...", None))
         self.ck_social_tenure.setText(_translate("Dialog", "Enable definition of social tenure relationship...", None))
 
