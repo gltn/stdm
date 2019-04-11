@@ -716,21 +716,19 @@ class STDMQGISLoader(object):
         :return:
         :rtype:
         """
-        file_handler = FilePaths()
-
-        template_files = glob.glob(u'{0}*.sdt'.format(
-            file_handler.defaultConfigPath()
+        template_files = glob.glob('{}*.sdt'.format(
+            FilePaths().defaultConfigPath()
         ))
         templates_path = composer_template_path()
-
         for temp_file in template_files:
-
-            destination_file = u'{}/{}'.format(
-                    templates_path, os.path.basename(temp_file))
-
-            if not os.path.isfile(u'{}/{}'.format(
-                    templates_path, os.path.basename(temp_file))):
-                shutil.copyfile(temp_file, destination_file)
+            destination_file = os.path.join(
+                templates_path, os.path.basename(temp_file))
+            if not os.path.isfile(destination_file):
+                try:
+                    shutil.copyfile(temp_file, destination_file)
+                except IOError:
+                    os.makedirs(templates_path)
+                    shutil.copyfile(temp_file, destination_file)
 
     def load_configuration_from_file(self, parent, manual=False):
         """
