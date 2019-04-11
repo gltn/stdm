@@ -109,6 +109,7 @@ class LayerSelectionHandler(object):
         """
         if self.layer is None:
             return None
+
         if self.stdm_layer(self.layer):
             selected_features = self.layer.selectedFeatures()
             features = []
@@ -162,28 +163,31 @@ class LayerSelectionHandler(object):
         Get the layer table name if the source is from the database.
         :param layer: The layer for which the source is checked
         :type layer: QgsVectorLayer
-        :return: The table name or none if no table name found.
-        :rtype: String or None
+        :return: Table name. 
+        :rtype: str
         """
-        if layer is None:
-            return None
+        if layer is None: return ''
+
         source = layer.source()
-        if source is None:
-            return
+
+        if source is None: return ''
+
         vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+
+        table_name = ''
         try:
             table = vals['table'].split('.')
 
             table_name = table[1].strip('"')
-            if table_name in pg_views():
-                return table_name
-
-            entity_table = self.current_profile.entity_by_name(table_name)
-            if entity_table is None:
-                return None
-            return table_name
         except KeyError:
-            return None
+            table_name = ''
+
+        if table_name in pg_views():
+            return table_name
+
+        entity_table = self.current_profile.entity_by_name(table_name)
+        return table_name
+
 
     def active_layer_check(self):
         """
@@ -214,12 +218,14 @@ class LayerSelectionHandler(object):
         :return: True if the active layer is STDM layer or False if it is not.
         :rtype: Boolean
         """
+        source_found = True
+
         layer_source = self.get_layer_source(active_layer)
 
-        if layer_source is not None:
-            return True
-        else:
-            return False
+        if layer_source == '':
+            source_found = False
+
+        return source_found
 
     def activate_select_tool(self):
         """
@@ -242,8 +248,7 @@ class LayerSelectionHandler(object):
         """
         Removes sel_highlight from the canvas.
         """
-        if self.sel_highlight is not None:
-            self.sel_highlight = None
+        self.sel_highlight = None
 
     def refresh_layers(self):
         """
@@ -314,11 +319,14 @@ class DetailsDBHandler(LayerSelectionHandler):
         """
         if entity is None:
             entity = self._entity
+
         if entity is None:
             return
+
         if entity.name in self.plugin.entity_formatters.keys():
             self.column_formatter = self.plugin.entity_formatters[entity.name]
             return
+
         for col in entity.columns.values():
             col_name = col.name
 
@@ -536,7 +544,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
             self.handle_dock
         )
 
-    def init_dock(self):
+    def open_dock(self):
         """
         Creates dock on right dock widget area and set window title.
         """
@@ -556,10 +564,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
         :return:
         :rtype:
         """
-        if checked:
-            self.init_dock()
-        else:
-            self.close_dock()
+        self.open_dock() if checked else self.close_dock()
 
 
     def clear_feature_selection(self):
@@ -685,7 +690,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.view_selection = self.view.selectionModel()
 
         self.view_selection.currentChanged.connect(
-            self.on_tree_view_item_clicked
+            self.disable_delete_btn
         )
         # show tree message if dock is open and button clicked
         if self.plugin is not None:
@@ -711,7 +716,7 @@ class DetailsTreeView(DetailsDBHandler):
         canvas.setExtent(box)
         canvas.refresh()
 
-    def on_tree_view_item_clicked(self, current, previous):
+    def disable_delete_btn(self, current, previous):
         """
         Disables the delete button if the party node is clicked and enable it
         if other items are clicked.
@@ -736,7 +741,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.layer_table = self.get_layer_source(
             self.iface.activeLayer()
         )
-        if self.layer_table is None:
+        if self.layer_table == '':
             return
 
         if self.layer_table in spatial_tables() and \
@@ -827,7 +832,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         Prepares the dock widget for data loading.
         """
-        # self.init_dock()
+        # self.open_dock()
         # if self.container_widget is not None:
         self.add_tree_view()
 
@@ -852,7 +857,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.show_tree
         )
 
-        self.steam_signals(self.entity)
+        self.node_signals(self.entity)
 
     def add_tree_view(self):
         """
@@ -911,6 +916,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         Shows the treeview.
         """
+
         str_records = []
 
         if self._selected_features is None:
@@ -956,6 +962,7 @@ class DetailsTreeView(DetailsDBHandler):
                     str_records = self.feature_str_link(id)
 
                 self.spatial_unit_items[root] = self.entity
+
                 if len(str_records) > 0:
                     db_model = getattr(str_records[0], self.entity.name)
                 else:
@@ -1132,6 +1139,9 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The root QStandardItem with the feature id
         :rtype: OrderedDict
         """
+
+        import pydevd; pydevd.settrace()
+
         roots = OrderedDict()
         selected_features = self._selected_features
         if selected_features is None:
@@ -1154,6 +1164,9 @@ class DetailsTreeView(DetailsDBHandler):
         :param str_records: STR record models linked to the spatial unit.
         :type str_records: List
         """
+
+        import pydevd; pydevd.settrace()
+
         if model is None: return
 
         if isinstance(model, OrderedDict):
@@ -1179,7 +1192,8 @@ class DetailsTreeView(DetailsDBHandler):
                 parent.appendRow([child])
             except RuntimeError:
                 pass
-            # Add Social Tenure Relationship steam as a last child
+
+            # Add Social Tenure Relationship node as a last child
             if i == len(self._formatted_record) - 1:
                 if len(str_records) > 0:
                     self.add_str_child(parent, str_records, feature_id, party_query)
@@ -1189,7 +1203,7 @@ class DetailsTreeView(DetailsDBHandler):
                         self.add_no_str_steam(parent)
         self.expand_node(parent)
 
-    def add_str_steam(self, parent, str_id):
+    def add_str_node(self, parent, str_id):
         """
         Adds the STR parent into the treeview.
         :param parent: The parent of the STR item, which is the
@@ -1259,6 +1273,8 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The party column name with value.
         :rtype: String
         """
+        import pydevd; pydevd.settrace()
+
         spatial_units = self.social_tenure.spatial_units
 
         for spatial_unit in spatial_units:
@@ -1279,15 +1295,17 @@ class DetailsTreeView(DetailsDBHandler):
         :param feature_id: The selected feature id.
         :type feature_id: Integer
         """
+        import pydevd; pydevd.settrace()
+
+        if str_records is None: return
 
         if self.layer_table is None and self.plugin is not None:
             return
+
         spatial_unit_names = [sp.name for sp in self.spatial_units]
 
         # If the layer table is not spatial unit table, don't show STR node.
         if self.layer_table not in spatial_unit_names  and self.plugin is not None:
-            return
-        if str_records is None:
             return
 
         for record in str_records:
@@ -1297,7 +1315,7 @@ class DetailsTreeView(DetailsDBHandler):
             else:
                 continue
             self.str_models[record.id] = record
-            str_root = self.add_str_steam(parent, record.id)
+            str_root = self.add_str_node(parent, record.id)
             # add STR children
             self.column_widget_registry(record, self.social_tenure)
 
@@ -1357,7 +1375,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         self.feature_str_model[feature_id] = self.str_models.keys()
 
-    def add_party_steam(self, parent, party_entity, party_id):
+    def add_party_node(self, parent, party_entity, party_id):
         """
         Add party steam with table icon and entity short name.
         :param parent: The parent of the party steam - STR steam.
@@ -1381,7 +1399,7 @@ class DetailsTreeView(DetailsDBHandler):
         party_root.setEditable(False)
         return party_root
 
-    def add_spatial_unit_steam(self, parent, spatial_unit_entity, spatial_unit_id):
+    def add_spatial_unit_node(self, parent, spatial_unit_entity, spatial_unit_id):
         """
         Add party steam with table icon and entity short name.
         :param parent: The parent of the party steam - STR steam.
@@ -1417,7 +1435,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         party_id = party_model.id
         self.party_models[party_id] = party_model
-        party_root = self.add_party_steam(
+        party_root = self.add_party_node(
             parent, party_entity, party_id
         )
         # add STR children
@@ -1443,7 +1461,7 @@ class DetailsTreeView(DetailsDBHandler):
         spatial_unit_id = spatial_unit_model.id
         # self.column_widget_registry(spatial_unit_model, spatial_entity)
         # self.party_models[spatial_unit_id] = spatial_unit_model
-        party_root = self.add_spatial_unit_steam(
+        party_root = self.add_spatial_unit_node(
             parent, spatial_entity, spatial_unit_id
         )
         # add STR children
@@ -1454,7 +1472,7 @@ class DetailsTreeView(DetailsDBHandler):
             party_root.appendRow([party_child])
         return party_root
 
-    def add_custom_attr_steam(self, parent):
+    def add_custom_attr_node(self, parent):
         """
         Add party steam with table icon and entity short name.
         :param parent: The parent of the party steam - STR steam.
@@ -1493,7 +1511,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         custom_attr_id = custom_attr_model.id
         # self.party_models[party_id] = party_model
-        custom_attr_root = self.add_custom_attr_steam(parent)
+        custom_attr_root = self.add_custom_attr_node(parent)
 
         # add STR children
         self.column_widget_registry(custom_attr_model, custom_attr_entity)
@@ -1600,9 +1618,9 @@ class DetailsTreeView(DetailsDBHandler):
         except IndexError:
             pass
 
-    def steam_signals(self, entity):
+    def node_signals(self, entity):
         """
-        Connects buttons to the steams in the treeview.
+        Connects buttons to the nodes in the treeview.
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
@@ -1610,12 +1628,12 @@ class DetailsTreeView(DetailsDBHandler):
             if hasattr(self.container_widget, 'edit_btn'):
                 if self.edit_btn_connected:
                     self.container_widget.edit_btn.clicked.disconnect(
-                        self.edit_selected_steam
+                        self.edit_selected_node
                     )
 
             if hasattr(self.container_widget, 'edit_btn'):
                 self.container_widget.edit_btn.clicked.connect(
-                    self.edit_selected_steam
+                    self.edit_selected_node
                 )
             if hasattr(self.container_widget, 'delete_btn'):
                 self.container_widget.delete_btn.clicked.connect(
@@ -1624,12 +1642,12 @@ class DetailsTreeView(DetailsDBHandler):
 
             if hasattr(self.container_widget, 'view_document_btn'):
                 self.container_widget.view_document_btn.clicked.connect(
-                    lambda: self.view_steam_document(
+                    lambda: self.view_node_document(
                         entity
                     )
                 )
 
-    def steam_data(self, mode, results):
+    def node_data(self, mode, results):
         """
         Gets tree item data to be used for editing and deleting a record.
         :param mode: The mode - edit or delete
@@ -1668,15 +1686,15 @@ class DetailsTreeView(DetailsDBHandler):
                 result = item.parent().data()
         return result, item
 
-    # def edit_selected_steam(self):
+    # def edit_selected_node(self):
     #     cProfile.runctx('self._edit_selected_steam()', globals(), locals())
 
-    def edit_selected_steam(self):
+    def edit_selected_node(self):
         """
         Edits the record based on the selected item in the tree view.
         """
         self.edit_btn_connected = True
-        id, item = self.steam_data('edit', self._selected_features)
+        id, item = self.node_data('edit', self._selected_features)
 
         feature_edit = True
         if id is None:
@@ -1730,9 +1748,9 @@ class DetailsTreeView(DetailsDBHandler):
             return
         self.view.expand(item.index())
         if feature_edit:
-            self.update_edited_steam(entity, id)
+            self.update_edited_node(entity, id)
         else:
-            self.update_edited_steam(self.social_tenure, id)
+            self.update_edited_node(self.social_tenure, id)
 
     def delete_selected_item(self):
         """
@@ -1740,7 +1758,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         """
         str_edit = False
-        id, item = self.steam_data('delete', self._selected_features)
+        id, item = self.node_data('delete', self._selected_features)
 
         if isinstance(id, str):
             data_error = QApplication.translate(
@@ -1834,12 +1852,12 @@ class DetailsTreeView(DetailsDBHandler):
 
             remaining_str = len(self.str_models)
 
-            self.updated_removed_steam(str_edit, item, remaining_str)
+            self.updated_removed_node(str_edit, item, remaining_str)
             return
         else:
             return
 
-    def update_edited_steam(self, entity, feature_id):
+    def update_edited_node(self, entity, feature_id):
         """
         Updates the treeview show the changes in the data.
         :param entity: The entity of the steam edited
@@ -1882,9 +1900,9 @@ class DetailsTreeView(DetailsDBHandler):
                 break
         return root
 
-    def updated_removed_steam(self, str_edit, item, remaining_str=0):
+    def updated_removed_node(self, str_edit, item, remaining_str=0):
         """
-        Updates a removed steam int the treeview by showing No STR defined.
+        Updates a removed node on the treeview by showing No STR defined.
         :param str_edit: A boolean showing if the delete is on STR steam or
         the spatial root.
         :type str_edit: Boolean
@@ -1901,7 +1919,7 @@ class DetailsTreeView(DetailsDBHandler):
                 feature_ids
             )
         else:
-            item.removeRows(0, 5)
+            item.removeRows(0, 5)  #<------------------------ What is the 5 magic number?
             # No other STR record remains for the spatial unit,
             # show No STR Defined
             if remaining_str == 0:
@@ -1914,7 +1932,7 @@ class DetailsTreeView(DetailsDBHandler):
                 row = item.row()
                 item.parent().removeRow(row)
 
-    def view_steam_document(self, entity):
+    def view_node_document(self, entity):
         """
         A slot raised when view document button is clicked. It opens document
         viewer and shows a document if a supporting document exists for the
@@ -1923,8 +1941,10 @@ class DetailsTreeView(DetailsDBHandler):
         :type entity: Object
 
         """
+        
+        import pydevd; pydevd.settrace()
 
-        id, item = self.steam_data('edit', self._selected_features)
+        id, item = self.node_data('edit', self._selected_features)
         if isinstance(id, QgsFeature):
             id = id.id()
         if id is None:

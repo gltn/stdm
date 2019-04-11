@@ -64,7 +64,7 @@ class OGRWriter():
         #Get OGR type
         ogrType = ogrTypes[colType]
 
-        #OGR date handling is broken! Convert Date type to STR type
+        #OGR date handling is broken! handle all dates as strings
         if ogrType == OGRWriter.OGR_DATE_TYPE: 
             ogrType = OGRWriter.OGR_STRING_TYPE
 

@@ -244,7 +244,6 @@ class Profile(QObject):
 
         if len(items) == 0:
             return None
-
         else:
             return items[0]
 
