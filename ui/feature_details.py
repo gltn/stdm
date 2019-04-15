@@ -1140,8 +1140,6 @@ class DetailsTreeView(DetailsDBHandler):
         :rtype: OrderedDict
         """
 
-        import pydevd; pydevd.settrace()
-
         roots = OrderedDict()
         selected_features = self._selected_features
         if selected_features is None:
@@ -1164,8 +1162,6 @@ class DetailsTreeView(DetailsDBHandler):
         :param str_records: STR record models linked to the spatial unit.
         :type str_records: List
         """
-
-        import pydevd; pydevd.settrace()
 
         if model is None: return
 
@@ -1273,8 +1269,6 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The party column name with value.
         :rtype: String
         """
-        import pydevd; pydevd.settrace()
-
         spatial_units = self.social_tenure.spatial_units
 
         for spatial_unit in spatial_units:
@@ -1295,8 +1289,6 @@ class DetailsTreeView(DetailsDBHandler):
         :param feature_id: The selected feature id.
         :type feature_id: Integer
         """
-        import pydevd; pydevd.settrace()
-
         if str_records is None: return
 
         if self.layer_table is None and self.plugin is not None:
@@ -1942,8 +1934,6 @@ class DetailsTreeView(DetailsDBHandler):
 
         """
         
-        import pydevd; pydevd.settrace()
-
         id, item = self.node_data('edit', self._selected_features)
         if isinstance(id, QgsFeature):
             id = id.id()
