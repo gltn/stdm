@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 """
 
 import os
+import sys
 
 from PyQt4 import uic
 from PyQt4.QtGui import (
@@ -76,9 +77,26 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.check_geoODK_path_exist()
 
         self.chk_all.stateChanged.connect(self.check_state_on)
+        self.btnShowOutputFolder.clicked.connect(self.onShowOutputFolder)
         #self.btn_upload.clicked.connect(self.upload_generated_form)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
+
+    def onShowOutputFolder(self):
+        output_path = FORM_HOME
+
+        # windows
+        if sys.platform.startswith('win32'):
+            os.startfile(output_path)
+
+        # *nix systems
+        if sys.platform.startswith('linux'):
+            subprocess.Popen(['xdg-open', output_path])
+        
+        # macOS
+        if sys.platform.startswith('darwin'):
+            subprocess.Popen(['open', output_path])
+
 
     def check_state_on(self):
         """
@@ -216,8 +234,8 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                     'One of the entities required to define str is not selected. Form not saved'
                 )
                 return
-            else:
-                self.generate_mobile_form(user_entities)
-        else:
-            self.generate_mobile_form(user_entities)
+            #else:
+                #self.generate_mobile_form(user_entities)
+        #else:
+        self.generate_mobile_form(user_entities)
 

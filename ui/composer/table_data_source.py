@@ -24,7 +24,10 @@ from PyQt4.QtGui import (
 )
 from PyQt4.QtCore import QRegExp
 
-from qgis.core import QgsMapLayerRegistry, QgsComposerFrame
+from qgis.core import (
+        QgsMapLayerRegistry, 
+        QgsComposerFrame,
+        )
 
 from stdm.data.pg_utils import (
     VIEWS,
@@ -94,8 +97,11 @@ class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
 
         #No need to add the layer in the legend
         QgsMapLayerRegistry.instance().addMapLayer(v_layer, False)
-        self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
+
+        if len(self.composer_item().columns()) > 0:
+            self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
         self._composer_table_item.update()
+
 
     def configuration(self):
         from stdm.composer import TableConfiguration

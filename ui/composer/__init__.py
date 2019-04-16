@@ -15,3 +15,6 @@ from .referenced_table_editor import (
 from .composer_chart_config import (
     ComposerChartConfigEditor
 )
+from .qr_code import (
+    ComposerQREditor
+)

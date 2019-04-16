@@ -128,6 +128,7 @@ LOGGER = logging.getLogger('stdm')
 class STDMQGISLoader(object):
 
     viewSTRWin = None
+
     def __init__(self, iface):
         self.iface = iface
 

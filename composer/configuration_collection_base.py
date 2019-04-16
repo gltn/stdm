@@ -310,6 +310,7 @@ class LinkedTableValueHandler(ItemConfigValueHandler):
 
         return results
 
+
 def col_values(cols, results):
         """
         :param cols: List containing column names whose values are to be
