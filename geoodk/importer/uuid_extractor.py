@@ -55,6 +55,7 @@ class InstanceUUIDExtractor():
         """Clear the current document path"""
         self.file_path = None
 
+
     def set_document(self):
         """
         :return:
@@ -63,6 +64,11 @@ class InstanceUUIDExtractor():
         if self.file.open(QIODevice.ReadOnly):
             self.doc.setContent(self.file)
         self.file.close()
+
+    def update_document(self):
+        '''Update the current instance by clearing the cache document'''
+        self.doc.clear()
+        self.set_document()
 
     def on_file_passed(self):
         """
@@ -156,11 +162,27 @@ class InstanceUUIDExtractor():
                 attribute_data[entity] = node_list_var
         return attribute_data, repeat_instance_data
 
-    def str_definition(self):
+    def read_attribute_data_from_node(self, node, entity_name):
+        """Read attribute data from a node item"""
+        node_list_var = OrderedDict()
+        attributes = OrderedDict()
+        attr_node = node.at(0).childNodes()
+        for j in range(attr_node.count()):
+            field_name = attr_node.at(j).nodeName()
+            field_value = attr_node.at(j).toElement().text()
+            node_list_var[field_name] = field_value
+        attributes[entity_name] = node_list_var
+        return attributes
+
+
+    def str_definition(self, instance = None):
         """
         Check if the instance file has entry social tenure
         :return:
         """
+        if instance:
+            self.set_file_path(instance)
+            self.set_document()
         attributes = {}
         nodes = self.doc.elementsByTagName('social_tenure')
         entity_nodes = nodes.item(0).childNodes()
@@ -170,12 +192,12 @@ class InstanceUUIDExtractor():
                 attributes[node_val.nodeName()] = node_val.text().rstrip()
         return attributes
 
-    def has_str_captured_in_instance(self):
+    def has_str_captured_in_instance(self, instance):
         """
         Bool if the str inclusion is required based on whether is captured or not
         :return:
         """
-        count = len(self.str_definition())
+        count = len(self.str_definition(instance))
         return True if count > 1 else False
 
     def entity_atrributes(self):
@@ -212,3 +234,9 @@ class InstanceUUIDExtractor():
             self.file.close()
         else:
             return
+
+    def close_document(self):
+        '''Close all the open documents and unset current paths'''
+        self.file_path = None
+        self.doc.clear()
+        self.new_list = None

@@ -103,7 +103,7 @@
   </connection>
   <connection>
    <sender>buttonBox</sender>
-   <signal>clicked(QAbstractButton*)</signal>
+   <signal>accepted()</signal>
    <receiver>Dialog</receiver>
    <slot>accept()</slot>
    <hints>

@@ -26,12 +26,12 @@ class EntityFormatter:
         self._profile = entity
         return self._profile.replace(' ','_')
 
-    def format_foreign_key(self):
+    def table_foreign_columns(self, function_call):
         """
-        Format foreign key column to Xform representation
+        read str table  foreign key columns  to Xform representation
         :return:
         """
-        pass
+        return self._profile.social_tenure.function_call
 
     def profile_has_social_tenure(self):
         """
