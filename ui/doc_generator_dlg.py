@@ -532,7 +532,6 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         if config is None:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                             "The entity configuration could not be extracted."))
-
             return
         
         #Get selected records and validate
@@ -544,13 +543,11 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         if len(records) == 0:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                                                           "Please load at least one entity record"))
-
             return
         
         if not self._docTemplatePath:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                                                           "Please select a document template to use"))
-
             return
         
         documentNamingAttrs = self.lstDocNaming.selectedMappings()

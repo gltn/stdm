@@ -32,6 +32,9 @@ from stdm.settings import (
 from enums import *
 
 class OGRWriter():
+
+    OGR_STRING_TYPE = 4
+    OGR_DATE_TYPE = 9
    
     def __init__(self,targetFile): 
         self._ds=None 
@@ -60,6 +63,10 @@ class OGRWriter():
         colType = columnType(table, field)
         #Get OGR type
         ogrType = ogrTypes[colType]
+
+        #OGR date handling is broken! handle all dates as strings
+        if ogrType == OGRWriter.OGR_DATE_TYPE: 
+            ogrType = OGRWriter.OGR_STRING_TYPE
 
         field_defn = ogr.FieldDefn(field.encode('utf-8'), ogrType)
 
@@ -142,17 +149,21 @@ class OGRWriter():
                     feat.SetGeometry(featGeom)
                     
                 else:
+                    field_value = r[i]
+                    field_value = str(field_value).encode('utf-8')
+                    feat.SetField(i,field_value)
+                    
+                    #if isinstance(r[i], decimal.Decimal):
 
-                    if isinstance(r[i], decimal.Decimal):
+                        #value = str(r[i])
+                        #feat.SetField(i, value)
 
-                        value = int(r[i])
-                        feat.setField(i, value)
-
-                    elif self.is_date(r[i]):
-                        date = datetime.datetime.strptime(r[i], "%Y-%m-%d").date()
-                        feat.setField(i, date)
-                    else:
-                        feat.SetField(i, r[i])
+                    #elif self.is_date(r[i]):
+                        #date_str = r[i].strftime('%d/%m/%Y')
+                        ##d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+                        #feat.SetField(i, date_str)
+                    #else:
+                        #feat.SetField(i, str(r[i]))
 
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
@@ -170,12 +181,14 @@ class OGRWriter():
 
     @staticmethod
     def is_date(string):
-        try:
-            date = datetime.datetime.strptime(string, "%Y-%m-%d").date()
+        return True if isinstance(string, datetime.date) else False
 
-            return True
-        except Exception:
-            return False
+        #try:
+            #date = datetime.datetime.strptime(string, "%Y-%m-%d").date()
+
+            #return True
+        #except Exception:
+            #return False
 
     def is_decimal(self, number):
         try:

@@ -104,10 +104,10 @@ def load_table_layers(config_collection):
         v_layer = vector_layer(layer_name)
 
         if v_layer is None:
-            return
+            continue
 
         if not v_layer.isValid():
-            return
+            continue
 
         v_layers.append(v_layer)
 
@@ -529,6 +529,7 @@ class ComposerWrapper(QObject):
 
         templateDoc = QDomDocument()
 
+
         if templateDoc.setContent(templateFile):
             table_config_collection = TableConfigurationCollection.create(templateDoc)
             '''
@@ -847,7 +848,9 @@ class ComposerWrapper(QObject):
             table_item = self.composition().getComposerItemById(item_id)
             if table_item is not None:
                 table_editor = ComposerTableDataSourceEditor(self, table_item, self.composerView())
+
                 table_editor.set_configuration(table_config)
+
 
                 table_editor.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
                         table_editor.set_table_vector_layer)
