@@ -161,6 +161,18 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.notice_bar.clear()
         self.notice_bar.insertErrorNotification(message)
 
+    def _column_type_info(self, column):
+        """
+        Check if column has TYPE_INFO attribute
+        :param column: Entity column object
+        :return: Column type. Otherwise None
+        :rtype: String or None
+        """
+        try:
+            return column.TYPE_INFO
+        except AttributeError:
+            return None
+
     def init_controls(self):
         """
         Initialize GUI controls default state when the dialog window is opened.
@@ -180,9 +192,16 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
 
-        self.cbMandt.setEnabled(not self.in_db)
-        self.cbUnique.setEnabled(not self.in_db)
-        self.cbIndex.setEnabled(not self.in_db)
+        col_type = self._column_type_info(self.column)
+        if not self.in_db and col_type == 'GEOMETRY':
+            opts = self.type_attribs[col_type]
+            self.cbMandt.setEnabled(opts['mandt']['enabled_state'])
+            self.cbUnique.setEnabled(opts['unique']['enabled_state'])
+            self.cbIndex.setEnabled(opts['index']['enabled_state'])
+        else:
+            self.cbMandt.setEnabled(not self.in_db)
+            self.cbUnique.setEnabled(not self.in_db)
+            self.cbIndex.setEnabled(not self.in_db)
 
     def validate_text(self, text):
         """
@@ -942,4 +961,3 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
     def rejectAct(self):
         self.done(0)
-
