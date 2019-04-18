@@ -119,19 +119,22 @@ class InstanceUUIDExtractor():
         nodes = self.doc.elementsByTagName(profile)
         return nodes.item(0).childNodes()
 
-    def document_entities_with_data(self, entity_nodes, selected_entities):
+    def document_entities_with_data(self, profile, selected_entities):
         """
         Get entities in the dom document matching user
         selected entities
         :rtype: OrderedDict
         """
-        instance_data = OrderedDict()
 
+        instance_data = OrderedDict()
+        self.set_document()
+        nodes = self.doc.elementsByTagName(profile)
+        entity_nodes = nodes.item(0).childNodes()
         for attrs in range(entity_nodes.count()):
-            node_name = entity_nodes.item(attrs).nodeName()
-            if node_name in selected_entities:
-                attr_nodes = self.doc.elementsByTagName(node_name)
-                instance_data[attr_nodes] = node_name
+            if entity_nodes.item(attrs).nodeName() in selected_entities:
+                name_entity = entity_nodes.item(attrs).nodeName()
+                attr_nodes = self.doc.elementsByTagName(name_entity)
+                instance_data[attr_nodes] = name_entity
         return instance_data
 
     def attribute_data_from_nodelist(self, args_list):

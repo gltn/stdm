@@ -708,6 +708,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 return
         except SQLAlchemyError as ae:
             QCoreApplication.processEvents()
+            QApplication.restoreOverrideCursor()
             self.feedback_message(unicode(ae.message))
             self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
             self.txt_feedback.append(str(ae.message))
