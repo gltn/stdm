@@ -486,7 +486,9 @@ class ImportData(QWizard, Ui_frmImport):
                     setVectorFileDir(self.field("srcFile"))
 
                     self.InfoMessage(
-                        "All features have been imported successfully!")
+                        "All features have been imported successfully!"
+                    )
+                    success = True
 
                 else:
                     success = False
@@ -621,4 +623,3 @@ class ImportData(QWizard, Ui_frmImport):
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
         msg.exec_()
-
