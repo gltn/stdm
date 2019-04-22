@@ -382,7 +382,6 @@ class OGRReader(object):
             delete_table_data(targettable)
 
         # Container for mapping column names to their corresponding values
-        column_value_mapping = {}
 
         lyr = self.getLayer()
         lyr.ResetReading()
@@ -400,6 +399,7 @@ class OGRReader(object):
         destination_entity = self._data_source_entity(targettable)
 
         for feat in lyr:
+            column_value_mapping = {}
             column_count = 0
             progress.setValue(init_val)
             progressMsg = lblMsgTemp.format((init_val + 1), numFeat)
