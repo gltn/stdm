@@ -827,10 +827,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         modelObj = dbHandler.queryObject().filter(
             self._dbmodel.id == record_id
         ).first()
-        if modelObj is None:
-            modelObj = self.child_model[row_number+1, self.entity]
 
-        return modelObj if not modelObj is None else None
+        if modelObj is None:
+            modelObj = self.child_model[row_number+1]
+
+        return modelObj
 
 
 class EntityBrowserWithEditor(EntityBrowser):
@@ -1048,7 +1049,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         :param model: The child model saved
         :type model: Object
         """
-        self.child_model[row_position, self.entity] = model
+        self.child_model[row_position] = model
 
 
     def onRemoveEntity(self):
@@ -1186,8 +1187,10 @@ class EntityBrowserWithEditor(EntityBrowser):
         del_result = True
 
         if self.parent_entity is not None:
-            del self.child_model[row_number + 1, self.entity]
-            del self._parent.child_models[row_number + 1, self.entity]
+            idx = row_number+1
+            if idx in self.child_model:
+                del self.child_model[idx]
+                del self._parent.child_models[idx, self.entity]
 
             self._tableModel.removeRows(row_number, 1)
             # Update number of records
@@ -1196,7 +1199,6 @@ class EntityBrowserWithEditor(EntityBrowser):
             #Clear previous notifications
             self._notifBar.clear()
 
-            return del_result
         #Remove record from the database
         dbHandler = self._dbmodel()
         entity = dbHandler.queryObject().filter(
