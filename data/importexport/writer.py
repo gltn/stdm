@@ -153,18 +153,6 @@ class OGRWriter():
                     field_value = str(field_value).encode('utf-8')
                     feat.SetField(i,field_value)
                     
-                    #if isinstance(r[i], decimal.Decimal):
-
-                        #value = str(r[i])
-                        #feat.SetField(i, value)
-
-                    #elif self.is_date(r[i]):
-                        #date_str = r[i].strftime('%d/%m/%Y')
-                        ##d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
-                        #feat.SetField(i, date_str)
-                    #else:
-                        #feat.SetField(i, str(r[i]))
-
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
                 raise Exception(
