@@ -121,9 +121,12 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
         self.cbo_default.addItem('')
 
         for lk_value in lk_values:
-            vt = unicode(lk_value)
-            text_value = lk_ent.values[vt]
-            self.cbo_default.addItem(text_value.value)
+            text_value = None
+            for k, v in lk_ent.values.items():
+                if v.value == lk_value:
+                    text_value = v.value
+            if text_value is not None:
+                self.cbo_default.addItem(text_value)
 
     def value_translator(self):
         """
