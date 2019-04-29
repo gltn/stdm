@@ -732,37 +732,37 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.buttonBox.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        #try:
-        if self.lst_widget.count() < 1:
-            msg = 'No mobile records found for the current profile'
-            self._notif_bar_str.insertErrorNotification(msg)
+        try:
+            if self.lst_widget.count() < 1:
+                msg = 'No mobile records found for the current profile'
+                self._notif_bar_str.insertErrorNotification(msg)
+                self.buttonBox.setEnabled(True)
+                QApplication.restoreOverrideCursor()
+                return
+            entities = self.user_selected_entities()
+            if len(entities) < 1:
+                if QMessageBox.information(self,
+                        QApplication.translate('MobileForms', 'Import Warning'),
+                        QApplication.translate('MobileForms',
+                        'You have not '
+                        'selected any entity for import. All entities '
+                        'will be imported'), QMessageBox.Ok |
+                                            QMessageBox.No) == QMessageBox.Ok:
+                    entities = self.instance_entities()
+                else:
+                    self.buttonBox.setEnabled(True)
+                    return
+
+            self.save_instance_data_to_db(entities)
+            self.buttonBox.setEnabled(True)
+            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
+            QApplication.restoreOverrideCursor()
+        except Exception as ex:
+            self.feedback_message(ex.message)
+            self.log_table_entry(unicode(ex.message))
             self.buttonBox.setEnabled(True)
             QApplication.restoreOverrideCursor()
             return
-        entities = self.user_selected_entities()
-        if len(entities) < 1:
-            if QMessageBox.information(self,
-                    QApplication.translate('MobileForms', 'Import Warning'),
-                    QApplication.translate('MobileForms',
-                    'You have not '
-                    'selected any entity for import. All entities '
-                    'will be imported'), QMessageBox.Ok |
-                                        QMessageBox.No) == QMessageBox.Ok:
-                entities = self.instance_entities()
-            else:
-                self.buttonBox.setEnabled(True)
-                return
-
-        self.save_instance_data_to_db(entities)
-        self.buttonBox.setEnabled(True)
-        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
-        QApplication.restoreOverrideCursor()
-        # except Exception as ex:
-        #     self.feedback_message(ex.message)
-        #     self.log_table_entry(unicode(ex.message))
-        #     self.buttonBox.setEnabled(True)
-        #     QApplication.restoreOverrideCursor()
-        #     return
 
     def log_instance(self, instance):
         instance_short_name = self.importlogger.log_data_name(instance)
