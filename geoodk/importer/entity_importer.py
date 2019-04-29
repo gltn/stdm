@@ -320,6 +320,7 @@ class Save2DB:
         for k, v in self.attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
+                print col_type
                 col_prop = self.entity.columns[k]
                 #print "property{0}....  and type.{1}".format(col_prop, col_type)
                 var = self.attribute_formatter(col_type, col_prop, v)
