@@ -338,6 +338,9 @@ class DocumentGenerator(QObject):
                 self._refresh_composer_maps(composition,
                                             spatialFieldsConfig.spatialFieldsMapping().keys())
 
+                # Set use fixed scale to false i.e. relative zoom
+                use_fixed_scale = False
+
                 # Create memory layers for spatial features and add them to the map
                 for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
 
@@ -358,7 +361,6 @@ class DocumentGenerator(QObject):
                             if lbl_field:
                                 if hasattr(rec, spfm.labelField()):
                                     layerName = getattr(rec, spfm.labelField())
-
                                 else:
                                     layerName = self._random_feature_layer_name(spatial_field)
                             else:
@@ -381,9 +383,13 @@ class DocumentGenerator(QObject):
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
-                            #Add feature
+                            # Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
-                            bbox.scale(spfm.zoomLevel())
+
+                            zoom_type = spfm.zoom_type
+                            # Only scale the extents if zoom type is relative
+                            if zoom_type == 'RELATIVE':
+                                bbox.scale(spfm.zoomLevel())
 
                             #Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QGis.WKBPoint:
@@ -401,6 +407,12 @@ class DocumentGenerator(QObject):
                             '''
                             self.map_registry.addMapLayer(ref_layer)
                             self._iface.mapCanvas().setExtent(bbox)
+
+                            # Set scale if type is FIXED
+                            if zoom_type == 'FIXED':
+                                self._iface.mapCanvas().zoomScale(spfm.zoomLevel())
+                                use_fixed_scale = True
+
                             self._iface.mapCanvas().refresh()
                             # Add layer to map memory layer list
                             self._map_memory_layers.append(ref_layer.id())
@@ -409,7 +421,7 @@ class DocumentGenerator(QObject):
                         Use root layer tree to get the correct ordering of layers
                         in the legend
                         '''
-                        self._refresh_map_item(map_item)
+                        self._refresh_map_item(map_item, use_fixed_scale)
 
                 # Extract chart information and generate chart
                 self._generate_charts(composition, chart_config_collection, rec)
@@ -454,7 +466,7 @@ class DocumentGenerator(QObject):
     def _random_feature_layer_name(self, sp_field):
         return u"{0}-{1}".format(sp_field, str(uuid.uuid4())[0:8])
 
-    def _refresh_map_item(self, map_item):
+    def _refresh_map_item(self, map_item, use__fixed_scale=False):
         """
         Updates the map item with the current extents and layer set in the
         map canvas.
@@ -465,6 +477,11 @@ class DocumentGenerator(QObject):
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
             map_item.zoomToExtent(self._map_renderer.extent())
+
+            # If use_scale is True then set NewScale based on that of the
+            # map renderer.
+            if use__fixed_scale:
+                map_item.setNewScale(self._map_renderer.scale())
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """

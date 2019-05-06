@@ -48,6 +48,15 @@ class SpatialFieldMapping(object):
         self._srid = -1
         self._geomType = ""
         self._zoom_level = 4
+        self._zoom_type = 'RELATIVE'
+
+    @property
+    def zoom_type(self):
+        return self._zoom_type
+
+    @zoom_type.setter
+    def zoom_type(self, zm_type):
+        self._zoom_type = zm_type
         
     def setSpatialField(self,spatialField):
         """
@@ -160,11 +169,11 @@ class SpatialFieldMapping(object):
         spColumnElement.setAttribute("itemid",self._itemId)
         spColumnElement.setAttribute("srid",self._srid)
         spColumnElement.setAttribute("geomType",self._geomType)
-
+        spColumnElement.setAttribute('zoomType', self._zoom_type)
         spColumnElement.setAttribute("zoom",str(self._zoom_level))
         symbolElement = domDocument.createElement("Symbol")
 
-        #Append symbol properties element
+        # Append symbol properties element
         if not self._symbol is None:
             prop = self._symbol.properties()
             QgsSymbolLayerV2Utils.saveProperties(prop,domDocument,symbolElement)
@@ -190,7 +199,11 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
 
         self._zoom_out_level = 16
 
+        self._zoom_fixed_scale = 1000
+
         self.sb_zoom.setValue(self._zoom_out_level)
+
+        self.sb_fixed_zoom.setValue(self._zoom_fixed_scale)
 
         self._srid = -1
 
@@ -203,13 +216,31 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         #Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
+        self.sb_fixed_zoom.valueChanged.connect(self.on_zoom_fixed_scale_changed)
+        self.rb_relative_zoom.toggled.connect(self.on_relative_zoom_checked)
 
-    def onDataSourceChanged(self,dataSourceName):
+        # Set relative zoom level as the default selected option for the radio buttons
+        self.rb_relative_zoom.setChecked(True)
+
+    def onDataSourceChanged(self, dataSourceName):
         """
         When the user changes the data source then update the fields.
         """
         self._dsName = dataSourceName
         self._loadFields()
+
+    def on_relative_zoom_checked(self, state):
+        # Slot when the radio button for relative zoom is checked/unchecked.
+        if state:
+            self.sb_zoom.setEnabled(True)
+            self.sb_fixed_zoom.setEnabled(False)
+        else:
+            self.sb_zoom.setEnabled(False)
+            self.sb_fixed_zoom.setEnabled(True)
+
+    def on_fixed_scale_zoom_checked(self, state):
+        # Slot riased when the radio button for fixed scale zoom is selected.
+        pass
 
     def setSymbolEditor(self, editor):
         """
@@ -263,7 +294,15 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         sp_field_mapping.setSymbolLayer(self.symbolLayer())
         sp_field_mapping.setSRID(self._srid)
         sp_field_mapping.setGeometryType(self._geomType)
-        sp_field_mapping.setZoomLevel(self.sb_zoom.value())
+        if self.rb_relative_zoom.isChecked():
+            zm_type = 'RELATIVE'
+            zoom = self.sb_zoom.value()
+        elif self.rb_fixed_scale.isChecked():
+            zm_type = 'FIXED'
+            zoom = self.sb_fixed_zoom.value()
+
+        sp_field_mapping.zoom_type = zm_type
+        sp_field_mapping.setZoomLevel(zoom)
 
         return sp_field_mapping
 
@@ -276,7 +315,14 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.setLabelField(spatialFieldMapping.labelField())
         self._srid = spatialFieldMapping.srid()
         self._geomType = spatialFieldMapping.geometryType()
-        self.sb_zoom.setValue(spatialFieldMapping.zoomLevel())
+        zoom_level = spatialFieldMapping.zoomLevel()
+        zoom_type = spatialFieldMapping.zoom_type
+        if zoom_type == 'RELATIVE':
+            self.rb_relative_zoom.setChecked(True)
+            self.sb_zoom.setValue(zoom_level)
+        elif zoom_type == 'FIXED':
+            self.rb_fixed_scale.setChecked(True)
+            self.sb_fixed_zoom.setValue(zoom_level)
 
     def setLabelField(self,labelField):
         """
@@ -316,3 +362,10 @@ class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
         self.cboLabelField.addItem("")
         
         self.cboLabelField.addItems(nonSpatialCols)
+
+    def on_zoom_fixed_scale_changed(self, value):
+        """
+        Slot raised when the fixed scale widget value changes.
+        """
+        if self._zoom_fixed_scale != value:
+            self._zoom_fixed_scale = value
