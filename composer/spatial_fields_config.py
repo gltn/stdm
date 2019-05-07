@@ -120,6 +120,7 @@ class SpatialFieldsConfiguration(object):
             srid = int(spatialFieldMappingElement.attribute("srid"))
             geomType = spatialFieldMappingElement.attribute("geomType") 
             zoom = float(spatialFieldMappingElement.attribute("zoom"))
+            zoom_type = spatialFieldMappingElement.attribute('zoomType', 'RELATIVE')
             
             #Create spatial field mapping
             spFieldMapping = SpatialFieldMapping(spatialField,labelField) 
@@ -127,6 +128,7 @@ class SpatialFieldsConfiguration(object):
             spFieldMapping.setSRID(srid)
             spFieldMapping.setGeometryType(geomType)
             spFieldMapping.setZoomLevel(zoom)
+            spFieldMapping.zoom_type = zoom_type
 
             symbolElement = spatialFieldMappingElement.firstChildElement("Symbol")
             if not symbolElement is None:

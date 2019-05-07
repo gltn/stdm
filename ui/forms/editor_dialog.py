@@ -636,10 +636,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []
 
-        if len(column.label) > 2:
-            column_label = column.label
+        if len(child_entity.label) > 2:
+            column_label = child_entity.label
         else:
-            column_label = format_name(column.name)
+            # Split and join  to filter out entity name prefix
+            # e.g. 'lo_parcel' to 'parcel'
+            column_label = format_name(" ".join(child_entity.name.split("_", 1)[1:]))
         self.entity_tab_widget.addTab(
             entity_browser,
             u'{0}'.format(
