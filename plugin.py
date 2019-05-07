@@ -113,7 +113,10 @@ from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
-from stdm.ui.feature_details import DetailsTreeView
+from stdm.ui.feature_details import (
+        DetailsTreeView,
+        DetailsDockWidget
+        )
 from stdm.ui.social_tenure.str_editor import STREditor
 
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
@@ -135,6 +138,7 @@ class STDMQGISLoader(object):
         # Initialize loader
         self.toolbarLoader = None
         self.menubarLoader = None
+        self.details_tree_view = None
 
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
@@ -830,10 +834,11 @@ class STDMQGISLoader(object):
 
     def loadModules(self):
 
-        self.details_tree_view = DetailsTreeView(self.iface, self)
         '''
         Define and add modules to the menu and/or toolbar using the module loader
         '''
+
+
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),
                                                self.stdmInitToolbar,self.logoutAct)
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(),
@@ -944,7 +949,6 @@ class STDMQGISLoader(object):
         QApplication.translate("SpatialEditorAction","Spatial Entity Details"), self.iface.mainWindow())
         self.feature_details_act.setCheckable(True)
 
-
         self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
         QApplication.translate("ViewSTRToolbarAction","View Social Tenure Relationship"),
         self.iface.mainWindow())
@@ -962,6 +966,9 @@ class STDMQGISLoader(object):
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
+        dock_widget = DetailsDockWidget(self.iface, self)
+        self.details_tree_view = DetailsTreeView(self.iface, self, dock_widget)
+
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
 
@@ -975,7 +982,9 @@ class STDMQGISLoader(object):
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
+
         self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
+
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
@@ -1206,6 +1215,7 @@ class STDMQGISLoader(object):
         )
 
         self.create_spatial_unit_manager()
+
 
         self.profile_status_message()
 

@@ -540,6 +540,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
         self.view_document_btn.setDisabled(True)
         # LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
+
         plugin.feature_details_act.toggled.connect(
             self.handle_dock
         )
