@@ -423,11 +423,13 @@ class DateWidgetFactory(ColumnWidgetRegistry):
 
     def format_column_value(self, value):
         #Format date to string
-        if not value is None:
-            return value.strftime('%x')
-
-        else:
+        if value is None:
             return ''
+        if value.year >= 1900:
+            return value.strftime('%x')
+        else:
+            # supporting dates earlier than 1900
+            return '{0.day:02d}/{0.month:02d}/{0.year:4d}'.format(value)
 
 DateWidgetFactory.register()
 
@@ -463,11 +465,13 @@ class DateTimeWidgetFactory(ColumnWidgetRegistry):
 
     def format_column_value(self, value):
         #Format datetime
-        if not value is None:
-            return value.strftime('%c')
-
-        else:
+        if value is None:
             return ''
+        if value.year >= 1900:
+            return value.strftime('%c')
+        else:
+            return '{0.day:02d}/{0.month:02d}/{0.year:4d}'.format(value)
+            
 
 DateTimeWidgetFactory.register()
 
