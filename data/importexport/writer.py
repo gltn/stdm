@@ -12,9 +12,11 @@ from PyQt4.QtGui import *
 try:
     from osgeo import gdal
     from osgeo import ogr
+    from osgeo import osr
 except:
     import gdal
     import ogr
+    import osr
 
 from stdm.data.pg_utils import (
     columnType,
@@ -88,7 +90,10 @@ class OGRWriter():
         if geom != "":
             pgGeomType,srid = geometryType(table,geom)
             geomType = wkbTypes[pgGeomType]
-            dest_crs = ogr.osr.SpatialReference()
+            try:
+                dest_crs = ogr.osr.SpatialReference()
+            except AttributeError:
+                dest_crs = osr.SpatialReference()
             dest_crs.ImportFromEPSG(srid)
 
         else:
