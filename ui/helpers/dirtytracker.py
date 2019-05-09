@@ -121,18 +121,17 @@ class ControlDirtyTrackerCollection(object):
     def __init__(self):
         self._ctlTrackerColl = []
         
-    def addControl(self,control,reader = None):
+    def addControl(self, control, reader=None):
         '''
         Register a control and its corresponding reader for monitoring its dirty state.
         '''
         #Try to search through registered value handlers
         if reader == None:
-            supported,handler = ControlDirtyTracker.isControlTypeSupported(control)
-            if supported:
-                reader = handler()
-            else:
-                #Do not add to the collection if a matching reader does not exist
+            supported, handler = ControlDirtyTracker.isControlTypeSupported(control)
+            #Do not add to the collection if a matching reader does not exist
+            if not supported:
                 return
+            reader = handler()
             
         ctlRdMapper = ControlReaderMapper(control,reader)
         self.RegisterControlReaderMappersForMonitor(ctlRdMapper)

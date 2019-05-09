@@ -218,10 +218,13 @@ class EntityEditorDialog(QDialog, MapperMixin):
         )
         QApplication.processEvents()
 
-        column_widget_area = self._setup_columns_content_area()
+        #set widgets values
+        column_widget_area = self._setup_columns_content_area() 
+
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
+
         QApplication.processEvents()
         # Add notification for mandatory columns if applicable
         next_row = 2
@@ -554,6 +557,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 row_id += 1
     
         self.entity_scroll_area.setWidget(self.scroll_widget_contents)
+
         if self.entity_tab_widget is None:
             self.entity_tab_widget = QTabWidget(self)
         # Check if there are children and add foreign key browsers
@@ -594,7 +598,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.doc_widget,
                 self.tr('Supporting Documents')
             )
-
 
         # Return the correct widget
         if not self.entity_tab_widget is None:
