@@ -303,7 +303,8 @@ class ExportData(QWizard,Ui_frmExportWizard):
         self.txtWhereQuery.clear()
         
     def filter_verifyQuery(self):
-        #Verify the query expression    
+        #Verify the query expression
+        self._format_stmnt()  # Format WHERE clause expression
         if len(self.txtWhereQuery.toPlainText()) == 0:
             msg = QApplication.translate(
                 'ExportData', u"No filter has been defined.")
@@ -321,7 +322,29 @@ class ExportData(QWizard,Ui_frmExportWizard):
 
                 msg = '{} {} {}'.format(msg1, rLen, msg2)
                 self.InfoMessage(msg)
-        
+
+    def _format_stmnt(self):
+        """
+        Format WHERE clause expression
+        :rtype: String
+        """
+        where_stmnt = self.txtWhereQuery.toPlainText()
+        if where_stmnt:
+            import re
+            sql_opr = ["=", "<>", "LIKE", ">", ">=", "AND", "<", "<=", "OR"]
+            exp = map(lambda s: '\\s*{}\\s*'.format(s), sql_opr)
+            exp = re.split(r'(' + "|".join(exp) + ')', where_stmnt)
+            where_stmnt = ""
+            for i in exp:
+                if i in self.allCols or i.strip() in sql_opr:
+                    where_stmnt += i
+                else:
+                    if i.startswith("'") and i.endswith("'"):
+                        where_stmnt += i
+                    else:
+                        where_stmnt += "'{}'".format(i.strip('"').strip("'"))
+            self.txtWhereQuery.setPlainText(where_stmnt)
+
     def filter_buildQuery(self):
         #Build query set and return results 
         queryCols = self.selectedColumns() 
