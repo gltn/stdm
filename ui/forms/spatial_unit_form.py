@@ -102,6 +102,7 @@ from stdm.ui.helpers import valueHandler
 LOGGER = logging.getLogger('stdm')
 EXCLUDED_COLUMNS_TO_FETCH = ['parcel_number', 'shape_area', 'shape_length']
 
+PARCEL_KEY = 'parcel_key'
 PARCEL_NUMBER = 'parcel_number'
 PARENT_PARCEL_NUMBER = 'parent_parcel_number'
 
@@ -462,8 +463,8 @@ class STDMFieldWidget(QObject):
         parcel_number_value = 0
 
         entity_cols = [c.name for c in self.entity.columns.values()]
+
         for col, value in mapped_data.iteritems():
-            # print feature_id, col, value
             if col == 'id' and feature_id <= 0:
                 continue
             if col == 'id' and feature_id > 0:
@@ -472,10 +473,17 @@ class STDMFieldWidget(QObject):
             if col == PARCEL_NUMBER:
                 parcel_number_value = value
 
-            if col in EXCLUDED_COLUMNS_TO_FETCH:
-                continue
+            if col == PARENT_PARCEL_NUMBER:
+                if feature_id < 0:
+                    value = parcel_number_value
+
+            if feature_id < 0:
+                if col in EXCLUDED_COLUMNS_TO_FETCH:
+                    continue
+
             if col not in entity_cols:
                 continue
+
             if value is None:
                 continue
             if value == NULL:
@@ -483,6 +491,7 @@ class STDMFieldWidget(QObject):
 
             setattr(ent_model, col, value)
             col_with_data.append(col)
+
         if geom_wkt is not None:
             # add geometry into the model
             setattr(
@@ -493,7 +502,7 @@ class STDMFieldWidget(QObject):
         else:
             return ent_model, 0
 
-        setattr(ent_model, PARENT_PARCEL_NUMBER, parcel_number_value)
+        #setattr(ent_model, PARENT_PARCEL_NUMBER, parcel_number_value)
 
         return ent_model, len(col_with_data)
 
@@ -584,8 +593,12 @@ class STDMFieldWidget(QObject):
             del self.feature_models[feature_id]
 
     def clear_split_parcel_key(self):
+        '''
+        Clear the parcel_key field for the newly created parcel
+        '''
         for k, model in self.feature_models.iteritems():
-            if model.id is None:
+            if model.parcel_number is None:
+                model.auto_parcel_key = ''
                 model.parcel_key = ''
 
     def on_digitizing_saved(self):
@@ -600,7 +613,7 @@ class STDMFieldWidget(QObject):
         if len(self.feature_models) == 0:
             return
 
-        # Very serious work-around: to be removed after shipping the first version 
+        # Clears the parcel_key before showing the form
         ###################
         self.clear_split_parcel_key()
         #####################
