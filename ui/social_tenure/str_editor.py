@@ -1327,7 +1327,8 @@ class STREditor(QDialog, Ui_STREditor):
             self.supporting_doc_box,
             self.doc_type_cbo,
             self.add_documents_btn,
-            self.notice
+            self.notice,
+            parent=self
         )
         self.supporting_doc_component.add_documents_btn.clicked.connect(
             self.supporting_doc_component.on_upload_document

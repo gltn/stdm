@@ -729,7 +729,7 @@ class CustomTenureInfo(object):
 class SupportingDocuments(ComponentUtility):
     onUploadDocument = pyqtSignal(list)
 
-    def __init__(self, box, combobox, add_documents_btn, notification_bar):
+    def __init__(self, box, combobox, add_documents_btn, notification_bar, parent=None):
         """
         Handles the supporting documents component loading.
         :param box: The layout holding the container widget.
@@ -741,8 +741,11 @@ class SupportingDocuments(ComponentUtility):
         :param notification_bar: The NotificationBar object that displays
         notification.
         :type notification_bar: Object
+        :param parent: The container of the widget
+        :type parent: QDialog or None
         """
         ComponentUtility.__init__(self)
+        self._parent = parent
         self.container_box = box
         self.doc_type_cbo = combobox
         self.notification_bar = notification_bar
@@ -760,7 +763,7 @@ class SupportingDocuments(ComponentUtility):
         self.supporting_doc_manager = SourceDocumentManager(
             self.social_tenure.supporting_doc,
             self.str_doc_model,
-            iface.mainWindow()
+            self._parent
         )
 
         self.create_doc_tab_populate_combobox()
