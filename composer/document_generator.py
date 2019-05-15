@@ -51,6 +51,7 @@ from qgis.core import (
     QgsMapLayer,
     QgsMapLayerRegistry,
     QgsProject,
+    QgsScaleCalculator,
     QgsVectorLayer
 )
 from qgis.utils import (
@@ -105,9 +106,8 @@ class DocumentGenerator(QObject):
         QObject.__init__(self,parent)
         self._iface = iface
         self._map_renderer = self._iface.mapCanvas().mapRenderer()
-        
+        self._map_settings = self._iface.mapCanvas().mapSettings()
         self._dbSession = STDMDb.instance().session
-        
         self._attr_value_formatters = {}
 
         self._current_profile = current_profile()
@@ -316,7 +316,7 @@ class DocumentGenerator(QObject):
             """
 
             for rec in records:
-                composition = QgsComposition(self._map_renderer)
+                composition = QgsComposition(self._map_settings)
                 composition.loadFromTemplate(templateDoc)
                 ref_layer = None
                 #Set value of composer items based on the corresponding db values
@@ -347,9 +347,8 @@ class DocumentGenerator(QObject):
                     map_item = composition.getComposerItemById(mapId)
 
                     if not map_item is None:
-                        # #Clear any previous map memory layer
-                        #self.clear_temporary_map_layers()
-
+                        # Clear any previous map memory layer
+                        # self.clear_temporary_map_layers()
                         for spfm in spfmList:
                             #Use the value of the label field to name the layer
                             lbl_field = spfm.labelField()
@@ -476,12 +475,12 @@ class DocumentGenerator(QObject):
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
-            map_item.zoomToExtent(self._map_renderer.extent())
+            map_item.zoomToExtent(self._iface.mapCanvas().extent())
 
             # If use_scale is True then set NewScale based on that of the
             # map renderer.
             if use__fixed_scale:
-                map_item.setNewScale(self._map_renderer.scale())
+                map_item.setNewScale(self._iface.mapCanvas().scale())
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """
