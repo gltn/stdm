@@ -139,6 +139,7 @@ class STDMQGISLoader(object):
         self.toolbarLoader = None
         self.menubarLoader = None
         self.details_tree_view = None
+        self.combo_action = None
 
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
@@ -1210,7 +1211,7 @@ class STDMQGISLoader(object):
         self.menubarLoader.loadContent()
 
         # Add profiles_combobox in front of the configuration wizard
-        self.stdmInitToolbar.insertWidget(
+        self.combo_action = self.stdmInitToolbar.insertWidget(
             self.wzdAct, self.profiles_combobox
         )
 
@@ -1842,6 +1843,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.logoutAct)
             self.stdmInitToolbar.removeAction(self.changePasswordAct)
             self.stdmInitToolbar.removeAction(self.wzdAct)
+            self.stdmInitToolbar.removeAction(self.combo_action)
             self.stdmInitToolbar.removeAction(self.spatialLayerManager)
             self.feature_details_act.setChecked(False)
             self.stdmInitToolbar.removeAction(self.feature_details_act)
