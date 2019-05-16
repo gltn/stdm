@@ -220,7 +220,6 @@ class FreezeTableWidget(QTableView):
             setResizeMode(QHeaderView.Fixed)
         self.frozen_table_view.setObjectName('frozen_table')
         self.setSelectionMode(QAbstractItemView.NoSelection)
-        self.set_style()
         # Remove the scroll bar
         self.frozen_table_view.setHorizontalScrollBarPolicy(
             Qt.ScrollBarAlwaysOff
@@ -353,24 +352,6 @@ class FreezeTableWidget(QTableView):
                 self.frozen_table_view.setColumnHidden(
                     col, True
                 )
-
-    def set_style(self):
-        """
-        Sets the style of the frozen table.
-        """
-        # Style frozentable view
-        self.frozen_table_view.setStyleSheet(
-            '''
-            #frozen_table{
-                border-top:none;
-            }
-            '''
-        )
-        self.shadow = QGraphicsDropShadowEffect(self)
-        self.shadow.setBlurRadius(5)
-        self.shadow.setOffset(2)
-        self.shadow.setYOffset(0)
-        self.frozen_table_view.setGraphicsEffect(self.shadow)
 
     def add_widgets(self, spatial_unit, insert_row):
         """
