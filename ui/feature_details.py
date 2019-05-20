@@ -386,7 +386,11 @@ class DetailsDBHandler(LayerSelectionHandler):
         #result = model_obj.queryObject().filter(model.id == id).all()
         result = model_obj.queryObject().all()
         if len(result) > 0:
-            return result[0]
+            for r in result:
+                if r.id == id:
+                    result = r
+                    break
+            return result
         else:
             return None
 
