@@ -1809,7 +1809,7 @@ class DetailsTreeView(DetailsDBHandler):
                 "\nClick Yes to proceed or No to cancel."
             )
             delete_question = QMessageBox.critical(
-                self.parentWidget(),
+                self.iface.mainWindow(),
                 QApplication.translate(
                     'DetailsTreeView',
                     'Delete Social Tenure Relationship'
