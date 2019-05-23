@@ -547,7 +547,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 return party_id_obj
 
     def load_edit_str_editor(self):
-        self.details_tree_view.edit_selected_steam()
+        self.details_tree_view.edit_selected_node()
         self.btnSearch.click()
         self.disable_buttons()
 
