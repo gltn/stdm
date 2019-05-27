@@ -49,6 +49,7 @@ from stdm.data.database import Content
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.security.authorization import Authorizer
 from stdm.utils.util import (
@@ -352,6 +353,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             entity_cfg.Title = table_display_name
             entity_cfg.STRModel = model
             entity_cfg.data_source_name = table_name
+            for col, factory in self._get_widget_factory(entity):
+                entity_cfg.LookupFormatters[col.name] = factory
 
             # Load filter and display columns
             # using only those which are of
@@ -367,6 +370,21 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             return entity_cfg
         else:
             return None
+
+    def _get_widget_factory(self, entity):
+        """
+        Get widget factory for specific column type
+        :param entity: Current column entity object
+        :type entity: Entity
+        :return c: Column object corresponding to the widget factory
+        :rtype c: BaseColumn
+        :return col_factory: Widget factory corresponding to the column type
+        :rtype col_factory: ColumnWidgetRegistry
+        """
+        for c in entity.columns.values():
+            col_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
+            if col_factory is not None:
+                yield c, col_factory(c)
 
     def add_entity_config(self, config):
         """
@@ -529,7 +547,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 return party_id_obj
 
     def load_edit_str_editor(self):
-        self.details_tree_view.edit_selected_steam()
+        self.details_tree_view.edit_selected_node()
         self.btnSearch.click()
         self.disable_buttons()
 
@@ -1136,9 +1154,6 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
     def _update_completer(self, values):
         #Get the items in a tuple and put them in a list
-        field_formatter = self.config.LookupFormatters.get(
-            self.currentFieldName(), None
-        )
 
         # Store display and actual values in a
         # model for easier mapping and
@@ -1153,14 +1168,15 @@ class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
 
             m_val = mv[0]
 
-            #2-column model - display (0) and actual(1)
-            if field_formatter is None:
-                f_model_values.append(m_val)
-                f_model_values.append(m_val)
-
-            else:
-                f_model_values.append(field_formatter(m_val))
-                f_model_values.append(m_val)
+            if m_val is not None:
+                col_label = self.currentFieldName()
+                if col_label in self.config.LookupFormatters:
+                    formatter = self.config.LookupFormatters[col_label]
+                    if formatter.column.TYPE_INFO == 'LOOKUP':
+                        m_val = formatter.code_value(m_val)[0]
+                    else:
+                        m_val = formatter.format_column_value(m_val)
+            f_model_values.extend([m_val, m_val])
 
             model_attr_mapping.append(f_model_values)
 
