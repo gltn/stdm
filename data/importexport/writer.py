@@ -155,7 +155,7 @@ class OGRWriter():
                     
                 else:
                     field_value = r[i]
-                    field_value = str(field_value).encode('utf-8')
+                    field_value = unicode(field_value).encode('utf-8')
                     feat.SetField(i,field_value)
                     
             if lyr.CreateFeature(feat) != 0:

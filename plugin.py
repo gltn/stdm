@@ -140,6 +140,7 @@ class STDMQGISLoader(object):
         self.menubarLoader = None
         self.details_tree_view = None
         self.combo_action = None
+        self.spatialLayerManagerDockWidget = self
 
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
