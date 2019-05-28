@@ -105,6 +105,8 @@ EXCLUDED_COLUMNS_TO_FETCH = ['parcel_number', 'shape_area', 'shape_length']
 PARCEL_KEY = 'parcel_key'
 PARCEL_NUMBER = 'parcel_number'
 PARENT_PARCEL_NUMBER = 'parent_parcel_number'
+SHAPE_AREA = 'shape_area'
+SHAPE_LENGTH = 'shape_length'
 
 class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
@@ -270,6 +272,9 @@ class STDMFieldWidget(QObject):
         self.removed_feature_models = OrderedDict()
         self.current_feature = None
         self.editor = None
+        self.removed_ids = []
+        self.new_feature = {}
+        self.new_feature_id = 0
         # self.onFeatureUpdated.connect(self.load_stdm_form)
 
     def init_form(self, table, spatial_column, curr_layer):
@@ -474,20 +479,20 @@ class STDMFieldWidget(QObject):
                 parcel_number_value = value
 
             if col == PARENT_PARCEL_NUMBER:
-                if feature_id < 0:
-                    value = parcel_number_value
+                #if feature_id < 0:
+                value = parcel_number_value
 
-            if feature_id < 0:
-                if col in EXCLUDED_COLUMNS_TO_FETCH:
-                    continue
+            #if feature_id < 0:
+            if col in EXCLUDED_COLUMNS_TO_FETCH:
+                continue
 
             if col not in entity_cols:
                 continue
 
-            if value is None:
+            if value is None or value == NULL:
                 continue
-            if value == NULL:
-                continue
+            #if value == NULL:
+                #continue
 
             setattr(ent_model, col, value)
             col_with_data.append(col)
@@ -501,8 +506,6 @@ class STDMFieldWidget(QObject):
             )
         else:
             return ent_model, 0
-
-        #setattr(ent_model, PARENT_PARCEL_NUMBER, parcel_number_value)
 
         return ent_model, len(col_with_data)
 
@@ -554,12 +557,30 @@ class STDMFieldWidget(QObject):
         if feature_id in self.removed_feature_models.keys():
             self.feature_models[feature_id] = \
                 self.removed_feature_models[feature_id]
+            self.removed_ids.append(int(feature_id))
+            self.reset_removed_feature_fields(self.new_feature[self.new_feature_id])
             return
-
 
         feature_model, col_with_data = self.feature_to_model(feature_id)
 
         self.feature_models[feature_id] = feature_model
+
+        if feature_id < 0:
+            self.new_feature[feature_id] = feature_model
+            self.new_feature_id = feature_id
+
+
+    def reset_removed_feature_fields(self, feature_model):
+        pnumber_val = getattr(feature_model, PARCEL_NUMBER)
+        parent_pnumber_val = getattr(feature_model, PARENT_PARCEL_NUMBER)
+        shape_area_val = getattr(feature_model, SHAPE_AREA)
+        shape_length_val = getattr(feature_model, SHAPE_LENGTH)
+
+        for fid in self.removed_ids:
+            setattr(self.feature_models[fid], PARCEL_NUMBER, pnumber_val)
+            setattr(self.feature_models[fid], PARENT_PARCEL_NUMBER, parent_pnumber_val)
+            setattr(self.feature_models[fid], SHAPE_AREA, shape_area_val)
+            setattr(self.feature_models[fid], SHAPE_LENGTH, shape_length_val)
 
     def on_form_saved(self, model):
         """
