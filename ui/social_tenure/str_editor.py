@@ -2091,37 +2091,9 @@ class EditSTREditor(STREditor):
         :type str_edit_node: List or STRNODE
         """
         STREditor.__init__(self)
-
-        self.str_edit_node = str_edit_node
-
-        try:
-            self.str_edit_obj = str_edit_node.model()
-            self.str_doc_edit_obj = str_edit_node.documents()
-        except AttributeError:
-            self.str_edit_obj = str_edit_node[0]
-            self.str_doc_edit_obj = str_edit_node[1]
-
         self.updated_str_obj = None
-        self.str_edit_dict = self.str_edit_obj.__dict__
-        current_party_detail = self.current_party(
-            self.str_edit_dict
-        )
-        if current_party_detail is not None:
-            self.party, self.party_column = self.current_party(
-                self.str_edit_dict
-            )
-
-        current_spatial_unit_detail = self.current_spatial_unit(
-            self.str_edit_dict
-        )
-
-        if current_spatial_unit_detail is not None:
-            self.spatial_unit, self.spatial_unit_column = \
-                self.current_spatial_unit(
-                    self.str_edit_dict
-                )
-
-
+        self.str_edit_node = str_edit_node
+        self.str_edits = self.current_str_detail()
         title = QApplication.translate(
             'EditSTREditor',
             'Edit Social Tenure Relationship'
@@ -2132,9 +2104,9 @@ class EditSTREditor(STREditor):
         self.remove_str_btn.setDisabled(True)
         self.party_init.connect(self.populate_party_str_type_store)
         self.spatial_unit_init.connect(self.populate_spatial_unit_store)
-        self.init_party_component(self.party)
-
-        self.init_spatial_unit_component(self.spatial_unit)
+        for rec in self.str_edits:
+            self.init_party_component(rec['party'])
+            self.init_spatial_unit_component(rec['sp_unit'])
 
         QTimer.singleShot(33, self._party_signals)
 
@@ -2152,6 +2124,37 @@ class EditSTREditor(STREditor):
         self.validity_init.connect(self.populate_validity_store)
         # self.custom_tenure_info_init.connect(self.populate_custom_tenure_store)
         self.populate_custom_tenure_store()
+
+    def clear_store(self, *args):
+        """
+        Remove all items from a dictionary object
+        :param args: Data store attributes
+        :type args: Tuple
+        :return: None
+        :rtype: None
+        """
+        for store in self.data_store.values():
+            for attr in args:
+                getattr(store, attr).clear()
+
+    def current_str_detail(self):
+        """
+        Gets the current STR party and spatial unit entity details
+        :return str_edits: A list of current party and spatial unit STR details
+        :rtype str_edits: List
+        """
+        str_edits = []
+        for rec in self.str_edit_node:
+            details = dict(zip(('str_rec', 'str_doc'), rec))
+            rec = rec[0].__dict__
+            current_party_detail = self.current_party(rec)
+            if current_party_detail is not None:
+                details['party'], details['party_col'] = current_party_detail
+            current_spatial_unit_detail = self.current_spatial_unit(rec)
+            if current_spatial_unit_detail is not None:
+                details['sp_unit'], details['sp_unit_col'] = current_spatial_unit_detail
+            str_edits.append(details)
+        return str_edits
 
     def init_spatial_unit_component(self, spatial_unit=None):
         """
@@ -2174,65 +2177,54 @@ class EditSTREditor(STREditor):
         self.spatial_unit_signals()
 
         self.spatial_unit_component.spatial_unit_fk_mapper.entity_combo. \
-            currentIndexChanged.connect(
-            self.switch_spatial_unit_entity
-        )
+            currentIndexChanged.connect(self.switch_spatial_unit_entity)
 
     def populate_party_str_type_store(self):
         """
         Populates the party and STR Type store into the data store.
         """
-        party_model_obj = getattr(self.str_edit_obj, self.party.name)
-        self.data_store[1].party.clear()
-        self.data_store[1].party[
-            self.str_edit_dict[self.party_column]
-        ] = party_model_obj
-        tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
-            self.spatial_unit.short_name
-        )
-        tenure_type_name = tenure_type_col.name
-        tenure_type = getattr(self.str_edit_obj, tenure_type_name, None)
-
-        self.data_store[1].str_type[
-            self.str_edit_dict[self.party_column]
-        ] = tenure_type
-        self.data_store[1].current_party = self.party
-        QTimer.singleShot(
-            40, lambda: self.populate_str_type(tenure_type)
-        )
+        self.clear_store('party', 'str_type', 'share', 'custom_tenure')
+        self.copied_party_row.clear()
+        for idx, rec in enumerate(self.str_edits):
+            str_rec = rec['str_rec']
+            str_rec_dict = str_rec.__dict__
+            party_id = str_rec_dict[rec['party_col']]
+            party_model_obj = getattr(str_rec, rec['party'].name)
+            self.data_store[1].party[party_id] = party_model_obj
+            tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
+                rec['sp_unit'].short_name
+            )
+            tenure_type_name = tenure_type_col.name
+            tenure_type = getattr(str_rec, tenure_type_name, None)
+            self.data_store[1].str_type[party_id] = tenure_type
+            self.data_store[1].current_party = rec['party']
+            rec['str_type'] = tenure_type
+            self.populate_str_type(rec, idx)
+        doc_item = self.str_item(self.tenure_type_text, self.str_number)
+        doc_item.setEnabled(True)
         self.party_component.party_fk_mapper.setSupportsList(False)
-
         self.set_party_active()
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
-    def populate_str_type(self, str_type_id):
+    def populate_str_type(self, rec, index):
         """
         Populate the STR type combobox and the tenure share spinbox.
-        :param str_type_id: The tenure type id
-        :type str_type_id: Integer
+        :param rec: The STR record to be edited
+        :type rec: Dict
+        :param index: The STR record index
+        :type index: Integer
         """
+        str_rec, tenure_type = rec['str_rec'], rec['str_type']
+        str_rec_dict = str_rec.__dict__
+        party_id = str_rec_dict[rec['party_col']]
         self.init_str_type_component()
-        party_id = self.str_edit_dict[self.party_column]
         # populate str type column
-        self.set_str_type_data(str_type_id, party_id, 0)
+        self.set_str_type_data(tenure_type, party_id, index)
         self.str_type_component.add_str_type_data(
-            self.spatial_unit, self.copied_party_row[party_id], 0
+            rec['sp_unit'], self.copied_party_row[party_id], 0
         )
-
-        self.init_tenure_data(
-            self.data_store[1], party_id, str_type_id, 1
-        )
-
-
-        tenure_share = self.str_edit_obj.tenure_share
-
-        self.data_store[1].share[party_id] = tenure_share
-
-        doc_item = self.str_item(
-            self.tenure_type_text, self.str_number
-        )
-
-        doc_item.setEnabled(True)
+        self.init_tenure_data(self.data_store[1], party_id, tenure_type, 1)
+        self.data_store[1].share[party_id] = str_rec.tenure_share
 
     def set_party_active(self):
         """
@@ -2253,15 +2245,13 @@ class EditSTREditor(STREditor):
         """
         Populates the spatial unit data store.
         """
-        spatial_unit_model_obj = getattr(
-            self.str_edit_obj, self.spatial_unit.name
-        )
-        self.data_store[1].spatial_unit.clear()
-
-        self.data_store[1].spatial_unit[
-            spatial_unit_model_obj.id
-        ] = spatial_unit_model_obj
-        self.data_store[1].current_spatial_unit = self.spatial_unit
+        self.clear_store('spatial_unit')
+        for rec in self.str_edits:
+            spatial_unit_model_obj = getattr(rec['str_rec'], rec['sp_unit'].name)
+            self.data_store[1].spatial_unit[
+                spatial_unit_model_obj.id
+            ] = spatial_unit_model_obj
+            self.data_store[1].current_spatial_unit = rec['sp_unit']
         doc_item = self.str_item(self.spatial_unit_text, self.str_number)
         doc_item.setEnabled(True)
 
@@ -2269,21 +2259,20 @@ class EditSTREditor(STREditor):
         """
         Populates the custom tenure info data store.
         """
-        party_model_obj = getattr(self.str_edit_obj, self.party.name)
-        self.data_store[1].custom_tenure.clear()
-        custom_entity = self.social_tenure.spu_custom_attribute_entity(
-            self.spatial_unit
-        )
-        if custom_entity is None:
-            return
-        if len(custom_entity.columns) < 3:
-            return
-        custom_model = entity_attr_to_model(
-            custom_entity, 'social_tenure_relationship_id', self.str_edit_obj.id
-        )
-
-        self.data_store[1].custom_tenure[party_model_obj.id] = custom_model
-
+        self.clear_store('custom_tenure')
+        for rec in self.str_edits:
+            party_model_obj = getattr(rec['str_rec'], rec['party'].name)
+            custom_entity = self.social_tenure.spu_custom_attribute_entity(
+                rec['sp_unit']
+            )
+            if custom_entity is None:
+                return
+            if len(custom_entity.columns) < 3:
+                return
+            custom_model = entity_attr_to_model(
+                custom_entity, 'social_tenure_relationship_id', rec['str_rec'].id
+            )
+            self.data_store[1].custom_tenure[party_model_obj.id] = custom_model
         doc_item = self.str_item(self.custom_tenure_info_text, self.str_number)
         doc_item.setEnabled(True)
 
@@ -2291,15 +2280,13 @@ class EditSTREditor(STREditor):
         """
         Populates the spatial unit data store.
         """
-        start_date = self.str_edit_obj.validity_start
-        end_date = self.str_edit_obj.validity_end
-        self.data_store[1].validity_period.clear()
-
-        self.data_store[1].validity_period['from_date'] = start_date
-        self.data_store[1].validity_period['to_date'] = end_date
-
+        self.clear_store('validity_period')
+        for rec in self.str_edits:
+            start_date = rec['str_rec'].validity_start
+            end_date = rec['str_rec'].validity_end
+            self.data_store[1].validity_period['from_date'] = start_date
+            self.data_store[1].validity_period['to_date'] = end_date
         doc_item = self.str_item(self.validity_period_text, self.str_number)
-
         doc_item.setEnabled(True)
 
     def populate_supporting_doc_store(self):
@@ -2309,25 +2296,25 @@ class EditSTREditor(STREditor):
         doc_item = self.str_item(
             self.supporting_doc_text, self.str_number
         )
+        for rec in self.str_edits:
+            doc = rec['str_doc']
+            if len(doc) < 1:
+                doc_item.setEnabled(True)
+                return
+            for doc_id, doc_objs in doc.iteritems():
 
-        if len(self.str_doc_edit_obj) < 1:
-            doc_item.setEnabled(True)
-            return
+                index = self.doc_type_cbo.findData(doc_id)
+                doc_text = self.doc_type_cbo.itemText(index)
 
-        for doc_id, doc_objs in self.str_doc_edit_obj.iteritems():
+                layout = self.supporting_doc_component.docs_tab.findChild(
+                    QVBoxLayout, u'layout_{}_{}'.format(doc_text, self.str_number)
+                )
 
-            index = self.doc_type_cbo.findData(doc_id)
-            doc_text = self.doc_type_cbo.itemText(index)
-
-            layout = self.supporting_doc_component.docs_tab.findChild(
-                QVBoxLayout, u'layout_{}_{}'.format(doc_text, self.str_number)
-            )
-
-            self.supporting_doc_component.supporting_doc_manager. \
-                registerContainer(layout, doc_id)
-            for doc_obj in doc_objs:
                 self.supporting_doc_component.supporting_doc_manager. \
-                    insertDocFromModel(doc_obj, doc_id)
+                    registerContainer(layout, doc_id)
+                for doc_obj in doc_objs:
+                    self.supporting_doc_component.supporting_doc_manager. \
+                        insertDocFromModel(doc_obj, doc_id)
 
         doc_item.setEnabled(True)
 
@@ -2383,27 +2370,20 @@ class EditSTREditor(STREditor):
         store.party.clear()
         store.party[model.id] = model
 
-    def set_str_type_data(self, str_type_id, party_id, row_number):
+    def set_str_type_data(self, str_type_id, party_id, index=0):
         """
         Sets the STR type data to the STR type data store dictionary.
         :param str_type_id: The STR type id
         :type str_type_id: Integer
         :param party_id: The party id
         :type party_id: Integer
-        :param row_number: The STR row number
-        :type row_number: Integer
+        :param index: The STR record index
+        :type index: Integer
         """
-        store = self.current_data_store()
-        store.str_type.clear()
-        store.share.clear()
-        store.custom_tenure.clear()
-        store.str_type[party_id] = str_type_id
-
+        self.data_store[1].str_type[party_id] = str_type_id
         row_data = self.str_type_component.copy_party_table(
-            self.party_component.party_fk_mapper._tbFKEntity,
-            row_number
+            self.party_component.party_fk_mapper._tbFKEntity, index
         )
-        self.copied_party_row.clear()
         self.copied_party_row[party_id] = row_data
 
     def accept(self):
