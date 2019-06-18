@@ -1710,17 +1710,20 @@ class DetailsTreeView(DetailsDBHandler):
             return
         # STR steam - edit social tenure relationship
         if item.text() == self.str_text:
-            entity = self.social_tenure
-            str_model = self.str_models[item.data()]
-            documents = self._supporting_doc_models(
-                entity.name, str_model
-            )
-            node_data = str_model, documents
+            str_model_doc = []
+            for i in range(item.parent().rowCount()):
+                child_ = item.parent().child(i)
+                try:
+                    model_ = self.str_models[child_.data()]
+                    if model_.structure_id == self.str_models[item.data()].structure_id:
+                        documents = self._supporting_doc_models(self.social_tenure.name, model_)
+                        str_model_doc.append((model_, documents))
+                except KeyError:
+                    continue
 
             feature_edit = False
-            edit_str = EditSTREditor(node_data)
+            edit_str = EditSTREditor(str_model_doc)
             edit_str.exec_()
-
         # party steam - edit party
         elif item in self.party_items.keys():
 
@@ -1745,7 +1748,7 @@ class DetailsTreeView(DetailsDBHandler):
             return
         self.view.expand(item.index())
         if feature_edit:
-            self.update_edited_node(entity, id)
+            self.update_edited_node(self.social_tenure, id)
         else:
             self.update_edited_node(self.social_tenure, id)
 

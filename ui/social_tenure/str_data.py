@@ -86,20 +86,17 @@ class STRDBHandler():
         """
         self.str_model = str_model
         self.data_store = data_store
-        self.str_edit_obj = None
         self.progress = STDMProgressDialog(iface.mainWindow())
         self.social_tenure = current_profile().social_tenure
+        self.str_edit_node = []
 
-
-
-        self.str_edit_node = str_edit_node
         if str_edit_node is not None:
             if isinstance(str_edit_node, tuple):
-                self.str_edit_obj = str_edit_node[0]
-                self.str_doc_edit_obj = str_edit_node[1]
+                self.str_edit_node.append((str_edit_node[0], str_edit_node[1]))
+            elif isinstance(str_edit_node, list):
+                self.str_edit_node = str_edit_node
             else:
-                self.str_edit_obj = str_edit_node.model()
-                self.str_doc_edit_obj = str_edit_node.documents()
+                self.str_edit_node.append((str_edit_node.model(), str_edit_node.documents()))
 
     def on_add_str(self, str_store):
         """
@@ -217,6 +214,47 @@ class STRDBHandler():
         if len(custom_attr_objs) > 0:
             custom_attr_obj.saveMany(custom_attr_objs)
 
+    def get_entity_id(self, str_store):
+        """
+        Gets party and spatial unit column names
+        :param str_store: The store of edited data
+        :type str_store: STRDataStore
+        :return party_col: Party column name
+        :rtype party_col: String
+        :return spatial_col: Spatial unit column name
+        :rtype spatial_col: String
+        """
+        party_col = '{}_id'.format(str_store.current_party.short_name.lower())
+        spatial_col = '{}_id'.format(str_store.current_spatial_unit.short_name.lower())
+        return party_col, spatial_col
+
+    def to_pydate(self, q_date):
+        """
+        Converts QDate to normal python date
+        :param q_date: PyQT QDate type
+        :type q_date: QDate
+        :return: Python date
+        :rtype: datetime.date
+        """
+        return q_date.toPyDate() if isinstance(q_date, QDate) else q_date
+
+    def pair_documents(self, str_type, doc_objs):
+        """
+        On multiple parties in an STR, pair supporting documents
+        :param str_type: STR type
+        :type str_type: OrderedDict
+        :param doc_objs: STR supporting documents
+        :type doc_objs: List
+        :return paired_doc: Paired supporting documents
+        :rtype paired_doc: List
+        """
+        paired_doc = []
+        if len(str_type) > 1 and not len(doc_objs) % 2:
+            count = 0
+            while count <= len(doc_objs) - 1:
+                paired_doc.append((doc_objs[count], doc_objs[count + 1]))
+                count += 2
+        return paired_doc
 
     def on_edit_str(self, str_store):
         """
@@ -225,82 +263,51 @@ class STRDBHandler():
          with existing data.
          :type str_store: STRDataStore
          """
-        _str_obj = self.str_model()
+        party_col, spatial_col = self.get_entity_id(str_store)
+        start_date = self.to_pydate(str_store.validity_period['from_date'])
+        end_date = self.to_pydate(str_store.validity_period['to_date'])
+        str_type = str_store.str_type
+        doc_objs = str_store.supporting_document
+        paired_doc = self.pair_documents(str_type, doc_objs)
+        share = str_store.share
+        party_keys = str_store.party.keys()
+        spatial_keys = str_store.spatial_unit.keys()
+        str_rec = {model.id: doc for model, doc in self.str_edit_node}
+        rows = self.str_model().queryObject().filter(self.str_model.id.in_(str_rec.keys())).all()
+        for idx, row in enumerate(rows):
+            attr = {c.name: getattr(row, c.name) for c in row.__table__.columns}
+            new_party = party_keys[idx]
+            party_id, spatial_id = attr[party_col], attr[spatial_col]
+            setattr(row, party_col, party_id if party_id in party_keys else new_party)
+            setattr(row, spatial_col, spatial_id if spatial_id in spatial_keys else spatial_keys[0])
+            row.validity_start = start_date
+            row.validity_end = end_date
+            row.tenure_type = str_type[party_id] if party_id in str_type.keys() else str_type[new_party]
+            row.tenure_share = share[party_id] if party_id in share.keys() else share[new_party]
 
-        str_edit_obj = _str_obj.queryObject().filter(
-            self.str_model.id == self.str_edit_obj.id
-        ).first()
+            # Extract new supporting documents
+            str_doc_objs = [obj for obj in sum(str_rec[row.id].values(), [])]
+            new_doc_objs = list(set(doc_objs) - set(str_doc_objs))
+            if paired_doc:
+                new_doc_objs = [
+                    d[idx] for d in paired_doc
+                    if not all(i in str_doc_objs for i in d)
+                ]
 
+            # Add new supporting documents
+            if len(new_doc_objs) > 0:
+                row.documents.extend([doc for doc in new_doc_objs])
 
-        party = str_store.current_party
-        spatial_unit = str_store.current_spatial_unit
-        # custom_attr_entity = self.social_tenure.spu_custom_attribute_entity(
-        #     spatial_unit
-        # )
-        party_short_name = party.short_name
-        spatial_unit_short_name = spatial_unit.short_name
-        tenure_type_col = self.social_tenure.spatial_unit_tenure_column(
-            spatial_unit_short_name
-        )
-
-        start_date = str_store.validity_period['from_date']
-        end_date = str_store.validity_period['to_date']
-        if isinstance(start_date, QDate):
-            start_date = start_date.toPyDate()
-        if isinstance(end_date, QDate):
-            end_date = end_date.toPyDate()
-
-        party_entity_id = '{}_id'.format(party_short_name.lower())
-        spatial_unit_entity_id = '{}_id'.format(spatial_unit_short_name.lower())
-        tenure_type = tenure_type_col.name
-
-        setattr(str_edit_obj, party_entity_id, str_store.party.keys()[0])
-        setattr(str_edit_obj, spatial_unit_entity_id, str_store.spatial_unit.keys()[0])
-        setattr(str_edit_obj, tenure_type, str_store.str_type.values()[0])
-
-        str_edit_obj.validity_start = start_date
-        str_edit_obj.validity_end = end_date
-        str_edit_obj.tenure_share = str_store.share[str_store.party.keys()[0]]
-
-        # get all doc model objects
-        added_doc_objs = str_store.supporting_document
-
-        self.str_doc_edit_obj = \
-            [obj for obj in sum(self.str_doc_edit_obj.values(), [])]
-
-        new_doc_objs = list(set(added_doc_objs) - set(self.str_doc_edit_obj))
-
-        # Insert supporting document if a new
-        # supporting document is uploaded.
-        if len(new_doc_objs) > 0:
-
-            # looping though newly added objects list
-            for doc_obj in new_doc_objs:
-                # append into the str edit obj
-                str_edit_obj.documents.append(doc_obj)
-
-        updated_str_edit_obj = str_edit_obj
-        str_edit_obj.update()
-        if len(str_store.custom_tenure.values()) > 0:
-            str_store.custom_tenure.values()[0].update()
-
-        # custom_attr_model = entity_model(self.custom_attr_entity)
-        # custom_attr_obj = custom_attr_model()
-        #
-        # custom_attr_objs = []
-        #
-        # # save custom tenure
-        # for col in self.custom_attr_entity.columns.values():
-        #     if col.TYPE_INFO == 'FOREIGN_KEY':
-        #         if col.parent.name == self.social_tenure.name:
-        #
-        #             setattr(custom_attr_model, col.name, str_objs[i].id)
-        #             custom_attr_objs.append(custom_attr_model)
-        #             break
-        #
-        # custom_attr_obj = self.custom_attr_entity.values()[0]
-
-        return updated_str_edit_obj
+            # Update custom tenure information
+            if party_id in party_keys:
+                for r in row.in_check_tenure_type_str_attrs_collection:
+                    custom_tenure = str_store.custom_tenure
+                    if custom_tenure:
+                        r.dispute_status = custom_tenure[party_id].dispute_status
+                        r.dispute_type = custom_tenure[party_id].dispute_type
+                        r.period_of_stay_in_years = custom_tenure[party_id].period_of_stay_in_years
+            row.update()  # Commit updates to DB
+        return rows
 
     def commit_str(self):
         """
@@ -312,7 +319,7 @@ class STRDBHandler():
         try:
 
             self.progress.show()
-            if self.str_edit_obj is None:
+            if not self.str_edit_node:
                 QApplication.processEvents()
                 self.progress.setRange(0, len(self.data_store))
                 self.progress.overall_progress(
