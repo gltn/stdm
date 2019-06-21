@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>531</width>
-    <height>719</height>
+    <height>684</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,33 +28,43 @@
      <property name="title">
       <string>Output Type:</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="rbExpImage">
-        <property name="text">
-         <string>Export as Image</string>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cboImageType">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QRadioButton" name="rbExpPDF">
-        <property name="text">
-         <string>Export as PDF</string>
-        </property>
-       </widget>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="cboImageType">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>25</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="rbExpImage">
+          <property name="text">
+           <string>Export as Image</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="rbExpPDF">
+          <property name="text">
+           <string>Export as PDF</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -96,7 +106,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>170</height>
+       <height>140</height>
       </size>
      </property>
      <property name="currentIndex">

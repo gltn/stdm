@@ -785,7 +785,6 @@ class DetailsTreeView(DetailsDBHandler):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
-
         if not button_clicked:
             return
 
@@ -926,6 +925,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         if self._selected_features is None:
             return
+
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -1654,6 +1654,7 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The item data (the id), and the item - QStandardItem
         :rtype: Tuple
         """
+
         item = None
         # One item is selected and number of feature is also 1
         if len(results) == 1 and len(self.view.selectedIndexes()) == 1:
@@ -1675,6 +1676,7 @@ class DetailsTreeView(DetailsDBHandler):
             result = 'Please, select an item to {}.'.format(mode)
         else:
             result = 'Please, select at least one feature to {}.'.format(mode)
+
         if result is None:
             if item is None:
                 item = self.model.item(0, 0)
@@ -1751,7 +1753,7 @@ class DetailsTreeView(DetailsDBHandler):
 
     def delete_selected_item(self):
         """
-        Deletes the selected item.
+        Deletes a selected item.
 
         """
         str_edit = False
