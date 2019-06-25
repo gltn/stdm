@@ -273,6 +273,7 @@ class Save2DB:
         :return:
         """
         self.column_info()
+        attributes = self.attributes
         try:
             if self.entity.short_name == 'social_tenure_relationship':
                 #try:
@@ -284,9 +285,9 @@ class Save2DB:
                     self.attributes.pop('party')
                 else:
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
-                    party_ref_column = full_party_ref_column + '_id'
+                    party_ref_column = full_party_ref_column.replace(prefix,'') + '_id'
 
-                setattr(self.model, party_ref_column, self.parents_ids.get(prefix + full_party_ref_column)[0])
+                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
                 if self.attributes.has_key('spatial_unit'):
                     full_spatial_ref_column = self.attributes.get('spatial_unit')
@@ -294,19 +295,25 @@ class Save2DB:
                     self.attributes.pop('spatial_unit')
                 else:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
-                    spatial_ref_column = full_spatial_ref_column + '_id'
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix + full_spatial_ref_column)[0])
+                    spatial_ref_column = full_spatial_ref_column.replace(prefix,'') + '_id'
+                    
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
+
+                attributes = self.attributes['social_tenure']
+
         except:
             pass
 
-        for k, v in self.attributes.iteritems():
+        for k, v in attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
+
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
+
         self.model.save()
         return self.model.id
 

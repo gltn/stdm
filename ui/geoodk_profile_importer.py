@@ -590,6 +590,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.pgbar.setValue(0)
                 self.importlogger.log_action("Import started ...\n")
 
+
                 for instance_obj, instance_obj_data in mobile_field_data.iteritems():
                     self.importlogger.log_action("File {} ...\n".format(instance_obj))
                     parents_info = []
@@ -618,7 +619,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
                             #self.log_table_entry(log_timestamp)
 
-
                             parents_info.append(entity)
                             single_occuring.pop(entity)
 
@@ -635,6 +635,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                         ref_id = entity_add.save_parent_to_db()
                                         self.parent_ids[fk_table_name] = [ref_id, fk_table_name]
                                         continue
+
 
                             self.count_import_file_step(counter, entity)
                             log_timestamp = '=== standalone table import  === : {0}'.format(entity)
@@ -677,6 +678,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 entity_add.cleanup()
                             else:
                                 continue
+
                     if instance_obj_data[1]:
                         '''We treat social tenure entities separately because of foreign key references'''
                         entity_relation = EntityImporter(instance_obj)
@@ -767,8 +769,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def log_instance(self, instance):
         instance_short_name = self.importlogger.log_data_name(instance)
         log_data = self.importlogger.read_log_data()
-        log_data[instance_short_name] = self.importlogger.log_date()
-        self.importlogger.write_log_data(log_data)
+        if len(log_data)>0:
+            log_data[instance_short_name] = self.importlogger.log_date()
+            self.importlogger.write_log_data(log_data)
 
     def remove_imported_instances(self):
         count = 0

@@ -168,9 +168,12 @@ class ImportLogger:
         data = {}
         raw_file = LOGGER_HOME + '/log_file.json'
         if os.path.isfile(raw_file):
-            with open(raw_file, "r") as read_file:
-                data = json.load(read_file)
-                read_file.close()
+            try:
+                with open(raw_file, "r") as read_file:
+                    data = json.load(read_file)
+                    read_file.close()
+            except:
+                data = {}
         return data
     
     def log_data_name(self, full_name):
