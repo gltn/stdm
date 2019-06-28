@@ -1717,7 +1717,10 @@ class DetailsTreeView(DetailsDBHandler):
                 child_ = item.parent().child(i)
                 try:
                     model_ = self.str_models[child_.data()]
-                    if model_.structure_id == self.str_models[item.data()].structure_id:
+                    child_model_rec = model_.__dict__
+                    str_model_rec = self.str_models[item.data()].__dict__
+                    spatial_unit_id = self.current_spatial_unit(child_model_rec)[1]
+                    if child_model_rec[spatial_unit_id] == str_model_rec[spatial_unit_id]:
                         documents = self._supporting_doc_models(self.social_tenure.name, model_)
                         str_model_doc.append((model_, documents))
                 except KeyError:
