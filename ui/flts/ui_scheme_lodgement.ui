@@ -34,6 +34,9 @@
   <property name="windowTitle">
    <string comment="Step 1 of 5">Lodgement of Scheme</string>
   </property>
+  <property name="wizardStyle">
+   <enum>QWizard::ClassicStyle</enum>
+  </property>
   <property name="options">
    <set>QWizard::NoBackButtonOnStartPage</set>
   </property>
@@ -141,7 +144,7 @@
   </widget>
   <widget class="QWizardPage" name="wizardPage2">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="2">
+    <item row="1" column="0" colspan="3">
      <widget class="QFrame" name="frame_3">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -169,27 +172,7 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="holders_lineEdit">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="2">
-     <widget class="QTextEdit" name="fileDisplay_textEdit">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::TabFocus</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
+    <item row="2" column="2">
      <widget class="QPushButton" name="browse_pushBtn">
       <property name="text">
        <string>Browse...</string>
@@ -203,7 +186,27 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="holders_lineEdit">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" colspan="3">
+     <widget class="QTextEdit" name="fileDisplay_textEdit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::TabFocus</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
      <widget class="QPushButton" name="upload_pushBtn">
       <property name="text">
        <string>Upload</string>
@@ -220,7 +223,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="2">
+    <item row="0" column="0" colspan="3">
      <widget class="QFrame" name="frame_2">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -269,6 +272,9 @@
        </property>
       </widget>
      </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QTableWidget" name="tableWidget"/>
     </item>
    </layout>
   </widget>
@@ -731,8 +737,6 @@
    </layout>
    <zorder>blockArea_frame</zorder>
    <zorder>frame_6</zorder>
-   <zorder>blockArea_label</zorder>
-   <zorder>blockArea_lineEdit</zorder>
    <zorder>frame_7</zorder>
   </widget>
   <widget class="QWizardPage" name="wizardPage_3">
@@ -910,19 +914,12 @@
     <item>
      <widget class="QLabel" name="desc_Label2_5">
       <property name="text">
-       <string>Confirm the saved data from the previous steps.  </string>
+       <string>Confirm the scheme information.Click Back to edit the information or Finish to save.  </string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QTreeView" name="tr_summary"/>
-    </item>
-    <item>
-     <widget class="QLabel" name="desc_Label2_6">
-      <property name="text">
-       <string>Click finish if satisfied with the information.</string>
-      </property>
-     </widget>
     </item>
    </layout>
   </widget>

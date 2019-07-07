@@ -31,6 +31,7 @@ class EstablishmentDialog(QDialog, Ui_scheme_establish_dialog):
 
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
+        self.setupUi(self)
 
 
 if __name__ == '__main__':

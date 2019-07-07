@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Sun Jul  7 12:35:28 2019
+# Created: Sun Jul  7 14:24:52 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,6 +36,7 @@ class Ui_LodgeScheme_Wzd(object):
         LodgeScheme_Wzd.setMinimumSize(QtCore.QSize(410, 150))
         LodgeScheme_Wzd.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         LodgeScheme_Wzd.setAcceptDrops(False)
+        LodgeScheme_Wzd.setWizardStyle(QtGui.QWizard.ClassicStyle)
         LodgeScheme_Wzd.setOptions(QtGui.QWizard.NoBackButtonOnStartPage)
         self.wizardPage1 = QtGui.QWizardPage()
         self.wizardPage1.setObjectName(_fromUtf8("wizardPage1"))
