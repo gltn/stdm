@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_login.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Tue Jul  2 06:21:56 2019
+#      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -73,11 +74,10 @@ class Ui_frmLogin(object):
         frmLogin.setTabOrder(self.txtPassword, self.btnBox)
 
     def retranslateUi(self, frmLogin):
-        frmLogin.setWindowTitle(_translate("frmLogin", "STDM Login", None))
+        frmLogin.setWindowTitle(_translate("frmLogin", "Login", None))
         self.btn_db_settings.setToolTip(_translate("frmLogin", "Edit database server settings", None))
         self.btn_db_settings.setStatusTip(_translate("frmLogin", "Edit database server settings", None))
         self.btn_db_settings.setWhatsThis(_translate("frmLogin", "Edit database server settings", None))
         self.label.setText(_translate("frmLogin", "Username", None))
         self.label_2.setText(_translate("frmLogin", "Password", None))
 
-from stdm import resources_rc

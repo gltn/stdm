@@ -1,8 +1,8 @@
 """
 /***************************************************************************
-Name                 : STDM Login Dialog
+Name                 : FLTS Login Dialog
 Description          : Display the dialog window for users to login in order 
-                        to access STDM tools and modules
+                        to access FLTS tools and modules
 Date                 : 24/May/2013 
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
@@ -65,21 +65,17 @@ class loginDlg(QDialog, Ui_frmLogin):
 
         else:
             btnLogin.setText(QApplication.translate("LoginDialog","Login"))
-            self.btn_db_settings.setVisible(True)
+            self.btn_db_settings.setVisible(False)
 
         #Connect slots
-        self.btn_db_settings.clicked.connect(self.settingsDialog)
+        # self.btn_db_settings.clicked.connect(self.settingsDialog)
         self.btnBox.accepted.connect(self.acceptdlg)
-        
+
         #Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
 
         if self._test_connect_mode:
             self.txtUserName.setFocus()
-
-        else:
-            self.txtUserName.setText('postgres')
-            self.txtPassword.setFocus()
 
     def test_connect_mode(self):
         return self._test_connect_mode
@@ -162,7 +158,7 @@ class loginDlg(QDialog, Ui_frmLogin):
                 dbconfig = DatabaseConfig()
                 dbconn = dbconfig.read()
                 if  dbconn is None:
-                    msg = QApplication.translate("loginDlg","The STDM database "
+                    msg = QApplication.translate("loginDlg","The FLTS database "
                                                             "connection has not "
                                                             "been configured in "
                                                             "your system.\nWould "

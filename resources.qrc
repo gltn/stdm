@@ -1,5 +1,40 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/flts_about.png</file>
+    <file>images/icons/flts_back_action.png</file>
+    <file>images/icons/flts_certificate.png</file>
+    <file>images/icons/flts_change_password.png</file>
+    <file>images/icons/flts_error.png</file>
+    <file>images/icons/flts_export_file.png</file>
+    <file>images/icons/flts_first_examination.png</file>
+    <file>images/icons/flts_help.png</file>
+    <file>images/icons/flts_import_file.png</file>
+    <file>images/icons/flts_import_plot.png</file>
+    <file>images/icons/flts_login.png</file>
+    <file>images/icons/flts_logout.png</file>
+    <file>images/icons/flts_new_action.png</file>
+    <file>images/icons/flts_notification.png</file>
+    <file>images/icons/flts_notification2.png</file>
+    <file>images/icons/flts_password.png</file>
+    <file>images/icons/flts_plot_module.png</file>
+    <file>images/icons/flts_print.png</file>
+    <file>images/icons/flts_report.png</file>
+    <file>images/icons/flts_revision.png</file>
+    <file>images/icons/flts_save.png</file>
+    <file>images/icons/flts_scan.png</file>
+    <file>images/icons/flts_scheme_assessment.png</file>
+    <file>images/icons/flts_scheme_management.png</file>
+    <file>images/icons/flts_scheme_management2.png</file>
+    <file>images/icons/flts_scheme_management3.png</file>
+    <file>images/icons/flts_scheme_notification.png</file>
+    <file>images/icons/flts_search.png</file>
+    <file>images/icons/flts_search_person.png</file>
+    <file>images/icons/flts_search_plot.png</file>
+    <file>images/icons/flts_search_result.png</file>
+    <file>images/icons/flts_second_examination.png</file>
+    <file>images/icons/flts_success.png</file>
+    <file>images/icons/flts_third_examination.png</file>
+    <file>images/icons/flts_validate.png</file>
     <file>images/icons/mobile_collect.png</file>
     <file>images/icons/mobile_data_management.png</file>
     <file>images/icons/mobile_import.png</file>
