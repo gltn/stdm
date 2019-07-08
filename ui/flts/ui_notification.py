@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_notification.ui'
 #
-# Created: Sun Jul  7 03:19:28 2019
+# Created: Mon Jul  8 13:24:51 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
