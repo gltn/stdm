@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_establishment.ui'
 #
-# Created: Tue Jul  9 06:17:10 2019
+# Created: Tue Jul  9 06:19:41 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -84,8 +84,8 @@ class Ui_scheme_establish_dialog(object):
         self.gridLayout_4.addWidget(self.frame_2, 1, 1, 1, 1)
         self.frame = QtGui.QFrame(scheme_establish_dialog)
         self.frame.setMinimumSize(QtCore.QSize(200, 45))
-        self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtGui.QFrame.Raised)
+        self.frame.setFrameShape(QtGui.QFrame.NoFrame)
+        self.frame.setFrameShadow(QtGui.QFrame.Plain)
         self.frame.setObjectName(_fromUtf8("frame"))
         self.label = QtGui.QLabel(self.frame)
         self.label.setGeometry(QtCore.QRect(10, 10, 131, 16))

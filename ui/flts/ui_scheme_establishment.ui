@@ -139,10 +139,10 @@ p, li { white-space: pre-wrap; }
       </size>
      </property>
      <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
+      <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
+      <enum>QFrame::Plain</enum>
      </property>
      <widget class="QLabel" name="label">
       <property name="geometry">
