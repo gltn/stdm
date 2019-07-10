@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_first_examination.ui'
 #
-# Created: Sat Jul  6 21:37:30 2019
+# Created: Wed Jul 10 15:41:52 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,12 +26,13 @@ except AttributeError:
 class Ui_FirstExam_Wzd(object):
     def setupUi(self, FirstExam_Wzd):
         FirstExam_Wzd.setObjectName(_fromUtf8("FirstExam_Wzd"))
-        FirstExam_Wzd.resize(817, 527)
+        FirstExam_Wzd.resize(817, 550)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(FirstExam_Wzd.sizePolicy().hasHeightForWidth())
         FirstExam_Wzd.setSizePolicy(sizePolicy)
+        FirstExam_Wzd.setWizardStyle(QtGui.QWizard.ModernStyle)
         self.wizardPage1 = QtGui.QWizardPage()
         self.wizardPage1.setObjectName(_fromUtf8("wizardPage1"))
         self.gridLayout_2 = QtGui.QGridLayout(self.wizardPage1)
@@ -374,16 +375,7 @@ class Ui_FirstExam_Wzd(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Scheme Name: .................................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Approved Data: ...............................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Approval Authority:............................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Date of Establishment:........................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Relevant Authority:............................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Land Rights Office: ............................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">Region: ..........................................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">....................................................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">....................................................</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">....................................................</span></p></body></html>", None))
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\"><br /></p></body></html>", None))
         self.label_3.setText(_translate("FirstExam_Wzd", "Click Next to proceed to the list of documents ", None))
         self.label_2.setText(_translate("FirstExam_Wzd", "For unapproved documents input comment must be added.", None))
         item = self.holders_tblWdg.verticalHeaderItem(0)
@@ -416,42 +408,6 @@ class Ui_FirstExam_Wzd(object):
         item.setText(_translate("FirstExam_Wzd", "Notification", None))
         __sortingEnabled = self.holders_tblWdg.isSortingEnabled()
         self.holders_tblWdg.setSortingEnabled(False)
-        item = self.holders_tblWdg.item(0, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(0, 2)
-        item.setText(_translate("FirstExam_Wzd", "unapproved", None))
-        item = self.holders_tblWdg.item(1, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(1, 2)
-        item.setText(_translate("FirstExam_Wzd", "approved", None))
-        item = self.holders_tblWdg.item(2, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(2, 2)
-        item.setText(_translate("FirstExam_Wzd", "unapproved", None))
-        item = self.holders_tblWdg.item(3, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(3, 2)
-        item.setText(_translate("FirstExam_Wzd", "approved", None))
-        item = self.holders_tblWdg.item(4, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(4, 2)
-        item.setText(_translate("FirstExam_Wzd", "unapproved", None))
-        item = self.holders_tblWdg.item(5, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(5, 2)
-        item.setText(_translate("FirstExam_Wzd", "approved", None))
-        item = self.holders_tblWdg.item(6, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(6, 2)
-        item.setText(_translate("FirstExam_Wzd", "approved", None))
-        item = self.holders_tblWdg.item(7, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(7, 2)
-        item.setText(_translate("FirstExam_Wzd", "unapproved", None))
-        item = self.holders_tblWdg.item(8, 0)
-        item.setText(_translate("FirstExam_Wzd", "Click to view...", None))
-        item = self.holders_tblWdg.item(8, 2)
-        item.setText(_translate("FirstExam_Wzd", "approved", None))
         self.holders_tblWdg.setSortingEnabled(__sortingEnabled)
         self.title_label_2.setText(_translate("FirstExam_Wzd", "List of Documents", None))
         self.subtitle_label_2.setText(_translate("FirstExam_Wzd", "This screen shows data for the established scheme ", None))

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_second_examination.ui'
 #
-# Created: Sat Jul  6 21:37:45 2019
+# Created: Wed Jul 10 15:48:25 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,6 +27,7 @@ class Ui_SecondExam_Wzd(object):
     def setupUi(self, SecondExam_Wzd):
         SecondExam_Wzd.setObjectName(_fromUtf8("SecondExam_Wzd"))
         SecondExam_Wzd.resize(640, 501)
+        SecondExam_Wzd.setWizardStyle(QtGui.QWizard.ModernStyle)
         self.wizardPage1 = QtGui.QWizardPage()
         self.wizardPage1.setObjectName(_fromUtf8("wizardPage1"))
         self.gridLayout = QtGui.QGridLayout(self.wizardPage1)

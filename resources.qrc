@@ -144,5 +144,7 @@
     <file>images/icons/expression.png</file>
 	<file>images/icons/qrcode.png</file>
 	<file>images/icons/qrcode_512.png</file>
+    <file>images/icons/disapprove.png</file>
+    <file>images/icons/approve.png</file>
   </qresource>
 </RCC>

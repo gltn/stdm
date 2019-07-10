@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Revision</string>
   </property>
+  <property name="wizardStyle">
+   <enum>QWizard::ClassicStyle</enum>
+  </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
@@ -91,7 +94,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>587</width>
+            <width>569</width>
             <height>69</height>
            </rect>
           </property>

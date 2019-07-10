@@ -100,7 +100,7 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
             self.tr('Second Examination')
         )
         self.lsi_third_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_third_examination'),
+            QIcon(':/plugins/stdm/images/icons/flts_third_examination.png'),
             self.tr('Third Examination')
         )
         self.lsi_revision = QListWidgetItem(

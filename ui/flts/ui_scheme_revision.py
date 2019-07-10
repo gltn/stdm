@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_revision.ui'
 #
-# Created: Sat Jul  6 21:37:05 2019
+# Created: Wed Jul 10 18:39:11 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,6 +27,7 @@ class Ui_revision_Wzd(object):
     def setupUi(self, revision_Wzd):
         revision_Wzd.setObjectName(_fromUtf8("revision_Wzd"))
         revision_Wzd.resize(627, 415)
+        revision_Wzd.setWizardStyle(QtGui.QWizard.ClassicStyle)
         self.wizardPage1 = QtGui.QWizardPage()
         self.wizardPage1.setObjectName(_fromUtf8("wizardPage1"))
         self.gridLayout = QtGui.QGridLayout(self.wizardPage1)
@@ -65,7 +66,7 @@ class Ui_revision_Wzd(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 587, 69))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 569, 69))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout_2.addWidget(self.scrollArea, 0, 0, 1, 1)

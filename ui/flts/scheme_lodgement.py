@@ -16,6 +16,7 @@ email                : joehene@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QWizard
 )
@@ -31,6 +32,13 @@ class LodgementWizard(QWizard, Ui_LodgeScheme_Wzd):
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
         self.setupUi(self)
+
+        # Add maximize buttons
+        self.setWindowFlags(
+            self.windowFlags() |
+            Qt.WindowSystemMenuHint |
+            Qt.WindowMaximizeButtonHint
+        )
 
 
 if __name__ == '__main__':
