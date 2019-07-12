@@ -1103,7 +1103,7 @@ class STDMQGISLoader(object):
         # self.details_tree_view = DetailsTreeView(self.iface, self, dock_widget)
         #
         # # Add current profiles to profiles combobox
-        # self.load_profiles_combobox()
+        self.load_profiles_combobox()
 
         # flts
 
@@ -1517,12 +1517,6 @@ class STDMQGISLoader(object):
         self.fltsNotificationCntGroup.addContentItem(fltsNotificationCnt)
         self.fltsNotificationCntGroup.setContainerItem(self.notificationAct)
         self.fltsNotificationCntGroup.register()
-
-        # lhtSettingsCntGroups = []
-        # lhtSettingsCntGroups.append(schemeSettingsCntGroups)
-        # lhtSettingsCntGroups.append(certSettingsCntGroups)
-        # lhtSettingsCntGroups.append(self.fltsSearchCntGroup)
-        # lhtSettingsCntGroups.append(self.fltsReportCntGroup)
 
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)

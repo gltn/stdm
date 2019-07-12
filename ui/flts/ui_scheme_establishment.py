@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_establishment.ui'
 #
-# Created: Wed Jul 10 15:40:39 2019
+# Created: Thu Jul 11 19:55:22 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -117,4 +117,5 @@ class Ui_scheme_establish_dialog(object):
         self.chk_approve.setText(_translate("scheme_establish_dialog", "Approve", None))
         self.chk_disapprove.setText(_translate("scheme_establish_dialog", "Disapprove", None))
         self.closeBtn.setText(_translate("scheme_establish_dialog", "Submit", None))
+
 # import resources_rc

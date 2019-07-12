@@ -45,7 +45,7 @@ from qgis.utils import (
     showException
 )
 
-from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
+from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import Entity
@@ -81,7 +81,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             collect_model=False,
             parent_entity=None,
             exclude_columns=[],
-            plugin = None
+            plugin=None
     ):
         """
         Class constructor.
@@ -112,12 +112,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.collection_suffix = self.tr('Collection')
 
-        #Set minimum width
+        # Set minimum width
         self.setMinimumWidth(450)
 
         self.plugin = plugin
 
-        #Flag for mandatory columns
+        # Flag for mandatory columns
         self.has_mandatory = False
         self.reload_form = False
         self._entity = entity
@@ -246,7 +246,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(
-            QDialogButtonBox.Cancel|QDialogButtonBox.Save
+            QDialogButtonBox.Cancel | QDialogButtonBox.Save
         )
 
         if self.edit_model is None:
@@ -295,7 +295,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.buttonBox.accepted.connect(
                     self.on_child_saved
                 )
-                #self.buttonBox.accepted.connect(self.submit)
+                # self.buttonBox.accepted.connect(self.submit)
 
         self.buttonBox.rejected.connect(self.cancel)
 
@@ -374,7 +374,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             self.setModel(self.ent_model())
             self.clear()
             self.child_models.clear()
-            for index in range(0, self.entity_tab_widget.count()-1):
+            for index in range(0, self.entity_tab_widget.count() - 1):
                 if isinstance(
                         self.entity_tab_widget.widget(index),
                         EntityBrowserWithEditor
@@ -438,7 +438,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         else:
             if self.is_valid:
-                #self.addedModel.emit(self.model())
+                # self.addedModel.emit(self.model())
                 self.setModel(self.ent_model())
 
                 self.clear()
@@ -501,7 +501,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Grid layout for controls
         self.gl = QGridLayout(self.scroll_widget_contents)
         self.gl.setObjectName('gl_widget_contents')
-    
+
         # Append column labels and widgets
         table_name = self._entity.name
         columns = table_column_names(table_name)
@@ -520,7 +520,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 # Format label text if it is a mandatory field
                 if c.mandatory:
                     header = u'{0} *'.format(c.ui_display())
-                    #Highlight asterisk
+                    # Highlight asterisk
                     header = self._highlight_asterisk(header)
 
                 self.c_label.setText(header)
@@ -529,7 +529,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.column_widget = column_widget
                 self.gl.addWidget(self.column_widget, row_id, 1, 1, 1)
 
-                #Add user tip if specified for the column configuration
+                # Add user tip if specified for the column configuration
                 if c.user_tip:
                     self.tip_lbl = UserTipLabel(user_tip=c.user_tip)
                     self.gl.addWidget(self.tip_lbl, row_id, 2, 1, 1)
@@ -538,10 +538,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
                     self.has_mandatory = True
 
                 col_name = c.name
-                #Replace name accordingly based on column type
+                # Replace name accordingly based on column type
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
-    
+
                 # Add widget to MapperMixin collection
                 self.addMapping(
                     col_name,
@@ -552,7 +552,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
                 # Bump up row_id
                 row_id += 1
-    
+
         self.entity_scroll_area.setWidget(self.scroll_widget_contents)
         if self.entity_tab_widget is None:
             self.entity_tab_widget = QTabWidget(self)
@@ -571,7 +571,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 else:
                     self._add_fk_browser(ch, col)
 
-        #Add tab widget if entity supports documents
+        # Add tab widget if entity supports documents
         if self._entity.supports_documents:
             self.doc_widget = SupportingDocumentsWidget(
                 self._entity.supporting_doc,
@@ -595,11 +595,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 self.tr('Supporting Documents')
             )
 
-
         # Return the correct widget
         if not self.entity_tab_widget is None:
             return self.entity_tab_widget
-    
+
         return self.entity_scroll_area
 
     def _add_primary_attr_widget(self):
@@ -610,9 +609,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
             tab_txt = self.entity_tab_widget.tabText(0)
             if not tab_txt == pr_txt:
                 self.entity_tab_widget.addTab(
-                self.entity_scroll_area,
-                pr_txt
-            )
+                    self.entity_scroll_area,
+                    pr_txt
+                )
 
     def _add_fk_browser(self, child_entity, column):
         # Create and add foreign key
@@ -675,7 +674,6 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 parent_entity = col.parent
                 if parent_entity == self._entity:
                     return col
-
 
     def children_entities(self):
         """

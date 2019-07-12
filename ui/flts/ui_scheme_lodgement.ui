@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LodgeScheme_Wzd</class>
- <widget class="QWizard" name="LodgeScheme_Wzd">
+ <class>Ldg_Wzd</class>
+ <widget class="QWizard" name="Ldg_Wzd">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>527</width>
-    <height>470</height>
+    <width>600</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,7 +28,7 @@
   <property name="maximumSize">
    <size>
     <width>600</width>
-    <height>480</height>
+    <height>550</height>
    </size>
   </property>
   <property name="contextMenuPolicy">
@@ -38,7 +38,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string comment="Step 1 of 5">Lodgement of Scheme</string>
+   <string>Lodgement of Scheme</string>
   </property>
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
@@ -48,7 +48,7 @@
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="1" column="0" colspan="2">
+    <item row="0" column="0" colspan="2">
      <widget class="QLabel" name="desc_Label1">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -61,118 +61,39 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="lnEdit_scheme_number">
+    <item row="1" column="0">
+     <widget class="QLabel" name="lbl_Sceme">
+      <property name="text">
+       <string>Scheme Number</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="lnEdit_schNum">
       <property name="readOnly">
        <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Date of Approval</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="title_lbl">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>15</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>New Land Hold Scheme</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
+    <item row="2" column="0">
      <widget class="QLabel" name="label_2">
       <property name="text">
        <string>Scheme Name</string>
       </property>
      </widget>
     </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lnEdit_schmNam"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Date of Approval</string>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="lnEdit_scheme_name"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_13">
-      <property name="text">
-       <string>Scheme Number</string>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="0" colspan="2">
-     <widget class="QLabel" name="label_5">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>If you would like to end this process click 'cancel' below, otherwise click 'next to proceed</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QComboBox" name="cbx_region"/>
-    </item>
-    <item row="7" column="1">
-     <widget class="QComboBox" name="scb_landRightsOffice"/>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Relevant Authority</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="label_11">
-      <property name="text">
-       <string>Block Area</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Region</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <widget class="QLineEdit" name="lineEdit_township"/>
-    </item>
-    <item row="10" column="1">
-     <widget class="QComboBox" name="cbx_division"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Date of Esablishment</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_10">
-      <property name="text">
-       <string>Registration Division</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QDateEdit" name="dateEdit_approval">
+     <widget class="QDateEdit" name="date_apprv">
       <property name="minimumDate">
        <date>
         <year>2009</year>
@@ -185,8 +106,15 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
-     <widget class="QDateEdit" name="dateEdit_establishment">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Date of Esablishment</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QDateEdit" name="date_establish">
       <property name="minimumDate">
        <date>
         <year>2019</year>
@@ -199,30 +127,80 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QComboBox" name="cbx_relevant_auth"/>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Relevant Authority</string>
+      </property>
+     </widget>
     </item>
-    <item row="7" column="0">
+    <item row="5" column="1">
+     <widget class="QComboBox" name="cbx_relvAuth"/>
+    </item>
+    <item row="6" column="0">
      <widget class="QLabel" name="label_7">
       <property name="text">
        <string>Land Rights Office</string>
       </property>
      </widget>
     </item>
-    <item row="9" column="0">
+    <item row="6" column="1">
+     <widget class="QComboBox" name="scb_lro"/>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>Region</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QComboBox" name="cbx_region"/>
+    </item>
+    <item row="8" column="0">
      <widget class="QLabel" name="label_9">
       <property name="text">
        <string>Township Name</string>
       </property>
      </widget>
     </item>
-    <item row="11" column="1">
-     <widget class="QSpinBox" name="spnBx_blockArea">
-      <property name="maximum">
-       <number>1000000000</number>
+    <item row="8" column="1">
+     <widget class="QLineEdit" name="lnEdit_twnshp"/>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Registration Division</string>
       </property>
-      <property name="singleStep">
-       <number>500</number>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QComboBox" name="cbx_regDiv"/>
+    </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>Block Area</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QDoubleSpinBox" name="dblSpinBx_blockArea">
+      <property name="decimals">
+       <number>4</number>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0" colspan="2">
+     <widget class="QLabel" name="label_5">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>If you would like to end this process click 'cancel' below, otherwise click 'next to proceed</string>
       </property>
      </widget>
     </item>
@@ -230,92 +208,25 @@
   </widget>
   <widget class="QWizardPage" name="wizardPage2">
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="holders_dir_url">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QPushButton" name="btn_browse_holders">
-      <property name="text">
-       <string>Browse...</string>
-      </property>
-      <property name="default">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Data preview</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="3">
-     <widget class="QTableWidget" name="tw_holders_preview"/>
-    </item>
-    <item row="1" column="0">
+    <item row="0" column="0">
      <widget class="QLabel" name="desc_Label2">
       <property name="text">
        <string>This step entails locating and importing the list of holders file.  </string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QFrame" name="frame_2">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="2" column="0">
+     <widget class="QLabel" name="lbl_data_prv">
+      <property name="text">
+       <string>Data preview</string>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>15</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>600</width>
-        <height>200</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <property name="lineWidth">
-       <number>0</number>
-      </property>
-      <widget class="QLabel" name="title_Label2">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>101</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Import holders</string>
-       </property>
-      </widget>
      </widget>
     </item>
-    <item row="5" column="2">
-     <widget class="QPushButton" name="btn_validate_holders">
+    <item row="3" column="0" colspan="2">
+     <widget class="ExcelWorkbookView" name="tw_hld_prv"/>
+    </item>
+    <item row="4" column="1">
+     <widget class="QPushButton" name="btn_valid_upld">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -327,8 +238,25 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_12">
+    <item row="1" column="1">
+     <widget class="QPushButton" name="btn_brws_hld">
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+      <property name="default">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLineEdit" name="lnEdit_hld_path">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="lbl_upld">
       <property name="text">
        <string>Click Upload button to save data.</string>
       </property>
@@ -338,66 +266,42 @@
   </widget>
   <widget class="QWizardPage" name="wizardPage">
    <layout class="QGridLayout" name="gridLayout_4">
-    <item row="0" column="0">
-     <widget class="QFrame" name="frame_4">
+    <item row="2" column="0">
+     <widget class="QFrame" name="frame">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>16</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>600</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="sizeIncrement">
-       <size>
-        <width>0</width>
-        <height>10</height>
-       </size>
-      </property>
       <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
+       <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
+       <enum>QFrame::Raised</enum>
       </property>
-      <property name="lineWidth">
-       <number>0</number>
-      </property>
-      <widget class="QLabel" name="title_Label2_3">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>501</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="lineWidth">
-        <number>0</number>
-       </property>
-       <property name="text">
-        <string>Upload Documents</string>
-       </property>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="btn_upld_multi">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Upload Multiple Documents</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resources.qrc">
+           <normaloff>:/plugins/stdm/images/icons/flts_import_file.png</normaloff>:/plugins/stdm/images/icons/flts_import_file.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item row="0" column="0">
      <widget class="QLabel" name="desc_Label2_2">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -431,8 +335,8 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QTableWidget" name="tbl_uploaded_docs">
+    <item row="1" column="0">
+     <widget class="QTableWidget" name="tbl_upld_docs">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -873,58 +777,10 @@
       </item>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QFrame" name="frame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QPushButton" name="btn_uploadAll">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Upload Multiple Documents</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../resources.qrc">
-           <normaloff>:/plugins/stdm/images/icons/flts_import_file.png</normaloff>:/plugins/stdm/images/icons/flts_import_file.png</iconset>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage_4">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QLabel" name="title_Label2_6">
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Summary</string>
-      </property>
-     </widget>
-    </item>
     <item>
      <widget class="QLabel" name="desc_Label2_5">
       <property name="sizePolicy">
@@ -944,6 +800,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ExcelWorkbookView</class>
+   <extends>QTableWidget</extends>
+   <header>stdm.ui.customcontrols.table_widget</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
  </resources>
