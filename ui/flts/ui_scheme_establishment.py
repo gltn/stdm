@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_establishment.ui'
 #
-# Created: Thu Jul 11 19:55:22 2019
+# Created: Fri Jul 12 17:21:57 2019
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!

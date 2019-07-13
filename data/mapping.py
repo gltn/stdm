@@ -498,6 +498,7 @@ class MapperMixin(object):
                             "New record has been successfully saved."
                         )
                     )
+                    print 'saving...'
 
             else:
                 self._model.update()
@@ -537,10 +538,10 @@ class MapperMixin(object):
             self.is_valid = False
 
         # Close the dialog
-        if isinstance(self, QDialog) and self.is_valid:
-            self.postSaveUpdate(self._model)
-            if not save_and_new:
-                self.accept()
+        # if isinstance(self, QDialog) and self.is_valid:
+        #     self.postSaveUpdate(self._model)
+        #     if not save_and_new:
+        #         self.accept()
 
     def clear(self):
         """

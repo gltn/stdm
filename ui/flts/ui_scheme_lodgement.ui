@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Ldg_Wzd</class>
- <widget class="QWizard" name="Ldg_Wzd">
+ <class>ldg_wzd</class>
+ <widget class="QWizard" name="ldg_wzd">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -69,7 +69,7 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QLineEdit" name="lnEdit_schNum">
+     <widget class="QLineEdit" name="lnedit_schm_num">
       <property name="readOnly">
        <bool>true</bool>
       </property>
@@ -83,7 +83,7 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="lnEdit_schmNam"/>
+     <widget class="QLineEdit" name="lnedit_schm_nam"/>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_3">
@@ -135,7 +135,7 @@
      </widget>
     </item>
     <item row="5" column="1">
-     <widget class="QComboBox" name="cbx_relvAuth"/>
+     <widget class="QComboBox" name="cbx_relv_auth"/>
     </item>
     <item row="6" column="0">
      <widget class="QLabel" name="label_7">
@@ -145,7 +145,7 @@
      </widget>
     </item>
     <item row="6" column="1">
-     <widget class="QComboBox" name="scb_lro"/>
+     <widget class="QComboBox" name="cbx_lro"/>
     </item>
     <item row="7" column="0">
      <widget class="QLabel" name="label_8">
@@ -165,7 +165,7 @@
      </widget>
     </item>
     <item row="8" column="1">
-     <widget class="QLineEdit" name="lnEdit_twnshp"/>
+     <widget class="QLineEdit" name="lnedit_twnshp"/>
     </item>
     <item row="9" column="0">
      <widget class="QLabel" name="label_10">
@@ -175,7 +175,7 @@
      </widget>
     </item>
     <item row="9" column="1">
-     <widget class="QComboBox" name="cbx_regDiv"/>
+     <widget class="QComboBox" name="cbx_reg_div"/>
     </item>
     <item row="10" column="0">
      <widget class="QLabel" name="label_11">
@@ -185,7 +185,7 @@
      </widget>
     </item>
     <item row="10" column="1">
-     <widget class="QDoubleSpinBox" name="dblSpinBx_blockArea">
+     <widget class="QDoubleSpinBox" name="dbl_spinbx_block_area">
       <property name="decimals">
        <number>4</number>
       </property>
