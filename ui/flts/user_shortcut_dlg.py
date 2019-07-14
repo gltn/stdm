@@ -84,51 +84,51 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self._search_items = []
 
         self.lsi_lodge_scheme = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_assessment.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_lodgement.svg'),
             self.tr('Lodgement')
         )
         self.lsi_establish_scheme = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_establishment.svg'),
             self.tr('Establishment')
         )
         self.lsi_first_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management2.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment1.svg'),
             self.tr('First Examination')
         )
         self.lsi_second_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management3.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment2.svg'),
             self.tr('Second Examination')
         )
         self.lsi_third_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_third_examination.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment3.svg'),
             self.tr('Third Examination')
         )
         self.lsi_revision = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_revision.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_revision.svg'),
             self.tr('Revision')
         )
         self.lsi_import_plots = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_import_plot.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_import_plot.svg'),
             self.tr('Import Plots')
         )
         self.lsi_print_certificate = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_print.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_print.svg'),
             self.tr('Print Certificate')
         )
         self.lsi_scan_certificate = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scan.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scan.svg'),
             self.tr('Scan Certificate')
         )
         self.lsi_search = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_search.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_search.svg'),
             self.tr('Search')
         )
         self.lsi_report = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_report.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_report.svg'),
             self.tr('Report')
         )
         self.lsi_notification = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_notification.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_notification.svg'),
             self.tr('Notification')
         )
 

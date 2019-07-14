@@ -16,16 +16,19 @@ email                : joehene@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
+from os.path import expanduser
 from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
-    QAbstractButton,
-    QMessageBox
-)
+    QMessageBox,
+    QStringListModel,
+    QTreeWidget,
+    QTreeView,
+    QPushButton,
+    QTreeWidgetItem)
 
-from stdm.data.pg_utils import(
+from stdm.data.pg_utils import (
     export_data
 )
 from stdm.settings import current_profile
@@ -40,8 +43,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
     Wizard that incorporates lodgement of all information required for a Land
     Hold Title Scheme
     """
-
-    wizardFinished = pyqtSignal(object, bool)
 
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
@@ -64,6 +65,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Entities
         self.entity_obj = self.curr_p.entity('Scheme')
+        self.notif_obj = self.curr_p.entity('Notification')
 
         if self.entity_obj is None:
             QMessageBox.critical(
@@ -73,8 +75,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Entity model
+        # Scheme entity model
         self.schm_model = entity_model(self.entity_obj)
+
+        # Notification entity model
+        self.notif_model = entity_model(self.notif_obj)
 
         if self.schm_model is None:
             QMessageBox.critical(
@@ -85,12 +90,27 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.reject()
 
         # Intializing mappermixin
+        # Scheme
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
+        # Notification
+        MapperMixin.__init__(self, self.notif_model, self.notif_obj)
+
+        # Configure notification bar
+        self.notif_bar = NotificationBar(self.vlNotification)
+
+        # Browse holders excel file
+        self.btn_brws_hld.clicked.connect(self.browse_holders_file)
+
+        # Browse multiple files
+        self.btn_upld_multi.clicked.connect(self.upload_multiple_files)
 
         # Populate lookup comboboxes
         self._populate_lookups()
 
         self.register_col_widgets()
+
+        # Scheme number
+        self.scheme_num()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -103,6 +123,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
     def _populate_lookups(self):
         # Load lookup columns
         self._populate_combo(self.cbx_relv_auth, 'cb_check_lht_relevant_authority')
+
+        self._populate_combo(self.cbx_lro, 'cb_check_lht_land_rights_office')
+
+        self._populate_combo(self.cbx_region, 'cb_check_lht_region')
+
+        self._populate_combo(self.cbx_reg_div, 'cb_check_lht_reg_division')
 
     def page_title(self):
         """
@@ -126,7 +152,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                      'Finish to save'))
         self.wizardPage_4.setSubTitle(self.tr(
             'Review the summary of the previous steps. Click Back to edit '
-            'information of Finish to save'))
+            'information or Finish to save'))
 
     def on_page_changed(self, idx):
         """
@@ -150,6 +176,35 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
+    def supporting_documents(self):
+        """
+        This is used in uploading and viewing of the scheme supporting documents
+        """
+        notice_btn = QPushButton(self.tr("browse..."))
+        expl_btn = QPushButton(self.tr("browse..."))
+        councl_btn = QPushButton(self.tr("browse..."))
+        tiltle_btn = QPushButton(self.tr("browse..."))
+        covr_btn = QPushButton(self.tr("browse..."))
+        lst_btn = QPushButton(self.tr("browse..."))
+        condt_btn = QPushButton(self.tr("browse..."))
+        digl_btn = QPushButton(self.tr("browse..."))
+
+        # Defining list of items
+        data = {
+            'Document': [self.tr('Notice of Establishmment of Scheme'),
+                         self.tr('Explanatory Report'),
+                         self.tr('Council Resolution(Approval of Scheme'),
+                         self.tr('Title Deed of Blockerf'),
+                         self.tr('Cover Certificate'),
+                         self.tr('List of Potential Holders'),
+                         self.tr('Document(s) Imposing Conditions'),
+                         self.tr('Digital Layout Plan')],
+            'Browse': [notice_btn, expl_btn, councl_btn, tiltle_btn, covr_btn,
+                       lst_btn, condt_btn, digl_btn],
+            'Status': [],
+            'View': [],
+        }
+
     def upload_multiple_files(self):
         """
         Browse and select multiple documents
@@ -158,26 +213,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
 
-    def accept_dlg(self):
-        # Check if the user has selected an action from the list widget
-        self.notif_bar.clear()
-
-        selected_items = self.lsw_category_action.selectedItems()
-
-        if len(selected_items) == 0:
-            self.notif_bar.insertWarningNotification(
-                self.tr("Please select an operation to perform"))
-            return
-
-        self._action_code = selected_items[0].data(Qt.UserRole)
-
-        self.accept()
+    def scheme_num(self):
+        """
+        Generate random scheme number
+        """
+        self.lnedit_schm_num.setText('NMBWND.0001')
+        # Use random and string library in generating scheme number
 
     def register_col_widgets(self):
         """
         Registers the column widgets
         """
         # Get the table columns and add mapping
+        self.addMapping('scheme_number', self.lnedit_schm_num)
         self.addMapping('scheme_name', self.lnedit_schm_nam)
         self.addMapping('date_of_approval', self.date_apprv)
         self.addMapping('date_of_establishment', self.date_establish)
@@ -191,12 +239,43 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         current_id = self.currentId()
         ret_status = False
 
+        self.notif_bar.clear()
+
         if current_id == 0:
-            # Check if all fields have been specified
-            return True
+            # Check if edit texts are filled
+            if len(self.lnedit_schm_nam.text()) == 0:
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please fill in the Scheme Name to proceed"))
+                # Check township name
+            elif len(self.lnedit_twnshp.text()) == 0:
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please fill in the Township Name to proceed"))
+                # Check block area value
+            elif self.dbl_spinbx_block_area.value() == 0.0000:
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Block Area cannot be zero"))
+            elif self.cbx_relv_auth.currentText() == '':
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please select an option for Relevant Authority"))
+            elif self.cbx_lro.currentText() == '':
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please select an option for Land Rights Office"))
+            elif self.cbx_region.currentText() == '':
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please select an option for Region"))
+            elif self.cbx_reg_div.currentText() == '':
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please select an option for Registration "
+                            "Division"))
+            else:
+                return True
         elif current_id == 1:
-            # Check if the holders file has been uploaded
-            return True
+            # TODO --- Use RegExp validator
+            if self.lnEdit_hld_path.text() == '':
+                self.notif_bar.insertWarningNotification(
+                    self.tr("Please select an appropriate file to proceed"))
+            else:
+                return True
         elif current_id == 2:
             # Check if all documents have been uploaded
             return True
@@ -220,6 +299,46 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Save scheme information to the database
         """
         self.submit()
+        SchemeSummary.set_scheme()
+
+    def create_notification(self):
+        """
+        Populate notification table
+        """
+        # Get the table columns and add mapping
+        self.addMapping('status', '2')
+        self.addMapping('source_user_id', 'src_usr_id')
+        self.addMapping('target_use_id', 'trgt_usr_id')
+        self.addMapping('content', 'notification')
+        self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
+
+
+class SchemeSummary(QTreeView, LodgementWizard):
+    """
+    Widget that displays scheme information.
+    """
+
+    def __init__(self, parent=None):
+        super(QTreeView, self).__init__(parent)
+
+    def set_scheme(self):
+        """
+        Defines static and dynamic variables to be shown in the summary.
+        """
+        pointListBox = QTreeWidget()
+        header = QTreeWidgetItem(['documents', 'data', 'files'])
+        pointListBox.setHeaderItem(header)
+        root = QTreeWidgetItem(pointListBox, ["root"])
+        A = QTreeWidgetItem(root, ["A"])
+        barA = QTreeWidgetItem(A, ["items", "items1"])
+        barZ = QTreeWidgetItem(A, ["items", "items1"])
+        pointListBox.show()
+
+    def refresh(self):
+        """
+        Upating data in the summary when user changes or updates in the wizard
+        """
+        pass
 
 
 if __name__ == '__main__':

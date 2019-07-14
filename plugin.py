@@ -189,26 +189,26 @@ class STDMQGISLoader(object):
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_login.png"),
+        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_login.svg"),
                                    QApplication.translate("LoginToolbarAction",
                                                           "Login"),
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
 
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_about.png"),
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_about.svg"),
                                    QApplication.translate("AboutToolbarAction", "About"), self.iface.mainWindow(),
                                    "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         # Define actions that are available to all logged in users
-        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_logout.png"), \
+        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_logout.svg"), \
                                     QApplication.translate("LogoutToolbarAction", "Logout"), self.iface.mainWindow(),
                                     "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
 
-        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_change_password.png"), \
+        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_password_change.svg"), \
                                             QApplication.translate("ChangePasswordToolbarAction", "Change Password"),
                                             self.iface.mainWindow(),
                                             "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
-        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_help.png"), \
+        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_help.svg"), \
                                   QApplication.translate("STDMQGISLoader", "Help Contents"), self.iface.mainWindow(),
                                   "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
@@ -565,7 +565,7 @@ class STDMQGISLoader(object):
 
                 message = QApplication.translate(
                     "STDMQGISLoader",
-                    'The system has detected that there '
+                    'The system has detected Fthat there '
                     'is no default profile. \n {}'.format(
                         solution
                     )
