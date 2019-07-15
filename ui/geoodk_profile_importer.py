@@ -238,8 +238,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         for f in os.listdir(path):
             if os.path.isfile(os.path.join(path, f)) and f.endswith('.xml'):
-                file_instance = os.path.join(path, f)
-                self.rename_file_to_UUID(file_instance)
+                file_instance = os.path.normcase(os.path.join(path, f))
+                if os.path.isfile(file_instance):
+                    self.rename_file_to_UUID(file_instance)
 
     def read_instance_data(self):
         """Read all instance data once and store them in a dict
@@ -247,6 +248,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         mobile_data = OrderedDict()
         social_tenure_info = OrderedDict()
+        self.uuid_extractor.unset_path()
         for instance in self.instance_list:
             self.uuid_extractor.set_file_path(instance)
 
@@ -755,12 +757,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
             self.save_instance_data_to_db(entities)
             self.buttonBox.setEnabled(True)
-            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
+
             QApplication.restoreOverrideCursor()
         except Exception as ex:
             self.feedback_message(ex.message)
             self.log_table_entry(unicode(ex.message))
             self.buttonBox.setEnabled(True)
+            self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
             QApplication.restoreOverrideCursor()
             return
 

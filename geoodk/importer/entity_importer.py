@@ -502,6 +502,13 @@ class Save2DB:
         else:
             return var
 
+    def abort_action(self):
+        """
+        Allow the current process of data import to abort.
+        :return:
+        """
+
+
     def cleanup(self):
         """
         Reset all the model and entity data before we process

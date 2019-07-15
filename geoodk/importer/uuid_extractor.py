@@ -66,7 +66,7 @@ class InstanceUUIDExtractor():
         self.file.close()
 
     def update_document(self):
-        '''Update the current instance by clearing the cache document'''
+        '''Update the current instance by clearing the document in the cache '''
         self.doc.clear()
         self.set_document()
 
