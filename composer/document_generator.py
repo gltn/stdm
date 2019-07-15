@@ -303,6 +303,8 @@ class DocumentGenerator(QObject):
 
             #Load the layers required by the table composer items
             self._table_mem_layers = load_table_layers(table_config_collection)
+
+            entityFieldName = self.format_entity_field_name(composerDS.name(), data_source)
             
             #Execute query
             dsTable,records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
@@ -433,6 +435,7 @@ class DocumentGenerator(QObject):
                     self._write_output(composition, outputMode, filePath)
                     
                 elif filePath is None and len(dataFields) > 0:
+                    entityFieldName = 'id'
                     docFileName = self._build_file_name(data_source, entityFieldName,
                                                       entityFieldValue, dataFields, fileExtension)
 
@@ -461,6 +464,13 @@ class DocumentGenerator(QObject):
             return True, "Success"
 
         return False, "Document composition could not be generated"
+
+    def format_entity_field_name(self, composer_datasource, entity):
+        if '_vw_' in composer_datasource:
+            ds = composer_datasource[composer_datasource.find('_vw_')+4:]
+            return ds+'_'+entity[entity.find('_')+1:]+'_id'
+        else:
+            return 'id'
 
     def _random_feature_layer_name(self, sp_field):
         return u"{0}-{1}".format(sp_field, str(uuid.uuid4())[0:8])

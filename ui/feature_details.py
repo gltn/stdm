@@ -785,7 +785,6 @@ class DetailsTreeView(DetailsDBHandler):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
-
         if not button_clicked:
             return
 
@@ -926,6 +925,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         if self._selected_features is None:
             return
+
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -1654,6 +1654,7 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The item data (the id), and the item - QStandardItem
         :rtype: Tuple
         """
+
         item = None
         # One item is selected and number of feature is also 1
         if len(results) == 1 and len(self.view.selectedIndexes()) == 1:
@@ -1675,6 +1676,7 @@ class DetailsTreeView(DetailsDBHandler):
             result = 'Please, select an item to {}.'.format(mode)
         else:
             result = 'Please, select at least one feature to {}.'.format(mode)
+
         if result is None:
             if item is None:
                 item = self.model.item(0, 0)
@@ -1710,17 +1712,23 @@ class DetailsTreeView(DetailsDBHandler):
             return
         # STR steam - edit social tenure relationship
         if item.text() == self.str_text:
-            entity = self.social_tenure
-            str_model = self.str_models[item.data()]
-            documents = self._supporting_doc_models(
-                entity.name, str_model
-            )
-            node_data = str_model, documents
+            str_model_doc = []
+            for i in range(item.parent().rowCount()):
+                child_ = item.parent().child(i)
+                try:
+                    model_ = self.str_models[child_.data()]
+                    child_model_rec = model_.__dict__
+                    str_model_rec = self.str_models[item.data()].__dict__
+                    spatial_unit_id = self.current_spatial_unit(child_model_rec)[1]
+                    if child_model_rec[spatial_unit_id] == str_model_rec[spatial_unit_id]:
+                        documents = self._supporting_doc_models(self.social_tenure.name, model_)
+                        str_model_doc.append((model_, documents))
+                except KeyError:
+                    continue
 
             feature_edit = False
-            edit_str = EditSTREditor(node_data)
+            edit_str = EditSTREditor(str_model_doc)
             edit_str.exec_()
-
         # party steam - edit party
         elif item in self.party_items.keys():
 
@@ -1745,13 +1753,13 @@ class DetailsTreeView(DetailsDBHandler):
             return
         self.view.expand(item.index())
         if feature_edit:
-            self.update_edited_node(entity, id)
+            self.update_edited_node(self.social_tenure, id)
         else:
             self.update_edited_node(self.social_tenure, id)
 
     def delete_selected_item(self):
         """
-        Deletes the selected item.
+        Deletes a selected item.
 
         """
         str_edit = False

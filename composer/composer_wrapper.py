@@ -507,7 +507,7 @@ class ComposerWrapper(QObject):
         self.setDocumentFile(orig_template_file)
 
         # make a copy of the original
-        orig_template_file.copy(copy_file)
+        result = orig_template_file.copy(copy_file)
 
         #templateFile = QFile(filePath)
 
@@ -528,7 +528,6 @@ class ComposerWrapper(QObject):
             return
 
         templateDoc = QDomDocument()
-
 
         if templateDoc.setContent(templateFile):
             table_config_collection = TableConfigurationCollection.create(templateDoc)
@@ -651,11 +650,13 @@ class ComposerWrapper(QObject):
                                                                    "already exists")),
                                             QMessageBox.Yes|QMessageBox.No)
 
-                    if result == QMessageBox.Yes:
+                    if result <> QMessageBox.Yes:
+                        return
+                    else:
                         #Delete the existing template
                         delFile = QFile(absPath)
-                        remStatus = delFile.remove()
-                        if not remStatus:
+                        remove_status = delFile.remove()
+                        if not remove_status:
                             QMessageBox.critical(self.composerView(),
                             QApplication.translate("ComposerWrapper",
                                                    "Delete Error"),
@@ -665,13 +666,10 @@ class ComposerWrapper(QObject):
                             " please remove it manually from the document templates directory.")))
                             return
 
-                    else:
-                        return
-
                 docFile= QFile(absPath)
 
-            else:
-                return
+            #else:
+                #return
 
         docFileInfo = QFileInfo(docFile)
 

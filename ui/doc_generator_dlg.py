@@ -596,9 +596,9 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             #Include extension in file name
             self._outputFilePath = self._outputFilePath #+ "." + fileExtension
             
-        else:
+        #else:
             #Multiple files to be generated.
-            pass
+            #pass
 
         self._doc_generator.set_link_field(config.link_field())
 
@@ -628,6 +628,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                 if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
                     status,msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
                                                   record.id, outputMode,
+                                                  data_source = self.ds_entity.name,
                                                   filePath = self._outputFilePath)
                     self._doc_generator.clear_temporary_layers()
                 #Output folder location using custom naming

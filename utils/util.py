@@ -1133,6 +1133,7 @@ def profile_and_user_views(profile, check_party=False):
     from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration
     )
+
     source_tables = []
 
     social_tenure = profile.social_tenure
@@ -1158,7 +1159,7 @@ def profile_and_user_views(profile, check_party=False):
         all_str_views.extend(prof.social_tenure.views.keys())
 
     for value in pg_views():
-        if value not in all_str_views:
+        if value not in all_str_views:  #and value not in source_tables:
             source_tables.append(value)
     return source_tables
 

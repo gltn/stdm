@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_doc_generator.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Fri Jun 21 06:32:09 2019
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,26 +26,31 @@ except AttributeError:
 class Ui_DocumentGeneratorDialog(object):
     def setupUi(self, DocumentGeneratorDialog):
         DocumentGeneratorDialog.setObjectName(_fromUtf8("DocumentGeneratorDialog"))
-        DocumentGeneratorDialog.resize(531, 719)
+        DocumentGeneratorDialog.resize(531, 684)
         self.gridLayout = QtGui.QGridLayout(DocumentGeneratorDialog)
         self.gridLayout.setVerticalSpacing(9)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.groupBox_2 = QtGui.QGroupBox(DocumentGeneratorDialog)
         self.groupBox_2.setMinimumSize(QtCore.QSize(0, 80))
         self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
-        self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_2)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.groupBox_2)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.gridLayout_4 = QtGui.QGridLayout()
+        self.gridLayout_4.setContentsMargins(-1, -1, -1, 0)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
-        self.rbExpImage = QtGui.QRadioButton(self.groupBox_2)
-        self.rbExpImage.setChecked(True)
-        self.rbExpImage.setObjectName(_fromUtf8("rbExpImage"))
-        self.gridLayout_4.addWidget(self.rbExpImage, 0, 0, 1, 1)
         self.cboImageType = QtGui.QComboBox(self.groupBox_2)
         self.cboImageType.setMinimumSize(QtCore.QSize(0, 25))
         self.cboImageType.setObjectName(_fromUtf8("cboImageType"))
-        self.gridLayout_4.addWidget(self.cboImageType, 0, 1, 1, 1)
+        self.gridLayout_4.addWidget(self.cboImageType, 1, 1, 1, 1)
+        self.rbExpImage = QtGui.QRadioButton(self.groupBox_2)
+        self.rbExpImage.setChecked(False)
+        self.rbExpImage.setObjectName(_fromUtf8("rbExpImage"))
+        self.gridLayout_4.addWidget(self.rbExpImage, 1, 0, 1, 1)
         self.rbExpPDF = QtGui.QRadioButton(self.groupBox_2)
+        self.rbExpPDF.setChecked(True)
         self.rbExpPDF.setObjectName(_fromUtf8("rbExpPDF"))
-        self.gridLayout_4.addWidget(self.rbExpPDF, 1, 0, 1, 2)
+        self.gridLayout_4.addWidget(self.rbExpPDF, 0, 0, 1, 1)
+        self.horizontalLayout_2.addLayout(self.gridLayout_4)
         self.gridLayout.addWidget(self.groupBox_2, 5, 0, 1, 1)
         self.gbDocNaming = QtGui.QGroupBox(DocumentGeneratorDialog)
         self.gbDocNaming.setEnabled(False)
@@ -61,7 +67,7 @@ class Ui_DocumentGeneratorDialog(object):
         self.gridLayout_3.addWidget(self.label_2, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.gbDocNaming, 8, 0, 1, 1)
         self.tabWidget = QtGui.QTabWidget(DocumentGeneratorDialog)
-        self.tabWidget.setMinimumSize(QtCore.QSize(0, 170))
+        self.tabWidget.setMinimumSize(QtCore.QSize(0, 140))
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.gridLayout.addWidget(self.tabWidget, 2, 0, 1, 1)
         self.chk_template_datasource = QtGui.QCheckBox(DocumentGeneratorDialog)
@@ -134,4 +140,3 @@ class Ui_DocumentGeneratorDialog(object):
         self.btnShowOutputFolder.setText(_translate("DocumentGeneratorDialog", "Open output folder...", None))
 
 from customcontrols import ModelAtrributesView
-from stdm import resources_rc
