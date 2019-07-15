@@ -13,7 +13,9 @@
     <file>images/icons/flts_login.png</file>
     <file>images/icons/flts_logout.png</file>
     <file>images/icons/flts_lodgement.png</file>
-    <file>images/icons/flts_new_action.png</file>
+    <file>images/icons/flts_database_designer.png</file>
+    <file>images/icons/flts_certificate_print.png</file>
+    <file>images/icons/flts_certificate_scan.png</file>
     <file>images/icons/flts_scheme_establishment.png</file>
     <file>images/icons/flts_notification.png</file>
     <file>images/icons/flts_notification2.png</file>
@@ -25,9 +27,13 @@
     <file>images/icons/flts_save.png</file>
     <file>images/icons/flts_scan.png</file>
     <file>images/icons/flts_scheme_assessment.png</file>
+    <file>images/icons/flts_scheme_import_plot.png</file>
     <file>images/icons/flts_scheme_management_assessment1.png</file>
     <file>images/icons/flts_scheme_management_assessment2.png</file>
     <file>images/icons/flts_scheme_management_assessment3.png</file>
+    <file>images/icons/flts_scheme_management_search.png</file>
+    <file>images/icons/flts_search_holder.png</file>
+    <file>images/icons/flts_search_plot.png</file>
     <file>images/icons/flts_scheme_notification.png</file>
     <file>images/icons/flts_search.png</file>
     <file>images/icons/flts_search_person.png</file>

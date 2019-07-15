@@ -74,8 +74,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         #Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
 
-        if self._test_connect_mode:
-            self.txtUserName.setFocus()
+        self.txtUserName.setFocus()
 
     def test_connect_mode(self):
         return self._test_connect_mode
