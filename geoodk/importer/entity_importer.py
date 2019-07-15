@@ -511,7 +511,7 @@ class Save2DB:
 
     def abort_action(self):
         """
-        Allow the current process of data import to abort.
+        Allow the current data import process to abort.
         :return:
         """
 
