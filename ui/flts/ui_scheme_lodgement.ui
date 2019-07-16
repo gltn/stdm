@@ -215,7 +215,7 @@
     <item row="1" column="0">
      <widget class="QLabel" name="desc_Label2">
       <property name="text">
-       <string>This step entails locating and importing the list of holders file.  </string>
+       <string>Select the Excel file containing holders information</string>
       </property>
      </widget>
     </item>
@@ -243,18 +243,8 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
-     <widget class="ExcelWorkbookView" name="tw_hld_prv"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="lbl_upld">
-      <property name="text">
-       <string>Click Upload button to save data.</string>
-      </property>
-     </widget>
-    </item>
     <item row="5" column="1">
-     <widget class="QPushButton" name="btn_valid_upld">
+     <widget class="QPushButton" name="btn_validdate_holders">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -262,9 +252,12 @@
        </sizepolicy>
       </property>
       <property name="text">
-       <string>Upload</string>
+       <string>Validate</string>
       </property>
      </widget>
+    </item>
+    <item row="4" column="0" colspan="2">
+     <widget class="ExcelWorkbookView" name="tw_hld_prv"/>
     </item>
    </layout>
   </widget>
@@ -294,7 +287,7 @@
        <number>0</number>
       </property>
       <property name="text">
-       <string>Below is a list for required documents. Click Browse to add individual documents or upload multiple documents.</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click the Upload link to add the individual supporting documents OR the Upload From Directory button to upload all of them&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -321,7 +314,7 @@
      </spacer>
     </item>
     <item row="3" column="1">
-     <widget class="QPushButton" name="btn_upld_multi">
+     <widget class="QPushButton" name="btn_upload_dir">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
         <horstretch>0</horstretch>
@@ -341,11 +334,17 @@
        </size>
       </property>
       <property name="text">
-       <string>Upload Documents</string>
+       <string>Upload From Directory...</string>
       </property>
       <property name="icon">
        <iconset resource="../../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/flts_import_file.png</normaloff>:/plugins/stdm/images/icons/flts_import_file.png</iconset>
+        <normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>24</width>
+        <height>24</height>
+       </size>
       </property>
      </widget>
     </item>
