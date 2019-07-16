@@ -89,11 +89,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Intializing mappermixin
-        # Scheme
+        # Intializing mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
-        # Notification
-        MapperMixin.__init__(self, self.notif_model, self.notif_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
@@ -238,44 +235,25 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
     def validateCurrentPage(self):
         current_id = self.currentId()
         ret_status = False
-
         self.notif_bar.clear()
 
         if current_id == 0:
-            # Check if edit texts are filled
-            if len(self.lnedit_schm_nam.text()) == 0:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please fill in the Scheme Name to proceed"))
-                # Check township name
-            elif len(self.lnedit_twnshp.text()) == 0:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please fill in the Township Name to proceed"))
-                # Check block area value
-            elif self.dbl_spinbx_block_area.value() == 0.0000:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Block Area cannot be zero"))
-            elif self.cbx_relv_auth.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Relevant Authority"))
-            elif self.cbx_lro.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Land Rights Office"))
-            elif self.cbx_region.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Region"))
-            elif self.cbx_reg_div.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Registration "
-                            "Division"))
-            else:
-                return True
+            # Check if values have been specified for the attribute widgets
+            errors = self.validate_all()
+            if len(errors) == 0:
+                ret_status = True
+
         elif current_id == 1:
             # TODO --- Use RegExp validator
-            if self.lnEdit_hld_path.text() == '':
+            if not self.lnEdit_hld_path.text():
                 self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an appropriate file to proceed"))
+                    self.tr(
+                        'Please choose the Excel file containing Holders '
+                        'information'
+                    )
+                )
             else:
-                return True
+                ret_status = True
         elif current_id == 2:
             # Check if all documents have been uploaded
             return True
@@ -292,6 +270,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     self.tr('Error in Saving Scheme'),
                     unicode(err)
                 )
+
         return ret_status
 
     def save_scheme(self):
@@ -299,7 +278,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Save scheme information to the database
         """
         self.submit()
-        SchemeSummary.set_scheme()
 
     def create_notification(self):
         """
@@ -339,12 +317,3 @@ class SchemeSummary(QTreeView, LodgementWizard):
         Upating data in the summary when user changes or updates in the wizard
         """
         pass
-
-
-if __name__ == '__main__':
-    import sys
-
-    app = QWizard.QApplication(sys.argv)
-    wizard = LodgementWizard()
-    wizard.show()
-    sys.exit(app.exec_())

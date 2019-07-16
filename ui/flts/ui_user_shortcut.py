@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_user_shortcut.ui'
 #
-# Created: Sat Jul  6 14:53:55 2019
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Tue Jul 16 00:06:41 2019
+#      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,21 +12,12 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    def _fromUtf8(s):
-        return s
-
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    _fromUtf8 = lambda s: s
 
 class Ui_UserShortcutDialog(object):
     def setupUi(self, UserShortcutDialog):
         UserShortcutDialog.setObjectName(_fromUtf8("UserShortcutDialog"))
-        UserShortcutDialog.resize(822, 479)
+        UserShortcutDialog.resize(665, 479)
         self.gridLayout = QtGui.QGridLayout(UserShortcutDialog)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.chb_donotshow = QtGui.QCheckBox(UserShortcutDialog)
@@ -41,6 +32,9 @@ class Ui_UserShortcutDialog(object):
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout.addWidget(self.buttonBox, 6, 0, 1, 1)
+        self.vlNotification = QtGui.QVBoxLayout()
+        self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
+        self.gridLayout.addLayout(self.vlNotification, 0, 0, 1, 1)
         self.splitter = QtGui.QSplitter(UserShortcutDialog)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName(_fromUtf8("splitter"))
@@ -70,7 +64,7 @@ class Ui_UserShortcutDialog(object):
         self.lsw_category_action.setTextElideMode(QtCore.Qt.ElideNone)
         self.lsw_category_action.setMovement(QtGui.QListView.Static)
         self.lsw_category_action.setProperty("isWrapping", True)
-        self.lsw_category_action.setResizeMode(QtGui.QListView.Fixed)
+        self.lsw_category_action.setResizeMode(QtGui.QListView.Adjust)
         self.lsw_category_action.setLayoutMode(QtGui.QListView.Batched)
         self.lsw_category_action.setGridSize(QtCore.QSize(84, 84))
         self.lsw_category_action.setViewMode(QtGui.QListView.IconMode)
@@ -79,9 +73,6 @@ class Ui_UserShortcutDialog(object):
         self.lsw_category_action.setWordWrap(True)
         self.lsw_category_action.setObjectName(_fromUtf8("lsw_category_action"))
         self.gridLayout.addWidget(self.splitter, 2, 0, 1, 1)
-        self.vlNotification = QtGui.QVBoxLayout()
-        self.vlNotification.setObjectName(_fromUtf8("vlNotification"))
-        self.gridLayout.addLayout(self.vlNotification, 0, 0, 1, 1)
 
         self.retranslateUi(UserShortcutDialog)
         self.lsw_category_action.setCurrentRow(-1)
@@ -89,8 +80,8 @@ class Ui_UserShortcutDialog(object):
         QtCore.QMetaObject.connectSlotsByName(UserShortcutDialog)
 
     def retranslateUi(self, UserShortcutDialog):
-        UserShortcutDialog.setWindowTitle(_translate("UserShortcutDialog", "Flexible Land Tenure System", None))
-        self.chb_donotshow.setText(_translate("UserShortcutDialog", "Do not show this dialog again on login", None))
-        self.label.setText(_translate("UserShortcutDialog", "<html><head/><body><p>Please select an action to perform</p></body></html>", None))
+        UserShortcutDialog.setWindowTitle(QtGui.QApplication.translate("UserShortcutDialog", "FLTS Action", None, QtGui.QApplication.UnicodeUTF8))
+        self.chb_donotshow.setText(QtGui.QApplication.translate("UserShortcutDialog", "Do not show this dialog again on login", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("UserShortcutDialog", "<html><head/><body><p>Please select an action to perform</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.lsw_category_action.setSortingEnabled(False)
 

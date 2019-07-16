@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
+    <width>665</width>
     <height>479</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Flexible Land Tenure System</string>
+   <string>FLTS Action</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="3" column="0">
@@ -43,6 +43,9 @@
       <set>QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
      </property>
     </widget>
+   </item>
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="vlNotification"/>
    </item>
    <item row="2" column="0">
     <widget class="QSplitter" name="splitter">
@@ -118,7 +121,7 @@
        <bool>true</bool>
       </property>
       <property name="resizeMode">
-       <enum>QListView::Fixed</enum>
+       <enum>QListView::Adjust</enum>
       </property>
       <property name="layoutMode">
        <enum>QListView::Batched</enum>
@@ -149,9 +152,6 @@
       </property>
      </widget>
     </widget>
-   </item>
-   <item row="0" column="0">
-    <layout class="QVBoxLayout" name="vlNotification"/>
    </item>
   </layout>
  </widget>

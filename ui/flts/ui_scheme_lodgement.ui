@@ -48,57 +48,10 @@
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="6" column="1">
-     <widget class="QComboBox" name="cbx_relv_auth"/>
-    </item>
-    <item row="8" column="1">
-     <widget class="QComboBox" name="cbx_region"/>
-    </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_9">
-      <property name="text">
-       <string>Township Name</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QLineEdit" name="lnedit_schm_num">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
     <item row="10" column="0">
      <widget class="QLabel" name="label_10">
       <property name="text">
        <string>Registration Division</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Relevant Authority</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="1">
-     <widget class="QComboBox" name="cbx_reg_div"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Date of Esablishment</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QComboBox" name="cbx_lro"/>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Region</string>
       </property>
      </widget>
     </item>
@@ -116,22 +69,32 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Land Rights Office</string>
-      </property>
-     </widget>
-    </item>
-    <item row="9" column="1">
-     <widget class="QLineEdit" name="lnedit_twnshp"/>
-    </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_2">
       <property name="text">
        <string>Scheme Name</string>
       </property>
      </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>Region</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>Township Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QComboBox" name="cbx_reg_div"/>
+    </item>
+    <item row="8" column="1">
+     <widget class="QComboBox" name="cbx_region"/>
     </item>
     <item row="4" column="0">
      <widget class="QLabel" name="label_3">
@@ -154,46 +117,47 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QLineEdit" name="lnedit_schm_nam"/>
+    <item row="6" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth"/>
     </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="desc_Label1">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
       <property name="text">
-       <string>Enter scheme information below. Please note the scheme number will be automatically generated</string>
+       <string>Relevant Authority</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="lbl_Sceme">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
       <property name="text">
-       <string>Scheme Number</string>
+       <string>Land Rights Office</string>
       </property>
      </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="QLineEdit" name="lnedit_twnshp"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_num">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Date of Esablishment</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QComboBox" name="cbx_lro"/>
     </item>
     <item row="11" column="0">
      <widget class="QLabel" name="label_11">
       <property name="text">
        <string>Block Area</string>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="0" colspan="2">
-     <widget class="QLabel" name="label_5">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>If you would like to end this process click 'cancel' below, otherwise click 'next to proceed</string>
       </property>
      </widget>
     </item>
@@ -207,12 +171,35 @@
       </property>
      </widget>
     </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="desc_Label1">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter scheme information below. Please note the scheme number will be automatically generated&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_nam"/>
+    </item>
     <item row="0" column="0" colspan="2">
      <layout class="QVBoxLayout" name="vlNotification">
       <property name="bottomMargin">
        <number>10</number>
       </property>
      </layout>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="lbl_Sceme">
+      <property name="text">
+       <string>Scheme Number</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -40,6 +40,9 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        # Scale widget sizes in the splitter
+        self.splitter.setSizes([250, 400])
         self.load_categories()
 
         # Connect signals
