@@ -41,18 +41,22 @@ class SupportingDocument(Entity):
 
         self.user_editable = False
 
-        self.creation_date = DateTimeColumn('creation_date', self)
+        self.last_modified = DateTimeColumn('last_modified', self)
         self.document_identifier = VarCharColumn('document_identifier',
                                                  self, maximum=50)
-        self.document_type = VarCharColumn('source_entity', self, maximum=150)
+        self.source_entity = VarCharColumn('source_entity', self, maximum=150)
         self.document_size = IntegerColumn('document_size', self)
-        self.filename = VarCharColumn('filename', self, maximum=200)
+        self.filename = VarCharColumn('name', self, maximum=200)
+        self.content_url= VarCharColumn('content_url', self, maximum=200)
+        self.created_by = VarCharColumn('created_by', self, maximum=50)
 
         LOGGER.debug('%s supporting document initialized.', self.name)
 
         # Add columns to the entity
-        self.add_column(self.creation_date)
+        self.add_column(self.last_modified)
         self.add_column(self.document_identifier)
-        self.add_column(self.document_type)
+        self.add_column(self.source_entity)
         self.add_column(self.document_size)
         self.add_column(self.filename)
+        self.add_column(self.content_url)
+        self.add_column(self.created_by)

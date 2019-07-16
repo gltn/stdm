@@ -63,8 +63,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Scheme Entity
+        # Entities
         self.entity_obj = self.curr_p.entity('Scheme')
+        self.notif_obj = self.curr_p.entity('Notification')
 
         if self.entity_obj is None:
             QMessageBox.critical(
@@ -77,6 +78,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Scheme entity model
         self.schm_model = entity_model(self.entity_obj)
 
+        # Notification entity model
+        self.notif_model = entity_model(self.notif_obj)
+
         if self.schm_model is None:
             QMessageBox.critical(
                 self,
@@ -85,7 +89,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Intializing mappermixin
+        # Intializing mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
 
         # Configure notification bar
@@ -95,12 +99,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
 
         # Browse multiple files
-        self.btn_upld_multi.clicked.connect(self.upload_multiple_files)
+        self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
 
         # Populate lookup comboboxes
         self._populate_lookups()
 
         self.register_col_widgets()
+
+        # Scheme number
+        self.scheme_num()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -203,62 +210,86 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
 
+    def scheme_num(self):
+        """
+        Generate random scheme number
+        """
+        self.lnedit_schm_num.setText('NMBWND.0001')
+        # Use random and string library in generating scheme number
+
     def register_col_widgets(self):
         """
         Registers the column widgets
         """
         # Get the table columns and add mapping
-        self.addMapping('scheme_number', self.lnedit_schm_num)
-        self.addMapping('scheme_name', self.lnedit_schm_nam)
-        self.addMapping('date_of_approval', self.date_apprv)
-        self.addMapping('date_of_establishment', self.date_establish)
-        self.addMapping('relevant_authority', self.cbx_relv_auth)
-        self.addMapping('region', self.cbx_region)
-        self.addMapping('township', self.lnedit_twnshp)
-        self.addMapping('registration_division', self.cbx_reg_div)
-        self.addMapping('area', self.dbl_spinbx_block_area)
+        self.addMapping(
+            'scheme_number',
+            self.lnedit_schm_num,
+            pseudoname='Scheme Number'
+        )
+        self.addMapping(
+            'scheme_name',
+            self.lnedit_schm_nam,
+            pseudoname='Scheme Name'
+        )
+        self.addMapping(
+            'date_of_approval',
+            self.date_apprv,
+            pseudoname='Approval Date'
+        )
+        self.addMapping(
+            'date_of_establishment',
+            self.date_establish,
+            pseudoname='Establishment Date'
+        )
+        self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority'
+        )
+        self.addMapping(
+            'region',
+            self.cbx_region,
+            pseudoname='Region'
+        )
+        self.addMapping(
+            'township',
+            self.lnedit_twnshp,
+            pseudoname='Township'
+        )
+        self.addMapping(
+            'registration_division',
+            self.cbx_reg_div,
+            pseudoname='Registration Division'
+        )
+        self.addMapping(
+            'area',
+            self.dbl_spinbx_block_area,
+            pseudoname='Area'
+        )
 
     def validateCurrentPage(self):
         current_id = self.currentId()
         ret_status = False
-
         self.notif_bar.clear()
 
         if current_id == 0:
-            # Check if edit texts are filled
-            if len(self.lnedit_schm_nam.text()) == 0:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please fill in the Scheme Name to proceed"))
-                # Check township name
-            elif len(self.lnedit_twnshp.text()) == 0:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please fill in the Township Name to proceed"))
-                # Check block area value
-            elif self.dbl_spinbx_block_area.value() == 0.0000:
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Block Area cannot be zero"))
-            elif self.cbx_relv_auth.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Relevant Authority"))
-            elif self.cbx_lro.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Land Rights Office"))
-            elif self.cbx_region.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Region"))
-            elif self.cbx_reg_div.currentText() == '':
-                self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an option for Registration "
-                            "Division"))
-            else:
-                return True
+            # Check if values have been specified for the attribute widgets
+            errors = self.validate_all()
+            if len(errors) == 0:
+                ret_status = True
+
         elif current_id == 1:
             # TODO --- Use RegExp validator
-            if self.lnEdit_hld_path.text() == '':
+            if not self.lnEdit_hld_path.text():
                 self.notif_bar.insertWarningNotification(
-                    self.tr("Please select an appropriate file to proceed"))
+                    self.tr(
+                        'Please choose the Excel file containing Holders '
+                        'information'
+                    )
+                )
             else:
-                return True
+                ret_status = True
         elif current_id == 2:
             # Check if all documents have been uploaded
             return True
@@ -275,6 +306,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     self.tr('Error in Saving Scheme'),
                     unicode(err)
                 )
+
         return ret_status
 
     def save_scheme(self):
@@ -288,36 +320,36 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Populate notification table
         """
         # Get the table columns and add mapping
-        self.addMapping('status')
-        self.addMapping('source_user_id')
-        self.addMapping('target_use_id')
-        self.addMapping('content')
-        self.addMapping('timestamp')
-
-    def scheme_num(self):
-        """
-        Add scheme number to the scheme number line edit
-        """
-        ra_text = 'RA.'
-        scheme_str = random_str_generator()
-        self.lnedit_schm_num.setText(ra_text + scheme_str)
+        self.addMapping('status', '2')
+        self.addMapping('source_user_id', 'src_usr_id')
+        self.addMapping('target_use_id', 'trgt_usr_id')
+        self.addMapping('content', 'notification')
+        self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
 
 
-def random_str_generator(str_len=6):
+class SchemeSummary(QTreeView, LodgementWizard):
     """
-    Generate a random string to be used as scheme number.
-    :return Str
+    Widget that displays scheme information.
     """
-    from random import choice
-    from string import ascii_uppercase
-    scheme_letters = ascii_uppercase
-    return ''.join(choice(scheme_letters) for i in range(str_len))
 
+    def __init__(self, parent=None):
+        super(QTreeView, self).__init__(parent)
 
-if __name__ == '__main__':
-    import sys
+    def set_scheme(self):
+        """
+        Defines static and dynamic variables to be shown in the summary.
+        """
+        pointListBox = QTreeWidget()
+        header = QTreeWidgetItem(['documents', 'data', 'files'])
+        pointListBox.setHeaderItem(header)
+        root = QTreeWidgetItem(pointListBox, ["root"])
+        A = QTreeWidgetItem(root, ["A"])
+        barA = QTreeWidgetItem(A, ["items", "items1"])
+        barZ = QTreeWidgetItem(A, ["items", "items1"])
+        pointListBox.show()
 
-    app = QWizard.QApplication(sys.argv)
-    wizard = LodgementWizard()
-    wizard.show()
-    sys.exit(app.exec_())
+    def refresh(self):
+        """
+        Upating data in the summary when user changes or updates in the wizard
+        """
+        pass

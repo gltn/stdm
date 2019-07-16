@@ -3,36 +3,156 @@
     <file>images/icons/flts_about.png</file>
     <file>images/icons/flts_back_action.png</file>
     <file>images/icons/flts_certificate.png</file>
-    <file>images/icons/flts_database_designer.png</file>
+    <file>images/icons/flts_password_change.png</file>
     <file>images/icons/flts_error.png</file>
     <file>images/icons/flts_export_file.png</file>
+    <file>images/icons/flts_first_examination.png</file>
     <file>images/icons/flts_help.png</file>
-    <file>images/icons/flts_import_file.png</file>
+    <file>images/icons/flts_scheme_docs_dir.png</file>
     <file>images/icons/flts_import_plot.png</file>
     <file>images/icons/flts_login.png</file>
     <file>images/icons/flts_logout.png</file>
-    <file>images/icons/flts_new_action.png</file>
+    <file>images/icons/flts_lodgement.png</file>
+    <file>images/icons/flts_database_designer.png</file>
+    <file>images/icons/flts_certificate_print.png</file>
+    <file>images/icons/flts_certificate_scan.png</file>
+    <file>images/icons/flts_scheme_establishment.png</file>
     <file>images/icons/flts_notification.png</file>
+    <file>images/icons/flts_notification2.png</file>
     <file>images/icons/flts_password.png</file>
     <file>images/icons/flts_plot_module.png</file>
     <file>images/icons/flts_print.png</file>
     <file>images/icons/flts_report.png</file>
-    <file>images/icons/flts_about.png</file>
+    <file>images/icons/flts_revision.png</file>
     <file>images/icons/flts_save.png</file>
     <file>images/icons/flts_scan.png</file>
-    <file>images/icons/flts_scheme_management.png</file>
-    <file>images/icons/flts_scheme_management_lodgement.png</file>
-    <file>images/icons/flts_scheme_management_establishment.png</file>
-    <file>images/icons/flts_scheme_management_examination1.png</file>
-    <file>images/icons/flts_scheme_management_examination2.png</file>
-    <file>images/icons/flts_scheme_management_examination3.png</file>
+    <file>images/icons/flts_scheme_assessment.png</file>
+    <file>images/icons/flts_scheme_import_plot.png</file>
+    <file>images/icons/flts_scheme_management_assessment1.png</file>
+    <file>images/icons/flts_scheme_management_assessment2.png</file>
+    <file>images/icons/flts_scheme_management_assessment3.png</file>
+    <file>images/icons/flts_scheme_management_search.png</file>
+    <file>images/icons/flts_search_holder.png</file>
+    <file>images/icons/flts_search_plot.png</file>
     <file>images/icons/flts_scheme_notification.png</file>
     <file>images/icons/flts_search.png</file>
     <file>images/icons/flts_search_person.png</file>
     <file>images/icons/flts_search_plot.png</file>
     <file>images/icons/flts_search_result.png</file>
+    <file>images/icons/flts_second_examination.png</file>
     <file>images/icons/flts_success.png</file>
+    <file>images/icons/flts_third_examination.png</file>
     <file>images/icons/flts_validate.png</file>
+    <file>images/icons/mobile_collect.png</file>
+    <file>images/icons/mobile_data_management.png</file>
+    <file>images/icons/mobile_import.png</file>
+    <file>images/icons/warning_large.png</file>
+    <file>images/icons/edit_settings.png</file>
+    <file>images/icons/help-content.png</file>
+    <file>images/icons/info.png</file>
+    <file>images/icons/info_small.png</file>
+    <file>images/icons/login.png</file>
+    <file>images/icons/logout.png</file>
+    <file>images/icons/settings.png</file>
+    <file>images/icons/change_password.png</file>
+    <file>images/icons/entity_management.png</file>
+    <file>images/icons/content_auth.png</file>
+    <file>images/icons/users_manage.png</file>
+    <file>images/icons/search.png</file>
+    <file>images/icons/add.png</file>
+    <file>images/icons/roles.png</file>
+    <file>images/icons/user.png</file>
+    <file>images/icons/user_mapping.png</file>
+    <file>images/icons/property_manager.png</file>
+    <file>images/icons/update.png</file>
+    <file>images/icons/save.png</file>
+    <file>images/icons/attachment.png</file>
+    <file>images/icons/remove.png</file>
+    <file>images/icons/close.png</file>
+    <file>images/icons/close_msg.png</file>
+    <file>images/icons/receipt.png</file>
+    <file>images/icons/social_tenure.png</file>
+    <file>images/icons/inherit.png</file>
+    <file>images/icons/conflict.png</file>
+    <file>images/icons/warning.png</file>
+    <file>images/icons/success.png</file>
+    <file>images/icons/browse.png</file>
+    <file>images/icons/new_str.png</file>
+    <file>images/icons/view_str.png</file>
+    <file>images/icons/property.png</file>
+    <file>images/icons/local.png</file>
+    <file>images/icons/web.png</file>
+    <file>images/icons/filter.png</file>
+    <file>images/icons/browse_all.png</file>
+    <file>images/icons/load.png</file>
+    <file>images/icons/reset.png</file>
+    <file>images/icons/no_action.png</file>
+    <file>images/icons/edit.png</file>
+    <file>images/icons/edit24.png</file>
+    <file>images/icons/delete.png</file>
+    <file>images/icons/minus.png</file>
+    <file>images/icons/plus.png</file>
+    <file>images/icons/farmer.png</file>
+    <file>images/icons/manage_admin_units.png</file>
+    <file>images/icons/survey.png</file>
+    <file>images/icons/create_feature.png</file>
+    <file>images/icons/save_tb.png</file>
+    <file>images/icons/cert_designer.png</file>
+    <file>images/icons/line.png</file>
+    <file>images/icons/db_field.png</file>
+    <file>images/icons/open_file.png</file>
+    <file>images/icons/document.png</file>
+    <file>images/icons/generate_document.png</file>
+    <file>images/icons/manage_templates.png</file>
+    <file>images/icons/add_map.png</file>
+    <file>images/icons/report.png</file>
+    <file>images/icons/column.png</file>
+    <file>images/icons/down.png</file>
+    <file>images/icons/first.png</file>
+    <file>images/icons/last.png</file>
+    <file>images/icons/next.png</file>
+    <file>images/icons/previous.png</file>
+    <file>images/icons/table.png</file>
+    <file>images/icons/up.png</file>
+    <file>images/icons/export.png</file>
+    <file>images/icons/import.png</file>
+    <file>images/icons/stdm.png</file>
+    <file>images/icons/stdm_2.png</file>
+    <file>images/icons/layer_point.png</file>
+    <file>images/icons/layer_line.png</file>
+    <file>images/icons/layer_polygon.png</file>
+    <file>images/icons/spatial_unit_manager.png</file>
+    <file>images/icons/chart.png</file>
+    <file>images/icons/chart_bar.png</file>
+    <file>images/icons/chart-512.png</file>
+    <file>images/icons/composer_table.png</file>
+    <file>images/icons/photo.png</file>
+    <file>images/icons/no_photo.png</file>
+    <file>images/icons/photo_24.png</file>
+    <file>images/icons/photo_64.png</file>
+    <file>images/icons/photo_512.png</file>
+    <file>images/icons/layer.gif</file>
     <file>images/icons/table_designer.png</file>
+    <file>images/icons/db_server_settings.png</file>
+    <file>images/icons/options.png</file>
+    <file>images/icons/user_tip.png</file>
+    <file>images/icons/select_record.png</file>
+    <file>images/icons/hierarchy.png</file>
+    <file>images/icons/feature_details.png</file>
+    <file>images/icons/major_annotation.png</file>
+    <file>images/icons/minor_annotation.png</file>
+    <file>images/icons/save_image.png</file>
+    <file>images/icons/period.png</file>
+    <file>images/icons/down_arrow.png</file>
+    <file>images/icons/period_blue.png</file>
+    <file>images/icons/code.png</file>
+    <file>images/icons/clear.png</file>
+    <file>images/icons/custom_tenure.png</file>
+    <file>images/icons/advanced_search.png</file>
+    <file>images/icons/expression.png</file>
+	<file>images/icons/qrcode.png</file>
+	<file>images/icons/qrcode_512.png</file>
+    <file>images/icons/disapprove.png</file>
+    <file>images/icons/approve.png</file>
   </qresource>
 </RCC>

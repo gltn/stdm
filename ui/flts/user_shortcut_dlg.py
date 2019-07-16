@@ -40,6 +40,9 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        # Scale widget sizes in the splitter
+        self.splitter.setSizes([250, 400])
         self.load_categories()
 
         # Connect signals
@@ -84,52 +87,64 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self._search_items = []
 
         self.lsi_lodge_scheme = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_lodgement.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_lodgement.png'),
             self.tr('Lodgement')
         )
         self.lsi_establish_scheme = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_establishment.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_establishment.png'),
             self.tr('Establishment')
         )
         self.lsi_first_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_examination1.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment1.png'),
             self.tr('First Examination')
         )
         self.lsi_second_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_examination2.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment2.png'),
             self.tr('Second Examination')
         )
         self.lsi_third_examination = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_examination3.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_assessment3.png'),
             self.tr('Third Examination')
         )
         self.lsi_revision = QListWidgetItem(
             QIcon(':/plugins/stdm/images/icons/flts_revision.png'),
             self.tr('Revision')
         )
+        self.lsi_sch_search = QListWidgetItem(
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_management_search.png'),
+            self.tr('Search')
+        )
         self.lsi_import_plots = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_import_plot.png'),
+            QIcon(':/plugins/stdm/images/icons/flts_scheme_import_plot.png'),
             self.tr('Import Plots')
         )
         self.lsi_print_certificate = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_print.png'),
-            self.tr('Print Certificate')
+            QIcon(':/plugins/stdm/images/icons/flts_certificate_print.png'),
+            self.tr('Print')
         )
         self.lsi_scan_certificate = QListWidgetItem(
-            QIcon(':/plugins/stdm/images/icons/flts_scan.png'),
-            self.tr('Scan Certificate')
+            QIcon(':/plugins/stdm/images/icons/flts_certificate_scan.png'),
+            self.tr('Scan')
         )
         self.lsi_search = QListWidgetItem(
             QIcon(':/plugins/stdm/images/icons/flts_search.png'),
             self.tr('Search')
         )
+        self.lsi_search_holder = QListWidgetItem(
+            QIcon(':/plugins/stdm/images/icons/flts_search_holder.png'),
+            self.tr('Holder')
+        )
+        self.lsi_search_plot = QListWidgetItem(
+            QIcon(':/plugins/stdm/images/icons/flts_search_plot.png'),
+            self.tr('Plot')
+        )
         self.lsi_report = QListWidgetItem(
             QIcon(':/plugins/stdm/images/icons/flts_report.png'),
-            self.tr('Report')
+            self.tr('Generate')
         )
-        self.lsi_notification = QListWidgetItem(
+        self.lsi_scheme_notification = QListWidgetItem(
             QIcon(':/plugins/stdm/images/icons/flts_notification.png'),
-            self.tr('Notification')
+            self.tr('Notifications')
         )
 
         # Assign unique identifier to the list item
@@ -139,9 +154,12 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self.lsi_second_examination.setData(Qt.UserRole, 'EXM2_SCM')
         self.lsi_third_examination.setData(Qt.UserRole, 'EXM3_SCM')
         self.lsi_import_plots.setData(Qt.UserRole, 'PLT_SCM')
+        self.lsi_sch_search.setData(Qt.UserRole, 'SRC_SCM')
+        self.lsi_search_holder.setData(Qt.UserRole, 'SRC_HLD')
+        self.lsi_search_plot.setData(Qt.UserRole, 'SRC_PLT')
         self.lsi_print_certificate.setData(Qt.UserRole, 'P_CRT')
         self.lsi_scan_certificate.setData(Qt.UserRole, 'S_CRT')
-        self.lsi_notification.setData(Qt.UserRole, 'NTF')
+        self.lsi_scheme_notification.setData(Qt.UserRole, 'NTF_SCM')
         self.lsi_search.setData(Qt.UserRole, 'SRC')
         self.lsi_report.setData(Qt.UserRole, 'RPT')
 
@@ -152,16 +170,16 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self._scheme_items.append(self.lsi_second_examination)
         self._scheme_items.append(self.lsi_third_examination)
         self._scheme_items.append(self.lsi_import_plots)
+        self._scheme_items.append(self.lsi_scheme_notification)
+        self._scheme_items.append(self.lsi_sch_search)
 
         # Certificate items
         self._certificate_items.append(self.lsi_print_certificate)
         self._certificate_items.append(self.lsi_scan_certificate)
 
-        # Notification items
-        self._notification_items.append(self.lsi_notification)
-
         # Search items
-        self._search_items.append(self.lsi_search)
+        self._search_items.append(self.lsi_search_plot)
+        self._search_items.append(self.lsi_search_holder)
 
         # Report items
         self._report_items.append(self.lsi_report)
@@ -171,7 +189,6 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self.lht_tr_item = QTreeWidgetItem(['Land Hold Title', 'LHT'])
         self.lht_scheme_item = QTreeWidgetItem(['Scheme', 'SCM'])
         self.lht_certificate_item = QTreeWidgetItem(['Certificate', 'CRT'])
-        self.lht_notification_item = QTreeWidgetItem(['Notification', 'NTF'])
         self.lht_search_item = QTreeWidgetItem(['Search', 'SRC'])
         self.lht_report_item = QTreeWidgetItem(['Report', 'RPT'])
 
@@ -180,9 +197,8 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         self.tr_title_category.hideColumn(1)
 
         self.lht_tr_item.addChild(self.lht_scheme_item)
-        self.lht_tr_item.addChild(self.lht_certificate_item)
-        self.lht_tr_item.addChild(self.lht_notification_item)
         self.lht_tr_item.addChild(self.lht_search_item)
+        self.lht_tr_item.addChild(self.lht_certificate_item)
         self.lht_tr_item.addChild(self.lht_report_item)
 
         # Expand base categories
