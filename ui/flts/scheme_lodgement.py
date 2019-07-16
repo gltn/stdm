@@ -63,9 +63,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Entities
+        # Scheme Entity
         self.entity_obj = self.curr_p.entity('Scheme')
-        self.notif_obj = self.curr_p.entity('Notification')
 
         if self.entity_obj is None:
             QMessageBox.critical(
@@ -78,9 +77,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Scheme entity model
         self.schm_model = entity_model(self.entity_obj)
 
-        # Notification entity model
-        self.notif_model = entity_model(self.notif_obj)
-
         if self.schm_model is None:
             QMessageBox.critical(
                 self,
@@ -90,10 +86,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.reject()
 
         # Intializing mappermixin
-        # Scheme
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
-        # Notification
-        MapperMixin.__init__(self, self.notif_model, self.notif_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
@@ -108,9 +101,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._populate_lookups()
 
         self.register_col_widgets()
-
-        # Scheme number
-        self.scheme_num()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -213,13 +203,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
 
-    def scheme_num(self):
-        """
-        Generate random scheme number
-        """
-        self.lnedit_schm_num.setText('NMBWND.0001')
-        # Use random and string library in generating scheme number
-
     def register_col_widgets(self):
         """
         Registers the column widgets
@@ -299,46 +282,36 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Save scheme information to the database
         """
         self.submit()
-        SchemeSummary.set_scheme()
 
     def create_notification(self):
         """
         Populate notification table
         """
         # Get the table columns and add mapping
-        self.addMapping('status', '2')
-        self.addMapping('source_user_id', 'src_usr_id')
-        self.addMapping('target_use_id', 'trgt_usr_id')
-        self.addMapping('content', 'notification')
-        self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
+        self.addMapping('status')
+        self.addMapping('source_user_id')
+        self.addMapping('target_use_id')
+        self.addMapping('content')
+        self.addMapping('timestamp')
+
+    def scheme_num(self):
+        """
+        Add scheme number to the scheme number line edit
+        """
+        ra_text = 'RA.'
+        scheme_str = random_str_generator()
+        self.lnedit_schm_num.setText(ra_text + scheme_str)
 
 
-class SchemeSummary(QTreeView, LodgementWizard):
+def random_str_generator(str_len=6):
     """
-    Widget that displays scheme information.
+    Generate a random string to be used as scheme number.
+    :return Str
     """
-
-    def __init__(self, parent=None):
-        super(QTreeView, self).__init__(parent)
-
-    def set_scheme(self):
-        """
-        Defines static and dynamic variables to be shown in the summary.
-        """
-        pointListBox = QTreeWidget()
-        header = QTreeWidgetItem(['documents', 'data', 'files'])
-        pointListBox.setHeaderItem(header)
-        root = QTreeWidgetItem(pointListBox, ["root"])
-        A = QTreeWidgetItem(root, ["A"])
-        barA = QTreeWidgetItem(A, ["items", "items1"])
-        barZ = QTreeWidgetItem(A, ["items", "items1"])
-        pointListBox.show()
-
-    def refresh(self):
-        """
-        Upating data in the summary when user changes or updates in the wizard
-        """
-        pass
+    from random import choice
+    from string import ascii_uppercase
+    scheme_letters = ascii_uppercase
+    return ''.join(choice(scheme_letters) for i in range(str_len))
 
 
 if __name__ == '__main__':

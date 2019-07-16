@@ -189,26 +189,26 @@ class STDMQGISLoader(object):
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_login.svg"),
+        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_login.png"),
                                    QApplication.translate("LoginToolbarAction",
                                                           "Login"),
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
 
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_about.svg"),
+        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_about.png"),
                                    QApplication.translate("AboutToolbarAction", "About"), self.iface.mainWindow(),
                                    "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         # Define actions that are available to all logged in users
-        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_logout.svg"), \
+        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_logout.png"), \
                                     QApplication.translate("LogoutToolbarAction", "Logout"), self.iface.mainWindow(),
                                     "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
 
-        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_password_change.svg"), \
+        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_password.png"), \
                                             QApplication.translate("ChangePasswordToolbarAction", "Change Password"),
                                             self.iface.mainWindow(),
                                             "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
-        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_help.svg"), \
+        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/flts_help.png"), \
                                   QApplication.translate("STDMQGISLoader", "Help Contents"), self.iface.mainWindow(),
                                   "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
@@ -921,7 +921,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         lhtBtn.setObjectName(lhtObjName)
         lhtBtn.setToolTip(lhtObjName)
-        lhtBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_assessment.png"))
+        lhtBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"))
         lhtBtn.setPopupMode(QToolButton.InstantPopup)
 
         lhtMenu = QMenu(lhtBtn)
@@ -929,7 +929,7 @@ class STDMQGISLoader(object):
 
         # Settings menu container in FLTS's QGIS menu
         lhtAdminMenu = QMenu(self.stdmMenu)
-        lhtAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_assessment.png"))
+        lhtAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"))
         lhtAdminMenu.setObjectName("FLTSAdminSettings")
         lhtAdminMenu.setTitle(QApplication.translate("ToolbarLhtSettings", "Land Hold Title"))
 
@@ -940,7 +940,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         schemeBtn.setObjectName(schemeObjName)
         schemeBtn.setToolTip(schemeObjName)
-        schemeBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management2.png"))
+        schemeBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"))
         schemeBtn.setPopupMode(QToolButton.InstantPopup)
 
         schemeMenu = QMenu(schemeBtn)
@@ -948,7 +948,7 @@ class STDMQGISLoader(object):
 
         # Settings menu container in flts's QGIS menu
         schemeAdminMenu = QMenu(self.stdmMenu)
-        schemeAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management2.png"))
+        schemeAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"))
         schemeAdminMenu.setObjectName("FLTSAdminSettings")
         schemeAdminMenu.setTitle(QApplication.translate("ToolbarSchemeSettings", "Scheme Management"))
 
@@ -1016,7 +1016,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         notifBtn.setObjectName(notifObjName)
         notifBtn.setToolTip(notifObjName)
-        notifBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification2.png"))
+        notifBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification.png"))
         notifBtn.setPopupMode(QToolButton.InstantPopup)
 
         notifMenu = QMenu(notifBtn)
@@ -1024,7 +1024,7 @@ class STDMQGISLoader(object):
 
         # Settings menu container in STDM's QGIS menu
         fltsNotifMenu = QMenu(self.stdmMenu)
-        fltsNotifMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification2.png"))
+        fltsNotifMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification.png"))
         fltsNotifMenu.setObjectName("FLTSReportSettings")
         fltsNotifMenu.setTitle(QApplication.translate("ToolbarNotificationSettings", "Notification"))
 
@@ -1108,12 +1108,12 @@ class STDMQGISLoader(object):
         # flts
 
         self.schemeLodgementAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_scheme_assessment.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management_lodgement.png"),
             QApplication.translate("SchemeLodgementToolbarAction", "Scheme Lodgement"),
             self.iface.mainWindow())
 
         self.schemeEstablishmentAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management_establishment.png"),
             QApplication.translate(
                 "SchemeEstablishmentToolbarAction",
                 "Scheme Establishment"
@@ -1122,7 +1122,7 @@ class STDMQGISLoader(object):
         )
 
         self.firstExaminationAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_scheme_management2.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management_examination1.png"),
             QApplication.translate(
                 "FirstExaminationToolbarAction",
                 "First Examination"
@@ -1131,7 +1131,7 @@ class STDMQGISLoader(object):
         )
 
         self.secondExaminationAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_scheme_management3.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management_examination2.png"),
             QApplication.translate(
                 "SecondExaminationToolbarAction",
                 "Second Examination"
@@ -1140,7 +1140,7 @@ class STDMQGISLoader(object):
         )
 
         self.thirdExaminationAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_scheme_notification.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management_examination3.png"),
             QApplication.translate(
                 "ThirdExaminationToolbarAction",
                 "Third Examination"
@@ -1176,7 +1176,7 @@ class STDMQGISLoader(object):
         )
 
         self.schemeRevisionAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_revision.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_validate.png"),
             QApplication.translate(
                 "SchemeRevisionToolbarAction",
                 "Scheme Revision"
@@ -1203,7 +1203,7 @@ class STDMQGISLoader(object):
         )
 
         self.notificationAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_notification2.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_notification.png"),
             QApplication.translate(
                 "NotificationToolbarAction",
                 "Notification"

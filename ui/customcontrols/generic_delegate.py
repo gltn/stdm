@@ -23,10 +23,12 @@ from PyQt4.QtCore import Qt, QTimer
 from PyQt4.QtGui import QItemDelegate, QComboBox, QDoubleSpinBox, \
     QAbstractItemDelegate, QStandardItem
 
+
 class GenericDelegate(QItemDelegate):
     """
     It is a combobox delegate embedded in STR Type column.
     """
+
     def __init__(self, data, options, parent=None):
         """
         Initializes STRTypeDelegate and QItemDelegate.
@@ -40,7 +42,6 @@ class GenericDelegate(QItemDelegate):
         self.options = options
 
         self._view = parent
-
 
     def createEditor(self, parent, option, index):
         """
@@ -112,7 +113,7 @@ class GenericDelegate(QItemDelegate):
             if widget.count() > 0:
                 return
             widget.insertItem(0, " ")
-                #, len(self.str_type_set_data())
+            # , len(self.str_type_set_data())
             for id, text in self.data.iteritems():
                 widget.addItem(text, id)
 
@@ -121,7 +122,6 @@ class GenericDelegate(QItemDelegate):
                 list_item_index = index.model().data(index, Qt.DisplayRole)
             if list_item_index is not None and \
                     not isinstance(list_item_index, (unicode, str)):
-
                 value = list_item_index.toInt()
                 widget.blockSignals(True)
                 widget.setCurrentIndex(value[0])
