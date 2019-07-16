@@ -99,7 +99,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
 
         # Browse multiple files
-        self.btn_upld_multi.clicked.connect(self.upload_multiple_files)
+        self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -222,15 +222,51 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Registers the column widgets
         """
         # Get the table columns and add mapping
-        self.addMapping('scheme_number', self.lnedit_schm_num)
-        self.addMapping('scheme_name', self.lnedit_schm_nam)
-        self.addMapping('date_of_approval', self.date_apprv)
-        self.addMapping('date_of_establishment', self.date_establish)
-        self.addMapping('relevant_authority', self.cbx_relv_auth)
-        self.addMapping('region', self.cbx_region)
-        self.addMapping('township', self.lnedit_twnshp)
-        self.addMapping('registration_division', self.cbx_reg_div)
-        self.addMapping('area', self.dbl_spinbx_block_area)
+        self.addMapping(
+            'scheme_number',
+            self.lnedit_schm_num,
+            pseudoname='Scheme Number'
+        )
+        self.addMapping(
+            'scheme_name',
+            self.lnedit_schm_nam,
+            pseudoname='Scheme Name'
+        )
+        self.addMapping(
+            'date_of_approval',
+            self.date_apprv,
+            pseudoname='Approval Date'
+        )
+        self.addMapping(
+            'date_of_establishment',
+            self.date_establish,
+            pseudoname='Establishment Date'
+        )
+        self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority'
+        )
+        self.addMapping(
+            'region',
+            self.cbx_region,
+            pseudoname='Region'
+        )
+        self.addMapping(
+            'township',
+            self.lnedit_twnshp,
+            pseudoname='Township'
+        )
+        self.addMapping(
+            'registration_division',
+            self.cbx_reg_div,
+            pseudoname='Registration Division'
+        )
+        self.addMapping(
+            'area',
+            self.dbl_spinbx_block_area,
+            pseudoname='Area'
+        )
 
     def validateCurrentPage(self):
         current_id = self.currentId()
