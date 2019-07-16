@@ -55,6 +55,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Current profile
         self.curr_p = current_profile()
 
+        # Flag for checking if document type has been loaded
+        self._suporting_docs_loaded = False
+
         if self.curr_p is None:
             QMessageBox.critical(
                 self,
@@ -95,15 +98,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
 
-        # Browse holders excel file
+        # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
-
-        # Browse multiple files
         self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
+        self.currentIdChanged.connect(self.on_page_changed)
 
         # Populate lookup comboboxes
         self._populate_lookups()
 
+        # Specify MapperMixin widgets
         self.register_col_widgets()
 
         # Scheme number
@@ -120,11 +123,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
     def _populate_lookups(self):
         # Load lookup columns
         self._populate_combo(self.cbx_relv_auth, 'cb_check_lht_relevant_authority')
-
         self._populate_combo(self.cbx_lro, 'cb_check_lht_land_rights_office')
-
         self._populate_combo(self.cbx_region, 'cb_check_lht_region')
-
         self._populate_combo(self.cbx_reg_div, 'cb_check_lht_reg_division')
 
     def page_title(self):
@@ -143,64 +143,68 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                              'will be automatically generated'))
         self.wizardPage2.setSubTitle(self.tr('Please browse for list of holde'
                                              'rs file'))
-        self.wizardPage.setSubTitle(self.tr
-                                    ('Review the summary of the previous '
-                                     'steps. Click Back to edit information of '
-                                     'Finish to save'))
         self.wizardPage_4.setSubTitle(self.tr(
             'Review the summary of the previous steps. Click Back to edit '
             'information or Finish to save'))
 
     def on_page_changed(self, idx):
         """
-         Show the page id that is loaded
+        Slot raised when the page with the given id is loaded.
         """
         page_num = idx + 1
         win_title = u'{0} - Step {1} of {2}'.format(self._base_win_title,
                                                     str(page_num),
                                                     str(self._num_pages))
         self.setWindowTitle(win_title)
-        self.save_data()
+
+        # Load scheme supporting documents
+        if idx == 2:
+            self._load_scheme_document_types()
 
     def browse_holders_file(self):
         """
         Browse for the holders file in the file directory
         """
-        holders_file = QFileDialog.getOpenFileName(self, "Open Holder's File",
+        holders_file = QFileDialog.getOpenFileName(self, "Browse Holder's File",
                                                    '~/',
-                                                   " Excel Files *.xls *xlsx")
+                                                   " Excel Files (*.xls *xlsx)")
         if holders_file:
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
-    def supporting_documents(self):
+    def _load_scheme_document_types(self):
         """
         This is used in uploading and viewing of the scheme supporting documents
         """
-        notice_btn = QPushButton(self.tr("browse..."))
-        expl_btn = QPushButton(self.tr("browse..."))
-        councl_btn = QPushButton(self.tr("browse..."))
-        tiltle_btn = QPushButton(self.tr("browse..."))
-        covr_btn = QPushButton(self.tr("browse..."))
-        lst_btn = QPushButton(self.tr("browse..."))
-        condt_btn = QPushButton(self.tr("browse..."))
-        digl_btn = QPushButton(self.tr("browse..."))
+        doc_type_table = 'cb_check_scheme_document_type'
 
-        # Defining list of items
-        data = {
-            'Document': [self.tr('Notice of Establishmment of Scheme'),
-                         self.tr('Explanatory Report'),
-                         self.tr('Council Resolution(Approval of Scheme'),
-                         self.tr('Title Deed of Blockerf'),
-                         self.tr('Cover Certificate'),
-                         self.tr('List of Potential Holders'),
-                         self.tr('Document(s) Imposing Conditions'),
-                         self.tr('Digital Layout Plan')],
-            'Browse': [notice_btn, expl_btn, councl_btn, tiltle_btn, covr_btn,
-                       lst_btn, condt_btn, digl_btn],
-            'Status': [],
-            'View': [],
-        }
+        # Check if the document type lookup exists
+        doc_type_entity = self.curr_p.entity_by_name(doc_type_table)
+        if doc_type_entity is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Scheme Document Type Lookup'),
+                self.tr(
+                    'The lookup table containing the document types is '
+                    'missing.'
+                )
+            )
+            self.tbw_documents.setEnabled(False)
+
+            return
+
+        # No need of fetching the documents again if already done before
+        if self._suporting_docs_loaded:
+            return
+
+        doc_res = export_data('cb_check_scheme_document_type')
+
+        # Add the documents types to the view
+        for d in doc_res:
+            doc_type = d.value
+            self.tbw_documents.add_document_type(doc_type)
+
+        self._suporting_docs_loaded = True
 
     def upload_multiple_files(self):
         """
