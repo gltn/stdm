@@ -214,8 +214,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         Generate random scheme number
         """
-        self.lnedit_schm_num.setText('NMBWND.0001')
-        # Use random and string library in generating scheme number
+        # Use random and string methods in generating scheme number
+        rel_a = self.tr("RA.")
+        letters = random_string(6)
+        following_num = str(random_number())
+        self.lnedit_schm_num.setText(rel_a + letters + '.' + following_num)
 
     def register_col_widgets(self):
         """
@@ -325,6 +328,31 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.addMapping('target_use_id', 'trgt_usr_id')
         self.addMapping('content', 'notification')
         self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
+
+
+def random_string(stringlength):
+    """
+    Generate random string of characters
+    :param stringLength:
+    :return:Str
+    """
+    from string import ascii_uppercase
+    from random import choice
+    letters = ascii_uppercase
+    return ''.join(choice(letters) for i in range(stringlength))
+
+
+def random_number():
+    """
+    Generate random string of characters
+    """
+    from random import (
+        seed,
+        randint)
+    for i in range(1):
+        value = randint(999, 9999)
+        return value
+
 
 
 class SchemeSummary(QTreeView, LodgementWizard):

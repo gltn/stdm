@@ -373,7 +373,13 @@
      </widget>
     </item>
     <item>
-     <widget class="QTreeView" name="tr_summary"/>
+     <widget class="SchemeSummaryWidget" name="tr_summary">
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -383,6 +389,11 @@
    <class>ExcelWorkbookView</class>
    <extends>QTableWidget</extends>
    <header>stdm.ui.customcontrols.table_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>SchemeSummaryWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>stdm.ui.customcontrols.scheme_summary_widget</header>
   </customwidget>
  </customwidgets>
  <resources>
