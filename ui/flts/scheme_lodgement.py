@@ -167,7 +167,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         holders_file = QFileDialog.getOpenFileName(self, "Browse Holder's File",
                                                    '~/',
-                                                   " Excel Files (*.xls *xlsx)")
+                                                   'Excel Files (*.xls *xlsx)')
         if holders_file:
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
