@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>702</width>
-    <height>571</height>
+    <height>591</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -262,7 +262,17 @@
    </layout>
   </widget>
   <widget class="QWizardPage" name="wizardPage">
+   <property name="subTitle">
+    <string>Upload the supporting documents for the scheme</string>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vlNotification_3">
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+     </layout>
+    </item>
     <item row="1" column="0" colspan="2">
      <widget class="QLabel" name="desc_Label2_2">
       <property name="sizePolicy">
@@ -287,7 +297,7 @@
        <number>0</number>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click the Upload link to add the individual supporting documents OR the Upload From Directory button to upload all of them&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Click the 'Browse' link to add the individual supporting documents &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -298,20 +308,21 @@
      </widget>
     </item>
     <item row="2" column="0" colspan="2">
-     <widget class="QTableView" name="tbw_documents"/>
+     <widget class="DocumentTableWidget" name="tbw_documents">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+     </widget>
     </item>
     <item row="3" column="0">
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Add multiple files from a source directory</string>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
+     </widget>
     </item>
     <item row="3" column="1">
      <widget class="QPushButton" name="btn_upload_dir">
@@ -329,7 +340,7 @@
       </property>
       <property name="maximumSize">
        <size>
-        <width>155</width>
+        <width>5000</width>
         <height>16777215</height>
        </size>
       </property>
@@ -342,18 +353,11 @@
       </property>
       <property name="iconSize">
        <size>
-        <width>24</width>
-        <height>24</height>
+        <width>16</width>
+        <height>16</height>
        </size>
       </property>
      </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlNotification_3">
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-     </layout>
     </item>
    </layout>
   </widget>
@@ -373,13 +377,7 @@
      </widget>
     </item>
     <item>
-     <widget class="SchemeSummaryWidget" name="tr_summary">
-      <column>
-       <property name="text">
-        <string notr="true">1</string>
-       </property>
-      </column>
-     </widget>
+     <widget class="QTreeView" name="tr_summary"/>
     </item>
    </layout>
   </widget>
@@ -391,9 +389,9 @@
    <header>stdm.ui.customcontrols.table_widget</header>
   </customwidget>
   <customwidget>
-   <class>SchemeSummaryWidget</class>
-   <extends>QTreeWidget</extends>
-   <header>stdm.ui.customcontrols.scheme_summary_widget</header>
+   <class>DocumentTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>stdm.ui.customcontrols.documents_table_widget</header>
   </customwidget>
  </customwidgets>
  <resources>
