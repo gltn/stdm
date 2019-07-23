@@ -247,7 +247,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.txtPort.clear()
 
     def _on_choose_supporting_docs_path(self):
-        #Slot raised to select directory for supporting documents.
+        # Slot raised to select directory for supporting documents.
         self._set_selected_directory(self.txtRepoLocation, self.tr(
             'Supporting Documents Directory')
         )
