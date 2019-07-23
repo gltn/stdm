@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Tue Jul 16 18:41:46 2019
+# Created: Wed Jul 17 09:57:22 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -204,7 +204,7 @@ class Ui_ldg_wzd(object):
         self.desc_Label2_5.setSizePolicy(sizePolicy)
         self.desc_Label2_5.setObjectName(_fromUtf8("desc_Label2_5"))
         self.verticalLayout_2.addWidget(self.desc_Label2_5)
-        self.tr_summary = QtGui.QTreeView(self.wizardPage_4)
+        self.tr_summary = SchemeSummaryWidget(self.wizardPage_4)
         self.tr_summary.setObjectName(_fromUtf8("tr_summary"))
         self.verticalLayout_2.addWidget(self.tr_summary)
         ldg_wzd.addPage(self.wizardPage_4)
@@ -235,6 +235,7 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
         self.desc_Label2_5.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
 
+from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
 from stdm.ui.customcontrols.table_widget import ExcelWorkbookView
 from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
 from stdm import resources_rc

@@ -66,6 +66,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
+        # Scheme reference
+        self._scheme = None
+
         # Entities
         self.entity_obj = self.curr_p.entity('Scheme')
         self.notif_obj = self.curr_p.entity('Notification')
@@ -102,6 +105,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
         self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
         self.currentIdChanged.connect(self.on_page_changed)
+        self.tbw_documents.browsed.connect(self.on_browsed_document)
+        self.tbw_documents.view_requested.connect(self.on_view_document)
+        self.tbw_documents.remove_requested.connect(self.on_remove_document)
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -160,6 +166,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Load scheme supporting documents
         if idx == 2:
             self._load_scheme_document_types()
+
+        # Load scheme object to the summary widget
+        if idx == 3:
+            print self._scheme
+            self.tr_summary.set_scheme(self._scheme)
 
     def browse_holders_file(self):
         """
@@ -280,12 +291,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         ret_status = False
         self.notif_bar.clear()
 
+        # Scheme attribute information
         if current_id == 0:
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
             if len(errors) == 0:
                 ret_status = True
 
+        # Holders upload page
         elif current_id == 1:
             # TODO --- Use RegExp validator
             if not self.lnEdit_hld_path.text():
@@ -297,11 +310,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
             else:
                 ret_status = True
+
+        # Supporting documents page
         elif current_id == 2:
+            # Set scheme object
+            self.submit(collect_model=True)
+            self._scheme = self.model()
+
             # Check if all documents have been uploaded
             return True
+
+        # Summary page
         elif current_id == 3:
-            # This is the last page
             try:
                 self.save_scheme()
                 # Add other functionality
@@ -315,6 +335,53 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
 
         return ret_status
+
+    def _source_doc_uploaded(self, doc_info):
+        # Checks if the source document has been uploaded
+        if not doc_info.source_filename:
+            QMessageBox.warning(
+                self,
+                self.tr('Source Document Missing'),
+                u'{0} {1}'.format(
+                    doc_info.document_type,
+                    self.tr('document has not yet been uploaded.')
+                )
+            )
+            return False
+
+        return True
+
+    def on_browsed_document(self, doc_info):
+        """
+        Slot raised after the user has accepted or rejected the file dialog
+        for browsing a source document. The 'source_filename' attribute is
+        empty if the user has not selected any file.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
+        """
+        if not doc_info.source_filename:
+            return
+
+    def on_view_document(self, doc_info):
+        """
+        Slot raised on clicking the View button in the document page. If
+        the document has been uploaded, it loads a widget showing its
+        contents.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
+        """
+        if not self._source_doc_uploaded(doc_info):
+            return
+
+    def on_remove_document(self, doc_info):
+        """
+        Slot raised on clicking the Remove button in the document page. It
+        deletes the document from the repository.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
+        """
+        if not self._source_doc_uploaded(doc_info):
+            return
 
     def save_scheme(self):
         """
@@ -356,32 +423,3 @@ def random_number():
     for i in range(1):
         value = randint(999, 9999)
         return value
-
-
-
-class SchemeSummary(QTreeView, LodgementWizard):
-    """
-    Widget that displays scheme information.
-    """
-
-    def __init__(self, parent=None):
-        super(QTreeView, self).__init__(parent)
-
-    def set_scheme(self):
-        """
-        Defines static and dynamic variables to be shown in the summary.
-        """
-        pointListBox = QTreeWidget()
-        header = QTreeWidgetItem(['documents', 'data', 'files'])
-        pointListBox.setHeaderItem(header)
-        root = QTreeWidgetItem(pointListBox, ["root"])
-        A = QTreeWidgetItem(root, ["A"])
-        barA = QTreeWidgetItem(A, ["items", "items1"])
-        barZ = QTreeWidgetItem(A, ["items", "items1"])
-        pointListBox.show()
-
-    def refresh(self):
-        """
-        Upating data in the summary when user changes or updates in the wizard
-        """
-        pass

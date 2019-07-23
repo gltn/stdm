@@ -25,7 +25,6 @@ class SchemeSummaryWidget(QTreeWidget):
     """
     A widget for displaying scheme summary information after lodgement
     """
-
     def __init__(self, parent=None):
         QTreeWidget.__init__(self, parent)
         self.setHeaderHidden(True)
@@ -62,6 +61,9 @@ class SchemeSummaryWidget(QTreeWidget):
         self.hld_num = QTreeWidgetItem()
 
         self._initialize_view()
+
+    def _def_attr_names(self):
+        pass
 
     def _initialize_view(self):
         """
@@ -147,16 +149,16 @@ class SchemeSummaryWidget(QTreeWidget):
         if self._scheme is None:
             return
 
-        name = self._scheme.name
-        number = self._scheme.number
-        relevant_auth = self._scheme.relevant_authority
+        name = self._scheme.scheme_name
+        number = self._scheme.scheme_number
+        relevant_auth = '' # self._scheme.relevant_authority
         date_of_approval = self._scheme.date_of_approval
-        date_of_establishment = self.__scheme.date_of_establishment
-        lro = self._scheme.lro
-        region = self._scheme.region
-        township_name = self._scheme.township
-        registration_div = self._scheme.registration_div
-        block_area = self._scheme.block_area
+        date_of_establishment = self._scheme.date_of_establishment
+        lro = '' #self._scheme.lro
+        region = '' #self._scheme.region
+        township_name = self._scheme.township_name
+        registration_div = '' # self._scheme.registration_div
+        block_area = str(self._scheme.area)
 
         # Capture the text values
         base_name = self.scm_name.text(0)
