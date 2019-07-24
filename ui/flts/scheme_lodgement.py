@@ -16,16 +16,14 @@ email                : joehene@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from os.path import expanduser
-from PyQt4.QtCore import *
+from time import strftime
+from PyQt4.Qt import Qt
 from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
     QMessageBox,
-    QStringListModel,
     QTreeWidget,
     QTreeView,
-    QPushButton,
     QTreeWidgetItem)
 
 from stdm.data.pg_utils import (
@@ -110,7 +108,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.register_col_widgets()
 
         # Scheme number
-        self.scheme_num()
+        # self.scheme_num()
+
+        # Notification details
+        self._notif_status = 2
+        self._notif_content = self.tr("Lodgement of scheme has been completed.")
+
+        self._filter_combo()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -122,10 +126,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def _populate_lookups(self):
         # Load lookup columns
-        self._populate_combo(self.cbx_relv_auth, 'cb_check_lht_relevant_authority')
-        self._populate_combo(self.cbx_lro, 'cb_check_lht_land_rights_office')
-        self._populate_combo(self.cbx_region, 'cb_check_lht_region')
-        self._populate_combo(self.cbx_reg_div, 'cb_check_lht_reg_division')
+        self._populate_combo(self.cbx_relv_auth,
+                             'cb_check_lht_relevant_authority')
+        self._populate_combo(self.cbx_relv_auth_name,
+                             'cb_check_lht_relevant_authority_name')
+        self._populate_combo(self.cbx_lro,
+                             'cb_check_lht_land_rights_office')
+        self._populate_combo(self.cbx_region,
+                             'cb_check_lht_region')
+        self._populate_combo(self.cbx_reg_div,
+                             'cb_check_lht_reg_division')
+
+    def _filter_combo(self):
+        model = self.cbx_region.model()
 
     def page_title(self):
         """
@@ -138,9 +151,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.wizardPage_4.setTitle('Summary')
 
         # Set page subtitles
-        self.wizardPage1.setSubTitle(self.tr('Please enter scheme information below. '
+        self.wizardPage1.setSubTitle(self.tr('Please enter scheme information'
+                                             ' below. '
                                              'Note that the scheme number'
-                                             'will be automatically generated'))
+                                             'will be automatically generated'
+                                             )
+                                     )
         self.wizardPage2.setSubTitle(self.tr('Please browse for list of holde'
                                              'rs file'))
         self.wizardPage_4.setSubTitle(self.tr(
@@ -165,16 +181,20 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         Browse for the holders file in the file directory
         """
-        holders_file = QFileDialog.getOpenFileName(self, "Browse Holder's File",
-                                                   '~/',
-                                                   'Excel Files (*.xls *xlsx)')
+        holders_file = QFileDialog.getOpenFileName(self,
+                                                   "Browse Holder's File",
+                                                   "~/",
+                                                   "CSV Files (*.csv);;"
+                                                   "Excel Files (*.xls *xlsx)"
+                                                   )
         if holders_file:
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
     def _load_scheme_document_types(self):
         """
-        This is used in uploading and viewing of the scheme supporting documents
+        This is used in uploading and viewing of the scheme supporting
+        documents
         """
         doc_type_table = 'cb_check_scheme_document_type'
 
@@ -214,15 +234,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
 
-    def scheme_num(self):
-        """
-        Generate random scheme number
-        """
-        # Use random and string methods in generating scheme number
-        rel_a = self.tr("RA.")
-        letters = random_string(6)
-        following_num = str(random_number())
-        self.lnedit_schm_num.setText(rel_a + letters + '.' + following_num)
+    # def scheme_num(self):
+    #     """
+    #     Generate random scheme number
+    #     """
+    #     # Use random and string methods in generating scheme number
+    #     rel_a = self.tr("RA.")
+    #     letters = random_string(6)
+    #     following_num = str(random_number())
+    #     self.lnedit_schm_num.setText(rel_a + letters + '.' + following_num)
 
     def register_col_widgets(self):
         """
@@ -250,14 +270,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Establishment Date'
         )
         self.addMapping(
-            'relevant_authority',
-            self.cbx_relv_auth,
-            pseudoname='Relevant Authority'
-        )
-        self.addMapping(
             'region',
             self.cbx_region,
             pseudoname='Region'
+        )
+        self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority Type'
+        )
+        self.addMapping(
+            'relevant_authority_name',
+            self.cbx_relv_auth_name,
+            pseudoname='Relevant Authority Name'
         )
         self.addMapping(
             'township',
@@ -273,6 +298,37 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'area',
             self.dbl_spinbx_block_area,
             pseudoname='Area'
+        )
+
+    def create_notification(self):
+        """
+        Populate notification table
+        """
+        # Get the table columns and add mapping
+        self.addMapping(
+            'status',
+            self._notif_status,
+            pseudoname='status'
+        )
+        self.addMapping(
+            'source_user_id',
+            self.source_user_id,
+            pseudoname='source user'
+        )
+        self.addMapping(
+            'target_use_id',
+            self.target_user_id,
+            pseudoname='target user'
+        )
+        self.addMapping(
+            'content',
+            self._notif_content,
+            pseudoname='content'
+        )
+        self.addMapping(
+            'timestamp',
+            str(strftime("%Y-%m-%d %H:%M:%S")),
+            pseudoname='timestamp'
         )
 
     def validateCurrentPage(self):
@@ -299,6 +355,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 ret_status = True
         elif current_id == 2:
             # Check if all documents have been uploaded
+            self.populate_summary()
             return True
         elif current_id == 3:
             # This is the last page
@@ -316,72 +373,96 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         return ret_status
 
+    def populate_summary(self):
+        """
+        Populating the scheme summary widget with values from the user input
+        """
+        self.tr_summary.scm_num.setText(0, '{0} {1}'.format(
+            self.tr(self.label_schm_num.text()),
+            ': ' + self.lnedit_schm_num.text()
+        )
+                                        )
+        self.tr_summary.scm_name.setText(0, '{0} {1}'.format(
+            self.tr(self.label_schm_name.text()),
+            ': ' + self.lnedit_schm_nam.text()
+        )
+                                         )
+        self.tr_summary.scm_date_apprv.setText(0, '{0} {1}'.format(
+            self.tr(self.label_date_apprv.text()),
+            ': ' + self.date_apprv.text()
+        )
+                                               )
+        self.tr_summary.scm_date_est.setText(0, '{0} {1}'.format(
+            self.tr(self.label_date_establish.text()),
+            ': ' + self.date_establish.text()
+        )
+                                             )
+        self.tr_summary.scm_region.setText(0, '{0} {1}'.format(
+            self.tr(self.label_region.text()),
+            ': ' + self.cbx_region.currentText()
+        )
+                                           )
+        self.tr_summary.scm_ra_type.setText(0, '{0} {1}'.format(
+            self.tr(self.label_rel_auth_type.text()),
+            ': ' + self.cbx_relv_auth.currentText()
+        )
+                                            )
+        self.tr_summary.scm_ra_name.setText(0, '{0} {1}'.format(
+            self.tr(self.label_rel_auth_name.text()),
+            ': ' + self.cbx_relv_auth_name.currentText()
+        )
+                                            )
+        self.tr_summary.scm_lro.setText(0, '{0} {1}'.format(
+            self.tr(self.label_lro.text()),
+            ': ' + self.cbx_lro.currentText()
+        )
+                                        )
+        self.tr_summary.scm_township.setText(0, '{0} {1}'.format(
+            self.tr(self.label_twn_name.text()),
+            ': ' + self.lnedit_twnshp.text()
+        )
+                                             )
+        self.tr_summary.scm_reg_div.setText(0, '{0} {1}'.format(
+            self.tr(self.label_reg_div.text()),
+            ': ' + self.cbx_reg_div.currentText()
+        )
+                                            )
+        self.tr_summary.scm_blk_area.setText(0, '{0} {1}'.format(
+            self.tr(self.label_blck_area.text()),
+            ': ' + self.dbl_spinbx_block_area.text()
+        )
+                                             )
+
     def save_scheme(self):
         """
         Save scheme information to the database
         """
         self.submit()
 
-    def create_notification(self):
+    def on_change_relevant_authority(self):
         """
-        Populate notification table
+        Clear the line edit first on change of relevant authority
         """
-        # Get the table columns and add mapping
-        self.addMapping('status', '2')
-        self.addMapping('source_user_id', 'src_usr_id')
-        self.addMapping('target_use_id', 'trgt_usr_id')
-        self.addMapping('content', 'notification')
-        self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
 
-
-def random_string(stringlength):
-    """
-    Generate random string of characters
-    :param stringLength:
-    :return:Str
-    """
-    from string import ascii_uppercase
-    from random import choice
-    letters = ascii_uppercase
-    return ''.join(choice(letters) for i in range(stringlength))
-
-
-def random_number():
-    """
-    Generate random string of characters
-    """
-    from random import (
-        seed,
-        randint)
-    for i in range(1):
-        value = randint(999, 9999)
-        return value
-
-
-
-class SchemeSummary(QTreeView, LodgementWizard):
-    """
-    Widget that displays scheme information.
-    """
-
-    def __init__(self, parent=None):
-        super(QTreeView, self).__init__(parent)
-
-    def set_scheme(self):
-        """
-        Defines static and dynamic variables to be shown in the summary.
-        """
-        pointListBox = QTreeWidget()
-        header = QTreeWidgetItem(['documents', 'data', 'files'])
-        pointListBox.setHeaderItem(header)
-        root = QTreeWidgetItem(pointListBox, ["root"])
-        A = QTreeWidgetItem(root, ["A"])
-        barA = QTreeWidgetItem(A, ["items", "items1"])
-        barZ = QTreeWidgetItem(A, ["items", "items1"])
-        pointListBox.show()
-
-    def refresh(self):
-        """
-        Upating data in the summary when user changes or updates in the wizard
-        """
-        pass
+# def random_string(stringlength):
+#     """
+#     Generate random string of characters
+#     :param stringlength:
+#     :return:Str
+#     """
+#     from string import ascii_uppercase
+#     from random import choice
+#     letters = ascii_uppercase
+#     return ''.join(choice(letters) for i in range(stringlength))
+#
+#
+# def random_number():
+#     """
+#     Generate random string of characters
+#     """
+#     from random import (
+#         seed,
+#         randint)
+#     for i in range(1):
+#         value = randint(999, 9999)
+#         return value
