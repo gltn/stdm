@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Tue Jul 23 12:31:43 2019
+# Created: Tue Jul 23 16:09:48 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 653)
+        DlgOptions.resize(626, 606)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -34,7 +34,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 598))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 551))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
@@ -223,4 +223,4 @@ class Ui_DlgOptions(object):
         self.label_9.setText(QtGui.QApplication.translate("DlgOptions", "Authentication configuration name", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_test_docs_repo_conn.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
 
-import resources_rc
+from stdm import resources_rc

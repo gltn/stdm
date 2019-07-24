@@ -45,9 +45,13 @@ from stdm.settings import (
 )
 
 from stdm.settings.registryconfig import (
+    cmis_atom_pub_url,
+    cmis_auth_config_id,
     composer_output_path,
     composer_template_path,
     debug_logging,
+    set_cmis_atom_pub_url,
+    set_cmis_auth_config_id,
     set_debug_logging,
     source_documents_path,
     QGISRegistryConfig,
@@ -57,6 +61,10 @@ from stdm.settings.registryconfig import (
     NETWORK_DOC_RESOURCE,
     CONFIG_UPDATED,
     WIZARD_RUN
+)
+
+from stdm.security.auth_config import (
+    config_entries
 )
 
 from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
@@ -97,36 +105,28 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
 
-        version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace('1.4', version)
-        self.label_9.setText(upgrade_label_text)
-
-        #Connect signals
+        # Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
         self.buttonBox.accepted.connect(self.on_accept)
         self.chk_pg_connections.toggled.connect(self._on_use_pg_connections)
         self.cbo_pg_connections.currentIndexChanged.connect(
             self._on_pg_profile_changed)
         self.btn_db_conn_clear.clicked.connect(self.clear_properties)
-        self.btn_test_db_connection.clicked.connect(self._on_test_connection)
-        self.btn_supporting_docs.clicked.connect(
-            self._on_choose_supporting_docs_path
-        )
+        self.btn_test_db_connection.clicked.connect(self._on_test_db_connection)
         self.btn_template_folder.clicked.connect(
             self._on_choose_doc_designer_template_path
         )
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        self.upgradeButton.toggled.connect(
-            self.manage_upgrade
+        self.btn_test_docs_repo_conn.clicked.connect(
+            self._on_test_cmis_connection
+        )
+        self.txt_atom_pub_url.textChanged.connect(
+            self._on_cmis_url_changed
         )
 
         self._config = StdmConfiguration.instance()
-        self._default_style_sheet = self.txtRepoLocation.styleSheet()
-
-        self.manage_upgrade()
-
         self.init_gui()
 
     def init_gui(self):
@@ -151,8 +151,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         #Load directory paths
         self._load_directory_paths()
 
-        self.edtEntityRecords.setMaximum(MAX_LIMIT)
-        self.edtEntityRecords.setValue(get_entity_browser_record_limit())
+        # Load document repository-related settings
+        self._load_cmis_config()
 
         # Debug logging
         lvl = debug_logging()
@@ -160,6 +160,36 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.chk_logging.setCheckState(Qt.Checked)
         else:
             self.chk_logging.setCheckState(Qt.Unchecked)
+
+    def _load_cmis_config(self):
+        """
+        Load configuration names and IDs in the combobox then select
+        the user specified ID.
+        """
+        # Load CMIS atom pub URL
+        self.txt_atom_pub_url.setText(cmis_atom_pub_url())
+
+        self.cbo_auth_config_name.clear()
+        self.cbo_auth_config_name.addItem('')
+
+        config_ids = config_entries()
+        for ci in config_ids:
+            id = ci[0]
+            name = ci[1]
+            display = u'{0} ({1})'.format(name, id)
+            self.cbo_auth_config_name.addItem(display, id)
+
+        # Then select the user specific config ID if specified
+        conf_id = cmis_auth_config_id()
+        if conf_id:
+            id_idx = self.cbo_auth_config_name.findData(conf_id)
+            if id_idx != -1:
+                self.cbo_auth_config_name.setCurrentIndex(id_idx)
+
+    def _on_cmis_url_changed(self, new_text):
+        # Slot raised when text for CMIS URL changes. Basically updates
+        # the tooltip so as to display long URLs
+        self.txt_atom_pub_url.setToolTip(new_text)
 
     def load_profiles(self):
         """
@@ -194,10 +224,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         #Load paths to various directory settings.
         comp_out_path = composer_output_path()
         comp_temp_path = composer_template_path()
-        source_doc_path = source_documents_path()
-
-        if not source_doc_path is None:
-            self.txtRepoLocation.setText(source_doc_path)
 
         if not comp_out_path is None:
             self.txt_output_dir.setText(comp_out_path)
@@ -245,12 +271,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.txtDatabase.clear()
         self.txtHost.clear()
         self.txtPort.clear()
-
-    def _on_choose_supporting_docs_path(self):
-        # Slot raised to select directory for supporting documents.
-        self._set_selected_directory(self.txtRepoLocation, self.tr(
-            'Supporting Documents Directory')
-        )
 
     def _on_choose_doc_designer_template_path(self):
         #Slot raised to select directory for document designer templates.
@@ -305,12 +325,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         port = self.txtPort.text()
         database = self.txtDatabase.text()
 
-        #Create database connection object
+        # Create database connection object
         db_conn = DatabaseConnection(host, port, database)
 
         return db_conn
 
-    def _on_test_connection(self):
+    def _on_test_db_connection(self):
         """
         Slot raised to test database connection.
         """
@@ -328,6 +348,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             msg = self.tr(u"Connection to '{0}' database was "
                           "successful.".format(db_conn.Database))
             QMessageBox.information(self, self.tr('Database Connection'), msg)
+
+    def _on_test_cmis_connection(self):
+        # Slot raised to test connection to CMIS service
+        status = self._validate_cmis_properties()
+        if not status:
+            return
 
     def set_current_profile(self):
         """
@@ -348,6 +374,41 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         return True
 
+    def set_cmis_properties(self):
+        """
+        Saves the CMIS atom pub URL and authentication configuration ID.
+        """
+        if not self._validate_cmis_properties():
+            return False
+
+        atom_pub_url = self.txt_atom_pub_url.text()
+        set_cmis_atom_pub_url(atom_pub_url)
+
+        curr_idx = self.cbo_auth_config_name.currentIndex()
+        config_id = self.cbo_auth_config_name.itemData(curr_idx)
+        set_cmis_auth_config_id(config_id)
+
+        return True
+
+    def _validate_cmis_properties(self):
+        # Assert if user has specified URL and authentication config ID.
+        atom_pub_url = self.txt_atom_pub_url.text()
+        config_name_id = self.cbo_auth_config_name.currentText()
+
+        status = True
+
+        if not atom_pub_url:
+            msg = self.tr('Please specify the URL of the CMIS atom pub service.')
+            self.notif_bar.insertErrorNotification(msg)
+            status = False
+
+        if not config_name_id:
+            msg = self.tr('Please select the configuration ID containing the CMIS authentication.')
+            self.notif_bar.insertErrorNotification(msg)
+            status = False
+
+        return status
+
     def save_database_properties(self):
         """
         Saves the specified database connection properties to the registry.
@@ -360,30 +421,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         #Create a database object and write it to the registry
         db_conn = self._database_connection()
         self._db_config.write(db_conn)
-
-        return True
-
-    def set_supporting_documents_path(self):
-        """
-        Set the directory of supporting documents.
-        :return: True if the directory was set in the registry, otherwise
-        False.
-        :rtype: bool
-        """
-        path = self.txtRepoLocation.text()
-
-        if not path:
-            msg = self.tr('Please set the supporting documents directory.')
-            self.notif_bar.insertErrorNotification(msg)
-
-            return False
-
-        #Validate path
-        if not self._check_path_exists(path, self.txtRepoLocation):
-            return False
-
-        #Commit to registry
-        self._reg_config.write({NETWORK_DOC_RESOURCE: path})
 
         return True
 
@@ -403,11 +440,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
             return False
 
-        #Validate path
+        # Validate path
         if not self._check_path_exists(path, self.txt_template_dir):
             return False
 
-        #Commit to registry
+        # Commit to registry
         self._reg_config.write({COMPOSER_TEMPLATE: path})
 
         return True
@@ -502,8 +539,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.save_database_properties():
             return False
 
-        #Set supporting documents directory
-        if not self.set_supporting_documents_path():
+        # Set CMIS properties
+        if not self.set_cmis_properties():
             return False
 
         #Set document designer templates path
@@ -516,8 +553,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.apply_debug_logging()
 
-        # Set Entity browser record limit
-        save_entity_browser_record_limit(self.edtEntityRecords.value())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
@@ -533,29 +568,3 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return
 
         self.accept()
-
-    def manage_upgrade(self):
-        """
-        A slot raised when the upgrade button is clicked.
-        It disables or enables the upgrade
-        button based on the ConfigUpdated registry value.
-        """
-
-        self.config_updated_dic = self._reg_config.read(
-            [CONFIG_UPDATED]
-        )
-
-        # if config file exists, check if registry key exists
-        if len(self.config_updated_dic) > 0:
-            config_updated_val = self.config_updated_dic[
-                CONFIG_UPDATED
-            ]
-            # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0' or config_updated_val == '-1':
-                self.upgradeButton.setEnabled(True)
-
-            # disable the button if any other value.
-            else:
-                self.upgradeButton.setEnabled(False)
-        else:
-            self.upgradeButton.setEnabled(False)

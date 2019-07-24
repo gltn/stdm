@@ -41,6 +41,8 @@ FIRST_LOGIN = 'FirstLogin'
 STDM_PLUGIN = 'stdm'
 STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
+CMIS_AUTH_CONFIG_ID = 'CmisAuthConfigId'
+CMIS_ATOM_PUB_URL = 'CmisAtomPubUrl'
 
 def registry_value(key_name):
     """
@@ -73,6 +75,49 @@ def set_registry_value(key, value):
     reg_config = RegistryConfig()
 
     reg_config.write({key: value})
+
+
+def cmis_auth_config_id():
+    """
+    :return: Returns the ID of the configuration object containing the
+    authentication credentials for the CMIS.
+    :rtype: str
+    """
+    conf_id = registry_value(CMIS_AUTH_CONFIG_ID)
+    if not conf_id:
+        return None
+
+    return conf_id
+
+
+def set_cmis_auth_config_id(config_id):
+    """
+    Sets the ID of the configuration object containing the authentication credentials for the CMIS.
+    :param config_id: ID of the configuration object.
+    :type config_id: str
+    """
+    set_registry_value(CMIS_AUTH_CONFIG_ID, config_id)
+
+
+def cmis_atom_pub_url():
+    """
+    :return: Returns the URL of the CMIS atom pub service.
+    :rtype: str
+    """
+    ap_url = registry_value(CMIS_ATOM_PUB_URL)
+    if not ap_url:
+        return None
+
+    return ap_url
+
+
+def set_cmis_atom_pub_url(cmis_url):
+    """
+    Sets the URL of the CMIS atom pub service.
+    :param cmis_url: URL of the atom pub service.
+    :type cmis_url: str
+    """
+    set_registry_value(CMIS_ATOM_PUB_URL, cmis_url)
 
 
 def composer_output_path():
