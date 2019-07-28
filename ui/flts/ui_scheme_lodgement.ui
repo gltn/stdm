@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>702</width>
-    <height>591</height>
+    <height>424</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,45 +48,51 @@
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="10" column="2">
-     <widget class="QComboBox" name="cbx_region"/>
-    </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_7">
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="label_desc">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
-       <string>Land Rights Office</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter scheme information below. Please note the scheme number will be automatically generated&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
-    <item row="13" column="0">
-     <widget class="QLabel" name="label_11">
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_schm_num">
       <property name="text">
-       <string>Block Area</string>
+       <string>Scheme Number</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="3">
-     <layout class="QVBoxLayout" name="vlNotification">
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-     </layout>
-    </item>
-    <item row="7" column="2">
-     <widget class="QDateEdit" name="date_establish">
-      <property name="minimumDate">
-       <date>
-        <year>2019</year>
-        <month>9</month>
-        <day>14</day>
-       </date>
-      </property>
-      <property name="calendarPopup">
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_num">
+      <property name="readOnly">
        <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="6" column="2">
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_schm_name">
+      <property name="text">
+       <string>Scheme Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_nam"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_date_apprv">
+      <property name="text">
+       <string>Date of Approval</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
      <widget class="QDateEdit" name="date_apprv">
       <property name="minimumDate">
        <date>
@@ -100,48 +106,95 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="2">
-     <widget class="QLineEdit" name="lnedit_schm_num">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="12" column="0">
-     <widget class="QLabel" name="label_10">
-      <property name="text">
-       <string>Registration Division</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="label_9">
-      <property name="text">
-       <string>Township Name</string>
-      </property>
-     </widget>
-    </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Region</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="2">
-     <widget class="QLineEdit" name="lnedit_twnshp"/>
-    </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_4">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_date_establish">
       <property name="text">
        <string>Date of Esablishment</string>
       </property>
      </widget>
     </item>
-    <item row="9" column="2">
+    <item row="5" column="1">
+     <widget class="QDateEdit" name="date_establish">
+      <property name="minimumDate">
+       <date>
+        <year>2019</year>
+        <month>9</month>
+        <day>14</day>
+       </date>
+      </property>
+      <property name="calendarPopup">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_region">
+      <property name="text">
+       <string>Region</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QComboBox" name="cbx_region"/>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_rel_auth_type">
+      <property name="text">
+       <string>Type of Relevant Authority</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth"/>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_rel_auth_name">
+      <property name="text">
+       <string>Name of Relevant Authority</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth_name"/>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_lro">
+      <property name="text">
+       <string>Land Rights Office</string>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
      <widget class="QComboBox" name="cbx_lro"/>
     </item>
-    <item row="13" column="2">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_twn_name">
+      <property name="text">
+       <string>Township Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QLineEdit" name="lnedit_twnshp"/>
+    </item>
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_reg_div">
+      <property name="text">
+       <string>Registration Division</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QComboBox" name="cbx_reg_div"/>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_blck_area">
+      <property name="text">
+       <string>Block Area</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
      <widget class="QDoubleSpinBox" name="dbl_spinbx_block_area">
       <property name="decimals">
        <number>4</number>
@@ -151,55 +204,12 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
-       <string>Scheme Name</string>
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vlNotification">
+      <property name="bottomMargin">
+       <number>10</number>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="3">
-     <widget class="QLabel" name="desc_Label1">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter scheme information below. Please note the scheme number will be automatically generated&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="2">
-     <widget class="QLineEdit" name="lnedit_schm_nam"/>
-    </item>
-    <item row="12" column="2">
-     <widget class="QComboBox" name="cbx_reg_div"/>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Date of Approval</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="lbl_Sceme">
-      <property name="text">
-       <string>Scheme Number</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QComboBox" name="cbx_relv_auth"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Relevant Authority</string>
-      </property>
-     </widget>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -213,7 +223,7 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QLabel" name="desc_Label2">
+     <widget class="QLabel" name="label_desc_2">
       <property name="text">
        <string>Select the Excel file containing holders information</string>
       </property>
@@ -237,7 +247,7 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QLabel" name="lbl_data_prv">
+     <widget class="QLabel" name="label_data_prev">
       <property name="text">
        <string>Data preview</string>
       </property>
@@ -274,7 +284,7 @@
      </layout>
     </item>
     <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="desc_Label2_2">
+     <widget class="QLabel" name="label_desc_3">
       <property name="sizePolicy">
        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
@@ -318,7 +328,7 @@
      </widget>
     </item>
     <item row="3" column="0">
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="label_upld_multi">
       <property name="text">
        <string>Add multiple files from a source directory</string>
       </property>
@@ -364,7 +374,7 @@
   <widget class="QWizardPage" name="wizardPage_4">
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QLabel" name="desc_Label2_5">
+     <widget class="QLabel" name="label_desc_4">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
         <horstretch>0</horstretch>
