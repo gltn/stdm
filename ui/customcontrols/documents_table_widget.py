@@ -29,7 +29,8 @@ from PyQt4.QtGui import (
 )
 from PyQt4.QtCore import (
     pyqtSignal,
-    Qt
+    Qt,
+    QThread
 )
 from stdm.settings.registryconfig import (
     last_document_path,
@@ -81,6 +82,8 @@ class DocumentTableWidget(QTableWidget):
 
         self._docs_info = OrderedDict()
         self._doc_prop = 'doc_info'
+        self.cmis_entity_doc_mapper = None
+        self.file_filters = 'PDF File (*.pdf)'
         self._init_ui()
 
     def _init_ui(self):
@@ -200,21 +203,47 @@ class DocumentTableWidget(QTableWidget):
         last_doc_path = last_document_path()
         if not last_doc_path:
             last_doc_path = '~/'
+
         doc_file_path = QFileDialog.getOpenFileName(
             self,
-            u'Browse {0} file'.format(doc_info.document_type),
+            u'Browse {0}'.format(doc_info.document_type),
             last_doc_path,
-            'PDF File (*.pdf)'
+            self.file_filters
         )
         if doc_file_path:
-            # Update the source file name
-            doc_info.source_filename = doc_file_path
-
             # Update registry setting
             set_last_document_path(doc_file_path)
 
+            # Update the source file name
+            doc_info.source_filename = doc_file_path
+
+            # Upload document content
+            self.upload_document(doc_file_path, doc_info.document_type)
+
         # Emit signal
         self.browsed.emit(doc_info)
+
+    def upload_document(self, doc_file_path, doc_type):
+        """
+        Upload the document in doc_file_path to the document repository. The
+        entity document mapper should have been set as it handles the
+        communication to the CMIS server.
+        :param doc_file_path: Path to the document to be uploaded.
+        :type doc_file_path: str
+        :param doc_type: Type of the document.
+        :type doc_type: str
+        :return: Returns the document object in the repository, that is if
+        it was successfully uploaded.
+        :rtype: cmislib.domain.Document
+        """
+        if self.cmis_entity_doc_mapper:
+            upload_thread = CmisDocumentUploadThread(
+                doc_file_path,
+                self.cmis_entity_doc_mapper,
+                doc_type,
+                self
+            )
+            upload_thread.start()
 
     def on_view_activated(self, link):
         """
@@ -263,3 +292,21 @@ class DocumentTableWidget(QTableWidget):
             return False
 
         return True
+
+
+class CmisDocumentUploadThread(QThread):
+    """
+    Enables the the upload of a document using a separate thread.
+    """
+    def __init__(self, path, cmis_doc_mapper, doc_type, parent=None):
+        super(CmisDocumentUploadThread, self).__init__(parent)
+        self._doc_mapper = cmis_doc_mapper
+        self._file_path = path
+        self._doc_type = doc_type
+
+    def run(self):
+        # Upload the document content through the doc mapper
+        self._doc_mapper.upload_document(
+            self._file_path,
+            self._doc_type
+        )

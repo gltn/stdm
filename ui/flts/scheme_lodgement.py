@@ -22,11 +22,10 @@ from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
     QMessageBox,
-    QStringListModel,
-    QTreeWidget,
-    QTreeView,
-    QPushButton,
-    QTreeWidgetItem)
+)
+from cmislib.exceptions import (
+    CmisException
+)
 
 from stdm.data.pg_utils import (
     export_data
@@ -36,6 +35,15 @@ from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
 from ui_scheme_lodgement import Ui_ldg_wzd
 from ..notification import NotificationBar, ERROR
+from stdm.network.cmis_manager import(
+    CmisDocumentMapperException,
+    CmisEntityDocumentMapper,
+    CmisManager
+)
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
+)
 
 
 class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
@@ -56,7 +64,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.curr_p = current_profile()
 
         # Flag for checking if document type has been loaded
-        self._suporting_docs_loaded = False
+        self._supporting_docs_loaded = False
 
         if self.curr_p is None:
             QMessageBox.critical(
@@ -70,7 +78,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._scheme = None
 
         # Entities
-        self.entity_obj = self.curr_p.entity('Scheme')
+        self._sch_entity_name = 'Scheme'
+        self.entity_obj = self.curr_p.entity(self._sch_entity_name)
         self.notif_obj = self.curr_p.entity('Notification')
 
         if self.entity_obj is None:
@@ -82,12 +91,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.reject()
 
         # Scheme entity model
-        self.schm_model = entity_model(self.entity_obj)
+        self.schm_model_cls, self._doc_model_cls = entity_model(
+            self.entity_obj,
+            with_supporting_document=True
+        )
 
         # Notification entity model
         self.notif_model = entity_model(self.notif_obj)
 
-        if self.schm_model is None:
+        if self.schm_model_cls is None:
             QMessageBox.critical(
                 self,
                 self.tr('Scheme Entity Model'),
@@ -95,11 +107,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Intializing mappermixin for saving attribute data
-        MapperMixin.__init__(self, self.schm_model, self.entity_obj)
+        # Initializing mappermixin for saving attribute data
+        MapperMixin.__init__(self, self.schm_model_cls, self.entity_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
+
+        # CMIS interfaces
+        self._cmis_mgr = CmisManager()
+        # Mapper will be set in initialization of 1st page
+        self._cmis_doc_mapper = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
@@ -163,9 +180,54 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                     str(self._num_pages))
         self.setWindowTitle(win_title)
 
+        # First page
+        # Set entity document mapper if connection to CMIS is successful
+        if idx == 0:
+            conn_status = self._cmis_mgr.connect()
+            if not conn_status:
+                msg = self.tr(
+                    'Failed to connect to the CMIS Service.\nPlease check the '
+                    'URL and login credentials for the CMIS service.'
+                )
+                QMessageBox.critical(
+                    self,
+                    self.tr(
+                        'CMIS Server Error'
+                    ),
+                    msg
+                )
+
+            if conn_status:
+                if not self._cmis_doc_mapper:
+                    try:
+                        self._cmis_doc_mapper = CmisEntityDocumentMapper(
+                            cmis_manager=self._cmis_mgr,
+                            doc_model_cls=self._doc_model_cls,
+                            entity_name=self._sch_entity_name
+                        )
+
+                        # Set the CMIS document mapper in document widget
+                        self.tbw_documents.cmis_entity_doc_mapper = \
+                            self._cmis_doc_mapper
+                    except CmisDocumentMapperException as cm_ex:
+                        QMessageBox.critical(
+                            self,
+                            self.tr('CMIS Server Error'),
+                            str(cm_ex)
+                        )
+                    except CmisException as c_ex:
+                        QMessageBox.critical(
+                            self,
+                            self.tr('CMIS Server Error'),
+                            c_ex.status
+                        )
+
         # Load scheme supporting documents
         if idx == 2:
             self._load_scheme_document_types()
+            # Disable widget if doc mapper could not be initialized
+            if not self._cmis_doc_mapper:
+                self.tbw_documents.setEnabled(False)
 
         # Load scheme object to the summary widget
         if idx == 3:
@@ -176,10 +238,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         Browse for the holders file in the file directory
         """
-        holders_file = QFileDialog.getOpenFileName(self, "Browse Holder's File",
-                                                   '~/',
-                                                   'Excel Files (*.xls *xlsx)')
+        last_doc_path = last_document_path()
+        if not last_doc_path:
+            last_doc_path = '~/'
+
+        holders_file = QFileDialog.getOpenFileName(
+            self,
+            'Browse Holders File',
+            last_doc_path,
+            'Excel Files (*.xls *xlsx)'
+        )
         if holders_file:
+            set_last_document_path(holders_file)
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
@@ -205,7 +275,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         # No need of fetching the documents again if already done before
-        if self._suporting_docs_loaded:
+        if self._supporting_docs_loaded:
             return
 
         doc_res = export_data('cb_check_scheme_document_type')
@@ -215,7 +285,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             doc_type = d.value
             self.tbw_documents.add_document_type(doc_type)
 
-        self._suporting_docs_loaded = True
+            # Also add the types to the CMIS doc mapper
+            self._cmis_doc_mapper.add_document_type(doc_type)
+
+        self._supporting_docs_loaded = True
 
     def upload_multiple_files(self):
         """

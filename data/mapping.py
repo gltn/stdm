@@ -367,6 +367,7 @@ class MapperMixin(object):
         :rtype:
         """
         errors = []
+        self._notifBar.clear()
         for attrMapper in self._attrMappers:
             error = self.validate(attrMapper)
 

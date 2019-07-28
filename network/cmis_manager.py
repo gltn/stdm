@@ -22,7 +22,11 @@ from mimetypes import guess_type
 from cmislib import (
     CmisClient
 )
+from PyQt4.QtCore import (
+    QFileInfo
+)
 from cmislib.exceptions import (
+    CmisException,
     ObjectNotFoundException
 )
 from stdm.security.auth_config import (
@@ -71,7 +75,7 @@ class CmisManager(object):
         self._connected = False
         self._cmis_client = None
         self._default_repo = None
-        self._context_base_folder_name = 'FLT'
+        self._context_base_folder_name = 'FLTS'
         self.temp_folder_name = 'Temp'
 
     @property
@@ -319,38 +323,10 @@ class CmisManager(object):
                 self.temp_folder_name
             )
 
-    def upload_document(self, folder, document_path, binary_read_mode=True):
-        """
-        Uploads a document specified in the given file path to the CMIS
-        folder. Please note that some repositories do not allow uploading
-        to the root folder.
-        :param folder: CMIS folder where the document will be uploaded.
-        :type folder: cmislib.domain.Folder
-        :param document_path: Path in the local system where containing the
-        document to be uploaded to the CMIS directory.
-        :type document_path: str
-        :param binary_read_mode: True to read the document as a binary file
-        or False to use text mode. Default is True.
-        :type binary_read_mode: bool
-        :return: Returns the created document object in the CMIS folder,
-        else None if the document could not be uploaded.
-        :rtype: cmislib.domain.Document
-        """
-        doc = None
-
-        read_mode = 'rb' if binary_read_mode else 'r'
-        with open(document_path, read_mode) as f:
-            doc = folder.createDocument(
-                'Test',
-                contentFile=f
-            )
-
-        return doc
-
 
 class CmisDocumentMapperException(Exception):
     """
-    Errors when managing an entity's supporting documents in an CMIS
+    Errors when managing an entity's supporting documents in a CMIS
     repository.
     """
     pass
@@ -363,7 +339,7 @@ class DocumentTypeFolderMapping(object):
     """
     def __init__(self, **kwargs):
         self.doc_type = kwargs.pop('doc_type', '')
-        self.doc_type_code = kwargs('type_code', '')
+        self.doc_type_code = kwargs.pop('type_code', '')
         self.folder = None
 
 
@@ -375,7 +351,7 @@ class CmisEntityDocumentMapper(object):
     using the entity name.
     """
     def __init__(self, **kwargs):
-        self._cmis_mgr = kwargs.pop('cmis_Manager', None)
+        self._cmis_mgr = kwargs.pop('cmis_manager', None)
         self._doc_model_cls = kwargs.pop('doc_model_cls', None)
         self._entity_name = kwargs.pop('entity_name', '')
         self._entity_folder = None
@@ -410,7 +386,7 @@ class CmisEntityDocumentMapper(object):
         if self._entity_folder:
             return status
 
-        ctx_folder = self._cmis_mgr.context_base_folder()
+        ctx_folder = self._cmis_mgr.context_base_folder
         if not ctx_folder:
             msg = 'Context base folder does not exist.'
             raise CmisDocumentMapperException(msg)
@@ -435,7 +411,7 @@ class CmisEntityDocumentMapper(object):
             raise CmisDocumentMapperException(msg)
 
         # Search repository
-        ctx_folder = self._cmis_mgr.context_base_folder()
+        ctx_folder = self._cmis_mgr.context_base_folder
         if not ctx_folder:
             msg = 'Context base folder does not exist.'
             raise CmisDocumentMapperException(msg)
@@ -497,6 +473,8 @@ class CmisEntityDocumentMapper(object):
 
         # Update document type mapping
         doc_mapper.folder = doc_type_folder
+
+        return doc_type_folder
 
     def mapping(self, name):
         """
@@ -660,13 +638,11 @@ class CmisEntityDocumentMapper(object):
         identify the document type. If doc_type has already been specified
         then the value of this paramter is skipped.
         :type doc_type_code: str
-        :return: Returns True if the document was successfully uploaded to
-        the repository, otherwise False.
-        :rtype: bool
+        :return: Returns the AtomPub document object, else None if it was
+        not successfully created.
+        :rtype: cmislib.domain.Document
         """
-        status = False
-
-        if not doc_type or not doc_type_code:
+        if not doc_type and not doc_type_code:
             msg = 'Please specify the document type name or code.'
             raise CmisDocumentMapperException(msg)
 
@@ -694,15 +670,29 @@ class CmisEntityDocumentMapper(object):
         if not doc_type_folder:
             doc_type_folder = self.create_document_type_folder(doc_type)
 
-        # Determine whether file is text or binary
-        is_binary = True
+        # Get name of the file without the extension
+        fi = QFileInfo(path)
+        doc_name = fi.completeBaseName()
 
-        mime_type = guess_type(path)
+        # Determine whether file is text or binary
+        read_mode = 'rb'
+        mime_type, encoding = guess_type(path)
         text_idx = mime_type.find('text')
         if text_idx != -1:
-            is_binary = False
+            read_mode = 'r'
 
-        return status
+        # TODO; mime_type should be set automatically
+        mime_type = 'application/pdf'
+
+        cmis_doc = None
+        with open(path, read_mode) as f:
+            cmis_doc = doc_type_folder.createDocument(
+                doc_name,
+                contentFile=f,
+                contentType=mime_type
+            )
+
+        return cmis_doc
 
 
 
