@@ -3,7 +3,8 @@
 Name                 : Scheme Lodgement Wizard
 Description          : Dialog for lodging a new scheme.
 Date                 : 01/July/2019
-copyright            : (C) 2019
+copyright            : (C) 2019 by Joseph Kariuki
+email                : joehene@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -15,25 +16,34 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-from time import strftime
-from PyQt4.Qt import Qt
+from os.path import expanduser
+from PyQt4.QtCore import *
 from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
     QMessageBox,
-    QAbstractItemView,
-    QListView
+)
+from cmislib.exceptions import (
+    CmisException
 )
 
 from stdm.data.pg_utils import (
-    export_data,
-    fetch_with_filter,
+    export_data
 )
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
 from ui_scheme_lodgement import Ui_ldg_wzd
 from ..notification import NotificationBar, ERROR
+from stdm.network.cmis_manager import(
+    CmisDocumentMapperException,
+    CmisEntityDocumentMapper,
+    CmisManager
+)
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
+)
 
 
 class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
@@ -54,7 +64,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.curr_p = current_profile()
 
         # Flag for checking if document type has been loaded
-        self._suporting_docs_loaded = False
+        self._supporting_docs_loaded = False
 
         if self.curr_p is None:
             QMessageBox.critical(
@@ -64,12 +74,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
+        # Scheme reference
+        self._scheme = None
+
         # Entities
-        self.entity_obj = self.curr_p.entity('Scheme')
+        self._sch_entity_name = 'Scheme'
+        self.entity_obj = self.curr_p.entity(self._sch_entity_name)
         self.notif_obj = self.curr_p.entity('Notification')
-        self.relv_auth_obj = self.curr_p.entity('Relevant_authority')
-        self.chk_relv_auth_type_obj = self.curr_p.entity('check_lht_relevant_authority')
-        self.chk_region_obj = self.curr_p.entity('check_lht_region')
 
         if self.entity_obj is None:
             QMessageBox.critical(
@@ -79,16 +90,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Entity models
-        self.schm_model = entity_model(self.entity_obj)
+        # Scheme entity model
+        self.schm_model_cls, self._doc_model_cls = entity_model(
+            self.entity_obj,
+            with_supporting_document=True
+        )
+
+        # Notification entity model
         self.notif_model = entity_model(self.notif_obj)
-        self.relv_auth_model = entity_model(self.relv_auth_obj)
-        self.chk_relv_auth_typ_model = entity_model(self.chk_relv_auth_type_obj)
-        self.chk_region_model = entity_model(self.chk_region_obj)
 
-        self.relv_entity_object = self.relv_auth_model()
-
-        if self.schm_model is None:
+        if self.schm_model_cls is None:
             QMessageBox.critical(
                 self,
                 self.tr('Scheme Entity Model'),
@@ -96,28 +107,24 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Intializing mappermixin for saving attribute data
-        MapperMixin.__init__(self, self.schm_model, self.entity_obj)
+        # Initializing mappermixin for saving attribute data
+        MapperMixin.__init__(self, self.schm_model_cls, self.entity_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
 
-        # if self.cbx_region.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
-        # elif self.cbx_relv_auth.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
+        # CMIS interfaces
+        self._cmis_mgr = CmisManager()
+        # Mapper will be set in initialization of 1st page
+        self._cmis_doc_mapper = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
         self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
         self.currentIdChanged.connect(self.on_page_changed)
-        self.cbx_region.currentIndexChanged.connect(
-            self.update_relevant_authority)
-        self.cbx_relv_auth.currentIndexChanged.connect(
-            self.update_relevant_authority)
-
-        self.cbx_relv_auth_name.currentIndexChanged.connect(
-            self.get_scheme_number)
+        self.tbw_documents.browsed.connect(self.on_browsed_document)
+        self.tbw_documents.view_requested.connect(self.on_view_document)
+        self.tbw_documents.remove_requested.connect(self.on_remove_document)
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -125,9 +132,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
-        # Notification details
-        self._notif_status = 2
-        self._notif_content = self.tr("Lodgement of scheme has been completed.")
+        # Scheme number
+        self.scheme_num()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -138,118 +144,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             cbo.addItem(r.value, r.id)
 
     def _populate_lookups(self):
-        """
-        Populate combobox dropdowns with values to be displayed when user
-        clicks the dropdown
-        """
-        relv_auth_type_tbl = 'cb_check_lht_relevant_authority'
-        lro_tbl = 'cb_check_lht_land_rights_office'
-        region_tbl = 'cb_check_lht_region'
-        reg_div_tbl = 'cb_check_lht_reg_division'
-
-        # Check if the tables exists
-        self._populate_combo(self.cbx_relv_auth,
-                             relv_auth_type_tbl)
-        self._populate_combo(self.cbx_lro,
-                             lro_tbl)
-        self._populate_combo(self.cbx_region,
-                             region_tbl)
-        self._populate_combo(self.cbx_reg_div,
-                             reg_div_tbl)
-
-    def update_relevant_authority(self):
-        """
-        Slot for updating the Relevant Authority combobox based on the
-        selections made in the two previous comboboxes
-        """
-        # Clear dropdown elements
-        clr_cbx_auth_name = self.cbx_relv_auth_name.clear()
-        # Get the region ID
-        region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
-        # Get the relevant authority ID
-        ra_id_type = self.cbx_relv_auth.itemData(
-            self.cbx_relv_auth.currentIndex())
-        # Check if region combobox is selected
-        if not region_id and not ra_id_type:
-            return clr_cbx_auth_name
-            # return clr_cbx_auth_name
-        # Check if relevant authority combobox is selected
-        # elif not ra_id_type:
-        #     self.cbx_relv_auth_name.clear()
-        #     return clr_cbx_auth_name
-
-        # Initial clear elements
-        self.cbx_relv_auth_name.clear()
-        # Add an empty itemData
-        self.cbx_relv_auth_name.addItem('')
-
-        # Query object for filtering items on name of relevant authority
-        # combobox based on selected items in region and type
-        res = self.relv_entity_object.queryObject().filter(
-            self.relv_auth_model.region == region_id,
-            self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type).all()
-
-        # Looping through the results to get details
-        for r in res:
-            authority_name = r.name_of_relevant_authority
-            authority_code = r.au_code
-            authority_id = r.id
-            # Add the items to combo
-            self.cbx_relv_auth_name.addItem(authority_name,
-                                            authority_id)
-
-    def get_scheme_number(self):
-        """
-        Slot for updating the scheme number based on selection of name of
-        relevant authority combobox selection
-        """
-        # Clear scheme number
-        clr_cbx_auth_name = self.lnedit_schm_num.clear()
-        # Get the relevant authority name ID
-        relv_auth_name_id = self.cbx_relv_auth_name.itemData(
-            self.cbx_relv_auth_name.currentIndex())
-        # Get the region ID
-        region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
-        # Get the relevant authority ID
-        ra_id_type = self.cbx_relv_auth.itemData(
-            self.cbx_relv_auth.currentIndex())
-
-        # Check if combo for name is selected
-        if not relv_auth_name_id:
-            # Clear elements
-            return clr_cbx_auth_name
-
-        # Query object for filtering items based on selected items
-        res = self.relv_entity_object.queryObject().filter(
-            self.relv_auth_model.region == region_id,
-            self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type).all()
-
-        # Create empty list of authority codes
-        auth_codes = []
-
-        # Looping through the results to get details
-        for r in res:
-            authority_code = r.au_code
-            authority_id = r.id
-            seq_number = r.last_value
-            # Add the items to lineEdit
-            auth_codes.append(authority_code)
-
-        # Filter the based on selected ID
-        s = self.cbx_relv_auth_name.currentIndex()
-        self.lnedit_schm_num.setText(auth_codes[s - 1])
-
-    def update_scheme_number(self):
-        """
-        Check for sequence number in the database and perform an incremenet
-        """
-        pass
+        # Load lookup columns
+        self._populate_combo(self.cbx_relv_auth, 'cb_check_lht_relevant_authority')
+        self._populate_combo(self.cbx_lro, 'cb_check_lht_land_rights_office')
+        self._populate_combo(self.cbx_region, 'cb_check_lht_region')
+        self._populate_combo(self.cbx_reg_div, 'cb_check_lht_reg_division')
 
     def page_title(self):
         """
-        Set page title and subtitle instructions
+        set page title and subtitle instructions
         """
         # Set page titles
         self.wizardPage1.setTitle('New Land Hold Scheme')
@@ -258,12 +161,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.wizardPage_4.setTitle('Summary')
 
         # Set page subtitles
-        self.wizardPage1.setSubTitle(self.tr('Please enter scheme information'
-                                             ' below. '
+        self.wizardPage1.setSubTitle(self.tr('Please enter scheme information below. '
                                              'Note that the scheme number'
-                                             'will be automatically generated'
-                                             )
-                                     )
+                                             'will be automatically generated'))
         self.wizardPage2.setSubTitle(self.tr('Please browse for list of holde'
                                              'rs file'))
         self.wizardPage_4.setSubTitle(self.tr(
@@ -280,28 +180,82 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                                     str(self._num_pages))
         self.setWindowTitle(win_title)
 
+        # First page
+        # Set entity document mapper if connection to CMIS is successful
+        if idx == 0:
+            conn_status = self._cmis_mgr.connect()
+            if not conn_status:
+                msg = self.tr(
+                    'Failed to connect to the CMIS Service.\nPlease check the '
+                    'URL and login credentials for the CMIS service.'
+                )
+                QMessageBox.critical(
+                    self,
+                    self.tr(
+                        'CMIS Server Error'
+                    ),
+                    msg
+                )
+
+            if conn_status:
+                if not self._cmis_doc_mapper:
+                    try:
+                        self._cmis_doc_mapper = CmisEntityDocumentMapper(
+                            cmis_manager=self._cmis_mgr,
+                            doc_model_cls=self._doc_model_cls,
+                            entity_name=self._sch_entity_name
+                        )
+
+                        # Set the CMIS document mapper in document widget
+                        self.tbw_documents.cmis_entity_doc_mapper = \
+                            self._cmis_doc_mapper
+                    except CmisDocumentMapperException as cm_ex:
+                        QMessageBox.critical(
+                            self,
+                            self.tr('CMIS Server Error'),
+                            str(cm_ex)
+                        )
+                    except CmisException as c_ex:
+                        QMessageBox.critical(
+                            self,
+                            self.tr('CMIS Server Error'),
+                            c_ex.status
+                        )
+
         # Load scheme supporting documents
         if idx == 2:
             self._load_scheme_document_types()
+            # Disable widget if doc mapper could not be initialized
+            if not self._cmis_doc_mapper:
+                self.tbw_documents.setEnabled(False)
+
+        # Load scheme object to the summary widget
+        if idx == 3:
+            print self._scheme
+            self.tr_summary.set_scheme(self._scheme)
 
     def browse_holders_file(self):
         """
         Browse for the holders file in the file directory
         """
-        holders_file = QFileDialog.getOpenFileName(self,
-                                                   "Browse Holder's File",
-                                                   "~/",
-                                                   "CSV Files (*.csv);;"
-                                                   "Excel Files (*.xls *xlsx)"
-                                                   )
+        last_doc_path = last_document_path()
+        if not last_doc_path:
+            last_doc_path = '~/'
+
+        holders_file = QFileDialog.getOpenFileName(
+            self,
+            'Browse Holders File',
+            last_doc_path,
+            'Excel Files (*.xls *xlsx)'
+        )
         if holders_file:
+            set_last_document_path(holders_file)
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
     def _load_scheme_document_types(self):
         """
-        This is used in uploading and viewing of the scheme supporting
-        documents
+        This is used in uploading and viewing of the scheme supporting documents
         """
         doc_type_table = 'cb_check_scheme_document_type'
 
@@ -321,7 +275,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         # No need of fetching the documents again if already done before
-        if self._suporting_docs_loaded:
+        if self._supporting_docs_loaded:
             return
 
         doc_res = export_data('cb_check_scheme_document_type')
@@ -331,7 +285,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             doc_type = d.value
             self.tbw_documents.add_document_type(doc_type)
 
-        self._suporting_docs_loaded = True
+            # Also add the types to the CMIS doc mapper
+            self._cmis_doc_mapper.add_document_type(doc_type)
+
+        self._supporting_docs_loaded = True
 
     def upload_multiple_files(self):
         """
@@ -340,6 +297,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         all_files_dlg = QFileDialog.getOpenFileNames(self,
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
+
+    def scheme_num(self):
+        """
+        Generate random scheme number
+        """
+        # Use random and string methods in generating scheme number
+        rel_a = self.tr("RA.")
+        letters = random_string(6)
+        following_num = str(random_number())
+        self.lnedit_schm_num.setText(rel_a + letters + '.' + following_num)
 
     def register_col_widgets(self):
         """
@@ -367,19 +334,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Establishment Date'
         )
         self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority'
+        )
+        self.addMapping(
             'region',
             self.cbx_region,
             pseudoname='Region'
-        )
-        self.addMapping(
-            'relevant_authority',
-            self.cbx_relv_auth,
-            pseudoname='Relevant Authority Type'
-        )
-        self.addMapping(
-            'relevant_authority_name',
-            self.cbx_relv_auth_name,
-            pseudoname='Relevant Authority Name'
         )
         self.addMapping(
             'township',
@@ -397,48 +359,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Area'
         )
 
-    def create_notification(self):
-        """
-        Populate notification table
-        """
-        # Get the table columns and add mapping
-        self.addMapping(
-            'status',
-            self._notif_status,
-            pseudoname='status'
-        )
-        self.addMapping(
-            'source_user_id',
-            self.source_user_id,
-            pseudoname='source user'
-        )
-        self.addMapping(
-            'target_use_id',
-            self.target_user_id,
-            pseudoname='target user'
-        )
-        self.addMapping(
-            'content',
-            self._notif_content,
-            pseudoname='content'
-        )
-        self.addMapping(
-            'timestamp',
-            str(strftime("%Y-%m-%d %H:%M:%S")),
-            pseudoname='timestamp'
-        )
-
     def validateCurrentPage(self):
         current_id = self.currentId()
         ret_status = False
         self.notif_bar.clear()
 
+        # Scheme attribute information
         if current_id == 0:
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
             if len(errors) == 0:
                 ret_status = True
 
+        # Holders upload page
         elif current_id == 1:
             # TODO --- Use RegExp validator
             if not self.lnEdit_hld_path.text():
@@ -450,12 +383,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
             else:
                 ret_status = True
+
+        # Supporting documents page
         elif current_id == 2:
+            # Set scheme object
+            self.submit(collect_model=True)
+            self._scheme = self.model()
+
             # Check if all documents have been uploaded
-            self.populate_summary()
             return True
+
+        # Summary page
         elif current_id == 3:
-            # This is the last page
             try:
                 self.save_scheme()
                 # Add other functionality
@@ -470,43 +409,90 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         return ret_status
 
-    def populate_summary(self):
+    def _source_doc_uploaded(self, doc_info):
+        # Checks if the source document has been uploaded
+        if not doc_info.source_filename:
+            QMessageBox.warning(
+                self,
+                self.tr('Source Document Missing'),
+                u'{0} {1}'.format(
+                    doc_info.document_type,
+                    self.tr('document has not yet been uploaded.')
+                )
+            )
+            return False
+
+        return True
+
+    def on_browsed_document(self, doc_info):
         """
-        Populating the scheme summary widget with values from the user input
+        Slot raised after the user has accepted or rejected the file dialog
+        for browsing a source document. The 'source_filename' attribute is
+        empty if the user has not selected any file.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
         """
-        # Scheme
-        self.tr_summary.scm_num.setText(1, self.lnedit_schm_num.text()
-                                        )
-        self.tr_summary.scm_name.setText(1,
-                                         self.lnedit_schm_nam.text()
-                                         )
-        self.tr_summary.scm_date_apprv.setText(1,
-                                               self.date_apprv.text()
-                                               )
-        self.tr_summary.scm_date_est.setText(1,
-                                             self.date_establish.text()
-                                             )
-        self.tr_summary.scm_region.setText(1, self.cbx_region.currentText()
-                                           )
-        self.tr_summary.scm_ra_type.setText(1,
-                                            self.cbx_relv_auth.currentText()
-                                            )
-        self.tr_summary.scm_ra_name.setText(
-            1,
-            self.cbx_relv_auth_name.currentText()
-        )
-        self.tr_summary.scm_lro.setText(1, self.cbx_lro.currentText()
-                                        )
-        self.tr_summary.scm_township.setText(1, self.lnedit_twnshp.text()
-                                             )
-        self.tr_summary.scm_reg_div.setText(1, self.cbx_reg_div.currentText()
-                                            )
-        self.tr_summary.scm_blk_area.setText(1,
-                                             self.dbl_spinbx_block_area.text()
-                                             )
+        if not doc_info.source_filename:
+            return
+
+    def on_view_document(self, doc_info):
+        """
+        Slot raised on clicking the View button in the document page. If
+        the document has been uploaded, it loads a widget showing its
+        contents.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
+        """
+        if not self._source_doc_uploaded(doc_info):
+            return
+
+    def on_remove_document(self, doc_info):
+        """
+        Slot raised on clicking the Remove button in the document page. It
+        deletes the document from the repository.
+        :param doc_info: Object containing document information.
+        :type doc_info: DocumentRowInfo
+        """
+        if not self._source_doc_uploaded(doc_info):
+            return
 
     def save_scheme(self):
         """
         Save scheme information to the database
         """
         self.submit()
+
+    def create_notification(self):
+        """
+        Populate notification table
+        """
+        # Get the table columns and add mapping
+        self.addMapping('status', '2')
+        self.addMapping('source_user_id', 'src_usr_id')
+        self.addMapping('target_use_id', 'trgt_usr_id')
+        self.addMapping('content', 'notification')
+        self.addMapping('timestamp', QDateTime.currentDateTime(self).toString())
+
+
+def random_string(stringlength):
+    """
+    Generate random string of characters
+    :param stringLength:
+    :return:Str
+    """
+    from string import ascii_uppercase
+    from random import choice
+    letters = ascii_uppercase
+    return ''.join(choice(letters) for i in range(stringlength))
+
+
+def random_number():
+    """
+    Generate random string of characters
+    """
+    from random import (
+        seed,
+        randint)
+    for i in range(1):
+        value = randint(999, 9999)
+        return value

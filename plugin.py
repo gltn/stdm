@@ -222,9 +222,6 @@ class STDMQGISLoader(object):
         self.initToolbar()
         self.initMenuItems()
 
-        # Show login dialog on startup
-        # self.login()
-
     def _menu_items(self):
         # Create menu and menu items on the menu bar
         self.stdmMenu = QMenu()
@@ -850,26 +847,24 @@ class STDMQGISLoader(object):
                                                self.stdmInitToolbar, self.logoutAct)
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(),
                                                self.stdmMenu, self.logoutAct)
-        # Connect to the content added signal
-        # self.toolbarLoader.contentAdded.connect(self.onContentAdded)
 
-        # #Define containers for grouping actions
-        # adminBtn = QToolButton()
-        # adminObjName = QApplication.translate("ToolbarAdminSettings","Admin Settings")
-        # #Required by module loader for those widgets that need to be inserted into the container
-        # adminBtn.setObjectName(adminObjName)
-        # adminBtn.setToolTip(adminObjName)
-        # adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
-        # adminBtn.setPopupMode(QToolButton.InstantPopup)
-        #
-        # adminMenu = QMenu(adminBtn)
-        # adminBtn.setMenu(adminMenu)
-        #
-        # #Settings menu container in STDM's QGIS menu
-        # stdmAdminMenu = QMenu(self.stdmMenu)
-        # stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
-        # stdmAdminMenu.setObjectName("STDMAdminSettings")
-        # stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
+        #Define containers for grouping actions
+        adminBtn = QToolButton()
+        adminObjName = QApplication.translate("ToolbarAdminSettings","Admin Settings")
+        #Required by module loader for those widgets that need to be inserted into the container
+        adminBtn.setObjectName(adminObjName)
+        adminBtn.setToolTip(adminObjName)
+        adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        adminBtn.setPopupMode(QToolButton.InstantPopup)
+
+        adminMenu = QMenu(adminBtn)
+        adminBtn.setMenu(adminMenu)
+
+        #Settings menu container in STDM's QGIS menu
+        stdmAdminMenu = QMenu(self.stdmMenu)
+        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        stdmAdminMenu.setObjectName("STDMAdminSettings")
+        stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
 
 
         # Create content menu container
@@ -1033,9 +1028,9 @@ class STDMQGISLoader(object):
         #                         QApplication.translate("ManageUsersToolbarAction", "Manage Users-Roles"),
         #                         self.iface.mainWindow())
         #
-        # self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
-        #                            QApplication.translate("OptionsToolbarAction", "Options"),
-        #                            self.iface.mainWindow())
+        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+                                   QApplication.translate("OptionsToolbarAction", "Options"),
+                                   self.iface.mainWindow())
 
         # self.manageAdminUnitsAct = QAction(
         #     QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"),
@@ -1203,7 +1198,7 @@ class STDMQGISLoader(object):
         # Connect the slots for the actions above
         # self.contentAuthAct.triggered.connect(self.contentAuthorization)
         # self.usersAct.triggered.connect(self.manageAccounts)
-        # self.options_act.triggered.connect(self.on_sys_options)
+        self.options_act.triggered.connect(self.on_sys_options)
         # self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         # self.exportAct.triggered.connect(self.onExportData)
         # self.importAct.triggered.connect(self.onImportData)
@@ -1224,7 +1219,6 @@ class STDMQGISLoader(object):
         # self.viewSTRAct.triggered.connect(self.onViewSTR)
 
         # flts
-
         self.schemeLodgementAct.triggered.connect(self.lodge_scheme)
         self.schemeEstablishmentAct.triggered.connect(self.establish_scheme)
         self.firstExaminationAct.triggered.connect(self.first_examination)
@@ -1245,8 +1239,8 @@ class STDMQGISLoader(object):
         # userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
         # userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
         #
-        # options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
-        # options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
+        options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
+        options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
 
         # adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         # adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -1282,7 +1276,6 @@ class STDMQGISLoader(object):
         # mobileFormImportCnt.code = "1394547d-fb6c-4f6e-80d2-53407cf7b7d4"
 
         # flts
-
         schemeLodgementCnt = ContentGroup.contentItemFromQAction(self.schemeLodgementAct)
         schemeLodgementCnt.code = "97EB2313-AA9C-4478-83F8-896E30E8FA78"
 
@@ -1357,7 +1350,6 @@ class STDMQGISLoader(object):
                 self.moduleContentGroups.append(moduleCntGroup)
 
         # Create content groups and add items
-
         # self.contentAuthCntGroup = ContentGroup(username)
         # self.contentAuthCntGroup.addContentItem(contentAuthCnt)
         # self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
@@ -1368,10 +1360,10 @@ class STDMQGISLoader(object):
         # self.userRoleCntGroup.setContainerItem(self.usersAct)
         # self.userRoleCntGroup.register()
         #
-        # self.options_content_group = ContentGroup(username)
-        # self.options_content_group.addContentItem(options_cnt)
-        # self.options_content_group.setContainerItem(self.options_act)
-        # self.options_content_group.register()
+        self.options_content_group = ContentGroup(username)
+        self.options_content_group.addContentItem(options_cnt)
+        self.options_content_group.setContainerItem(self.options_act)
+        self.options_content_group.register()
 
         # Group admin settings content groups
         # adminSettingsCntGroups = []
@@ -1513,9 +1505,6 @@ class STDMQGISLoader(object):
         #
         # self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         # self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
-        # self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
-        #                                                            adminBtn])
-
         # self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
         #
         # self.menubarLoader.addContent(self._action_separator())
@@ -1584,6 +1573,11 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.fltsNotificationCntGroup)
 
+        self.toolbarLoader.addContent(
+            self.options_content_group,
+            [adminMenu, adminBtn]
+        )
+
         # menubar items
         self.menubarLoader.addContents(schemeSettingsCntGroups, [lhtAdminMenu, lhtAdminMenu])
 
@@ -1600,11 +1594,6 @@ class STDMQGISLoader(object):
         # Load all the content in the container
         self.toolbarLoader.loadContent()
         self.menubarLoader.loadContent()
-
-        # Add profiles_combobox in front of the configuration wizard
-        # self.stdmInitToolbar.insertWidget(
-        #     self.wzdAct, self.profiles_combobox
-        # )
 
         # self.create_spatial_unit_manager()
 
@@ -1833,12 +1822,6 @@ class STDMQGISLoader(object):
         )
         opt_dlg.buttonBox.accepted.connect(
             lambda: self.reload_plugin(None)
-        )
-
-        opt_dlg.upgradeButton.clicked.connect(
-            lambda: self.load_configuration_from_file(
-                opt_dlg, True
-            )
         )
 
         opt_dlg.exec_()
@@ -2234,7 +2217,7 @@ class STDMQGISLoader(object):
             # self.stdmInitToolbar.removeAction(self.feature_details_act)
             # self.stdmInitToolbar.removeAction(self.contentAuthAct)
             # self.stdmInitToolbar.removeAction(self.usersAct)
-            # self.stdmInitToolbar.removeAction(self.options_act)
+            self.stdmInitToolbar.removeAction(self.options_act)
             # self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
             # self.stdmInitToolbar.removeAction(self.importAct)
             # self.stdmInitToolbar.removeAction(self.exportAct)
@@ -2398,14 +2381,6 @@ class STDMQGISLoader(object):
                 self.spatialLayerMangerDockWidget.hide()
             else:
                 self.spatialLayerMangerDockWidget.show()
-
-    def config_loader(self):
-        """
-        Method to provide access to config elements through the handler class
-        :return:class: config handler class
-        """
-        handler = ConfigTableReader()
-        return handler
 
     def mobile_form_generator(self):
         """
