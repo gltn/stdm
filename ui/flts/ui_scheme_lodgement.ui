@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>702</width>
-    <height>424</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,6 +48,13 @@
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vlNotification">
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+     </layout>
+    </item>
     <item row="1" column="0" colspan="2">
      <widget class="QLabel" name="label_desc">
       <property name="sizePolicy">
@@ -62,37 +69,67 @@
      </widget>
     </item>
     <item row="2" column="0">
+     <widget class="QLabel" name="label_region">
+      <property name="text">
+       <string>Region</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="cbx_region"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_rel_auth_type">
+      <property name="text">
+       <string>Type of Relevant Authority</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth"/>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_rel_auth_name">
+      <property name="text">
+       <string>Name of Relevant Authority</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth_name"/>
+    </item>
+    <item row="5" column="0">
      <widget class="QLabel" name="label_schm_num">
       <property name="text">
        <string>Scheme Number</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="5" column="1">
      <widget class="QLineEdit" name="lnedit_schm_num">
       <property name="readOnly">
        <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
+    <item row="6" column="0">
      <widget class="QLabel" name="label_schm_name">
       <property name="text">
        <string>Scheme Name</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="6" column="1">
      <widget class="QLineEdit" name="lnedit_schm_nam"/>
     </item>
-    <item row="4" column="0">
+    <item row="7" column="0">
      <widget class="QLabel" name="label_date_apprv">
       <property name="text">
        <string>Date of Approval</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="7" column="1">
      <widget class="QDateEdit" name="date_apprv">
       <property name="minimumDate">
        <date>
@@ -106,14 +143,14 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0">
+    <item row="8" column="0">
      <widget class="QLabel" name="label_date_establish">
       <property name="text">
        <string>Date of Esablishment</string>
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
+    <item row="8" column="1">
      <widget class="QDateEdit" name="date_establish">
       <property name="minimumDate">
        <date>
@@ -126,36 +163,6 @@
        <bool>true</bool>
       </property>
      </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_region">
-      <property name="text">
-       <string>Region</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QComboBox" name="cbx_region"/>
-    </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_rel_auth_type">
-      <property name="text">
-       <string>Type of Relevant Authority</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QComboBox" name="cbx_relv_auth"/>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_rel_auth_name">
-      <property name="text">
-       <string>Name of Relevant Authority</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="1">
-     <widget class="QComboBox" name="cbx_relv_auth_name"/>
     </item>
     <item row="9" column="0">
      <widget class="QLabel" name="label_lro">
@@ -203,13 +210,6 @@
        <double>10000000.000000000000000</double>
       </property>
      </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlNotification">
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-     </layout>
     </item>
    </layout>
   </widget>
@@ -387,7 +387,11 @@
      </widget>
     </item>
     <item>
-     <widget class="SchemeSummaryWidget" name="tr_summary"/>
+     <widget class="SchemeSummaryWidget" name="tr_summary">
+      <property name="uniformRowHeights">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

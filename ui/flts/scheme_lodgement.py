@@ -3,8 +3,7 @@
 Name                 : Scheme Lodgement Wizard
 Description          : Dialog for lodging a new scheme.
 Date                 : 01/July/2019
-copyright            : (C) 2019 by Joseph Kariuki
-email                : joehene@gmail.com
+copyright            : (C) 2019
  ***************************************************************************/
 
 /***************************************************************************
@@ -22,12 +21,13 @@ from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
     QMessageBox,
-    QTreeWidget,
-    QTreeView,
-    QTreeWidgetItem)
+    QAbstractItemView,
+    QListView
+)
 
 from stdm.data.pg_utils import (
-    export_data
+    export_data,
+    fetch_with_filter,
 )
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
@@ -67,6 +67,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Entities
         self.entity_obj = self.curr_p.entity('Scheme')
         self.notif_obj = self.curr_p.entity('Notification')
+        self.relv_auth_obj = self.curr_p.entity('Relevant_authority')
+        self.chk_relv_auth_type_obj = self.curr_p.entity('check_lht_relevant_authority')
+        self.chk_region_obj = self.curr_p.entity('check_lht_region')
 
         if self.entity_obj is None:
             QMessageBox.critical(
@@ -76,11 +79,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Scheme entity model
+        # Entity models
         self.schm_model = entity_model(self.entity_obj)
-
-        # Notification entity model
         self.notif_model = entity_model(self.notif_obj)
+        self.relv_auth_model = entity_model(self.relv_auth_obj)
+        self.chk_relv_auth_typ_model = entity_model(self.chk_relv_auth_type_obj)
+        self.chk_region_model = entity_model(self.chk_region_obj)
+
+        self.relv_entity_object = self.relv_auth_model()
 
         if self.schm_model is None:
             QMessageBox.critical(
@@ -96,10 +102,22 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
 
+        # if self.cbx_region.currentIndex() == 0:
+        #     self.cbx_relv_auth_name.setCurrentIndex(0)
+        # elif self.cbx_relv_auth.currentIndex() == 0:
+        #     self.cbx_relv_auth_name.setCurrentIndex(0)
+
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
         self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
         self.currentIdChanged.connect(self.on_page_changed)
+        self.cbx_region.currentIndexChanged.connect(
+            self.update_relevant_authority)
+        self.cbx_relv_auth.currentIndexChanged.connect(
+            self.update_relevant_authority)
+
+        self.cbx_relv_auth_name.currentIndexChanged.connect(
+            self.get_scheme_number)
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -107,14 +125,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
-        # Scheme number
-        # self.scheme_num()
-
         # Notification details
         self._notif_status = 2
         self._notif_content = self.tr("Lodgement of scheme has been completed.")
-
-        self._filter_combo()
 
     def _populate_combo(self, cbo, lookup_name):
         res = export_data(lookup_name)
@@ -125,24 +138,118 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             cbo.addItem(r.value, r.id)
 
     def _populate_lookups(self):
-        # Load lookup columns
-        self._populate_combo(self.cbx_relv_auth,
-                             'cb_check_lht_relevant_authority')
-        self._populate_combo(self.cbx_relv_auth_name,
-                             'cb_check_lht_relevant_authority_name')
-        self._populate_combo(self.cbx_lro,
-                             'cb_check_lht_land_rights_office')
-        self._populate_combo(self.cbx_region,
-                             'cb_check_lht_region')
-        self._populate_combo(self.cbx_reg_div,
-                             'cb_check_lht_reg_division')
+        """
+        Populate combobox dropdowns with values to be displayed when user
+        clicks the dropdown
+        """
+        relv_auth_type_tbl = 'cb_check_lht_relevant_authority'
+        lro_tbl = 'cb_check_lht_land_rights_office'
+        region_tbl = 'cb_check_lht_region'
+        reg_div_tbl = 'cb_check_lht_reg_division'
 
-    def _filter_combo(self):
-        model = self.cbx_region.model()
+        # Check if the tables exists
+        self._populate_combo(self.cbx_relv_auth,
+                             relv_auth_type_tbl)
+        self._populate_combo(self.cbx_lro,
+                             lro_tbl)
+        self._populate_combo(self.cbx_region,
+                             region_tbl)
+        self._populate_combo(self.cbx_reg_div,
+                             reg_div_tbl)
+
+    def update_relevant_authority(self):
+        """
+        Slot for updating the Relevant Authority combobox based on the
+        selections made in the two previous comboboxes
+        """
+        # Clear dropdown elements
+        clr_cbx_auth_name = self.cbx_relv_auth_name.clear()
+        # Get the region ID
+        region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
+        # Get the relevant authority ID
+        ra_id_type = self.cbx_relv_auth.itemData(
+            self.cbx_relv_auth.currentIndex())
+        # Check if region combobox is selected
+        if not region_id and not ra_id_type:
+            return clr_cbx_auth_name
+            # return clr_cbx_auth_name
+        # Check if relevant authority combobox is selected
+        # elif not ra_id_type:
+        #     self.cbx_relv_auth_name.clear()
+        #     return clr_cbx_auth_name
+
+        # Initial clear elements
+        self.cbx_relv_auth_name.clear()
+        # Add an empty itemData
+        self.cbx_relv_auth_name.addItem('')
+
+        # Query object for filtering items on name of relevant authority
+        # combobox based on selected items in region and type
+        res = self.relv_entity_object.queryObject().filter(
+            self.relv_auth_model.region == region_id,
+            self.relv_auth_model.type_of_relevant_authority ==
+            ra_id_type).all()
+
+        # Looping through the results to get details
+        for r in res:
+            authority_name = r.name_of_relevant_authority
+            authority_code = r.au_code
+            authority_id = r.id
+            # Add the items to combo
+            self.cbx_relv_auth_name.addItem(authority_name,
+                                            authority_id)
+
+    def get_scheme_number(self):
+        """
+        Slot for updating the scheme number based on selection of name of
+        relevant authority combobox selection
+        """
+        # Clear scheme number
+        clr_cbx_auth_name = self.lnedit_schm_num.clear()
+        # Get the relevant authority name ID
+        relv_auth_name_id = self.cbx_relv_auth_name.itemData(
+            self.cbx_relv_auth_name.currentIndex())
+        # Get the region ID
+        region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
+        # Get the relevant authority ID
+        ra_id_type = self.cbx_relv_auth.itemData(
+            self.cbx_relv_auth.currentIndex())
+
+        # Check if combo for name is selected
+        if not relv_auth_name_id:
+            # Clear elements
+            return clr_cbx_auth_name
+
+        # Query object for filtering items based on selected items
+        res = self.relv_entity_object.queryObject().filter(
+            self.relv_auth_model.region == region_id,
+            self.relv_auth_model.type_of_relevant_authority ==
+            ra_id_type).all()
+
+        # Create empty list of authority codes
+        auth_codes = []
+
+        # Looping through the results to get details
+        for r in res:
+            authority_code = r.au_code
+            authority_id = r.id
+            seq_number = r.last_value
+            # Add the items to lineEdit
+            auth_codes.append(authority_code)
+
+        # Filter the based on selected ID
+        s = self.cbx_relv_auth_name.currentIndex()
+        self.lnedit_schm_num.setText(auth_codes[s - 1])
+
+    def update_scheme_number(self):
+        """
+        Check for sequence number in the database and perform an incremenet
+        """
+        pass
 
     def page_title(self):
         """
-        set page title and subtitle instructions
+        Set page title and subtitle instructions
         """
         # Set page titles
         self.wizardPage1.setTitle('New Land Hold Scheme')
@@ -233,16 +340,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         all_files_dlg = QFileDialog.getOpenFileNames(self,
                                                      "Open Holder's File",
                                                      '~/', " *.pdf")
-
-    # def scheme_num(self):
-    #     """
-    #     Generate random scheme number
-    #     """
-    #     # Use random and string methods in generating scheme number
-    #     rel_a = self.tr("RA.")
-    #     letters = random_string(6)
-    #     following_num = str(random_number())
-    #     self.lnedit_schm_num.setText(rel_a + letters + '.' + following_num)
 
     def register_col_widgets(self):
         """
@@ -377,60 +474,35 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         Populating the scheme summary widget with values from the user input
         """
-        self.tr_summary.scm_num.setText(0, '{0} {1}'.format(
-            self.tr(self.label_schm_num.text()),
-            ': ' + self.lnedit_schm_num.text()
-        )
+        # Scheme
+        self.tr_summary.scm_num.setText(1, self.lnedit_schm_num.text()
                                         )
-        self.tr_summary.scm_name.setText(0, '{0} {1}'.format(
-            self.tr(self.label_schm_name.text()),
-            ': ' + self.lnedit_schm_nam.text()
-        )
+        self.tr_summary.scm_name.setText(1,
+                                         self.lnedit_schm_nam.text()
                                          )
-        self.tr_summary.scm_date_apprv.setText(0, '{0} {1}'.format(
-            self.tr(self.label_date_apprv.text()),
-            ': ' + self.date_apprv.text()
-        )
+        self.tr_summary.scm_date_apprv.setText(1,
+                                               self.date_apprv.text()
                                                )
-        self.tr_summary.scm_date_est.setText(0, '{0} {1}'.format(
-            self.tr(self.label_date_establish.text()),
-            ': ' + self.date_establish.text()
-        )
+        self.tr_summary.scm_date_est.setText(1,
+                                             self.date_establish.text()
                                              )
-        self.tr_summary.scm_region.setText(0, '{0} {1}'.format(
-            self.tr(self.label_region.text()),
-            ': ' + self.cbx_region.currentText()
-        )
+        self.tr_summary.scm_region.setText(1, self.cbx_region.currentText()
                                            )
-        self.tr_summary.scm_ra_type.setText(0, '{0} {1}'.format(
-            self.tr(self.label_rel_auth_type.text()),
-            ': ' + self.cbx_relv_auth.currentText()
-        )
+        self.tr_summary.scm_ra_type.setText(1,
+                                            self.cbx_relv_auth.currentText()
                                             )
-        self.tr_summary.scm_ra_name.setText(0, '{0} {1}'.format(
-            self.tr(self.label_rel_auth_name.text()),
-            ': ' + self.cbx_relv_auth_name.currentText()
+        self.tr_summary.scm_ra_name.setText(
+            1,
+            self.cbx_relv_auth_name.currentText()
         )
-                                            )
-        self.tr_summary.scm_lro.setText(0, '{0} {1}'.format(
-            self.tr(self.label_lro.text()),
-            ': ' + self.cbx_lro.currentText()
-        )
+        self.tr_summary.scm_lro.setText(1, self.cbx_lro.currentText()
                                         )
-        self.tr_summary.scm_township.setText(0, '{0} {1}'.format(
-            self.tr(self.label_twn_name.text()),
-            ': ' + self.lnedit_twnshp.text()
-        )
+        self.tr_summary.scm_township.setText(1, self.lnedit_twnshp.text()
                                              )
-        self.tr_summary.scm_reg_div.setText(0, '{0} {1}'.format(
-            self.tr(self.label_reg_div.text()),
-            ': ' + self.cbx_reg_div.currentText()
-        )
+        self.tr_summary.scm_reg_div.setText(1, self.cbx_reg_div.currentText()
                                             )
-        self.tr_summary.scm_blk_area.setText(0, '{0} {1}'.format(
-            self.tr(self.label_blck_area.text()),
-            ': ' + self.dbl_spinbx_block_area.text()
-        )
+        self.tr_summary.scm_blk_area.setText(1,
+                                             self.dbl_spinbx_block_area.text()
                                              )
 
     def save_scheme(self):
@@ -438,31 +510,3 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Save scheme information to the database
         """
         self.submit()
-
-    def on_change_relevant_authority(self):
-        """
-        Clear the line edit first on change of relevant authority
-        """
-
-# def random_string(stringlength):
-#     """
-#     Generate random string of characters
-#     :param stringlength:
-#     :return:Str
-#     """
-#     from string import ascii_uppercase
-#     from random import choice
-#     letters = ascii_uppercase
-#     return ''.join(choice(letters) for i in range(stringlength))
-#
-#
-# def random_number():
-#     """
-#     Generate random string of characters
-#     """
-#     from random import (
-#         seed,
-#         randint)
-#     for i in range(1):
-#         value = randint(999, 9999)
-#         return value
