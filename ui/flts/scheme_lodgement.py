@@ -98,14 +98,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Intializing mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
+        MapperMixin.__init__(self, self.relv_auth_model, self.relv_auth_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
-
-        # if self.cbx_region.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
-        # elif self.cbx_relv_auth.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
@@ -173,10 +169,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not region_id and not ra_id_type:
             return clr_cbx_auth_name
             # return clr_cbx_auth_name
-        # Check if relevant authority combobox is selected
-        # elif not ra_id_type:
-        #     self.cbx_relv_auth_name.clear()
-        #     return clr_cbx_auth_name
 
         # Initial clear elements
         self.cbx_relv_auth_name.clear()
@@ -219,6 +211,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not relv_auth_name_id:
             # Clear elements
             return clr_cbx_auth_name
+        elif not region_id:
+            return clr_cbx_auth_name
 
         # Query object for filtering items based on selected items
         res = self.relv_entity_object.queryObject().filter(
@@ -228,6 +222,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Create empty list of authority codes
         auth_codes = []
+        global seq_number
 
         # Looping through the results to get details
         for r in res:
@@ -241,11 +236,23 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         s = self.cbx_relv_auth_name.currentIndex()
         self.lnedit_schm_num.setText(auth_codes[s - 1])
 
-    def update_scheme_number(self):
-        """
-        Check for sequence number in the database and perform an incremenet
-        """
-        pass
+        # Check if number exists in the column
+        if seq_number is None:
+            seq_number = 1
+            # Get the added code
+            schm_code = self.lnedit_schm_num.text()
+            # Format and concatenate code
+            m = str(seq_number/100.0000)
+            n = m[1:]
+            schm_full_code = schm_code + n
+            # Show the concatenated code
+            self.lnedit_schm_num.setText(schm_full_code)
+        elif seq_number is not None:
+            seq_number = +1
+            m = str(seq_number / 100.0000)
+            n = m[1:]
+            schm_full_code = self.lnedit_schm_num.text() + n
+            self.lnedit_schm_num.setText(schm_full_code)
 
     def page_title(self):
         """
