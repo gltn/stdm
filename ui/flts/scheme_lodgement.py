@@ -96,16 +96,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Intializing mappermixin for saving attribute data
+        # Initializing mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.entity_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
-
-        # if self.cbx_region.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
-        # elif self.cbx_relv_auth.currentIndex() == 0:
-        #     self.cbx_relv_auth_name.setCurrentIndex(0)
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
@@ -117,7 +112,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.update_relevant_authority)
 
         self.cbx_relv_auth_name.currentIndexChanged.connect(
-            self.get_scheme_number)
+            self.on_ra_name_changed)
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -168,18 +163,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
         # Get the relevant authority ID
         ra_id_type = self.cbx_relv_auth.itemData(
-            self.cbx_relv_auth.currentIndex())
+            self.cbx_relv_auth.currentIndex()
+        )
+
         # Check if region combobox is selected
         if not region_id and not ra_id_type:
-            return clr_cbx_auth_name
-            # return clr_cbx_auth_name
-        # Check if relevant authority combobox is selected
-        # elif not ra_id_type:
-        #     self.cbx_relv_auth_name.clear()
-        #     return clr_cbx_auth_name
+            return
 
         # Initial clear elements
         self.cbx_relv_auth_name.clear()
+
         # Add an empty itemData
         self.cbx_relv_auth_name.addItem('')
 
@@ -188,58 +181,49 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         res = self.relv_entity_object.queryObject().filter(
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type).all()
+            ra_id_type
+        ).all()
 
         # Looping through the results to get details
         for r in res:
             authority_name = r.name_of_relevant_authority
-            authority_code = r.au_code
             authority_id = r.id
-            # Add the items to combo
-            self.cbx_relv_auth_name.addItem(authority_name,
-                                            authority_id)
+            l_value = r.last_value
+            code = r.au_code
 
-    def get_scheme_number(self):
+            # Add the items to combo
+            # Date will contain tuple(ID, code and last value)
+            self.cbx_relv_auth_name.addItem(
+                authority_name,
+                (authority_id, code, l_value)
+            )
+
+    def on_ra_name_changed(self):
         """
         Slot for updating the scheme number based on selection of name of
         relevant authority combobox selection
         """
         # Clear scheme number
-        clr_cbx_auth_name = self.lnedit_schm_num.clear()
-        # Get the relevant authority name ID
-        relv_auth_name_id = self.cbx_relv_auth_name.itemData(
-            self.cbx_relv_auth_name.currentIndex())
-        # Get the region ID
-        region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
-        # Get the relevant authority ID
-        ra_id_type = self.cbx_relv_auth.itemData(
-            self.cbx_relv_auth.currentIndex())
+        self.lnedit_schm_num.clear()
 
-        # Check if combo for name is selected
-        if not relv_auth_name_id:
-            # Clear elements
-            return clr_cbx_auth_name
+        if not self.cbx_relv_auth_name.currentText():
+            return
 
-        # Query object for filtering items based on selected items
-        res = self.relv_entity_object.queryObject().filter(
-            self.relv_auth_model.region == region_id,
-            self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type).all()
+        id, code, last_value = self.cbx_relv_auth_name.itemData(
+            self.cbx_relv_auth_name.currentIndex()
+        )
 
-        # Create empty list of authority codes
-        auth_codes = []
+        scheme_code = self._gen_scheme_number(code, last_value)
+        self.lnedit_schm_num.setText(scheme_code)
 
-        # Looping through the results to get details
-        for r in res:
-            authority_code = r.au_code
-            authority_id = r.id
-            seq_number = r.last_value
-            # Add the items to lineEdit
-            auth_codes.append(authority_code)
-
-        # Filter the based on selected ID
-        s = self.cbx_relv_auth_name.currentIndex()
-        self.lnedit_schm_num.setText(auth_codes[s - 1])
+    def _gen_scheme_number(self, code, last_value):
+        # Generates a new scheme number
+        if not last_value:
+            last_value = 0
+        last_value += 1
+        scheme_code = u'{0}.{1}'.format(code, str(last_value).zfill(3))
+        
+        return scheme_code
 
     def update_scheme_number(self):
         """

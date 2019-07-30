@@ -49,8 +49,8 @@ class CmisManager(object):
         :param kwargs:
         - url: URL of the CMIS atom pub service. Obtained from the
         settings if not specified.
-        - auth_config_id: ID of the authentication configuration. Obtained f
-        rom the settings if not specified.
+        - auth_config_id: ID of the authentication configuration. Obtained
+        from the settings if not specified.
         """
         self.url = kwargs.pop('url', '')
         # Use default URL in the settings if None has been specified
@@ -499,7 +499,8 @@ class CmisEntityDocumentMapper(object):
         """
         next(
             (
-                m for m in self._doc_type_mapping.values() if m.doc_type_code == code
+                m for m in self._doc_type_mapping.values()
+                if m.doc_type_code == code
             ),
             None
         )
