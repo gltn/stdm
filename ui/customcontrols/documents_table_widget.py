@@ -27,10 +27,12 @@ from cmislib.domain import (
 )
 from PyQt4.QtGui import (
     QAbstractItemView,
+    QColor,
     QFileDialog,
     QIcon,
     QLabel,
     QMessageBox,
+    QProgressBar,
     QTableWidget,
     QTableWidgetItem
 )
@@ -72,6 +74,9 @@ class DocumentTableWidget(QTableWidget):
     view_requested= pyqtSignal(object)
     remove_requested = pyqtSignal(object)
 
+    # Upload state
+    NOT_UPLOADED, SUCCESS, ERROR = range(3)
+
     def __init__(self, parent=None, doc_info_cls=None):
         super(DocumentTableWidget, self).__init__(parent)
 
@@ -92,6 +97,9 @@ class DocumentTableWidget(QTableWidget):
 
         self._docs_info = OrderedDict()
         self._doc_prop = 'doc_info'
+        self._not_uploaded_txt = self.tr('Not uploaded')
+        self._success_txt = self.tr('Successful')
+        self._error_txt = self.tr('Error!')
         self.cmis_entity_doc_mapper = None
         self.file_filters = 'PDF File (*.pdf)'
         self._init_ui()
@@ -192,7 +200,7 @@ class DocumentTableWidget(QTableWidget):
         self.setCellWidget(row_count, 4, lbl_remove)
 
         # Insert status
-        status_item = QTableWidgetItem('Not Uploaded')
+        status_item = QTableWidgetItem(self._not_uploaded_txt)
         self.setItem(row_count, 2, status_item)
 
     def create_hyperlink_widget(self, name, document_info):
@@ -280,7 +288,73 @@ class DocumentTableWidget(QTableWidget):
                 self.on_successful_upload
             )
 
+            # Disable widgets and show upload progress bar
+            self._before_upload(doc_type)
+
             upload_thread.start()
+
+    def _before_upload(self, doc_type):
+        """
+        Activated just before an upload. It disables user actions and shows
+        a progress bar.
+        """
+        doc_info = self.row_document_info_from_type(doc_type)
+        if not doc_info:
+            return
+
+        row_num = doc_info.row_num
+
+        # Disable user actions in the given row
+        self._enable_user_action_widgets(
+            row_num,
+            False
+        )
+
+        # Show progress bar
+        pg_bar = QProgressBar()
+        pg_bar.setRange(0, 0)
+        pg_bar.setTextVisible(False)
+        # Remove text before showing progress bar
+        ti = self.item(row_num, 2)
+        ti.setText('')
+        self.setCellWidget(row_num, 2, pg_bar)
+
+    def _after_upload(self, doc_type, status):
+        doc_info = self.row_document_info_from_type(doc_type)
+        if not doc_info:
+            return
+
+        row_num = doc_info.row_num
+        # Enable user actions, hide progress bar and set status message
+        self._enable_user_action_widgets(row_num)
+
+        # Remove progress bar
+        self.removeCellWidget(row_num, 2)
+
+        # Insert status text and set cell styling
+        ti = self.item(row_num, 2)
+        if status == DocumentTableWidget.NOT_UPLOADED:
+            ti.setText(self._not_uploaded_txt)
+            ti.setBackgroundColor(Qt.white)
+            ti.setTextColor(Qt.black)
+        elif status == DocumentTableWidget.SUCCESS:
+            ti.setText(self._success_txt)
+            ti.setTextColor(Qt.white)
+            ti.setBackgroundColor(QColor('#00b300'))
+        elif status == DocumentTableWidget.ERROR:
+            ti.setText(self._error_txt)
+            ti.setTextColor(Qt.white)
+            ti.setBackgroundColor(Qt.red)
+
+    def _enable_user_action_widgets(self, row_num, enable=True):
+        # Enable/disable Browse, View, Remove widgets in a tuple
+        lbl_browse = self.cellWidget(row_num, 1)
+        lbl_view = self.cellWidget(row_num, 3)
+        lbl_remove = self.cellWidget(row_num, 4)
+
+        lbl_browse.setEnabled(enable)
+        lbl_view.setEnabled(enable)
+        lbl_remove.setEnabled(enable)
 
     def on_view_activated(self, link):
         """
@@ -316,11 +390,7 @@ class DocumentTableWidget(QTableWidget):
         document object.
         :type res_info: tuple(doc_type, document object)
         """
-        QMessageBox.information(
-            self,
-            'Upload',
-            'Successful'
-        )
+        self._after_upload(res_info[0], DocumentTableWidget.SUCCESS)
 
     def show_document_type_error(self, doc_type, op_error):
         """
@@ -346,6 +416,9 @@ class DocumentTableWidget(QTableWidget):
         )
         # Set tooltip
         ti.setToolTip(op_error)
+
+        # Update status column
+        self._after_upload(doc_type, DocumentTableWidget.ERROR)
 
     def clear_error_hints(self, row_idx):
         # Clears the error icon and tooltip for the row in the given index.
