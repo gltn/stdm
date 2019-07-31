@@ -19,9 +19,16 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
+from cmislib.exceptions import (
+    CmisException
+)
+from cmislib.domain import (
+    Document
+)
 from PyQt4.QtGui import (
     QAbstractItemView,
     QFileDialog,
+    QIcon,
     QLabel,
     QMessageBox,
     QTableWidget,
@@ -35,6 +42,9 @@ from PyQt4.QtCore import (
 from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
+)
+from stdm.network.cmis_manager import (
+    CmisDocumentMapperException
 )
 
 
@@ -127,6 +137,24 @@ class DocumentTableWidget(QTableWidget):
         """
         return self._docs_info.get(idx, None)
 
+    def row_document_info_from_type(self, doc_type):
+        """
+        Get the DocumentRowInfo for the row representing the given document
+        type.
+        :param doc_type: Document type
+        :type doc_type: str
+        :return: Returns the DocumentRowInfo for the given row index, else
+        None if not found.
+        :rtype: DocumentRowInfo
+        """
+        return next(
+            (
+                di for di in self._docs_info.values()
+                if di.document_type == doc_type
+            ),
+            None
+        )
+
     def add_document_type(self, name):
         """
         Add a new document type to the collection.
@@ -200,6 +228,10 @@ class DocumentTableWidget(QTableWidget):
 
         doc_info = sender.property(self._doc_prop)
 
+        # Clear error hints
+        row_idx = doc_info.row_num
+        self.clear_error_hints(row_idx)
+
         last_doc_path = last_document_path()
         if not last_doc_path:
             last_doc_path = '~/'
@@ -232,9 +264,6 @@ class DocumentTableWidget(QTableWidget):
         :type doc_file_path: str
         :param doc_type: Type of the document.
         :type doc_type: str
-        :return: Returns the document object in the repository, that is if
-        it was successfully uploaded.
-        :rtype: cmislib.domain.Document
         """
         if self.cmis_entity_doc_mapper:
             upload_thread = CmisDocumentUploadThread(
@@ -243,6 +272,14 @@ class DocumentTableWidget(QTableWidget):
                 doc_type,
                 self
             )
+            # Connect signals
+            upload_thread.error.connect(
+                self.on_upload_error
+            )
+            upload_thread.succeeded.connect(
+                self.on_successful_upload
+            )
+
             upload_thread.start()
 
     def on_view_activated(self, link):
@@ -261,6 +298,64 @@ class DocumentTableWidget(QTableWidget):
 
         # Emit signal
         self.view_requested.emit(doc_info)
+
+    def on_upload_error(self, error_info):
+        """
+        Slot raised when there is an error when uploading a document.
+        :param error_info: Tuple containing the document type and
+        corresponding error message.
+        :type error_info: tuple(doc_type, error_msg)
+        """
+        self.show_document_type_error(error_info[0], error_info[1])
+
+    def on_successful_upload(self, res_info):
+        """
+        Slot raised when a document has been successfully uploaded to the
+        repository
+        :param res_info: Tuple containing the document type and cmislib
+        document object.
+        :type res_info: tuple(doc_type, document object)
+        """
+        QMessageBox.information(
+            self,
+            'Upload',
+            'Successful'
+        )
+
+    def show_document_type_error(self, doc_type, op_error):
+        """
+        Shows an error icon next to the document type text in the table cell.
+        :param doc_type: Type of document for which to show the error.
+        :type doc_type: str
+        :param op_error: Description of the error which will be shown as a
+        tooltip.
+        :type op_error: str
+        """
+        # Try to get DocumentInfo object from document type
+        row_info = self.row_document_info_from_type(doc_type)
+        if not row_info:
+            return
+
+        ti = self.item(row_info.row_num, 0)
+        if not ti:
+            return
+
+        # Set error icon
+        ti.setIcon(
+            QIcon(':/plugins/stdm/images/icons/warning.png')
+        )
+        # Set tooltip
+        ti.setToolTip(op_error)
+
+    def clear_error_hints(self, row_idx):
+        # Clears the error icon and tooltip for the row in the given index.
+        ti = self.item(row_idx, 0)
+        if not ti:
+            return
+
+        # Clear hints if any
+        ti.setIcon(QIcon())
+        ti.setToolTip('')
 
     def on_remove_activated(self, link):
         """
@@ -296,8 +391,11 @@ class DocumentTableWidget(QTableWidget):
 
 class CmisDocumentUploadThread(QThread):
     """
-    Enables the the upload of a document using a separate thread.
+    Handles the the upload of a document using a separate thread.
     """
+    error = pyqtSignal(tuple) # (doc_type, error_msg)
+    succeeded = pyqtSignal(tuple) # (doc_type, Document)
+
     def __init__(self, path, cmis_doc_mapper, doc_type, parent=None):
         super(CmisDocumentUploadThread, self).__init__(parent)
         self._doc_mapper = cmis_doc_mapper
@@ -306,7 +404,15 @@ class CmisDocumentUploadThread(QThread):
 
     def run(self):
         # Upload the document content through the doc mapper
-        self._doc_mapper.upload_document(
-            self._file_path,
-            self._doc_type
-        )
+        try:
+            doc = self._doc_mapper.upload_document(
+                self._file_path,
+                self._doc_type
+            )
+            self.succeeded.emit((self._doc_type, doc))
+        except CmisDocumentMapperException as cdmex:
+            self.error.emit((self._doc_type, str(cdmex)))
+        except CmisException as cex:
+            self.error.emit((self._doc_type, cex.status))
+        except Exception as ex:
+            self.error.emit((self._doc_type, str(ex)))

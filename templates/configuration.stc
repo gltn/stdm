@@ -98,7 +98,15 @@
     <CodeValue value="Low" code=""/>
    </ValueList>
    <ValueList name="check_scheme_document_type">
-    <CodeValue value="General" code=""/>
+    <CodeValue value="Notice of Scheme Establishment" code=""/>
+    <CodeValue value="Explanatory Note" code=""/>
+    <CodeValue value="Council Resolution" code=""/>
+    <CodeValue value="Title Deed of Blockerf" code=""/>
+    <CodeValue value="Cover Certificate" code=""/>
+    <CodeValue value="Transfer Contract" code=""/>
+    <CodeValue value="Documents Imposing Conditions" code=""/>
+    <CodeValue value="Digital Layout Plan" code=""/>
+    <CodeValue value="Field Book" code=""/>
    </ValueList>
   </ValueLists>
   <Entity editable="True" global="False" rowindex="0" associative="False" description="Staging table for plots imported from LIS" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot" name="cb_lis_plot" label="LIS Plot">

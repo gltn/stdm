@@ -20,18 +20,19 @@ email                : stdm@unhabitat.org
 import logging
 
 from PyQt4.QtGui import (
+    QCursor,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QIntValidator,
-    QMessageBox,
-    QApplication)
+    QIntValidator
+)
 from PyQt4.QtCore import(
     Qt,
     QDir,
     QTimer,
     SIGNAL
 )
+from qgis.core import QgsApplication
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.config import DatabaseConfig
@@ -65,6 +66,9 @@ from stdm.settings.registryconfig import (
 
 from stdm.security.auth_config import (
     config_entries
+)
+from stdm.network.cmis_manager import (
+    CmisManager
 )
 
 from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
@@ -347,13 +351,41 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if res == QDialog.Accepted:
             msg = self.tr(u"Connection to '{0}' database was "
                           "successful.".format(db_conn.Database))
-            QMessageBox.information(self, self.tr('Database Connection'), msg)
+            self.notif_bar.insertSuccessNotification(msg)
 
     def _on_test_cmis_connection(self):
         # Slot raised to test connection to CMIS service
         status = self._validate_cmis_properties()
         if not status:
             return
+
+        self.notif_bar.clear()
+
+        atom_pub_url = self.txt_atom_pub_url.text()
+        auth_conf_id = self.cbo_auth_config_name.itemData(
+            self.cbo_auth_config_name.currentIndex()
+        )
+
+        cmis_mgr = CmisManager(
+            url=atom_pub_url,
+            auth_config_id=auth_conf_id
+        )
+
+        QgsApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+        status = cmis_mgr.connect()
+        QgsApplication.restoreOverrideCursor()
+
+        if status:
+            msg = self.tr(
+                'Connection to the CMIS server succeeded.'
+            )
+            self.notif_bar.insertSuccessNotification(msg)
+        else:
+            msg = self.tr(
+                'Failed to connect to the CMIS server. Check URL and/or '
+                'credentials.'
+            )
+            self.notif_bar.insertErrorNotification(msg)
 
     def set_current_profile(self):
         """

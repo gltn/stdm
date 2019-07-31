@@ -497,7 +497,7 @@ class CmisEntityDocumentMapper(object):
         :return: Returns the document type mapping object based on the code
         of the document type or None if not found.
         """
-        next(
+        return next(
             (
                 m for m in self._doc_type_mapping.values()
                 if m.doc_type_code == code

@@ -16,6 +16,10 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from time import strftime
+from PyQt4.Qt import Qt
+from cmislib.exceptions import (
+    CmisException
+)
 from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
@@ -26,9 +30,18 @@ from stdm.data.pg_utils import (
     export_data,
     fetch_with_filter,
 )
+from stdm.network.cmis_manager import (
+    CmisDocumentMapperException,
+    CmisManager,
+    CmisEntityDocumentMapper
+)
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
+)
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
-from stdm.data.mapping import MapperMixin, _AttributeMapper
+from stdm.data.mapping import MapperMixin
 from ui_scheme_lodgement import Ui_ldg_wzd
 from ..notification import NotificationBar, ERROR
 
@@ -54,6 +67,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Flag for checking if document type has been loaded
         self._suporting_docs_loaded = False
 
+        # Entity names
+        self._sch_entity_name = 'Scheme'
+
         # Check if the current profile exists
         if self.curr_p is None:
             QMessageBox.critical(
@@ -67,6 +83,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.schm_entity = self.curr_p.entity('Scheme')
         self.relv_auth_entity = self.curr_p.entity('Relevant_authority')
         self.notif_entity = self.curr_p.entity('Notification')
+        self.entity_obj = self.curr_p.entity(self._sch_entity_name)
+        self.notif_obj = self.curr_p.entity('Notification')
+        self.relv_auth_obj = self.curr_p.entity('Relevant_authority')
+        self.chk_relv_auth_type_obj = self.curr_p.entity(
+            'check_lht_relevant_authority'
+        )
+        self.chk_region_obj = self.curr_p.entity('check_lht_region')
 
         # Check if entities exist
         if self.schm_entity is None:
@@ -94,6 +117,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         "profile.")
             )
             self.reject()
+        # Entity models
+        self.schm_model, self._scheme_doc_model = entity_model(
+            self.entity_obj,
+            with_supporting_document=True
+        )
+        self.notif_model = entity_model(self.notif_obj)
+        self.relv_auth_model = entity_model(self.relv_auth_obj)
+        self.chk_relv_auth_typ_model = entity_model(self.chk_relv_auth_type_obj)
+        self.chk_region_model = entity_model(self.chk_region_obj)
 
         # Entity
         self.schm_model = entity_model(self.schm_entity)
@@ -129,6 +161,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
 
+        # CMIS stuff for document management
+        self._suporting_docs_loaded = False
+        self._cmis_mgr = CmisManager()
+
+        # Mapper will be set in initialization of 1st page
+        self._cmis_doc_mapper = None
+
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
         self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
@@ -137,8 +176,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.update_relevant_authority)
         self.cbx_relv_auth.currentIndexChanged.connect(
             self.update_relevant_authority)
+
         self.cbx_relv_auth_name.currentIndexChanged.connect(
             self.on_ra_name_changed)
+
+        # Populate lookup comboboxes
         self._populate_lookups()
 
         # Specify MapperMixin widgets
@@ -153,7 +195,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         res = export_data(lookup_name)
         cbo.clear()
         cbo.addItem('')
-        # Loop through items in the lookup table
+
         for r in res:
             cbo.addItem(r.value, r.id)
 
@@ -243,7 +285,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             last_value = 0
         last_value += 1
         scheme_code = u'{0}.{1}'.format(code, str(last_value).zfill(3))
-        
+
         return scheme_code
 
     def page_title(self):
@@ -268,26 +310,83 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot raised when the page with the given id is loaded.
         """
         page_num = idx + 1
-        win_title = u'{0} - Step {1} of {2}'.format(self._base_win_title,
-                                                    str(page_num),
-                                                    str(self._num_pages))
+        win_title = u'{0} - Step {1} of {2}'.format(
+            self._base_win_title,
+            str(page_num),
+            str(self._num_pages)
+        )
         self.setWindowTitle(win_title)
+
+        # First page
+        # Set entity document mapper if connection to CMIS is successful
+        if idx == 0:
+            self._init_cmis_doc_mapper()
 
         # Load scheme supporting documents
         if idx == 2:
             self._load_scheme_document_types()
 
+            # Disable widget if doc mapper could not be initialized
+            if not self._cmis_doc_mapper:
+                self.tbw_documents.setEnabled(False)
+
+    def _init_cmis_doc_mapper(self):
+        # Initializes CMIS stuff
+        conn_status = self._cmis_mgr.connect()
+        if not conn_status:
+            msg = self.tr(
+                'Failed to connect to the CMIS Service.\nPlease check the '
+                'URL and login credentials for the CMIS service.'
+            )
+            QMessageBox.critical(
+                self,
+                self.tr(
+                    'CMIS Server Error'
+                ),
+                msg
+            )
+        if conn_status:
+            if not self._cmis_doc_mapper:
+                try:
+                    self._cmis_doc_mapper = CmisEntityDocumentMapper(
+                        cmis_manager=self._cmis_mgr,
+                        doc_model_cls=self._scheme_doc_model,
+                        entity_name=self._sch_entity_name
+                    )
+
+                    # Set the CMIS document mapper in document widget
+                    self.tbw_documents.cmis_entity_doc_mapper = \
+                        self._cmis_doc_mapper
+                except CmisDocumentMapperException as cm_ex:
+                    QMessageBox.critical(
+                        self,
+                        self.tr('CMIS Server Error'),
+                        str(cm_ex)
+                    )
+                except CmisException as c_ex:
+                    QMessageBox.critical(
+                        self,
+                        self.tr('CMIS Server Error'),
+                        c_ex.status
+                    )
+
     def browse_holders_file(self):
         """
         Browse for the holders file in the file directory
         """
-        holders_file = QFileDialog.getOpenFileName(self,
-                                                   "Browse Holder's File",
-                                                   "~/",
-                                                   "CSV Files (*.csv);;"
-                                                   "Excel Files (*.xls *xlsx)"
-                                                   )
+        last_doc_path = last_document_path()
+        if not last_doc_path:
+            last_doc_path = '~/'
+
+        holders_file = QFileDialog.getOpenFileName(
+            self,
+            'Browse Holders File',
+            last_doc_path,
+            'Excel Files (*.xls *xlsx)'
+        )
+
         if holders_file:
+            set_last_document_path(holders_file)
             self.lnEdit_hld_path.setText(holders_file)
             self.tw_hld_prv.load_workbook(holders_file)
 
@@ -323,6 +422,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         for d in doc_res:
             doc_type = d.value
             self.tbw_documents.add_document_type(doc_type)
+            # Also add the types to the CMIS doc mapper
+            self._cmis_doc_mapper.add_document_type(doc_type)
 
         self._suporting_docs_loaded = True
 
@@ -388,11 +489,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'area',
             self.dbl_spinbx_block_area,
             pseudoname='Area'
-        )
-        self.addMapping(
-            'last_value',
-            self.lnedit_schm_num,
-            pseudoname='Scheme Num'
         )
 
     def create_notification(self):
