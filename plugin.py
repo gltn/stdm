@@ -305,7 +305,7 @@ class STDMQGISLoader(object):
             db = STDMDb.instance()
 
             if not db.postgis_state:
-                if postgis_exists():
+                if not postgis_exists():
                     create_postgis()
                 else:
                     err_msg = QApplication.translate(
