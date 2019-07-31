@@ -24,8 +24,6 @@ from PyQt4.QtGui import (
     QWizard,
     QFileDialog,
     QMessageBox,
-    QAbstractItemView,
-    QListView
 )
 
 from stdm.data.pg_utils import (
@@ -59,6 +57,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         self.setupUi(self)
         self.page_title()
+        # Equate number of pages in wizard to page IDs
         self._num_pages = len(self.pageIds())
         self._base_win_title = self.windowTitle()
 
@@ -71,6 +70,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Entity names
         self._sch_entity_name = 'Scheme'
 
+        # Check if the current profile exists
         if self.curr_p is None:
             QMessageBox.critical(
                 self,
@@ -80,6 +80,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.reject()
 
         # Entities
+        self.schm_entity = self.curr_p.entity('Scheme')
+        self.relv_auth_entity = self.curr_p.entity('Relevant_authority')
+        self.notif_entity = self.curr_p.entity('Notification')
         self.entity_obj = self.curr_p.entity(self._sch_entity_name)
         self.notif_obj = self.curr_p.entity('Notification')
         self.relv_auth_obj = self.curr_p.entity('Relevant_authority')
@@ -88,7 +91,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         )
         self.chk_region_obj = self.curr_p.entity('check_lht_region')
 
-        if self.entity_obj is None:
+        # Check if entities exist
+        if self.schm_entity is None:
             QMessageBox.critical(
                 self,
                 self.tr('Missing Scheme Entity'),
@@ -96,6 +100,23 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
+        if self.relv_auth_entity is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity'),
+                self.tr("The relevant authority entity is missing in the "
+                        "profile.")
+            )
+            self.reject()
+
+        if self.notif_entity is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Notification Entity'),
+                self.tr("The notification entity is missing in the "
+                        "profile.")
+            )
+            self.reject()
         # Entity models
         self.schm_model, self._scheme_doc_model = entity_model(
             self.entity_obj,
@@ -106,8 +127,17 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.chk_relv_auth_typ_model = entity_model(self.chk_relv_auth_type_obj)
         self.chk_region_model = entity_model(self.chk_region_obj)
 
-        self.relv_entity_object = self.relv_auth_model()
+        # Entity
+        self.schm_model = entity_model(self.schm_entity)
+        self.relv_auth_model = entity_model(self.relv_auth_entity)
+        self.notification_model = entity_model(self.notif_entity)
 
+        # Entity object
+        self.schm_model_obj = self.schm_model()
+        self.relv_entity_obj = self.relv_auth_model()
+        self.notif_entity_obj = self.notification_model()
+
+        # Check if entity models exist
         if self.schm_model is None:
             QMessageBox.critical(
                 self,
@@ -116,8 +146,17 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
+        if self.relv_auth_model is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Relevant Authority Entity Model'),
+                self.tr("The relevant authority entity model could not be "
+                        "generated.")
+            )
+            self.reject()
+
         # Initializing mappermixin for saving attribute data
-        MapperMixin.__init__(self, self.schm_model, self.entity_obj)
+        MapperMixin.__init__(self, self.schm_model, self.schm_entity)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
@@ -147,11 +186,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
-        # Notification details
-        self._notif_status = 2
-        self._notif_content = self.tr("Lodgement of scheme has been completed.")
-
     def _populate_combo(self, cbo, lookup_name):
+        """
+        Populates comboboxes with items from the database
+        :param cbo: Combobox object
+        :param lookup_name: name of the lookup table
+        """
         res = export_data(lookup_name)
         cbo.clear()
         cbo.addItem('')
@@ -164,28 +204,24 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Populate combobox dropdowns with values to be displayed when user
         clicks the dropdown
         """
-        relv_auth_type_tbl = 'cb_check_lht_relevant_authority'
-        lro_tbl = 'cb_check_lht_land_rights_office'
-        region_tbl = 'cb_check_lht_region'
-        reg_div_tbl = 'cb_check_lht_reg_division'
-
         # Check if the tables exists
-        self._populate_combo(self.cbx_relv_auth,
-                             relv_auth_type_tbl)
-        self._populate_combo(self.cbx_lro,
-                             lro_tbl)
         self._populate_combo(self.cbx_region,
-                             region_tbl)
+                             'cb_check_lht_region')
+        self._populate_combo(self.cbx_relv_auth,
+                             'cb_check_lht_relevant_authority')
+        self._populate_combo(self.cbx_lro,
+                             'cb_check_lht_land_rights_office')
         self._populate_combo(self.cbx_reg_div,
-                             reg_div_tbl)
+                             'cb_check_lht_reg_division')
+
+        # Sort region combobox items
+        self.cbx_region.model().sort(0)
 
     def update_relevant_authority(self):
         """
         Slot for updating the Relevant Authority combobox based on the
         selections made in the two previous comboboxes
         """
-        # Clear dropdown elements
-        clr_cbx_auth_name = self.cbx_relv_auth_name.clear()
         # Get the region ID
         region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
         # Get the relevant authority ID
@@ -205,7 +241,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Query object for filtering items on name of relevant authority
         # combobox based on selected items in region and type
-        res = self.relv_entity_object.queryObject().filter(
+        res = self.relv_entity_obj.queryObject().filter(
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
             ra_id_type
@@ -254,14 +290,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def page_title(self):
         """
-        Set page title and subtitle instructions
+        Insert page subtitles which contain instructions to the user.
         """
-        # Set page titles
-        self.wizardPage1.setTitle('New Land Hold Scheme')
-        self.wizardPage2.setTitle('Import Holders')
-        self.wizardPage.setTitle('Upload Documents')
-        self.wizardPage_4.setTitle('Summary')
-
         # Set page subtitles
         self.wizardPage1.setSubTitle(self.tr('Please enter scheme information'
                                              ' below. '

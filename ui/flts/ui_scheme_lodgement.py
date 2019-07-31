@@ -243,7 +243,7 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_4.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
 
+from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
 from stdm.ui.customcontrols.table_widget import ExcelWorkbookView
-from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
 from stdm import resources_rc
