@@ -1,9 +1,9 @@
 REM Drop/recreate database for testing STDM db configurations
 echo off
 
-SET DB_NAME=%1
-SET PG_VERSION=9.5
-SET PG_PORT=5093
+SET DB_NAME=flts
+SET PG_VERSION=11
+SET PG_PORT=5433
 SET PG_USER=postgres
 
 echo.

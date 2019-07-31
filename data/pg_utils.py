@@ -44,17 +44,18 @@ from stdm.utils.util import (
 from sqlalchemy.exc import IntegrityError
 
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
-_postGISViews = ["geometry_columns","raster_columns","geography_columns",
-                 "raster_overviews","foreign_key_references"]
+_postGISViews = ["geometry_columns", "raster_columns", "geography_columns",
+                 "raster_overviews", "foreign_key_references"]
 
-_pg_numeric_col_types = ["smallint","integer","bigint","double precision",
-                      "numeric","decimal","real","smallserial","serial",
-                      "bigserial"]
+_pg_numeric_col_types = ["smallint", "integer", "bigint", "double precision",
+                         "numeric", "decimal", "real", "smallserial", "serial",
+                         "bigserial"]
 _text_col_types = ["character varying", "text"]
 
-#Flags for specifying data source type
+# Flags for specifying data source type
 VIEWS = 2500
 TABLES = 2501
+
 
 def spatial_tables(exclude_views=False):
     """
@@ -69,13 +70,14 @@ def spatial_tables(exclude_views=False):
     for r in result:
         spTable = r["f_table_name"]
         if exclude_views:
-            tableIndex = getIndex(views,spTable)
+            tableIndex = getIndex(views, spTable)
             if tableIndex == -1:
                 spTables.append(spTable)
         else:
             spTables.append(spTable)
 
     return spTables
+
 
 def pg_tables(schema="public", exclude_lookups=False):
     """
@@ -86,27 +88,28 @@ def pg_tables(schema="public", exclude_lookups=False):
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
     result = _execute(t, tschema=schema, tbtype="BASE TABLE")
-        
+
     pgTables = []
-        
+
     for r in result:
         tableName = r["table_name"]
-        
-        #Remove default PostGIS tables
+
+        # Remove default PostGIS tables
         tableIndex = getIndex(_postGISTables, tableName)
         if tableIndex == -1:
             if exclude_lookups:
-                #Validate if table is a lookup table and if it is, then omit
+                # Validate if table is a lookup table and if it is, then omit
                 rx = QRegExp("check_*")
                 rx.setPatternSyntax(QRegExp.Wildcard)
-                
+
                 if not rx.exactMatch(tableName):
                     pgTables.append(tableName)
-                    
+
             else:
                 pgTables.append(tableName)
-            
+
     return pgTables
+
 
 def pg_views(schema="public"):
     """
@@ -114,19 +117,19 @@ def pg_views(schema="public"):
     """
     t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
              "ORDER BY table_name ASC")
-    result = _execute(t, tschema = schema, tbtype = "VIEW")
-        
+    result = _execute(t, tschema=schema, tbtype="VIEW")
+
     pgViews = []
-        
+
     for r in result:
 
         viewName = r["table_name"]
-        
-        #Remove default PostGIS tables
+
+        # Remove default PostGIS tables
         viewIndex = getIndex(_postGISViews, viewName)
         if viewIndex == -1:
             pgViews.append(viewName)
-            
+
     return pgViews
 
 
@@ -141,9 +144,9 @@ def view_details(self, view):
     """
     if view in pg_views():
         t = text('SELECT definition '
-            'FROM pg_views '
-            'WHERE viewname=:view_name;'
-        )
+                 'FROM pg_views '
+                 'WHERE viewname=:view_name;'
+                 )
 
         result = _execute(t, view_name=view)
 
@@ -151,6 +154,7 @@ def view_details(self, view):
         for row in result:
             definition.append(row[0])
         return definition[0]
+
 
 def get_referenced_table(self, view):
     """
@@ -209,6 +213,7 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
     else:
         return True
 
+
 def pg_table_count(table_name):
     """
     Returns a count of records in a table
@@ -225,13 +230,13 @@ def pg_table_count(table_name):
 
     return cnt
 
+
 def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
-    #Process the report builder filter
+    # Process the report builder filter
     if "'" in columns and '"' not in columns:
         cols = []
         spited_cols = columns.split(',')
         for col in spited_cols:
-
             col = u'{}'.format(col)
             cols.append(col)
         columns = ','.join(cols)
@@ -241,18 +246,18 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     if whereStr != "":
         sql += u" WHERE {0} ".format(whereStr)
 
-
-    if sortStmnt !="":
+    if sortStmnt != "":
         sql += sortStmnt
 
     t = text(sql)
-    
+
     return _execute(t)
 
-def export_data(table_name):
+
+def export_data(table_name, **kwargs):
     sql = u"SELECT * FROM {0} ".format(unicode(table_name))
 
-    t = text(sql)
+    t = text(sql, kwargs)
 
     return _execute(t)
 
@@ -283,6 +288,7 @@ def fetch_from_table(table_name, limit):
 
     return _execute(t)
 
+
 def export_data_from_columns(columns, table_name):
     sql = u"SELECT {0} FROM {1}".format(unicode(columns), unicode(table_name))
 
@@ -307,10 +313,10 @@ def fix_sequence(table_name):
 
     _execute(sql_sequence_fix)
 
-def import_data(table_name, columns_names, data, **kwargs):
 
+def import_data(table_name, columns_names, data, **kwargs):
     sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
-                                                    columns_names, unicode(data))
+                                                     columns_names, unicode(data))
 
     t = text(sql)
     conn = STDMDb.instance().engine.connect()
@@ -329,6 +335,7 @@ def import_data(table_name, columns_names, data, **kwargs):
     except SQLAlchemyError:
         trans.rollback()
         return False
+
 
 def table_column_names(tableName, spatialColumns=False, creation_order=False):
     """
@@ -349,14 +356,15 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
 
     t = text(sql)
     result = _execute(t, tbname=tableName)
-        
+
     columnNames = []
-       
+
     for r in result:
         colName = r[columnName]
         columnNames.append(colName)
-           
+
     return columnNames
+
 
 def non_spatial_table_columns(table):
     """
@@ -370,21 +378,23 @@ def non_spatial_table_columns(table):
 
     return [x for x in all_columns if x not in spatial_columns]
 
-def delete_table_data(tableName, cascade = True):
+
+def delete_table_data(tableName, cascade=True):
     """
     Delete all the rows in the target table.
     """
     tables = pg_tables()
     tableIndex = getIndex(tables, tableName)
-    
+
     if tableIndex != -1:
         sql = "TRUNCATE {0}".format(tableName)
-        
+
         if cascade:
             sql += " CASCADE"
-        
+
         t = text(sql)
-        _execute(t) 
+        _execute(t)
+
 
 def geometryType(tableName, spatialColumnName, schemaName="public"):
     """
@@ -394,18 +404,19 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
     sql = u"select type,srid from geometry_columns where f_table_name = :tbname " \
           "and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
     t = text(sql)
-    
-    result = _execute(t,tbname = tableName,spcolumn=spatialColumnName,tbschema=schemaName)
-        
-    geomType,epsg_code = "", -1
-       
+
+    result = _execute(t, tbname=tableName, spcolumn=spatialColumnName, tbschema=schemaName)
+
+    geomType, epsg_code = "", -1
+
     for r in result:
         geomType = r["type"]
         epsg_code = r["srid"]
-        
+
         break
-        
-    return (geomType,epsg_code)
+
+    return (geomType, epsg_code)
+
 
 def unique_column_values(tableName, columnName, quoteDataTypes=["character varying"]):
     """
@@ -414,17 +425,17 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     """
     # tableName = unicode(tableName)
     # columnName = unicode(columnName)
-    dataType = columnType(tableName,columnName)
+    dataType = columnType(tableName, columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     if "'" in columnName and '"' not in columnName:
         sql = u'SELECT DISTINCT "{0}" FROM {1}'.format(unicode(columnName),
-                                                     tableName)
+                                                       tableName)
     else:
 
         sql = u"SELECT DISTINCT {0} FROM {1}".format(unicode(columnName), tableName)
     t = text(sql)
     result = _execute(t)
-    
+
     uniqueVals = []
 
     for r in result:
@@ -434,7 +445,7 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
                 uniqueVals.append(u"NULL")
             else:
                 uniqueVals.append(u"''")
-                
+
         else:
             if quoteRequired == -1:
                 uniqueVals.append(unicode(r[columnName]))
@@ -443,13 +454,14 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
 
     return uniqueVals
 
+
 def columnType(tableName, columnName):
     """
     Returns the PostgreSQL data type of the specified column.
     """
     view = tableName in pg_views()
     if not view:
-        sql = u"SELECT data_type FROM information_schema.columns where table_name='{}' AND column_name='{}'".\
+        sql = u"SELECT data_type FROM information_schema.columns where table_name='{}' AND column_name='{}'". \
             format(tableName, columnName)
     else:
         # if ' ' in columnName:
@@ -478,6 +490,7 @@ def columnType(tableName, columnName):
         break
     return dataType
 
+
 def columns_by_type(table, data_types):
     """
     :param table: Name of the database table.
@@ -501,6 +514,7 @@ def columns_by_type(table, data_types):
 
     return cols
 
+
 def numeric_columns(table):
     """
     :param table: Name of the database table.
@@ -511,8 +525,9 @@ def numeric_columns(table):
     """
     return columns_by_type(table, _pg_numeric_col_types)
 
+
 def numeric_varchar_columns(table, exclude_fk_columns=True):
-    #Combines numeric and text column types mostly used for display columns
+    # Combines numeric and text column types mostly used for display columns
     num_char_types = _pg_numeric_col_types + _text_col_types
 
     num_char_cols = columns_by_type(table, num_char_types)
@@ -530,6 +545,7 @@ def numeric_varchar_columns(table, exclude_fk_columns=True):
 
     else:
         return num_char_cols
+
 
 def qgsgeometry_from_wkbelement(wkb_element):
     """
@@ -550,8 +566,9 @@ def qgsgeometry_from_wkbelement(wkb_element):
         geom_wkt = split_geom[1]
 
     return QgsGeometry.fromWkt(geom_wkt)
-    
-def _execute(sql,**kwargs):
+
+
+def _execute(sql, **kwargs):
     """
     Execute the passed in sql statement
     """
@@ -559,7 +576,7 @@ def _execute(sql,**kwargs):
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
     try:
-        result = conn.execute(sql,**kwargs)
+        result = conn.execute(sql, **kwargs)
         trans.commit()
         conn.close()
         return result
@@ -574,11 +591,12 @@ def reset_content_roles():
     resetSql = text(rolesSet)
     _execute(resetSql)
 
+
 def delete_table_keys(table):
-    #clean_delete_table(table)
+    # clean_delete_table(table)
     capabilities = ["Create", "Select", "Update", "Delete"]
     for action in capabilities:
-        init_key = action +" "+ str(table).title()
+        init_key = action + " " + str(table).title()
         sql = u"DELETE FROM content_roles WHERE content_base_id IN" \
               " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
         sql2 = u"DELETE FROM content_base WHERE content_base.id IN" \
@@ -589,6 +607,7 @@ def delete_table_keys(table):
         _execute(r2)
         Base.metadata._remove_table(table, 'public')
 
+
 def safely_delete_tables(tables):
     for table in tables:
         sql = "DROP TABLE  if exists {0} CASCADE".format(table)
@@ -596,8 +615,10 @@ def safely_delete_tables(tables):
         Base.metadata._remove_table(table, 'public')
         flush_session_activity()
 
+
 def flush_session_activity():
     STDMDb.instance().session._autoflush()
+
 
 def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', proj_wkt=None):
     """
@@ -634,6 +655,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
         except Exception:
             pass
     return v_layer
+
 
 def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     """
@@ -691,7 +713,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     for r in result:
         rel_table = r[ref_table]
 
-        fk_ref = r["column_name"], rel_table,\
+        fk_ref = r["column_name"], rel_table, \
                  r["foreign_column_name"], r["constraint_name"]
 
         if not filter_exp is None:
@@ -720,7 +742,7 @@ def table_view_dependencies(table_name, column_name=None):
     """
     views = []
 
-    #Load the SQL file depending on whether its table or table/column
+    # Load the SQL file depending on whether its table or table/column
     if column_name is None:
         script_path = PLUGIN_DIR + '/scripts/table_related_views.sql'
     else:
@@ -754,7 +776,7 @@ def table_view_dependencies(table_name, column_name=None):
                     column_name=column_name
                 )
 
-            #Get view names
+            # Get view names
             for r in result:
                 view_name = r['view_name']
                 views.append(view_name)
@@ -778,7 +800,7 @@ def drop_cascade_table(table_name):
 
         return True
 
-    #Error if the current user is not the owner.
+    # Error if the current user is not the owner.
     except SQLAlchemyError:
         return False
 
@@ -804,7 +826,7 @@ def drop_cascade_column(table_name, column):
 
         return True
 
-    #Error if the current user is not the owner.
+    # Error if the current user is not the owner.
     except SQLAlchemyError:
         return False
 
@@ -823,7 +845,7 @@ def drop_view(view_name):
         _execute(t)
         return True
 
-    #Error such as view dependencies or the current user is not the owner.
+    # Error such as view dependencies or the current user is not the owner.
     except SQLAlchemyError:
 
         return False
@@ -882,7 +904,7 @@ def add_constraint(child_table, child_column, parent_table):
           'ADD CONSTRAINT {0}_{1}_fkey FOREIGN KEY ({1}) ' \
           'REFERENCES {2} (id) MATCH SIMPLE ' \
           'ON UPDATE NO ACTION ON DELETE NO ACTION;'.format(
-                child_table, child_column, parent_table
+        child_table, child_column, parent_table
     )
     t = text(sql)
     _execute(t)
@@ -945,6 +967,7 @@ def profile_sequences(prefix):
                 profile_sequences.append(profile_sequence)
 
     return profile_sequences
+
 
 def set_child_dependencies_null_on_delete(table):
     """
