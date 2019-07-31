@@ -120,6 +120,29 @@ class NetworkFileManager(QObject):
         """
         pass
 
+    def file_exist(self, doc_model = None, doc_type=None):
+        """
+        Check if a file exists before removing.
+        """
+        file_found = True
+        if doc_model is not None:
+            #Build the path from the model variable values.
+            fileName, fileExt = guess_extension(doc_model.filename)
+            profile_name = self.curr_profile.name
+            #Qt always expects the file separator be be "/" regardless of platform.
+            absPath = u'{}/{}/{}/{}/{}{}'.format(
+                self.networkPath,
+                profile_name.lower(),
+                doc_model.source_entity,
+                doc_type.lower().replace(' ', '_'),
+                doc_model.document_identifier,
+                fileExt
+            )
+
+            file_found = QFile.exists(absPath)
+        return file_found
+    
+
     def deleteDocument(self, docmodel = None, doc_type=None):
         """
         Delete the source document from the central repository.

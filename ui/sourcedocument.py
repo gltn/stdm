@@ -632,14 +632,15 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         successfully removed or False if an error was encountered.
         :rtype: bool
         """
-
+        status = True
         if self._mode == UPLOAD_MODE:
             status = self.fileManager.deleteDocument()
         else:
-
             doc_type = self.doc_type_value()
             self.removed_doc.append(self._srcDoc)
-            status = self.fileManager.deleteDocument(self._srcDoc, doc_type)
+            # Before anything, we check if file exist!
+            if self.fileManager.file_exist(self._srcDoc, doc_type):
+                status = self.fileManager.deleteDocument(self._srcDoc, doc_type)
 
         if not status:
             if not suppress_messages:
