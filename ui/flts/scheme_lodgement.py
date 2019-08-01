@@ -416,8 +416,21 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if self._suporting_docs_loaded:
             return
 
-        doc_res = export_data('cb_check_scheme_document_type')
+        # Check Doc mapper
+        if not self._cmis_doc_mapper:
+            QMessageBox.critical(
+                self,
+                self.tr('CMIS Server Error'),
+                self.tr(
+                    'Document mapper could not be initialized, please check '
+                    'the connection to the CMIS server.'
+                )
+            )
+            self.tbw_documents.setEnabled(False)
+            self.btn_upload_dir.setEnabled(False)
+            return
 
+        doc_res = export_data('cb_check_scheme_document_type')
         # Add the documents types to the view
         for d in doc_res:
             doc_type = d.value
