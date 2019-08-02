@@ -28,17 +28,24 @@ from cmislib.domain import (
 from PyQt4.QtGui import (
     QAbstractItemView,
     QColor,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QIcon,
     QLabel,
+    QListView,
     QMessageBox,
     QProgressBar,
+    QStandardItem,
+    QStandardItemModel,
     QTableWidget,
-    QTableWidgetItem
+    QTableWidgetItem,
+    QVBoxLayout
 )
 from PyQt4.QtCore import (
     pyqtSignal,
     Qt,
+    QDir,
     QThread
 )
 from stdm.settings.registryconfig import (
@@ -47,6 +54,9 @@ from stdm.settings.registryconfig import (
 )
 from stdm.network.cmis_manager import (
     CmisDocumentMapperException
+)
+from stdm.ui.notification import (
+    NotificationBar
 )
 
 
@@ -96,6 +106,8 @@ class DocumentTableWidget(QTableWidget):
             )
 
         self._docs_info = OrderedDict()
+        # Container for uploaded documents based on type
+        self._doc_types_upload = OrderedDict()
         self._doc_prop = 'doc_info'
         self._not_uploaded_txt = self.tr('Not uploaded')
         self._success_txt = self.tr('Successful')
@@ -202,6 +214,16 @@ class DocumentTableWidget(QTableWidget):
         # Insert status
         status_item = QTableWidgetItem(self._not_uploaded_txt)
         self.setItem(row_count, 2, status_item)
+
+        # Update collections with empty list
+        self._doc_types_upload[name] = []
+
+    def document_types(self):
+        """
+        :return: Returns a list containing the names of the document types.
+        :rtype: list
+        """
+        return self._doc_types_upload.keys()
 
     def create_hyperlink_widget(self, name, document_info):
         """
@@ -489,3 +511,134 @@ class CmisDocumentUploadThread(QThread):
             self.error.emit((self._doc_type, cex.status))
         except Exception as ex:
             self.error.emit((self._doc_type, str(ex)))
+
+
+class DirDocumentTypeSelector(QDialog):
+    """
+    Dialog for selecting supporting documents from a given directory. Default
+    filter searches for PDF files only.
+    """
+    def __init__(self, dir, doc_types, parent=None, filters=None):
+        super(DirDocumentTypeSelector, self).__init__(parent)
+        self.setWindowTitle(
+            self.tr('Document Types')
+        )
+        self._filters = filters
+        # Use PDF as default filter
+        if not self._filters:
+            self._filters = ['*.pdf']
+
+        self._init_ui()
+        self._dir = QDir(dir)
+        self._dir.setNameFilters(self._filters)
+        self._doc_types = doc_types
+
+        self._attr_model = QStandardItemModel(self)
+        self._sel_doc_types = OrderedDict()
+
+        # Notification bar
+        self._notif_bar = NotificationBar(self.vl_notif)
+
+        self.resize(320, 350)
+
+        # Load documents
+        self.load_document_types()
+
+    @property
+    def selected_document_types(self):
+        """
+        :return: Returns a dictionary of the document types and the
+        corresponding file paths as selected by the user.
+        :rtype: dict
+        """
+        return self._sel_doc_types
+
+    def _init_ui(self):
+        # Draw UI widgets
+        layout = QVBoxLayout()
+        # Add layout for notification bar
+        self.vl_notif = QVBoxLayout()
+        layout.addLayout(self.vl_notif)
+        self.lbl_info = QLabel()
+        self.lbl_info.setObjectName('lbl_info')
+        self.lbl_info.setText(self.tr(
+            'The selected document types have been found in the directory, '
+            'check/uncheck to specify which ones to upload.'
+        ))
+        self.lbl_info.setWordWrap(True)
+        layout.addWidget(self.lbl_info)
+        self.lst_docs = QListView()
+        layout.addWidget(self.lst_docs)
+        self.btn_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        layout.addWidget(self.btn_box)
+        self.setLayout(layout)
+
+        # Connect signals
+        self.btn_box.accepted.connect(
+            self.set_selected_document_types
+        )
+        self.btn_box.rejected.connect(
+            self.reject
+        )
+
+    def set_selected_document_types(self):
+        """
+        Sets the collections of accepted document types and their
+        corresponding file paths and accepts the dialog.
+        """
+        self._sel_doc_types = OrderedDict()
+        for i in range(self._attr_model.rowCount()):
+            doc_type_item = self._attr_model.item(i, 0)
+
+            if doc_type_item.checkState() == Qt.Checked:
+                path_item = self._attr_model.item(i, 1)
+                self._sel_doc_types[doc_type_item.text()] = path_item.text()
+
+        if len(self._sel_doc_types) == 0:
+            self._notif_bar.clear()
+            msg = self.tr('No matching documents found or selected.')
+            self._notif_bar.insertWarningNotification(msg)
+
+            return
+
+        self.accept()
+
+    def load_document_types(self):
+        """
+        Load all document types to the list view.
+        """
+        self._attr_model.clear()
+        self._attr_model.setColumnCount(2)
+
+        file_infos = self._dir.entryInfoList(
+            QDir.Readable | QDir.Files,
+            QDir.Name
+        )
+
+        # Index file info based on name
+        idx_file_infos = {fi.completeBaseName().lower() : fi for fi in file_infos}
+
+        for d in self._doc_types:
+            doc_type_item = QStandardItem(d)
+            doc_type_item.setCheckable(True)
+            path_item = QStandardItem()
+
+            item_enabled = False
+            check_state = Qt.Unchecked
+            dl = d.lower()
+            if dl in idx_file_infos:
+                item_enabled = True
+                check_state = Qt.Checked
+                path = idx_file_infos[dl].filePath()
+                path_item.setText(path)
+                doc_type_item.setToolTip(path)
+
+            doc_type_item.setEnabled(item_enabled)
+            doc_type_item.setCheckState(check_state)
+
+            self._attr_model.appendRow([doc_type_item, path_item])
+
+        self.lst_docs.setModel(self._attr_model)
+
