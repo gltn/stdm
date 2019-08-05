@@ -170,13 +170,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # CMIS stuff for document management
         self._suporting_docs_loaded = False
         self._cmis_mgr = CmisManager()
-
         # Mapper will be set in initialization of 1st page
         self._cmis_doc_mapper = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
-        self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
+        self.btn_upload_dir.clicked.connect(self.on_upload_multiple_files)
         self.currentIdChanged.connect(self.on_page_changed)
         self.cbx_region.currentIndexChanged.connect(
             self.update_relevant_authority)
@@ -447,7 +446,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         self._suporting_docs_loaded = True
 
-    def upload_multiple_files(self):
+    def on_upload_multiple_files(self):
         """
         Browse and select multiple supporting documents.
         """
@@ -482,6 +481,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         )
         res = dir_doc_dlg.exec_()
         if res == QDialog.Accepted:
+            # Get document types selected by the user
             selected_doc_types = dir_doc_dlg.selected_document_types
 
             # Upload the files

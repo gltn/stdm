@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from mimetypes import guess_type
+from collections import OrderedDict
 from cmislib import (
     CmisClient
 )
@@ -359,6 +360,94 @@ class CmisEntityDocumentMapper(object):
             self._set_entity_folder()
 
         self._doc_type_mapping = {}
+        self._uploaded_docs = OrderedDict()
+
+    @property
+    def uploaded_documents(self):
+        """
+        :return: Returns a collection indexed by document type with a list
+        containing the uploaded Document objects.
+        :rtype: OrderedDict
+        """
+        return self._uploaded_docs
+
+    def uploaded_documents_by_type(self, doc_type):
+        """
+        Gets the list of uploaded documents based on the document type.
+        :param doc_type: Name of the document type.
+        :type doc_type: str
+        :return: Returns the list of uploaded documents based on the
+        document type. Returns None if the document type does not exist
+        in the collection of uploaded documents.
+        :rtype: list
+        """
+        return self.uploaded_documents.get(doc_type, None)
+
+    def _cmis_doc_id(self, doc):
+        # Returns the unique identifier of the document in the CMIS repo.
+        props = doc.getProperties()
+        return props['cmis:versionSeriesId']
+
+    def _uploaded_document_by_type_uuid(self, doc_type, uuid):
+        # Returns a tuple containing the index of the document in the list
+        # and corresponding document object. Returns (-1, None) if not found.
+        if not doc_type in self.uploaded_documents:
+            return None
+
+        uploaded_type_docs = self.uploaded_documents_by_type(doc_type)
+
+        idx, d = -1, None
+        for i, doc in enumerate(uploaded_type_docs):
+            if self._cmis_doc_id(doc):
+                idx = i
+                d = doc
+                break
+
+        return idx, d
+
+    def remove_document(self, doc_type, uuid):
+        """
+        Removes the document with the given unique identifier and of the
+        given type.
+        :param doc_type: Name of the document type.
+        :type doc_type: str
+        :param uuid: Unique identifier of the document in the CMIS repository.
+        :type uuid: str
+        :return: Returns True if the operation succeeded or False if it
+        failed. The latter can be due to:
+            - The document type does not exist.
+            - The document with the given identifier was not found.
+            - The operation failed in the CMIS server side.
+        :rtype: bool
+        """
+        idx, doc = self._uploaded_document_by_type_uuid(doc_type, uuid)
+        if idx == -1:
+            return False
+
+        # Remove the document from the list
+        uploaded_type_docs = self.uploaded_documents_by_type(doc_type)
+        doc = uploaded_type_docs.pop(idx)
+
+        # Delete the document
+        doc.delete()
+
+        return True
+
+    def uploaded_document_by_type_uuid(self, doc_type, uuid):
+        """
+        Searches the collection of uploaded documents for the AtomPub
+        document based on the document type and corresponding unique
+        identifier of the document.
+        :param doc_type: Name of the document type.
+        :type doc_type: str
+        :param uuid: Unique document identifier in the CMIS repository.
+        :type uuid: str
+        :return: Returns the AtomPub document or None if not found.
+        :rtype: cmislib.domain.Document
+        """
+        idx, doc = self._uploaded_document_by_type_uuid(doc_type, uuid)
+
+        return doc
 
     @property
     def entity_folder(self):
@@ -692,6 +781,13 @@ class CmisEntityDocumentMapper(object):
                 contentFile=f,
                 contentType=mime_type
             )
+
+        # Update reference of uploaded documents.
+        if not doc_type in self._uploaded_docs:
+            self._uploaded_docs[doc_type] = []
+
+        uploaded_type_docs = self._uploaded_docs[doc_type]
+        uploaded_type_docs.append(cmis_doc)
 
         return cmis_doc
 
