@@ -28,17 +28,24 @@ from cmislib.domain import (
 from PyQt4.QtGui import (
     QAbstractItemView,
     QColor,
+    QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QIcon,
     QLabel,
+    QListView,
     QMessageBox,
     QProgressBar,
+    QStandardItem,
+    QStandardItemModel,
     QTableWidget,
-    QTableWidgetItem
+    QTableWidgetItem,
+    QVBoxLayout
 )
 from PyQt4.QtCore import (
     pyqtSignal,
     Qt,
+    QDir,
     QThread
 )
 from stdm.settings.registryconfig import (
@@ -47,6 +54,9 @@ from stdm.settings.registryconfig import (
 )
 from stdm.network.cmis_manager import (
     CmisDocumentMapperException
+)
+from stdm.ui.notification import (
+    NotificationBar
 )
 
 
@@ -60,7 +70,7 @@ class DocumentRowInfo(object):
         self.source_filename = ''
         self.target_path = ''
         self.uuid = ''
-        self.uploaded = False
+        self.upload_status = DocumentTableWidget.NOT_UPLOADED
         self.document_type_id = -1
 
 
@@ -96,9 +106,11 @@ class DocumentTableWidget(QTableWidget):
             )
 
         self._docs_info = OrderedDict()
+        # Container for uploaded documents based on type
+        self._doc_types_upload = OrderedDict()
         self._doc_prop = 'doc_info'
         self._not_uploaded_txt = self.tr('Not uploaded')
-        self._success_txt = self.tr('Successful')
+        self._success_txt = self.tr('Uploaded')
         self._error_txt = self.tr('Error!')
         self.cmis_entity_doc_mapper = None
         self.file_filters = 'PDF File (*.pdf)'
@@ -202,6 +214,16 @@ class DocumentTableWidget(QTableWidget):
         # Insert status
         status_item = QTableWidgetItem(self._not_uploaded_txt)
         self.setItem(row_count, 2, status_item)
+
+        # Update collections with empty list
+        self._doc_types_upload[name] = []
+
+    def document_types(self):
+        """
+        :return: Returns a list containing the names of the document types.
+        :rtype: list
+        """
+        return self._doc_types_upload.keys()
 
     def create_hyperlink_widget(self, name, document_info):
         """
@@ -319,32 +341,43 @@ class DocumentTableWidget(QTableWidget):
         ti.setText('')
         self.setCellWidget(row_num, 2, pg_bar)
 
-    def _after_upload(self, doc_type, status):
+    def _after_upload(self, doc_type, status, uuid=None):
         doc_info = self.row_document_info_from_type(doc_type)
         if not doc_info:
             return
 
         row_num = doc_info.row_num
-        # Enable user actions, hide progress bar and set status message
-        self._enable_user_action_widgets(row_num)
-
         # Remove progress bar
         self.removeCellWidget(row_num, 2)
 
         # Insert status text and set cell styling
+        # Not uploaded
         ti = self.item(row_num, 2)
         if status == DocumentTableWidget.NOT_UPLOADED:
             ti.setText(self._not_uploaded_txt)
             ti.setBackgroundColor(Qt.white)
             ti.setTextColor(Qt.black)
+            doc_info.upload_status = DocumentTableWidget.NOT_UPLOADED
+
+        # Successfully uploaded
         elif status == DocumentTableWidget.SUCCESS:
             ti.setText(self._success_txt)
             ti.setTextColor(Qt.white)
             ti.setBackgroundColor(QColor('#00b300'))
+            doc_info.upload_status = DocumentTableWidget.SUCCESS
+            # Set the document uuid
+            if uuid:
+                doc_info.uuid = uuid
+
+        # Error while uploading
         elif status == DocumentTableWidget.ERROR:
             ti.setText(self._error_txt)
             ti.setTextColor(Qt.white)
             ti.setBackgroundColor(Qt.red)
+            doc_info.upload_status = DocumentTableWidget.ERROR
+
+        # Enable user actions, hide progress bar and set status message
+        self._enable_user_action_widgets(row_num)
 
     def _enable_user_action_widgets(self, row_num, enable=True):
         # Enable/disable Browse, View, Remove widgets in a tuple
@@ -370,6 +403,31 @@ class DocumentTableWidget(QTableWidget):
 
         doc_info = sender.property(self._doc_prop)
 
+        # Get status of the upload
+        status = doc_info.upload_status
+        if status == DocumentTableWidget.ERROR:
+            msg = self.tr(
+                'The document cannot be viewed as there was an error while '
+                'uploading it.'
+            )
+            QMessageBox.critical(
+                self,
+                self.tr('Error in Viewing Document'),
+                msg
+            )
+        elif status == DocumentTableWidget.NOT_UPLOADED:
+            msg = self.tr(
+                'Please upload a document for viewing.'
+            )
+            QMessageBox.warning(
+                self,
+                self.tr('View Document'),
+                msg
+            )
+        elif status == DocumentTableWidget.SUCCESS:
+            # Load document viewer
+            pass
+
         # Emit signal
         self.view_requested.emit(doc_info)
 
@@ -384,13 +442,18 @@ class DocumentTableWidget(QTableWidget):
 
     def on_successful_upload(self, res_info):
         """
-        Slot raised when a document has been successfully uploaded to the
-        repository
+        Slot raised by the upload thread when a document has been
+        successfully uploaded to the repository. The UUID is set in the
+        DocumentRowInfo object.
         :param res_info: Tuple containing the document type and cmislib
         document object.
         :type res_info: tuple(doc_type, document object)
         """
-        self._after_upload(res_info[0], DocumentTableWidget.SUCCESS)
+        doc_type = res_info[0]
+        doc_obj= res_info[1]
+        cmis_props = doc_obj.getProperties()
+        doc_uuid = cmis_props['cmis:versionSeriesId']
+        self._after_upload(doc_type, DocumentTableWidget.SUCCESS, doc_uuid)
 
     def show_document_type_error(self, doc_type, op_error):
         """
@@ -444,8 +507,58 @@ class DocumentTableWidget(QTableWidget):
 
         doc_info = sender.property(self._doc_prop)
 
+        # Get status of the upload
+        status = doc_info.upload_status
+        if status == DocumentTableWidget.ERROR:
+            msg = self.tr(
+                'The document cannot be removed as there was an error while '
+                'uploading it.'
+            )
+            QMessageBox.critical(
+                self,
+                self.tr('Error in Removing Document'),
+                msg
+            )
+        elif status == DocumentTableWidget.NOT_UPLOADED:
+            msg = self.tr(
+                'No document was uploaded.'
+            )
+            QMessageBox.warning(
+                self,
+                self.tr('Remove Document'),
+                msg
+            )
+        elif status == DocumentTableWidget.SUCCESS:
+            # Remove document using separate thread
+            doc_type = doc_info.document_type
+            uuid = doc_info.uuid
+            delete_thread = CmisDocumentDeleteThread(
+                self.cmis_entity_doc_mapper,
+                doc_type,
+                uuid,
+                self
+            )
+            # Reset document type status after completion
+            delete_thread.succeeded.connect(
+                self._on_remove_document_succeeded
+            )
+            delete_thread.start()
+
         # Emit signal
         self.remove_requested.emit(doc_info)
+
+    def _on_remove_document_succeeded(self, doc_type):
+        # Slot raised after the document deletion thread has finished.
+        # Reset document type status
+        self._after_upload(doc_type, DocumentTableWidget.NOT_UPLOADED)
+
+    def _on_remove_document_error(self, error_msg):
+        # Slot raised when an error occured when document deletion failed.
+        QMessageBox.critical(
+            self,
+            self.tr('Remove Document Error'),
+            error_msg
+        )
 
     def _is_sender_valid(self, sender):
         # Assert if the sender of the signal can be extracted
@@ -489,3 +602,171 @@ class CmisDocumentUploadThread(QThread):
             self.error.emit((self._doc_type, cex.status))
         except Exception as ex:
             self.error.emit((self._doc_type, str(ex)))
+
+
+class CmisDocumentDeleteThread(QThread):
+    """
+    Handles deletion of a document from the CMIS repository.
+    """
+    succeeded = pyqtSignal(str)
+    error = pyqtSignal(str)
+
+    def __init__(self, cmis_doc_mapper, doc_type, doc_uuid, parent=None):
+        super(CmisDocumentDeleteThread, self).__init__(parent)
+        self._doc_mapper = cmis_doc_mapper
+        self._doc_type = doc_type
+        self._doc_uuid = doc_uuid
+
+    def run(self):
+        # Delete the document.
+        try:
+            self._doc_mapper.remove_document(
+                self._doc_type,
+                self._doc_uuid
+            )
+            self.succeeded.emit(self._doc_type)
+        except CmisException as cex:
+            self.error.emit(cex.status)
+        except Exception as ex:
+            self.error.emit(str(ex))
+
+
+class DirDocumentTypeSelector(QDialog):
+    """
+    Dialog for selecting supporting documents from a given directory. Default
+    filter searches for PDF files only.
+    """
+    def __init__(self, dir, doc_types, parent=None, filters=None):
+        super(DirDocumentTypeSelector, self).__init__(parent)
+        self.setWindowTitle(
+            self.tr('Documents in Folder')
+        )
+        self._filters = filters
+        # Use PDF as default filter
+        if not self._filters:
+            self._filters = ['*.pdf']
+
+        self._init_ui()
+        self._dir = QDir(dir)
+        self._dir.setNameFilters(self._filters)
+        self._doc_types = doc_types
+
+        self._attr_model = QStandardItemModel(self)
+        self._sel_doc_types = OrderedDict()
+
+        # Notification bar
+        self._notif_bar = NotificationBar(self.vl_notif)
+
+        self.resize(320, 350)
+
+        # Load documents
+        self.load_document_types()
+
+    @property
+    def selected_document_types(self):
+        """
+        :return: Returns a dictionary of the document types and the
+        corresponding file paths as selected by the user.
+        :rtype: dict
+        """
+        return self._sel_doc_types
+
+    def _init_ui(self):
+        # Draw UI widgets
+        layout = QVBoxLayout()
+        # Add layout for notification bar
+        self.vl_notif = QVBoxLayout()
+        layout.addLayout(self.vl_notif)
+        self.lbl_info = QLabel()
+        self.lbl_info.setObjectName('lbl_info')
+        self.lbl_info.setText(self.tr(
+            'The selected document types have been found in the directory, '
+            'check/uncheck to specify which ones to upload.'
+        ))
+        self.lbl_info.setWordWrap(True)
+        layout.addWidget(self.lbl_info)
+        self.lst_docs = QListView()
+        layout.addWidget(self.lst_docs)
+        self.lbl_warning = QLabel()
+        self.lbl_warning.setTextFormat(Qt.RichText)
+        self.lbl_warning.setText(self.tr(
+            '<html><head/><body><p><span style=" font-style:italic;">'
+            '* Previously uploaded documents will be replaced.</span></p>'
+            '</body></html>'
+        ))
+        self.lbl_warning.setWordWrap(True)
+        layout.addWidget(self.lbl_warning)
+        self.btn_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        layout.addWidget(self.btn_box)
+        self.setLayout(layout)
+
+        # Connect signals
+        self.btn_box.accepted.connect(
+            self.set_selected_document_types
+        )
+        self.btn_box.rejected.connect(
+            self.reject
+        )
+
+    def set_selected_document_types(self):
+        """
+        Sets the collections of accepted document types and their
+        corresponding file paths and accepts the dialog.
+        """
+        self._sel_doc_types = OrderedDict()
+        for i in range(self._attr_model.rowCount()):
+            doc_type_item = self._attr_model.item(i, 0)
+
+            if doc_type_item.checkState() == Qt.Checked:
+                path_item = self._attr_model.item(i, 1)
+                self._sel_doc_types[doc_type_item.text()] = path_item.text()
+
+        if len(self._sel_doc_types) == 0:
+            self._notif_bar.clear()
+            msg = self.tr('No matching documents found or selected.')
+            self._notif_bar.insertWarningNotification(msg)
+
+            return
+
+        self.accept()
+
+    def load_document_types(self):
+        """
+        Load all document types to the list view and enable/check the items
+        for those types that have been found.
+        """
+        self._attr_model.clear()
+        self._attr_model.setColumnCount(2)
+
+        file_infos = self._dir.entryInfoList(
+            QDir.Readable | QDir.Files,
+            QDir.Name
+        )
+
+        # Index file info based on name
+        idx_file_infos = {fi.completeBaseName().lower(): fi for fi in file_infos}
+
+        for d in self._doc_types:
+            doc_type_item = QStandardItem(d)
+            doc_type_item.setCheckable(True)
+            path_item = QStandardItem()
+
+            item_enabled = False
+            check_state = Qt.Unchecked
+            dl = d.lower()
+            if dl in idx_file_infos:
+                item_enabled = True
+                check_state = Qt.Checked
+                path = idx_file_infos[dl].filePath()
+                path_item.setText(path)
+                doc_type_item.setToolTip(path)
+
+            doc_type_item.setEnabled(item_enabled)
+            doc_type_item.setCheckState(check_state)
+
+            self._attr_model.appendRow([doc_type_item, path_item])
+
+        self.lst_docs.setModel(self._attr_model)
+

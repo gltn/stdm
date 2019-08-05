@@ -19,12 +19,19 @@ from time import strftime
 from cmislib.exceptions import (
     CmisException
 )
+from PyQt4.QtCore import (
+    QDir
+)
 from PyQt4.QtGui import (
-    QWizard,
+    QDialog,
     QFileDialog,
     QMessageBox,
+    QWizard
 )
 
+from stdm.ui.customcontrols.documents_table_widget import (
+    DirDocumentTypeSelector
+)
 from stdm.data.pg_utils import (
     export_data,
     fetch_with_filter,
@@ -136,13 +143,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # CMIS stuff for document management
         self._suporting_docs_loaded = False
         self._cmis_mgr = CmisManager()
-
         # Mapper will be set in initialization of 1st page
         self._cmis_doc_mapper = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
-        self.btn_upload_dir.clicked.connect(self.upload_multiple_files)
+        self.btn_upload_dir.clicked.connect(self.on_upload_multiple_files)
         self.currentIdChanged.connect(self.on_page_changed)
         self.cbx_region.currentIndexChanged.connect(
             self.update_relevant_authority)
@@ -428,6 +434,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.tbw_documents.setEnabled(False)
             self.btn_upload_dir.setEnabled(False)
+
             return
 
         doc_res = export_data('cb_check_scheme_document_type')
@@ -440,13 +447,50 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         self._suporting_docs_loaded = True
 
-    def upload_multiple_files(self):
+    def on_upload_multiple_files(self):
         """
-        Browse and select multiple documents
+        Browse and select multiple supporting documents.
         """
-        all_files_dlg = QFileDialog.getOpenFileNames(self,
-                                                     "Open Holder's File",
-                                                     '~/', " *.pdf")
+        last_doc_path = last_document_path()
+        if not last_doc_path:
+            last_doc_path = '~/'
+
+        docs_dir = QFileDialog.getExistingDirectory(
+            self,
+            'Browse Supporting Documents Source Directory',
+            last_doc_path
+        )
+        if not docs_dir:
+            return
+
+        # Check if there are files in the selected directory
+        dir = QDir(docs_dir)
+        els = dir.entryList(QDir.NoDot | QDir.NoDotDot | QDir.Files)
+        if len(els) == 0:
+            QMessageBox.warning(
+                self,
+                'Supporting Documents',
+                self.tr('There are no files in the selected directory.')
+            )
+            return
+
+        doc_types = self.tbw_documents.document_types()
+        dir_doc_dlg = DirDocumentTypeSelector(
+            docs_dir,
+            doc_types,
+            self
+        )
+        res = dir_doc_dlg.exec_()
+        if res == QDialog.Accepted:
+            # Get document types selected by the user
+            selected_doc_types = dir_doc_dlg.selected_document_types
+
+            # Upload the files
+            for d_type, d_path in selected_doc_types.iteritems():
+                self.tbw_documents.upload_document(
+                    d_path,
+                    d_type
+                )
 
     def register_col_widgets(self):
         """
