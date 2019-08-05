@@ -75,7 +75,7 @@ class DocumentTableWidget(QTableWidget):
     remove_requested = pyqtSignal(object)
 
     # Upload state
-    NOT_UPLOADED, SUCCESS, ERROR = range(3)
+    READ, UNREAD = range(2)
 
     def __init__(self, parent=None, doc_info_cls=None):
         super(DocumentTableWidget, self).__init__(parent)

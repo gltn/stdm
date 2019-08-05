@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>635</width>
-    <height>470</height>
+    <width>802</width>
+    <height>538</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,22 +18,29 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>700</width>
     <height>300</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>700</width>
+    <width>1000</width>
     <height>1000</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Establishment of Scheme</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0">
-    <widget class="QTreeView" name="tw_lodgement_details">
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="3">
+    <layout class="QVBoxLayout" name="vlNotification">
+     <property name="bottomMargin">
+      <number>10</number>
+     </property>
+    </layout>
+   </item>
+   <item row="2" column="1">
+    <widget class="SchemeSummaryWidget" name="tw_lodgement_details">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -48,18 +55,18 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="2">
+   <item row="1" column="0" colspan="3">
     <widget class="QFrame" name="frame">
      <property name="minimumSize">
       <size>
        <width>200</width>
-       <height>45</height>
+       <height>30</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
        <width>600</width>
-       <height>16777215</height>
+       <height>30</height>
       </size>
      </property>
      <property name="frameShape">
@@ -68,32 +75,13 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="lbl_Instruct">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
-        <width>131</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>Scheme establishment</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>30</y>
-        <width>471</width>
-        <height>16</height>
+        <y>0</y>
+        <width>465</width>
+        <height>13</height>
        </rect>
       </property>
       <property name="text">
@@ -102,7 +90,7 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="2" column="2">
     <widget class="QFrame" name="frame_2">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -122,31 +110,37 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="chk_approve">
-        <property name="text">
-         <string>Approve</string>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="0" colspan="2">
+       <widget class="QTextEdit" name="txtEdit_disApprv">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="icon">
-         <iconset resource="../../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/approve.png</normaloff>:/plugins/stdm/images/icons/approve.png</iconset>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="chk_disapprove">
-        <property name="text">
-         <string>Disapprove</string>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>600</height>
+         </size>
         </property>
-        <property name="icon">
-         <iconset resource="../../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/disapprove.png</normaloff>:/plugins/stdm/images/icons/disapprove.png</iconset>
+        <property name="sizeIncrement">
+         <size>
+          <width>0</width>
+          <height>450</height>
+         </size>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QPushButton" name="closeBtn">
+       <widget class="QPushButton" name="btnSubmit">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -173,31 +167,25 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QTextEdit" name="textEdit_approval">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="0" column="1">
+       <widget class="QCheckBox" name="chk_disapprove">
+        <property name="text">
+         <string>Disapprove</string>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
+        <property name="icon">
+         <iconset resource="../../resources.qrc">
+          <normaloff>:/plugins/stdm/images/icons/disapprove.png</normaloff>:/plugins/stdm/images/icons/disapprove.png</iconset>
         </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>600</height>
-         </size>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="chk_approve">
+        <property name="text">
+         <string>Approve</string>
         </property>
-        <property name="sizeIncrement">
-         <size>
-          <width>0</width>
-          <height>450</height>
-         </size>
+        <property name="icon">
+         <iconset resource="../../resources.qrc">
+          <normaloff>:/plugins/stdm/images/icons/approve.png</normaloff>:/plugins/stdm/images/icons/approve.png</iconset>
         </property>
        </widget>
       </item>
@@ -206,25 +194,15 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SchemeSummaryWidget</class>
+   <extends>QTreeView</extends>
+   <header>stdm.ui.customcontrols.scheme_summary_widget</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../resources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>closeBtn</sender>
-   <signal>clicked()</signal>
-   <receiver>scheme_establish_dialog</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>590</x>
-     <y>431</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>374</x>
-     <y>329</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

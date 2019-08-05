@@ -65,7 +65,6 @@ from ui.flts.scan_certificate import ScanCertificateDialog
 from ui.flts.print_certificate import PrintCertificateDialog
 from ui.flts.search import SearchDialog
 from ui.flts.report import ReportDialog
-from ui.flts.notification import NotificationDialog
 
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
@@ -1229,7 +1228,7 @@ class STDMQGISLoader(object):
         self.scanCertificateAct.triggered.connect(self.scan_certificate)
         self.searchAct.triggered.connect(self.flts_search)
         self.reportAct.triggered.connect(self.flts_report)
-        self.notificationAct.triggered.connect(self.flts_notification)
+        # self.notificationAct.triggered.connect(self.flts_notification)
 
         # Create content items
 
@@ -1350,82 +1349,17 @@ class STDMQGISLoader(object):
                 self.moduleContentGroups.append(moduleCntGroup)
 
         # Create content groups and add items
-        # self.contentAuthCntGroup = ContentGroup(username)
-        # self.contentAuthCntGroup.addContentItem(contentAuthCnt)
-        # self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
-        # self.contentAuthCntGroup.register()
-        #
-        # self.userRoleCntGroup = ContentGroup(username)
-        # self.userRoleCntGroup.addContentItem(userRoleMngtCnt)
-        # self.userRoleCntGroup.setContainerItem(self.usersAct)
-        # self.userRoleCntGroup.register()
-        #
+
         self.options_content_group = ContentGroup(username)
         self.options_content_group.addContentItem(options_cnt)
         self.options_content_group.setContainerItem(self.options_act)
         self.options_content_group.register()
 
         # Group admin settings content groups
-        # adminSettingsCntGroups = []
-        # adminSettingsCntGroups.append(self.contentAuthCntGroup)
-        # adminSettingsCntGroups.append(self.userRoleCntGroup)
-        # adminSettingsCntGroups.append(self.options_content_group)
 
-        # self.adminUnitsCntGroup = ContentGroup(username)
-        # self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
-        # self.adminUnitsCntGroup.setContainerItem(self.manageAdminUnitsAct)
-        # self.adminUnitsCntGroup.register()
-        #
-        # self.spatialUnitManagerCntGroup = ContentGroup(username, self.spatialLayerManager)
-        # self.spatialUnitManagerCntGroup.addContentItem(spatialLayerManagerCnt)
-        # self.spatialUnitManagerCntGroup.register()
-        #
-        # self.feature_details_cnt_group = ContentGroup(username, self.feature_details_act)
-        # self.feature_details_cnt_group.addContentItem(feature_details_cnt)
-        # self.feature_details_cnt_group.register()
-        #
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
-        #
-        # self.STRCntGroup = TableContentGroup(username,
-        #                                      self.viewSTRAct.text(),
-        #                                      self.viewSTRAct)
-        # self.STRCntGroup.createContentItem().code = "71EC2ED8-5D7F-4A27-8514-CFFE94E1294F"
-        # self.STRCntGroup.readContentItem().code = "ED607F24-11A2-427C-B395-2E2A3EBA4EBD"
-        # self.STRCntGroup.updateContentItem().code = "5D45A49D-F640-4A48-94D9-A10F502655F5"
-        # self.STRCntGroup.deleteContentItem().code = "15E27A59-28F7-42B4-858F-C070E2C3AE10"
-        # self.STRCntGroup.register()
-        #
-        # self.docDesignerCntGroup = ContentGroup(username, self.docDesignerAct)
-        # self.docDesignerCntGroup.addContentItem(documentDesignerCnt)
-        # self.docDesignerCntGroup.register()
-        #
-        # self.docGeneratorCntGroup = ContentGroup(username, self.docGeneratorAct)
-        # self.docGeneratorCntGroup.addContentItem(documentGeneratorCnt)
-        # self.docGeneratorCntGroup.register()
-        #
-        # self.importCntGroup = ContentGroup(username, self.importAct)
-        # self.importCntGroup.addContentItem(importCnt)
-        # self.importCntGroup.register()
-        #
-        # self.exportCntGroup = ContentGroup(username, self.exportAct)
-        # self.exportCntGroup.addContentItem(exportCnt)
-        # self.exportCntGroup.register()
-        #
-        # # Create mobile content group
-        # self.mobileXformgenCntGroup = ContentGroup(username, self.mobile_form_act)
-        # self.mobileXformgenCntGroup.addContentItem(mobileFormgeneratorCnt)
-        # self.mobileXformgenCntGroup.register()
-        #
-        # self.mobileXFormImportCntGroup = ContentGroup(username, self.mobile_form_import)
-        # self.mobileXFormImportCntGroup.addContentItem(mobileFormImportCnt)
-        # self.mobileXFormImportCntGroup.register()
-        #
-        # # Group geoodk actions to one menu
-        # geoodkSettingsCntGroup = []
-        # geoodkSettingsCntGroup.append(self.mobileXformgenCntGroup)
-        # geoodkSettingsCntGroup.append(self.mobileXFormImportCntGroup)
 
         # FLTS
         # Create content groups and add items
@@ -1502,52 +1436,8 @@ class STDMQGISLoader(object):
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
-        # self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
-        # self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
-        #
-        # self.menubarLoader.addContent(self._action_separator())
-        # self.toolbarLoader.addContent(self._action_separator())
-        #
-        # self.menubarLoader.addContents(self.moduleContentGroups, [stdmEntityMenu, stdmEntityMenu])
-        # self.toolbarLoader.addContents(self.moduleContentGroups, [contentMenu, contentBtn])
-        #
-        # self.menubarLoader.addContent(self.spatialUnitManagerCntGroup)
-        # self.toolbarLoader.addContent(self.spatialUnitManagerCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.feature_details_cnt_group)
-        # self.menubarLoader.addContent(self.feature_details_cnt_group)
-        #
-        # self.toolbarLoader.addContent(self.STRCntGroup)
-        # self.menubarLoader.addContent(self.STRCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.adminUnitsCntGroup)
-        # self.menubarLoader.addContent(self.adminUnitsCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.importCntGroup)
-        # self.menubarLoader.addContent(self.importCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.exportCntGroup)
-        # self.menubarLoader.addContent(self.exportCntGroup)
 
-        # Add mobile content to tool bar and menu
-        # self.menubarLoader.addContents(geoodkSettingsCntGroup, [geoodk_mobile_dataMenu, geoodk_mobile_dataMenu])
-        # self.toolbarLoader.addContents(geoodkSettingsCntGroup, [geoodkMenu, geoodkBtn])
-        #
-        # self.menubarLoader.addContent(self._action_separator())
-        # self.toolbarLoader.addContent(self._action_separator())
-        #
-        # self.toolbarLoader.addContent(self.docDesignerCntGroup)
-        # self.menubarLoader.addContent(self.docDesignerCntGroup)
-        #
-        # self.toolbarLoader.addContent(self.docGeneratorCntGroup)
-        #
-        # self.menubarLoader.addContent(self.docGeneratorCntGroup)
-
-        # flts
-
-        # toolbar items
+        # flts toolbar items
 
         self.toolbarLoader.addContent(self.schemeLodgementCntGroup)
         self.toolbarLoader.addContent(self.schemeEstablishmentCntGroup)
@@ -2462,8 +2352,6 @@ class STDMQGISLoader(object):
                 self.print_certificate()
             elif action_code == 'S_CRT':
                 self.scan_certificate()
-            elif action_code == 'NTF':
-                self.flts_notification()
             elif action_code == 'SRC':
                 self.flts_search()
             elif action_code == 'RPT':
@@ -2542,10 +2430,3 @@ class STDMQGISLoader(object):
         """
         report_dialog = ReportDialog(self.iface.mainWindow())
         report_dialog.exec_()
-
-    def flts_notification(self):
-        """
-        Load the dialog for notifications in flts
-        """
-        notification_dialog = NotificationDialog(self.iface.mainWindow())
-        notification_dialog.exec_()
