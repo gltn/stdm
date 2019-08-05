@@ -201,6 +201,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Entity object
         self.relv_entity_obj = self.relv_auth_model()
+        self.chk_regdiv_obj = self.chk_regdiv_model()
 
         if self.relv_auth_model is None:
             QMessageBox.critical(
@@ -234,19 +235,27 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
             ra_id_type).all()
+        if len(res) == 0:
+            return
+
+        reg_div = res[0].registration_division
+
+        regdiv_instance = self.chk_regdiv_obj.queryObject().filter(
+            self.chk_regdiv_model.id == reg_div
+        ).first()
 
         # Looping through the results to get details
         for r in res:
             authority_name = r.name_of_relevant_authority
             authority_id = r.id
             code = r.au_code
-            reg_div = r.registration_division
+            frc = regdiv_instance.value
 
             # Add the items to combo
             # Date will contain tuple(ID, code and registration division)
             self.cbx_relv_auth_name.addItem(
                 authority_name,
-                (authority_id, code, reg_div)
+                (authority_id, code, reg_div, frc)
             )
 
     def on_ra_name_changed(self):
@@ -261,14 +270,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not self.cbx_relv_auth_name.currentText():
             return
 
-        id, code, reg_div = self.cbx_relv_auth_name.itemData(
+        id, code, reg_div, frc = self.cbx_relv_auth_name.itemData(
             self.cbx_relv_auth_name.currentIndex()
         )
         last_value = None
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
         # Registration division
-        self.lnedit_reg_div.setText(str(reg_div))
+        self.lnedit_reg_div.setText(frc)
 
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number
@@ -484,11 +493,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.lnedit_twnshp,
             pseudoname='Township'
         )
-        self.addMapping(
-            'registration_division',
-            self.lnedit_reg_div,
-            pseudoname='Registration Division'
-        )
+        # self.addMapping(
+        #     'registration_division',
+        #     self.lnedit_reg_div,
+        #     pseudoname='Registration Division'
+        # )
         self.addMapping(
             'area',
             self.dbl_spinbx_block_area,
@@ -526,12 +535,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         notif_entity_obj = notification_model()
 
         # Get the table columns and add mapping
-        notif_entity_obj.status = 1
-        notif_entity_obj.source_user_id = 1
-        notif_entity_obj.target_user_id = 2
-        notif_entity_obj.content = 'Lodgement'
-        notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
-        notif_entity_obj.save()
+        # notif_entity_obj.status = 1
+        # notif_entity_obj.source_user_id = 1
+        # notif_entity_obj.target_user_id = 2
+        # notif_entity_obj.content = 'Lodgement'
+        # notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
+        # notif_entity_obj.save()
 
     def validateCurrentPage(self):
         current_id = self.currentId()
@@ -604,7 +613,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                         )
         self.tr_summary.scm_township.setText(1, self.lnedit_twnshp.text()
                                              )
-        self.tr_summary.scm_reg_div.setText(1, self.cbx_reg_div.currentText()
+        self.tr_summary.scm_reg_div.setText(1, self.lnedit_reg_div.text()
                                             )
         self.tr_summary.scm_blk_area.setText(1,
                                              self.dbl_spinbx_block_area.text()
