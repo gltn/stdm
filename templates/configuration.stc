@@ -161,7 +161,7 @@
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="2147483647" description="The relevant authority" index="False" name="relevant_authority" searchable="True" TYPE_INFO="LOOKUP" label="relevant authority" mandatory="True">
      <Relation name="fk_cb_check_lht_relevant_authority_id_cb_scheme_relevant_authority"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Land rights office" index="False" name="land_rights_office" searchable="True" TYPE_INFO="LOOKUP" label="land rights office" mandatory="True">
+    <Column unique="False" tip="" rowindex="4" minimum="0" maximum="2147483647" description="Land rights office" index="False" name="land_rights_office" searchable="True" TYPE_INFO="LOOKUP" label="land rights office" mandatory="True">
      <Relation name="fk_cb_check_lht_land_rights_office_id_cb_scheme_land_rights_office"/>
     </Column>
     <Column unique="False" tip="" rowindex="5" minimum="0" maximum="2147483647" description="Region in which the scheme exists" index="False" name="region" searchable="True" TYPE_INFO="LOOKUP" label="region" mandatory="True">
@@ -171,9 +171,7 @@
      <Relation name="fk_cb_cdrs_title_deed_id_cb_scheme_title_deed_number"/>
     </Column>
     <Column unique="False" tip="" rowindex="7" minimum="0" maximum="100" description="Name of the township" index="False" name="township_name" searchable="True" TYPE_INFO="VARCHAR" label="township" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="8" minimum="0" maximum="2147483647" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="LOOKUP" label="registration division" mandatory="True">
-     <Relation name="fk_cb_check_lht_reg_division_id_cb_scheme_registration_division"/>
-    </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="20" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="VARCHAR" label="registration division" mandatory="True"/>
     <Column unique="False" tip="" rowindex="9" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="The geometric area of the scheme" index="False" name="area" searchable="True" TYPE_INFO="DOUBLE" label="scheme area" mandatory="True">
      <Numeric scale="4" precision="15"/>
     </Column>
@@ -431,7 +429,7 @@
     <Column unique="False" tip="" rowindex="1" minimum="-2147483648" maximum="2147483647" description="Identifier of the notification sender" index="False" name="source_user_id" searchable="True" TYPE_INFO="INT" label="sender id" mandatory="True"/>
     <Column unique="False" tip="" rowindex="2" minimum="-2147483648" maximum="2147483647" description="Identifier of the notification receiver" index="False" name="target_user_id" searchable="True" TYPE_INFO="INT" label="receiver id" mandatory="True"/>
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="100" description="Message contained in the notification" index="False" name="content" searchable="True" TYPE_INFO="VARCHAR" label="notification content" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="2019-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Time of the notification generation" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="" mandatory="True">
+    <Column unique="False" tip="" rowindex="-1" minimum="2019-08-06 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Notification timestamp" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="True">
      <currentDateTime minimum="True" maximum="True"/>
     </Column>
    </Columns>

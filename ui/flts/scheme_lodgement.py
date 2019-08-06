@@ -241,11 +241,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
             ra_id_type).all()
+
+        # Check wht the query object returns
         if len(res) == 0:
             return
 
         reg_div = res[0].registration_division
 
+        # Query object filtered on registration division lookup
         regdiv_instance = self.chk_regdiv_obj.queryObject().filter(
             self.chk_regdiv_model.id == reg_div
         ).first()
@@ -498,6 +501,26 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         # Get the table columns and add mapping
         self.addMapping(
+            'region',
+            self.cbx_region,
+            pseudoname='Region'
+        )
+        self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority Type'
+        )
+        self.addMapping(
+            'relevant_authority_name',
+            self.cbx_relv_auth_name,
+            pseudoname='Relevant Authority Name'
+        )
+        self.addMapping(
+            'registration_division',
+            self.lnedit_reg_div,
+            pseudoname='Registration Division'
+        )
+        self.addMapping(
             'scheme_number',
             self.lnedit_schm_num,
             pseudoname='Scheme Number'
@@ -518,30 +541,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Establishment Date'
         )
         self.addMapping(
-            'region',
-            self.cbx_region,
-            pseudoname='Region'
-        )
-        self.addMapping(
-            'relevant_authority',
-            self.cbx_relv_auth,
-            pseudoname='Relevant Authority Type'
-        )
-        self.addMapping(
-            'relevant_authority_name',
-            self.cbx_relv_auth_name,
-            pseudoname='Relevant Authority Name'
+            'land_rights_office',
+            self.cbx_lro,
+            pseudoname='Land Rights Office'
         )
         self.addMapping(
             'township',
             self.lnedit_twnshp,
             pseudoname='Township'
         )
-        # self.addMapping(
-        #     'registration_division',
-        #     self.lnedit_reg_div,
-        #     pseudoname='Registration Division'
-        # )
         self.addMapping(
             'area',
             self.dbl_spinbx_block_area,
@@ -579,12 +587,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         notif_entity_obj = notification_model()
 
         # Get the table columns and add mapping
-        # notif_entity_obj.status = 1
-        # notif_entity_obj.source_user_id = 1
-        # notif_entity_obj.target_user_id = 2
-        # notif_entity_obj.content = 'Lodgement'
-        # notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
-        # notif_entity_obj.save()
+        notif_entity_obj.status = 1
+        notif_entity_obj.source_user_id = 1
+        notif_entity_obj.target_user_id = 2
+        notif_entity_obj.content = 'Lodgement'
+        notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
+        notif_entity_obj.save()
 
     def validateCurrentPage(self):
         current_id = self.currentId()
