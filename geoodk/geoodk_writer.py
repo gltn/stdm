@@ -667,7 +667,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref",self.model_category_group(parent_path, key))
 
-                label_text_info = key.replace("_", " ").title()
+                label_text_info = self.entity_read.col_label(key)
                 label_txt= self.create_text_node(label_text_info)
                 #label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
@@ -742,7 +742,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref", self.model_category_group(parent_path, key))
-                label_text_info = key.replace("_", " ").title()
+                label_text_info = self.entity_read.col_label(key)
                 label_txt = self.create_text_node(label_text_info)
                 # label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
@@ -823,7 +823,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         #     self.entity_read.user_entity_name() + " " +
         #     col.replace("_"," ").title().replace("Id", ""))
         lk_node_label_txt = self.create_text_node(
-            col.replace("_", " ").title().replace("Id", ""))
+            self.entity_read.col_label(col))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)
 
@@ -878,7 +878,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.setAttribute("ref", self.set_model_xpath(key, 'social_tenure'))
         lk_node_label = self.create_node("label")
         lk_node_label_txt = self.create_text_node(
-            key.replace("_", " ").title().replace("Id", ""))
+            self.entity_read.col_label(key))
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)
 

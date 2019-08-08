@@ -229,6 +229,19 @@ class GeoODKReader:
             if col.name == item_col:
                 return col.mandatory
 
+    def col_label(self, item_col):
+        """
+        Get the column label using the column name
+        :param: column name
+        :return: label name
+        :rtype: string
+        """
+        col_objs = self.profile_entity_attribute().values()
+        for obj in col_objs:
+            if obj.name == item_col:
+                return [obj.label if obj.label else
+                        obj.name.replace('_', ' ').title()][0]
+
     def entity_lookup(self):
         """
         :param lookup: 
