@@ -32,6 +32,7 @@ from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
 from ui_scheme_establishment import Ui_scheme_establish_dialog
+from notification import NotificationDialog
 from ..notification import NotificationBar, ERROR
 from ..customcontrols.scheme_summary_widget import SchemeSummaryWidget
 
@@ -147,37 +148,37 @@ class EstablishmentDialog(QDialog, Ui_scheme_establish_dialog, MapperMixin):
         self.chk_disapprove.toggled.connect(self.on_disapprove_action)
         self.btnSubmit.clicked.connect(self.on_validate_all)
 
-        self.tvw_notification.notif_detail.setSelected = False
+        # self.tvw_notification.notif_detail.setSelected = False
 
-        item_selected = self.tvw_notification.setItemSelected
+        # item_selected = self.tvw_notification.setItemSelected
 
-        if self.tvw_notification.notif_detail.setSelected:
-            self.on_notif_clicked()
+        # if self.tvw_notification.notif_detail.setSelected:
+        #     self.on_notif_clicked()
 
         self.approved = self.chk_approve.isChecked()
         self.disapproved = self.chk_disapprove.isChecked()
 
         # self.tw_lodgement_details.setEnabled(False)
 
-        self._load_notification()
+        # self._load_notification()
 
         self.load_scheme_details()
 
-    def _load_notification(self):
-        """
-        Load notification data from the database
-        """
-        # Querying for notification
-        res = self.notif_obj.queryObject().all()
-
-        for r in res:
-            n_status = r.status
-            n_content = r.content
-            n_time = r.timestamp
-
-            self.tvw_notification.notif_detail.setText(0, str(n_content))
-            self.tvw_notification.notif_detail.setText(1, str(n_status))
-            self.tvw_notification.notif_detail.setText(2, str(n_time))
+    # def _load_notification(self):
+    #     """
+    #     Load notification data from the database
+    #     """
+    #     # Querying for notification
+    #     res = self.notif_obj.queryObject().all()
+    #
+    #     for r in res:
+    #         n_status = r.status
+    #         n_content = r.content
+    #         n_time = r.timestamp
+    #
+    #         self.tvw_notification.notif_detail.setText(0, str(n_content))
+    #         self.tvw_notification.notif_detail.setText(1, str(n_status))
+    #         self.tvw_notification.notif_detail.setText(2, str(n_time))
 
     def on_notif_clicked(self):
         """
@@ -211,7 +212,7 @@ class EstablishmentDialog(QDialog, Ui_scheme_establish_dialog, MapperMixin):
             self.sc_summary.scm_name.setText(1, sc_name)
             self.sc_summary.scm_date_apprv.setText(1, str(sc_apprv))
             self.sc_summary.scm_date_est.setText(1, str(sc_est))
-            self.sc_summary.scm_lro.setText(1, sc_lro)
+            self.sc_summary.scm_lro.setText(1, str(sc_lro))
             self.sc_summary.scm_township.setText(1, sc_townshp)
             # self.sc_summary.scm_reg_div.setText(1, sc_reg_div)
             # self.sc_summary.scm_ra_name.setText(1, sc_relv_auth)
@@ -284,8 +285,8 @@ class EstablishmentDialog(QDialog, Ui_scheme_establish_dialog, MapperMixin):
         """
         # Get the table columns and add mapping
         self.notif_obj.status = 1
-        self.notif_obj.source_user_id = 1
-        self.notif_obj.target_user_id = 2
+        self.notif_obj.source_user_id = 2
+        self.notif_obj.target_user_id = 3
         self.notif_obj.content = 'Establishment done'
         self.notif_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
         self.notif_obj.save()

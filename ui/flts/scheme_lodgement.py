@@ -89,32 +89,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Entity objects
+        # Scheme object
         self.sch_entity_obj = self.curr_p.entity(self._sch_entity_name)
-        self.relv_auth_obj = self.curr_p.entity(self._rel_auth_entity_name)
-        self.chk_relv_auth_type_obj = self.curr_p.entity(
-            self._rel_auth_chk_entity_name
-        )
-        self.chk_region_obj = self.curr_p.entity(self._rgn_chk_entity_name)
-        self.chk_reg_div_obj = self.curr_p.entity(self._reg_div_chk_entity_name)
-
-        # Check if entities exist
-        if self.sch_entity_obj is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Scheme Entity'),
-                self.tr("The scheme entity is missing in the profile.")
-            )
-            self.reject()
-
-        if self.relv_auth_obj is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Relevant Authority Entity'),
-                self.tr("The relevant authority entity is missing in the "
-                        "profile.")
-            )
-            self.reject()
 
         # Entity models
         self.schm_model, self._scheme_doc_model = entity_model(
@@ -125,7 +101,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Entity object
         self.schm_model_obj = self.schm_model()
 
-        # Check if entity models exist
+        # Check if scheme entity models exist
         if self.schm_model is None:
             QMessageBox.critical(
                 self,
@@ -198,6 +174,48 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot for updating the Relevant Authority combobox based on the
         selections made in the two previous comboboxes
         """
+        # Entity objects
+        self.relv_auth_obj = self.curr_p.entity(self._rel_auth_entity_name)
+        self.chk_relv_auth_type_obj = self.curr_p.entity(
+            self._rel_auth_chk_entity_name
+        )
+        self.chk_region_obj = self.curr_p.entity(self._rgn_chk_entity_name)
+        self.chk_reg_div_obj = self.curr_p.entity(self._reg_div_chk_entity_name)
+
+        # Check if entities exist
+        if self.relv_auth_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity'),
+                self.tr("The relevant authority entity is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_relv_auth_type_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_region_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_reg_div_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+
         # Entity models
         self.chk_relv_auth_typ_model = entity_model(
             self.chk_relv_auth_type_obj)
@@ -209,7 +227,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.relv_entity_obj = self.relv_auth_model()
         self.chk_regdiv_obj = self.chk_regdiv_model()
 
-        if self.relv_auth_model is None:
+        if self.relv_entity_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Relevant Authority Entity Model'),
+                self.tr("The relevant authority entity model could not be "
+                        "generated.")
+            )
+            self.reject()
+        elif self.chk_regdiv_obj is None:
             QMessageBox.critical(
                 self,
                 self.tr('Relevant Authority Entity Model'),
@@ -242,7 +268,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.relv_auth_model.type_of_relevant_authority ==
             ra_id_type).all()
 
-        # Check wht the query object returns
+        # Check what the query object returns
         if len(res) == 0:
             return
 
@@ -618,6 +644,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 ret_status = True
         elif current_id == 2:
             # Check if all documents have been uploaded
+            self._load_scheme_document_types()
+            # Populate values to summary in next page
             self.populate_summary()
             return True
         elif current_id == 3:

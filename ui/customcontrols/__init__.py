@@ -4,3 +4,6 @@ from .coordinates_editor import CoordinatesWidget
 from .model_attributes_view import ModelAtrributesView
 from .checkable_combo import MultipleChoiceCombo
 from .list_pair_table_view import ListPairTableView
+from .notification_widget import NotificationWidget
+from .scheme_summary_widget import SchemeSummaryWidget
+from documents_table_widget import DocumentTableWidget

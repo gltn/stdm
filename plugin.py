@@ -65,6 +65,7 @@ from ui.flts.scan_certificate import ScanCertificateDialog
 from ui.flts.print_certificate import PrintCertificateDialog
 from ui.flts.search import SearchDialog
 from ui.flts.report import ReportDialog
+from ui.flts.notification import NotificationDialog
 
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
@@ -853,7 +854,7 @@ class STDMQGISLoader(object):
         #Required by module loader for those widgets that need to be inserted into the container
         adminBtn.setObjectName(adminObjName)
         adminBtn.setToolTip(adminObjName)
-        adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_settings.png"))
         adminBtn.setPopupMode(QToolButton.InstantPopup)
 
         adminMenu = QMenu(adminBtn)
@@ -861,7 +862,7 @@ class STDMQGISLoader(object):
 
         #Settings menu container in STDM's QGIS menu
         stdmAdminMenu = QMenu(self.stdmMenu)
-        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_settings.png"))
         stdmAdminMenu.setObjectName("STDMAdminSettings")
         stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
 
@@ -1000,7 +1001,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         notifBtn.setObjectName(notifObjName)
         notifBtn.setToolTip(notifObjName)
-        notifBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification2.png"))
+        notifBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification.png"))
         notifBtn.setPopupMode(QToolButton.InstantPopup)
 
         notifMenu = QMenu(notifBtn)
@@ -1008,7 +1009,7 @@ class STDMQGISLoader(object):
 
         # Settings menu container in STDM's QGIS menu
         fltsNotifMenu = QMenu(self.stdmMenu)
-        fltsNotifMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification2.png"))
+        fltsNotifMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_notification.png"))
         fltsNotifMenu.setObjectName("FLTSReportSettings")
         fltsNotifMenu.setTitle(QApplication.translate("ToolbarNotificationSettings", "Notification"))
 
@@ -1027,7 +1028,7 @@ class STDMQGISLoader(object):
         #                         QApplication.translate("ManageUsersToolbarAction", "Manage Users-Roles"),
         #                         self.iface.mainWindow())
         #
-        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/flts_options.png"), \
                                    QApplication.translate("OptionsToolbarAction", "Options"),
                                    self.iface.mainWindow())
 
@@ -1159,7 +1160,7 @@ class STDMQGISLoader(object):
         )
 
         self.schemeRevisionAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_revision.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_scheme_management.png"),
             QApplication.translate(
                 "SchemeRevisionToolbarAction",
                 "Scheme Revision"
@@ -1186,7 +1187,7 @@ class STDMQGISLoader(object):
         )
 
         self.notificationAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/flts_notification2.png"),
+            QIcon(":/plugins/stdm/images/icons/flts_notification.png"),
             QApplication.translate(
                 "NotificationToolbarAction",
                 "Notification"
@@ -1228,7 +1229,7 @@ class STDMQGISLoader(object):
         self.scanCertificateAct.triggered.connect(self.scan_certificate)
         self.searchAct.triggered.connect(self.flts_search)
         self.reportAct.triggered.connect(self.flts_report)
-        # self.notificationAct.triggered.connect(self.flts_notification)
+        self.notificationAct.triggered.connect(self.flts_notification)
 
         # Create content items
 
@@ -2352,6 +2353,8 @@ class STDMQGISLoader(object):
                 self.print_certificate()
             elif action_code == 'S_CRT':
                 self.scan_certificate()
+            elif action_code == 'NTF':
+                self.flts_notification()
             elif action_code == 'SRC':
                 self.flts_search()
             elif action_code == 'RPT':
@@ -2430,3 +2433,10 @@ class STDMQGISLoader(object):
         """
         report_dialog = ReportDialog(self.iface.mainWindow())
         report_dialog.exec_()
+
+    def flts_notification(self):
+        """
+        Load the dialog for notifications in flts
+        """
+        notification_dialog = NotificationDialog(self.iface.mainWindow())
+        notification_dialog.exec_()
