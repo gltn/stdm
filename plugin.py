@@ -56,7 +56,7 @@ from stdm.ui.options_base import OptionsDialog
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
 from ui.flts.scheme_establishment import EstablishmentDialog
-from ui.flts.first_examination import FirstExaminationWizard
+from ui.flts.scheme_manager.scheme_manager import SchemeManagerDlg
 from ui.flts.second_examination import SecondExaminationWizard
 from ui.flts.third_examination import ThirdExaminationWizard
 from ui.flts.import_plots import ImportPlotWizard
@@ -2377,8 +2377,8 @@ class STDMQGISLoader(object):
         """
         Load the wizard for first examination of scheme.
         """
-        f_examination = FirstExaminationWizard(self.iface.mainWindow())
-        f_examination.exec_()
+        schemeManager = SchemeManagerDlg(self.iface.mainWindow())
+        schemeManager.exec_()
 
     def second_examination(self):
         """
