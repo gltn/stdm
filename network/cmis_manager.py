@@ -741,7 +741,7 @@ class CmisEntityDocumentMapper(object):
             raise CmisDocumentMapperException(msg)
 
         # Get doc_type from code
-        if doc_type_code and not doc_type_code:  # @gkahiu code underneath may never not be reached
+        if doc_type_code and not doc_type_code:  # @gkahiu code underneath may never be reached
             doc_type_m = self.mapping_by_code(doc_type_code)
             if not doc_type_m:
                 msg = u'Document type could not be retrieved from {0} ' \
