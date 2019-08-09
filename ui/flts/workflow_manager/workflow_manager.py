@@ -30,8 +30,28 @@ class WorkflowManagerDockWidget(QDockWidget):
         self.setWindowTitle("FLTS Workflow Manager")
         self.setObjectName("WorkflowManagerDockWidget")
         self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+
+        self.topLevelChanged.connect(self.topLevelChange)
+
         workflowManagerObj = WorkflowManager(self)
         self.setWidget(workflowManagerObj)
+
+    def topLevelChange(self, topLevel):
+        """
+        On undock, get top level floating dock widget and
+        add maximize and minimize buttons
+        :param topLevel: Flag to check if dock widget is top level
+        :type topLevel: Boolean
+        """
+        dockWidget = self.sender()
+        if dockWidget is None or not isinstance(dockWidget, QDockWidget):
+            return
+        if dockWidget.isFloating():
+            dockWidget.setWindowFlags(
+                Qt.CustomizeWindowHint | Qt.Window |
+                Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
+            )
+        dockWidget.show()
 
 
 class WorkflowManager(QWidget, Ui_WorkflowManagerWidget):
