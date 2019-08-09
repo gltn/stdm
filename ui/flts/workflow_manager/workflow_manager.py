@@ -17,26 +17,37 @@ copyright            : (C) 2019
 """
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from ui_scheme_manager import Ui_SchemeManagerDlg
-from scheme_model import SchemeModel
+from ui_workflow_manager import Ui_WorkflowManagerWidget
+# from scheme_model import SchemeModel
 
 
-class SchemeManagerDlg(QDialog, Ui_SchemeManagerDlg):
+class WorkflowManagerDockWidget(QDockWidget):
     """
-    Dialog that manages all scheme pipelines; establishment and, first and
-    second examination
+    Docks Workflow Manager in QGIS window
     """
+    def __init__(self, parent=None):
+        super(QDockWidget, self).__init__(parent)
+        self.setWindowTitle("FLTS Workflow Manager")
+        self.setObjectName("WorkflowManagerDockWidget")
+        self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+        workflowManagerObj = WorkflowManager(self)
+        self.setWidget(workflowManagerObj)
 
-    def __init__(self, iface_, parent=None):
-        QDialog.__init__(self, parent)
+
+class WorkflowManager(QWidget, Ui_WorkflowManagerWidget):
+    """
+    Manages FLTS workflow and notifications on;
+    Scheme Establishment and First, Second and Third Examination
+    """
+    def __init__(self, parent=None):
+        super(QWidget, self).__init__(parent)
 
         self.setupUi(self)
 
         # self.model = SchemeModel(session, entityModels)  # table model
         # self.schemeTableView.setModel(self.model)
 
-        self.schemeTableView.setSelectionMode(QTableView.SingleSelection)
-        self.schemeTableView.setSelectionBehavior(QTableView.SelectRows)
-        self.schemeTableView.resizeColumnsToContents()
-        self.splitter.setStretchFactor(0, 1)
-        self.splitter.setStretchFactor(1, 3)
+        # self.schemeTableView.setSelectionMode(QTableView.SingleSelection)
+        # self.schemeTableView.setSelectionBehavior(QTableView.SelectRows)
+        # self.schemeTableView.resizeColumnsToContents()
+

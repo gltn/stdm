@@ -56,7 +56,7 @@ from stdm.ui.options_base import OptionsDialog
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
 from ui.flts.scheme_establishment import EstablishmentDialog
-from ui.flts.scheme_manager.scheme_manager import SchemeManagerDlg
+from ui.flts.workflow_manager.workflow_manager import WorkflowManagerDockWidget
 from ui.flts.second_examination import SecondExaminationWizard
 from ui.flts.third_examination import ThirdExaminationWizard
 from ui.flts.import_plots import ImportPlotWizard
@@ -149,6 +149,7 @@ class STDMQGISLoader(object):
         # Initialize loader
         self.toolbarLoader = None
         self.menubarLoader = None
+        self.workflowManager = None
 
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
@@ -2375,10 +2376,14 @@ class STDMQGISLoader(object):
 
     def first_examination(self):
         """
-        Load the wizard for first examination of scheme.
+        Set docking widget at the bottom and load scheme records
         """
-        schemeManager = SchemeManagerDlg(self.iface.mainWindow())
-        schemeManager.exec_()
+        if self.workflowManager and isinstance(
+                self.workflowManager, WorkflowManagerDockWidget
+        ):
+            return
+        self.workflowManager = WorkflowManagerDockWidget(self.iface.mainWindow())
+        self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.workflowManager)
 
     def second_examination(self):
         """
