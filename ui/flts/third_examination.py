@@ -1,10 +1,9 @@
 """
 /***************************************************************************
-Name                 : Third Examination Wizard
-Description          : Dialog for performing third examination  on a scheme.
-Date                 : 01/July/2019
-copyright            : (C) 2019 by Joseph Kariuki
-email                : joehene@gmail.com
+Name                 : Third Examination Widget
+Description          : A widget for performing third examination  on a scheme.
+Date                 : 07/August/2019
+copyright            : (C) 2019
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,22 +15,26 @@ email                : joehene@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (
-    Qt
-)
 
-from PyQt4.QtGui import (
-    QWizard
-)
-
-from ui_third_examination import Ui_ThirdExam_Wzd
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
 
-class ThirdExaminationWizard(QWizard, Ui_ThirdExam_Wzd):
+class ThirdExaminationWidget(QWidget, Ui_WorkflowManagerWidget):
     """
-    Performing the third examination on a scheme
+    Manages Third Examination notifications and workflow
     """
     def __init__(self, parent=None):
-        QWizard.__init__(self, parent)
+        super(QWidget, self).__init__(parent)
 
         self.setupUi(self)
+
+        self.setWindowTitle("Third Workflow Manager")
+        self.setObjectName("thirdExamination")
+        # self.model = SchemeModel(session, entityModels)  # table model
+        # self.schemeTableView.setModel(self.model)
+
+        # self.schemeTableView.setSelectionMode(QTableView.SingleSelection)
+        # self.schemeTableView.setSelectionBehavior(QTableView.SelectRows)
+        # self.schemeTableView.resizeColumnsToContents()
