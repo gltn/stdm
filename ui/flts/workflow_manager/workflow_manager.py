@@ -1,8 +1,8 @@
 """
 /***************************************************************************
-Name                 : Scheme Lodgement Wizard
-Description          : Dialog for lodging a new scheme.
-Date                 : 01/July/2019
+Name                 : Workflow Manager
+Description          : Defines FLTS generic workflow functions and classes
+Date                 : 07/August/2019
 copyright            : (C) 2019
  ***************************************************************************/
 
@@ -17,28 +17,23 @@ copyright            : (C) 2019
 """
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from ui_workflow_manager import Ui_WorkflowManagerWidget
-# from scheme_model import SchemeModel
 
 
-class WorkflowManagerDockWidget(QDockWidget):
+class DockWidget(QDockWidget):
     """
-    Docks Workflow Manager in QGIS window
+    Sets a dockable widget from a widget
     """
-    def __init__(self, parent=None):
+    def __init__(self, customWidget, parent=None):
         super(QDockWidget, self).__init__(parent)
-        self.setWindowTitle("FLTS Workflow Manager")
-        self.setObjectName("WorkflowManagerDockWidget")
+        self.setWindowTitle(customWidget.windowTitle())
+        self.setObjectName(customWidget.objectName())
         self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+        self.topLevelChanged.connect(self._onTopLevelChange)
+        self.setWidget(customWidget)
 
-        self.topLevelChanged.connect(self.onTopLevelChange)
-
-        workflowManagerObj = WorkflowManager(self)
-        self.setWidget(workflowManagerObj)
-
-    def onTopLevelChange(self, topLevel):
+    def _onTopLevelChange(self, topLevel):
         """
-        Add maximize and minimize buttons
+        Add maximize and minimize buttons on the dock widget
         :param topLevel: Flag to check if dock widget is top level
         :type topLevel: Boolean
         """
@@ -53,20 +48,63 @@ class WorkflowManagerDockWidget(QDockWidget):
         dockWidget.show()
 
 
-class WorkflowManager(QWidget, Ui_WorkflowManagerWidget):
+class DockWidgetFactory:
     """
-    Manages FLTS workflow and notifications on;
-    Scheme Establishment and First, Second and Third Examination
+    Factory to create dockable widgets from a widget
     """
-    def __init__(self, parent=None):
-        super(QWidget, self).__init__(parent)
+    addedWidgets = {}
 
-        self.setupUi(self)
+    def __init__(self, customWidget, iface=None):
+        self._customWidget = customWidget()
+        self._iface = iface
 
-        # self.model = SchemeModel(session, entityModels)  # table model
-        # self.schemeTableView.setModel(self.model)
+    def getDockWidget(self):
+        """
+        Returns dock widget if it exists
+        :return dockWidget: A dockwidget
+        :rtype dockWidget: QDockWidget
+        """
+        objectName = self._customWidget.objectName()
+        dockWidgets = DockWidgetFactory.addedWidgets
+        if objectName in dockWidgets:
+            dockWidget = dockWidgets[objectName]
+            return dockWidget
 
-        # self.schemeTableView.setSelectionMode(QTableView.SingleSelection)
-        # self.schemeTableView.setSelectionBehavior(QTableView.SelectRows)
-        # self.schemeTableView.resizeColumnsToContents()
+    def showDockWidget(self, dockWidget):
+        """
+        Shows hidden dock widget
+        :return: A docked widget or None
+        :rtype: QDockWidget or None
+        """
+        self.hideDockWidget(dockWidget)
+        if dockWidget.isHidden():
+            return dockWidget.show()
+        return
+
+    def setDockWidget(self):
+        """
+        Sets a new dock widget in QGIS
+        :return: A docked widget
+        :rtype: QDockWidget
+        """
+        addedWidgets = DockWidgetFactory.addedWidgets
+        newWidget = DockWidget(self._customWidget, self._iface.mainWindow())
+        addedWidgets[newWidget.objectName()] = newWidget
+        self.hideDockWidget()
+        self._iface.addDockWidget(Qt.BottomDockWidgetArea, newWidget)
+
+    def hideDockWidget(self, dockWidget=None):
+        """
+        Hides visible dock widget
+        :param dockWidget:
+        :type dockWidget: QDockWidget
+        """
+        for widget_ in DockWidgetFactory.addedWidgets.values():
+            if widget_ != dockWidget and widget_.isVisible():
+                widget_.hide()
+
+
+
+
+
 

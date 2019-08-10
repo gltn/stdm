@@ -56,9 +56,10 @@ from stdm.ui.options_base import OptionsDialog
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
 from ui.flts.scheme_establishment import EstablishmentDialog
-from ui.flts.workflow_manager.workflow_manager import WorkflowManagerDockWidget
-from ui.flts.second_examination import SecondExaminationWizard
-from ui.flts.third_examination import ThirdExaminationWizard
+from ui.flts.workflow_manager.workflow_manager import DockWidgetFactory
+from ui.flts.first_examination import FirstExaminationWidget
+from ui.flts.second_examination import SecondExaminationWidget
+from ui.flts.third_examination import ThirdExaminationWidget
 from ui.flts.import_plots import ImportPlotWizard
 from ui.flts.scheme_revision import SchemeRevisionWizard
 from ui.flts.scan_certificate import ScanCertificateDialog
@@ -149,7 +150,6 @@ class STDMQGISLoader(object):
         # Initialize loader
         self.toolbarLoader = None
         self.menubarLoader = None
-        self.workflowManager = None
 
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
@@ -2376,28 +2376,34 @@ class STDMQGISLoader(object):
 
     def first_examination(self):
         """
-        Set docking widget at the bottom and load scheme records
+        Docks First Examination workflow manager widget
         """
-        if self.workflowManager and isinstance(
-                self.workflowManager, WorkflowManagerDockWidget
-        ):
-            return
-        self.workflowManager = WorkflowManagerDockWidget(self.iface.mainWindow())
-        self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.workflowManager)
+        self.dockCustomWidget(FirstExaminationWidget)
 
     def second_examination(self):
         """
-        Load the wizard for second examination of scheme.
+        Docks Second Examination workflow manager widget
         """
-        s_examination = SecondExaminationWizard(self.iface.mainWindow())
-        s_examination.exec_()
+        self.dockCustomWidget(SecondExaminationWidget)
 
     def third_examination(self):
         """
-        Load the wizard for third examination of scheme.
+        Docks Third Examination workflow manager widget
         """
-        t_examination = ThirdExaminationWizard(self.iface.mainWindow())
-        t_examination.exec_()
+        self.dockCustomWidget(ThirdExaminationWidget)
+
+    def dockCustomWidget(self, customWidget):
+        """
+        Docks custom widgets in QGIS
+        :param customWidget: Custom widget
+        :type customWidget:  QWidget
+        """
+        dockWidget = DockWidgetFactory(customWidget, self.iface)
+        oldDockWidget = dockWidget.getDockWidget()
+        if oldDockWidget:
+            dockWidget.showDockWidget(oldDockWidget)
+            return
+        dockWidget.setDockWidget()
 
     def import_plots(self):
         """
