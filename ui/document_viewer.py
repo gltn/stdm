@@ -75,7 +75,7 @@ class PDFDocumentViewer(QWidget):
         super(PDFDocumentViewer, self).__init__(parent)
         self._init_ui()
         self._cmis_doc = cmis_doc
-        self.doc_type = ''
+        self._doc_type = ''
         self._load_doc()
 
     def _init_ui(self):
