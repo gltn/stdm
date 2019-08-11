@@ -120,7 +120,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.notif_bar = NotificationBar(self.vlNotification)
 
         # CMIS stuff for document management
-        self._suporting_docs_loaded = False
         self._cmis_mgr = CmisManager()
         # Mapper will be set in initialization of 1st page
         self._cmis_doc_mapper = None
