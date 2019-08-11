@@ -52,8 +52,8 @@ class DockWidgetFactory:
     """
     Factory to create dockable widgets from a widget
     """
-    addedWidgets = {}
-    currentWidget = None
+    savedWidgets = {}
+    activeWidget = None
 
     def __init__(self, customWidget, iface=None):
         self._customWidget = customWidget()
@@ -66,9 +66,9 @@ class DockWidgetFactory:
         :rtype dockWidget: QDockWidget
         """
         objectName = self._customWidget.objectName()
-        addedWidgets = DockWidgetFactory.addedWidgets
-        if objectName in addedWidgets:
-            dockWidget = addedWidgets[objectName]
+        savedWidgets = DockWidgetFactory.savedWidgets
+        if objectName in savedWidgets:
+            dockWidget = savedWidgets[objectName]
             return dockWidget
 
     def showDockWidget(self, dockWidget):
@@ -78,7 +78,7 @@ class DockWidgetFactory:
         :rtype: QDockWidget or None
         """
         if dockWidget.isHidden():
-            DockWidgetFactory.currentWidget = dockWidget
+            DockWidgetFactory.activeWidget = dockWidget
             return dockWidget.show()
         return
 
@@ -88,19 +88,19 @@ class DockWidgetFactory:
         :return: A docked widget
         :rtype: QDockWidget
         """
-        addedWidgets = DockWidgetFactory.addedWidgets
+        savedWidgets = DockWidgetFactory.savedWidgets
         newWidget = DockWidget(self._customWidget, self._iface.mainWindow())
-        addedWidgets[newWidget.objectName()] = newWidget
+        savedWidgets[newWidget.objectName()] = newWidget
         self._iface.addDockWidget(Qt.BottomDockWidgetArea, newWidget)
-        DockWidgetFactory.currentWidget = newWidget
+        DockWidgetFactory.activeWidget = newWidget
 
     @classmethod
-    def hideCurrentDockWidget(cls):
+    def hideActiveDockWidget(cls):
         """
-        Hides current visible dock widget
+        Hides the active/visible dock widget
         """
-        if cls.currentWidget and cls.currentWidget.isVisible():
-            cls.currentWidget.hide()
+        if cls.activeWidget and cls.activeWidget.isVisible():
+            cls.activeWidget.hide()
 
 
 
