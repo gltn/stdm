@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Tue Jul 30 21:21:28 2019
+# Created: Sat Aug 10 22:44:39 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -158,10 +158,6 @@ class Ui_ldg_wzd(object):
         self.wizardPage.setObjectName(_fromUtf8("wizardPage"))
         self.gridLayout = QtGui.QGridLayout(self.wizardPage)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
-        self.vlNotification_3 = QtGui.QVBoxLayout()
-        self.vlNotification_3.setContentsMargins(-1, -1, -1, 10)
-        self.vlNotification_3.setObjectName(_fromUtf8("vlNotification_3"))
-        self.gridLayout.addLayout(self.vlNotification_3, 0, 0, 1, 2)
         self.label_desc_3 = QtGui.QLabel(self.wizardPage)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
@@ -175,21 +171,13 @@ class Ui_ldg_wzd(object):
         self.label_desc_3.setMargin(1)
         self.label_desc_3.setObjectName(_fromUtf8("label_desc_3"))
         self.gridLayout.addWidget(self.label_desc_3, 1, 0, 1, 2)
-        self.tbw_documents = DocumentTableWidget(self.wizardPage)
-        self.tbw_documents.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tbw_documents.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
-        self.tbw_documents.setObjectName(_fromUtf8("tbw_documents"))
-        self.gridLayout.addWidget(self.tbw_documents, 2, 0, 1, 2)
-        self.label_upld_multi = QtGui.QLabel(self.wizardPage)
-        self.label_upld_multi.setObjectName(_fromUtf8("label_upld_multi"))
-        self.gridLayout.addWidget(self.label_upld_multi, 3, 0, 1, 1)
         self.btn_upload_dir = QtGui.QPushButton(self.wizardPage)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.btn_upload_dir.sizePolicy().hasHeightForWidth())
         self.btn_upload_dir.setSizePolicy(sizePolicy)
-        self.btn_upload_dir.setMinimumSize(QtCore.QSize(0, 30))
+        self.btn_upload_dir.setMinimumSize(QtCore.QSize(0, 0))
         self.btn_upload_dir.setMaximumSize(QtCore.QSize(5000, 16777215))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -197,6 +185,21 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setIconSize(QtCore.QSize(16, 16))
         self.btn_upload_dir.setObjectName(_fromUtf8("btn_upload_dir"))
         self.gridLayout.addWidget(self.btn_upload_dir, 3, 1, 1, 1)
+        self.label_upld_multi = QtGui.QLabel(self.wizardPage)
+        self.label_upld_multi.setObjectName(_fromUtf8("label_upld_multi"))
+        self.gridLayout.addWidget(self.label_upld_multi, 3, 0, 1, 1)
+        self.vlNotification_3 = QtGui.QVBoxLayout()
+        self.vlNotification_3.setContentsMargins(-1, -1, -1, 10)
+        self.vlNotification_3.setObjectName(_fromUtf8("vlNotification_3"))
+        self.gridLayout.addLayout(self.vlNotification_3, 0, 0, 1, 2)
+        self.tbw_documents = DocumentTableWidget(self.wizardPage)
+        self.tbw_documents.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tbw_documents.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
+        self.tbw_documents.setObjectName(_fromUtf8("tbw_documents"))
+        self.gridLayout.addWidget(self.tbw_documents, 2, 0, 1, 2)
+        self.gp_preview_docs = QgsCollapsibleGroupBox(self.wizardPage)
+        self.gp_preview_docs.setObjectName(_fromUtf8("gp_preview_docs"))
+        self.gridLayout.addWidget(self.gp_preview_docs, 4, 0, 1, 2)
         ldg_wzd.addPage(self.wizardPage)
         self.wizardPage_4 = QtGui.QWizardPage()
         self.wizardPage_4.setObjectName(_fromUtf8("wizardPage_4"))
@@ -239,11 +242,13 @@ class Ui_ldg_wzd(object):
         self.btn_validate_holders.setText(QtGui.QApplication.translate("ldg_wzd", "Validate", None, QtGui.QApplication.UnicodeUTF8))
         self.wizardPage.setSubTitle(QtGui.QApplication.translate("ldg_wzd", "Upload the supporting documents for the scheme", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_3.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
+        self.gp_preview_docs.setTitle(QtGui.QApplication.translate("ldg_wzd", "Preview Documents", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_4.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
 
-from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
 from stdm.ui.customcontrols.table_widget import ExcelWorkbookView
+from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
+from qgis.gui import QgsCollapsibleGroupBox
 from stdm import resources_rc

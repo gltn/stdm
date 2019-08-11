@@ -23,6 +23,7 @@ from __future__ import division
 import logging
 
 from PyQt4.QtGui import (
+    QHBoxLayout,
     QMdiSubWindow,
     QMdiArea,
     QApplication,
@@ -44,6 +45,7 @@ from PyQt4.QtGui import (
     QMainWindow,
     QMenu,
     QDesktopWidget,
+    QTabWidget,
     QResizeEvent
 )
 from PyQt4.QtCore import (
@@ -53,12 +55,81 @@ from PyQt4.QtCore import (
     QFile,
     QSize
 )
+from PyQt4.QtWebKit import (
+    QWebView
+)
 
 from stdm.utils.util import (
     guess_extension
 )
 from stdm.settings import current_profile
 LOGGER = logging.getLogger('stdm')
+
+
+class PDFDocumentViewer(QWidget):
+    """
+    Widget for displaying a CMIS document object together with the basic
+    properties of the document.
+    """
+    def __init__(self, cmis_doc=None, parent=None):
+        super(PDFDocumentViewer, self).__init__(parent)
+        self._init_ui()
+        self._cmis_doc = cmis_doc
+        self.doc_type = ''
+        self._load_doc()
+
+    def _init_ui(self):
+        # Initialize UI
+        layout = QHBoxLayout()
+        self._doc_view = QWebView()
+        layout.addWidget(self._doc_view)
+        self.setLayout(layout)
+
+    @property
+    def document(self):
+        """
+        :return: Returns the CMIS document object.
+        :rtype: cmis.domain.Document
+        """
+        return self._cmis_doc
+
+    @document.setter
+    def document(self, document):
+        """
+        Sets the CMIS document and reloads the page.
+        :param document: CMIS document object.
+        :type document: cmis.domain.Document
+        """
+        self._cmis_doc = document
+        self._load_doc()
+
+    def _load_doc(self):
+        # Loads the CMIS document in the viewer.
+        if not self._cmis_doc:
+            return
+
+
+class DocumentViewerContainer(QTabWidget):
+    """
+    Provides a tab-interface for viewing supporting documents based on the
+    document type.
+    """
+    def __init__(self, parent=None):
+        super(DocumentViewerContainer, self).__init__(parent)
+        self._doc_type_idx = {}
+
+    def add_document(self, doc_type, cmis_doc):
+        """
+        Creates a tab and load the document, based on the CMIS properties,
+        for viewing. No tab is created if there is a previously loaded
+        document of the same type, the viewer is reloaded with the new document.
+        :param doc_type: Name of the document type.
+        :type doc_type: str
+        :param cmis_doc: CMIS document object containg the document
+        properties.
+        :type cmis_doc: cmis.domain.Document
+        """
+
 
 class PhotoViewer(QScrollArea):
     """
