@@ -68,7 +68,7 @@ class DockWidgetFactory:
         objectName = self._customWidget.objectName()
         savedWidgets = DockWidgetFactory.savedWidgets
         if objectName in savedWidgets:
-            dockWidget = savedWidgets[objectName]
+            dockWidget = savedWidgets.get(objectName, None)
             return dockWidget
 
     @classmethod
