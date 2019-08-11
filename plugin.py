@@ -2428,9 +2428,9 @@ class STDMQGISLoader(object):
         """
         dockWidget = DockWidgetFactory(customWidget, self.iface)
         savedWidget = dockWidget.getDockWidget()
-        DockWidgetFactory.hideActiveDockWidget()  # Active/visible
+        DockWidgetFactory.hideActiveDockWidget()
         if savedWidget:
-            dockWidget.showDockWidget(savedWidget)
+            DockWidgetFactory.showDockWidget(savedWidget)
             return
         dockWidget.setDockWidget()
 

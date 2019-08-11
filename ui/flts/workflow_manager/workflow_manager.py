@@ -71,14 +71,15 @@ class DockWidgetFactory:
             dockWidget = savedWidgets[objectName]
             return dockWidget
 
-    def showDockWidget(self, dockWidget):
+    @classmethod
+    def showDockWidget(cls, dockWidget):
         """
         Shows hidden dock widget
         :return: A docked widget or None
         :rtype: QDockWidget or None
         """
         if dockWidget.isHidden():
-            DockWidgetFactory.activeWidget = dockWidget
+            cls.activeWidget = dockWidget
             return dockWidget.show()
         return
 
