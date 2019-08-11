@@ -1,9 +1,12 @@
 """
 /***************************************************************************
-Name                 : Scheme Lodgement Wizard
-Description          : Dialog for lodging a new scheme.
-Date                 : 01/July/2019
-copyright            : (C) 2019
+Name                 : SchemeSummaryWidget
+Description          : A table widget that provides a quick access menus for
+                       uploading and viewing supporting documents.
+Date                 : 16/July/2019
+copyright            : (C) 2019 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -130,13 +133,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.update_relevant_authority)
         self.cbx_relv_auth.currentIndexChanged.connect(
             self.update_relevant_authority)
-
         self.cbx_relv_auth_name.currentIndexChanged.connect(
             self.on_ra_name_changed)
-
         # Populate lookup comboboxes
         self._populate_lookups()
-
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
@@ -165,6 +165,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                              'cb_check_lht_relevant_authority')
         self._populate_combo(self.cbx_lro,
                              'cb_check_lht_land_rights_office')
+        self._populate_combo(self.cbx_reg_div,
+                             'cb_check_lht_reg_division')
 
         # Sort region combobox items
         self.cbx_region.model().sort(0)
@@ -257,7 +259,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Initial clear elements
         self.cbx_relv_auth_name.clear()
-
         # Add an empty itemData
         self.cbx_relv_auth_name.addItem('')
 
@@ -266,17 +267,20 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         res = self.relv_entity_obj.queryObject().filter(
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type).all()
+            ra_id_type,
+            self.relv_auth_model.registration_division ==
+            self.chk_regdiv_model.id).all()
 
         # Check what the query object returns
         if len(res) == 0:
             return
 
-        reg_div = res[0].registration_division
+        # reg_div = res[0].registration_division
 
         # Query object filtered on registration division lookup
-        regdiv_instance = self.chk_regdiv_obj.queryObject().filter(
-            self.chk_regdiv_model.id == reg_div
+        res1 = self.chk_regdiv_obj.queryObject().filter(
+            self.chk_regdiv_model.id ==
+            self.relv_auth_model.registration_division
         ).first()
 
         # Looping through the results to get details
@@ -284,13 +288,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             authority_name = r.name_of_relevant_authority
             authority_id = r.id
             code = r.au_code
-            frc = regdiv_instance.value
+            reg_div_val = res1.value
 
             # Add the items to combo
             # Date will contain tuple(ID, code and registration division)
             self.cbx_relv_auth_name.addItem(
                 authority_name,
-                (authority_id, code, reg_div, frc)
+                (authority_id, code, reg_div_val)
             )
 
     def on_ra_name_changed(self):
@@ -298,21 +302,27 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot for updating the scheme number based on selection of name of
         relevant authority combobox selection
         """
-        # Clear scheme number and registration division
+        # Clear scheme number
         self.lnedit_schm_num.clear()
-        self.lnedit_reg_div.clear()
+        self.cbx_reg_div.clear()
 
         if not self.cbx_relv_auth_name.currentText():
             return
 
-        id, code, reg_div, frc = self.cbx_relv_auth_name.itemData(
+        id, code, reg_div_val = self.cbx_relv_auth_name.itemData(
             self.cbx_relv_auth_name.currentIndex()
         )
+
+        # Registration division
+        self.cbx_reg_div.addItem('')
+        self.cbx_reg_div.clearEditText()
+        self.cbx_reg_div.addItems(reg_div_val)
+
         last_value = None
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
-        # Registration division
-        self.lnedit_reg_div.setText(frc)
+
+        return reg_div_val
 
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number
@@ -543,7 +553,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         )
         self.addMapping(
             'registration_division',
-            self.lnedit_reg_div,
+            self.cbx_reg_div,
             pseudoname='Registration Division'
         )
         self.addMapping(
@@ -693,7 +703,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                         )
         self.tr_summary.scm_township.setText(1, self.lnedit_twnshp.text()
                                              )
-        self.tr_summary.scm_reg_div.setText(1, self.lnedit_reg_div.text()
+        self.tr_summary.scm_reg_div.setText(1, self.cbx_reg_div.currentText()
                                             )
         self.tr_summary.scm_blk_area.setText(1,
                                              self.dbl_spinbx_block_area.text()
