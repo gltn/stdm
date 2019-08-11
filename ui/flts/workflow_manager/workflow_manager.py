@@ -65,9 +65,9 @@ class DockWidgetFactory:
         :rtype dockWidget: QDockWidget
         """
         objectName = self._customWidget.objectName()
-        dockWidgets = DockWidgetFactory.addedWidgets
-        if objectName in dockWidgets:
-            dockWidget = dockWidgets[objectName]
+        addedWidgets = DockWidgetFactory.addedWidgets
+        if objectName in addedWidgets:
+            dockWidget = addedWidgets[objectName]
             return dockWidget
 
     def showDockWidget(self, dockWidget):
