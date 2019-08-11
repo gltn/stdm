@@ -147,9 +147,11 @@ class SchemeSummaryWidget(QTreeWidget):
         lbl_view_doc_layout_plan = self.create_hyperlink_widget(view_str)
         self.setItemWidget(self.doc_layout_plan, 1, lbl_view_doc_layout_plan)
 
-        self.doc_imposing_condition.setText(0, self.tr('Document Imposing Conditions: '))
+        self.doc_imposing_condition.setText(0, self.tr('Document Imposing '
+                                                       'Conditions: '))
         lbl_view_doc_imposing = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_imposing_condition, 1, lbl_view_doc_imposing)
+        self.setItemWidget(self.doc_imposing_condition, 1,
+                           lbl_view_doc_imposing)
 
         self.doc_explanatory.setText(0, self.tr('Explanatory Report: '))
         lbl_view_doc_explanatory = self.create_hyperlink_widget(view_str)
@@ -159,17 +161,22 @@ class SchemeSummaryWidget(QTreeWidget):
         lbl_view_doc_fieldbk = self.create_hyperlink_widget(view_str)
         self.setItemWidget(self.doc_field_book, 1, lbl_view_doc_fieldbk)
 
-        self.doc_potential_hld.setText(0, self.tr('List of Potential Holders: '))
+        self.doc_potential_hld.setText(0, self.tr('List of Potential '
+                                                  'Holders: '))
         lbl_view_doc_potential_hld = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_potential_hld, 1, lbl_view_doc_potential_hld)
+        self.setItemWidget(self.doc_potential_hld, 1,
+                           lbl_view_doc_potential_hld)
 
-        self.doc_notice_establish.setText(0, self.tr('Notice of Establishment of Scheme: '))
+        self.doc_notice_establish.setText(0, self.tr('Notice of Establishment '
+                                                     'of Scheme: '))
         lbl_view_doc_notice = self.create_hyperlink_widget(view_str)
         self.setItemWidget(self.doc_notice_establish, 1, lbl_view_doc_notice)
 
-        self.doc_blockerf_title.setText(0, self.tr('Title Deed of Blockerf: '))
+        self.doc_blockerf_title.setText(0, self.tr('Title Deed of Blockerf: ')
+                                        )
         lbl_view_blockerf_title = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_blockerf_title, 1, lbl_view_blockerf_title)
+        self.setItemWidget(self.doc_blockerf_title, 1,
+                           lbl_view_blockerf_title)
 
         self.doc_trans_contract.setText(0, self.tr('Transfer Contract: '))
         lbl_view_doc_trans = self.create_hyperlink_widget(view_str)

@@ -6,42 +6,38 @@
     <file>images/icons/flts_password_change.png</file>
     <file>images/icons/flts_error.png</file>
     <file>images/icons/flts_export_file.png</file>
-    <file>images/icons/flts_first_examination.png</file>
     <file>images/icons/flts_help.png</file>
     <file>images/icons/flts_scheme_docs_dir.png</file>
     <file>images/icons/flts_import_plot.png</file>
     <file>images/icons/flts_login.png</file>
     <file>images/icons/flts_logout.png</file>
     <file>images/icons/flts_lodgement.png</file>
+    <file>images/icons/flts_notification.png</file>
     <file>images/icons/flts_database_designer.png</file>
     <file>images/icons/flts_certificate_print.png</file>
     <file>images/icons/flts_certificate_scan.png</file>
     <file>images/icons/flts_scheme_establishment.png</file>
-    <file>images/icons/flts_notification.png</file>
-    <file>images/icons/flts_notification2.png</file>
+    <file>images/icons/flts_options.png</file>
     <file>images/icons/flts_password.png</file>
     <file>images/icons/flts_plot_module.png</file>
     <file>images/icons/flts_print.png</file>
     <file>images/icons/flts_report.png</file>
-    <file>images/icons/flts_revision.png</file>
     <file>images/icons/flts_save.png</file>
     <file>images/icons/flts_scan.png</file>
-    <file>images/icons/flts_scheme_assessment.png</file>
     <file>images/icons/flts_scheme_import_plot.png</file>
+    <file>images/icons/flts_scheme_management.png</file>
     <file>images/icons/flts_scheme_management_assessment1.png</file>
     <file>images/icons/flts_scheme_management_assessment2.png</file>
     <file>images/icons/flts_scheme_management_assessment3.png</file>
     <file>images/icons/flts_scheme_management_search.png</file>
     <file>images/icons/flts_search_holder.png</file>
     <file>images/icons/flts_search_plot.png</file>
-    <file>images/icons/flts_scheme_notification.png</file>
     <file>images/icons/flts_search.png</file>
     <file>images/icons/flts_search_person.png</file>
     <file>images/icons/flts_search_plot.png</file>
     <file>images/icons/flts_search_result.png</file>
-    <file>images/icons/flts_second_examination.png</file>
+    <file>images/icons/flts_settings.png</file>
     <file>images/icons/flts_success.png</file>
-    <file>images/icons/flts_third_examination.png</file>
     <file>images/icons/flts_validate.png</file>
     <file>images/icons/mobile_collect.png</file>
     <file>images/icons/mobile_data_management.png</file>
@@ -53,7 +49,6 @@
     <file>images/icons/info_small.png</file>
     <file>images/icons/login.png</file>
     <file>images/icons/logout.png</file>
-    <file>images/icons/settings.png</file>
     <file>images/icons/change_password.png</file>
     <file>images/icons/entity_management.png</file>
     <file>images/icons/content_auth.png</file>

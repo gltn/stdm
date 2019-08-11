@@ -1,9 +1,12 @@
 """
 /***************************************************************************
-Name                 : Scheme Lodgement Wizard
-Description          : Dialog for lodging a new scheme.
-Date                 : 01/July/2019
-copyright            : (C) 2019
+Name                 : SchemeSummaryWidget
+Description          : A table widget that provides a quick access menus for
+                       uploading and viewing supporting documents.
+Date                 : 16/July/2019
+copyright            : (C) 2019 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
  ***************************************************************************/
 
 /***************************************************************************
@@ -75,6 +78,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Entity names
         self._sch_entity_name = 'Scheme'
+        self._rel_auth_entity_name = 'Relevant_authority'
+        self._rel_auth_chk_entity_name = 'check_lht_relevant_authority'
+        self._rgn_chk_entity_name = 'check_lht_region'
+        self._reg_div_chk_entity_name = 'check_lht_reg_division'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -85,65 +92,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Entities
-        self.schm_entity = self.curr_p.entity('Scheme')
-        self.relv_auth_entity = self.curr_p.entity('Relevant_authority')
-        self.notif_entity = self.curr_p.entity('Notification')
-        self.entity_obj = self.curr_p.entity(self._sch_entity_name)
-        self.notif_obj = self.curr_p.entity('Notification')
-        self.relv_auth_obj = self.curr_p.entity('Relevant_authority')
-        self.chk_relv_auth_type_obj = self.curr_p.entity(
-            'check_lht_relevant_authority'
-        )
-        self.chk_region_obj = self.curr_p.entity('check_lht_region')
+        # Scheme object
+        self.sch_entity_obj = self.curr_p.entity(self._sch_entity_name)
 
-        # Check if entities exist
-        if self.schm_entity is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Scheme Entity'),
-                self.tr("The scheme entity is missing in the profile.")
-            )
-            self.reject()
-
-        if self.relv_auth_entity is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Relevant Authority Entity'),
-                self.tr("The relevant authority entity is missing in the "
-                        "profile.")
-            )
-            self.reject()
-
-        if self.notif_entity is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Notification Entity'),
-                self.tr("The notification entity is missing in the "
-                        "profile.")
-            )
-            self.reject()
         # Entity models
         self.schm_model, self._scheme_doc_model = entity_model(
-            self.entity_obj,
+            self.sch_entity_obj,
             with_supporting_document=True
         )
-        self.notif_model = entity_model(self.notif_obj)
-        self.relv_auth_model = entity_model(self.relv_auth_obj)
-        self.chk_relv_auth_typ_model = entity_model(self.chk_relv_auth_type_obj)
-        self.chk_region_model = entity_model(self.chk_region_obj)
-
-        # Entity
-        self.schm_model = entity_model(self.schm_entity)
-        self.relv_auth_model = entity_model(self.relv_auth_entity)
-        self.notification_model = entity_model(self.notif_entity)
 
         # Entity object
         self.schm_model_obj = self.schm_model()
-        self.relv_entity_obj = self.relv_auth_model()
-        self.notif_entity_obj = self.notification_model()
 
-        # Check if entity models exist
+        # Check if scheme entity models exist
         if self.schm_model is None:
             QMessageBox.critical(
                 self,
@@ -152,23 +113,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        if self.relv_auth_model is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Relevant Authority Entity Model'),
-                self.tr("The relevant authority entity model could not be "
-                        "generated.")
-            )
-            self.reject()
-
         # Initializing mappermixin for saving attribute data
-        MapperMixin.__init__(self, self.schm_model, self.schm_entity)
+        MapperMixin.__init__(self, self.schm_model, self.sch_entity_obj)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
 
         # CMIS stuff for document management
-        self._suporting_docs_loaded = False
         self._cmis_mgr = CmisManager()
         # Mapper will be set in initialization of 1st page
         self._cmis_doc_mapper = None
@@ -181,13 +132,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.update_relevant_authority)
         self.cbx_relv_auth.currentIndexChanged.connect(
             self.update_relevant_authority)
-
         self.cbx_relv_auth_name.currentIndexChanged.connect(
             self.on_ra_name_changed)
-
         # Populate lookup comboboxes
         self._populate_lookups()
-
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
@@ -227,6 +175,76 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot for updating the Relevant Authority combobox based on the
         selections made in the two previous comboboxes
         """
+        # Entity objects
+        self.relv_auth_obj = self.curr_p.entity(self._rel_auth_entity_name)
+        self.chk_relv_auth_type_obj = self.curr_p.entity(
+            self._rel_auth_chk_entity_name
+        )
+        self.chk_region_obj = self.curr_p.entity(self._rgn_chk_entity_name)
+        self.chk_reg_div_obj = self.curr_p.entity(self._reg_div_chk_entity_name)
+
+        # Check if entities exist
+        if self.relv_auth_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity'),
+                self.tr("The relevant authority entity is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_relv_auth_type_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_region_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+        elif self.chk_reg_div_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Entity Lookup'),
+                self.tr("The relevant authority entity lookup is missing in the "
+                        "profile.")
+            )
+            self.reject()
+
+        # Entity models
+        self.chk_relv_auth_typ_model = entity_model(
+            self.chk_relv_auth_type_obj)
+        self.chk_region_model = entity_model(self.chk_region_obj)
+        self.relv_auth_model = entity_model(self.relv_auth_obj)
+        self.chk_regdiv_model = entity_model(self.chk_reg_div_obj)
+
+        # Entity object
+        self.relv_entity_obj = self.relv_auth_model()
+        self.chk_regdiv_obj = self.chk_regdiv_model()
+
+        if self.relv_entity_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Relevant Authority Entity Model'),
+                self.tr("The relevant authority entity model could not be "
+                        "generated.")
+            )
+            self.reject()
+        elif self.chk_regdiv_obj is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Relevant Authority Entity Model'),
+                self.tr("The relevant authority entity model could not be "
+                        "generated.")
+            )
+            self.reject()
+
         # Get the region ID
         region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
         # Get the relevant authority ID
@@ -240,7 +258,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Initial clear elements
         self.cbx_relv_auth_name.clear()
-
         # Add an empty itemData
         self.cbx_relv_auth_name.addItem('')
 
@@ -249,21 +266,34 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         res = self.relv_entity_obj.queryObject().filter(
             self.relv_auth_model.region == region_id,
             self.relv_auth_model.type_of_relevant_authority ==
-            ra_id_type
-        ).all()
+            ra_id_type,
+            self.relv_auth_model.registration_division ==
+            self.chk_regdiv_model.id).all()
+
+        # Check what the query object returns
+        if len(res) == 0:
+            return
+
+        # reg_div = res[0].registration_division
+
+        # Query object filtered on registration division lookup
+        res1 = self.chk_regdiv_obj.queryObject().filter(
+            self.chk_regdiv_model.id ==
+            self.relv_auth_model.registration_division
+        ).first()
 
         # Looping through the results to get details
         for r in res:
             authority_name = r.name_of_relevant_authority
             authority_id = r.id
-            l_value = r.last_value
             code = r.au_code
+            reg_div_val = res1.value
 
             # Add the items to combo
-            # Date will contain tuple(ID, code and last value)
+            # Date will contain tuple(ID, code and registration division)
             self.cbx_relv_auth_name.addItem(
                 authority_name,
-                (authority_id, code, l_value)
+                (authority_id, code, reg_div_val)
             )
 
     def on_ra_name_changed(self):
@@ -273,16 +303,25 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         # Clear scheme number
         self.lnedit_schm_num.clear()
+        self.cbx_reg_div.clear()
 
         if not self.cbx_relv_auth_name.currentText():
             return
 
-        id, code, last_value = self.cbx_relv_auth_name.itemData(
+        id, code, reg_div_val = self.cbx_relv_auth_name.itemData(
             self.cbx_relv_auth_name.currentIndex()
         )
 
+        # Registration division
+        self.cbx_reg_div.addItem('')
+        self.cbx_reg_div.clearEditText()
+        self.cbx_reg_div.addItems(reg_div_val)
+
+        last_value = None
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
+
+        return reg_div_val
 
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number
@@ -493,9 +532,29 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def register_col_widgets(self):
         """
-        Registers the column widgets
+        Registers the column widgets to the table columns
         """
         # Get the table columns and add mapping
+        self.addMapping(
+            'region',
+            self.cbx_region,
+            pseudoname='Region'
+        )
+        self.addMapping(
+            'relevant_authority',
+            self.cbx_relv_auth,
+            pseudoname='Relevant Authority Type'
+        )
+        self.addMapping(
+            'relevant_authority_name',
+            self.cbx_relv_auth_name,
+            pseudoname='Relevant Authority Name'
+        )
+        self.addMapping(
+            'registration_division',
+            self.cbx_reg_div,
+            pseudoname='Registration Division'
+        )
         self.addMapping(
             'scheme_number',
             self.lnedit_schm_num,
@@ -517,29 +576,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Establishment Date'
         )
         self.addMapping(
-            'region',
-            self.cbx_region,
-            pseudoname='Region'
-        )
-        self.addMapping(
-            'relevant_authority',
-            self.cbx_relv_auth,
-            pseudoname='Relevant Authority Type'
-        )
-        self.addMapping(
-            'relevant_authority_name',
-            self.cbx_relv_auth_name,
-            pseudoname='Relevant Authority Name'
+            'land_rights_office',
+            self.cbx_lro,
+            pseudoname='Land Rights Office'
         )
         self.addMapping(
             'township',
             self.lnedit_twnshp,
             pseudoname='Township'
-        )
-        self.addMapping(
-            'registration_division',
-            self.cbx_reg_div,
-            pseudoname='Registration Division'
         )
         self.addMapping(
             'area',
@@ -549,34 +593,41 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def create_notification(self):
         """
-        Populate notification table
+        Create a notification once the Scheme lodgement is completed.
         """
+        # Notification entity
+        notif_entity = self.curr_p.entity('Notification')
+
+        # Check if entity exists
+        if notif_entity is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Notification Entity'),
+                self.tr("The notification entity is missing in the "
+                        "profile.")
+            )
+            self.reject()
+
+        notification_model = entity_model(notif_entity)
+
+        # Check if model exists
+        if notification_model is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Notification Entity Model'),
+                self.tr("The notification entity model could not be generated.")
+            )
+            self.reject()
+
+        notif_entity_obj = notification_model()
+
         # Get the table columns and add mapping
-        self.addMapping(
-            'status',
-            self._notif_status,
-            pseudoname='status'
-        )
-        self.addMapping(
-            'source_user_id',
-            self.source_user_id,
-            pseudoname='source user'
-        )
-        self.addMapping(
-            'target_use_id',
-            self.target_user_id,
-            pseudoname='target user'
-        )
-        self.addMapping(
-            'content',
-            self._notif_content,
-            pseudoname='content'
-        )
-        self.addMapping(
-            'timestamp',
-            str(strftime("%Y-%m-%d %H:%M:%S")),
-            pseudoname='timestamp'
-        )
+        notif_entity_obj.status = 1
+        notif_entity_obj.source_user_id = 1
+        notif_entity_obj.target_user_id = 2
+        notif_entity_obj.content = 'Lodgement'
+        notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
+        notif_entity_obj.save()
 
     def validateCurrentPage(self):
         current_id = self.currentId()
@@ -602,6 +653,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 ret_status = True
         elif current_id == 2:
             # Check if all documents have been uploaded
+            self._load_scheme_document_types()
+            # Populate values to summary in next page
             self.populate_summary()
             return True
         elif current_id == 3:
@@ -609,7 +662,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             try:
                 self.save_scheme()
                 # Add other functionality
-
+                self.create_notification()
                 ret_status = True
             except Exception as err:
                 QMessageBox.critical(

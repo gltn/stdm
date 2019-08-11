@@ -85,7 +85,7 @@ class DocumentTableWidget(QTableWidget):
     remove_requested = pyqtSignal(object)
 
     # Upload state
-    NOT_UPLOADED, SUCCESS, ERROR = range(3)
+    NOT_UPLOADED, UPLOADED, SUCCESS, ERROR = range(4)
 
     def __init__(self, parent=None, doc_info_cls=None):
         super(DocumentTableWidget, self).__init__(parent)
@@ -421,7 +421,7 @@ class DocumentTableWidget(QTableWidget):
             )
             QMessageBox.warning(
                 self,
-                self.tr('View Document'),
+                self.tr('Upload Document'),
                 msg
             )
         elif status == DocumentTableWidget.SUCCESS:
@@ -481,7 +481,7 @@ class DocumentTableWidget(QTableWidget):
         ti.setToolTip(op_error)
 
         # Update status column
-        self._after_upload(doc_type, DocumentTableWidget.ERROR)
+        self._after_upload(doc_type, op_error)
 
     def clear_error_hints(self, row_idx):
         # Clears the error icon and tooltip for the row in the given index.

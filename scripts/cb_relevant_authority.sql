@@ -1,575 +1,369 @@
- INSERT INTO "cb_relevant_authority"
-VALUES      (1,
-             'Gobabis',
-             'GOBBIS',
-             1,
-             9,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (2,
-             'Grootfontein',
-             'GRTFIN',
-             1,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (3,
-             'Henties Bay',
-             'HENTAY',
-             1,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (4,
-             'Keetmanshoop',
-             'KETMOP',
-             1,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (5,
-             'Mariental',
-             'MARNAL',
-             1,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (6,
-             'Okahandja',
-             'OKHNJA',
-             1,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (7,
-             'Omaruru',
-             'OMARRU',
-             1,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (8,
-             'Otjiwarongo',
-             'OTJWGO',
-             1,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (9,
-             'Outjo',
-             'OUTJOX',
-             1,
-             7,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (10,
-             'Swakopmund',
-             'SWKPND',
-             1,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (11,
-             'Tsumeb',
-             'TSUMEB',
-             1,
-             12,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (12,
-             'Walvis Bay',
-             'WALVAY',
-             1,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (13,
-             'Windhoek',
-             'WINDEK',
-             1,
-             6,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (14,
-             'Arandis',
-             'ARNDIS',
-             2,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (15,
-             'Aranos',
-             'ARANOS',
-             2,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (16,
-             'Eenhana',
-             'EENHNA',
-             2,
-             8,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (17,
-             'Helao Nafidi',
-             'HELNDI',
-             2,
-             8,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (18,
-             'Karasburg',
-             'KARSRG',
-             2,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (19,
-             'Karibib',
-             'KARBIB',
-             2,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (20,
-             'Katima Mulilo',
-             'KATMLO',
-             2,
-             14,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (21,
-             'Khorixas',
-             'KHRXAS',
-             2,
-             7,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (22,
-             'Luderitz',
-             'LUDRTZ',
-             2,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (23,
-             'Nkurenkuru',
-             'NKRNRU',
-             2,
-             5,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (24,
-             'Okahao',
-             'OKAHAO',
-             2,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (25,
-             'Okakarara',
-             'OKKRRA',
-             2,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (26,
-             'Omuthiya',
-             'OMTHYA',
-             2,
-             12,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (27,
-             'Ondangwa',
-             'ONDNWA',
-             2,
-             11,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (28,
-             'Ongwediva ',
-             'ONGWVA ',
-             2,
-             11,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (29,
-             'Oniipa ',
-             'ONIIPA ',
-             2,
-             12,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (30,
-             'Opuwo ',
-             'OPUWOX ',
-             2,
-             7,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (31,
-             'Oranjemund ',
-             'ORNJND ',
-             2,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (32,
-             'Oshakati ',
-             'OSHKTI ',
-             2,
-             11,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (33,
-             'Oshikuku ',
-             'OSHKKU ',
-             2,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (34,
-             'Otavi ',
-             'OTAVIX ',
-             2,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (35,
-             'Outapi',
-             'OUTAPI',
-             2,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (36,
-             'Rehoboth ',
-             'REHBTH ',
-             2,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (37,
-             'Ruacana ',
-             'RUACNA ',
-             2,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (38,
-             'Rundu ',
-             'RUNDUX ',
-             2,
-             4,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (39,
-             'Usakos ',
-             'USAKOS ',
-             2,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (40,
-             'Aroab ',
-             'AROABX ',
-             3,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (41,
-             'Berseba ',
-             'BERSBA ',
-             3,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (42,
-             'Bethanie ',
-             'BETHIE ',
-             3,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (44,
-             'Bukalo ',
-             'BUKALO ',
-             3,
-             14,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (45,
-             'Divundu ',
-             'DIVNDU ',
-             3,
-             4,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (46,
-             'Gibeon ',
-             'GIBEON ',
-             3,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (47,
-             'Gochas ',
-             'GOCHAS ',
-             3,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (48,
-             'Kalkrand ',
-             'KALKND ',
-             3,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (49,
-             'Kamanjab ',
-             'KAMNAB ',
-             3,
-             7,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (50,
-             'Koës ',
-             'KOESXX ',
-             3,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (51,
-             'Leonardville ',
-             'LENRLE ',
-             3,
-             9,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (52,
-             'Luhonono ',
-             'LUHNNO ',
-             3,
-             14,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (53,
-             'Maltahöhe ',
-             'MALTHE ',
-             3,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (54,
-             'Okongo ',
-             'OKONGO ',
-             3,
-             8,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (55,
-             'Otjinene ',
-             'OTJNNE ',
-             3,
-             9,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (56,
-             'Stampriet ',
-             'STMPET ',
-             3,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (57,
-             'Tsandi ',
-             'TSANDI ',
-             3,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (58,
-             'Tses ',
-             'TSESXX ',
-             3,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (59,
-             'Witvlei ',
-             'WITVEI ',
-             3,
-             9,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (60,
-             'Erongo',
-             'ERONGO',
-             4,
-             1,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (61,
-             'Hardap',
-             'HARDAP',
-             4,
-             2,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (63,
-             'Karas',
-             'KARAS',
-             4,
-             3,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (64,
-             'Kavango East',
-             'KAVEST',
-             4,
-             4,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (65,
-             'Kavango West',
-             'KAVWST',
-             4,
-             5,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (66,
-             'Khomas',
-             'KHOMAS',
-             4,
-             6,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (67,
-             'Kunene',
-             'KUNENE',
-             4,
-             7,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (68,
-             'Ohangwena',
-             'OHNGNA',
-             4,
-             8,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (69,
-             'Omaheke',
-             'OMAHKE',
-             4,
-             9,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (70,
-             'Omusati',
-             'OMUSTI',
-             4,
-             10,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (71,
-             'Oshana',
-             'OSHANA',
-             4,
-             11,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (72,
-             'Oshikoto',
-             'OSHKTO',
-             4,
-             12,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (73,
-             'Otjozondjupa',
-             'OTZNPA',
-             4,
-             13,
-             NULL);
-
-INSERT INTO "cb_relevant_authority"
-VALUES      (74,
-             'Zambezi',
-             'ZAMBZI',
-             4,
-             14,
-             NULL);  
+/* This SQL script populated the cb_relevant_authority table and should be run only after
+   running the configuration wizard */
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Gobabis', 'GOBBIS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+	WHERE ra.value = 'Municipality Council' AND region.value = 'Omaheke' AND division.value = 'L';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Grootfontein', 'GRTFIN', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Otjozondjupa' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Henties', 'HENTAY', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Erongo' AND division.value = 'G';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Keetmanshoop', 'KETMOP', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Karas' AND division.value = 'T';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Mariental', 'MARNAL', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Hardap' AND division.value = 'R';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Okahandja', 'OKHNJA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Otjozondjupa' AND division.value = 'J';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Omaruru', 'OMARRU', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Erongo' AND division.value = 'C';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Otjiwarongo', 'OTJWGO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Otjozondjupa' AND division.value = 'D';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Outjo', 'OUTJOX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Kunene' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Swakopmund', 'SWKPND', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Erongo' AND division.value = 'G';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Tsumeb', 'TSUMEB', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Oshikoto' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Walvis Bay', 'WALVAY', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Erongo' AND division.value = 'F';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Windhoek', 'WINDEK', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Municipality Council' AND region.value = 'Khomas' AND division.value = 'K';
+
+--TOWN COUNCIL:
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Arandis', 'ARNDIS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Erongo' AND division.value = 'G';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Aranos', 'ARANOS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Hardap' AND division.value = 'R';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Eenhana', 'EENHNA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Ohangwena' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Helao Nafidi', 'HELNDI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Ohangwena' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Karasburg', 'KARSRG', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Karas' AND division.value = 'V';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Karibib', 'KARBIB', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Erongo' AND division.value = 'H';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Katima Mulilo', 'KATMLO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Zambezi' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Khorixas', 'KHRXAS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Kunene' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Luderitz', 'LUDRTZ', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Karas' AND division.value = 'N';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Nkurenkuru', 'NKRNRU', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Kavango' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Okahao', 'OKAHAO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Okakarara', 'OKKRRA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Otjozondjupa' AND division.value = 'D';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Omuthiya', 'OMTHYA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Oshikoto' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Ondangwa', 'ONDNWA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Oshana' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Ongwediva', 'ONGWVA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Oshana' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oniipa', 'ONIIPA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Oshikoto' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Opuwo', 'OPUWOX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Kunene' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oranjemund', 'ORNJND', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Karas' AND division.value = 'N';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oshakati', 'OSHKTI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Oshana' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oshikuku', 'OSHKKU', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Otavi', 'OTAVIX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Otjozondjupa' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Outapi', 'OUTAPI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Rehoboth', 'REHBTH', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Hardap' AND division.value = 'M';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Ruacana', 'RUACNA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Rundu', 'RUNDUX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Kavango East' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Usakos', 'USAKOS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Town Council' AND region.value = 'Erongo' AND division.value = 'H';
+
+--VILLAGE COUNCIL:
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Aroab', 'AROABX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Karas' AND division.value = 'T';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Berseba', 'BERSBA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Karas' AND division.value = 'T';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Bethanie', 'BETHIE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Karas' AND division.value = 'S';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Bukalo', 'BUKALO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Zambezi' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Divundu', 'DIVNDU', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Kavango East' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Gibeon', 'GIBEON', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Hardap' AND division.value = 'R';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Gochas', 'GOCHAS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Hardap' AND division.value = 'R';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Kalkrand', 'KALKND', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Hardap' AND division.value = 'M';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Kamanjab', 'KAMNAB', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Kunene' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Koës', 'KOESXX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Karas' AND division.value = 'T';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Leonardville', 'LENRLE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Omaheke' AND division.value = 'L';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Luhonono', 'LUHNNO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Zambezi' AND division.value = 'L';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Maltahöhe', 'MALTHE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Hardap' AND division.value = 'P';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Okongo', 'OKONGO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Ohangwena' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Otjinene', 'OTJNNE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Omaheke' AND division.value = 'L';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Stampriet', 'STMPET', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Hardap' AND division.value = 'R';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Tsandi', 'TSANDI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Tses', 'TSESXX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Karas' AND division.value = 'T';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Witvlei', 'WITVEI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Village Council' AND region.value = 'Omaheke' AND division.value = 'L';
+
+--REGIONAL COUNCIL:
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Erongo', 'ERONGO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Erongo' AND division.value = 'CFGHK';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Hardap', 'HARDAP', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Hardap' AND division.value = 'LMNPRST';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Karas', 'KARASX', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Karas' AND division.value = 'NSTV';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Kavango East', 'KAVEST', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Kavango East' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Kavango West', 'KAVWST', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Kavango West' AND division.value = 'B';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Khomas', 'KHOMAS', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Khomas' AND division.value = 'GJKLMN';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Kunene', 'KUNENE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Kunene' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Ohangwena', 'OHNGNA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Ohangwena' AND division.value = 'AB';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Omaheke', 'OMAHKE', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Omaheke' AND division.value = 'KL';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Omusati', 'OMUSTI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Omusati' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oshana', 'OSHANA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Oshana' AND division.value = 'A';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Oshikoto', 'OSHKTO', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Oshikoto' AND division.value = 'AB';
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Otjozondjupa', 'OTZNPA', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Otjozondjupa' AND division.value = 'ABCDHJKL';
+
+
+INSERT INTO cb_relevant_authority (name_of_relevant_authority, au_code, type_of_relevant_authority, region, registration_division)
+    SELECT 'Zambezi', 'ZAMBZI', ra.id, region.id, division.id
+    FROM cb_check_lht_relevant_authority ra, cb_check_lht_region region, cb_check_lht_reg_division division
+    WHERE ra.value = 'Regional Council' AND region.value = 'Zambezi' AND division.value = 'B';

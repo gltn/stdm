@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_notification.ui'
 #
-# Created: Mon Jul  8 13:24:51 2019
-#      by: PyQt4 UI code generator 4.10.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -27,21 +26,16 @@ class Ui_Notification_Dlg(object):
     def setupUi(self, Notification_Dlg):
         Notification_Dlg.setObjectName(_fromUtf8("Notification_Dlg"))
         Notification_Dlg.resize(400, 300)
-        self.notification_Widget = QtGui.QListWidget(Notification_Dlg)
-        self.notification_Widget.setGeometry(QtCore.QRect(10, 10, 381, 192))
-        self.notification_Widget.setObjectName(_fromUtf8("notification_Widget"))
-        self.pushButton = QtGui.QPushButton(Notification_Dlg)
-        self.pushButton.setGeometry(QtCore.QRect(30, 230, 101, 31))
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
-        self.pushButton_2 = QtGui.QPushButton(Notification_Dlg)
-        self.pushButton_2.setGeometry(QtCore.QRect(270, 230, 101, 31))
-        self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
+        self.gridLayout = QtGui.QGridLayout(Notification_Dlg)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.tvw_notification = NotificationWidget(Notification_Dlg)
+        self.tvw_notification.setObjectName(_fromUtf8("tvw_notification"))
+        self.gridLayout.addWidget(self.tvw_notification, 0, 0, 1, 1)
 
         self.retranslateUi(Notification_Dlg)
         QtCore.QMetaObject.connectSlotsByName(Notification_Dlg)
 
     def retranslateUi(self, Notification_Dlg):
-        Notification_Dlg.setWindowTitle(_translate("Notification_Dlg", "Dialog", None))
-        self.pushButton.setText(_translate("Notification_Dlg", "Read", None))
-        self.pushButton_2.setText(_translate("Notification_Dlg", "Send", None))
+        Notification_Dlg.setWindowTitle(_translate("Notification_Dlg", "Notification Dialog", None))
 
+from stdm.ui.customcontrols.notification_widget import NotificationWidget
