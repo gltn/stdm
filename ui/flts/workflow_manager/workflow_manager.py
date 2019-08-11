@@ -53,6 +53,7 @@ class DockWidgetFactory:
     Factory to create dockable widgets from a widget
     """
     addedWidgets = {}
+    currentWidget = None
 
     def __init__(self, customWidget, iface=None):
         self._customWidget = customWidget()
@@ -76,8 +77,8 @@ class DockWidgetFactory:
         :return: A docked widget or None
         :rtype: QDockWidget or None
         """
-        self.hideDockWidget(dockWidget)
         if dockWidget.isHidden():
+            DockWidgetFactory.currentWidget = dockWidget
             return dockWidget.show()
         return
 
@@ -90,18 +91,17 @@ class DockWidgetFactory:
         addedWidgets = DockWidgetFactory.addedWidgets
         newWidget = DockWidget(self._customWidget, self._iface.mainWindow())
         addedWidgets[newWidget.objectName()] = newWidget
-        self.hideDockWidget()
         self._iface.addDockWidget(Qt.BottomDockWidgetArea, newWidget)
+        DockWidgetFactory.currentWidget = newWidget
 
-    def hideDockWidget(self, dockWidget=None):
+    @classmethod
+    def hideCurrentDockWidget(cls):
         """
-        Hides visible dock widget
-        :param dockWidget:
-        :type dockWidget: QDockWidget
+        Hides current visible dock widget
         """
-        for widget_ in DockWidgetFactory.addedWidgets.values():
-            if widget_ != dockWidget and widget_.isVisible():
-                widget_.hide()
+        if cls.currentWidget and cls.currentWidget.isVisible():
+            cls.currentWidget.hide()
+
 
 
 

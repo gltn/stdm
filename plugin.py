@@ -2428,6 +2428,7 @@ class STDMQGISLoader(object):
         """
         dockWidget = DockWidgetFactory(customWidget, self.iface)
         oldDockWidget = dockWidget.getDockWidget()
+        DockWidgetFactory.hideCurrentDockWidget()
         if oldDockWidget:
             dockWidget.showDockWidget(oldDockWidget)
             return
