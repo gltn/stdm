@@ -2,8 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Tue Jul 23 16:09:48 2019
-#      by: PyQt4 UI code generator 4.9.4
+# Created by: PyQt4 UI code generator 4.11.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +11,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
@@ -48,7 +56,7 @@ class Ui_DlgOptions(object):
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.btn_template_folder = QtGui.QToolButton(self.groupBox_3)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.btn_template_folder.setIcon(icon)
         self.btn_template_folder.setIconSize(QtCore.QSize(24, 24))
         self.btn_template_folder.setObjectName(_fromUtf8("btn_template_folder"))
@@ -198,29 +206,29 @@ class Ui_DlgOptions(object):
         QtCore.QMetaObject.connectSlotsByName(DlgOptions)
 
     def retranslateUi(self, DlgOptions):
-        DlgOptions.setWindowTitle(QtGui.QApplication.translate("DlgOptions", "Options", None, QtGui.QApplication.UnicodeUTF8))
-        self.chk_logging.setText(QtGui.QApplication.translate("DlgOptions", "Debug logging", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_3.setTitle(QtGui.QApplication.translate("DlgOptions", "Document Composer", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_template_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose templates directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_template_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("DlgOptions", "Output folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("DlgOptions", "Template folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_composer_out_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose output directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_composer_out_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("DlgOptions", "Set current profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("DlgOptions", "Database Properties", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("DlgOptions", "Port", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("DlgOptions", "Host", None, QtGui.QApplication.UnicodeUTF8))
-        self.chk_pg_connections.setText(QtGui.QApplication.translate("DlgOptions", "Extract from existing connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("DlgOptions", "Database", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_conn_clear.setToolTip(QtGui.QApplication.translate("DlgOptions", "Clear database connection properties", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_conn_clear.setText(QtGui.QApplication.translate("DlgOptions", "Clear", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_db_connection.setToolTip(QtGui.QApplication.translate("DlgOptions", "Test database connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_db_connection.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("DlgOptions", "Document Repository", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("DlgOptions", "Atom pub CMIS URL", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_9.setText(QtGui.QApplication.translate("DlgOptions", "Authentication configuration name", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_docs_repo_conn.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
+        DlgOptions.setWindowTitle(_translate("DlgOptions", "Options", None))
+        self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
+        self.groupBox_3.setTitle(_translate("DlgOptions", "Document Composer", None))
+        self.btn_template_folder.setToolTip(_translate("DlgOptions", "Choose templates directory", None))
+        self.btn_template_folder.setText(_translate("DlgOptions", "...", None))
+        self.label_8.setText(_translate("DlgOptions", "Output folder", None))
+        self.label_7.setText(_translate("DlgOptions", "Template folder", None))
+        self.btn_composer_out_folder.setToolTip(_translate("DlgOptions", "Choose output directory", None))
+        self.btn_composer_out_folder.setText(_translate("DlgOptions", "...", None))
+        self.label.setText(_translate("DlgOptions", "Set current profile", None))
+        self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
+        self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
+        self.label_3.setText(_translate("DlgOptions", "Port", None))
+        self.label_2.setText(_translate("DlgOptions", "Host", None))
+        self.chk_pg_connections.setText(_translate("DlgOptions", "Extract from existing connection", None))
+        self.label_4.setText(_translate("DlgOptions", "Database", None))
+        self.btn_db_conn_clear.setToolTip(_translate("DlgOptions", "Clear database connection properties", None))
+        self.btn_db_conn_clear.setText(_translate("DlgOptions", "Clear", None))
+        self.btn_test_db_connection.setToolTip(_translate("DlgOptions", "Test database connection", None))
+        self.btn_test_db_connection.setText(_translate("DlgOptions", "Test connection...", None))
+        self.groupBox_2.setTitle(_translate("DlgOptions", "Document Repository", None))
+        self.label_6.setText(_translate("DlgOptions", "Atom pub CMIS URL", None))
+        self.label_9.setText(_translate("DlgOptions", "Authentication configuration name", None))
+        self.btn_test_docs_repo_conn.setText(_translate("DlgOptions", "Test connection...", None))
 
 from stdm import resources_rc

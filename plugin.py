@@ -1016,19 +1016,19 @@ class STDMQGISLoader(object):
 
         # Define actions
 
-        # self.contentAuthAct = QAction(
-        #     QIcon(":/plugins/stdm/images/icons/content_auth.png"),
-        #     QApplication.translate(
-        #         "ContentAuthorizationToolbarAction",
-        #         "Content Authorization"
-        #     ),
-        #     self.iface.mainWindow()
-        # )
+        self.contentAuthAct = QAction(
+            QIcon(":/plugins/stdm/images/icons/flts_content_auth.png"),
+            QApplication.translate(
+                "ContentAuthorizationToolbarAction",
+                "Content Authorization"
+            ),
+            self.iface.mainWindow()
+        )
 
-        # self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
-        #                         QApplication.translate("ManageUsersToolbarAction", "Manage Users-Roles"),
-        #                         self.iface.mainWindow())
-        #
+        self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/flts_users_manage.png"), \
+                                QApplication.translate("ManageUsersToolbarAction", "Manage Users-Roles"),
+                                self.iface.mainWindow())
+
         self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/flts_options.png"), \
                                    QApplication.translate("OptionsToolbarAction", "Options"),
                                    self.iface.mainWindow())
@@ -1197,8 +1197,8 @@ class STDMQGISLoader(object):
         )
 
         # Connect the slots for the actions above
-        # self.contentAuthAct.triggered.connect(self.contentAuthorization)
-        # self.usersAct.triggered.connect(self.manageAccounts)
+        self.contentAuthAct.triggered.connect(self.contentAuthorization)
+        self.usersAct.triggered.connect(self.manageAccounts)
         self.options_act.triggered.connect(self.on_sys_options)
         # self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         # self.exportAct.triggered.connect(self.onExportData)
@@ -1234,12 +1234,12 @@ class STDMQGISLoader(object):
 
         # Create content items
 
-        # contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
-        # contentAuthCnt.code = "E59F7CC1-0D0E-4EA2-9996-89DACBD07A83"
-        #
-        # userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
-        # userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
-        #
+        contentAuthCnt = ContentGroup.contentItemFromQAction(self.contentAuthAct)
+        contentAuthCnt.code = "E59F7CC1-0D0E-4EA2-9996-89DACBD07A83"
+
+        userRoleMngtCnt = ContentGroup.contentItemFromQAction(self.usersAct)
+        userRoleMngtCnt.code = "0CC4FB8F-70BA-4DE8-8599-FD344A564EB5"
+
         options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
         options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
 
@@ -1352,6 +1352,16 @@ class STDMQGISLoader(object):
 
         # Create content groups and add items
 
+        self.contentAuthCntGroup = ContentGroup(username)
+        self.contentAuthCntGroup.addContentItem(contentAuthCnt)
+        self.contentAuthCntGroup.setContainerItem(self.contentAuthAct)
+        self.contentAuthCntGroup.register()
+
+        self.userRoleCntGroup = ContentGroup(username)
+        self.userRoleCntGroup.addContentItem(userRoleMngtCnt)
+        self.userRoleCntGroup.setContainerItem(self.usersAct)
+        self.userRoleCntGroup.register()
+
         self.options_content_group = ContentGroup(username)
         self.options_content_group.addContentItem(options_cnt)
         self.options_content_group.setContainerItem(self.options_act)
@@ -1439,6 +1449,14 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
+        # Add content authorization stuff
+        self.toolbarLoader.addContent(self.contentAuthCntGroup)
+        self.menubarLoader.addContent(self.contentAuthCntGroup)
+
+        # Add user role stuff
+        self.toolbarLoader.addContent(self.userRoleCntGroup)
+        self.menubarLoader.addContent(self.userRoleCntGroup)
+
         # flts toolbar items
 
         self.toolbarLoader.addContent(self.schemeLodgementCntGroup)
@@ -1464,6 +1482,16 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self._action_separator())
 
         self.toolbarLoader.addContent(self.fltsNotificationCntGroup)
+
+        self.toolbarLoader.addContent(
+            self.contentAuthCntGroup,
+            [adminMenu, adminBtn]
+        )
+
+        self.toolbarLoader.addContent(
+            self.userRoleCntGroup,
+            [adminMenu, adminBtn]
+        )
 
         self.toolbarLoader.addContent(
             self.options_content_group,

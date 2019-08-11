@@ -73,7 +73,7 @@
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+              <normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -139,7 +139,7 @@
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+              <normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</iconset>
             </property>
             <property name="iconSize">
              <size>
