@@ -849,10 +849,10 @@ class STDMQGISLoader(object):
         self.menubarLoader = QtContainerLoader(self.iface.mainWindow(),
                                                self.stdmMenu, self.logoutAct)
 
-        #Define containers for grouping actions
+        # Define containers for grouping actions
         adminBtn = QToolButton()
-        adminObjName = QApplication.translate("ToolbarAdminSettings","Admin Settings")
-        #Required by module loader for those widgets that need to be inserted into the container
+        adminObjName = QApplication.translate("ToolbarLhtSettings", "Admin Settings")
+        # Required by module loader for those widgets that need to be inserted into the container
         adminBtn.setObjectName(adminObjName)
         adminBtn.setToolTip(adminObjName)
         adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/flts_settings.png"))
@@ -861,12 +861,11 @@ class STDMQGISLoader(object):
         adminMenu = QMenu(adminBtn)
         adminBtn.setMenu(adminMenu)
 
-        #Settings menu container in STDM's QGIS menu
-        stdmAdminMenu = QMenu(self.stdmMenu)
-        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_settings.png"))
-        stdmAdminMenu.setObjectName("STDMAdminSettings")
-        stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings","Admin Settings"))
-
+        # Settings menu container in STDM's QGIS menu
+        fltsAdminMenu = QMenu(self.stdmMenu)
+        fltsAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_settings.png"))
+        fltsAdminMenu.setObjectName("FLTSAdminSettings")
+        fltsAdminMenu.setTitle(QApplication.translate("ToolbarLhtSettings", "Admin Settings"))
 
         # Create content menu container
         # contentBtn = QToolButton()
@@ -921,7 +920,7 @@ class STDMQGISLoader(object):
         # Settings menu container in FLTS's QGIS menu
         lhtAdminMenu = QMenu(self.stdmMenu)
         lhtAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_assessment.png"))
-        lhtAdminMenu.setObjectName("FLTSAdminSettings")
+        lhtAdminMenu.setObjectName("FLTSsettings")
         lhtAdminMenu.setTitle(QApplication.translate("ToolbarLhtSettings", "Land Hold Title"))
 
         # Scheme
@@ -1367,11 +1366,15 @@ class STDMQGISLoader(object):
         self.options_content_group.setContainerItem(self.options_act)
         self.options_content_group.register()
 
-        # Group admin settings content groups
-
         self.wzdConfigCntGroup = ContentGroup(username, self.wzdAct)
         self.wzdConfigCntGroup.addContentItem(wzdConfigCnt)
         self.wzdConfigCntGroup.register()
+
+        adminSettingsCntGroups = []
+        adminSettingsCntGroups.append(self.contentAuthCntGroup)
+        adminSettingsCntGroups.append(self.userRoleCntGroup)
+        adminSettingsCntGroups.append(self.options_content_group)
+        adminSettingsCntGroups.append(self.wzdConfigCntGroup)
 
         # FLTS
         # Create content groups and add items
@@ -1405,9 +1408,9 @@ class STDMQGISLoader(object):
         self.thirdExaminationCntGroup.addContentItem(thirdExaminationCnt)
         self.thirdExaminationCntGroup.setContainerItem(self.thirdExaminationAct)
         self.thirdExaminationCntGroup.register()
-        #
-        # # Group scheme settings content groups
-        #
+
+        # Group scheme settings content groups
+
         schemeSettingsCntGroups = []
         schemeSettingsCntGroups.append(self.schemeLodgementCntGroup)
         schemeSettingsCntGroups.append(self.schemeEstablishmentCntGroup)
@@ -1445,19 +1448,23 @@ class STDMQGISLoader(object):
         self.fltsNotificationCntGroup.setContainerItem(self.notificationAct)
         self.fltsNotificationCntGroup.register()
 
-        # Add Design Forms menu and tool bar actions
-        self.toolbarLoader.addContent(self.wzdConfigCntGroup)
-        self.menubarLoader.addContent(self.wzdConfigCntGroup)
-
-        # Add content authorization stuff
-        self.toolbarLoader.addContent(self.contentAuthCntGroup)
-        self.menubarLoader.addContent(self.contentAuthCntGroup)
-
-        # Add user role stuff
-        self.toolbarLoader.addContent(self.userRoleCntGroup)
-        self.menubarLoader.addContent(self.userRoleCntGroup)
-
         # flts toolbar items
+
+        self.toolbarLoader.addContent(self.wzdConfigCntGroup,
+                                      [adminMenu, adminBtn]
+                                      )
+
+        self.toolbarLoader.addContent(self.contentAuthCntGroup,
+                                      [adminMenu, adminBtn]
+                                      )
+
+        self.toolbarLoader.addContent(self.userRoleCntGroup,
+                                      [adminMenu, adminBtn]
+                                      )
+
+        self.toolbarLoader.addContent(self.options_content_group,
+                                      [adminMenu, adminBtn]
+                                      )
 
         self.toolbarLoader.addContent(self.schemeLodgementCntGroup)
         self.toolbarLoader.addContent(self.schemeEstablishmentCntGroup)
@@ -1483,33 +1490,32 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.fltsNotificationCntGroup)
 
-        self.toolbarLoader.addContent(
-            self.contentAuthCntGroup,
-            [adminMenu, adminBtn]
-        )
-
-        self.toolbarLoader.addContent(
-            self.userRoleCntGroup,
-            [adminMenu, adminBtn]
-        )
-
-        self.toolbarLoader.addContent(
-            self.options_content_group,
-            [adminMenu, adminBtn]
-        )
-
         # menubar items
-        self.menubarLoader.addContents(schemeSettingsCntGroups, [lhtAdminMenu, lhtAdminMenu])
+        self.menubarLoader.addContents(schemeSettingsCntGroups,
+                                       [lhtAdminMenu, lhtAdminMenu]
+                                       )
 
         self.toolbarLoader.addContent(self._action_separator())
 
-        self.menubarLoader.addContents(certSettingsCntGroups, [lhtAdminMenu, lhtAdminMenu])
+        self.menubarLoader.addContents(certSettingsCntGroups,
+                                       [lhtAdminMenu, lhtAdminMenu]
+                                       )
 
         self.toolbarLoader.addContent(self._action_separator())
 
-        self.menubarLoader.addContent(self.printCertCntGroup, [lhtAdminMenu, lhtAdminMenu])
-        self.menubarLoader.addContent(self.scanCertCntGroup, [lhtAdminMenu, lhtAdminMenu])
-        self.menubarLoader.addContent(self.fltsNotificationCntGroup, [lhtAdminMenu, lhtAdminMenu])
+        self.menubarLoader.addContent(self.printCertCntGroup,
+                                      [lhtAdminMenu, lhtAdminMenu]
+                                      )
+        self.menubarLoader.addContent(self.scanCertCntGroup,
+                                      [lhtAdminMenu, lhtAdminMenu]
+                                      )
+        self.menubarLoader.addContent(self.fltsNotificationCntGroup,
+                                      [lhtAdminMenu, lhtAdminMenu]
+                                      )
+
+        self.menubarLoader.addContents(adminSettingsCntGroups,
+                                       [fltsAdminMenu, fltsAdminMenu]
+                                       )
 
         # Load all the content in the container
         self.toolbarLoader.loadContent()
