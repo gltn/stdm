@@ -52,7 +52,8 @@ class DockWidgetFactory:
     """
     Factory to create dockable widgets from a widget
     """
-    addedWidgets = {}
+    savedWidgets = {}
+    activeWidget = None
 
     def __init__(self, customWidget, iface=None):
         self._customWidget = customWidget()
@@ -65,19 +66,20 @@ class DockWidgetFactory:
         :rtype dockWidget: QDockWidget
         """
         objectName = self._customWidget.objectName()
-        addedWidgets = DockWidgetFactory.addedWidgets
-        if objectName in addedWidgets:
-            dockWidget = addedWidgets[objectName]
+        savedWidgets = DockWidgetFactory.savedWidgets
+        if objectName in savedWidgets:
+            dockWidget = savedWidgets.get(objectName, None)
             return dockWidget
 
-    def showDockWidget(self, dockWidget):
+    @classmethod
+    def showDockWidget(cls, dockWidget):
         """
         Shows hidden dock widget
         :return: A docked widget or None
         :rtype: QDockWidget or None
         """
-        self.hideDockWidget(dockWidget)
         if dockWidget.isHidden():
+            cls.activeWidget = dockWidget
             return dockWidget.show()
         return
 
@@ -87,21 +89,20 @@ class DockWidgetFactory:
         :return: A docked widget
         :rtype: QDockWidget
         """
-        addedWidgets = DockWidgetFactory.addedWidgets
+        savedWidgets = DockWidgetFactory.savedWidgets
         newWidget = DockWidget(self._customWidget, self._iface.mainWindow())
-        addedWidgets[newWidget.objectName()] = newWidget
-        self.hideDockWidget()
+        savedWidgets[newWidget.objectName()] = newWidget
         self._iface.addDockWidget(Qt.BottomDockWidgetArea, newWidget)
+        DockWidgetFactory.activeWidget = newWidget
 
-    def hideDockWidget(self, dockWidget=None):
+    @classmethod
+    def hideActiveDockWidget(cls):
         """
-        Hides visible dock widget
-        :param dockWidget:
-        :type dockWidget: QDockWidget
+        Hides the active/visible dock widget
         """
-        for widget_ in DockWidgetFactory.addedWidgets.values():
-            if widget_ != dockWidget and widget_.isVisible():
-                widget_.hide()
+        if cls.activeWidget and cls.activeWidget.isVisible():
+            cls.activeWidget.hide()
+
 
 
 

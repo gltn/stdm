@@ -2433,9 +2433,10 @@ class STDMQGISLoader(object):
         :type customWidget:  QWidget
         """
         dockWidget = DockWidgetFactory(customWidget, self.iface)
-        oldDockWidget = dockWidget.getDockWidget()
-        if oldDockWidget:
-            dockWidget.showDockWidget(oldDockWidget)
+        savedWidget = dockWidget.getDockWidget()
+        DockWidgetFactory.hideActiveDockWidget()
+        if savedWidget:
+            DockWidgetFactory.showDockWidget(savedWidget)
             return
         dockWidget.setDockWidget()
 
