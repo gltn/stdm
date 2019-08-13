@@ -8,10 +8,10 @@
     <CodeValue value="Ownership" code=""/>
    </ValueList>
    <ValueList name="check_lht_relevant_authority">
-    <CodeValue value="Municipality Council" code="MC"/>
-    <CodeValue value="Village Council" code="VC"/>
     <CodeValue value="Town Council" code="TC"/>
     <CodeValue value="Regional Council" code="RC"/>
+    <CodeValue value="Municipality Council" code="MC"/>
+    <CodeValue value="Village Council" code="VC"/>
    </ValueList>
    <ValueList name="check_lht_land_rights_office">
     <CodeValue value="Windhoek" code=""/>
@@ -54,6 +54,9 @@
     <CodeValue value="LMNPRST" code=""/>
     <CodeValue value="GJKLMN" code=""/>
     <CodeValue value="ABCDHJKL" code=""/>
+    <CodeValue value="AB" code=""/>
+    <CodeValue value="KL" code=""/>
+    <CodeValue value="NSTV" code=""/>
    </ValueList>
    <ValueList name="check_lht_approval_status">
     <CodeValue value="Approved" code=""/>
@@ -346,7 +349,7 @@
      <Relation name="fk_cb_cdrs_title_deed_id_cb_scheme_title_deed_number"/>
     </Column>
     <Column unique="False" tip="" rowindex="7" minimum="0" maximum="100" description="Name of the township" index="False" name="township_name" searchable="True" TYPE_INFO="VARCHAR" label="township" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="20" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="VARCHAR" label="registration division" mandatory="True"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="5" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="VARCHAR" label="registration division" mandatory="False"/>
     <Column unique="False" tip="" rowindex="9" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="The geometric area of the scheme" index="False" name="area" searchable="True" TYPE_INFO="DOUBLE" label="scheme area" mandatory="True">
      <Numeric scale="4" precision="15"/>
     </Column>
@@ -467,8 +470,6 @@
    <EntityRelation displayColumns="name,code" child="Relevant_authority" showInParent="True" parent="check_lht_relevant_authority" name="fk_cb_check_lht_relevant_authority_id_cb_relevant_authority_type_of_relevant_authority" parentColumn="id" showInChild="True" childColumn="type_of_relevant_authority"/>
    <EntityRelation displayColumns="name,code" child="Relevant_authority" showInParent="True" parent="check_lht_region" name="fk_cb_check_lht_region_id_cb_relevant_authority_region" parentColumn="id" showInChild="True" childColumn="region"/>
    <EntityRelation displayColumns="name,code" child="Relevant_authority" showInParent="True" parent="check_lht_reg_division" name="fk_cb_check_lht_reg_division_id_cb_relevant_authority_registration_division" parentColumn="id" showInChild="True" childColumn="registration_division"/>
-   <EntityRelation displayColumns="name,code" child="Approval" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_approval_status" parentColumn="id" showInChild="True" childColumn="status"/>
-   <EntityRelation displayColumns="name,code" child="Plot" showInParent="True" parent="check_lht_plot_use" name="fk_cb_check_lht_plot_use_id_cb_plot_use" parentColumn="id" showInChild="True" childColumn="use"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_gender" name="fk_cb_check_lht_gender_id_cb_holder_gender" parentColumn="id" showInChild="True" childColumn="gender"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_marital_status" name="fk_cb_check_lht_marital_status_id_cb_holder_marital_status" parentColumn="id" showInChild="True" childColumn="marital_status"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_gender" name="fk_cb_check_lht_gender_id_cb_holder_spouse_gender" parentColumn="id" showInChild="True" childColumn="spouse_gender"/>
@@ -476,6 +477,9 @@
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_income_level" name="fk_cb_check_lht_income_level_id_cb_holder_income_level" parentColumn="id" showInChild="True" childColumn="income_level"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_occupation" name="fk_cb_check_lht_occupation_id_cb_holder_occupation" parentColumn="id" showInChild="True" childColumn="occupation"/>
    <EntityRelation displayColumns="name,code" child="Notification" showInParent="True" parent="check_lht_notification" name="fk_cb_check_lht_notification_id_cb_notification_status" parentColumn="id" showInChild="True" childColumn="status"/>
+   <EntityRelation displayColumns="name,code" child="Approval" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_approval_status" parentColumn="id" showInChild="True" childColumn="status"/>
+   <EntityRelation displayColumns="name,code" child="Plot" showInParent="True" parent="check_lht_plot_use" name="fk_cb_check_lht_plot_use_id_cb_plot_use" parentColumn="id" showInChild="True" childColumn="use"/>
+   <EntityRelation displayColumns="" child="check_tenure_type_str_attrs" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_check_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="name,code" child="Scheme_supporting_document" showInParent="True" parent="check_scheme_document_type" name="fk_cb_check_scheme_document_type_id_cb_scheme_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="Scheme_supporting_document" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_supporting_document_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="" child="Scheme_supporting_document" showInParent="True" parent="supporting_document" name="fk_cb_supporting_document_id_cb_scheme_supporting_document_supporting_doc_id" parentColumn="id" showInChild="True" childColumn="supporting_doc_id"/>
@@ -488,7 +492,6 @@
    <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_approval_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="Approval" name="fk_cb_approval_id_cb_scheme_approval_approval_id" parentColumn="id" showInChild="True" childColumn="approval_id"/>
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
-   <EntityRelation displayColumns="" child="check_tenure_type_str_attrs" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_check_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
   </Relations>
