@@ -131,6 +131,7 @@ class DocumentViewerContainer(QTabWidget):
         """
 
 
+
 class PhotoViewer(QScrollArea):
     """
     Widget for viewing images by incorporating basic navigation options.
