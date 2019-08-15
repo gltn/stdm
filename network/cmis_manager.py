@@ -407,6 +407,9 @@ class CmisEntityDocumentMapper(object):
         self._doc_type_mapping = {}
         self._uploaded_docs = OrderedDict()
 
+    def _extract_cmis_doc(self, uploaded_doc_info):
+        return uploaded_doc_info.cmis_doc
+
     @property
     def uploaded_documents(self):
         """
@@ -414,7 +417,10 @@ class CmisEntityDocumentMapper(object):
         containing the uploaded Document objects.
         :rtype: OrderedDict
         """
-        return [di.cmis_doc for di in self._uploaded_docs]
+        return {
+            doc_type: map(self._extract_cmis_doc, doc_infos)
+            for doc_type, doc_infos in self._uploaded_docs.iteritems()
+        }
 
     def uploaded_documents_by_type(self, doc_type):
         """
@@ -836,7 +842,6 @@ class CmisEntityDocumentMapper(object):
 
                     # Update the document name if reference_name is specified
                     if reference_name:
-                        print doc_name
                         props = {CMIS_NAME: doc_name}
                         doc.updateProperties(props)
                         i += 1

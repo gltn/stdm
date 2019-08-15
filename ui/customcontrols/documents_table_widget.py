@@ -261,7 +261,7 @@ class DocumentTableWidget(QTableWidget):
 
         # Clear error hints
         row_idx = doc_info.row_num
-        self.clear_error_hints(row_idx)
+        self.clear_error_success_hints(row_idx)
 
         last_doc_path = last_document_path()
         if not last_doc_path:
@@ -359,6 +359,8 @@ class DocumentTableWidget(QTableWidget):
             ti.setBackgroundColor(Qt.white)
             ti.setTextColor(Qt.black)
             doc_info.upload_status = DocumentTableWidget.NOT_UPLOADED
+            # Remove any error or success styling cues
+            self.clear_error_success_hints(row_num)
 
         # Successfully uploaded
         elif status == DocumentTableWidget.SUCCESS:
@@ -498,7 +500,7 @@ class DocumentTableWidget(QTableWidget):
         # Update status column
         self._after_upload(doc_type, DocumentTableWidget.ERROR, op_error)
 
-    def clear_error_hints(self, row_idx):
+    def clear_error_success_hints(self, row_idx):
         # Clears the error icon and tooltip for the row in the given index.
         ti = self.item(row_idx, 0)
         if not ti:
@@ -553,17 +555,34 @@ class DocumentTableWidget(QTableWidget):
                 uuid,
                 self
             )
-            # Reset document type status after completion
+
+            # connect signals
             delete_thread.succeeded.connect(
                 self._on_remove_document_succeeded
             )
+            delete_thread.error.connect(
+                self._on_remove_document_error
+            )
+
             delete_thread.start()
 
         # Emit signal
         self.remove_requested.emit(doc_info)
 
-    def _on_remove_document_succeeded(self, doc_type):
+    def _on_remove_document_succeeded(self, doc_type, status):
         # Slot raised after the document deletion thread has finished.
+        if not status:
+            msg = u'{0} could not be removed.'.format(
+                doc_type
+            )
+            QMessageBox.warning(
+                self,
+                self.tr('Remove Document'),
+                msg
+            )
+
+            return
+
         # Reset document type status
         self._after_upload(doc_type, DocumentTableWidget.NOT_UPLOADED)
 
@@ -623,7 +642,7 @@ class CmisDocumentDeleteThread(QThread):
     """
     Handles deletion of a document from the CMIS repository.
     """
-    succeeded = pyqtSignal(str)
+    succeeded = pyqtSignal(str, bool)
     error = pyqtSignal(str)
 
     def __init__(self, cmis_doc_mapper, doc_type, doc_uuid, parent=None):
@@ -635,11 +654,11 @@ class CmisDocumentDeleteThread(QThread):
     def run(self):
         # Delete the document.
         try:
-            self._doc_mapper.remove_document(
+            status = self._doc_mapper.remove_document(
                 self._doc_type,
                 self._doc_uuid
             )
-            self.succeeded.emit(self._doc_type)
+            self.succeeded.emit(self._doc_type, status)
         except CmisException as cex:
             self.error.emit(cex.status)
         except Exception as ex:
