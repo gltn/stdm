@@ -129,7 +129,7 @@ class DocumentViewerContainer(QTabWidget):
         properties.
         :type cmis_doc: cmis.domain.Document
         """
-
+        pass
 
 
 class PhotoViewer(QScrollArea):

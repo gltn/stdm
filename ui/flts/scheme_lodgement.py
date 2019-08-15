@@ -23,14 +23,17 @@ from cmislib.exceptions import (
     CmisException
 )
 from PyQt4.QtCore import (
-    QDir
+    QDir,
+    Qt
 )
 from PyQt4.QtGui import (
     QDialog,
     QFileDialog,
     QMessageBox,
+    QProgressDialog,
     QWizard
 )
+from qgis.core import QgsApplication
 
 from stdm.ui.customcontrols.documents_table_widget import (
     DirDocumentTypeSelector
@@ -82,6 +85,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._rel_auth_chk_entity_name = 'check_lht_relevant_authority'
         self._rgn_chk_entity_name = 'check_lht_region'
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
+        self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -92,17 +96,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Scheme object
-        self.sch_entity_obj = self.curr_p.entity(self._sch_entity_name)
+        # Scheme entity
+        self.sch_entity = self.curr_p.entity(self._sch_entity_name)
 
         # Entity models
         self.schm_model, self._scheme_doc_model = entity_model(
-            self.sch_entity_obj,
+            self.sch_entity,
             with_supporting_document=True
         )
-
-        # Entity object
-        self.schm_model_obj = self.schm_model()
 
         # Check if scheme entity models exist
         if self.schm_model is None:
@@ -113,8 +114,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
             self.reject()
 
-        # Initializing mappermixin for saving attribute data
-        MapperMixin.__init__(self, self.schm_model, self.sch_entity_obj)
+        # Initializing Mappermixin for saving attribute data
+        MapperMixin.__init__(self, self.schm_model, self.sch_entity)
 
         # Configure notification bar
         self.notif_bar = NotificationBar(self.vlNotification)
@@ -439,10 +440,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         This is used in uploading and viewing of the scheme supporting
         documents
         """
-        doc_type_table = 'cb_check_scheme_document_type'
-
         # Check if the document type lookup exists
-        doc_type_entity = self.curr_p.entity_by_name(doc_type_table)
+        doc_type_entity = self.curr_p.entity_by_name(self._scheme_doc_type_lookup)
         if doc_type_entity is None:
             QMessageBox.critical(
                 self,
@@ -475,13 +474,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
             return
 
-        doc_res = export_data('cb_check_scheme_document_type')
+        doc_res = export_data(self._scheme_doc_type_lookup)
         # Add the documents types to the view
         for d in doc_res:
             doc_type = d.value
+            code = d.code
+            type_id = d.id
             self.tbw_documents.add_document_type(doc_type)
             # Also add the types to the CMIS doc mapper
-            self._cmis_doc_mapper.add_document_type(doc_type)
+            self._cmis_doc_mapper.add_document_type(doc_type, code, type_id)
 
         self._suporting_docs_loaded = True
 
@@ -651,19 +652,21 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
             else:
                 ret_status = True
+
         elif current_id == 2:
-            # Check if all documents have been uploaded
             self._load_scheme_document_types()
+
             # Populate values to summary in next page
             self.populate_summary()
+
             return True
+
         elif current_id == 3:
             # This is the last page
             try:
                 self.save_scheme()
-                # Add other functionality
-                self.create_notification()
                 ret_status = True
+
             except Exception as err:
                 QMessageBox.critical(
                     self,
@@ -710,6 +713,64 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def save_scheme(self):
         """
-        Save scheme information to the database
+        Save scheme information, move supporting documents, save holders
+        table and create appropriate notifications.
         """
-        self.submit()
+        pg_dlg = QProgressDialog(
+            parent=self
+        )
+        pg_dlg.setWindowModality(Qt.WindowModal)
+        pg_dlg.setMinimum(0)
+        pg_dlg.setMaximum(4)
+        pg_dlg.setCancelButton(None)
+        pg_dlg.setWindowTitle(self.tr(
+            'Saving Scheme Information...'
+        ))
+
+        pg_dlg.setLabelText(self.tr(
+            'Retrieving scheme attribute data...'
+        ))
+        pg_dlg.setValue(1)
+        # Get scheme db object for manual saving to database.
+        self.submit(True)
+        scheme_obj = self.model()
+        QgsApplication.processEvents()
+
+        pg_dlg.setLabelText(self.tr(
+            'Saving supporting documents, please wait...'
+        ))
+        pg_dlg.setValue(2)
+        QgsApplication.processEvents()
+        # Attach documents
+        doc_objs = self._cmis_doc_mapper.persist_documents(
+            scheme_obj.scheme_number
+        )
+        scheme_obj.documents = doc_objs
+        QgsApplication.processEvents()
+
+        pg_dlg.setLabelText(self.tr(
+            'Saving holders data...'
+        ))
+        pg_dlg.setValue(3)
+        # Code for saving holders information
+
+        pg_dlg.setLabelText(self.tr(
+            'Saving scheme and notification data...'
+        ))
+        pg_dlg.setValue(4)
+        scheme_obj.save()
+        QgsApplication.processEvents()
+
+        # Create notification
+        # self.create_notification()
+
+        msg = self.tr(
+            u'A new scheme, of number {0}, has been successfully lodged.'.format(
+                scheme_obj.scheme_number
+            )
+        )
+        QMessageBox.information(
+            self,
+            self.tr('New Scheme'),
+            msg
+        )

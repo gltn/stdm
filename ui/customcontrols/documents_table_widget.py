@@ -72,6 +72,7 @@ class DocumentRowInfo(object):
         self.uuid = ''
         self.upload_status = DocumentTableWidget.NOT_UPLOADED
         self.document_type_id = -1
+        self.doc_obj = None
 
 
 class DocumentTableWidget(QTableWidget):
@@ -341,7 +342,7 @@ class DocumentTableWidget(QTableWidget):
         ti.setText('')
         self.setCellWidget(row_num, 2, pg_bar)
 
-    def _after_upload(self, doc_type, status, uuid=None):
+    def _after_upload(self, doc_type, status, extras=None):
         doc_info = self.row_document_info_from_type(doc_type)
         if not doc_info:
             return
@@ -366,8 +367,8 @@ class DocumentTableWidget(QTableWidget):
             ti.setBackgroundColor(QColor('#00b300'))
             doc_info.upload_status = DocumentTableWidget.SUCCESS
             # Set the document uuid
-            if uuid:
-                doc_info.uuid = uuid
+            if extras:
+                doc_info.uuid = extras
 
         # Error while uploading
         elif status == DocumentTableWidget.ERROR:
@@ -451,6 +452,20 @@ class DocumentTableWidget(QTableWidget):
         """
         doc_type = res_info[0]
         doc_obj= res_info[1]
+
+        row_info = self.row_document_info_from_type(doc_type)
+        if not row_info:
+            return
+
+        ti = self.item(row_info.row_num, 0)
+        if not ti:
+            return
+
+        # Set success icon
+        ti.setIcon(
+            QIcon(':/plugins/stdm/images/icons/success.png')
+        )
+
         cmis_props = doc_obj.getProperties()
         doc_uuid = cmis_props['cmis:versionSeriesId']
         self._after_upload(doc_type, DocumentTableWidget.SUCCESS, doc_uuid)
@@ -481,7 +496,7 @@ class DocumentTableWidget(QTableWidget):
         ti.setToolTip(op_error)
 
         # Update status column
-        self._after_upload(doc_type, op_error)
+        self._after_upload(doc_type, DocumentTableWidget.ERROR, op_error)
 
     def clear_error_hints(self, row_idx):
         # Clears the error icon and tooltip for the row in the given index.

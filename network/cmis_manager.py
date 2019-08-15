@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from mimetypes import guess_type
+from uuid import uuid4
 from collections import OrderedDict
 from cmislib import (
     CmisClient
@@ -37,6 +38,14 @@ from stdm.settings.registryconfig import (
     cmis_atom_pub_url,
     cmis_auth_config_id
 )
+
+CMIS_NAME = 'cmis:name'
+CMIS_TITLE = 'cmis:title'
+CMIS_VERSION_SERIES_ID = 'cmis:versionSeriesId'
+CMIS_CREATED_BY = 'cmis:createdBy'
+CMIS_CREATION_DATE = 'cmis:creationDate'
+CMIS_CONTENT_STREAM_LENGTH = 'cmis:contentStreamLength'
+CMIS_CONTENT_STREAM_ID = 'cmis:contentStreamId'
 
 
 class CmisManager(object):
@@ -158,6 +167,32 @@ class CmisManager(object):
             pass
 
         return temp_folder
+
+    def create_temp_folder(self):
+        """
+        Creates the temp folder, under the context base folder, if None
+        exists.
+        :return: Returns True if the operation succeeded, otherwise False.
+        :rtype: bool
+        """
+        status = False
+
+        ctx_folder = self.context_base_folder
+        if not ctx_folder:
+            msg = 'Context base folder does not exist.'
+            raise CmisDocumentMapperException(msg)
+
+        tmp_folder = self.context_temp_folder
+        # No need to create if it already exists
+        if tmp_folder:
+            return status
+
+        tmp_folder = ctx_folder.createFolder(
+            self.temp_folder_name
+        )
+        status = True
+
+        return status
 
     @property
     def default_repository(self):
@@ -341,7 +376,17 @@ class DocumentTypeFolderMapping(object):
     def __init__(self, **kwargs):
         self.doc_type = kwargs.pop('doc_type', '')
         self.doc_type_code = kwargs.pop('type_code', '')
+        self.doc_type_id = kwargs.pop('type_id', -1)
         self.folder = None
+
+
+class UploadedDocInfo(object):
+    """
+    Container for info on uploaded CMIS document.
+    """
+    def __init__(self, **kwargs):
+        self.cmis_doc = kwargs.pop('cmis_doc', None)
+        self.temp_dir = kwargs.pop('temp_dir', True)
 
 
 class CmisEntityDocumentMapper(object):
@@ -369,7 +414,7 @@ class CmisEntityDocumentMapper(object):
         containing the uploaded Document objects.
         :rtype: OrderedDict
         """
-        return self._uploaded_docs
+        return [di.cmis_doc for di in self._uploaded_docs]
 
     def uploaded_documents_by_type(self, doc_type):
         """
@@ -386,7 +431,7 @@ class CmisEntityDocumentMapper(object):
     def _cmis_doc_id(self, doc):
         # Returns the unique identifier of the document in the CMIS repo.
         props = doc.getProperties()
-        return props['cmis:versionSeriesId']
+        return props[CMIS_VERSION_SERIES_ID]
 
     def _uploaded_document_by_type_uuid(self, doc_type, uuid):
         # Returns a tuple containing the index of the document in the list
@@ -674,7 +719,7 @@ class CmisEntityDocumentMapper(object):
         """
         self._doc_model_cls = doc_model_cls
 
-    def add_document_type(self, name, code=''):
+    def add_document_type(self, name, code='', type_id=-1):
         """
         Add the name of the document type that will be managed by this
         object. You can also set the corresponding code which can also be
@@ -684,10 +729,13 @@ class CmisEntityDocumentMapper(object):
         :type name: str
         :param code: Code corresponding to the type of the document.
         :type code: str
+        :param type_id: Primary key id of the document type in the lookup table.
+        :type type_id: int
         """
         doc_type_mapping = DocumentTypeFolderMapping(
             doc_type=name,
-            type_code=code
+            type_code=code,
+            type_id=type_id
         )
         self.add_mapping(doc_type_mapping)
 
@@ -716,7 +764,102 @@ class CmisEntityDocumentMapper(object):
         """
         self._doc_type_mapping = {}
 
-    def upload_document(self, path, doc_type='', doc_type_code=''):
+    def _cmis_doc_to_db_model(self, cmis_doc, doc_type_id):
+        # Create a database model object from the CMIS doc properties.
+        if not self._doc_model_cls:
+            msg = 'A database document model object has not been specified.'
+            raise CmisDocumentMapperException(msg)
+
+        # Get CMIS properties
+        props = cmis_doc.getProperties()
+        doc_identifier = props[CMIS_VERSION_SERIES_ID]
+        doc_size = props[CMIS_CONTENT_STREAM_LENGTH]
+        doc_name = props[CMIS_NAME]
+        # Relative location in document repo file system
+        doc_url = props[CMIS_CONTENT_STREAM_ID]
+        created_by = props[CMIS_CREATED_BY]
+        creation_date = props[CMIS_CREATION_DATE]
+
+        # Add properties to model
+        db_model = self._doc_model_cls()
+        db_model.last_modified = creation_date
+        db_model.document_identifier = doc_identifier
+        db_model.source_entity = self.entity_name
+        db_model.document_size = doc_size
+        db_model.name = doc_name
+        db_model.content_url = doc_url
+        db_model.created_by = created_by
+        db_model.document_type = doc_type_id
+
+        return db_model
+
+    def persist_documents(self, reference_name=''):
+        """
+        Moves the documents in the Temp directory to the corresponding
+        document type folders for the given entity. If reference_name is
+        specified, the document names will be replaced with this reference
+        name. The document object models will also be created and returned
+        as a list.
+        :param reference_name: Name to be used for naming the documents when
+        moved from the Temp folder.
+        :type reference_name: str
+        :return: Returns a list of document object models for attaching to
+        the main entity object for saving in the database.
+        :rtype: list
+        """
+        temp_folder = self._cmis_mgr.context_temp_folder
+
+        doc_model_objs = []
+        for doc_type, doc_infos in self._uploaded_docs.iteritems():
+            # Counter for appending _n suffix in document names
+            i = 0
+
+            doc_type_folder = self.document_type_folder(doc_type)
+            if not doc_type_folder:
+                # Create document type folder if it does not exist
+                doc_type_folder = self.create_document_type_folder(doc_type)
+
+            if not doc_type_folder:
+                msg = u'{0} folder could not be created.'.format(doc_type)
+                raise CmisDocumentMapperException(msg)
+
+            for di in doc_infos:
+                doc_name = reference_name
+                doc = di.cmis_doc
+
+                # Move document if in Temp directory
+                if di.temp_dir:
+                    doc.move(temp_folder, doc_type_folder)
+
+                    if i > 0:
+                        doc_name = '{0}_{1:d}'.format(doc_name, i)
+
+                    # Update the document name if reference_name is specified
+                    if reference_name:
+                        print doc_name
+                        props = {CMIS_NAME: doc_name}
+                        doc.updateProperties(props)
+                        i += 1
+
+                # Create database model
+                type_mapping = self._doc_type_mapping.get(doc_type, None)
+                if not type_mapping:
+                    msg = 'The DocumentTypeFolderMapping object could not be found.'
+                    raise CmisDocumentMapperException(msg)
+
+                doc_type_id = type_mapping.doc_type_id
+                db_model = self._cmis_doc_to_db_model(doc, doc_type_id)
+                doc_model_objs.append(db_model)
+
+        return doc_model_objs
+
+    def upload_document(
+            self,
+            path,
+            doc_type='',
+            doc_type_code='',
+            use_temp_dir=True
+    ):
         """
         Uploads the document specified in path to the folder of the given
         document type based on the specified document type folder mapping.
@@ -726,8 +869,14 @@ class CmisEntityDocumentMapper(object):
         :type doc_type: str
         :param doc_type_code: Code of the document type which is used to
         identify the document type. If doc_type has already been specified
-        then the value of this paramter is skipped.
+        then the value of this parameter is skipped.
         :type doc_type_code: str
+        :param use_temp_dir: Specify True to upload the document in the Temp
+        directory using an auto-generated name then move it to the correct
+        document type repository using the :func:'persist_documents' method.
+        If set to False, the document will be directly uploaded to the
+        corresponding document type folder. Default is True.
+        :type use_temp_dir: bool
         :return: Returns the AtomPub document object, else None if it was
         not successfully created.
         :rtype: cmislib.domain.Document
@@ -754,15 +903,29 @@ class CmisEntityDocumentMapper(object):
             msg = 'Mapping for the specified document type name not found.'
             raise CmisDocumentMapperException(msg)
 
-        doc_type_folder = self.document_type_folder(doc_type)
+        if use_temp_dir:
+            dest_folder = self._cmis_mgr.context_temp_folder
+        else:
+            dest_folder = self.document_type_folder(doc_type)
 
         # Try create the folder if it does not exist
-        if not doc_type_folder:
-            doc_type_folder = self.create_document_type_folder(doc_type)
+        if not dest_folder:
+            if use_temp_dir:
+                status = self._cmis_mgr.create_temp_folder()
+                if not status:
+                    msg = 'Temp directory could not be created.'
+                    raise CmisDocumentMapperException(msg)
+                else:
+                    dest_folder = self._cmis_mgr.context_temp_folder
+            else:
+                dest_folder = self.create_document_type_folder(doc_type)
 
-        # Get name of the file without the extension
-        fi = QFileInfo(path)
-        doc_name = fi.completeBaseName()
+        if use_temp_dir:
+            doc_name = str(uuid4())
+        else:
+            # Get name of the file without the extension
+            fi = QFileInfo(path)
+            doc_name = fi.completeBaseName()
 
         # Determine whether file is text or binary
         read_mode = 'rb'
@@ -771,12 +934,12 @@ class CmisEntityDocumentMapper(object):
         if text_idx != -1:
             read_mode = 'r'
 
-        # TODO; mime_type should be set automatically
+        # TODO: mime_type should be set automatically
         mime_type = 'application/pdf'
 
         cmis_doc = None
         with open(path, read_mode) as f:
-            cmis_doc = doc_type_folder.createDocument(
+            cmis_doc = dest_folder.createDocument(
                 doc_name,
                 contentFile=f,
                 contentType=mime_type
@@ -786,8 +949,11 @@ class CmisEntityDocumentMapper(object):
         if not doc_type in self._uploaded_docs:
             self._uploaded_docs[doc_type] = []
 
-        uploaded_type_docs = self._uploaded_docs[doc_type]
-        uploaded_type_docs.append(cmis_doc)
+        if cmis_doc:
+            doc_info = UploadedDocInfo(cmis_doc=cmis_doc, temp_dir=use_temp_dir)
+
+            uploaded_type_docs = self._uploaded_docs[doc_type]
+            uploaded_type_docs.append(doc_info)
 
         return cmis_doc
 
