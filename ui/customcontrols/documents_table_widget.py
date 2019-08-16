@@ -147,6 +147,34 @@ class DocumentTableWidget(QTableWidget):
         """
         return self._docs_info
 
+    @property
+    def uploaded_documents(self):
+        """
+        :return: Returns a collection containing the uploaded Document
+        object (or None) indexed by the document type.
+        :rtype: dict
+        """
+        s_docs = {}
+        uploaded_docs = self.cmis_entity_doc_mapper.uploaded_documents
+        for dt, docs in uploaded_docs.iteritems():
+            doc = docs[0] if len(docs) > 0 else None
+            s_docs[dt] = doc
+
+        return s_docs
+
+    def uploaded_document_by_type(self, doc_type):
+        """
+        Gets the uploaded documents based on the document type.
+        :param doc_type: Name of the document type.
+        :type doc_type: str
+        :return: Returns the uploaded document based on the
+        document type or None if no document has been uploaded for the given
+        type or if the document type does not exist in the collection of
+        uploaded documents.
+        :rtype: cmislib.domain.Document
+        """
+        return self.uploaded_documents.get(doc_type, None)
+
     def row_document_information(self, idx):
         """
         Gets the DocumentRowInfo for the row with the given index.

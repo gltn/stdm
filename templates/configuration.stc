@@ -149,6 +149,7 @@
     <Column unique="False" tip="" rowindex="4" minimum="0" maximum="2147483647" description="Registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="LOOKUP" label="registration division" mandatory="True">
      <Relation name="fk_cb_check_lht_reg_division_id_cb_relevant_authority_registration_division"/>
     </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="The last value saved for the unique scheme number" index="False" name="last_val" searchable="True" TYPE_INFO="INT" label="" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="10" associative="False" description="Refers to the holder of Land Hold Title" proxy="False" createId="True" supportsDocuments="False" shortName="Holder" name="cb_holder" label="lht_holder">
@@ -345,16 +346,11 @@
     <Column unique="False" tip="" rowindex="5" minimum="0" maximum="2147483647" description="Region in which the scheme exists" index="False" name="region" searchable="True" TYPE_INFO="LOOKUP" label="region" mandatory="True">
      <Relation name="fk_cb_check_lht_region_id_cb_scheme_region"/>
     </Column>
-    <Column unique="False" tip="" rowindex="6" minimum="0" maximum="2147483647" description="The number/code of the title deed" index="False" name="title_deed_number" searchable="False" TYPE_INFO="FOREIGN_KEY" label="tityle deed no" mandatory="False">
-     <Relation name="fk_cb_cdrs_title_deed_id_cb_scheme_title_deed_number"/>
-    </Column>
     <Column unique="False" tip="" rowindex="7" minimum="0" maximum="100" description="Name of the township" index="False" name="township_name" searchable="True" TYPE_INFO="VARCHAR" label="township" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="5" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="VARCHAR" label="registration division" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="8" minimum="0" maximum="5" description="The registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="VARCHAR" label="registration division" mandatory="False"/>
     <Column unique="False" tip="" rowindex="9" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="The geometric area of the scheme" index="False" name="area" searchable="True" TYPE_INFO="DOUBLE" label="scheme area" mandatory="True">
      <Numeric scale="4" precision="15"/>
     </Column>
-    <Column unique="False" tip="" rowindex="10" minimum="0" maximum="30" description="Registration number of document imposing conditions" index="False" name="doc_imposing_conditions_number" searchable="True" TYPE_INFO="VARCHAR" label="doc imposing conditions" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="11" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="const ref no" mandatory="False"/>
     <Column unique="False" tip="" rowindex="12" minimum="-2147483648" maximum="2147483647" description="Number of polts in the scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="number of plots" mandatory="False"/>
     <Column unique="False" tip="" rowindex="13" minimum="0" maximum="32" description="The number representing the scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme_number" mandatory="True"/>
    </Columns>

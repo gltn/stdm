@@ -415,7 +415,7 @@ class CmisEntityDocumentMapper(object):
         """
         :return: Returns a collection indexed by document type with a list
         containing the uploaded Document objects.
-        :rtype: OrderedDict
+        :rtype: dict
         """
         return {
             doc_type: map(self._extract_cmis_doc, doc_infos)

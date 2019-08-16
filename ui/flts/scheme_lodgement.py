@@ -77,7 +77,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.curr_p = current_profile()
 
         # Flag for checking if document type has been loaded
-        self._suporting_docs_loaded = False
+        self._supporting_docs_loaded = False
 
         # Entity names
         self._sch_entity_name = 'Scheme'
@@ -129,8 +129,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Initialize Mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.sch_entity)
 
-        # Configure notification bar
+        # Configure notification bars
         self.notif_bar = NotificationBar(self.vlNotification)
+        self.docs_notif_bar = NotificationBar(self.vlNotification_docs)
+        self.holders_notif_bar = NotificationBar(self.vlNotification_holders)
 
         # CMIS stuff for document management
         self._cmis_mgr = CmisManager()
@@ -389,12 +391,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._init_cmis_doc_mapper()
 
         # Load scheme supporting documents
-        if idx == 2:
+        elif idx == 1:
             self._load_scheme_document_types()
 
             # Disable widget if doc mapper could not be initialized
             if not self._cmis_doc_mapper:
                 self.tbw_documents.setEnabled(False)
+        # Last page
+        elif idx == 3:
+            # Populate summary widget
+            self.populate_summary()
 
     def _init_cmis_doc_mapper(self):
         # Initializes CMIS stuff
@@ -477,7 +483,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         # No need of fetching the documents again if already done before
-        if self._suporting_docs_loaded:
+        if self._supporting_docs_loaded:
             return
 
         # Check Doc mapper
@@ -505,7 +511,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Also add the types to the CMIS doc mapper
             self._cmis_doc_mapper.add_document_type(doc_type, code, type_id)
 
-        self._suporting_docs_loaded = True
+        self._supporting_docs_loaded = True
 
     def on_upload_multiple_files(self):
         """
@@ -662,25 +668,25 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             if len(errors) == 0:
                 ret_status = True
 
-        elif current_id == 1:
+        elif current_id == 2:
             # TODO --- Use RegExp validator
             if not self.lnEdit_hld_path.text():
-                self.notif_bar.insertWarningNotification(
+                self.holders_notif_bar.clear()
+                self.holders_notif_bar.insertWarningNotification(
                     self.tr(
-                        'Please choose the Excel file containing Holders '
-                        'information'
+                        'Please choose the Excel file containing the Holders '
+                        'information.'
                     )
                 )
             else:
                 ret_status = True
 
-        elif current_id == 2:
-            self._load_scheme_document_types()
-
-            # Populate values to summary in next page
-            self.populate_summary()
-
-            return True
+        elif current_id == 1:
+            ret_status = self._is_documents_page_valid()
+            if not ret_status:
+                self.docs_notif_bar.clear()
+                msg = self.tr('(FOR NOW) Please upload at least one supporting document.')
+                self.docs_notif_bar.insertWarningNotification(msg)
 
         elif current_id == 3:
             # This is the last page
@@ -696,6 +702,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
 
         return ret_status
+
+    def _is_documents_page_valid(self):
+        # Checks if the documents have been uploaded
+        # TODO: Update to incorporate a check for all documents
+        is_valid = False
+        uploaded_docs = self.tbw_documents.uploaded_documents.values()
+        for d in uploaded_docs:
+            # Check if not None. To be refactored.
+            if d:
+                is_valid = True
+                break
+
+        return is_valid
 
     def populate_summary(self):
         """

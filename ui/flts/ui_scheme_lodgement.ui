@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>755</width>
-    <height>493</height>
+    <height>657</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -48,6 +48,9 @@
   </property>
   <widget class="QWizardPage" name="wizardPage1">
    <layout class="QGridLayout" name="gridLayout_2">
+    <property name="verticalSpacing">
+     <number>10</number>
+    </property>
     <item row="0" column="0" colspan="2">
      <layout class="QVBoxLayout" name="vlNotification">
       <property name="bottomMargin">
@@ -213,64 +216,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="wizardPage2">
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlNotification_2">
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-     </layout>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_desc_2">
-      <property name="text">
-       <string>Select the Excel file containing holders information</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="lnEdit_hld_path">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QPushButton" name="btn_brws_hld">
-      <property name="text">
-       <string>Browse...</string>
-      </property>
-      <property name="default">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_data_prev">
-      <property name="text">
-       <string>Data preview</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QPushButton" name="btn_validate_holders">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Validate</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="2">
-     <widget class="ExcelWorkbookView" name="tw_hld_prv"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QWizardPage" name="wizardPage">
    <property name="subTitle">
     <string>Upload the supporting documents for the scheme</string>
@@ -353,7 +298,7 @@
      </widget>
     </item>
     <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlNotification_3">
+     <layout class="QVBoxLayout" name="vlNotification_docs">
       <property name="bottomMargin">
        <number>10</number>
       </property>
@@ -371,10 +316,71 @@
     </item>
     <item row="4" column="0" colspan="2">
      <widget class="QgsCollapsibleGroupBox" name="gp_preview_docs">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="title">
        <string>Preview Documents</string>
       </property>
      </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wizardPage2">
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vlNotification_holders">
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_desc_2">
+      <property name="text">
+       <string>Select the Excel file containing holders information</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="lnEdit_hld_path">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="btn_brws_hld">
+      <property name="text">
+       <string>Browse...</string>
+      </property>
+      <property name="default">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_data_prev">
+      <property name="text">
+       <string>Data preview</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QPushButton" name="btn_validate_holders">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Validate</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" colspan="2">
+     <widget class="ExcelWorkbookView" name="tw_hld_prv"/>
     </item>
    </layout>
   </widget>
