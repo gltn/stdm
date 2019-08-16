@@ -685,7 +685,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             ret_status = self._is_documents_page_valid()
             if not ret_status:
                 self.docs_notif_bar.clear()
-                msg = self.tr('(FOR NOW) Please upload at least one supporting document.')
+                msg = self.tr(
+                    '(FOR NOW) Please upload at least one supporting '
+                    'document.'
+                )
                 self.docs_notif_bar.insertWarningNotification(msg)
 
         elif current_id == 3:
