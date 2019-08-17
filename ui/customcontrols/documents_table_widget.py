@@ -325,9 +325,6 @@ class DocumentTableWidget(QTableWidget):
         :type doc_type: str
         """
         if self.cmis_entity_doc_mapper:
-            # Remove previously uploaded document, if any
-            self.remove_document_by_doc_type(doc_type)
-
             # Upload the new one
             upload_thread = CmisDocumentUploadThread(
                 doc_file_path,

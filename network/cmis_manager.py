@@ -497,6 +497,29 @@ class CmisEntityDocumentMapper(object):
 
         return True
 
+    def remove_all_documents(self, doc_type):
+        """
+        Removes all the documents (in the current session) for the given type.
+        :param doc_type: Type of the document.
+        :type doc_type: str
+        """
+        if not doc_type in self._uploaded_docs:
+            return
+
+        doc_infos = self._uploaded_docs[doc_type]
+        for di in doc_infos:
+            doc = di.cmis_doc
+            # Attempt to delete and suppress any errors
+            try:
+                doc.delete()
+            except:
+                pass
+
+            del di
+
+        # Reset container
+        self._uploaded_docs[doc_type] = []
+
     def uploaded_document_by_type_uuid(self, doc_type, uuid):
         """
         Searches the collection of uploaded documents for the AtomPub
@@ -876,7 +899,8 @@ class CmisEntityDocumentMapper(object):
             path,
             doc_type='',
             doc_type_code='',
-            use_temp_dir=True
+            use_temp_dir=True,
+            clear_all=True
     ):
         """
         Uploads the document specified in path to the folder of the given
@@ -895,6 +919,8 @@ class CmisEntityDocumentMapper(object):
         If set to False, the document will be directly uploaded to the
         corresponding document type folder. Default is True.
         :type use_temp_dir: bool
+        :param clear_all: True to clear all previously uploaded documents (in
+        the current session) for the given document type.
         :return: Returns the AtomPub document object, else None if it was
         not successfully created.
         :rtype: cmislib.domain.Document
@@ -937,6 +963,10 @@ class CmisEntityDocumentMapper(object):
                     dest_folder = self._cmis_mgr.context_temp_folder
             else:
                 dest_folder = self.create_document_type_folder(doc_type)
+
+        # Clear all documents if option has been specified
+        if clear_all:
+            self.remove_all_documents(doc_type)
 
         if use_temp_dir:
             doc_name = str(uuid4())
