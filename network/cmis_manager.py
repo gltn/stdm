@@ -471,16 +471,29 @@ class CmisEntityDocumentMapper(object):
             - The operation failed in the CMIS server side.
         :rtype: bool
         """
-        idx, doc = self._uploaded_document_by_type_uuid(doc_type, uuid)
+        # Need to manually remove items from the collection
+        if not doc_type in self._uploaded_docs:
+            return False
+
+        idx = -1
+        doc_infos = self._uploaded_docs[doc_type]
+        for i, di in enumerate(doc_infos):
+            doc = di.cmis_doc
+            doc_id = self._cmis_doc_id(doc)
+            if doc_id == uuid:
+                idx = i
+                break
+
         if idx == -1:
             return False
 
-        # Remove the document from the list
-        uploaded_type_docs = self.uploaded_documents_by_type(doc_type)
-        doc = uploaded_type_docs.pop(idx)
+        # Remove document information object
+        rm_doc_info = doc_infos.pop(idx)
+        rm_doc = rm_doc_info.cmis_doc
 
-        # Delete the document
-        doc.delete()
+        # Delete the document from the repository
+        rm_doc.delete()
+        del rm_doc_info
 
         return True
 
