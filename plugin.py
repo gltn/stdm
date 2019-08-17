@@ -55,7 +55,8 @@ from stdm.ui.options_base import OptionsDialog
 # flts
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
-from ui.flts.scheme_establishment import EstablishmentDialog
+from ui.flts.workflow_manager.dock_widget_factory import DockWidgetFactory
+from ui.flts.workflow_manager.workflow_manager_widget import WorkflowManagerWidget
 from ui.flts.import_plots import ImportPlotWizard
 from ui.flts.scheme_revision import SchemeRevisionWizard
 from ui.flts.scan_certificate import ScanCertificateDialog
@@ -2399,28 +2400,48 @@ class STDMQGISLoader(object):
         lodge_wizard.exec_()
 
     def establish_scheme(self):
-        """Load the dialog for establishemnt of scheme.
         """
-        establish_dialog = EstablishmentDialog(self.iface.mainWindow())
-        establish_dialog.exec_()
+        Docks Scheme establishment workflow manager widget
+        """
+        workflowManager = WorkflowManagerWidget(
+            "Scheme Establishment Workflow Manager",
+            "schemeEstablishment"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def first_examination(self):
         """
         Docks First Examination workflow manager widget
         """
-        pass
+        workflowManager = WorkflowManagerWidget(
+            "First Workflow Manager",
+            "firstExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def second_examination(self):
         """
         Docks Second Examination workflow manager widget
         """
-        pass
+        workflowManager = WorkflowManagerWidget(
+            "Second Workflow Manager",
+            "secondExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def third_examination(self):
         """
         Docks Third Examination workflow manager widget
         """
-        pass
+        workflowManager = WorkflowManagerWidget(
+            "Third Workflow Manager",
+            "thirdExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def import_plots(self):
         """
