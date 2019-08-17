@@ -56,10 +56,6 @@ from stdm.ui.options_base import OptionsDialog
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
 from ui.flts.scheme_establishment import EstablishmentDialog
-from ui.flts.workflow_manager.workflow_manager import DockWidgetFactory
-from ui.flts.first_examination import FirstExaminationWidget
-from ui.flts.second_examination import SecondExaminationWidget
-from ui.flts.third_examination import ThirdExaminationWidget
 from ui.flts.import_plots import ImportPlotWizard
 from ui.flts.scheme_revision import SchemeRevisionWizard
 from ui.flts.scan_certificate import ScanCertificateDialog
@@ -2412,33 +2408,19 @@ class STDMQGISLoader(object):
         """
         Docks First Examination workflow manager widget
         """
-        self.dockCustomWidget(FirstExaminationWidget)
+        pass
 
     def second_examination(self):
         """
         Docks Second Examination workflow manager widget
         """
-        self.dockCustomWidget(SecondExaminationWidget)
+        pass
 
     def third_examination(self):
         """
         Docks Third Examination workflow manager widget
         """
-        self.dockCustomWidget(ThirdExaminationWidget)
-
-    def dockCustomWidget(self, customWidget):
-        """
-        Docks custom widgets in QGIS
-        :param customWidget: Custom widget
-        :type customWidget:  QWidget
-        """
-        dockWidget = DockWidgetFactory(customWidget, self.iface)
-        savedWidget = dockWidget.getDockWidget()
-        DockWidgetFactory.hideActiveDockWidget()
-        if savedWidget:
-            DockWidgetFactory.showDockWidget(savedWidget)
-            return
-        dockWidget.setDockWidget()
+        pass
 
     def import_plots(self):
         """
