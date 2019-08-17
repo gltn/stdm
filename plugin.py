@@ -55,11 +55,8 @@ from stdm.ui.options_base import OptionsDialog
 # flts
 from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
-from ui.flts.scheme_establishment import EstablishmentDialog
-from ui.flts.workflow_manager.workflow_manager import DockWidgetFactory
-from ui.flts.first_examination import FirstExaminationWidget
-from ui.flts.second_examination import SecondExaminationWidget
-from ui.flts.third_examination import ThirdExaminationWidget
+from ui.flts.workflow_manager.dock_widget_factory import DockWidgetFactory
+from ui.flts.workflow_manager.workflow_manager_widget import WorkflowManagerWidget
 from ui.flts.import_plots import ImportPlotWizard
 from ui.flts.scheme_revision import SchemeRevisionWizard
 from ui.flts.scan_certificate import ScanCertificateDialog
@@ -2403,42 +2400,48 @@ class STDMQGISLoader(object):
         lodge_wizard.exec_()
 
     def establish_scheme(self):
-        """Load the dialog for establishemnt of scheme.
         """
-        establish_dialog = EstablishmentDialog(self.iface.mainWindow())
-        establish_dialog.exec_()
+        Docks Scheme establishment workflow manager widget
+        """
+        workflowManager = WorkflowManagerWidget(
+            "Scheme Establishment Workflow Manager",
+            "schemeEstablishment"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def first_examination(self):
         """
         Docks First Examination workflow manager widget
         """
-        self.dockCustomWidget(FirstExaminationWidget)
+        workflowManager = WorkflowManagerWidget(
+            "First Workflow Manager",
+            "firstExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def second_examination(self):
         """
         Docks Second Examination workflow manager widget
         """
-        self.dockCustomWidget(SecondExaminationWidget)
+        workflowManager = WorkflowManagerWidget(
+            "Second Workflow Manager",
+            "secondExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def third_examination(self):
         """
         Docks Third Examination workflow manager widget
         """
-        self.dockCustomWidget(ThirdExaminationWidget)
-
-    def dockCustomWidget(self, customWidget):
-        """
-        Docks custom widgets in QGIS
-        :param customWidget: Custom widget
-        :type customWidget:  QWidget
-        """
-        dockWidget = DockWidgetFactory(customWidget, self.iface)
-        savedWidget = dockWidget.getDockWidget()
-        DockWidgetFactory.hideActiveDockWidget()
-        if savedWidget:
-            DockWidgetFactory.showDockWidget(savedWidget)
-            return
-        dockWidget.setDockWidget()
+        workflowManager = WorkflowManagerWidget(
+            "Third Workflow Manager",
+            "thirdExamination"
+        )
+        dockWidget = DockWidgetFactory(workflowManager, self.iface)
+        dockWidget.showDockWidget()
 
     def import_plots(self):
         """

@@ -1,7 +1,7 @@
 """
 /***************************************************************************
-Name                 : Workflow Manager
-Description          : Defines FLTS generic workflow functions and classes
+Name                 : Dock Widget Factory
+Description          : A factory that creates a dockable widget
 Date                 : 07/August/2019
 copyright            : (C) 2019
  ***************************************************************************/
@@ -56,8 +56,21 @@ class DockWidgetFactory:
     activeWidget = None
 
     def __init__(self, customWidget, iface=None):
-        self._customWidget = customWidget()
+        self._customWidget = customWidget
         self._iface = iface
+
+    def showDockWidget(self):
+        """
+        Shows dockable widget
+        :return: Dockable widget or None
+        :rtype: QDockWidget or None
+        """
+        dockWidget = self.getDockWidget()
+        DockWidgetFactory.hideActiveDockWidget()
+        if dockWidget and dockWidget.isHidden():
+            DockWidgetFactory.activeWidget = dockWidget
+            return dockWidget.show()
+        self.setDockWidget()
 
     def getDockWidget(self):
         """
@@ -71,22 +84,10 @@ class DockWidgetFactory:
             dockWidget = savedWidgets.get(objectName, None)
             return dockWidget
 
-    @classmethod
-    def showDockWidget(cls, dockWidget):
-        """
-        Shows hidden dock widget
-        :return: A docked widget or None
-        :rtype: QDockWidget or None
-        """
-        if dockWidget.isHidden():
-            cls.activeWidget = dockWidget
-            return dockWidget.show()
-        return
-
     def setDockWidget(self):
         """
-        Sets a new dock widget in QGIS
-        :return: A docked widget
+        Sets a new dockable widget in QGIS
+        :return: A dockable widget
         :rtype: QDockWidget
         """
         savedWidgets = DockWidgetFactory.savedWidgets
