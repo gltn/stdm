@@ -23,7 +23,7 @@ from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
-from stdm.ui.flts.workflow_manager.workflow_manager_mvc import WorkflowManagerModel
+from stdm.ui.flts.workflow_manager.scheme_model import SchemeModel
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
 
@@ -49,7 +49,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.tr("The {} entity model could not be generated.".format(self._entity.short_name))
             )
             self.reject()
-        self.model = WorkflowManagerModel(self._entity_model)
+
+        self.model = SchemeModel(self._entity_model)
         # self.table_view = QTableView()
         # self.table_view.setModel(self.model)
         # self.table_view.setSelectionMode(QTableView.SingleSelection)
