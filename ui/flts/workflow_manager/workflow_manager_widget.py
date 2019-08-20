@@ -32,6 +32,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
+    setStyleSheet = "QHeaderView::section{" \
+                    "border-top:0px solid #D8D8D8;" \
+                    "border-left:0px solid #D8D8D8;" \
+                    "border-right: 1px solid #D8D8D8;" \
+                    "border-bottom: 1px solid #D8D8D8;" \
+                    "padding:4px;" \
+                    "}" \
+                    "QTableCornerButton::section{" \
+                    "border-top:0px solid #D8D8D8;" \
+                    "border-left:0px solid #D8D8D8;" \
+                    "border-right:1px solid #D8D8D8;" \
+                    "border-bottom: 1px solid #D8D8D8;" \
+                    "background-color:white;" \
+                    "}"
+
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
@@ -44,21 +59,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setModel(self.model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
-        setStyleSheet = "QHeaderView::section{"\
-            "border-top:0px solid #D8D8D8;"\
-            "border-left:0px solid #D8D8D8;"\
-            "border-right: 1px solid #D8D8D8;"\
-            "border-bottom: 1px solid #D8D8D8;"\
-            "padding:4px;"\
-            "}"\
-            "QTableCornerButton::section{"\
-            "border-top:0px solid #D8D8D8;"\
-            "border-left:0px solid #D8D8D8;"\
-            "border-right:1px solid #D8D8D8;"\
-            "border-bottom: 1px solid #D8D8D8;"\
-            "background-color:white;"\
-            "}"
-        self.table_view.horizontalHeader().setStyleSheet(setStyleSheet)
+        self.table_view.horizontalHeader().setStyleSheet(WorkflowManagerWidget.setStyleSheet)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.initial_load()
