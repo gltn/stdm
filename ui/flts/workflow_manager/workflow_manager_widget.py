@@ -17,10 +17,10 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from sqlalchemy.orm import joinedload
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.scheme_model import SchemeModel
@@ -34,49 +34,117 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     """
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
-
         self.setupUi(self)
+        self._profile = current_profile()
         self.setWindowTitle(title)
         self.setObjectName(object_name)
-        self._profile = current_profile()
-        self._entity = self._profile.entity("Scheme")
-        self._entity_model = entity_model(self._entity)
-
-        if self._entity_model is None:
-            QMessageBox.critical(
-                self,
-                self.tr('{} Entity Model'.format(self._entity.short_name)),
-                self.tr("The {} entity model could not be generated.".format(self._entity.short_name))
-            )
-            self.reject()
-
-        self.model = SchemeModel(self._entity_model)
-        # self.table_view = QTableView()
-        # self.table_view.setModel(self.model)
-        # self.table_view.setSelectionMode(QTableView.SingleSelection)
-        # self.table_view.setSelectionBehavior(QTableView.SelectRows)
-
-        # self.schemeTableView.resizeColumnsToContents()
-
-        QTimer.singleShot(0, self.initial_load)
+        self.data_service = SchemeDataService(self._profile)
+        self.model = SchemeModel(self.data_service)
+        self.table_view = QTableView()
+        self.table_view.setModel(self.model)
+        self.table_view.setAlternatingRowColors(True)
+        self.table_view.setShowGrid(False)
+        self.table_view.setSelectionMode(QTableView.SingleSelection)
+        self.table_view.setSelectionBehavior(QTableView.SelectRows)
+        self.tabWidget.insertTab(0, self.table_view, 'Test_Scheme')
+        self.initial_load()
 
     def initial_load(self):
+        """
+        Initial table view data load
+        """
         try:
+            pass
             self.model.load()
-        except exc.SQLAlchemyError as sql_error:
-            QMessageBox.critical(
+        except (exc.SQLAlchemyError, Exception) as e:
+            QMessageBox.critical(  # To be made dynamic
                 self,
-                self.tr('{} Entity Model'.format(self._entity.short_name)),
-                self.tr("{0}s failed to load: {1}".format(self._entity.short_name, sql_error))
+                self.tr('{} Entity Model'.format(self.data_service.entity_name)),
+                self.tr("{0} failed to load: {1}".format(self.data_service.entity_name, e))
             )
-            self.reject()
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                self.tr('{} Entity Model'.format(self._entity.short_name)),
-                self.tr("{0}s failed to load: {1}".format(self._entity.short_name, e))
-            )
-            self.reject()
+        else:
+            self.table_view.horizontalHeader().setStretchLastSection(True)
+            self.table_view.resizeColumnsToContents()
 
-        # self.model.sortByName()
-        # self.resizeColumns()
+
+class SchemeDataService:
+    """
+    Scheme data model services
+    """
+    config = [
+            {'List of Holders': 'view'},
+            {'Supporting Document': 'view'},
+            {'Number of Scheme': 'scheme_number'},
+            {'Name of Scheme': 'scheme_name'},
+            {'Date of Approval': 'date_of_approval'},
+            {'Date of Establishment': 'date_of_establishment'},
+            {'Type of Relevant Authority': {'cb_check_lht_relevant_authority': 'value'}},
+            {'Land Rights Office': {'cb_check_lht_land_rights_office': 'value'}},
+            {'Region': {'cb_check_lht_region': 'value'}},
+            {'Township': 'township_name'},
+            {'Registration Division': 'registration_division'},
+            {'Block Area': 'area'}
+        ]
+
+    def __init__(self, current_profile):
+        self._profile = current_profile
+        self._name = "Scheme"
+
+    @property
+    def entity_name(self):
+        """
+        Entity name
+        :return _name: Entity name
+        :rtype _name: String
+        """
+        return self._name
+
+    def _entity_model(self):
+        """
+`       Scheme entity model
+        :return model: Scheme entity model;
+        :rtype model: DeclarativeMeta
+        """
+        exception = None
+        try:
+            self._entity = self._profile.entity(self._name)
+            model = entity_model(self._entity)
+            return model
+        except AttributeError as e:
+            exception = e
+        finally:
+            if exception:
+                raise exception
+
+    def related_entity_name(self):
+        """
+        Related entity name
+        :return entity_name: Related entity name
+        :rtype entity_name: List
+        """
+        entity_name = []
+        for fk in self._entity_model().__table__.foreign_keys:
+            entity_name.append(fk.column.table.name)
+        return entity_name
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return query_object: Query results
+        :rtype query_object: Query
+        """
+        exception = None
+        model = self._entity_model()
+        entity_object = model()
+        try:
+            query_object = entity_object.queryObject(). \
+                options(joinedload(model.cb_check_lht_land_rights_office)). \
+                options(joinedload(model.cb_check_lht_region)). \
+                options(joinedload(model.cb_check_lht_relevant_authority)). \
+                options(joinedload(model.cb_cdrs_title_deed))
+            return query_object
+        except (exc.SQLAlchemyError, Exception) as e:
+            exception = e
+        finally:
+            if exception:
+                raise exception

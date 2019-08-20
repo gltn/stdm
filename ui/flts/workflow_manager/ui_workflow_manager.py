@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:/junk/test/ui_workflow_manager.ui'
+# Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_workflow_manager.ui'
 #
-# Created: Fri Aug 09 18:34:13 2019
+# Created: Tue Aug 20 07:54:06 2019
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -65,9 +65,6 @@ class Ui_WorkflowManagerWidget(object):
         self.verticalLayout.addWidget(self.line)
         self.tabWidget = QtGui.QTabWidget(WorkflowManagerWidget)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName(_fromUtf8("tab"))
-        self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.verticalLayout.addWidget(self.tabWidget)
         self.paginationLayout = QtGui.QHBoxLayout()
         self.paginationLayout.setObjectName(_fromUtf8("paginationLayout"))
@@ -91,7 +88,7 @@ class Ui_WorkflowManagerWidget(object):
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.retranslateUi(WorkflowManagerWidget)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(WorkflowManagerWidget)
 
     def retranslateUi(self, WorkflowManagerWidget):
@@ -102,7 +99,6 @@ class Ui_WorkflowManagerWidget(object):
         self.searchEdit.setPlaceholderText(_translate("WorkflowManagerWidget", "Type to search...", None))
         self.filterComboBox.setItemText(0, _translate("WorkflowManagerWidget", "Apply Filter", None))
         self.searchButton.setText(_translate("WorkflowManagerWidget", "Search", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("WorkflowManagerWidget", "Scheme", None))
         self.firstButton.setText(_translate("WorkflowManagerWidget", "First", None))
         self.previousButton.setText(_translate("WorkflowManagerWidget", "Previous", None))
         self.paginationEdit.setText(_translate("WorkflowManagerWidget", "No Records Found", None))

@@ -69,7 +69,6 @@ class DockWidgetFactory:
         DockWidgetFactory.hide_active_dock_widget()
         if dock_widget and dock_widget.isHidden():
             DockWidgetFactory.active_widget = dock_widget
-            dock_widget.setWindowTitle(dock_widget.windowTitle() + " " + str(id(dock_widget)))
             return dock_widget.show()
         self.set_dock_widget()
 
