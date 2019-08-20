@@ -45,6 +45,9 @@ class SchemeModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if column in result:
                 return result[column]
+        elif role == Qt.TextColorRole:
+            if column in (0, 1):
+                return QColor('blue')
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -72,7 +75,6 @@ class SchemeModel(QAbstractTableModel):
         """
         Loads query results to be used in the table view
         """
-        exception = None
         try:
             self.query_object = self.data_service.run_query()
             self.query_object = self.query_object.all()
@@ -101,10 +103,7 @@ class SchemeModel(QAbstractTableModel):
                 store["data"] = row
                 self.results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            exception = e
-        finally:
-            if exception:
-                raise exception
+            raise e
 
     @staticmethod
     def _cast_data(value):

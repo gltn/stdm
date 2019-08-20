@@ -120,16 +120,12 @@ class SchemeDataService:
         :return model: Scheme entity model;
         :rtype model: DeclarativeMeta
         """
-        exception = None
         try:
             self._entity = self._profile.entity(self._name)
             model = entity_model(self._entity)
             return model
         except AttributeError as e:
-            exception = e
-        finally:
-            if exception:
-                raise exception
+            raise e
 
     def related_entity_name(self):
         """
@@ -148,7 +144,6 @@ class SchemeDataService:
         :return query_object: Query results
         :rtype query_object: Query
         """
-        exception = None
         model = self._entity_model()
         entity_object = model()
         try:
@@ -159,7 +154,4 @@ class SchemeDataService:
                 options(joinedload(model.cb_cdrs_title_deed)).order_by(model.date_of_approval)
             return query_object
         except (exc.SQLAlchemyError, Exception) as e:
-            exception = e
-        finally:
-            if exception:
-                raise exception
+            raise e
