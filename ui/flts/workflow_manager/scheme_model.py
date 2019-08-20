@@ -48,10 +48,10 @@ class SchemeModel(QAbstractTableModel):
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        # if role == Qt.TextAlignmentRole:
-        #     if orientation == Qt.Horizontal:
-        #         return QVariant(int(Qt.AlignLeft|Qt.AlignVCenter))
-        #     return QVariant(int(Qt.AlignRight|Qt.AlignVCenter))
+        if role == Qt.TextAlignmentRole:
+            if orientation == Qt.Horizontal:
+                return int(Qt.AlignLeft|Qt.AlignVCenter)
+            return int(Qt.AlignRight|Qt.AlignVCenter)
         if role != Qt.DisplayRole:
             return None
         if orientation == Qt.Horizontal:
