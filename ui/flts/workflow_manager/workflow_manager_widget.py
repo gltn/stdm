@@ -69,7 +69,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Initial table view data load
         """
         try:
-            pass
             self.model.load()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(  # To be made dynamic
