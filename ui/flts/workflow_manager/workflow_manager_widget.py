@@ -74,8 +74,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(  # To be made dynamic
                 self,
-                self.tr('{} Entity Model'.format(self.data_service.entity_name)),
-                self.tr("{0} failed to load: {1}".format(self.data_service.entity_name, e))
+                self.tr('{} Entity Model'.format(self.model.entity_name)),
+                self.tr("{0} failed to load: {1}".format(self.model.entity_name, e))
             )
         else:
             self.table_view.horizontalHeader().setStretchLastSection(True)
@@ -103,16 +103,7 @@ class SchemeDataService:
 
     def __init__(self, current_profile):
         self._profile = current_profile
-        self._name = "Scheme"
-
-    @property
-    def entity_name(self):
-        """
-        Entity name
-        :return _name: Entity name
-        :rtype _name: String
-        """
-        return self._name
+        self.entity_name = "Scheme"
 
     def _entity_model(self):
         """
@@ -121,7 +112,7 @@ class SchemeDataService:
         :rtype model: DeclarativeMeta
         """
         try:
-            self._entity = self._profile.entity(self._name)
+            self._entity = self._profile.entity(self.entity_name)
             model = entity_model(self._entity)
             return model
         except AttributeError as e:

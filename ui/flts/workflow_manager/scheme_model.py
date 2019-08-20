@@ -131,4 +131,12 @@ class SchemeModel(QAbstractTableModel):
         """
         if item not in container:
             container.append(item)
+    @property
+    def entity_name(self):
+        """
+        Entity name
+        :return _name: Entity name
+        :rtype _name: String
+        """
+        return self.data_service.entity_name
 
