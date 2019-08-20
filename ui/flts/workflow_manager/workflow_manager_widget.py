@@ -44,9 +44,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setModel(self.model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
-        self.table_view.setSelectionMode(QTableView.SingleSelection)
+        setStyleSheet = "QHeaderView::section{"\
+            "border-top:0px solid #D8D8D8;"\
+            "border-left:0px solid #D8D8D8;"\
+            "border-right: 1px solid #D8D8D8;"\
+            "border-bottom: 1px solid #D8D8D8;"\
+            "padding:4px;"\
+            "}"\
+            "QTableCornerButton::section{"\
+            "border-top:0px solid #D8D8D8;"\
+            "border-left:0px solid #D8D8D8;"\
+            "border-right:1px solid #D8D8D8;"\
+            "border-bottom: 1px solid #D8D8D8;"\
+            "background-color:white;"\
+            "}"
+        self.table_view.horizontalHeader().setStyleSheet(setStyleSheet)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
-        self.tabWidget.insertTab(0, self.table_view, 'Test_Scheme')
+        self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.initial_load()
 
     def initial_load(self):
@@ -141,7 +155,7 @@ class SchemeDataService:
                 options(joinedload(model.cb_check_lht_land_rights_office)). \
                 options(joinedload(model.cb_check_lht_region)). \
                 options(joinedload(model.cb_check_lht_relevant_authority)). \
-                options(joinedload(model.cb_cdrs_title_deed))
+                options(joinedload(model.cb_cdrs_title_deed)).order_by(model.date_of_approval)
             return query_object
         except (exc.SQLAlchemyError, Exception) as e:
             exception = e
