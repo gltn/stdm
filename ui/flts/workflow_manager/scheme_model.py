@@ -57,6 +57,8 @@ class SchemeModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if self._headers:
                 return self._headers[section]
+        elif orientation == Qt.Vertical:
+            return None
         return int(section + 1)
 
     def rowCount(self, index=QModelIndex()):
