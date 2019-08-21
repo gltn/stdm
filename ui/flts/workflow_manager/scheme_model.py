@@ -37,6 +37,10 @@ class SchemeModel(QAbstractTableModel):
         self._headers = []
 
     def data(self, index, role=Qt.DisplayRole):
+        """
+        Implementation of QAbstractTableModel
+        data method
+        """
         if not index.isValid() or \
            not (0 <= index.row() < len(self.results)):
             return None
@@ -51,11 +55,15 @@ class SchemeModel(QAbstractTableModel):
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
+        """
+        Implementation of QAbstractTableModel
+        columnCount method
+        """
         if role == Qt.TextAlignmentRole:
             if orientation == Qt.Horizontal:
-                return int(Qt.AlignLeft|Qt.AlignVCenter)
-            return int(Qt.AlignRight|Qt.AlignVCenter)
-        if role != Qt.DisplayRole:
+                return int(Qt.AlignLeft | Qt.AlignVCenter)
+            return int(Qt.AlignRight | Qt.AlignVCenter)
+        elif role != Qt.DisplayRole:
             return None
         if orientation == Qt.Horizontal:
             if self._headers:
@@ -65,10 +73,20 @@ class SchemeModel(QAbstractTableModel):
         return int(section + 1)
 
     def rowCount(self, index=QModelIndex()):
+        """
+        Implementation of QAbstractTableModel
+        rowCount method
+        """
         return len(self.results)
 
     def columnCount(self, index=QModelIndex()):
-        # return 12
+        """
+        Returns the number of columns for the view table
+        :param index: Item location in the model
+        :type index: Integer
+        :return: Number of columns
+        :rtype: Integer
+        """
         return len(self._headers)
 
     def load(self):
