@@ -49,6 +49,10 @@ class SchemeModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if column in result:
                 return result[column]
+        elif role == Qt.TextAlignmentRole:
+            if isinstance(result[column], float):
+                return int(Qt.AlignCenter | Qt.AlignVCenter)
+            return int(Qt.AlignLeft | Qt.AlignVCenter)
         elif role == Qt.TextColorRole:
             if column in (0, 1):
                 return QColor('blue')
