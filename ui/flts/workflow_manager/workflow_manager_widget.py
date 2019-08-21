@@ -104,19 +104,6 @@ class SchemeDataService:
         self._profile = current_profile
         self.entity_name = "Scheme"
 
-    def _entity_model(self):
-        """
-`       Scheme entity model
-        :return model: Scheme entity model;
-        :rtype model: DeclarativeMeta
-        """
-        try:
-            self._entity = self._profile.entity(self.entity_name)
-            model = entity_model(self._entity)
-            return model
-        except AttributeError as e:
-            raise e
-
     def related_entity_name(self):
         """
         Related entity name
@@ -144,4 +131,17 @@ class SchemeDataService:
                 options(joinedload(model.cb_cdrs_title_deed)).order_by(model.date_of_approval)
             return query_object
         except (exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_model(self):
+        """
+`       Scheme entity model
+        :return model: Scheme entity model;
+        :rtype model: DeclarativeMeta
+        """
+        try:
+            entity = self._profile.entity(self.entity_name)
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
             raise e
