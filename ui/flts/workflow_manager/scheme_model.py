@@ -54,7 +54,7 @@ class SchemeModel(QAbstractTableModel):
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         """
         Implementation of QAbstractTableModel
-        columnCount method
+        headerData method
         """
         if role == Qt.TextAlignmentRole:
             if orientation == Qt.Horizontal:
@@ -78,7 +78,8 @@ class SchemeModel(QAbstractTableModel):
 
     def columnCount(self, index=QModelIndex()):
         """
-        Returns the number of columns for the view table
+        Implementation of QAbstractTableModel
+        columnCount method
         :param index: Item location in the model
         :type index: Integer
         :return: Number of columns
