@@ -49,10 +49,6 @@ class SchemeModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if column in result:
                 return result[column]
-        elif role == Qt.TextAlignmentRole:
-            if isinstance(result[column], float):
-                return int(Qt.AlignCenter | Qt.AlignVCenter)
-            return int(Qt.AlignLeft | Qt.AlignVCenter)
         elif role == Qt.TextColorRole:
             if column in (0, 1):
                 return QColor('blue')
@@ -104,7 +100,7 @@ class SchemeModel(QAbstractTableModel):
             for row in self.query_object:
                 store = {}
                 row_dict = row.__dict__
-                for n, prop in enumerate(self.data_service.config):
+                for n, prop in enumerate(self.data_service.field_option):
                     field = prop.values()[0]
                     header = prop.keys()[0]
                     if isinstance(field, dict):

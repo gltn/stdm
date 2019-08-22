@@ -21,6 +21,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
+from stdm.ui.flts.workflow_manager.config import SchemeConfig
+from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.scheme_model import SchemeModel
@@ -32,21 +34,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
-    setStyleSheet = "QHeaderView::section{" \
-                    "border-top:0px solid #D8D8D8;" \
-                    "border-left:0px solid #D8D8D8;" \
-                    "border-right: 1px solid #D8D8D8;" \
-                    "border-bottom: 1px solid #D8D8D8;" \
-                    "padding:4px;" \
-                    "}" \
-                    "QTableCornerButton::section{" \
-                    "border-top:0px solid #D8D8D8;" \
-                    "border-left:0px solid #D8D8D8;" \
-                    "border-right:1px solid #D8D8D8;" \
-                    "border-bottom: 1px solid #D8D8D8;" \
-                    "background-color:white;" \
-                    "}"
-
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
@@ -59,7 +46,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setModel(self.model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
-        self.table_view.horizontalHeader().setStyleSheet(WorkflowManagerWidget.setStyleSheet)
+        self.table_view.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.initial_load()
@@ -71,7 +58,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         try:
             self.model.load()
         except (exc.SQLAlchemyError, Exception) as e:
-            QMessageBox.critical(  # To be made dynamic
+            QMessageBox.critical(
                 self,
                 self.tr('{} Entity Model'.format(self.model.entity_name)),
                 self.tr("{0} failed to load: {1}".format(self.model.entity_name, e))
@@ -85,24 +72,18 @@ class SchemeDataService:
     """
     Scheme data model services
     """
-    config = [
-            {'List of Holders': 'view'},
-            {'Supporting Document': 'view'},
-            {'Number of Scheme': 'scheme_number'},
-            {'Name of Scheme': 'scheme_name'},
-            {'Date of Approval': 'date_of_approval'},
-            {'Date of Establishment': 'date_of_establishment'},
-            {'Type of Relevant Authority': {'cb_check_lht_relevant_authority': 'value'}},
-            {'Land Rights Office': {'cb_check_lht_land_rights_office': 'value'}},
-            {'Region': {'cb_check_lht_region': 'value'}},
-            {'Township': 'township_name'},
-            {'Registration Division': 'registration_division'},
-            {'Block Area': 'area'}
-        ]
-
     def __init__(self, current_profile):
         self._profile = current_profile
         self.entity_name = "Scheme"
+
+    @property
+    def field_option(self):
+        """
+        Scheme field option
+        :return: Column and query field options
+        :rtype: List
+        """
+        return SchemeConfig().field_option
 
     def related_entity_name(self):
         """
