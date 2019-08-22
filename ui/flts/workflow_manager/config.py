@@ -30,19 +30,20 @@ conf = {
         {'Block Area': 'area'}
     ],
     'header_view_style': 'QHeaderView::section{'
-                        'border-top:0px solid #D8D8D8;'
-                        'border-left:0px solid #D8D8D8;'
-                        'border-right: 1px solid #D8D8D8;'
-                        'border-bottom: 1px solid #D8D8D8;'
-                        'padding:4px;'
-                        '}'
-                        'QTableCornerButton::section{'
-                        'border-top:0px solid #D8D8D8;'
-                        'border-left:0px solid #D8D8D8;'
-                        'border-right:1px solid #D8D8D8;'
-                        'border-bottom: 1px solid #D8D8D8;'
-                        'background-color:white;'
-                        '}'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'padding:4px;'
+                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}'
+                         'QTableCornerButton::section{'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}'
 }
 
 
