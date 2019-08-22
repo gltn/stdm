@@ -58,6 +58,9 @@
       </property>
      </layout>
     </item>
+    <item row="2" column="1">
+     <widget class="QComboBox" name="cbx_region"/>
+    </item>
     <item row="1" column="0" colspan="2">
      <widget class="QLabel" name="label_desc">
       <property name="sizePolicy">
@@ -71,16 +74,6 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_region">
-      <property name="text">
-       <string>Region</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="cbx_region"/>
-    </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_rel_auth_type">
       <property name="text">
@@ -88,57 +81,20 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_region">
+      <property name="text">
+       <string>Region</string>
+      </property>
+     </widget>
+    </item>
     <item row="3" column="1">
      <widget class="QComboBox" name="cbx_relv_auth"/>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_rel_auth_name">
-      <property name="text">
-       <string>Name of Relevant Authority</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QComboBox" name="cbx_relv_auth_name"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_reg_div">
-      <property name="text">
-       <string>Registration Division</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QComboBox" name="cbx_reg_div"/>
-    </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_schm_num">
-      <property name="text">
-       <string>Scheme Number</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLineEdit" name="lnedit_schm_num">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
     </item>
     <item row="7" column="0">
      <widget class="QLabel" name="label_schm_name">
       <property name="text">
        <string>Scheme Name</string>
-      </property>
-     </widget>
-    </item>
-    <item row="7" column="1">
-     <widget class="QLineEdit" name="lnedit_schm_nam"/>
-    </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_date_apprv">
-      <property name="text">
-       <string>Date of Approval</string>
       </property>
      </widget>
     </item>
@@ -156,10 +112,57 @@
       </property>
      </widget>
     </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_date_establish">
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_rel_auth_name">
       <property name="text">
-       <string>Date of Esablishment</string>
+       <string>Name of Relevant Authority</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="QLineEdit" name="lnedit_twnshp"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QComboBox" name="cbx_reg_div"/>
+    </item>
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_twn_name">
+      <property name="text">
+       <string>Township Name</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_nam"/>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_reg_div">
+      <property name="text">
+       <string>Registration Division</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="cbx_relv_auth_name"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QLineEdit" name="lnedit_schm_num">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_date_apprv">
+      <property name="text">
+       <string>Date of Approval</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_schm_num">
+      <property name="text">
+       <string>Scheme Number</string>
       </property>
      </widget>
     </item>
@@ -184,19 +187,6 @@
       </property>
      </widget>
     </item>
-    <item row="10" column="1">
-     <widget class="QComboBox" name="cbx_lro"/>
-    </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="label_twn_name">
-      <property name="text">
-       <string>Township Name</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="1">
-     <widget class="QLineEdit" name="lnedit_twnshp"/>
-    </item>
     <item row="12" column="0">
      <widget class="QLabel" name="label_blck_area">
       <property name="text">
@@ -213,6 +203,16 @@
        <double>10000000.000000000000000</double>
       </property>
      </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_date_establish">
+      <property name="text">
+       <string>Date of Esablishment</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QComboBox" name="cbx_lro"/>
     </item>
    </layout>
   </widget>

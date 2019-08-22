@@ -60,6 +60,10 @@ from stdm.ui.notification import (
 )
 from stdm.ui.customcontrols import TABLE_STYLE_SHEET
 
+BROWSE_IMG = ':/plugins/stdm/images/icons/flts_open_file.png'
+VIEW_IMG = ':/plugins/stdm/images/icons/flts_view_file.png'
+REMOVE_IMG = ':/plugins/stdm/images/icons/flts_delete.png'
+
 
 class DocumentRowInfo(object):
     """
@@ -135,10 +139,10 @@ class DocumentTableWidget(QTableWidget):
         self.setColumnCount(5)
         self.setHorizontalHeaderLabels([
             self.tr('Document Type'),
-            self.tr('Action'),
+            self.tr('Browse'),
             self.tr('Status'),
-            self.tr('Action'),
-            self.tr('Action')
+            self.tr('View'),
+            self.tr('Remove')
         ])
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
@@ -240,11 +244,11 @@ class DocumentTableWidget(QTableWidget):
         self._docs_info[row_count] = doc_info
 
         # Specify action links
-        lbl_browse = self.create_hyperlink_widget(self.tr('Browse'), doc_info)
+        lbl_browse = self.create_hyperlink_widget(BROWSE_IMG, doc_info)
         lbl_browse.linkActivated.connect(self.on_browse_activate)
-        lbl_view = self.create_hyperlink_widget(self.tr('View'), doc_info)
+        lbl_view = self.create_hyperlink_widget(VIEW_IMG, doc_info)
         lbl_view.linkActivated.connect(self.on_view_activated)
-        lbl_remove = self.create_hyperlink_widget(self.tr('Remove'), doc_info)
+        lbl_remove = self.create_hyperlink_widget(REMOVE_IMG, doc_info)
         lbl_remove.linkActivated.connect(self.on_remove_activated)
 
         # Insert action links
@@ -266,11 +270,11 @@ class DocumentTableWidget(QTableWidget):
         """
         return self._doc_types_upload.keys()
 
-    def create_hyperlink_widget(self, name, document_info):
+    def create_hyperlink_widget(self, img_src, document_info):
         """
         Creates a clickable QLabel widget that appears like a hyperlink.
-        :param name: Display name of the hyperlink.
-        :type name: str
+        :param img_src: Image source.
+        :type img_src: str
         :param document_info: Container for document information that is
         embedded as a property in the label.
         :type document_info: DocumentRowInfo
@@ -279,8 +283,11 @@ class DocumentTableWidget(QTableWidget):
         """
         lbl_link = QLabel()
         lbl_link.setAlignment(Qt.AlignHCenter)
-        lbl_link.setText(u'<a href=\'placeholder\'>{0}</a>'.format(name))
-        #lbl_link.setText('<a href=""><img src=":/plugins/stdm/images/icons/flts_open_file.png"/>{0}</a>'.format(name))
+        lbl_link.setText(
+            '<a href="placeholder"><img src=\'{0}\'/></a>'.format(
+                img_src
+            )
+        )
         lbl_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
         lbl_link.setProperty(self._doc_prop, document_info)
 
@@ -413,9 +420,10 @@ class DocumentTableWidget(QTableWidget):
 
         # Successfully uploaded
         elif status == DocumentTableWidget.SUCCESS:
+            ti.setIcon(
+                QIcon(':/plugins/stdm/images/icons/success.png')
+            )
             ti.setText(self._success_txt)
-            ti.setTextColor(Qt.white)
-            ti.setBackgroundColor(QColor('#00b300'))
             doc_info.upload_status = DocumentTableWidget.SUCCESS
             # Set the document uuid
             if extras:
@@ -423,9 +431,11 @@ class DocumentTableWidget(QTableWidget):
 
         # Error while uploading
         elif status == DocumentTableWidget.ERROR:
+            ti.setIcon(
+                QIcon(':/plugins/stdm/images/icons/warning.png')
+            )
             ti.setText(self._error_txt)
-            ti.setTextColor(Qt.white)
-            ti.setBackgroundColor(Qt.red)
+            ti.setToolTip(extras)
             doc_info.upload_status = DocumentTableWidget.ERROR
 
         # Enable user actions, hide progress bar and set status message
@@ -503,20 +513,6 @@ class DocumentTableWidget(QTableWidget):
         """
         doc_type = res_info[0]
         doc_obj= res_info[1]
-
-        row_info = self.row_document_info_from_type(doc_type)
-        if not row_info:
-            return
-
-        ti = self.item(row_info.row_num, 0)
-        if not ti:
-            return
-
-        # Set success icon
-        ti.setIcon(
-            QIcon(':/plugins/stdm/images/icons/success.png')
-        )
-
         cmis_props = doc_obj.getProperties()
         doc_uuid = cmis_props['cmis:versionSeriesId']
         self._after_upload(doc_type, DocumentTableWidget.SUCCESS, doc_uuid)
@@ -530,28 +526,12 @@ class DocumentTableWidget(QTableWidget):
         tooltip.
         :type op_error: str
         """
-        # Try to get DocumentInfo object from document type
-        row_info = self.row_document_info_from_type(doc_type)
-        if not row_info:
-            return
-
-        ti = self.item(row_info.row_num, 0)
-        if not ti:
-            return
-
-        # Set error icon
-        ti.setIcon(
-            QIcon(':/plugins/stdm/images/icons/warning.png')
-        )
-        # Set tooltip
-        ti.setToolTip(op_error)
-
         # Update status column
         self._after_upload(doc_type, DocumentTableWidget.ERROR, op_error)
 
     def clear_error_success_hints(self, row_idx):
         # Clears the error icon and tooltip for the row in the given index.
-        ti = self.item(row_idx, 0)
+        ti = self.item(row_idx, 2)
         if not ti:
             return
 
@@ -814,6 +794,7 @@ class DirDocumentTypeSelector(QDialog):
     def _init_ui(self):
         # Draw UI widgets
         layout = QVBoxLayout()
+
         # Add layout for notification bar
         self.vl_notif = QVBoxLayout()
         layout.addLayout(self.vl_notif)
