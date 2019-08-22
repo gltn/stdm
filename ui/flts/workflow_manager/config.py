@@ -18,8 +18,6 @@ copyright            : (C) 2019
 
 conf = {
     'field_options': [
-        {'List of Holders': 'view'},
-        {'Supporting Document': 'view'},
         {'Number of Scheme': 'scheme_number'},
         {'Name of Scheme': 'scheme_name'},
         {'Date of Approval': 'date_of_approval'},

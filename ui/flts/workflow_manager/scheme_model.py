@@ -49,9 +49,6 @@ class SchemeModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             if column in result:
                 return result[column]
-        elif role == Qt.TextColorRole:
-            if column in (0, 1):
-                return QColor('blue')
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
