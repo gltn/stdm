@@ -133,5 +133,5 @@ class Ui_DocumentGeneratorDialog(object):
         self.chkUseOutputFolder.setText(_translate("DocumentGeneratorDialog", "Save to output folder", None))
         self.btnShowOutputFolder.setText(_translate("DocumentGeneratorDialog", "Open output folder...", None))
 
-from customcontrols import ModelAtrributesView
+from stdm.ui.customcontrols.model_attributes_view import ModelAtrributesView
 from stdm import resources_rc

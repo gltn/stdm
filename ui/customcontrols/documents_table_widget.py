@@ -58,6 +58,7 @@ from stdm.network.cmis_manager import (
 from stdm.ui.notification import (
     NotificationBar
 )
+from stdm.ui.customcontrols import TABLE_STYLE_SHEET
 
 
 class DocumentRowInfo(object):
@@ -131,6 +132,7 @@ class DocumentTableWidget(QTableWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.NoSelection)
         self.horizontalHeader().resizeSection(0, 250)
+        self.setStyleSheet(TABLE_STYLE_SHEET)
 
         # Make 'Document Type' to be bold
         doc_type_item = self.horizontalHeaderItem(0)

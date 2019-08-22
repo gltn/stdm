@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from datetime import datetime
 from PyQt4.QtCore import (
     QFileInfo,
     QVariant
@@ -50,10 +51,11 @@ xl_2_qgs_field_mapping = {
     XL_CELL_TEXT: QVariant.String,
     XL_CELL_NUMBER: QVariant.Double,
     XL_CELL_DATE: QVariant.Date,
-    XL_CELL_BOOLEAN: QVariant.Bool
+    XL_CELL_BOOLEAN: QVariant.String
 }
 
-DEFAULT_SHEET_NAME = 'Qgis2Excel'
+DEFAULT_SHEET_NAME = 'Holders Table'
+DATE_FORMAT = '%Y-%m-%d'
 
 
 class XLSException(Exception):
@@ -64,9 +66,32 @@ class XLSException(Exception):
     pass
 
 
+def _append_idx_suffix(items, name):
+    # Checks if name exists in items and append an auto-increment number
+    if not name in items:
+        return name
+
+    if not name:
+        return name
+
+    name_parts = name.split('_')
+    if len(name_parts) == 1:
+        return '{0}_1'.format(name)
+
+    # Get last item and check whether its a digit
+    count = len(name_parts)
+    last_item = name_parts[count - 1]
+    if last_item.isdigit():
+        new_idx = int(last_item) + 1
+        return '{0}_{1}'.format(name, new_idx)
+    else:
+        return '{0}1'.format(name)
+
+
 def _create_qgs_fields(xl_sheet, headers_first_line):
     # Create list of QgsField items based on type of columns in the sheet.
     fields = []
+    used_col_names = []
     xl_qgs_col_idx_mapping = {} # cell_index: qgs_feature_index
     qgs_col_idx = 0
     base_col_name = 'col'
@@ -79,20 +104,32 @@ def _create_qgs_fields(xl_sheet, headers_first_line):
 
     for i in range(ncols):
         if headers_first_line:
-            cell = xl_sheet.cell_value(0, i)
+            cell = xl_sheet.cell(0, i)
             val = cell.value
             if cell.ctype == XL_CELL_NUMBER or cell.ctype == XL_CELL_TEXT:
                 col_name = str(val)
-                # Remove spaces
-                col_name = col_name.replace(' ', '_')
 
             else:
                 # If not number or text then exclude the column
                 continue
+
+            # Format column name
+            # Remove spaces and new lines
+            col_name = col_name.replace(
+                ' ', '_'
+            ).replace(
+                '\n', '_'
+            ).replace(
+                '_-_', '_'
+            ).strip('_')
+
         else:
             col_name = '{0)_{1}'.format(base_col_name, str(i+1))
 
         cell = xl_sheet.cell(type_row_idx, i)
+
+        # If column name already exists then append '_n' suffix
+        col_name = _append_idx_suffix(used_col_names, col_name)
 
         # If cell has an error then exclude the column
         if cell.ctype in xl_2_qgs_field_mapping:
@@ -106,6 +143,9 @@ def _create_qgs_fields(xl_sheet, headers_first_line):
             xl_qgs_col_idx_mapping[i] = qgs_col_idx
             qgs_col_idx += 1
 
+            # Add column name so that there are no duplicates
+            used_col_names.append(col_name)
+
             # Append field to the collection
             fields.append(field)
         else:
@@ -114,7 +154,12 @@ def _create_qgs_fields(xl_sheet, headers_first_line):
     return xl_qgs_col_idx_mapping, fields
 
 
-def _cells_2_features(xl_sheet, headers_first_line, col_idx_mapping):
+def _cells_2_features(
+        xl_sheet,
+        headers_first_line,
+        col_idx_mapping,
+        vl_fields
+):
     # Create a list of QgsFeature from xl_sheet cells
     features = []
     nrows = xl_sheet.nrows
@@ -125,12 +170,22 @@ def _cells_2_features(xl_sheet, headers_first_line, col_idx_mapping):
         if headers_first_line and r == 0:
             continue
 
-        feat = QgsFeature()
+        feat = QgsFeature(vl_fields)
         for c in range(ncols):
             # Check if the column index had been mapped to a QgsField
             if c in col_idx_mapping:
                 qgs_idx = col_idx_mapping[c]
-                cell_val = xl_sheet.cell_value(r, c)
+                cell = xl_sheet.cell(r, c)
+                cell_val = cell.value
+                if cell.ctype == XL_CELL_BOOLEAN:
+                    cell_val = 'True' if cell_val == 1 else 'False'
+                elif cell.ctype == XL_CELL_DATE:
+                    try:
+                        dt = xldate_as_tuple(cell_val, xl_sheet.book.datemode)
+                        cell_val = datetime(*dt)
+                    except XLDateError as de:
+                        raise de
+
                 feat.setAttribute(qgs_idx, cell_val)
 
         features.append(feat)
@@ -176,7 +231,7 @@ def xls_2_qgs_vector_layer(xls_path, headers_first_line=True):
     if not sheet_name:
         sheet_name = DEFAULT_SHEET_NAME
 
-    xls_vl = QgsVectorLayer(None, sheet_name, 'memory')
+    xls_vl = QgsVectorLayer('None', sheet_name, 'memory')
     dp = xls_vl.dataProvider()
 
     # Get QgsField items
@@ -186,11 +241,14 @@ def xls_2_qgs_vector_layer(xls_path, headers_first_line=True):
     dp.addAttributes(fields)
     xls_vl.updateFields()
 
+    fields = xls_vl.pendingFields()
+
     # Create qgis features items, add them to data provider
     features = _cells_2_features(
         xl_sheet,
         headers_first_line,
-        col_idx_mapping
+        col_idx_mapping,
+        fields
     )
     dp.addFeatures(features)
 

@@ -998,7 +998,10 @@ class CmisEntityDocumentMapper(object):
             self._uploaded_docs[doc_type] = []
 
         if cmis_doc:
-            doc_info = UploadedDocInfo(cmis_doc=cmis_doc, temp_dir=use_temp_dir)
+            doc_info = UploadedDocInfo(
+                cmis_doc=cmis_doc,
+                temp_dir=use_temp_dir
+            )
 
             uploaded_type_docs = self._uploaded_docs[doc_type]
             uploaded_type_docs.append(doc_info)

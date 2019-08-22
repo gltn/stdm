@@ -101,4 +101,4 @@ class Ui_RelatedTableTranslatorDialog(object):
         self.label_3.setText(_translate("RelatedTableTranslatorDialog", "Table name", None))
         self.label_4.setText(_translate("RelatedTableTranslatorDialog", "Output column", None))
 
-from ..customcontrols import ListPairTableView
+from stdm.ui.customcontrols.list_pair_table_view import ListPairTableView

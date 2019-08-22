@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Fri Aug 16 08:42:26 2019
+# Created: Thu Aug 22 15:42:42 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -173,35 +173,38 @@ class Ui_ldg_wzd(object):
         self.wizardPage2.setObjectName(_fromUtf8("wizardPage2"))
         self.gridLayout_3 = QtGui.QGridLayout(self.wizardPage2)
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
-        self.vlNotification_holders = QtGui.QVBoxLayout()
-        self.vlNotification_holders.setContentsMargins(-1, -1, -1, 10)
-        self.vlNotification_holders.setObjectName(_fromUtf8("vlNotification_holders"))
-        self.gridLayout_3.addLayout(self.vlNotification_holders, 0, 0, 1, 2)
+        self.btn_brws_hld = QtGui.QPushButton(self.wizardPage2)
+        self.btn_brws_hld.setText(_fromUtf8(""))
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_brws_hld.setIcon(icon1)
+        self.btn_brws_hld.setDefault(True)
+        self.btn_brws_hld.setObjectName(_fromUtf8("btn_brws_hld"))
+        self.gridLayout_3.addWidget(self.btn_brws_hld, 2, 1, 1, 1)
         self.label_desc_2 = QtGui.QLabel(self.wizardPage2)
         self.label_desc_2.setObjectName(_fromUtf8("label_desc_2"))
-        self.gridLayout_3.addWidget(self.label_desc_2, 1, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.label_desc_2, 1, 0, 1, 2)
+        self.label_data_prev = QtGui.QLabel(self.wizardPage2)
+        self.label_data_prev.setObjectName(_fromUtf8("label_data_prev"))
+        self.gridLayout_3.addWidget(self.label_data_prev, 3, 0, 1, 1)
         self.lnEdit_hld_path = QtGui.QLineEdit(self.wizardPage2)
         self.lnEdit_hld_path.setEnabled(True)
         self.lnEdit_hld_path.setObjectName(_fromUtf8("lnEdit_hld_path"))
         self.gridLayout_3.addWidget(self.lnEdit_hld_path, 2, 0, 1, 1)
-        self.btn_brws_hld = QtGui.QPushButton(self.wizardPage2)
-        self.btn_brws_hld.setDefault(True)
-        self.btn_brws_hld.setObjectName(_fromUtf8("btn_brws_hld"))
-        self.gridLayout_3.addWidget(self.btn_brws_hld, 2, 1, 1, 1)
-        self.label_data_prev = QtGui.QLabel(self.wizardPage2)
-        self.label_data_prev.setObjectName(_fromUtf8("label_data_prev"))
-        self.gridLayout_3.addWidget(self.label_data_prev, 3, 0, 1, 1)
-        self.btn_validate_holders = QtGui.QPushButton(self.wizardPage2)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.btn_validate_holders.sizePolicy().hasHeightForWidth())
-        self.btn_validate_holders.setSizePolicy(sizePolicy)
-        self.btn_validate_holders.setObjectName(_fromUtf8("btn_validate_holders"))
-        self.gridLayout_3.addWidget(self.btn_validate_holders, 5, 1, 1, 1)
-        self.tw_hld_prv = ExcelWorkbookView(self.wizardPage2)
+        self.pushButton = QtGui.QPushButton(self.wizardPage2)
+        self.pushButton.setText(_fromUtf8(""))
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/update.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.pushButton.setIcon(icon2)
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.gridLayout_3.addWidget(self.pushButton, 2, 2, 1, 1)
+        self.vlNotification_holders = QtGui.QVBoxLayout()
+        self.vlNotification_holders.setContentsMargins(-1, -1, -1, 10)
+        self.vlNotification_holders.setObjectName(_fromUtf8("vlNotification_holders"))
+        self.gridLayout_3.addLayout(self.vlNotification_holders, 0, 0, 1, 3)
+        self.tw_hld_prv = HoldersTableView(self.wizardPage2)
         self.tw_hld_prv.setObjectName(_fromUtf8("tw_hld_prv"))
-        self.gridLayout_3.addWidget(self.tw_hld_prv, 4, 0, 1, 2)
+        self.gridLayout_3.addWidget(self.tw_hld_prv, 4, 0, 1, 3)
         ldg_wzd.addPage(self.wizardPage2)
         self.wizardPage_4 = QtGui.QWizardPage()
         self.wizardPage_4.setObjectName(_fromUtf8("wizardPage_4"))
@@ -243,14 +246,14 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
         self.gp_preview_docs.setTitle(QtGui.QApplication.translate("ldg_wzd", "Preview Documents", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel file containing holders information", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_brws_hld.setText(QtGui.QApplication.translate("ldg_wzd", "Browse...", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_brws_hld.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Browse file", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None, QtGui.QApplication.UnicodeUTF8))
         self.label_data_prev.setText(QtGui.QApplication.translate("ldg_wzd", "Data preview", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_validate_holders.setText(QtGui.QApplication.translate("ldg_wzd", "Validate", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Reload file", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_4.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
 
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
-from stdm.ui.customcontrols.table_widget import ExcelWorkbookView
+from stdm.ui.customcontrols.table_widget import HoldersTableView
 from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
 from qgis.gui import QgsCollapsibleGroupBox
 from stdm import resources_rc

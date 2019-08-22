@@ -34,9 +34,9 @@ from PyQt4.QtCore import QDate, QDateTime
 from PyQt4.QtGui import QWidget
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
-from stdm.ui.customcontrols import CoordinatesWidget
+from stdm.ui.customcontrols.coordinates_editor import CoordinatesWidget
 from stdm.utils.util import setComboCurrentIndexWithItemData
-from stdm.ui.customcontrols  import MultipleChoiceCombo
+from stdm.ui.customcontrols.checkable_combo  import MultipleChoiceCombo
 #from stdm.ui.attribute_browser import AttributeBrowser
 from stdm.ui.customcontrols.relation_line_edit import (
     AdministrativeUnitLineEdit,

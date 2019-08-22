@@ -454,13 +454,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self,
             'Browse Holders File',
             last_doc_path,
-            'Excel Files (*.xls *xlsx)'
+            'Excel Files (*.xls *xlsx);;Comma Separated Value (*.csv)'
         )
 
         if holders_file:
             set_last_document_path(holders_file)
             self.lnEdit_hld_path.setText(holders_file)
-            self.tw_hld_prv.load_workbook(holders_file)
+            self.tw_hld_prv.load_holders_file(holders_file)
 
     def _load_scheme_document_types(self):
         """
@@ -674,7 +674,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 self.holders_notif_bar.clear()
                 self.holders_notif_bar.insertWarningNotification(
                     self.tr(
-                        'Please choose the Excel file containing the Holders '
+                        'Please upload the file containing the Holders '
                         'information.'
                     )
                 )

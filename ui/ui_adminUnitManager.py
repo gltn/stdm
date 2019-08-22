@@ -91,5 +91,5 @@ class Ui_frmAdminUnitManager(object):
         self.label.setText(_translate("frmAdminUnitManager", "Unit Name", None))
         self.label_2.setText(_translate("frmAdminUnitManager", "Code", None))
 
-from customcontrols import ValidatingLineEdit
+from stdm.ui.customcontrols.validating_line_edit import ValidatingLineEdit
 from stdm import resources_rc

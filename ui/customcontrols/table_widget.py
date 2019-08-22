@@ -33,8 +33,11 @@ from PyQt4.QtCore import (
     QFile,
     QFileInfo,
     QSize,
-    Qt
+    Qt,
+    QVariant
 )
+
+from qgis.core import QgsErrorMessage
 
 # Flag for checking whether import of xlrd library succeeded
 XLRD_AVAIL = True
@@ -46,6 +49,12 @@ try:
     )
 except ImportError as ie:
     XLRD_AVAIL = False
+
+from stdm.data.flts import (
+    holder_readers
+)
+
+from stdm.ui.customcontrols import TABLE_STYLE_SHEET
 
 
 def _ascii_lbl_gen():
@@ -71,13 +80,14 @@ def uppercase_labels(n):
     return list(itertools.islice(_ascii_lbl_gen(), n))
 
 
-class ExcelSheetView(QTableWidget):
-    """A widget for displaying Excel sheet data."""
+class HoldersSheetView(QTableWidget):
+    """A widget for displaying sheet data from a QgsVectorLayer data source."""
     def __init__(self, **kwargs):
         super(QTableWidget, self).__init__(**kwargs)
         self._nrows = 20
         self._ncols = 20
         self._ws = None
+        self._vl = None
 
         # Default ISO format for the date
         self._date_format = '%Y-%m-%d'
@@ -85,82 +95,84 @@ class ExcelSheetView(QTableWidget):
         # Init default view
         self._init_ui()
 
-    @property
-    def sheet(self):
-        """
-        :return: Returns object containing worksheet data.
-        :rtype: xlrd.sheet.Sheet
-        """
-        return self._ws
-
     def _init_ui(self):
         # Set default options
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionBehavior(QAbstractItemView.SelectItems)
+
+        # Set stylesheet for horizontal header
+        self.setStyleSheet(TABLE_STYLE_SHEET)
         self._update_view()
 
     def _update_view(self):
         # Set number of rows and columns, as well as horizontal labels.
         self.setRowCount(self._nrows)
         self.setColumnCount(self._ncols)
-        hlabels = uppercase_labels(self._ncols)
-        self.setHorizontalHeaderLabels(hlabels)
+        if self._vl:
+            h_labels = self._vl_columns()
+        else:
+            h_labels = uppercase_labels(self._ncols)
+        self.setHorizontalHeaderLabels(h_labels)
 
-    def load_worksheet(self, xsheet):
+    @property
+    def vector_layer(self):
         """
-        Loads worksheet data into the table.
-        :param xsheet: Object containing worksheet data.
-        :type xsheet: xlrd.sheet.Sheet
+        :return: Returns the data source associated with the sheet view.
+        :rtype: QgsVectorLayer
         """
-        if not xsheet:
-            QMessageBox.critical(
-                self.parentWidget(),
-                self.tr('Null Sheet'),
-                self.tr('Sheet object is None, cannot be loaded.')
-            )
-            return
+        return self._vl
 
-        self._ws = xsheet
-        self._ncols = self._ws.ncols
-        self._nrows = self._ws.nrows
+    def _vl_columns(self):
+        # Returns a list containing the field names in the vector layer
+        return [f.name() for f in self._vl.fields()]
+
+    def load_qgs_vector_layer(self, vl):
+        """
+        Loads a QgsVectorLayer (created from Excel or CSV file) into the
+        table.
+        :param vl: Vector layer containing table information.
+        :type vl: QgsVectorLayer
+        """
+        self._vl = vl
+        dp = self._vl.dataProvider()
+        self._nrows = dp.featureCount()
+        self._ncols = len(dp.fieldNameMap())
+        fields = self._vl.fields()
 
         # Update view
         self._update_view()
 
         # Add cell values
         tbi = None
-        for r in range(self._nrows):
-            for c in range(self._ncols):
+        features = self._vl.getFeatures()
+        ridx = 0
+
+        for f in features:
+            cidx = 0
+
+            # Read attributes
+            for fi in fields:
                 tbi = QTableWidgetItem()
-                cell = self._ws.cell(r, c)
-                val = cell.value
-                # Number
-                if cell.ctype == 2:
-                    val = str(float(val))
+                attr = f.attribute(fi.name())
+                # Correctly represent double values that are actually int
+                if fi.type() == QVariant.Double:
+                    if attr.is_integer():
+                        attr = int(attr)
 
-                # Date/time
-                elif cell.ctype == 3:
-                    try:
-                        dt = xldate_as_tuple(val, self._ws.book.datemode)
-                        val_dt = datetime(*dt)
-                        # Apply formatting for the date/time
-                        val = val_dt.strftime(self._date_format)
-                    except XLDateError as de:
-                        self.format_error_cell(tbi)
-                        val = u'DATE ERROR!'
-
-                # Boolean
-                elif cell.ctype == 4:
-                    val = 'True' if val == 1 else 'False'
-
-                # Error with Excel codes
-                elif cell.ctype == 5:
-                    self.format_error_cell(tbi)
-                    val = u'ERROR - {0}'.format(str(val))
+                # Format string representation
+                # Date
+                if fi.type() == QVariant.Date:
+                    val = attr.strftime(self._date_format)
+                else:
+                    val = str(attr)
 
                 tbi.setText(val)
-                self.setItem(r, c, tbi)
+                self.setItem(ridx, cidx, tbi)
+
+                cidx += 1
+
+            ridx += 1
 
     def format_error_cell(self, tbi):
         """
@@ -204,8 +216,8 @@ class WorksheetInfo(object):
         self.ws = None
 
 
-class ExcelWorkbookView(QWidget):
-    """A read-only table view for browsing MS Excel data."""
+class HoldersTableView(QWidget):
+    """A read-only table view for browsing MS Excel or CSV data."""
     def __init__(self, *args, **kwargs):
         super(QWidget, self).__init__(*args, **kwargs)
         self._init_ui()
@@ -218,20 +230,6 @@ class ExcelWorkbookView(QWidget):
 
         # Reset the view
         self.reset_view()
-
-        # Check availability of XLRD library
-        if not XLRD_AVAIL:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Dependency'),
-                self.tr(
-                    '\'xlrd\' library is missing.\nExcel data cannot be loaded '
-                    'without this library. Please install it and try again.'
-                )
-            )
-            self.setEnabled(False)
-
-            return
 
     @property
     def date_format(self):
@@ -288,7 +286,7 @@ class ExcelWorkbookView(QWidget):
 
     def _add_default_sheet(self):
         # Add a default/empty sheet to the view.
-        def_sheet = ExcelSheetView()
+        def_sheet = HoldersSheetView()
         self._tbw.addTab(def_sheet, self.tr('Sheet 1'))
 
     def _init_ui(self):
@@ -304,37 +302,37 @@ class ExcelWorkbookView(QWidget):
         self._vl.addWidget(self._pg_par)
         self.setLayout(self._vl)
 
-    def add_xlrd_sheet(self, xsheet):
+    def add_vector_layer(self, vl):
         """
-        Adds data contained in a sheet object to the view.
-        :param xsheet: Object containing worksheet data.
-        :type xsheet: xlrd.sheet.Sheet
+        Adds data contained in Qgis vector layer object to the view.
+        :param vl: Object containing holders data.
+        :type vl: QgsVectorLayer
         """
-        worksheet = ExcelSheetView()
-        worksheet.date_format = self._dt_format
-        name = xsheet.name
-        idx = self._tbw.addTab(worksheet, name)
+        holders_sheet = HoldersSheetView()
+        holders_sheet.date_format = self._dt_format
+        name = vl.name()
+        idx = self._tbw.addTab(holders_sheet, name)
         self._tbw.setTabToolTip(idx, name)
 
-        worksheet.load_worksheet(xsheet)
+        holders_sheet.load_qgs_vector_layer(vl)
 
         # Add worksheet info to collection
         wsi = WorksheetInfo()
         wsi.name = name
         wsi.idx = idx
-        wsi.ws_widget = worksheet
-        wsi.ws = xsheet
+        wsi.ws_widget = holders_sheet
+        wsi.ws = vl
 
         self._ws_info[wsi.idx] = wsi
 
-    def load_workbook(self, path):
+    def load_holders_file(self, path):
         """
-        Loads the workbook contained in the specified file to the view.
-        :param path: Path to fil containing workbook data.
+        Loads the holders data contained in the specified file to the view.
+        :param path: Path to file containing holders data.
         :type path: str
         """
-        xfile = QFile(path)
-        if not xfile.exists():
+        holders_file = QFile(path)
+        if not holders_file.exists():
             QMessageBox.critical(
                 self,
                 self.tr('Invalid path'),
@@ -347,8 +345,8 @@ class ExcelWorkbookView(QWidget):
             return
 
         # Check permissions
-        xfileinfo = QFileInfo(xfile)
-        if not xfileinfo.isReadable():
+        holders_fileinfo = QFileInfo(holders_file)
+        if not holders_fileinfo.isReadable():
             QMessageBox.critical(
                 self,
                 self.tr('Unreadable file'),
@@ -360,6 +358,60 @@ class ExcelWorkbookView(QWidget):
 
             return
 
+        # Get file extension
+        ext = holders_fileinfo.suffix()
+
+        # Get reader based on suffix
+        if ext not in holder_readers:
+            msg = 'No reader defined for \'{0}\' file extension'.format(ext)
+            QMessageBox.critical(
+                self,
+                self.tr('Invalid Extension'),
+                msg
+            )
+
+            return
+
+        reader = holder_readers[ext]
+
+        vl = None
+
+        try:
+            # Get vector layer
+            vl = reader(path)
+        except Exception as ex:
+            QMessageBox.critical(
+                self,
+                self.tr('Error Loading Data Source.'),
+                str(ex)
+            )
+
+            return
+
+        if not vl:
+            QMessageBox.critical(
+                self.parentWidget(),
+                self.tr('Null Data Source'),
+                self.tr('Data source object is None, cannot be loaded.')
+            )
+
+            return
+
+        if not vl.isValid():
+            err = vl.error()
+            if not err.isEmpty():
+                err_msg = err.summary()
+            else:
+                err_msg = 'The holders data source is invalid.'
+
+            QMessageBox.critical(
+                self.parentWidget(),
+                self.tr('Invalid Data Source'),
+                err_msg
+            )
+
+            return
+
         # Clear view
         self.clear_view()
 
@@ -367,14 +419,10 @@ class ExcelWorkbookView(QWidget):
         self._pg_par.setVisible(True)
         pg_val = 0
 
-        # Add sheets
-        wb = open_workbook(path)
-        self._pg_par.setRange(0, wb.nsheets)
-        for s in wb.sheets():
-            self.add_xlrd_sheet(s)
+        # Add vector layer to the view
+        self._pg_par.setRange(0, 1)
+        self.add_vector_layer(vl)
 
-            # Update progress bar
-            pg_val += 1
-            self._pg_par.setValue(pg_val)
+        self._pg_par.setValue(1)
 
         self._pg_par.setVisible(False)

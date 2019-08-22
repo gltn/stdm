@@ -41,4 +41,4 @@ class Ui_SpatialUnitTenureDialog(object):
         SpatialUnitTenureDialog.setWindowTitle(QtGui.QApplication.translate("SpatialUnitTenureDialog", "Spatial Unit Tenure Types", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("SpatialUnitTenureDialog", "<html><head/><body><p>Specify the tenure type corresponding to each spatial unit</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
 
-from ..customcontrols import ListPairTableView
+from stdm.ui.customcontrols.list_pair_table_view import ListPairTableView

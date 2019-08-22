@@ -19,6 +19,7 @@
     <file>images/icons/flts_content_auth.png</file>
     <file>images/icons/flts_scheme_establishment.png</file>
     <file>images/icons/flts_options.png</file>
+    <file>images/icons/flts_open_file.png</file>
     <file>images/icons/flts_password.png</file>
     <file>images/icons/flts_plot_module.png</file>
     <file>images/icons/flts_print.png</file>
@@ -41,6 +42,7 @@
     <file>images/icons/flts_success.png</file>
     <file>images/icons/flts_users_manage.png</file>
     <file>images/icons/flts_validate.png</file>
+    <file>images/icons/flts_view_file.png</file>
     <file>images/icons/mobile_collect.png</file>
     <file>images/icons/mobile_data_management.png</file>
     <file>images/icons/mobile_import.png</file>
