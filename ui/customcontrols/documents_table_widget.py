@@ -116,7 +116,18 @@ class DocumentTableWidget(QTableWidget):
         self._error_txt = self.tr('Error!')
         self.cmis_entity_doc_mapper = None
         self.file_filters = 'PDF File (*.pdf)'
+        # Flag for checking if there is an active upload
+        self._has_active_operation = False
         self._init_ui()
+
+    @property
+    def has_active_operation(self):
+        """
+        :return: Returns True if there is an ongoing upload or removal of
+        document.
+        :rtype: bool
+        """
+        return self._has_active_operation
 
     def _init_ui(self):
         # Set up the basic columns
@@ -138,7 +149,6 @@ class DocumentTableWidget(QTableWidget):
         doc_type_item = self.horizontalHeaderItem(0)
         dt_font = doc_type_item.font()
         dt_font.setBold(True)
-        #doc_type_item.setFont(dt_font)
 
     @property
     def document_information(self):
@@ -270,6 +280,7 @@ class DocumentTableWidget(QTableWidget):
         lbl_link = QLabel()
         lbl_link.setAlignment(Qt.AlignHCenter)
         lbl_link.setText(u'<a href=\'placeholder\'>{0}</a>'.format(name))
+        #lbl_link.setText('<a href=""><img src=":/plugins/stdm/images/icons/flts_open_file.png"/>{0}</a>'.format(name))
         lbl_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
         lbl_link.setProperty(self._doc_prop, document_info)
 
@@ -340,6 +351,12 @@ class DocumentTableWidget(QTableWidget):
             )
             upload_thread.succeeded.connect(
                 self.on_successful_upload
+            )
+            upload_thread.started.connect(
+                self._on_upload_remove_started
+            )
+            upload_thread.finished.connect(
+                self._on_upload_remove_finished
             )
 
             # Disable widgets and show upload progress bar
@@ -542,6 +559,16 @@ class DocumentTableWidget(QTableWidget):
         ti.setIcon(QIcon())
         ti.setToolTip('')
 
+    def _on_upload_remove_started(self):
+        # Slot raised when a thread for uploading or removing a document
+        # has started. It sets an active operation status.
+        self._has_active_operation = True
+
+    def _on_upload_remove_finished(self):
+        # Slot raised when a thread for uploading or removing a document
+        # has finisged. It sets the active operation status to False.
+        self._has_active_operation = False
+
     def remove_document_by_doc_type(self, doc_type):
         """
         Remove document based on the given document type.
@@ -580,6 +607,13 @@ class DocumentTableWidget(QTableWidget):
         delete_thread.error.connect(
             self._on_remove_document_error
         )
+        delete_thread.started.connect(
+            self._on_upload_remove_started
+        )
+        delete_thread.finished.connect(
+            self._on_upload_remove_finished
+        )
+
         delete_thread.start()
 
     def on_remove_activated(self, link):

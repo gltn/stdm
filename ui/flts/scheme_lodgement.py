@@ -691,6 +691,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                 )
                 self.docs_notif_bar.insertWarningNotification(msg)
 
+            # Check if there is an active document upload/removal operation
+            active_operation = self.tbw_documents.has_active_operation
+            if active_operation:
+                ret_status = False
+                msg = self.tr(
+                    'There is an ongoing operation with the CMIS server. '
+                    'Please wait a few moments.'
+                )
+                self.docs_notif_bar.insertWarningNotification(msg)
+
         elif current_id == 3:
             # This is the last page
             try:
