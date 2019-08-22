@@ -301,10 +301,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if len(res) == 0:
             return
 
+        reg_div = res[0].registration_division
+
         # Query object filtered on registration division lookup
         res1 = chk_regdiv_obj.queryObject().filter(
             self._regdiv_lookup_model.id ==
-            self._relevant_auth_model.registration_division
+            reg_div
         ).first()
 
         # Looping through the results to get details
@@ -319,7 +321,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Date will contain tuple(ID, code and registration division)
             self.cbx_relv_auth_name.addItem(
                 authority_name,
-                (authority_id, code, reg_div_val, last_val)
+                (authority_id, code, reg_div, reg_div_val, last_val)
             )
 
     def on_ra_name_changed(self):
@@ -334,17 +336,19 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not self.cbx_relv_auth_name.currentText():
             return
 
-        id, code, reg_div_val, last_value = self.cbx_relv_auth_name.itemData(
+        id, code, reg_div, reg_div_val, last_value = self.cbx_relv_auth_name.itemData(
             self.cbx_relv_auth_name.currentIndex()
         )
 
         # Registration division
         self.cbx_reg_div.addItem('')
         self.cbx_reg_div.clearEditText()
-        self.cbx_reg_div.addItems(reg_div_val)
+        self.cbx_reg_div.addItem(reg_div_val, reg_div)
 
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
+
+        print reg_div_val
 
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number

@@ -23,86 +23,87 @@ class DockWidget(QDockWidget):
     """
     Sets a dockable widget from a widget
     """
-    def __init__(self, customWidget, parent=None):
+    def __init__(self, custom_widget, parent=None):
         super(QDockWidget, self).__init__(parent)
-        self.setWindowTitle(customWidget.windowTitle())
-        self.setObjectName(customWidget.objectName())
+        self.setWindowTitle(custom_widget.windowTitle())
+        self.setObjectName(custom_widget.objectName())
         self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
-        self.topLevelChanged.connect(self._onTopLevelChange)
-        self.setWidget(customWidget)
+        self.topLevelChanged.connect(self._on_top_level_change)
+        self.setWidget(custom_widget)
 
-    def _onTopLevelChange(self, topLevel):
+    def _on_top_level_change(self, top_level):
         """
         Add maximize and minimize buttons on the dock widget
-        :param topLevel: Flag to check if dock widget is top level
-        :type topLevel: Boolean
+        :param top_level: Flag to check if dock widget is top level
+        :type top_level: Boolean
         """
-        dockWidget = self.sender()
-        if dockWidget is None or not isinstance(dockWidget, QDockWidget):
+        dock_widget = self.sender()
+        if dock_widget is None or not isinstance(dock_widget, QDockWidget):
             return
-        if dockWidget.isFloating():
-            dockWidget.setWindowFlags(
+        if dock_widget.isFloating():
+            dock_widget.setWindowFlags(
                 Qt.CustomizeWindowHint | Qt.Window |
                 Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
             )
-        dockWidget.show()
+        dock_widget.show()
 
 
 class DockWidgetFactory:
     """
     Factory to create dockable widgets from a widget
     """
-    savedWidgets = {}
-    activeWidget = None
+    saved_widgets = {}
+    active_widget = None
 
-    def __init__(self, customWidget, iface=None):
-        self._customWidget = customWidget
+    def __init__(self, custom_widget, iface=None):
+        self._custom_widget = custom_widget
         self._iface = iface
 
-    def showDockWidget(self):
+    def show_dock_widget(self):
         """
         Shows dockable widget
         :return: Dockable widget or None
         :rtype: QDockWidget or None
         """
-        dockWidget = self.getDockWidget()
-        DockWidgetFactory.hideActiveDockWidget()
-        if dockWidget and dockWidget.isHidden():
-            DockWidgetFactory.activeWidget = dockWidget
-            return dockWidget.show()
-        self.setDockWidget()
+        dock_widget = self.get_dock_widget()
+        DockWidgetFactory.hide_active_dock_widget()
+        if dock_widget and dock_widget.isHidden():
+            DockWidgetFactory.active_widget = dock_widget
+            dock_widget.setWindowTitle(dock_widget.windowTitle() + " " + str(id(dock_widget)))
+            return dock_widget.show()
+        self.set_dock_widget()
 
-    def getDockWidget(self):
+    def get_dock_widget(self):
         """
         Returns dock widget if it exists
         :return dockWidget: A dockwidget
         :rtype dockWidget: QDockWidget
         """
-        objectName = self._customWidget.objectName()
-        savedWidgets = DockWidgetFactory.savedWidgets
-        if objectName in savedWidgets:
-            dockWidget = savedWidgets.get(objectName, None)
-            return dockWidget
+        object_name = self._custom_widget.objectName()
+        saved_widgets = DockWidgetFactory.saved_widgets
+        if object_name in saved_widgets:
+            dock_widget = saved_widgets.get(object_name, None)
+            return dock_widget
 
-    def setDockWidget(self):
+    def set_dock_widget(self):
         """
         Sets a new dockable widget in QGIS
         :return: A dockable widget
         :rtype: QDockWidget
         """
-        savedWidgets = DockWidgetFactory.savedWidgets
-        newWidget = DockWidget(self._customWidget, self._iface.mainWindow())
-        savedWidgets[newWidget.objectName()] = newWidget
-        self._iface.addDockWidget(Qt.BottomDockWidgetArea, newWidget)
-        DockWidgetFactory.activeWidget = newWidget
+        saved_widgets = DockWidgetFactory.saved_widgets
+        new_widget = DockWidget(self._custom_widget, self._iface.mainWindow())
+        saved_widgets[new_widget.objectName()] = new_widget
+        self._iface.addDockWidget(Qt.BottomDockWidgetArea, new_widget)
+        DockWidgetFactory.active_widget = new_widget
 
     @classmethod
-    def hideActiveDockWidget(cls):
+    def hide_active_dock_widget(cls):
         """
         Hides the active/visible dock widget
         """
-        if cls.activeWidget and cls.activeWidget.isVisible():
-            cls.activeWidget.hide()
+        if cls.active_widget and cls.active_widget.isVisible():
+            cls.active_widget.hide()
 
 
 

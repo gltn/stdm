@@ -2403,45 +2403,45 @@ class STDMQGISLoader(object):
         """
         Docks Scheme establishment workflow manager widget
         """
-        workflowManager = WorkflowManagerWidget(
+        workflow_manager = WorkflowManagerWidget(
             "Scheme Establishment Workflow Manager",
             "schemeEstablishment"
         )
-        dockWidget = DockWidgetFactory(workflowManager, self.iface)
-        dockWidget.showDockWidget()
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
 
     def first_examination(self):
         """
         Docks First Examination workflow manager widget
         """
-        workflowManager = WorkflowManagerWidget(
+        workflow_manager = WorkflowManagerWidget(
             "First Workflow Manager",
             "firstExamination"
         )
-        dockWidget = DockWidgetFactory(workflowManager, self.iface)
-        dockWidget.showDockWidget()
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
 
     def second_examination(self):
         """
         Docks Second Examination workflow manager widget
         """
-        workflowManager = WorkflowManagerWidget(
+        workflow_manager = WorkflowManagerWidget(
             "Second Workflow Manager",
             "secondExamination"
         )
-        dockWidget = DockWidgetFactory(workflowManager, self.iface)
-        dockWidget.showDockWidget()
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
 
     def third_examination(self):
         """
         Docks Third Examination workflow manager widget
         """
-        workflowManager = WorkflowManagerWidget(
+        workflow_manager = WorkflowManagerWidget(
             "Third Workflow Manager",
             "thirdExamination"
         )
-        dockWidget = DockWidgetFactory(workflowManager, self.iface)
-        dockWidget.showDockWidget()
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
 
     def import_plots(self):
         """
