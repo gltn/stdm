@@ -1,6 +1,6 @@
 """
 /***************************************************************************
-Name                 : Scheme Model
+Name                 : Workflow Manager Model
 Description          : Model for handling scheme table data in
                        Scheme Establishment and First, Second and
                        Third Examination FLTS modules.
@@ -24,13 +24,13 @@ from PyQt4.QtGui import *
 from sqlalchemy import exc
 
 
-class SchemeModel(QAbstractTableModel):
+class WorkflowManagerModel(QAbstractTableModel):
     """
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
     def __init__(self, data_service):
-        super(SchemeModel, self).__init__()
+        super(WorkflowManagerModel, self).__init__()
         self.data_service = data_service
         self.query_object = None
         self.results = []
@@ -46,9 +46,8 @@ class SchemeModel(QAbstractTableModel):
             return Qt.ItemIsEnabled
         elif self._headers[column].editable:
             return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
-                         Qt.ItemIsEditable)
-        return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
-                            Qt.ItemIsEditable)
+                         Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+        return Qt.ItemFlags(QAbstractTableModel.flags(self, index))
 
     def data(self, index, role=Qt.DisplayRole):
         """
@@ -61,8 +60,13 @@ class SchemeModel(QAbstractTableModel):
         result = self.results[index.row()]
         column = index.column()
         if role == Qt.DisplayRole:
-            if column in result:
-                return result[column]
+            return result.get(column, None)
+
+        # if value2 != 0:
+        #     return QtCore.Qt.Checked
+        # else:
+        #     return QtCore.Qt.Unchecked
+
         return None
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -94,12 +98,42 @@ class SchemeModel(QAbstractTableModel):
         """
         Implementation of QAbstractTableModel
         columnCount method
-        :param index: Item location in the model
-        :type index: Integer
-        :return: Number of columns
-        :rtype: Integer
         """
         return len(self._headers)
+
+    def setData(self, index, value, role=Qt.EditRole):
+        """
+        Implementation of QAbstractTableModel
+        setData method
+        """
+        if not index.isValid() and \
+                not (0 <= index.row() < len(self.results)):
+            return False
+        result = self.results[index.row()]
+        column = index.column()
+        if isinstance(result.get(column, None), float):
+            if self.is_number(value):
+                result[column] = value
+
+        else:
+            result[column] = value
+        self.emit(SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+        return True
+
+    @staticmethod
+    def is_number(value):
+        """
+        Check if value is a number
+        :param value: Input value
+        :type value: Multiple types
+        :return: True when number and false otherwise
+        :rtype: Boolean
+        """
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
 
     def load(self):
         """

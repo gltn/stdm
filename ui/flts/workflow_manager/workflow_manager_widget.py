@@ -25,7 +25,7 @@ from stdm.ui.flts.workflow_manager.config import SchemeConfig
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
-from stdm.ui.flts.workflow_manager.scheme_model import SchemeModel
+from stdm.ui.flts.workflow_manager.workflow_manager_model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
 
@@ -41,7 +41,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setWindowTitle(title)
         self.setObjectName(object_name)
         self.data_service = SchemeDataService(self._profile)
-        self.model = SchemeModel(self.data_service)
+        self.model = WorkflowManagerModel(self.data_service)
         self.table_view = QTableView()
         self.table_view.setModel(self.model)
         self.table_view.setAlternatingRowColors(True)
