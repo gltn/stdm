@@ -36,6 +36,20 @@ class SchemeModel(QAbstractTableModel):
         self.results = []
         self._headers = []
 
+    def flags(self, index):
+        """
+        Implementation of QAbstractTableModel
+        flags method
+        """
+        column = index.column()
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        elif self._headers[column].editable:
+            return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
+                         Qt.ItemIsEditable)
+        return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
+                            Qt.ItemIsEditable)
+
     def data(self, index, role=Qt.DisplayRole):
         """
         Implementation of QAbstractTableModel
@@ -64,7 +78,7 @@ class SchemeModel(QAbstractTableModel):
             return None
         if orientation == Qt.Horizontal:
             if self._headers:
-                return self._headers[section]
+                return self._headers[section].name
         elif orientation == Qt.Vertical:
             return None
         return int(section + 1)

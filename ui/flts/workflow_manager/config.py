@@ -15,19 +15,22 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+from collections import namedtuple
+
+Column = namedtuple("Column", ["name", "editable"])
 
 conf = {
     'field_options': [
-        {'Number of Scheme': 'scheme_number'},
-        {'Name of Scheme': 'scheme_name'},
-        {'Date of Approval': 'date_of_approval'},
-        {'Date of Establishment': 'date_of_establishment'},
-        {'Type of Relevant Authority': {'cb_check_lht_relevant_authority': 'value'}},
-        {'Land Rights Office': {'cb_check_lht_land_rights_office': 'value'}},
-        {'Region': {'cb_check_lht_region': 'value'}},
-        {'Township': 'township_name'},
-        {'Registration Division': 'registration_division'},
-        {'Block Area': 'area'}
+        {Column(name='', editable=True): None},
+        {Column(name='Number of Scheme', editable=False): 'scheme_number'},
+        {Column(name='Date of Approval', editable=False): 'date_of_approval'},
+        {Column(name='Date of Establishment', editable=False): 'date_of_establishment'},
+        {Column(name='Type of Relevant Authority', editable=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', editable=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', editable=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', editable=False): 'township_name'},
+        {Column(name='Registration Division', editable=False): 'registration_division'},
+        {Column(name='Block Area', editable=False): 'area'}
     ],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
