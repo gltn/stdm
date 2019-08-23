@@ -156,6 +156,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.btn_reload_holders.clicked.connect(
             self.load_holders_file
         )
+        self.chk_holders_validate.toggled.connect(
+            self.on_validate_holders
+        )
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -487,6 +490,26 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         self.tw_hld_prv.load_holders_file(h_path)
+
+    def on_validate_holders(self, toggled):
+        """
+        Slot raised when the checkbox for validating holders data is
+        checked/unchecked.
+        :param toggled: Toggle status
+        :type toggled: bool
+        """
+        # Notify user that validation will be done prior to moving to
+        # the next page.
+        if not toggled:
+            msg = 'Validation of the holders data will be performed prior to ' \
+                  'loading the summary page upon clicking Next.'
+            self.holders_notif_bar.insertInformationNotification(msg)
+
+    def validate_holders(self):
+        """
+        Validate holders data in the table.
+        """
+        pass
 
     def _load_scheme_document_types(self):
         """

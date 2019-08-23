@@ -37,8 +37,6 @@ from PyQt4.QtCore import (
     QVariant
 )
 
-from qgis.core import QgsErrorMessage
-
 # Flag for checking whether import of xlrd library succeeded
 XLRD_AVAIL = True
 try:
@@ -165,7 +163,7 @@ class HoldersSheetView(QTableWidget):
                 if fi.type() == QVariant.Date:
                     val = attr.strftime(self._date_format)
                 else:
-                    val = str(attr)
+                    val = unicode(attr)
 
                 tbi.setText(val)
                 self.setItem(ridx, cidx, tbi)

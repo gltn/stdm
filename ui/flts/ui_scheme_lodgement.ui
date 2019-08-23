@@ -328,6 +328,26 @@
   </widget>
   <widget class="QWizardPage" name="wizardPage2">
    <layout class="QGridLayout" name="gridLayout_3">
+    <item row="4" column="0" colspan="3">
+     <widget class="HoldersTableView" name="tw_hld_prv"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLineEdit" name="lnEdit_hld_path">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>Path to the Holders Excel or CSV file...</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="label_desc_2">
+      <property name="text">
+       <string>Select the Excel or CSV file containing the holders information</string>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="1">
      <widget class="QPushButton" name="btn_brws_hld">
       <property name="toolTip">
@@ -345,29 +365,12 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="label_desc_2">
-      <property name="text">
-       <string>Select the Excel or CSV file containing the holders information</string>
+    <item row="0" column="0" colspan="3">
+     <layout class="QVBoxLayout" name="vlNotification_holders">
+      <property name="bottomMargin">
+       <number>10</number>
       </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_data_prev">
-      <property name="text">
-       <string>Data preview</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLineEdit" name="lnEdit_hld_path">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="placeholderText">
-       <string>Path to the Holders Excel or CSV file...</string>
-      </property>
-     </widget>
+     </layout>
     </item>
     <item row="2" column="2">
      <widget class="QPushButton" name="btn_reload_holders">
@@ -383,15 +386,15 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="3">
-     <layout class="QVBoxLayout" name="vlNotification_holders">
-      <property name="bottomMargin">
-       <number>10</number>
+    <item row="3" column="0">
+     <widget class="QCheckBox" name="chk_holders_validate">
+      <property name="text">
+       <string>Perform validation upon loading data</string>
       </property>
-     </layout>
-    </item>
-    <item row="4" column="0" colspan="3">
-     <widget class="HoldersTableView" name="tw_hld_prv"/>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

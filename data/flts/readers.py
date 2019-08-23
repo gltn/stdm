@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 from datetime import datetime
 from PyQt4.QtCore import (
     QFileInfo,
+    QUrl,
     QVariant
 )
 from qgis.core import (
@@ -54,7 +55,7 @@ xl_2_qgs_field_mapping = {
     XL_CELL_BOOLEAN: QVariant.String
 }
 
-DEFAULT_SHEET_NAME = 'Holders Table'
+DEFAULT_SHEET_NAME = 'Holders Sheet'
 DATE_FORMAT = '%Y-%m-%d'
 
 
@@ -253,3 +254,32 @@ def xls_2_qgs_vector_layer(xls_path, headers_first_line=True):
     dp.addFeatures(features)
 
     return xls_vl
+
+
+def csv_vector_layer(csv_path, **kwargs):
+    """
+    Create a vector layer from a CSV file.
+    :param csv_path: Path of the CSV file.
+    :type csv_path: str
+    :param kwargs:
+    :return: Returns a QGIS memory layer containing the CSV data.
+    :rtype: QgsVectorLayer
+    """
+    # Get file name
+    csv_fi = QFileInfo(csv_path)
+    layer_name = csv_fi.completeBaseName()
+
+    delimiter = kwargs.pop('delimiter', ';')
+
+    # Construct URL with CSV provider query items
+    url = QUrl.fromLocalFile(csv_path)
+    url.addQueryItem('type', 'csv')
+    url.addQueryItem('delimiter', delimiter)
+    url.addQueryItem('geomType', 'none')
+    url.addQueryItem('subsetIndex', 'no')
+    url.addQueryItem('watchFile', 'no')
+
+    uri = url.toEncoded().data()
+    csv_vl = QgsVectorLayer(uri, layer_name, 'delimitedtext')
+
+    return csv_vl
