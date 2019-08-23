@@ -1,15 +1,3 @@
-'''
-from .validating_line_edit import ValidatingLineEdit
-from .combobox_with_other import ComboBoxWithOther
-from .coordinates_editor import CoordinatesWidget
-from .model_attributes_view import ModelAtrributesView
-from .checkable_combo import MultipleChoiceCombo
-from .list_pair_table_view import ListPairTableView
-from .notification_widget import NotificationWidget
-from .scheme_summary_widget import SchemeSummaryWidget
-from documents_table_widget import DocumentTableWidget
-'''
-
 TABLE_STYLE_SHEET = 'QTableWidget { border:2px groove #96A8A8; ' \
                     'border-radius:3px;selection-background-color: ' \
                     'qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: ' \

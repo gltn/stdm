@@ -153,6 +153,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.update_relevant_authority)
         self.cbx_relv_auth_name.currentIndexChanged.connect(
             self.on_ra_name_changed)
+        self.btn_reload_holders.clicked.connect(
+            self.load_holders_file
+        )
 
         # Populate lookup comboboxes
         self._populate_lookups()
@@ -464,7 +467,26 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if holders_file:
             set_last_document_path(holders_file)
             self.lnEdit_hld_path.setText(holders_file)
-            self.tw_hld_prv.load_holders_file(holders_file)
+            self.load_holders_file()
+
+    def load_holders_file(self):
+        """
+        Load the holders data into the table view based on the file specified
+        in the path textbox.
+        """
+        h_path = self.lnEdit_hld_path.text()
+        if not h_path:
+            QMessageBox.warning(
+                self,
+                self.tr('Empty File Path'),
+                self.tr(
+                    'Please specify the path to the Holders file.'
+                )
+            )
+
+            return
+
+        self.tw_hld_prv.load_holders_file(h_path)
 
     def _load_scheme_document_types(self):
         """

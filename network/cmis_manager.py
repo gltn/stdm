@@ -964,7 +964,7 @@ class CmisEntityDocumentMapper(object):
             else:
                 dest_folder = self.create_document_type_folder(doc_type)
 
-        # Clear all documents if option has been specified
+        # Clear all documents of the given type, if option has been specified
         if clear_all:
             self.remove_all_documents(doc_type)
 
