@@ -45,8 +45,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         if not index.isValid():
             return Qt.ItemIsEnabled
         elif self._headers[column].editable:
-            return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
-                         Qt.ItemIsEditable | Qt.ItemIsUserCheckable)
+            return Qt.ItemFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable |
+                                Qt.ItemIsUserCheckable)
         return Qt.ItemFlags(QAbstractTableModel.flags(self, index))
 
     def data(self, index, role=Qt.DisplayRole):
