@@ -1,10 +1,11 @@
 """
 /***************************************************************************
-Name                 : Scheme Document Table
-Description          : Widget for managing workflow and notification in
+Name                 : Scheme Details View
+Description          : Table view widget for viewing scheme holders and
+                       supporting documents for workflow manager modules;
                        Scheme Establishment and First, Second and
                        Third Examination FLTS modules.
-Date                 : 07/August/2019
+Date                 : 22/August/2019
 copyright            : (C) 2019
  ***************************************************************************/
 
