@@ -17,13 +17,48 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import SchemeConfig
 from stdm.data.configuration import entity_model
 
 
-class SchemeDataService:
+class DataService:
+    """
+    Data service abstract class
+    """
+    __metaclass__ = ABCMeta
+
+    @abstractmethod
+    def field_option(self):
+        """
+        Scheme field options
+        """
+        raise NotImplementedError
+
+    def related_entity_name(self):
+        """
+        Related entity name
+        """
+        raise NotImplementedError
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return:
+        """
+        raise NotImplementedError
+
+    def _entity_model(self):
+        """
+        Scheme entity model
+        :return:
+        """
+        raise NotImplementedError
+
+
+class SchemeDataService(DataService):
     """
     Scheme data model services
     """
@@ -34,7 +69,7 @@ class SchemeDataService:
     @property
     def field_option(self):
         """
-        Scheme field option
+        Scheme field options
         :return: Column and query field options
         :rtype: List
         """

@@ -22,7 +22,7 @@ from PyQt4.QtCore import Qt
 Column = namedtuple("Column", ["name", "flag"])
 
 conf = {
-    'field_options': [
+    'scheme_options': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): 0},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {Column(name='Date of Approval', flag=False): 'date_of_approval'},
@@ -80,7 +80,7 @@ class SchemeConfig(Config):
         :return: Column and query field options
         :rtype: List
         """
-        return self.get_data('field_options')
+        return self.get_data('scheme_options')
 
 
 class StyleSheet(Config):
