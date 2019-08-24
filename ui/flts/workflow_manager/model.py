@@ -44,9 +44,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         if not index.isValid():
             return Qt.ItemIsEnabled
-        elif self._headers[column].editable:
-            return Qt.ItemFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable |
-                                Qt.ItemIsUserCheckable)
+        elif self._headers[column].flag == Qt.ItemIsUserCheckable:
+            return Qt.ItemFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
         return Qt.ItemFlags(QAbstractTableModel.flags(self, index))
 
     def data(self, index, role=Qt.DisplayRole):
@@ -56,18 +55,21 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         if not index.isValid() or \
            not (0 <= index.row() < len(self.results)):
-            return None
+            return
         result = self.results[index.row()]
         column = index.column()
-        if role == Qt.DisplayRole:
-            return result.get(column, None)
-
-        # if value2 != 0:
-        #     return QtCore.Qt.Checked
-        # else:
-        #     return QtCore.Qt.Unchecked
-
-        return None
+        value = result.get(column, None)
+        flag = self._headers[column].flag
+        if role == Qt.DisplayRole and flag != Qt.ItemIsUserCheckable:
+            return value
+        elif role == Qt.CheckStateRole and flag == Qt.ItemIsUserCheckable:
+            if isinstance(value, float):
+                return Qt.Checked if int(value) == 1 else Qt.Unchecked
+        elif role == Qt.TextAlignmentRole:
+            if flag == Qt.ItemIsUserCheckable:
+                return int(Qt.AlignCenter | Qt.AlignVCenter)
+            return int(Qt.AlignLeft | Qt.AlignVCenter)
+        return
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         """
@@ -79,12 +81,12 @@ class WorkflowManagerModel(QAbstractTableModel):
                 return int(Qt.AlignLeft | Qt.AlignVCenter)
             return int(Qt.AlignRight | Qt.AlignVCenter)
         elif role != Qt.DisplayRole:
-            return None
+            return
         if orientation == Qt.Horizontal:
             if self._headers:
                 return self._headers[section].name
         elif orientation == Qt.Vertical:
-            return None
+            return
         return int(section + 1)
 
     def rowCount(self, index=QModelIndex()):
@@ -111,29 +113,16 @@ class WorkflowManagerModel(QAbstractTableModel):
             return False
         result = self.results[index.row()]
         column = index.column()
+        flag = self._headers[column].flag
         if isinstance(result.get(column, None), float):
-            if self.is_number(value):
-                result[column] = value
-
+            if flag == Qt.ItemIsUserCheckable:
+                result[column] = 1.0 if value == Qt.Checked else 0.0
+            else:
+                result[column] = float(value)
         else:
             result[column] = value
         self.emit(SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
         return True
-
-    @staticmethod
-    def is_number(value):
-        """
-        Check if value is a number
-        :param value: Input value
-        :type value: Multiple types
-        :return: True when number and false otherwise
-        :rtype: Boolean
-        """
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False
 
     def load(self):
         """
@@ -178,7 +167,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         :return value: Cast data
         :rtype value: Multiple types
         """
-        if isinstance(value, Decimal):
+        if isinstance(value, (Decimal, int)):
             return float(value)
         elif isinstance(value, datetime.date):
             return QDate(value)

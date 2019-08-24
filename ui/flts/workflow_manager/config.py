@@ -16,21 +16,23 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from collections import namedtuple
+from PyQt4.QtCore import Qt
 
-Column = namedtuple("Column", ["name", "editable"])
+
+Column = namedtuple("Column", ["name", "flag"])
 
 conf = {
     'field_options': [
-        {Column(name='', editable=True): None},
-        {Column(name='Number of Scheme', editable=False): 'scheme_number'},
-        {Column(name='Date of Approval', editable=False): 'date_of_approval'},
-        {Column(name='Date of Establishment', editable=False): 'date_of_establishment'},
-        {Column(name='Type of Relevant Authority', editable=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', editable=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', editable=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', editable=False): 'township_name'},
-        {Column(name='Registration Division', editable=False): 'registration_division'},
-        {Column(name='Block Area', editable=False): 'area'}
+        {Column(name='', flag=Qt.ItemIsUserCheckable): 0},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Date of Approval', flag=False): 'date_of_approval'},
+        {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
+        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', flag=False): 'township_name'},
+        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {Column(name='Block Area', flag=False): 'area'}
     ],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'

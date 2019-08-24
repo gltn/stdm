@@ -25,7 +25,6 @@ from stdm.ui.flts.workflow_manager.config import SchemeConfig
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
-from stdm.ui.flts.workflow_manager.delegate import WorkflowManagerDelegate
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
