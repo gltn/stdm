@@ -20,7 +20,6 @@ copyright            : (C) 2019
 import datetime
 from decimal import Decimal
 from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from sqlalchemy import exc
 
 
@@ -192,4 +191,14 @@ class WorkflowManagerModel(QAbstractTableModel):
         :rtype _name: String
         """
         return self.data_service.entity_name
+
+    def get_record_id(self, row=0):
+        """
+        Gets record/entity id (primary key)
+        :param row: Row index/number
+        :rtype row: Integer
+        :return: Record id
+        :rtype: integer
+        """
+        return self.results[row]["data"].id
 

@@ -17,7 +17,6 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
@@ -38,6 +37,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._profile = current_profile()
+        self._checked_ids = []
         self.setWindowTitle(title)
         self.setObjectName(object_name)
         self.data_service = SchemeDataService(self._profile)
@@ -49,6 +49,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
+        self.table_view.clicked.connect(self._on_checked)
         self.initial_load()
 
     def initial_load(self):
@@ -66,6 +67,77 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             self.table_view.horizontalHeader().setStretchLastSection(True)
             self.table_view.resizeColumnsToContents()
+
+    def _on_checked(self, index):
+        """
+        Slot called on a click of a record
+        :param index: Table view item identifier/QModelIndex
+        :type index: Integer
+        """
+        row = index.row()
+        column = index.column()
+        if column == 0:
+            value = self.model.results[row].get(column)
+            record_id = self.model.get_record_id(row)
+            if int(value) == 1:
+                self._add_checked_id(record_id)
+                self._enable_widget([self.holdersButton, self.documentsButton])
+            else:
+                self._remove_checked_id(record_id)
+                if not self._checked_ids:
+                    self._disable_widget([self.holdersButton, self.documentsButton])
+        else:
+            if not self._checked_ids:
+                self._disable_widget([self.holdersButton, self.documentsButton])
+
+    def _remove_checked_id(self, record_id):
+        """
+        Remove table view record identifier
+        from checked tracker
+        :param record_id: Checked table view identifier
+        :rtype record_id: Integer
+        """
+        if record_id in self._checked_ids:
+            try:
+                self._checked_ids.remove(record_id)
+            except ValueError:
+                pass
+
+    def _add_checked_id(self, record_id):
+        """
+        Add table view record identifier
+        from checked tracker
+        :param record_id: Checked table view identifier
+        :rtype record_id: Integer
+        """
+        if record_id not in self._checked_ids:
+            self._checked_ids.append(record_id)
+
+    @staticmethod
+    def _enable_widget(widgets):
+        """
+        Enable a widget
+        :param widgets: A widget/group of widgets to be enabled
+        :rtype widgets: List or QWidget
+        """
+        if isinstance(widgets, list):
+            for widget in widgets:
+                widget.setEnabled(True)
+        else:
+            widgets.setEnabled(True)
+
+    @staticmethod
+    def _disable_widget(widgets):
+        """
+        Disable a widget
+        :param widgets: A widget/group of widgets to be enabled
+        :rtype widgets: List or QWidget
+        """
+        if isinstance(widgets, list):
+            for widget in widgets:
+                widget.setEnabled(False)
+        else:
+            widgets.setEnabled(False)
 
 
 class SchemeDataService:
