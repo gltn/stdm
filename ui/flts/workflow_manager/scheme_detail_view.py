@@ -27,3 +27,5 @@ from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 
+pass
+
