@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>626</width>
-    <height>606</height>
+    <width>702</width>
+    <height>695</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,8 +39,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>608</width>
-        <height>551</height>
+        <width>684</width>
+        <height>640</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
@@ -73,7 +73,7 @@
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</iconset>
+              <normaloff>:/plugins/stdm/images/icons/flts_open_file.png</normaloff>:/plugins/stdm/images/icons/flts_open_file.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -139,7 +139,7 @@
             </property>
             <property name="icon">
              <iconset resource="../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</normaloff>:/plugins/stdm/images/icons/flts_scheme_docs_dir.png</iconset>
+              <normaloff>:/plugins/stdm/images/icons/flts_open_file.png</normaloff>:/plugins/stdm/images/icons/flts_open_file.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -437,6 +437,40 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Holders configuration file</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="txt_holders_config">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QToolButton" name="btn_holders_conf_file">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/plugins/stdm/images/icons/flts_open_file.png</normaloff>:/plugins/stdm/images/icons/flts_open_file.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
         </widget>
        </item>
       </layout>

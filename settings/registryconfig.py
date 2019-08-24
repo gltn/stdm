@@ -43,6 +43,7 @@ STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 CMIS_AUTH_CONFIG_ID = 'CmisAuthConfigId'
 CMIS_ATOM_PUB_URL = 'CmisAtomPubUrl'
+HOLDERS_CONFIG = 'HolderConfigPath'
 
 def registry_value(key_name):
     """
@@ -118,6 +119,27 @@ def set_cmis_atom_pub_url(cmis_url):
     :type cmis_url: str
     """
     set_registry_value(CMIS_ATOM_PUB_URL, cmis_url)
+
+
+def holders_config_path():
+    """
+    :return: Returns the path to the holders configuration file.
+    :rtype: str
+    """
+    holders_cfg_path = registry_value(HOLDERS_CONFIG)
+    if not holders_cfg_path:
+        return None
+
+    return holders_cfg_path
+
+
+def set_holders_config_path(holders_cfg_path):
+    """
+    Sets the path to the holders configuration file.
+    :param holders_cfg_path: Path to the holders configuration file.
+    :type holders_cfg_path: str
+    """
+    set_registry_value(HOLDERS_CONFIG, holders_cfg_path)
 
 
 def composer_output_path():

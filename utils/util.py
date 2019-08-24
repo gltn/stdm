@@ -41,11 +41,10 @@ from PyQt4.QtGui import (
     QAbstractItemView,
     QVBoxLayout,
     QLabel,
-    QApplication,
     QCheckBox,
     QDialogButtonBox,
-    QLineEdit, QHBoxLayout, QIcon, QToolButton, QTableWidget, QTableView,
-    QListWidget)
+    QListWidget
+)
 from sqlalchemy import (
     func
 )

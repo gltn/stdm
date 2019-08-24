@@ -51,9 +51,11 @@ from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
     debug_logging,
+    holders_config_path,
     set_cmis_atom_pub_url,
     set_cmis_auth_config_id,
     set_debug_logging,
+    set_holders_config_path,
     source_documents_path,
     QGISRegistryConfig,
     RegistryConfig,
@@ -78,6 +80,7 @@ from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
 MAX_LIMIT = 500 # Maximum records in a entity browser
+DEF_HOLDERS_CONFIG_PATH = QDir.home().path()+ '/.stdm/holders_config.ini'
 
 def pg_profile_names():
     """/
@@ -129,6 +132,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.txt_atom_pub_url.textChanged.connect(
             self._on_cmis_url_changed
         )
+        self.btn_holders_conf_file.clicked.connect(
+            self._on_choose_holders_config_file
+        )
 
         self._config = StdmConfiguration.instance()
         self.init_gui()
@@ -157,6 +163,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         # Load document repository-related settings
         self._load_cmis_config()
+
+        # Load holders configuration file path
+        self._load_holders_configuration_file()
 
         # Debug logging
         lvl = debug_logging()
@@ -189,6 +198,30 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             id_idx = self.cbo_auth_config_name.findData(conf_id)
             if id_idx != -1:
                 self.cbo_auth_config_name.setCurrentIndex(id_idx)
+
+    def _load_holders_configuration_file(self):
+        # Load the path of the holders configuration file.
+        holders_config = holders_config_path()
+        if not holders_config:
+            # Use the default path
+            holders_config = DEF_HOLDERS_CONFIG_PATH
+
+        self.txt_holders_config.setText(holders_config)
+
+    def _on_choose_holders_config_file(self):
+        # Slot raised to browse the holders config file
+        holders_config = self.txt_holders_config.text()
+        if not holders_config:
+            holders_config = QDir.home().path()
+
+        conf_file = QFileDialog.getOpenFileName(
+            self,
+            self.tr('Browse Holders Configuration File'),
+            holders_config,
+            'Holders INI file (*.ini)'
+        )
+        if conf_file:
+            self.txt_holders_config.setText(conf_file)
 
     def _on_cmis_url_changed(self, new_text):
         # Slot raised when text for CMIS URL changes. Basically updates
@@ -441,6 +474,20 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         return status
 
+    def set_holders_config_file(self):
+        # Save the path to the holders configuration file
+        holders_config_file = self.txt_holders_config.text()
+        if not holders_config_file:
+            msg = self.tr(
+                'Please set the path to the holders configuration file.'
+            )
+            self.notif_bar.insertErrorNotification(msg)
+            return False
+
+        set_holders_config_path(holders_config_file)
+
+        return True
+
     def save_database_properties(self):
         """
         Saves the specified database connection properties to the registry.
@@ -575,6 +622,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_cmis_properties():
             return False
 
+        # Set holders configuration file path
+        if not self.set_holders_config_file():
+            return False
+
         #Set document designer templates path
         if not self.set_document_templates_path():
             return False
@@ -584,7 +635,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             return False
 
         self.apply_debug_logging()
-
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)

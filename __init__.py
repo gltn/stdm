@@ -117,14 +117,37 @@ def copy_core_configuration():
     copy_status = conf_file.copy(conf_dest)
 
 
+def copy_holders_configuration():
+    """
+    Copies the default configuration for holders data source to destination
+    mapping if there is none in the .stdm folder.
+    """
+    holders_config_path = u'{0}/templates/holders_config.ini'.format(
+        os.path.dirname(__file__)
+    )
+
+    # Exit if the holder config mapping does not exist
+    if not QFile.exists(holders_config_path):
+        return
+
+    # Copy mapping file if none existed in USER_PLUGIN_DIR
+    holders_conf_file = QFile(holders_config_path)
+    holders_conf_dest = u'{0}/holders_config.ini'.format(USER_PLUGIN_DIR)
+
+    copy_status = holders_conf_file.copy(holders_conf_dest)
+
+
 def classFactory(iface):
     """
     Load STDMQGISLoader class.
     """
     setup_logger()
 
-    #Copy the basic configuration to the user folder if None exists
+    # Copy the basic configuration to the user folder if None exists
     copy_core_configuration()
+
+    # Copy the holders mapping config file
+    copy_holders_configuration()
 
     from stdm.plugin import STDMQGISLoader
     return STDMQGISLoader(iface)

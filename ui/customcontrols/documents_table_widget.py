@@ -27,7 +27,6 @@ from cmislib.domain import (
 )
 from PyQt4.QtGui import (
     QAbstractItemView,
-    QColor,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
