@@ -38,6 +38,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._profile = current_profile()
         self._checked_ids = []
+        self._saved_detail_widget = {}
         self.setWindowTitle(title)
         self.setObjectName(object_name)
         self.data_service = SchemeDataService(self._profile)
@@ -49,9 +50,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.horizontalHeader().\
             setStyleSheet(StyleSheet().header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
+        self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.table_view.clicked.connect(self._on_checked)
-        self.documentsButton.clicked.connect(self._on_view_document)
+        self.documentsButton.clicked.connect(self._on_view_scheme_detail)
         self.initial_load()
 
     def initial_load(self):
@@ -118,6 +120,52 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if record_id not in self._checked_ids:
             self._checked_ids.append(record_id)
 
+    def _on_view_scheme_detail(self):
+        """
+        On clicking the 'Holders' or 'Documents'
+        buttons, open scheme detail table view
+        """
+        if not self._checked_ids:
+            return
+        label = self._get_button_label(self.sender())
+        key = "{0}_{1}".format(str(self._checked_ids[-1]), label)
+        if key in self._saved_detail_widget:
+            saved_widget = self._saved_detail_widget[key]
+            self._replace_tab(0, saved_widget, "Scheme>" + label)
+        else:
+            detail_table = SchemeDetailTableView(
+                self._checked_ids[-1], self._profile, self
+            )
+            self._replace_tab(0, detail_table, "Scheme>" + label)
+            self._saved_detail_widget[key] = detail_table
+        self._disable_widget(self.documentsButton)
+
+    def _get_button_label(self, sender):
+        """
+        Return button text
+        :param sender: Object invoking the signal
+        :type sender: QPushButton
+        :return: Sender button label text
+        :rtype: String
+        """
+        sender = sender
+        if sender is None or not isinstance(sender, QPushButton):
+            return
+        return sender.text()
+
+    def _replace_tab(self, index, widget, label):
+        """
+        Replace existing tab with another
+        :param index: Current tab index
+        :type index: Integer
+        :param widget: Tab widget
+        :type widget: QTabWidget
+        :param label: Tab label
+        :type label: String
+        """
+        self.tabWidget.removeTab(index)
+        self.tabWidget.insertTab(index, widget, label)
+
     @staticmethod
     def _enable_widget(widgets):
         """
@@ -143,42 +191,4 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 widget.setEnabled(False)
         else:
             widgets.setEnabled(False)
-
-    def _on_view_document(self):
-        """
-        On clicking the 'Document' button,
-        open detail document table view
-        """
-        label = self._button_text(self.sender())
-        if self._checked_ids:
-            detail_table = SchemeDetailTableView(
-                self._checked_ids[-1], self._profile, self
-            )
-            self._replace_tab(0, detail_table, "Scheme>" + label)
-
-    def _button_text(self, sender):
-        """
-        Return button text
-        :param sender: Object invoking the signal
-        :type sender: QPushButton
-        :return: Sender button label text
-        :rtype: String
-        """
-        sender = sender
-        if sender is None or not isinstance(sender, QPushButton):
-            return
-        return sender.text()
-
-    def _replace_tab(self, index, widget, label):
-        """
-        Replace existing tab with another
-        :param index: Current tab index
-        :type index: Integer
-        :param widget: Tab widget
-        :type widget: QTabWidget
-        :param label: Tab label
-        :type label: String
-        """
-        self.tabWidget.removeTab(index)
-        self.tabWidget.insertTab(index, widget, label)
 

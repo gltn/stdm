@@ -42,6 +42,7 @@ class SchemeDetailTableView(QTableView):
         self.setShowGrid(False)
         self.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.setSelectionBehavior(QTableView.SelectRows)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.initial_load()
 
     def initial_load(self):
