@@ -21,11 +21,9 @@ from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
-from stdm.ui.flts.workflow_manager.data_service import (
-    SchemeDataService,
-    DocumentDataService
-)
+from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
+from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
 
@@ -37,11 +35,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
-        self._profile = current_profile()
+        _profile = current_profile()
         self._checked_ids = []
         self.setWindowTitle(title)
         self.setObjectName(object_name)
-        self.data_service = SchemeDataService(self._profile)
+        self.data_service = SchemeDataService(_profile)
         self.model = WorkflowManagerModel(self.data_service)
         self.table_view = QTableView()
         self.table_view.setModel(self.model)
@@ -50,6 +48,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
+        detail_table = SchemeDetailTableView(1, _profile, self)
+        self.tabWidget.insertTab(1, detail_table, 'Scheme>Document')
         self.table_view.clicked.connect(self._on_checked)
         self.initial_load()
 

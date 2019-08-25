@@ -21,12 +21,42 @@ copyright            : (C) 2019
 
 from PyQt4.QtGui import *
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload
-from stdm.ui.flts.workflow_manager.config import SchemeConfig
 from stdm.ui.flts.workflow_manager.config import StyleSheet
-from stdm.data.configuration import entity_model
-from stdm.settings import current_profile
+from stdm.ui.flts.workflow_manager.data_service import DocumentDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 
-pass
+
+class SchemeDetailTableView(QTableView):
+    """
+    Views scheme holders and supporting documents for workflow
+    manager modules; Scheme Establishment and First, Second and
+    Third Examination FLTS modules.
+    """
+    def __init__(self, scheme_id, current_profile, parent=None):
+        super(QTableView, self).__init__(parent)
+        self._profile = current_profile
+        self.data_service = DocumentDataService(self._profile, scheme_id)
+        self.model = WorkflowManagerModel(self.data_service)
+        self.setModel(self.model)
+        self.setAlternatingRowColors(True)
+        self.setShowGrid(False)
+        self.horizontalHeader().setStyleSheet(StyleSheet().header_style)
+        self.setSelectionBehavior(QTableView.SelectRows)
+        self.initial_load()
+
+    def initial_load(self):
+        """
+        Initial table view data load
+        """
+        try:
+            self.model.load()
+        except (exc.SQLAlchemyError, Exception) as e:
+            QMessageBox.critical(
+                self,
+                self.tr('{} Entity Model'.format(self.model.entity_name)),
+                self.tr("{0} failed to load: {1}".format(self.model.entity_name, e))
+            )
+        else:
+            self.horizontalHeader().setStretchLastSection(True)
+            self.resizeColumnsToContents()
 
