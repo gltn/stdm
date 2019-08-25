@@ -23,6 +23,7 @@ from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import (
     SchemeDataService,
+    DocumentDataService
 )
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget

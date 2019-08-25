@@ -34,6 +34,14 @@ conf = {
         {Column(name='Registration Division', flag=False): 'registration_division'},
         {Column(name='Block Area', flag=False): 'area'}
     ],
+    'document_options': [
+        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Document Type', flag=False): {'supporting_document': 'value'}},
+        {Column(name='Document Size', flag=False): 'document_size'},
+        {Column(name='Last Modified', flag=False): 'last_modified'},
+        {Column(name='Created By', flag=False): 'created_by'},
+        {Column(name='View Document', flag=False): 'View'}
+    ],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
@@ -71,16 +79,32 @@ class Config(object):
 
 class SchemeConfig(Config):
     """
-    Scheme configuration interface
+    Scheme table view configuration interface
     """
     @property
     def field_option(self):
         """
-        Scheme field option
+        Scheme table view field option
         :return: Column and query field options
         :rtype: List
         """
         return self.get_data('scheme_options')
+
+
+class DocumentConfig(Config):
+    """
+    Scheme supporting documents table
+    view configuration interface
+    """
+    @property
+    def field_option(self):
+        """
+        Scheme supporting documents
+        table view field option
+        :return: Column and query field options
+        :rtype: List
+        """
+        return self.get_data('document_options')
 
 
 class StyleSheet(Config):
