@@ -54,9 +54,10 @@ class SchemeDetailTableView(QTableView):
             QMessageBox.critical(
                 self,
                 self.tr('{} Entity Model'.format(self.model.entity_name)),
-                self.tr("{0} failed to load: {1}".format(self.model.entity_name, e))
+                self.tr("{0} failed to load: {1}".format(
+                    self.model.entity_name, e
+                ))
             )
         else:
             self.horizontalHeader().setStretchLastSection(True)
-            self.resizeColumnsToContents()
-
+            self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)

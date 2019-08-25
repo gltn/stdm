@@ -25,7 +25,6 @@ from stdm.ui.flts.workflow_manager.config import(
     DocumentConfig,
 )
 from stdm.data.configuration import entity_model
-from stdm.data.pg_utils import fetch_with_filter
 
 
 class DataService:
