@@ -86,6 +86,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._rgn_chk_entity_name = 'check_lht_region'
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
+        self._rel_auth_reg_division_name = 'Relavant_auth_reg_division'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -119,12 +120,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._relevant_auth_lookup = None
         self._region_lookup = None
         self._reg_div_lookup = None
+        self._rel_auth_reg_division_entity = None
 
         # Entity models
         self._relevant_auth_type_model = None
         self._region_lookup_model = None
         self._relevant_auth_model = None
         self._regdiv_lookup_model = None
+        self._rel_auth_reg_division_model = None
 
         # Initialize Mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.sch_entity)
@@ -216,6 +219,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._reg_div_lookup = self.curr_p.entity(
                 self._reg_div_chk_entity_name
             )
+        if not self._rel_auth_reg_division_entity:
+            self._rel_auth_reg_division_entity = self.curr_p.entity(
+                self._rel_auth_reg_division_name
+            )
 
         # Check if entities exist
         if self._relv_auth_entity is None:
@@ -250,6 +257,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         "profile.")
             )
             self.reject()
+        elif self._rel_auth_reg_division_entity is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing Relevant Authority Reg Division Entity'),
+                self.tr("The relevant authority entity registration division "
+                        "entity is missing in the profile.")
+            )
+            self.reject()
 
         # Entity models
         if not self._relevant_auth_type_model:
@@ -262,6 +277,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._relevant_auth_model = entity_model(self._relv_auth_entity)
         if not self._regdiv_lookup_model:
             self._regdiv_lookup_model = entity_model(self._reg_div_lookup)
+        if not self._rel_auth_reg_division_model:
+            self._rel_auth_reg_division_model = entity_model(
+                self._rel_auth_reg_division_entity
+            )
 
     def update_relevant_authority(self):
         """
