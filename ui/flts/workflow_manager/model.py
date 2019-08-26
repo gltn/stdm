@@ -130,7 +130,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         try:
             self.query_object = self.data_service.run_query()
             fk_entity_name = self.data_service.related_entity_name()
-            print(0)
             for row in self.query_object:
                 store = {}
                 row_dict = row.__dict__
@@ -155,7 +154,6 @@ class WorkflowManagerModel(QAbstractTableModel):
 
                 store["data"] = row if 'data' not in row_dict else row_dict["data"]
                 self.results.append(store)
-            print(0)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 

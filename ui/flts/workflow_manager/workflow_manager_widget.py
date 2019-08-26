@@ -52,7 +52,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
-        self.table_view.clicked.connect(self._on_checked)
+        self.table_view.clicked.connect(self._on_check_uncheck)
+        self.tabWidget.tabCloseRequested.connect(self._close_tab)
+        self.holdersButton.setObjectName("Holders")
+        self.documentsButton.setObjectName("Documents")
         self.documentsButton.clicked.connect(self._on_view_scheme_detail)
         self.initial_load()
 
@@ -75,25 +78,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.table_view.horizontalHeader().\
                 setResizeMode(QHeaderView.ResizeToContents)
 
-    def _on_checked(self, index):
+    def _on_check_uncheck(self, index):
         """
-        Slot called on a click of a record
+        Slot called on check/uncheck
         :param index: Table view item identifier/QModelIndex
         :type index: Integer
         """
         row = index.row()
         column = index.column()
-        if column == 0:
-            value = self.model.results[row].get(column)
-            record_id = self.model.get_record_id(row)
-            if int(value) == 1:
-                self._add_checked_id(int(record_id))
-                self._enable_widget([self.holdersButton, self.documentsButton])
-            else:
-                self._remove_checked_id(record_id)
-                if not self._checked_ids:
-                    self._disable_widget([self.holdersButton, self.documentsButton])
+        if column != 0:
+            return
+        value = self.model.results[row].get(column)
+        record_id = self.model.get_record_id(row)
+        if int(value) == 1:
+            self._add_checked_id(int(record_id))
+            self._enable_widget([self.holdersButton, self.documentsButton])
         else:
+            self._remove_checked_id(record_id)
             if not self._checked_ids:
                 self._disable_widget([self.holdersButton, self.documentsButton])
 
@@ -127,22 +128,22 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if not self._checked_ids:
             return
-        label = self._get_button_label(self.sender())
+        label = self._get_button_name(self.sender())
         key = "{0}_{1}".format(str(self._checked_ids[-1]), label)
         if key in self._saved_detail_widget:
             saved_widget = self._saved_detail_widget[key]
-            self._replace_tab(0, saved_widget, "Scheme>" + label)
+            if self._is_alive(saved_widget):
+                self._replace_tab(1, saved_widget, label)
         else:
             detail_table = SchemeDetailTableView(
                 self._checked_ids[-1], self._profile, self
             )
-            self._replace_tab(0, detail_table, "Scheme>" + label)
+            self._replace_tab(1, detail_table, label)
             self._saved_detail_widget[key] = detail_table
-        self._disable_widget(self.documentsButton)
 
-    def _get_button_label(self, sender):
+    def _get_button_name(self, sender):
         """
-        Return button text
+        Return button object name
         :param sender: Object invoking the signal
         :type sender: QPushButton
         :return: Sender button label text
@@ -151,7 +152,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         sender = sender
         if sender is None or not isinstance(sender, QPushButton):
             return
-        return sender.text()
+        return sender.objectName()
 
     def _replace_tab(self, index, widget, label):
         """
@@ -165,6 +166,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         self.tabWidget.removeTab(index)
         self.tabWidget.insertTab(index, widget, label)
+        self.tabWidget.setTabsClosable(True)
+        tab_bar = self.tabWidget.tabBar()
+        tab_bar.setTabButton(0, QTabBar.RightSide, None)
+        self.tabWidget.setCurrentIndex(index)
+
+    def _close_tab(self, index):
+        """
+        Cleanly closes the tab
+        :param index: Index of the tab to be closed
+        :type index: Integer
+        """
+        # tab = self.tabWidget.widget(index)
+        self.tabWidget.removeTab(index)
+        # if tab is not None:
+        #     tab.deleteLater()
 
     @staticmethod
     def _enable_widget(widgets):
@@ -192,3 +208,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             widgets.setEnabled(False)
 
+    def _is_alive(self, widget):
+        """
+        Checks widget/tab for aliveness
+        :param widget: Qt widget
+        :type widget: QtWidget
+        :return: True if alive False otherwise
+        :rtype: Boolean
+        """
+        import sip
+        try:
+            sip.unwrapinstance(widget)
+        except RuntimeError:
+            return False
+        return True
