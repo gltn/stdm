@@ -38,7 +38,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._profile = current_profile()
         self._checked_ids = []
-        self._saved_detail_widget = {}
+        self._detail_store = {}
+        self._temp_store = {}
+        self._open = True
+        self._tab_name = None
         self.setWindowTitle(title)
         self.setObjectName(object_name)
         self.data_service = SchemeDataService(self._profile)
@@ -56,7 +59,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
-        self.documentsButton.clicked.connect(self._on_view_scheme_detail)
+        self.documentsButton.clicked.connect(
+            lambda: self._view_scheme_detail(self._detail_store)
+        )
         self.initial_load()
 
     def initial_load(self):
@@ -90,26 +95,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         value = self.model.results[row].get(column)
         record_id = self.model.get_record_id(row)
+        #on check
         if int(value) == 1:
             self._add_checked_id(int(record_id))
             self._enable_widget([self.holdersButton, self.documentsButton])
-        else:
-            self._remove_checked_id(record_id)
-            if not self._checked_ids:
-                self._disable_widget([self.holdersButton, self.documentsButton])
-
-    def _remove_checked_id(self, record_id):
-        """
-        Remove table view record identifier
-        from checked tracker
-        :param record_id: Checked table view identifier
-        :rtype record_id: Integer
-        """
-        if record_id in self._checked_ids:
-            try:
-                self._checked_ids.remove(record_id)
-            except ValueError:
-                pass
+            return
+        # on uncheck
+        self._remove_checked_id(record_id)
+        self._update_scheme_detail(record_id)
+        if not self._checked_ids:
+            self._disable_widget([self.holdersButton, self.documentsButton])
 
     def _add_checked_id(self, record_id):
         """
@@ -121,17 +116,57 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if record_id not in self._checked_ids:
             self._checked_ids.append(record_id)
 
-    def _on_view_scheme_detail(self):
+    def _remove_checked_id(self, record_id):
+        """
+        Remove table view record identifier
+        from checked tracker
+        :param record_id: Checked table view identifier
+        :rtype record_id: Integer
+        """
+        try:
+            self._checked_ids.remove(record_id)
+        except ValueError:
+            pass
+
+    def _update_scheme_detail(self, record_id):
+        """
+        Updates Scheme Details tab
+        :param record_id: Checked table view identifier
+        :rtype record_id: Integer
+        """
+        if not self._open:
+            return
+        key = "{0}_{1}".format(str(record_id), self._tab_name)
+        self._remove_stored_widget(key)
+        self._view_scheme_detail(self._temp_store, self._tab_name)
+
+    def _remove_stored_widget(self, key):
+        """
+        Removed archived table view widget
+        :param key: Archived widget identifier
+        :type key: String
+        """
+        if key in self._temp_store:
+            del self._temp_store[key]
+
+    def _view_scheme_detail(self, store, label=None):
         """
         On clicking the 'Holders' or 'Documents'
-        buttons, open scheme detail table view
+        buttons, open scheme detail tab
+        :param store: Archived QWidget
+        :rtype store: Dictionary
+        :param label: Tag label
+        :rtype label: String
+        :return:
         """
         if not self._checked_ids:
+            self._close_tab(1)
             return
-        label = self._get_button_name(self.sender())
+        if not label:
+            label = self._get_button_name(self.sender())
         key = "{0}_{1}".format(str(self._checked_ids[-1]), label)
-        if key in self._saved_detail_widget:
-            saved_widget = self._saved_detail_widget[key]
+        if key in store:
+            saved_widget = store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         else:
@@ -139,7 +174,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._checked_ids[-1], self._profile, self
             )
             self._replace_tab(1, detail_table, label)
-            self._saved_detail_widget[key] = detail_table
+            store[key] = detail_table
+            self._temp_store[key] = detail_table
 
     def _get_button_name(self, sender):
         """
@@ -170,6 +206,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
         self.tabWidget.setCurrentIndex(index)
+        self._open = True
+        self._tab_name = label
 
     def _close_tab(self, index):
         """
@@ -181,6 +219,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.removeTab(index)
         # if tab is not None:
         #     tab.deleteLater()
+        self._open = False
+        self._tab_name = None
 
     @staticmethod
     def _enable_widget(widgets):
