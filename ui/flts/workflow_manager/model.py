@@ -21,6 +21,7 @@ import datetime
 from decimal import Decimal
 from PyQt4.QtCore import *
 from sqlalchemy import exc
+from sqlalchemy.orm.collections import InstrumentedList
 
 
 class WorkflowManagerModel(QAbstractTableModel):
@@ -129,36 +130,53 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         try:
             self.query_object = self.data_service.run_query()
-            fk_entity_name = self.data_service.related_entity_name()
+            fk_entity_name, collection_name = self.data_service.related_entity_name()
             for row in self.query_object:
                 store = {}
-                row_dict = row.__dict__
                 for n, prop in enumerate(self.data_service.field_option):
                     field = prop.values()[0]
                     header = prop.keys()[0]
                     if isinstance(field, dict):
                         fk_name = field.keys()[0]
-                        if fk_name in fk_entity_name and fk_name in row_dict:
-                            value = getattr(row_dict[fk_name], field[fk_name])
+                        if fk_name in fk_entity_name and hasattr(row, fk_name):
+                            fk_entity_object = getattr(row, fk_name)
+                            value = getattr(fk_entity_object, field.get(fk_name))
                             store[n] = self._cast_data(value)
                             self._append(header, self._headers)
                             continue
-                    elif field in row_dict:
-                        value = row_dict[field]
+                        elif collection_name:
+                            for item in self._get_collection_item(row, collection_name):
+                                if hasattr(item, fk_name):
+                                    fk_entity_object = getattr(item, fk_name)
+                                    value = getattr(fk_entity_object, field.get(fk_name))
+                                    store[n] = self._cast_data(value)
+                                    self._append(header, self._headers)
+                            continue
+                    elif hasattr(row, field):
+                        value = getattr(row, field, None)
                         store[n] = self._cast_data(value)
                         self._append(header, self._headers)
                         continue
                     else:
                         store[n] = self._cast_data(field)
                         self._append(header, self._headers)
-
-                store["data"] = row if 'data' not in row_dict else row_dict["data"]
+                store["data"] = row
                 self.results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    @staticmethod
-    def _cast_data(value):
+    def _get_collection_item(self, row, collection_name):
+        """
+        Returns a collection of related entity values
+        :return:
+        """
+        for name in collection_name:
+            collection = getattr(row, name)
+            if isinstance(collection, InstrumentedList):
+                for item in collection:
+                    yield item
+
+    def _cast_data(self, value):
         """
         Cast data from one type to another
         :param value: Item data
@@ -166,7 +184,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         :return value: Cast data
         :rtype value: Multiple types
         """
-        if isinstance(value, (Decimal, int)):
+        value = float(value) if self._is_number(value) else value
+        if isinstance(value, (Decimal, int, float)):
             return float(value)
         elif isinstance(value, datetime.date):
             return QDate(value)
@@ -201,4 +220,18 @@ class WorkflowManagerModel(QAbstractTableModel):
         :rtype: integer
         """
         return self.results[row]["data"].id
+
+    def _is_number(self, value):
+        """
+        Checks if value is a number
+        :param value: Input value
+        :type value: Multiple types
+        :return: True if number otherwise return false
+        :rtype: Boolean
+        """
+        try:
+            float(value)
+            return True
+        except (ValueError, TypeError, Exception):
+            return False
 

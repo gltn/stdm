@@ -84,12 +84,15 @@ class SchemeDataService(DataService):
         :return entity_name: Related entity name
         :rtype entity_name: List
         """
-        entity_name = []
-        for fk in self._entity_model(self.entity_name).__table__.foreign_keys:
-            entity_name.append(fk.column.table.name)
-        if not entity_name:
-            entity_name = entity_name.append(self.entity_name)
-        return entity_name
+        fk_entity_name = []
+        collection_name = []
+        model = self._entity_model(self.entity_name)
+        for relation in model.__mapper__.relationships.keys():
+            if relation.endswith("_collection"):
+                collection_name.append(relation)
+            else:
+                fk_entity_name.append(relation)
+        return fk_entity_name, collection_name
 
     def run_query(self):
         """
@@ -150,13 +153,15 @@ class DocumentDataService(DataService):
         :return entity_name: Related entity name
         :rtype entity_name: List
         """
-        entity_name = []
+        fk_entity_name = []
+        collection_name = []
         model, sp_doc_model = self._entity_model(self.entity_name)
-        for fk in model.__table__.foreign_keys:
-            entity_name.append(fk.column.table.name)
-        if not entity_name:
-            entity_name.append(self.entity_name)
-        return entity_name
+        for relation in model.__mapper__.relationships.keys():
+            if relation.endswith("_collection"):
+                collection_name.append(relation)
+            else:
+                fk_entity_name.append(relation)
+        return fk_entity_name, collection_name
 
     def run_query(self):
         """
@@ -172,33 +177,9 @@ class DocumentDataService(DataService):
                 sc_doc_model.supporting_doc_id == model.id,
                 sc_doc_model.scheme_id == self._scheme_id
             ).order_by(model.last_modified).all()
-            query_object = self._dot_dictify(query_object)
             return query_object
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
-
-    def _dot_dictify(self, query_object):
-        """
-        Convert key dictionary access to dot notation
-        and implicitly add a magic method __dict__
-        The __dict__ is used in converting query results
-        to dict in the view model.
-        :param query_object: Query results
-        :type query_object: Query
-        :return: Query results
-        :rtype: List
-        """
-        results = []
-        for row in query_object:
-            record = row.__dict__
-            document = row.cb_scheme_supporting_document_collection[0].\
-                cb_check_scheme_document_type
-            record["supporting_document"] = document
-            record["data"] = row
-            dot_dict = DotDictify()
-            dot_dict.update(record)
-            results.append(dot_dict)
-        return results
 
     def _entity_model(self, name=None):
         """
@@ -219,12 +200,3 @@ class DocumentDataService(DataService):
         except AttributeError as e:
             raise e
 
-
-class DotDictify(dict):
-    """
-    Convert key dictionary access to dot notation
-    and implicitly add a magic method __dict__
-    """
-    def __init__(self, *args, **kwargs):
-        super(DotDictify, self).__init__(*args, **kwargs)
-        self.__dict__ = self

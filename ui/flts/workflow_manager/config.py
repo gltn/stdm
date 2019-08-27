@@ -23,7 +23,7 @@ Column = namedtuple("Column", ["name", "flag"])
 
 conf = {
     'scheme_options': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): 0},
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {Column(name='Date of Approval', flag=False): 'date_of_approval'},
         {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
@@ -36,7 +36,7 @@ conf = {
     ],
     'document_options': [
         {Column(name='Number of Scheme', flag=False): 'name'},
-        {Column(name='Document Type', flag=False): {'supporting_document': 'value'}},
+        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
         {Column(name='Document Size', flag=False): 'document_size'},
         {Column(name='Last Modified', flag=False): 'last_modified'},
         {Column(name='Created By', flag=False): 'created_by'},
