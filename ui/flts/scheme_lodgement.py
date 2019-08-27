@@ -51,6 +51,9 @@ from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
 )
+from stdm.data.flts.validators import(
+    EntityVectorLayerValidator
+)
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
@@ -86,6 +89,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._rgn_chk_entity_name = 'check_lht_region'
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
+        self._holders_entity_name = 'Holder'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -119,6 +123,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._relevant_auth_lookup = None
         self._region_lookup = None
         self._reg_div_lookup = None
+        self._holder_entity = None
 
         # Entity models
         self._relevant_auth_type_model = None
@@ -142,6 +147,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Last int value used for generating the scheme number
         self._abs_last_scheme_value = None
+
+        # Validator for holders data
+        self._holders_validator = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
