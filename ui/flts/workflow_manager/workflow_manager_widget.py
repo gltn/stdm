@@ -70,6 +70,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         try:
             self.model.load()
+            self._enable_search() if self.model.results \
+                else self._disable_search()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
@@ -162,24 +164,24 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if not self._checked_ids:
             self._close_tab(1)
             return
-        sender = None
+        activate = False
         if not label:
-            sender = self.sender()
-            label = self._get_button_name(sender)
+            activate = True
+            label = self._get_button_name(self.sender())
         key = "{0}_{1}".format(str(self._checked_ids[-1]), label)
         if key in store:
             saved_widget = store[key]
             if self._is_alive(saved_widget):
-                self._replace_tab(1, saved_widget, label)
+                self._replace_tab(1, saved_widget, label, activate)
         else:
             detail_table = SchemeDetailTableView(
                 self._checked_ids[-1], self._profile, self
             )
-            self._replace_tab(1, detail_table, label)
+            self._replace_tab(1, detail_table, label, activate)
             store[key] = detail_table
             self._temp_store[key] = detail_table
-        if sender:
-            self.tabWidget.setCurrentIndex(1)
+            self._enable_search() if detail_table.model.results \
+                else self._disable_search()
 
     def _get_button_name(self, sender):
         """
@@ -194,7 +196,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         return sender.objectName()
 
-    def _replace_tab(self, index, widget, label):
+    def _enable_search(self):
+        """
+        Enables Workflow Manager search features
+        """
+        self._enable_widget([
+            self.searchEdit, self.filterComboBox, self.searchButton
+        ])
+
+    def _disable_search(self):
+        """
+        Disables Workflow Manager search features
+        """
+        self._disable_widget([
+            self.searchEdit, self.filterComboBox, self.searchButton
+        ])
+
+    def _replace_tab(self, index, widget, label, activate):
         """
         Replace existing tab with another
         :param index: Current tab index
@@ -203,12 +221,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type widget: QTabWidget
         :param label: Tab label
         :type label: String
+        :param activate: Flag to set widget as current
+        :type activate: Boolean
         """
         self.tabWidget.removeTab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
+        if activate:
+            self.tabWidget.setCurrentIndex(index)
         self._open = True
         self._tab_name = label
 
