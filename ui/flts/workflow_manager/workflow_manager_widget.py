@@ -151,8 +151,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _view_scheme_detail(self, store, label=None):
         """
-        On clicking the 'Holders' or 'Documents'
-        buttons, open scheme detail tab
+        On unchecking a record or clicking the 'Holders'
+        or'Documents' buttons, open scheme detail tab
         :param store: Archived QWidget
         :rtype store: Dictionary
         :param label: Tag label
@@ -162,8 +162,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if not self._checked_ids:
             self._close_tab(1)
             return
+        sender = None
         if not label:
-            label = self._get_button_name(self.sender())
+            sender = self.sender()
+            label = self._get_button_name(sender)
         key = "{0}_{1}".format(str(self._checked_ids[-1]), label)
         if key in store:
             saved_widget = store[key]
@@ -176,6 +178,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._replace_tab(1, detail_table, label)
             store[key] = detail_table
             self._temp_store[key] = detail_table
+        if sender:
+            self.tabWidget.setCurrentIndex(1)
 
     def _get_button_name(self, sender):
         """
@@ -205,7 +209,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.setTabsClosable(True)
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
-        self.tabWidget.setCurrentIndex(index)
         self._open = True
         self._tab_name = label
 
