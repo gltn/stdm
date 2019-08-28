@@ -128,6 +128,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         Loads query results to be used in the table view
         """
+        # TODO: Too long method. To be broken potentially into class objects
         try:
             self.query_object = self.data_service.run_query()
             fk_entity_name, collection_name = self.data_service.related_entity_name()
@@ -143,10 +144,11 @@ class WorkflowManagerModel(QAbstractTableModel):
                             self._append(header, self._headers)
                             continue
                         elif collection_name:
+                            store[n] = None
                             for item in self._get_collection_item(row, collection_name):
                                 if hasattr(item, fk_name):
                                     store[n] = self._get_value(item, field, fk_name)
-                                    self._append(header, self._headers)
+                            self._append(header, self._headers)
                             continue
                     elif hasattr(row, field):
                         store[n] = self._get_value(row, field)
@@ -161,17 +163,33 @@ class WorkflowManagerModel(QAbstractTableModel):
             raise e
 
     def _get_value(self, row_obj, field, attr=None):
+        """
+        Returns entity field value
+        :param row_obj: Entity row object
+        :type row_obj: Entity
+        :param field: Field or related entity name
+        :type field: String/Dictionary
+        :param attr: Related entity field
+        :type attr: String
+        :return value: Field value
+        :rtype value: Multiple types
+        """
         if attr:
             fk_entity_object = getattr(row_obj, attr)
             value = getattr(fk_entity_object, field.get(attr))
         else:
             value = getattr(row_obj, field)
-        return self._cast_data(value)
+        value = self._cast_data(value)
+        return value
 
     def _get_collection_item(self, row, collection_name):
         """
         Returns a collection of related entity values
-        :return:
+        :param row: Entity record
+        :type row: Entity
+        :param collection_name: Name of relationship
+        :return item: Collection item of values
+        :rtype item:
         """
         for name in collection_name:
             collection = getattr(row, name)

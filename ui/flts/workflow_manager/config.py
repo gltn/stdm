@@ -24,8 +24,10 @@ Column = namedtuple("Column", ["name", "flag"])
 conf = {
     'scheme_options': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
         {Column(name='Date of Approval', flag=False): 'date_of_approval'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
         {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
         {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
