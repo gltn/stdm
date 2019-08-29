@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Fri Aug 23 11:48:45 2019
+# Created: Thu Aug 29 10:21:11 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -180,9 +180,6 @@ class Ui_ldg_wzd(object):
         self.lnEdit_hld_path.setEnabled(True)
         self.lnEdit_hld_path.setObjectName(_fromUtf8("lnEdit_hld_path"))
         self.gridLayout_3.addWidget(self.lnEdit_hld_path, 2, 0, 1, 1)
-        self.label_desc_2 = QtGui.QLabel(self.wizardPage2)
-        self.label_desc_2.setObjectName(_fromUtf8("label_desc_2"))
-        self.gridLayout_3.addWidget(self.label_desc_2, 1, 0, 1, 2)
         self.btn_brws_hld = QtGui.QPushButton(self.wizardPage2)
         self.btn_brws_hld.setText(_fromUtf8(""))
         icon1 = QtGui.QIcon()
@@ -195,6 +192,13 @@ class Ui_ldg_wzd(object):
         self.vlNotification_holders.setContentsMargins(-1, -1, -1, 10)
         self.vlNotification_holders.setObjectName(_fromUtf8("vlNotification_holders"))
         self.gridLayout_3.addLayout(self.vlNotification_holders, 0, 0, 1, 3)
+        self.label_desc_2 = QtGui.QLabel(self.wizardPage2)
+        self.label_desc_2.setObjectName(_fromUtf8("label_desc_2"))
+        self.gridLayout_3.addWidget(self.label_desc_2, 1, 0, 1, 2)
+        self.chk_holders_validate = QtGui.QCheckBox(self.wizardPage2)
+        self.chk_holders_validate.setChecked(True)
+        self.chk_holders_validate.setObjectName(_fromUtf8("chk_holders_validate"))
+        self.gridLayout_3.addWidget(self.chk_holders_validate, 3, 0, 1, 1)
         self.btn_reload_holders = QtGui.QPushButton(self.wizardPage2)
         self.btn_reload_holders.setText(_fromUtf8(""))
         icon2 = QtGui.QIcon()
@@ -202,10 +206,19 @@ class Ui_ldg_wzd(object):
         self.btn_reload_holders.setIcon(icon2)
         self.btn_reload_holders.setObjectName(_fromUtf8("btn_reload_holders"))
         self.gridLayout_3.addWidget(self.btn_reload_holders, 2, 2, 1, 1)
-        self.chk_holders_validate = QtGui.QCheckBox(self.wizardPage2)
-        self.chk_holders_validate.setChecked(True)
-        self.chk_holders_validate.setObjectName(_fromUtf8("chk_holders_validate"))
-        self.gridLayout_3.addWidget(self.chk_holders_validate, 3, 0, 1, 1)
+        self.lbl_validation_description = QtGui.QLabel(self.wizardPage2)
+        self.lbl_validation_description.setMinimumSize(QtCore.QSize(0, 45))
+        self.lbl_validation_description.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.lbl_validation_description.setFrameShadow(QtGui.QFrame.Plain)
+        self.lbl_validation_description.setText(_fromUtf8(""))
+        self.lbl_validation_description.setWordWrap(True)
+        self.lbl_validation_description.setMargin(10)
+        self.lbl_validation_description.setObjectName(_fromUtf8("lbl_validation_description"))
+        self.gridLayout_3.addWidget(self.lbl_validation_description, 6, 0, 1, 3)
+        self.label = QtGui.QLabel(self.wizardPage2)
+        self.label.setFrameShadow(QtGui.QFrame.Sunken)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout_3.addWidget(self.label, 5, 0, 1, 3)
         ldg_wzd.addPage(self.wizardPage2)
         self.wizardPage_4 = QtGui.QWizardPage()
         self.wizardPage_4.setObjectName(_fromUtf8("wizardPage_4"))
@@ -248,10 +261,11 @@ class Ui_ldg_wzd(object):
         self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
         self.gp_preview_docs.setTitle(QtGui.QApplication.translate("ldg_wzd", "Preview Documents", None, QtGui.QApplication.UnicodeUTF8))
         self.lnEdit_hld_path.setPlaceholderText(QtGui.QApplication.translate("ldg_wzd", "Path to the Holders Excel or CSV file...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_brws_hld.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Browse file", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_reload_holders.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Reload file", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None, QtGui.QApplication.UnicodeUTF8))
         self.chk_holders_validate.setText(QtGui.QApplication.translate("ldg_wzd", "Perform validation upon loading data", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_reload_holders.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Reload file", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p><span style=\" font-weight:600;\">Validation Result</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_4.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
 
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget

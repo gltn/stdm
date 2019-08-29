@@ -21,6 +21,7 @@ from datetime import datetime
 
 from PyQt4.QtGui import (
     QAbstractItemView,
+    QIcon,
     QMessageBox,
     QProgressBar,
     QTabWidget,
@@ -30,6 +31,7 @@ from PyQt4.QtGui import (
     QWidget
 )
 from PyQt4.QtCore import (
+    pyqtSignal,
     QFile,
     QFileInfo,
     QSize,
@@ -180,6 +182,33 @@ class HoldersSheetView(QTableWidget):
         """
         tbi.setTextColor(Qt.red)
 
+    def highlight_validation_cell(self, validation_result):
+        """
+        Highlights a cell to show warning or error messages from a
+        validation process.
+        :param ridx: Row position.
+        :type ridx: int
+        :param cidx: Column position
+        :type cidx: int
+        :param messages: Object containing validation messages
+        :type messages: list
+        """
+        ridx = validation_result.ridx
+        cidx = validation_result.cidx
+
+        # Get table item
+        tbi = self.item(ridx, cidx)
+        if not tbi:
+            return
+
+        # Set error icon
+        tbi.setIcon(
+            QIcon(':/plugins/stdm/images/icons/warning.png')
+        )
+
+        # Save validation result object in the item user role
+        tbi.setData(Qt.UserRole, validation_result)
+
     @property
     def date_format(self):
         """
@@ -322,6 +351,24 @@ class HoldersTableView(QWidget):
         wsi.ws = vl
 
         self._ws_info[wsi.idx] = wsi
+
+    def current_sheet_view(self):
+        """
+        Gets the sheet view in the current tab view.
+        :return: Sheet view widget.
+        :rtype: HoldersSheetView
+        """
+        return self._tbw.currentWidget()
+
+    def sheet_view(self, idx):
+        """
+        Gets the sheet view widget with the given index.
+        :param idx: Index number.
+        :type idx: int
+        :return: Sheet view widget.
+        :rtype: HoldersSheetView
+        """
+        return self.worksheet_info(idx).ws_widget
 
     def load_holders_file(self, path):
         """

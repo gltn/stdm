@@ -24,7 +24,8 @@ from cmislib.exceptions import (
 )
 from PyQt4.QtCore import (
     QDir,
-    Qt
+    Qt,
+    SIGNAL
 )
 from PyQt4.QtGui import (
     QDialog,
@@ -52,7 +53,8 @@ from stdm.settings.registryconfig import (
     set_last_document_path
 )
 from stdm.data.flts.validators import(
-    EntityVectorLayerValidator
+    EntityVectorLayerValidator,
+    ValidatorException
 )
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
@@ -150,6 +152,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Validator for holders data
         self._holders_validator = None
+
+        # Progress dialog for showing validation status
+        self._h_validation_prog_dlg = QProgressDialog(self)
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
@@ -362,8 +367,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
 
-        print reg_div_val
-
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number
         if not last_value:
@@ -415,10 +418,34 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Disable widget if doc mapper could not be initialized
             if not self._cmis_doc_mapper:
                 self.tbw_documents.setEnabled(False)
+
+        # Initialize holders stuff
+        elif idx == 2:
+            self._init_holder_helpers()
+
         # Last page
         elif idx == 3:
             # Populate summary widget
             self.populate_summary()
+
+    def _init_holder_helpers(self):
+        # Init helper classes for holders data
+        if not self._holder_entity:
+            self._holder_entity = self.curr_p.entity(
+                self._holders_entity_name
+            )
+            if not self._holder_entity:
+                msg = self.tr(
+                    'Could not find the Holders entity.\nPlease check to '
+                    'confirm that it has been created in the configuration'
+                )
+                QMessageBox.critical(
+                    self,
+                    self.tr('Missing Holders Entity'),
+                    msg
+                )
+
+                return
 
     def _init_cmis_doc_mapper(self):
         # Initializes CMIS stuff
@@ -499,6 +526,24 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         self.tw_hld_prv.load_holders_file(h_path)
 
+        curr_sheet = self.tw_hld_prv.current_sheet_view()
+
+        # Check if a signal has been defined in the sheet view and disconnect
+        # Use old-style signal to check if signal is connected
+        receivers = curr_sheet.receivers(SIGNAL('itemSelectionChanged()'))
+        # Disconnect all slots for the itemSelectionChanged signal
+        if receivers > 0:
+            curr_sheet.itemSelectionChanged.disconnect()
+
+        # Reconnect signal
+        curr_sheet.itemSelectionChanged.connect(
+            self._on_holders_table_selection_changed
+        )
+
+        # Perform validation immediately after loading the data
+        if self.chk_holders_validate.isChecked():
+            self._validate_holders()
+
     def on_validate_holders(self, toggled):
         """
         Slot raised when the checkbox for validating holders data is
@@ -513,11 +558,174 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                   'loading the summary page upon clicking Next.'
             self.holders_notif_bar.insertInformationNotification(msg)
 
-    def validate_holders(self):
-        """
-        Validate holders data in the table.
-        """
-        pass
+    def _validate_holders(self, notify_user=False):
+        # Validates holders data
+        # Notify user about the validation process
+        if notify_user:
+            QMessageBox.information(
+                self,
+                self.tr('Validation Process'),
+                self.tr(
+                    'Click OK to start the validation of the holders data.'
+                )
+            )
+
+        try:
+            ds = self.tw_hld_prv.current_sheet_view().vector_layer
+            self._holders_validator = EntityVectorLayerValidator(
+                self._holder_entity,
+                ds,
+                parent=self
+            )
+
+            # Performs some pre-validation checks.
+            # Check if mandatory columns have been mapped
+            passed_mandatory, cols = self._holders_validator.validate_mandatory()
+            if not passed_mandatory:
+                cols_str = '\n'.join(cols)
+                msg = self.tr(
+                    'The following mandatory columns have not been '
+                    'mapped: {0}'.format(cols_str)
+                )
+                QMessageBox.critical(
+                    self,
+                    self.tr('Missing Mandatory Columns'),
+                    msg
+                )
+
+                return
+
+            # Check if at least one data source column has been mapped
+            ds_mapped = self._holders_validator.validate_mapped_ds_columns()
+            if not ds_mapped:
+                msg = 'At least one column in the data source has to be ' \
+                      'mapped.'
+                QMessageBox.critical(
+                    self,
+                    self.tr('Mapped Data Source Columns'),
+                    msg
+                )
+
+                return
+
+            # Check if at least one entity column has been mapped
+            entity_mapped = self._holders_validator.validate_entity_columns()
+            if not entity_mapped:
+                msg = 'At least one entity column has to be mapped.'
+                QMessageBox.critical(
+                    self,
+                    self.tr('Mapped Entity Columns'),
+                    msg
+                )
+
+                return
+
+            # Connect validation signals
+            self._holders_validator.featureValidated.connect(
+                self._on_holder_feat_validated
+            )
+            self._holders_validator.validationFinished.connect(
+                self._on_holder_validation_complete
+            )
+
+            # Set progress dialog properties
+            self._h_validation_prog_dlg.setMinimum(0)
+            self._h_validation_prog_dlg.setMaximum(
+                self._holders_validator.count
+            )
+            self._h_validation_prog_dlg.setWindowModality(
+                Qt.WindowModal
+            )
+            self._h_validation_prog_dlg.setLabelText(
+                self.tr('Validating holders records in the data source...')
+            )
+            self._h_validation_prog_dlg.setWindowTitle(
+                self.tr('Validation Progress')
+            )
+            self._h_validation_prog_dlg.setValue(0)
+
+            # Start the validation process
+            self._holders_validator.start()
+
+        except ValidatorException as ve:
+            QMessageBox.critical(
+                self,
+                self.tr('Holders Validation Error'),
+                unicode(ve)
+            )
+
+    def _on_holder_feat_validated(self, results):
+        # Slot raised when a feature in the data source has been validated.
+        # Highlight warning or error cells
+        for r in results:
+            if len(r.warnings) > 0 or len(r.errors) > 0:
+                self.tw_hld_prv.current_sheet_view().\
+                    highlight_validation_cell(r)
+
+        # Update progress bar
+        curr_val = self._h_validation_prog_dlg.value()
+        curr_val += 1
+        self._h_validation_prog_dlg.setValue(curr_val)
+        QgsApplication.processEvents()
+
+    def _on_holder_validation_complete(self):
+        # Slot raised when the validation of holder information is complete.
+        num_features = self._holders_validator.count
+        num_err_features = len(
+            self._holders_validator.row_warnings_errors.keys()
+        )
+
+        # Get features that have warning or error
+        msg = self.tr(
+            u'Validation process complete.\nOut of the {0} features in the '
+            u'data source, {1} have warnings and/or errors.\nPlease click '
+            u'on a cell with an error icon in the preview table to get more '
+            u'details.'.format(
+                str(num_features),
+                str(num_err_features)
+            )
+        )
+        QMessageBox.information(
+            self,
+            self.tr('Validation Summary'),
+            msg
+        )
+
+    def _on_holders_table_selection_changed(self):
+        # Slot raised when selection changes in the holders table widget.
+        self.lbl_validation_description.setText('')
+
+        # Check if validator has been initialized
+        if not self._holders_validator:
+            return
+
+        curr_sheet = self.tw_hld_prv.current_sheet_view()
+        sel_items = curr_sheet.selectedItems()
+        if len(sel_items) == 0:
+            return
+
+        sel_item = sel_items[0]
+        if self._holders_validator.status == EntityVectorLayerValidator.NOT_STARTED:
+            self.lbl_validation_description.setText(
+                self.tr('Not validated')
+            )
+        elif self._holders_validator.status == EntityVectorLayerValidator.NOT_COMPLETED:
+            self.lbl_validation_description.setText(
+                self.tr('UNKNOWN: Validation process not complete')
+            )
+        elif self._holders_validator.status == EntityVectorLayerValidator.FINISHED:
+            # Get data stored in the user role
+            val_results = sel_item.data(Qt.UserRole)
+            if not val_results:
+                self.lbl_validation_description.setText(
+                    self.tr('SUCCESSFUL')
+                )
+            else:
+                combined_msgs = val_results.errors + val_results.warnings
+                str_msgs = [str(vr) for vr in combined_msgs]
+                self.lbl_validation_description.setText(
+                    '\n- '.join(str_msgs)
+                )
 
     def _load_scheme_document_types(self):
         """
@@ -725,6 +933,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             if len(errors) == 0:
                 ret_status = True
 
+        # Holders page
         elif current_id == 2:
             # TODO --- Use RegExp validator
             if not self.lnEdit_hld_path.text():
@@ -736,8 +945,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     )
                 )
             else:
+                if not self.chk_holders_validate.isChecked():
+                    self._validate_holders(True)
+
+                # Set status based on validation result
                 ret_status = True
 
+        # Documents page
         elif current_id == 1:
             ret_status = self._is_documents_page_valid()
             if not ret_status:

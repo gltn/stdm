@@ -341,13 +341,6 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QLabel" name="label_desc_2">
-      <property name="text">
-       <string>Select the Excel or CSV file containing the holders information</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="1">
      <widget class="QPushButton" name="btn_brws_hld">
       <property name="toolTip">
@@ -372,6 +365,23 @@
       </property>
      </layout>
     </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QLabel" name="label_desc_2">
+      <property name="text">
+       <string>Select the Excel or CSV file containing the holders information</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QCheckBox" name="chk_holders_validate">
+      <property name="text">
+       <string>Perform validation upon loading data</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
     <item row="2" column="2">
      <widget class="QPushButton" name="btn_reload_holders">
       <property name="toolTip">
@@ -386,13 +396,38 @@
       </property>
      </widget>
     </item>
-    <item row="3" column="0">
-     <widget class="QCheckBox" name="chk_holders_validate">
-      <property name="text">
-       <string>Perform validation upon loading data</string>
+    <item row="6" column="0" colspan="3">
+     <widget class="QLabel" name="lbl_validation_description">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>45</height>
+       </size>
       </property>
-      <property name="checked">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="wordWrap">
        <bool>true</bool>
+      </property>
+      <property name="margin">
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="3">
+     <widget class="QLabel" name="label">
+      <property name="frameShadow">
+       <enum>QFrame::Sunken</enum>
+      </property>
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Validation Result&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>

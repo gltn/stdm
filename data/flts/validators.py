@@ -160,6 +160,28 @@ class EntityVectorLayerColumnMapping(object):
         return EntityVectorLayerColumnMapping(col_mapping)
 
 
+def message_type_str(message_type):
+    """
+    Converts the message type enumeration to the equivalent string
+    representation.
+    :param message_type: Message type enumeration.
+    :type message_type: int
+    :return: Returns the string equivalent of the message type
+    enumeration.
+    :rtype: str
+    """
+    if message_type == SUCCESS:
+        return 'Success'
+    elif message_type == ERROR:
+        return 'Error'
+    elif message_type == WARNING:
+        return 'Warning'
+    elif message_type == UNDEFINED:
+        return 'Undefined'
+    else:
+        return 'Unknown'
+
+
 class ValidationMessage(object):
     """
     Container for a message returned from a validation process. It contains
@@ -168,6 +190,25 @@ class ValidationMessage(object):
     def __init__(self, **kwargs):
         self.message_type = kwargs.pop('message_type', UNDEFINED)
         self.description = kwargs.pop('description', '')
+
+    def __str__(self):
+        return '{0}: {1}'.format(
+            message_type_str(self.message_type).upper(),
+            self.description
+        )
+
+    def __unicode__(self):
+        return u'{0} - {1}'.format(
+            message_type_str(self.message_type),
+            self.description
+        )
+
+    def __repr__(self):
+        return '{0}({1}, {2})'.format(
+            self.__class__.__name__,
+            message_type_str(self.message_type),
+            self.description
+        )
 
 
 class AbstractColumnValidator(object):
@@ -180,8 +221,11 @@ class AbstractColumnValidator(object):
         self._column = column
         if self._column:
             self.setup()
-
+            
+        self._validation_messages = []
         self._next_validator = next_validator
+        if self._next_validator:
+            self._validation_messages =self._next_validator.messages
 
     @property
     def next_validator(self):
@@ -204,8 +248,26 @@ class AbstractColumnValidator(object):
         :rtype: AbstractColumnValidator
         """
         self._next_validator = validator
+        self._validation_messages = validator.messages
 
         return validator
+
+    @property
+    def messages(self):
+        """
+        :return: Returns a list of messages set by this as well as previous
+        validators.
+        :rtype: list
+        """
+        return self._validation_messages
+
+    def add_validation_message(self, message):
+        """
+        Adds a message from a validation operation.
+        :param message: Validation message.
+        :type message: ValidationMessage
+        """
+        self._validation_messages.append(message)
 
     @property
     def column(self):
@@ -253,8 +315,8 @@ class AbstractColumnValidator(object):
     def _create_validation_message(self, m_type, description):
         # Creates a validation message
         return ValidationMessage(
-            m_type,
-            description
+            message_type=m_type,
+            description=description
         )
 
 
@@ -264,48 +326,41 @@ class BaseColumnValidator(AbstractColumnValidator):
     """
     def validate(self, value, messages=None):
         # Check if value has been defined against a mandatory column.
-        if not messages:
-            messages = []
-
         mandatory = self._column.mandatory
         if mandatory and not value:
             msg = 'Value missing, this is a mandatory field.'
             v_msg = self._create_validation_message(ERROR, msg)
-            messages.append(v_msg)
+            self.add_validation_message(v_msg)
         else:
             v_msg = self._create_validation_message(SUCCESS, '')
-            messages.append(v_msg)
+            self.add_validation_message(v_msg)
 
         if self._next_validator:
-            self._next_validator.validate(value, messages)
+            return self._next_validator.validate(value, messages)
         else:
-            return messages
+            return self._validation_messages
 
 
 class NumberValidator(AbstractColumnValidator):
     """
     Checks if a value is a number.
     """
-
     def validate(self, value, messages=None):
-        if not messages:
-            messages = []
-
         # We still check for a value if it was not defined as mandatory.
         if value:
             try:
                 num = float(value)
                 v_msg = self._create_validation_message(SUCCESS, '')
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
             except ValueError:
                 msg = 'Value is not a number.'
                 v_msg = self._create_validation_message(ERROR, msg)
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
 
         if self._next_validator:
-            self._next_validator.validate(value, messages)
+            return self._next_validator.validate(value, messages)
         else:
-            return messages
+            return self._validation_messages
 
 
 class IntegerValidator(AbstractColumnValidator):
@@ -320,15 +375,15 @@ class IntegerValidator(AbstractColumnValidator):
             if not isinstance(value, int):
                 msg = 'Value is not an integer'
                 v_msg = self._create_validation_message(WARNING, msg)
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
             else:
                 v_msg = self._create_validation_message(SUCCESS, '')
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
 
         if self._next_validator:
-            self._next_validator.validate(value, messages)
+            return self._next_validator.validate(value, messages)
         else:
-            return messages
+            return self._validation_messages
 
 
 class RangeValidator(AbstractColumnValidator):
@@ -345,13 +400,14 @@ class RangeValidator(AbstractColumnValidator):
 
             # Check for range based on column type
             if self._column.TYPE_INFO == 'VARCHAR':
+                value = unicode(value)
                 if len(value) > max_len:
                     msg = 'Exceeds length, maximum is {0}.'.format(max_len)
                     v_msg = self._create_validation_message(ERROR, msg)
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
                 else:
                     v_msg = self._create_validation_message(SUCCESS, '')
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
             elif self._column.TYPE_INFO == 'INT' or \
                     self._column.TYPE_INFO == 'DOUBLE':
                 if value < min_len:
@@ -359,25 +415,25 @@ class RangeValidator(AbstractColumnValidator):
                         min_len
                     )
                     v_msg = self._create_validation_message(ERROR, msg)
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
                 else:
                     v_msg = self._create_validation_message(SUCCESS, '')
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
 
                 if value > max_len:
                     msg = 'Greater than maximum, maximum is {0}.'.format(
                         max_len
                     )
                     v_msg = self._create_validation_message(ERROR, msg)
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
                 else:
                     v_msg = self._create_validation_message(SUCCESS, '')
-                    messages.append(v_msg)
+                    self.add_validation_message(v_msg)
 
         if self._next_validator:
-            self._next_validator.validate(value, messages)
+            return self._next_validator.validate(value, messages)
         else:
-            return messages
+            return self._validation_messages
 
 
 class LookupValidator(AbstractColumnValidator):
@@ -385,35 +441,41 @@ class LookupValidator(AbstractColumnValidator):
     Checks if the specified value is a valid lookup option.
     """
     def __init__(self, **kwargs):
-        super(LookupValidator, self).__init__(**kwargs)
-        self._lookup_entity = kwargs.pop('lookup', None)
-        self._lookup_items = {}
+        self._lookup_entity = None
+        c = kwargs.get('column', None)
+        if c:
+            self._lookup_entity = c.value_list
 
+        self._lookup_items = {}
+        self._lookup_values = []
+
+        # Init parent
+        super(LookupValidator, self).__init__(**kwargs)
+
+    def setup(self):
         # Fetch items
         if not self._lookup_entity:
             return
 
         self._lookup_items = lookup_values(self._lookup_entity)
-        self._lookup_values = self._lookup_items.values()
+        # Convert values to lower case for comparison purposes
+        self._lookup_values = [v.lower() for v in self._lookup_items.values()]
 
     def validate(self, value, messages=None):
-        if not messages:
-            messages = []
-
         if value:
             value = unicode(value)
-            if value in self._lookup_values:
+            if value.lower() in self._lookup_values:
                 v_msg = self._create_validation_message(SUCCESS, '')
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
             else:
-                msg = 'Value is not the lookup list'
+                msg = 'Value is not in the lookup list'
                 v_msg = self._create_validation_message(ERROR, msg)
-                messages.append(v_msg)
+                self.add_validation_message(v_msg)
 
         if self._next_validator:
-            self._next_validator.validate(value, messages)
+            return self._next_validator.validate(value, messages)
         else:
-            return messages
+            return self._validation_messages
 
 
 """
@@ -424,8 +486,8 @@ in the list.
 """
 col_type_validators = {
     'VARCHAR': [RangeValidator],
-    'INT': [RangeValidator, NumberValidator, IntegerValidator],
-    'DOUBLE': [RangeValidator, NumberValidator],
+    'INT': [NumberValidator, IntegerValidator, RangeValidator],
+    'DOUBLE': [NumberValidator, RangeValidator,],
     'LOOKUP': [LookupValidator]
 }
 
@@ -451,7 +513,7 @@ def column_validator_factory(column):
 
     # Chain the validators
     for cv in c_validators:
-        cv_obj = cv(column)
+        cv_obj = cv(column=column)
         next_validator.set_next_validator(cv_obj)
         next_validator = cv_obj
 
@@ -465,6 +527,60 @@ class ValidatorException(Exception):
     pass
 
 
+class ValidationResult(object):
+    """
+    Container for messages from a validation process.
+    """
+    def __init__(self, ridx, cidx, messages):
+        self.ridx = ridx
+        self.cidx = cidx
+        self.messages = messages
+        self._success_msgs = []
+        self._warning_msgs = []
+        self._error_msgs = []
+
+        # Disaggregate by message types
+        if messages:
+            self._disaggregate()
+
+    def _disaggregate(self):
+        # Disaggregate messages by type.
+        self._success_msgs = self._messages_by_type(SUCCESS)
+        self._warning_msgs = self._messages_by_type(WARNING)
+        self._error_msgs = self._messages_by_type(ERROR)
+
+    def _messages_by_type(self, msg_type):
+        # Returns messages of the given type
+        return [m for m in self.messages if m.message_type == msg_type]
+
+    @property
+    def success(self):
+        """
+        :return: Returns a list of successful messages, as a subset of the
+        messages property.
+        :rtype: list
+        """
+        return self._success_msgs
+
+    @property
+    def warnings(self):
+        """
+        :return: Returns a list of warning messages, as a subset of the
+        messages property.
+        :rtype: list
+        """
+        return self._warning_msgs
+
+    @property
+    def errors(self):
+        """
+        :return: Returns a list of error messages, as a subset of the
+        messages property.
+        :rtype: list
+        """
+        return self._error_msgs
+
+
 class EntityVectorLayerValidator(QObject):
     """
     Validates a vector layer object against the given entity object
@@ -472,9 +588,9 @@ class EntityVectorLayerValidator(QObject):
     # Flag for validation status
     NOT_STARTED, NOT_COMPLETED, FINISHED = range(3)
 
-    # Signal for validated values
-    # (row, column, list containing validation messages)
-    featureValidated = pyqtSignal(tuple)
+    # Signals for validation process
+    featureValidated = pyqtSignal(list)
+    validationFinished = pyqtSignal()
 
     def __init__(
             self,
@@ -506,31 +622,41 @@ class EntityVectorLayerValidator(QObject):
             self._ent_vl_mapping = entity_vector_layer_mapping()
 
         if not self._ent_vl_mapping:
-            raise TypeError(
+            raise ValidatorException(
                 'EntityVectorLayerColumnMapping could not be initialized.'
             )
 
         self._messages = OrderedDict()
-        self._non_successful_messages = OrderedDict()
         self._status = EntityVectorLayerValidator.NOT_STARTED
 
     @property
     def messages(self):
         """
-        :return: Returns a container with all validation messages with a
-        tuple of the row_index, column_index as the key.
+        :return: Returns a container with all validation messages with the
+        row_index as the key.
         :rtype: OrderedDict
         """
         return self._messages
 
     @property
-    def non_successful_messages(self):
+    def row_warnings_errors(self):
         """
-        :return: Returns a container with only those messages that are warnings
-        or errors.
+        Groups warning or error validation results, from a
+        EntityVectorLayerValidator validation process, by row numbers.
+        :return: Returns a collection containing a list of validation results
+        for each row, with the row number as the key.
         :rtype: OrderedDict
         """
-        return self._non_successful_messages
+        error_warning_collec = OrderedDict()
+
+        for row, results in self._messages.iteritems():
+            warn_errors = [r for r in results
+                          if len(r.errors) > 0 or len(r.warnings) > 0]
+
+            if len(warn_errors) > 0:
+                error_warning_collec[row] = warn_errors
+
+        return error_warning_collec
 
     @property
     def status(self):
@@ -546,18 +672,12 @@ class EntityVectorLayerValidator(QObject):
         """
         Resets the validation session.
         """
-        self._messages = []
-        self._non_successful_messages = []
+        self._messages = OrderedDict()
         self._status = EntityVectorLayerValidator.NOT_STARTED
 
-    def _add_item_messages(self, row_index, column_index, messages):
-        # Adds validation results to the respective collections
-        self._messages[(row_index, column_index)] = messages
-
-        warning_err_msgs = [m for m in messages if m.message_type == ERROR
-                            or m.message_type == WARNING]
-        self._non_successful_messages[(row_index, column_index)] \
-            = warning_err_msgs
+    def _add_validation_result(self, row_index, v_res):
+        # Adds validation result to the messages collection
+        self._messages[row_index] = v_res
 
     @property
     def entity(self):
@@ -637,6 +757,14 @@ class EntityVectorLayerValidator(QObject):
 
         return column_validator_factory(ent_col)
 
+    @property
+    def count(self):
+        """
+        :return: Returns the number of features in the data source.
+        :rtype: int
+        """
+        return self._vl.dataProvider().featureCount()
+
     def start(self):
         """
         Starts the validation process. It is important to ensure that
@@ -655,8 +783,12 @@ class EntityVectorLayerValidator(QObject):
         # Update status
         self._status = EntityVectorLayerValidator.NOT_COMPLETED
 
+        # Reset collection
+        self._messages = OrderedDict()
+
         for feat in feats:
             cidx = 0
+            feat_messages = []
             for f in fields:
                 name = f.name()
                 if self._ent_vl_mapping.contains_source_column(name):
@@ -669,17 +801,23 @@ class EntityVectorLayerValidator(QObject):
                     attr_val = feat.attribute(name)
                     res = validator.validate(attr_val)
 
-                    # Add result to the collection
-                    self._add_item_messages(ridx, cidx, res)
-
-                    # Raise signal
-                    self.featureValidated.emit((ridx, cidx, res))
+                    v_result = ValidationResult(ridx, cidx, res)
+                    feat_messages.append(v_result)
 
                 cidx += 1
+
+            # Add result to the collection
+            self._add_validation_result(ridx, feat_messages)
+
+            # Emit signal
+            self.featureValidated.emit(feat_messages)
 
             ridx += 1
 
         self._status = EntityVectorLayerValidator.FINISHED
+
+        # Emit finished signal
+        self.validationFinished.emit()
 
 
 
