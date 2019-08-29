@@ -86,7 +86,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._rgn_chk_entity_name = 'check_lht_region'
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
-        self._rel_auth_reg_division_name = 'Relavant_auth_reg_division'
+        self._rel_auth_reg_division_name = 'Relevant_auth_reg_division'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -120,14 +120,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._relevant_auth_lookup = None
         self._region_lookup = None
         self._reg_div_lookup = None
-        self._rel_auth_reg_division_entity = None
+        # self._rel_auth_reg_division_entity = None
 
         # Entity models
         self._relevant_auth_type_model = None
         self._region_lookup_model = None
         self._relevant_auth_model = None
         self._regdiv_lookup_model = None
-        self._rel_auth_reg_division_model = None
+        # self._rel_auth_reg_division_model = None
 
         # Initialize Mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.sch_entity)
@@ -209,7 +209,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
         if not self._relevant_auth_lookup:
             self._relevant_auth_lookup = self.curr_p.entity(
-            self._rel_auth_chk_entity_name
+                self._rel_auth_chk_entity_name
             )
         if not self._region_lookup:
             self._region_lookup = self.curr_p.entity(
@@ -218,10 +218,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not self._reg_div_lookup:
             self._reg_div_lookup = self.curr_p.entity(
                 self._reg_div_chk_entity_name
-            )
-        if not self._rel_auth_reg_division_entity:
-            self._rel_auth_reg_division_entity = self.curr_p.entity(
-                self._rel_auth_reg_division_name
             )
 
         # Check if entities exist
@@ -257,14 +253,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         "profile.")
             )
             self.reject()
-        elif self._rel_auth_reg_division_entity is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing Relevant Authority Reg Division Entity'),
-                self.tr("The relevant authority entity registration division "
-                        "entity is missing in the profile.")
-            )
-            self.reject()
 
         # Entity models
         if not self._relevant_auth_type_model:
@@ -277,10 +265,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._relevant_auth_model = entity_model(self._relv_auth_entity)
         if not self._regdiv_lookup_model:
             self._regdiv_lookup_model = entity_model(self._reg_div_lookup)
-        if not self._rel_auth_reg_division_model:
-            self._rel_auth_reg_division_model = entity_model(
-                self._rel_auth_reg_division_entity
-            )
 
     def update_relevant_authority(self):
         """
@@ -292,7 +276,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Entity object
         relv_entity_obj = self._relevant_auth_model()
-        chk_regdiv_obj = self._regdiv_lookup_model()
 
         # Get the region ID
         region_id = self.cbx_region.itemData(self.cbx_region.currentIndex())
@@ -308,45 +291,37 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Initial clear elements
         self.cbx_relv_auth_name.clear()
+        self.cbx_reg_div.clear()
 
         # Add an empty itemData
         self.cbx_relv_auth_name.addItem('')
+        self.cbx_reg_div.addItem('')
 
         # Query object for filtering items on name of relevant authority
         # combobox based on selected items in region and type
         res = relv_entity_obj.queryObject().filter(
             self._relevant_auth_model.region == region_id,
             self._relevant_auth_model.type_of_relevant_authority ==
-            ra_id_type,
-            self._relevant_auth_model.registration_division ==
-            self._regdiv_lookup_model.id
+            ra_id_type
         ).all()
-
-        # Check what the query object returns
-        if len(res) == 0:
-            return
-
-        reg_div = res[0].registration_division
-
-        # Query object filtered on registration division lookup
-        res1 = chk_regdiv_obj.queryObject().filter(
-            self._regdiv_lookup_model.id ==
-            reg_div
-        ).first()
 
         # Looping through the results to get details
         for r in res:
             authority_name = r.name_of_relevant_authority
             authority_id = r.id
             code = r.au_code
-            reg_div_val = res1.value
             last_val = r.last_val
-
-            # Add the items to combo
-            # Date will contain tuple(ID, code and registration division)
+            reg_divs = []
+            for i in r.cb_check_lht_reg_division_collection:
+                reg_divs.append(
+                    (i.id, i.value)
+                )
+            # Add items to combobox
+            # Data will contain tuple(IDm code and registration division)
             self.cbx_relv_auth_name.addItem(
-                authority_name,
-                (authority_id, code, reg_div, reg_div_val, last_val)
+                authority_name, (
+                    authority_id, code, last_val, reg_divs
+                )
             )
 
     def on_ra_name_changed(self):
@@ -361,19 +336,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if not self.cbx_relv_auth_name.currentText():
             return
 
-        id, code, reg_div, reg_div_val, last_value = self.cbx_relv_auth_name.itemData(
+        authority_id, code, last_value, reg_divs = self.cbx_relv_auth_name.itemData(
             self.cbx_relv_auth_name.currentIndex()
         )
 
         # Registration division
         self.cbx_reg_div.addItem('')
-        self.cbx_reg_div.clearEditText()
-        self.cbx_reg_div.addItem(reg_div_val, reg_div)
+
+        for regdiv in reg_divs:
+            self.cbx_reg_div.addItem(regdiv[1], regdiv[0])
 
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
-
-        print reg_div_val
 
     def _gen_scheme_number(self, code, last_value):
         # Generates a new scheme number
@@ -725,6 +699,22 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
         notif_entity_obj.save()
 
+    def validate_block_area(self):
+        """
+        Check whether the block area value is zero
+        """
+        # Preset minimum value equals to zero
+        min_value = self.dbl_spinbx_block_area.minimum()
+
+        if self.dbl_spinbx_block_area.value() == min_value:
+            self.notif_bar.insertWarningNotification(
+                self.tr(
+                    "Block Area value cannot be zero."
+                )
+            )
+        else:
+            return True
+
     def validateCurrentPage(self):
         current_id = self.currentId()
         ret_status = False
@@ -733,7 +723,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         if current_id == 0:
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
-            if len(errors) == 0:
+            if self.validate_block_area() and len(errors) == 0:
                 ret_status = True
 
         elif current_id == 2:
