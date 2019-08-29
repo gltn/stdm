@@ -592,6 +592,11 @@ INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
 	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
     FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
+	WHERE ra.au_code = 'BETHIE' AND regdiv.value = 'S';
+
+	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
+    SELECT ra.id, regdiv.id
+    FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
 	WHERE ra.au_code = 'DIVNDU' AND regdiv.value = 'B';
 
 	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
@@ -725,11 +730,6 @@ INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
     FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
 	WHERE ra.au_code = 'HARDAP' AND regdiv.value = 'T';
-
-	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
-    SELECT ra.id, regdiv.id
-    FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
-	WHERE ra.au_code = 'KARASX' AND regdiv.value = 'R';
 
 	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
