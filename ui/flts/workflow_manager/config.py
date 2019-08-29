@@ -15,19 +15,34 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+from collections import namedtuple
+from PyQt4.QtCore import Qt
+
+
+Column = namedtuple("Column", ["name", "flag"])
 
 conf = {
-    'field_options': [
-        {'Number of Scheme': 'scheme_number'},
-        {'Name of Scheme': 'scheme_name'},
-        {'Date of Approval': 'date_of_approval'},
-        {'Date of Establishment': 'date_of_establishment'},
-        {'Type of Relevant Authority': {'cb_check_lht_relevant_authority': 'value'}},
-        {'Land Rights Office': {'cb_check_lht_land_rights_office': 'value'}},
-        {'Region': {'cb_check_lht_region': 'value'}},
-        {'Township': 'township_name'},
-        {'Registration Division': 'registration_division'},
-        {'Block Area': 'area'}
+    'scheme_options': [
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Date of Approval', flag=False): 'date_of_approval'},
+        {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
+        {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
+        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', flag=False): 'township_name'},
+        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {Column(name='Block Area', flag=False): 'area'}
+    ],
+    'document_options': [
+        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
+        {Column(name='Document Size', flag=False): 'document_size'},
+        {Column(name='Last Modified', flag=False): 'last_modified'},
+        {Column(name='Created By', flag=False): 'created_by'},
+        {Column(name='View Document', flag=False): 'View'}
     ],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
@@ -66,16 +81,32 @@ class Config(object):
 
 class SchemeConfig(Config):
     """
-    Scheme configuration interface
+    Scheme table view configuration interface
     """
     @property
     def field_option(self):
         """
-        Scheme field option
+        Scheme table view field option
         :return: Column and query field options
         :rtype: List
         """
-        return self.get_data('field_options')
+        return self.get_data('scheme_options')
+
+
+class DocumentConfig(Config):
+    """
+    Scheme supporting documents table
+    view configuration interface
+    """
+    @property
+    def field_option(self):
+        """
+        Scheme supporting documents
+        table view field option
+        :return: Column and query field options
+        :rtype: List
+        """
+        return self.get_data('document_options')
 
 
 class StyleSheet(Config):
