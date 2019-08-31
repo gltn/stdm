@@ -21,7 +21,9 @@ import datetime
 from decimal import Decimal
 from PyQt4.QtCore import *
 from sqlalchemy import exc
+from sqlalchemy.orm.base import object_mapper
 from sqlalchemy.orm.collections import InstrumentedList
+from sqlalchemy.orm.exc import UnmappedInstanceError
 
 
 class WorkflowManagerModel(QAbstractTableModel):
@@ -146,8 +148,11 @@ class WorkflowManagerModel(QAbstractTableModel):
                         elif collection_name:
                             store[n] = None
                             for item in self._get_collection_item(row, collection_name):
-                                if hasattr(item, fk_name):
-                                    store[n] = self._get_value(item, field, fk_name)
+                                if hasattr(item, fk_name) or hasattr(item, field.get(fk_name)):
+                                    if self._is_mapped(getattr(item, fk_name, None)):
+                                        store[n] = self._get_value(item, field, fk_name)
+                                    else:
+                                        store[n] = self._get_value(item, field.get(fk_name))
                             self._append(header, self._headers)
                             continue
                     elif hasattr(row, field):
@@ -175,10 +180,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         :rtype value: Multiple types
         """
         if attr:
-            fk_entity_object = getattr(row_obj, attr)
-            value = getattr(fk_entity_object, field.get(attr))
+            fk_entity_object = getattr(row_obj, attr, None)
+            value = getattr(fk_entity_object, field.get(attr), None)
         else:
-            value = getattr(row_obj, field)
+            value = getattr(row_obj, field, None)
         value = self._cast_data(value)
         return value
 
@@ -192,10 +197,17 @@ class WorkflowManagerModel(QAbstractTableModel):
         :rtype item:
         """
         for name in collection_name:
-            collection = getattr(row, name)
+            collection = getattr(row, name, None)
             if isinstance(collection, InstrumentedList):
                 for item in collection:
                     yield item
+
+    def _is_mapped(self, obj):
+        try:
+            object_mapper(obj)
+            return True
+        except UnmappedInstanceError:
+            return False
 
     def _cast_data(self, value):
         """
