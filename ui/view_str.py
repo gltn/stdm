@@ -21,6 +21,8 @@ email                : stdm@unhabitat.org
 from datetime import date
 from sqlalchemy import exc
 from collections import OrderedDict
+import copy
+
 import logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -163,6 +165,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 self.windowTitle(), '- ' + str(count) +' rows'
             ))
         )
+
+        self.active_spu_id = -1
 
         self.toolBox.setStyleSheet(
             '''
@@ -452,13 +456,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             if entity_name in party_names:
 
-                self.details_tree_view.search_party(
+                self.active_spu_id = self.details_tree_view.search_party(
                     entity, result_ids
                 )
             else:
                 self.details_tree_view.search_spatial_unit(
                     entity, result_ids
                 )
+
+            self.tbPropertyPreview._iface.activeLayer().selectByExpression("id={}".format(self.active_spu_id))
+            self.details_tree_view._selected_features = self.tbPropertyPreview._iface.activeLayer().selectedFeatures()
             #self._load_root_node(entity_name, formattedNode)
 
     def clearSearch(self):
@@ -486,15 +493,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         is changed in the tree view
         selection model.
         """
-
         if len(self.details_tree_view.view.selectedIndexes()) < 1:
             self.disable_buttons()
             return
         self.search_done = True
+
         index = self.details_tree_view.view.selectedIndexes()[0]
         item = self.details_tree_view.model.itemFromIndex(index)
 
         QApplication.processEvents()
+
         # STR steam - edit social tenure relationship
         if item.text() == self.details_tree_view.str_text:
             entity = self.curr_profile.social_tenure

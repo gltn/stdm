@@ -667,6 +667,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.view.setEditTriggers(
             QAbstractItemView.NoEditTriggers
         )
+
         self.str_text = QApplication.translate(
             'DetailsTreeView',
             'Social Tenure Relationship'
@@ -679,8 +680,8 @@ class DetailsTreeView(DetailsDBHandler):
             '''
         )
         self.current_profile = current_profile()
-        if self.current_profile is None:
-            return
+        if self.current_profile is None: return
+
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_units = self.social_tenure.spatial_units
 
@@ -692,6 +693,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.doc_viewer = _EntityDocumentViewerHandler(
             self.doc_viewer_title, self.iface.mainWindow()
         )
+
         self.view_selection = self.view.selectionModel()
 
         self.view_selection.currentChanged.connect(
@@ -785,15 +787,13 @@ class DetailsTreeView(DetailsDBHandler):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
-        if not button_clicked:
-            return
+        if not button_clicked: return
 
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
 
-        if not self.db_configuration_done():
-            return
+        if not self.db_configuration_done(): return
 
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
@@ -923,9 +923,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         str_records = []
 
-        if self._selected_features is None:
-            return
-
+        if self._selected_features is None: return
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -1044,6 +1042,8 @@ class DetailsTreeView(DetailsDBHandler):
                 db_model = self.feature_model(entity, spu_id)
 
             self.add_root_children(db_model, root, str_records, True)
+
+        return getattr(str_records[0], self.layer_table).id  # Nast hack!!
 
         #self.layer.selectByIds(
             #self.feature_models.keys()
@@ -1683,24 +1683,25 @@ class DetailsTreeView(DetailsDBHandler):
                 result = item.data()
             else:
                 result = item.parent().data()
+
         return result, item
 
-    # def edit_selected_node(self):
-    #     cProfile.runctx('self._edit_selected_steam()', globals(), locals())
 
     def edit_selected_node(self):
         """
         Edits the record based on the selected item in the tree view.
         """
+
         self.edit_btn_connected = True
-        id, item = self.node_data('edit', self._selected_features)
+        data, item = self.node_data('edit', self._selected_features)
 
         feature_edit = True
-        if id is None:
-            return
-        if isinstance(id, str):
+
+        if data is None: return
+
+        if isinstance(data, str):
             data_error = QApplication.translate(
-                'DetailsTreeView', id
+                'DetailsTreeView', data
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
@@ -1710,6 +1711,7 @@ class DetailsTreeView(DetailsDBHandler):
                 data_error
             )
             return
+
         # STR steam - edit social tenure relationship
         if item.text() == self.str_text:
             str_model_doc = []
@@ -1734,7 +1736,7 @@ class DetailsTreeView(DetailsDBHandler):
 
             entity = self.party_items[item]
 
-            model = self.feature_model(self.party_items[item], id)
+            model = self.feature_model(self.party_items[item], data)
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
             )
@@ -1743,7 +1745,7 @@ class DetailsTreeView(DetailsDBHandler):
         elif item in self.spatial_unit_items.keys():
             entity = self.spatial_unit_items[item]
 
-            model = self.feature_model(entity, id)
+            model = self.feature_model(entity, data)
 
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
@@ -1753,9 +1755,9 @@ class DetailsTreeView(DetailsDBHandler):
             return
         self.view.expand(item.index())
         if feature_edit:
-            self.update_edited_node(self.social_tenure, id)
+            self.update_edited_node(self.social_tenure, data)
         else:
-            self.update_edited_node(self.social_tenure, id)
+            self.update_edited_node(self.social_tenure, data)
 
     def delete_selected_item(self):
         """
