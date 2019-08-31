@@ -202,9 +202,16 @@ class WorkflowManagerModel(QAbstractTableModel):
                 for item in collection:
                     yield item
 
-    def _is_mapped(self, obj):
+    def _is_mapped(self, value):
+        """
+        Check if value is an ORM mapped object
+        :param value: Input value
+        :type value: Multiple type
+        :return: True if mapped otherwise false
+        :rtype: Boolean
+        """
         try:
-            object_mapper(obj)
+            object_mapper(value)
             return True
         except UnmappedInstanceError:
             return False
