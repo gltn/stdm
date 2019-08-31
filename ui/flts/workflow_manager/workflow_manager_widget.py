@@ -40,7 +40,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._checked_ids = []
         self._detail_store = {}
         self._temp_store = {}
-        self._open = True
         self._tab_name = None
         self.setWindowTitle(title)
         self.setObjectName(object_name)
@@ -136,7 +135,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param record_id: Checked table view identifier
         :rtype record_id: Integer
         """
-        if not self._open:
+        if not self._tab_name:
             return
         key = "{0}_{1}".format(str(record_id), self._tab_name)
         self._remove_stored_widget(key)
@@ -231,7 +230,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
         if activate:
             self.tabWidget.setCurrentIndex(index)
-        self._open = True
         self._tab_name = label
 
     def _close_tab(self, index):
@@ -244,7 +242,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.removeTab(index)
         # if tab is not None:
         #     tab.deleteLater()
-        self._open = False
         self._tab_name = None
 
     @staticmethod
