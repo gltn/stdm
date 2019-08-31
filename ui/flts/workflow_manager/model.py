@@ -220,8 +220,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         value = float(value) if self._is_number(value) else value
         if isinstance(value, (Decimal, int, float)):
             return float(value)
-        elif isinstance(value, datetime.date):
+        elif type(value) is datetime.date:
             return QDate(value)
+        elif type(value) is datetime.datetime:
+            return QDateTime(value).time()
         return unicode(value) if value is not None else value
 
     @staticmethod
