@@ -126,6 +126,35 @@ class WorkflowManagerModel(QAbstractTableModel):
         self.emit(SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
         return True
 
+    def get_record_id(self, row=0):
+        """
+        Gets record/entity id (primary key)
+        :param row: Row index/number
+        :rtype row: Integer
+        :return: Record id
+        :rtype: integer
+        """
+        return self.results[row]["data"].id
+
+    @staticmethod
+    def get_column_index(index, position):
+        """
+        Get item index at a column position
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :param position: Required column position
+        :type position: Integer
+        :return row: Row position or None
+        :rtype row: Integer
+        :return column: Column position or None
+        :rtype column: Integer
+        """
+        row = index.row()
+        column = index.column()
+        if column != position:
+            return None, None
+        return row, column
+
     def load(self):
         """
         Loads query results to be used in the table view
@@ -187,7 +216,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         value = self._cast_data(value)
         return value
 
-    def _get_collection_item(self, row, collection_name):
+    @staticmethod
+    def _get_collection_item(row, collection_name):
         """
         Returns a collection of related entity values
         :param row: Entity record
@@ -202,9 +232,17 @@ class WorkflowManagerModel(QAbstractTableModel):
                 for item in collection:
                     yield item
 
-    def _is_mapped(self, obj):
+    @staticmethod
+    def _is_mapped(value):
+        """
+        Check if value is an ORM mapped object
+        :param value: Input value
+        :type value: Multiple type
+        :return: True if mapped otherwise false
+        :rtype: Boolean
+        """
         try:
-            object_mapper(obj)
+            object_mapper(value)
             return True
         except UnmappedInstanceError:
             return False
@@ -220,8 +258,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         value = float(value) if self._is_number(value) else value
         if isinstance(value, (Decimal, int, float)):
             return float(value)
-        elif isinstance(value, datetime.date):
+        elif type(value) is datetime.date:
             return QDate(value)
+        elif type(value) is datetime.datetime:
+            return QDateTime(value).time()
         return unicode(value) if value is not None else value
 
     @staticmethod
@@ -244,17 +284,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         return self.data_service.entity_name
 
-    def get_record_id(self, row=0):
-        """
-        Gets record/entity id (primary key)
-        :param row: Row index/number
-        :rtype row: Integer
-        :return: Record id
-        :rtype: integer
-        """
-        return self.results[row]["data"].id
-
-    def _is_number(self, value):
+    @staticmethod
+    def _is_number(value):
         """
         Checks if value is a number
         :param value: Input value
@@ -267,4 +298,3 @@ class WorkflowManagerModel(QAbstractTableModel):
             return True
         except (ValueError, TypeError, Exception):
             return False
-

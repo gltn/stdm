@@ -25,14 +25,14 @@ conf = {
     'scheme_options': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Approved', flag=False): {'status': 'status'}},
         {Column(name='Date of Approval', flag=False): 'date_of_approval'},
         {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
         {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
         {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
         {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
         {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', flag=False): 'township_name'},
+        {Column(name='Township', flag=False): 'township_name'}, 
         {Column(name='Registration Division', flag=False): 'registration_division'},
         {Column(name='Block Area', flag=False): 'area'}
     ],
