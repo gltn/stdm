@@ -17,9 +17,14 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 from PyQt4.QtGui import *
 from sqlalchemy import exc
-from stdm.ui.flts.workflow_manager.config import StyleSheet
+from stdm.ui.flts.workflow_manager.config import (
+    ColumnPosition,
+    ApprovalStatus,
+    StyleSheet,
+)
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
@@ -37,10 +42,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._profile = current_profile()
-        self._checked_ids = []
+        self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._temp_store = {}
         self._tab_name = None
+        self._column = ColumnPosition().position
+        self._status = ApprovalStatus().status
         self.setWindowTitle(title)
         self.setObjectName(object_name)
         self.data_service = SchemeDataService(self._profile)
@@ -91,10 +97,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        state, record_id = self._check_state(index)
-        if state == 1:
-            self._add_checked_id(record_id)
+        check_state, record_id = self._check_state(index)
+        status = self._get_approval_status(index)
+        if check_state == 1:
+            self._checked_ids[record_id] = status
             self._enable_widget([self.holdersButton, self.documentsButton])
+            self._enable_widget(self.approveButton) if status != self._status.APPROVED \
+                else self._enable_widget(self.disapproveButton)
 
     def _on_uncheck(self, index):
         """
@@ -102,14 +111,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        state, record_id = self._check_state(index)
-        if state == 0:
+        check_state, record_id = self._check_state(index)
+        if check_state == 0:
             self._remove_checked_id(record_id)
             key, label = self._create_key(record_id)
             self._remove_stored_widget(key)
             if not self._checked_ids:
+                self._close_tab(1)
                 self._disable_widget([
-                    self.holdersButton, self.documentsButton
+                    self.holdersButton, self.documentsButton,
+                    self.approveButton, self.disapproveButton
                 ])
 
     def _check_state(self, index):
@@ -122,9 +133,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return record_id: Record/entity id (primary key)
         :rtype record_id: Integer
         """
-        position = 0
         row, column = self.model.get_column_index(
-            index, position
+            index, self._column.CHECK
         )
         if None in (row, column):
             return None, None
@@ -132,15 +142,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         record_id = self.model.get_record_id(row)
         return int(state), int(record_id)
 
-    def _add_checked_id(self, record_id):
+    def _get_approval_status(self, index):
         """
-        Add table view record identifier
-        from checked tracker
-        :param record_id: Checked table view identifier
-        :rtype record_id: Integer
+        Return scheme approval status
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :return status: Scheme approval status
+        :rtype status: Integer
         """
-        if record_id not in self._checked_ids:
-            self._checked_ids.append(record_id)
+        row = index.row()
+        status = self.model.results[row].get(self._column.STATUS)
+        return int(status)
 
     def _remove_checked_id(self, record_id):
         """
@@ -150,9 +162,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype record_id: Integer
         """
         try:
-            self._checked_ids.remove(record_id)
-        except ValueError:
+            del self._checked_ids[record_id]
+        except KeyError:
             return
+        else:
+            status = self._checked_ids.values()
+            if self._status.APPROVED not in status:
+                self._disable_widget(self.disapproveButton)
+            elif self._status.PENDING not in status and \
+                    self._status.UNAPPROVED not in status:
+                self._disable_widget(self.approveButton)
 
     def _remove_stored_widget(self, key):
         """
@@ -177,9 +196,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type store: Dictionary
         """
         if not self._checked_ids:
-            self._close_tab(1)
             return
-        last_id = self._checked_ids[-1]
+        last_id = self._checked_ids.keys()[-1]
         key, label = self._create_key(last_id)
         if key in store:
             saved_widget = store[key]

@@ -18,8 +18,9 @@ copyright            : (C) 2019
 from collections import namedtuple
 from PyQt4.QtCore import Qt
 
-
 Column = namedtuple("Column", ["name", "flag"])
+ColumnIndex = namedtuple("ColumnIndex", ["CHECK", "STATUS"])
+Status = namedtuple("Status", ["APPROVED", "PENDING", "UNAPPROVED"])
 
 conf = {
     'scheme_options': [
@@ -44,6 +45,8 @@ conf = {
         {Column(name='Created By', flag=False): 'created_by'},
         {Column(name='View Document', flag=False): 'View'}
     ],
+    'column_position': ColumnIndex(CHECK=0, STATUS=2),
+    'approval_status': Status(APPROVED=1, PENDING=2, UNAPPROVED=3),
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
@@ -107,6 +110,34 @@ class DocumentConfig(Config):
         :rtype: List
         """
         return self.get_data('document_options')
+
+
+class ColumnPosition(Config):
+    """
+    Column position interface
+    """
+    @property
+    def position(self):
+        """
+        Return column position
+        :return: Column position
+        :rtype: ColumnIndex
+        """
+        return self.get_data('column_position')
+
+
+class ApprovalStatus(Config):
+    """
+    Approval status interface
+    """
+    @property
+    def status(self):
+        """
+        Return approval status
+        :return: Approval status
+        :rtype: Status
+        """
+        return self.get_data('approval_status')
 
 
 class StyleSheet(Config):
