@@ -98,12 +98,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type index: QModelIndex
         """
         check_state, record_id = self._check_state(index)
-        status = self._get_approval_status(index)
         if check_state == 1:
+            status = self._get_approval_status(index)
             self._checked_ids[record_id] = status
-            self._enable_widget([self.holdersButton, self.documentsButton])
-            self._enable_widget(self.approveButton) if status != self._status.APPROVED \
-                else self._enable_widget(self.disapproveButton)
+            self._enable_check_widgets(status)
 
     def _on_uncheck(self, index):
         """
@@ -116,12 +114,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._remove_checked_id(record_id)
             key, label = self._create_key(record_id)
             self._remove_stored_widget(key)
-            if not self._checked_ids:
-                self._close_tab(1)
-                self._disable_widget([
-                    self.holdersButton, self.documentsButton,
-                    self.approveButton, self.disapproveButton
-                ])
+            self._disable_uncheck_widgets()
 
     def _check_state(self, index):
         """
@@ -165,13 +158,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             del self._checked_ids[record_id]
         except KeyError:
             return
-        else:
-            status = self._checked_ids.values()
-            if self._status.APPROVED not in status:
-                self._disable_widget(self.disapproveButton)
-            elif self._status.PENDING not in status and \
-                    self._status.UNAPPROVED not in status:
-                self._disable_widget(self.approveButton)
 
     def _remove_stored_widget(self, key):
         """
@@ -187,6 +173,31 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         else:
             self._load_scheme_detail(self._detail_store)
+
+    def _enable_check_widgets(self, status):
+        """
+        Enable Workflow Manager widgets on check
+        """
+        self._enable_widget([self.holdersButton, self.documentsButton])
+        self._enable_widget(self.approveButton) if status != self._status.APPROVED \
+            else self._enable_widget(self.disapproveButton)
+
+    def _disable_uncheck_widgets(self):
+        """
+        Disable Workflow Manager widgets on uncheck
+        """
+        status = self._checked_ids.values()
+        if not self._checked_ids:
+            self._close_tab(1)
+            self._disable_widget([
+                self.holdersButton, self.documentsButton,
+                self.approveButton, self.disapproveButton
+            ])
+        elif self._status.APPROVED not in status:
+            self._disable_widget(self.disapproveButton)
+        elif self._status.PENDING not in status and \
+                self._status.UNAPPROVED not in status:
+            self._disable_widget(self.approveButton)
 
     def _load_scheme_detail(self, store):
         """
