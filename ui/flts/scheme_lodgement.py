@@ -54,7 +54,8 @@ from stdm.settings.registryconfig import (
 )
 from stdm.data.flts.validators import(
     EntityVectorLayerValidator,
-    ValidatorException
+    ValidatorException,
+    ValidatorThread
 )
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
@@ -152,6 +153,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Validator for holders data
         self._holders_validator = None
+        self._holders_validator_worker = None
 
         # Progress dialog for showing validation status
         self._h_validation_prog_dlg = QProgressDialog(self)
@@ -532,6 +534,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._on_holders_table_selection_changed
         )
 
+        # Create validator object
+        ds = self.tw_hld_prv.current_sheet_view().vector_layer
+        self._holders_validator = EntityVectorLayerValidator(
+            self._holder_entity,
+            ds,
+            parent=self
+        )
+
         # Perform validation immediately after loading the data
         if self.chk_holders_validate.isChecked():
             self._validate_holders()
@@ -563,13 +573,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
 
         try:
-            ds = self.tw_hld_prv.current_sheet_view().vector_layer
-            self._holders_validator = EntityVectorLayerValidator(
-                self._holder_entity,
-                ds,
-                parent=self
-            )
-
             # Performs some pre-validation checks.
             # Check if mandatory columns have been mapped
             passed_mandatory, cols = self._holders_validator.validate_mandatory()
@@ -612,11 +615,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
                 return
 
-            # Connect validation signals
-            self._holders_validator.featureValidated.connect(
+            # Create validator worker
+            self._holders_validator_worker = ValidatorThread(
+                self._holders_validator,
+                self
+            )
+            self._holders_validator_worker.featureValidated.connect(
                 self._on_holder_feat_validated
             )
-            self._holders_validator.validationFinished.connect(
+            self._holders_validator_worker.validationFinished.connect(
                 self._on_holder_validation_complete
             )
 
@@ -634,10 +641,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._h_validation_prog_dlg.setWindowTitle(
                 self.tr('Validation Progress')
             )
+            # Connect canceled signal
+            self._h_validation_prog_dlg.canceled.connect(
+                self._on_validation_canceled
+            )
             self._h_validation_prog_dlg.setValue(0)
 
             # Start the validation process
-            self._holders_validator.start()
+            self._holders_validator_worker.start()
 
         except ValidatorException as ve:
             QMessageBox.critical(
@@ -667,7 +678,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._holders_validator.row_warnings_errors.keys()
         )
 
-        # Get features that have warning or error
+        # Get features that have warnings or errors
         msg = self.tr(
             u'Validation process complete.\nOut of the {0} features in the '
             u'data source, {1} have warnings and/or errors.\nPlease click '
@@ -683,6 +694,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             msg
         )
 
+    def _on_validation_canceled(self):
+        """"
+        Slot raised when the validation process has been cancelled by the user.
+        """
+        if self._holders_validator_worker:
+            self._holders_validator_worker.stop()
+
     def _on_holders_table_selection_changed(self):
         # Slot raised when selection changes in the holders table widget.
         self.lbl_validation_description.setText('')
@@ -697,15 +715,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         sel_item = sel_items[0]
-        if self._holders_validator.status == EntityVectorLayerValidator.NOT_STARTED:
+        if self._holders_validator.status == \
+                EntityVectorLayerValidator.NOT_STARTED:
             self.lbl_validation_description.setText(
                 self.tr('Not validated')
             )
-        elif self._holders_validator.status == EntityVectorLayerValidator.NOT_COMPLETED:
+        elif self._holders_validator.status == \
+                EntityVectorLayerValidator.NOT_COMPLETED:
             self.lbl_validation_description.setText(
                 self.tr('UNKNOWN: Validation process not complete')
             )
-        elif self._holders_validator.status == EntityVectorLayerValidator.FINISHED:
+        elif self._holders_validator.status == \
+                EntityVectorLayerValidator.FINISHED:
             # Get data stored in the user role
             val_results = sel_item.data(Qt.UserRole)
             if not val_results:
@@ -931,6 +952,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return True
 
     def validateCurrentPage(self):
+        # Validate each page
         current_id = self.currentId()
         ret_status = False
         self.notif_bar.clear()
@@ -943,7 +965,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Holders page
         elif current_id == 2:
-            # TODO --- Use RegExp validator
             if not self.lnEdit_hld_path.text():
                 self.holders_notif_bar.clear()
                 self.holders_notif_bar.insertWarningNotification(
@@ -953,11 +974,47 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     )
                 )
             else:
-                if not self.chk_holders_validate.isChecked():
-                    self._validate_holders(True)
+                status = self._holders_validator.status
+                if status == EntityVectorLayerValidator.NOT_STARTED:
+                    msg = self.tr(
+                        'The holders data has not yet been validated.'
+                    )
+                elif status == EntityVectorLayerValidator.NOT_COMPLETED:
+                    msg = self.tr(
+                        'The validation process was interrupted.'
+                    )
+                elif status == EntityVectorLayerValidator.FINISHED:
+                    # Check if there were errors
+                    num_err_features = len(
+                        self._holders_validator.row_warnings_errors.keys()
+                    )
+                    if num_err_features > 0:
+                        msg = self.tr(
+                            'There were errors in the last validation '
+                            'process.'
+                        )
+                    else:
+                        ret_status = True
 
-                # Set status based on validation result
-                ret_status = True
+                if not ret_status and msg:
+                    # Give user the option to (re)run the validation process.
+                    action_msg = self.tr(
+                        'Do you want to (re)run the validation process?'
+                    )
+                    res= QMessageBox.warning(
+                        self,
+                        self.tr('Validation Status'),
+                        u'{0}\n{1}'.format(
+                            msg,
+                            action_msg
+                        ),
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No
+                    )
+
+                    # Run the validation if the user selects Yes
+                    if res == QMessageBox.Yes:
+                        self._validate_holders()
 
         # Documents page
         elif current_id == 1:

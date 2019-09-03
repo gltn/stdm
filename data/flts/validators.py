@@ -27,7 +27,8 @@ from abc import (
 
 from PyQt4.QtCore import (
     pyqtSignal,
-    QObject
+    QObject,
+    QThread
 )
 
 from stdm.settings import current_profile
@@ -87,8 +88,10 @@ class EntityVectorLayerColumnMapping(object):
     Contains the mapping of vector layer columns to the corresponding entity
     columns as specified in the given configuration file.
     """
-    def __init__(self, col_mapping=OrderedDict()):
+    def __init__(self, col_mapping=None):
         self._col_mapping = col_mapping
+        if not self._col_mapping:
+            self._col_mapping = OrderedDict()
 
     @property
     def column_mapping(self):
@@ -468,7 +471,8 @@ class LookupValidator(AbstractColumnValidator):
                 v_msg = self._create_validation_message(SUCCESS, '')
                 self.add_validation_message(v_msg)
             else:
-                msg = 'Value is not in the lookup list'
+                msg = 'Value is not in the lookup list. Available options:' \
+                      ' {0}'.format(', '.join(self._lookup_values))
                 v_msg = self._create_validation_message(ERROR, msg)
                 self.add_validation_message(v_msg)
 
@@ -529,7 +533,7 @@ class ValidatorException(Exception):
 
 class ValidationResult(object):
     """
-    Container for messages from a validation process.
+    Container for messages from a validation process for a given data cell.
     """
     def __init__(self, ridx, cidx, messages):
         self.ridx = ridx
@@ -749,6 +753,32 @@ class EntityVectorLayerValidator(QObject):
 
         return True
 
+    @property
+    def is_valid(self):
+        """
+        :return: Returns True if the validator is valid, else
+        False. This property will return False if one of the following
+        conditions is False:
+        - Not all mandatory columns have been mapped.
+        - The source columns do not exist in the data source.
+        - If the status is NOT_STARTED or NOT_FINISHED.
+        - If it contains one or more error messages.
+        """
+        if not self.validate_mandatory():
+            return False
+
+        if not self.validate_mapped_ds_columns():
+            return False
+
+        if not self.validate_entity_columns():
+            return False
+
+        if self.status == EntityVectorLayerValidator.NOT_STARTED or \
+                self.status == EntityVectorLayerValidator.NOT_COMPLETED:
+            return False
+
+        return True
+
     def _column_validator(self, col_name):
         # Get the validator based on the given name of the entity column.
         ent_col = self._entity.column(col_name)
@@ -768,9 +798,9 @@ class EntityVectorLayerValidator(QObject):
     def start(self):
         """
         Starts the validation process. It is important to ensure that
-        :func:pre_validate has been called prior to executing this function.
-        Emits the featureValidated signal for each feature parsed in the
-        vector layer.
+        the validation functions have been called prior to executing this
+        function. Emits the featureValidated signal for each feature parsed
+        in the vector layer.
         """
         # Assert if vector layer is valid
         if not self._vl.isValid():
@@ -818,6 +848,47 @@ class EntityVectorLayerValidator(QObject):
 
         # Emit finished signal
         self.validationFinished.emit()
+
+
+class ValidatorThread(QThread):
+    """
+    Thread for performing the validation process in the background.
+    """
+    # Propagate signals
+    featureValidated = pyqtSignal(list)
+    validationFinished = pyqtSignal()
+    validationCanceled = pyqtSignal()
+
+    def __init__(self, entity_vl_validator, parent=None):
+        super(ValidatorThread, self).__init__(parent)
+        self._ent_vl_validator = entity_vl_validator
+
+        # Connect signals
+        self._ent_vl_validator.featureValidated.connect(
+            self._on_feature_validated
+        )
+        self._ent_vl_validator.validationFinished.connect(
+            self._on_validation_finished
+        )
+
+    def run(self):
+        # Start the validation process.
+        self._ent_vl_validator.start()
+
+    def _on_feature_validated(self, results):
+        # Propagate signal
+        self.featureValidated.emit(results)
+
+    def _on_validation_finished(self):
+        # Propagate signal
+        self.validationFinished.emit()
+
+    def stop(self):
+        """
+        Stop execution of the thread and raise validationCanceled signal.
+        """
+        self.exit(0)
+        self.validationCanceled.emit()
 
 
 
