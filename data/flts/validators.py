@@ -471,8 +471,8 @@ class LookupValidator(AbstractColumnValidator):
                 v_msg = self._create_validation_message(SUCCESS, '')
                 self.add_validation_message(v_msg)
             else:
-                msg = 'Value is not in the lookup list. Available options:' \
-                      ' {0}'.format(', '.join(self._lookup_values))
+                msg = 'Value is not in the lookup list. \nAvailable options:' \
+                      ' {0}'.format(', '.join(self._lookup_items.values()))
                 v_msg = self._create_validation_message(ERROR, msg)
                 self.add_validation_message(v_msg)
 

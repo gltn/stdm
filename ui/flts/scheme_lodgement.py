@@ -522,6 +522,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         curr_sheet = self.tw_hld_prv.current_sheet_view()
 
+        # Clear validation result label
+        self.lbl_validation_description.clear()
+
         # Check if a signal has been defined in the sheet view and disconnect
         # Use old-style signal to check if signal is connected
         receivers = curr_sheet.receivers(SIGNAL('itemSelectionChanged()'))
@@ -542,6 +545,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             parent=self
         )
 
+        # Connect signals
+        self._holders_validator.featureValidated.connect(
+            self._on_holder_feat_validated
+        )
+        self._holders_validator.validationFinished.connect(
+            self._on_holder_validation_complete
+        )
+
         # Perform validation immediately after loading the data
         if self.chk_holders_validate.isChecked():
             self._validate_holders()
@@ -560,17 +571,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                   'loading the summary page upon clicking Next.'
             self.holders_notif_bar.insertInformationNotification(msg)
 
-    def _validate_holders(self, notify_user=False):
+    def _validate_holders(self):
         # Validates holders data
-        # Notify user about the validation process
-        if notify_user:
-            QMessageBox.information(
-                self,
-                self.tr('Validation Process'),
-                self.tr(
-                    'Click OK to start the validation of the holders data.'
-                )
-            )
+        # Reset the validator
+        self._holders_validator.reset()
 
         try:
             # Performs some pre-validation checks.
@@ -615,18 +619,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
                 return
 
-            # Create validator worker
-            self._holders_validator_worker = ValidatorThread(
-                self._holders_validator,
-                self
-            )
-            self._holders_validator_worker.featureValidated.connect(
-                self._on_holder_feat_validated
-            )
-            self._holders_validator_worker.validationFinished.connect(
-                self._on_holder_validation_complete
-            )
-
             # Set progress dialog properties
             self._h_validation_prog_dlg.setMinimum(0)
             self._h_validation_prog_dlg.setMaximum(
@@ -648,7 +640,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self._h_validation_prog_dlg.setValue(0)
 
             # Start the validation process
-            self._holders_validator_worker.start()
+            self._holders_validator.start()
 
         except ValidatorException as ve:
             QMessageBox.critical(
@@ -669,10 +661,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         curr_val = self._h_validation_prog_dlg.value()
         curr_val += 1
         self._h_validation_prog_dlg.setValue(curr_val)
-        QgsApplication.processEvents()
 
     def _on_holder_validation_complete(self):
-        # Slot raised when the validation of holder information is complete.
+        # Slot raised when holder validation is complete.
         num_features = self._holders_validator.count
         num_err_features = len(
             self._holders_validator.row_warnings_errors.keys()
