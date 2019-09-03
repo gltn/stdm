@@ -196,6 +196,14 @@
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to users" proxy="False" createId="True" supportsDocuments="False" shortName="User" name="cb_user" label="User">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="True" tip="" rowindex="-1" minimum="0" maximum="30" description="Name of the system user" index="False" name="user_name" searchable="True" TYPE_INFO="VARCHAR" label="user name" mandatory="True"/>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="30" description="First name of the system user" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="first name" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="30" description="Last name of the user" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
+   </Columns>
+  </Entity>
   <Entity editable="False" global="False" rowindex="-1" associative="False" description="" proxy="False" createId="True" supportsDocuments="False" shortName="check_tenure_type_str_attrs" name="cb_check_tenure_type_str_attrs" label="">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
