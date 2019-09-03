@@ -103,7 +103,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         Implementation of QAbstractTableModel
         columnCount method
         """
-        return len(self._headers)
+        try:
+            return len(self._headers)
+        except IndexError as e:
+            return 0
 
     def setData(self, index, value, role=Qt.EditRole):
         """
@@ -298,3 +301,33 @@ class WorkflowManagerModel(QAbstractTableModel):
             return True
         except (ValueError, TypeError, Exception):
             return False
+
+    def save(self, values):
+        self.emit(SIGNAL("layoutAboutToBeChanged()"))
+        fk_entity_name, collection_name = self.data_service.related_entity_name()
+        for id_, (field, row, new_value) in values.items():
+            data = self.results[row]["data"]
+            if isinstance(field, dict):
+                fk_name = field.keys()[0]
+                if fk_name in fk_entity_name and hasattr(data, fk_name):
+                    fk_entity_object = getattr(data, fk_name, None)
+                    setattr(fk_entity_object, field.get(fk_name), new_value)
+                    fk_entity_object.update()
+                    continue
+                elif collection_name:
+                    for item in self._get_collection_item(data, collection_name):
+                        if hasattr(item, fk_name) or hasattr(item, field.get(fk_name)):
+                            if self._is_mapped(getattr(item, fk_name, None)):
+                                fk_entity_object = getattr(item, fk_name, None)
+                                setattr(fk_entity_object, field.get(fk_name), new_value)
+                                fk_entity_object.update()
+                            else:
+                                setattr(item, field.get(fk_name), new_value)
+                                item.update()
+                    continue
+            elif hasattr(data, field):
+                setattr(data, field, new_value)
+                data.update()
+                continue
+        # self.load()
+        self.emit(SIGNAL("layoutChanged()"))

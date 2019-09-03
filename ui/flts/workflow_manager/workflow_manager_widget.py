@@ -68,7 +68,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
+        self.approveButton.clicked.connect(self._approve)
         self.initial_load()
+
+    def _approve(self):
+        approve_values = {
+            id_: ({'cb_approval': 'status'}, row, 1) for id_, (row, status) in
+            self._checked_ids.items() if status != self._status.APPROVED
+        }
+        self.model.save(approve_values)
 
     def initial_load(self):
         """
@@ -97,10 +105,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        check_state, record_id = self._check_state(index)
+        row, check_state, record_id = self._check_state(index)
         if check_state == 1:
             status = self._get_approval_status(index)
-            self._checked_ids[record_id] = status
+            self._checked_ids[record_id] = (row, status)
             self._enable_widgets_on_check(status)
 
     def _on_uncheck(self, index):
@@ -109,7 +117,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        check_state, record_id = self._check_state(index)
+        row, check_state, record_id = self._check_state(index)
         if check_state == 0:
             self._remove_checked_id(record_id)
             key, label = self._create_key(record_id)
@@ -133,7 +141,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return None, None
         state = self.model.results[row].get(column)
         record_id = self.model.get_record_id(row)
-        return int(state), int(record_id)
+        return row, int(state), int(record_id)
 
     def _get_approval_status(self, index):
         """
@@ -186,7 +194,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Disable Workflow Manager widgets on uncheck
         """
-        status = self._checked_ids.values()
+        status = self._checked_ids.values()[0]
         if not self._checked_ids:
             self._close_tab(1)
             self._disable_widget([
