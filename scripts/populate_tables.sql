@@ -863,12 +863,10 @@ INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
 	WHERE ra.au_code = 'OTZNPA' AND regdiv.value = 'D';
 
-
 	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
     FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
 	WHERE ra.au_code = 'OTZNPA' AND regdiv.value = 'H';
-
 
 	INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
@@ -889,3 +887,8 @@ INSERT INTO cb_relevant_auth_reg_division (relv_auth_id, reg_division_id)
     SELECT ra.id, regdiv.id
     FROM cb_relevant_authority ra, cb_check_lht_reg_division regdiv
 	WHERE ra.au_code = 'ZAMBZI' AND regdiv.value = 'B';
+
+-- Populate the users table with the usernames from pg_catalog
+
+	INSERT INTO cb_user (user_name)
+	SELECT usename FROM pg_user;
