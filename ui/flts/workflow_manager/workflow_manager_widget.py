@@ -18,6 +18,7 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from collections import OrderedDict
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import (
@@ -72,8 +73,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.initial_load()
 
     def _approve(self):
+        column_index = 2
         approve_values = {
-            id_: ({'cb_approval': 'status'}, row, 1) for id_, (row, status) in
+            row: ({'cb_approval': 'status'}, column_index, 1) for id_, (row, status) in
             self._checked_ids.items() if status != self._status.APPROVED
         }
         self.model.save(approve_values)
@@ -194,7 +196,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Disable Workflow Manager widgets on uncheck
         """
-        status = self._checked_ids.values()[0]
+        status = self._get_stored_status()
         if not self._checked_ids:
             self._close_tab(1)
             self._disable_widget([
@@ -206,6 +208,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         elif self._status.PENDING not in status and \
                 self._status.UNAPPROVED not in status:
             self._disable_widget(self.approveButton)
+
+    def _get_stored_status(self):
+        """
+        Return stored scheme approval status
+        :return status: Scheme approval status
+        :rtype status: List
+        """
+        status = [tup[1] for tup in self._checked_ids.values()]
+        return status
 
     def _load_scheme_detail(self, store):
         """

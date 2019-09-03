@@ -37,6 +37,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         self.query_object = None
         self.results = []
         self._headers = []
+        self.fk_entity_name, self.collection_name = \
+            self.data_service.related_entity_name()
 
     def flags(self, index):
         """
@@ -126,7 +128,7 @@ class WorkflowManagerModel(QAbstractTableModel):
                 result[column] = float(value)
         else:
             result[column] = value
-        self.emit(SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+        self.dataChanged.emit(index, index)
         return True
 
     def get_record_id(self, row=0):
@@ -165,57 +167,56 @@ class WorkflowManagerModel(QAbstractTableModel):
         # TODO: Too long method. To be broken potentially into class objects
         try:
             self.query_object = self.data_service.run_query()
-            fk_entity_name, collection_name = self.data_service.related_entity_name()
             for row in self.query_object:
                 store = {}
                 for n, prop in enumerate(self.data_service.field_option):
-                    field = prop.values()[0]
+                    column = prop.values()[0]
                     header = prop.keys()[0]
-                    if isinstance(field, dict):
-                        fk_name = field.keys()[0]
-                        if fk_name in fk_entity_name and hasattr(row, fk_name):
-                            store[n] = self._get_value(row, field, fk_name)
+                    if isinstance(column, dict):
+                        fk_name = column.keys()[0]
+                        if fk_name in self.fk_entity_name and hasattr(row, fk_name):
+                            store[n] = self._get_value(row, column, fk_name)
                             self._append(header, self._headers)
                             continue
-                        elif collection_name:
+                        elif self.collection_name:
                             store[n] = None
-                            for item in self._get_collection_item(row, collection_name):
-                                if hasattr(item, fk_name) or hasattr(item, field.get(fk_name)):
+                            for item in self._get_collection_item(row, self.collection_name):
+                                if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                                     if self._is_mapped(getattr(item, fk_name, None)):
-                                        store[n] = self._get_value(item, field, fk_name)
+                                        store[n] = self._get_value(item, column, fk_name)
                                     else:
-                                        store[n] = self._get_value(item, field.get(fk_name))
+                                        store[n] = self._get_value(item, column.get(fk_name))
                             self._append(header, self._headers)
                             continue
-                    elif hasattr(row, field):
-                        store[n] = self._get_value(row, field)
+                    elif hasattr(row, column):
+                        store[n] = self._get_value(row, column)
                         self._append(header, self._headers)
                         continue
                     else:
-                        store[n] = self._cast_data(field)
+                        store[n] = self._cast_data(column)
                         self._append(header, self._headers)
                 store["data"] = row
                 self.results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _get_value(self, row_obj, field, attr=None):
+    def _get_value(self, row_obj, column, attr=None):
         """
-        Returns entity field value
+        Returns entity column value
         :param row_obj: Entity row object
         :type row_obj: Entity
-        :param field: Field or related entity name
-        :type field: String/Dictionary
-        :param attr: Related entity field
+        :param column: Field or related entity name
+        :type column: String/Dictionary
+        :param attr: Related entity column
         :type attr: String
         :return value: Field value
         :rtype value: Multiple types
         """
         if attr:
             fk_entity_object = getattr(row_obj, attr, None)
-            value = getattr(fk_entity_object, field.get(attr), None)
+            value = getattr(fk_entity_object, column.get(attr), None)
         else:
-            value = getattr(row_obj, field, None)
+            value = getattr(row_obj, column, None)
         value = self._cast_data(value)
         return value
 
@@ -303,31 +304,37 @@ class WorkflowManagerModel(QAbstractTableModel):
             return False
 
     def save(self, values):
-        self.emit(SIGNAL("layoutAboutToBeChanged()"))
-        fk_entity_name, collection_name = self.data_service.related_entity_name()
-        for id_, (field, row, new_value) in values.items():
-            data = self.results[row]["data"]
-            if isinstance(field, dict):
-                fk_name = field.keys()[0]
-                if fk_name in fk_entity_name and hasattr(data, fk_name):
+        # self.layoutAboutToBeChanged.emit()
+        # index = self.index(4, 2)
+        # self.results[4][2] = 1
+        # self.dataChanged.emit(index, index)
+        # self.layoutChanged.emit()
+
+        for row_idx, (column, column_idx, new_value) in values.items():
+            row = self.results[row_idx]
+            data = row["data"]
+            if isinstance(column, dict):
+                fk_name = column.keys()[0]
+                if fk_name in self.fk_entity_name and hasattr(data, fk_name):
                     fk_entity_object = getattr(data, fk_name, None)
-                    setattr(fk_entity_object, field.get(fk_name), new_value)
+                    setattr(fk_entity_object, column.get(fk_name), new_value)
                     fk_entity_object.update()
                     continue
-                elif collection_name:
-                    for item in self._get_collection_item(data, collection_name):
-                        if hasattr(item, fk_name) or hasattr(item, field.get(fk_name)):
+                elif self.collection_name:
+                    for item in self._get_collection_item(data, self.collection_name):
+                        if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                             if self._is_mapped(getattr(item, fk_name, None)):
                                 fk_entity_object = getattr(item, fk_name, None)
-                                setattr(fk_entity_object, field.get(fk_name), new_value)
+                                setattr(fk_entity_object, column.get(fk_name), new_value)
                                 fk_entity_object.update()
                             else:
-                                setattr(item, field.get(fk_name), new_value)
+                                setattr(item, column.get(fk_name), new_value)
                                 item.update()
                     continue
-            elif hasattr(data, field):
-                setattr(data, field, new_value)
+            elif hasattr(data, column):
+                setattr(data, column, new_value)
                 data.update()
                 continue
-        # self.load()
-        self.emit(SIGNAL("layoutChanged()"))
+            row[column_idx] = new_value
+            # index = self.index(row_idx, column_idx)
+            # self.dataChanged.emit(index, index)
