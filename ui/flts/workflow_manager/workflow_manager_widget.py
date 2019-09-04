@@ -103,7 +103,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if check_state == 1:
             status = self._get_approval_status(index)
             self._checked_ids[record_id] = (row, status)
-            self._on_check_enable_widgets(status)
+            self._on_check_enable_widgets()
 
     def _on_uncheck(self, index):
         """
@@ -175,14 +175,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             self._load_scheme_detail(self._detail_store)
 
-    def _on_check_enable_widgets(self, status):
+    def _on_check_enable_widgets(self):
         """
         Enable Workflow Manager widgets on check
         """
+        status = self._get_stored_status()
         self._enable_widget([self.holdersButton, self.documentsButton])
-        self._enable_widget(self.approveButton) \
-            if status != self._approval_option.APPROVED \
-            else self._enable_widget(self.disapproveButton)
+        if self._approval_option.PENDING in status or \
+                self._approval_option.UNAPPROVED in status:
+            self._enable_widget(self.approveButton)
+        if self._approval_option.APPROVED in status:
+            self._enable_widget(self.disapproveButton)
+        self._on_check_disable_widgets()
 
     def _on_check_disable_widgets(self):
         """
