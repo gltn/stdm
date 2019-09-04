@@ -303,38 +303,35 @@ class WorkflowManagerModel(QAbstractTableModel):
         except (ValueError, TypeError, Exception):
             return False
 
-    def save(self, values):
-        # self.layoutAboutToBeChanged.emit()
-        # index = self.index(4, 2)
-        # self.results[4][2] = 1
-        # self.dataChanged.emit(index, index)
-        # self.layoutChanged.emit()
-
-        for row_idx, (column, column_idx, new_value) in values.items():
-            row = self.results[row_idx]
-            data = row["data"]
-            if isinstance(column, dict):
-                fk_name = column.keys()[0]
-                if fk_name in self.fk_entity_name and hasattr(data, fk_name):
-                    fk_entity_object = getattr(data, fk_name, None)
-                    setattr(fk_entity_object, column.get(fk_name), new_value)
-                    fk_entity_object.update()
-                    continue
-                elif self.collection_name:
-                    for item in self._get_collection_item(data, self.collection_name):
-                        if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                            if self._is_mapped(getattr(item, fk_name, None)):
-                                fk_entity_object = getattr(item, fk_name, None)
-                                setattr(fk_entity_object, column.get(fk_name), new_value)
-                                fk_entity_object.update()
-                            else:
-                                setattr(item, column.get(fk_name), new_value)
-                                item.update()
-                    continue
-            elif hasattr(data, column):
-                setattr(data, column, new_value)
-                data.update()
-                continue
-            row[column_idx] = new_value
-            # index = self.index(row_idx, column_idx)
-            # self.dataChanged.emit(index, index)
+    def update(self, values):
+        """
+        Update database record(s) on client edit
+        """
+        try:
+            for row_idx, (column, column_idx, new_value) in values.iteritems():
+                row = self.results[row_idx]
+                data = row["data"]
+                if isinstance(column, dict):
+                    fk_name = column.keys()[0]
+                    if fk_name in self.fk_entity_name and hasattr(data, fk_name):
+                        fk_entity_object = getattr(data, fk_name, None)
+                        setattr(fk_entity_object, column.get(fk_name), new_value)
+                        fk_entity_object.update()
+                    elif self.collection_name:
+                        for item in self._get_collection_item(data, self.collection_name):
+                            if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+                                if self._is_mapped(getattr(item, fk_name, None)):
+                                    fk_entity_object = getattr(item, fk_name, None)
+                                    setattr(fk_entity_object, column.get(fk_name), new_value)
+                                    fk_entity_object.update()
+                                else:
+                                    setattr(item, column.get(fk_name), new_value)
+                                    item.update()
+                elif hasattr(data, column):
+                    setattr(data, column, new_value)
+                    data.update()
+                row[column_idx] = new_value
+                index = self.index(row_idx, column_idx)
+                self.dataChanged.emit(index, index)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e

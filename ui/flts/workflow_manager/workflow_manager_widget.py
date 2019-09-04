@@ -18,12 +18,11 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import (
+    ApprovalConfig,
     ColumnPosition,
-    ApprovalStatus,
     StyleSheet,
 )
 from stdm.settings import current_profile
@@ -43,57 +42,51 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._profile = current_profile()
+        self.data_service = SchemeDataService(self._profile)
         self._checked_ids = OrderedDict()
         self._detail_store = {}
         self._tab_name = None
-        self._column = ColumnPosition().position
-        self._status = ApprovalStatus().status
+        self._col_position = ColumnPosition().position
+        self._approval_option = ApprovalConfig().option
+        _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
         self.setObjectName(object_name)
-        self.data_service = SchemeDataService(self._profile)
-        self.model = WorkflowManagerModel(self.data_service)
+        self.holdersButton.setObjectName("Holders")
+        self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
-        self.table_view.setModel(self.model)
+        self._model = WorkflowManagerModel(self.data_service)
+        self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
         self.table_view.horizontalHeader().\
-            setStyleSheet(StyleSheet().header_style)
+            setStyleSheet(_header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
-        self.holdersButton.setObjectName("Holders")
-        self.documentsButton.setObjectName("Documents")
+        self.approveButton.clicked.connect(self._on_approve)
+        self.disapproveButton.clicked.connect(self._on_disapprove)
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
-        self.approveButton.clicked.connect(self._approve)
-        self.initial_load()
+        self._initial_load()
 
-    def _approve(self):
-        column_index = 2
-        approve_values = {
-            row: ({'cb_approval': 'status'}, column_index, 1) for id_, (row, status) in
-            self._checked_ids.items() if status != self._status.APPROVED
-        }
-        self.model.save(approve_values)
-
-    def initial_load(self):
+    def _initial_load(self):
         """
         Initial table view data load
         """
         try:
-            self.model.load()
-            self._enable_search() if self.model.results \
+            self._model.load()
+            self._enable_search() if self._model.results \
                 else self._disable_search()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
-                self.tr('{} Entity Model'.format(self.model.entity_name)),
+                self.tr('{} Entity Model'.format(self._model.entity_name)),
                 self.tr("{0} failed to load: {1}".format(
-                    self.model.entity_name, e
+                    self._model.entity_name, e
                 ))
             )
         else:
@@ -136,13 +129,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return record_id: Record/entity id (primary key)
         :rtype record_id: Integer
         """
-        row, column = self.model.get_column_index(
-            index, self._column.CHECK
+        row, column = self._model.get_column_index(
+            index, self._col_position.CHECK
         )
         if None in (row, column):
             return None, None
-        state = self.model.results[row].get(column)
-        record_id = self.model.get_record_id(row)
+        state = self._model.results[row].get(column)
+        record_id = self._model.get_record_id(row)
         return row, int(state), int(record_id)
 
     def _get_approval_status(self, index):
@@ -154,7 +147,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype status: Integer
         """
         row = index.row()
-        status = self.model.results[row].get(self._column.STATUS)
+        status = self._model.results[row].get(self._col_position.STATUS)
         return int(status)
 
     def _remove_checked_id(self, record_id):
@@ -189,7 +182,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Enable Workflow Manager widgets on check
         """
         self._enable_widget([self.holdersButton, self.documentsButton])
-        self._enable_widget(self.approveButton) if status != self._status.APPROVED \
+        self._enable_widget(self.approveButton) \
+            if status != self._approval_option.APPROVED \
             else self._enable_widget(self.disapproveButton)
 
     def _disable_widgets_on_uncheck(self):
@@ -203,10 +197,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.holdersButton, self.documentsButton,
                 self.approveButton, self.disapproveButton
             ])
-        elif self._status.APPROVED not in status:
+        elif self._approval_option.APPROVED not in status:
             self._disable_widget(self.disapproveButton)
-        elif self._status.PENDING not in status and \
-                self._status.UNAPPROVED not in status:
+        elif self._approval_option.PENDING not in status and \
+                self._approval_option.UNAPPROVED not in status:
             self._disable_widget(self.approveButton)
 
     def _get_stored_status(self):
@@ -353,7 +347,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             widgets.setEnabled(False)
 
-    def _is_alive(self, widget):
+    @staticmethod
+    def _is_alive(widget):
         """
         Checks widget/tab for aliveness
         :param widget: Qt widget
@@ -367,3 +362,37 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         except RuntimeError:
             return False
         return True
+
+    def _on_approve(self):
+        """
+        Approves a Scheme
+        """
+        status_option = self._approval_option.APPROVED
+        value = self._approve_disapprove(status_option)
+        self._model.update(value)
+
+    def _on_disapprove(self):
+        """
+        Disapprove a Scheme
+        """
+        status_option = self._approval_option.UNAPPROVED
+        value = self._approve_disapprove(status_option)
+        self._model.update(value)
+
+    def _approve_disapprove(self, status_option):
+        """
+        Approve or disapprove a Scheme
+        :param status_option: Approve or disapprove status
+        :type status_option: Integer
+        :return values: Approval/disapproval values
+        :rtype values: Dictionary
+        """
+        values = {}
+        for id_, (row, status) in self._checked_ids.iteritems():
+            if status != status_option:
+                values[row] = (
+                    self._approval_option.column,
+                    self._approval_option.index,
+                    status_option
+                )
+        return values

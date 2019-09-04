@@ -20,23 +20,15 @@ from PyQt4.QtCore import Qt
 
 Column = namedtuple("Column", ["name", "flag"])
 ColumnIndex = namedtuple("ColumnIndex", ["CHECK", "STATUS"])
-Status = namedtuple("Status", ["APPROVED", "PENDING", "UNAPPROVED"])
+ApprovalOption = namedtuple(
+    "ApprovalOption", ["APPROVED", "PENDING", "UNAPPROVED", 'column', 'index']
+)
 
 conf = {
-    'scheme_options': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Approved', flag=False): {'status': 'status'}},
-        {Column(name='Date of Approval', flag=False): 'date_of_approval'},
-        {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
-        {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
-        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', flag=False): 'township_name'}, 
-        {Column(name='Registration Division', flag=False): 'registration_division'},
-        {Column(name='Block Area', flag=False): 'area'}
-    ],
+    'approval_options': ApprovalOption(
+        APPROVED=1, PENDING=2, UNAPPROVED=3, column={'cb_approval': 'status'}, index=2
+    ),
+    'column_position': ColumnIndex(CHECK=0, STATUS=2),
     'document_options': [
         {Column(name='Number of Scheme', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
@@ -45,8 +37,6 @@ conf = {
         {Column(name='Created By', flag=False): 'created_by'},
         {Column(name='View Document', flag=False): 'View'}
     ],
-    'column_position': ColumnIndex(CHECK=0, STATUS=2),
-    'approval_status': Status(APPROVED=1, PENDING=2, UNAPPROVED=3),
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
@@ -61,7 +51,21 @@ conf = {
                          'border-right: 1px solid #C4C2BF;'
                          'border-bottom: 1px solid #A9A5A2;'
                          'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}'
+                         '}',
+    'scheme_options': [
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Date of Approval', flag=False): 'date_of_approval'},
+        {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
+        {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
+        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', flag=False): 'township_name'}, 
+        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {Column(name='Block Area', flag=False): 'area'}
+    ]
 }
 
 
@@ -82,18 +86,32 @@ class Config(object):
         return self._config.get(option, None)
 
 
-class SchemeConfig(Config):
+class ApprovalConfig(Config):
     """
-    Scheme table view configuration interface
+    Approval configuration interface
     """
     @property
-    def field_option(self):
+    def option(self):
         """
-        Scheme table view field option
-        :return: Column and query field options
-        :rtype: List
+        Return approval options
+        :return: Approval options
+        :rtype: ApprovalOption
         """
-        return self.get_data('scheme_options')
+        return self.get_data('approval_options')
+
+
+class ColumnPosition(Config):
+    """
+    Column position interface
+    """
+    @property
+    def position(self):
+        """
+        Return column position
+        :return: Column position
+        :rtype: ColumnIndex
+        """
+        return self.get_data('column_position')
 
 
 class DocumentConfig(Config):
@@ -112,34 +130,6 @@ class DocumentConfig(Config):
         return self.get_data('document_options')
 
 
-class ColumnPosition(Config):
-    """
-    Column position interface
-    """
-    @property
-    def position(self):
-        """
-        Return column position
-        :return: Column position
-        :rtype: ColumnIndex
-        """
-        return self.get_data('column_position')
-
-
-class ApprovalStatus(Config):
-    """
-    Approval status interface
-    """
-    @property
-    def status(self):
-        """
-        Return approval status
-        :return: Approval status
-        :rtype: Status
-        """
-        return self.get_data('approval_status')
-
-
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -152,3 +142,20 @@ class StyleSheet(Config):
         :rtype: String
         """
         return self.get_data('header_view_style')
+
+
+class SchemeConfig(Config):
+    """
+    Scheme table view configuration interface
+    """
+    @property
+    def field_option(self):
+        """
+        Scheme table view field option
+        :return: Column and query field options
+        :rtype: List
+        """
+        return self.get_data('scheme_options')
+
+
+
