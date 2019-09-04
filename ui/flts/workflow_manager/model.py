@@ -164,7 +164,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         Loads query results to be used in the table view
         """
-        # TODO: Too long method. To be broken potentially into class objects
+        # TODO: Too long/ugly method. To be broken potentially into class objects
         try:
             self.query_object = self.data_service.run_query()
             for row in self.query_object:
@@ -219,37 +219,6 @@ class WorkflowManagerModel(QAbstractTableModel):
             value = getattr(row_obj, column, None)
         value = self._cast_data(value)
         return value
-
-    @staticmethod
-    def _get_collection_item(row, collection_name):
-        """
-        Returns a collection of related entity values
-        :param row: Entity record
-        :type row: Entity
-        :param collection_name: Name of relationship
-        :return item: Collection item of values
-        :rtype item:
-        """
-        for name in collection_name:
-            collection = getattr(row, name, None)
-            if isinstance(collection, InstrumentedList):
-                for item in collection:
-                    yield item
-
-    @staticmethod
-    def _is_mapped(value):
-        """
-        Check if value is an ORM mapped object
-        :param value: Input value
-        :type value: Multiple type
-        :return: True if mapped otherwise false
-        :rtype: Boolean
-        """
-        try:
-            object_mapper(value)
-            return True
-        except UnmappedInstanceError:
-            return False
 
     def _cast_data(self, value):
         """
@@ -307,6 +276,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         Update database record(s) on client edit
         """
+        # TODO: Too long/ugly method. To be broken potentially into class objects
         try:
             for row_idx, (column, column_idx, new_value) in values.iteritems():
                 row = self.results[row_idx]
@@ -335,3 +305,34 @@ class WorkflowManagerModel(QAbstractTableModel):
                 self.dataChanged.emit(index, index)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    @staticmethod
+    def _get_collection_item(row, collection_name):
+        """
+        Returns a collection of related entity values
+        :param row: Entity record
+        :type row: Entity
+        :param collection_name: Name of relationship
+        :return item: Collection item of values
+        :rtype item:
+        """
+        for name in collection_name:
+            collection = getattr(row, name, None)
+            if isinstance(collection, InstrumentedList):
+                for item in collection:
+                    yield item
+
+    @staticmethod
+    def _is_mapped(value):
+        """
+        Check if value is an ORM mapped object
+        :param value: Input value
+        :type value: Multiple type
+        :return: True if mapped otherwise false
+        :rtype: Boolean
+        """
+        try:
+            object_mapper(value)
+            return True
+        except UnmappedInstanceError:
+            return False

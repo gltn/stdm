@@ -37,7 +37,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
-
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
@@ -104,7 +103,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if check_state == 1:
             status = self._get_approval_status(index)
             self._checked_ids[record_id] = (row, status)
-            self._enable_widgets_on_check(status)
+            self._on_check_enable_widgets(status)
 
     def _on_uncheck(self, index):
         """
@@ -117,7 +116,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._remove_checked_id(record_id)
             key, label = self._create_key(record_id)
             self._remove_stored_widget(key)
-            self._disable_widgets_on_uncheck()
+            self._on_check_disable_widgets()
 
     def _check_state(self, index):
         """
@@ -152,8 +151,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _remove_checked_id(self, record_id):
         """
-        Remove table view record identifier
-        from checked tracker
+        Remove table view checked ids from checked tracker
         :param record_id: Checked table view identifier
         :rtype record_id: Integer
         """
@@ -177,7 +175,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             self._load_scheme_detail(self._detail_store)
 
-    def _enable_widgets_on_check(self, status):
+    def _on_check_enable_widgets(self, status):
         """
         Enable Workflow Manager widgets on check
         """
@@ -186,7 +184,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if status != self._approval_option.APPROVED \
             else self._enable_widget(self.disapproveButton)
 
-    def _disable_widgets_on_uncheck(self):
+    def _on_check_disable_widgets(self):
         """
         Disable Workflow Manager widgets on uncheck
         """
@@ -368,16 +366,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Approves a Scheme
         """
         status_option = self._approval_option.APPROVED
-        value = self._approve_disapprove(status_option)
-        self._model.update(value)
+        values = self._approve_disapprove(status_option)
+        self._model.update(values)
+        self._update_checked_id()
 
     def _on_disapprove(self):
         """
         Disapprove a Scheme
         """
         status_option = self._approval_option.UNAPPROVED
-        value = self._approve_disapprove(status_option)
-        self._model.update(value)
+        values = self._approve_disapprove(status_option)
+        self._model.update(values)
+        self._update_checked_id()
 
     def _approve_disapprove(self, status_option):
         """
@@ -396,3 +396,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     status_option
                 )
         return values
+
+    def _update_checked_id(self):
+        """
+        Update table view checked ids in the checked tracker
+        """
+        checked_ids = self._checked_ids.copy()
+        for id_, (row, status) in checked_ids.iteritems():
+            index = self._model.index(row, self._col_position.CHECK)
+            self._on_check(index)
