@@ -19,17 +19,11 @@ from collections import namedtuple
 from PyQt4.QtCore import Qt
 
 Column = namedtuple("Column", ["name", "flag"])
-ColumnIndex = namedtuple("ColumnIndex", ["CHECK", "STATUS"])
-ApprovalOption = namedtuple(
-    "ApprovalOption", ["APPROVED", "PENDING", "UNAPPROVED", 'column', 'index']
-)
+LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS"])
+UpdateColumn = namedtuple("UpdateColumn", ['column', 'index'])
 
 conf = {
-    'approval_options': ApprovalOption(
-        APPROVED=1, PENDING=2, UNAPPROVED=3, column={'cb_approval': 'status'}, index=2
-    ),
-    'column_position': ColumnIndex(CHECK=0, STATUS=2),
-    'document_options': [
+    'document_columns': [
         {Column(name='Number of Scheme', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
         {Column(name='Document Size', flag=False): 'document_size'},
@@ -52,7 +46,8 @@ conf = {
                          'border-bottom: 1px solid #A9A5A2;'
                          'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
-    'scheme_options': [
+    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2),
+    'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
@@ -65,7 +60,8 @@ conf = {
         {Column(name='Township', flag=False): 'township_name'}, 
         {Column(name='Registration Division', flag=False): 'registration_division'},
         {Column(name='Block Area', flag=False): 'area'}
-    ]
+    ],
+    'update_columns': UpdateColumn(column={'cb_approval': 'status'}, index=2)
 }
 
 
@@ -86,48 +82,20 @@ class Config(object):
         return self._config.get(option, None)
 
 
-class ApprovalConfig(Config):
-    """
-    Approval configuration interface
-    """
-    @property
-    def option(self):
-        """
-        Return approval options
-        :return: Approval options
-        :rtype: ApprovalOption
-        """
-        return self.get_data('approval_options')
-
-
-class ColumnPosition(Config):
-    """
-    Column position interface
-    """
-    @property
-    def position(self):
-        """
-        Return column position
-        :return: Column position
-        :rtype: ColumnIndex
-        """
-        return self.get_data('column_position')
-
-
 class DocumentConfig(Config):
     """
     Scheme supporting documents table
     view configuration interface
     """
     @property
-    def field_option(self):
+    def columns(self):
         """
         Scheme supporting documents
-        table view field option
-        :return: Column and query field options
+        table view columns options
+        :return: Table view columns and query columns options
         :rtype: List
         """
-        return self.get_data('document_options')
+        return self.get_data('document_columns')
 
 
 class StyleSheet(Config):
@@ -149,13 +117,31 @@ class SchemeConfig(Config):
     Scheme table view configuration interface
     """
     @property
-    def field_option(self):
+    def columns(self):
         """
-        Scheme table view field option
-        :return: Column and query field options
+        Scheme table view columns options
+        :return: Table view columns and query columns options
         :rtype: List
         """
-        return self.get_data('scheme_options')
+        return self.get_data('scheme_columns')
+
+    @property
+    def lookups(self):
+        """
+        Scheme table view lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
+    @property
+    def update_columns(self):
+        """
+        Scheme table view update column options
+        :return: Update column options
+        :rtype: UpdateColumn
+        """
+        return self.get_data('update_columns')
 
 
 

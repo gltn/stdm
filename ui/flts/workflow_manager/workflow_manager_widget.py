@@ -20,11 +20,7 @@ copyright            : (C) 2019
 from collections import OrderedDict
 from PyQt4.QtGui import *
 from sqlalchemy import exc
-from stdm.ui.flts.workflow_manager.config import (
-    ApprovalConfig,
-    ColumnPosition,
-    StyleSheet,
-)
+from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
@@ -40,13 +36,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
-        self._profile = current_profile()
-        self.data_service = SchemeDataService(self._profile)
         self._checked_ids = OrderedDict()
         self._detail_store = {}
         self._tab_name = None
-        self._col_position = ColumnPosition().position
-        self._approval_option = ApprovalConfig().option
+        self._profile = current_profile()
+        self.data_service = SchemeDataService(self._profile)
+        self._lookup = self.data_service.lookups
+        self._update_column = self.data_service.update_columns
         _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
         self.setObjectName(object_name)
@@ -129,7 +125,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype record_id: Integer
         """
         row, column = self._model.get_column_index(
-            index, self._col_position.CHECK
+            index, self._lookup.CHECK
         )
         if None in (row, column):
             return None, None
@@ -146,7 +142,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype status: Integer
         """
         row = index.row()
-        status = self._model.results[row].get(self._col_position.STATUS)
+        status = self._model.results[row].get(self._lookup.STATUS)
         return int(status)
 
     def _remove_checked_id(self, record_id):
@@ -181,10 +177,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         status = self._get_stored_status()
         self._enable_widget([self.holdersButton, self.documentsButton])
-        if self._approval_option.PENDING in status or \
-                self._approval_option.UNAPPROVED in status:
+        if self._lookup.PENDING in status or \
+                self._lookup.UNAPPROVED in status:
             self._enable_widget(self.approveButton)
-        if self._approval_option.APPROVED in status:
+        if self._lookup.APPROVED in status:
             self._enable_widget(self.disapproveButton)
         self._on_check_disable_widgets()
 
@@ -199,10 +195,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.holdersButton, self.documentsButton,
                 self.approveButton, self.disapproveButton
             ])
-        elif self._approval_option.APPROVED not in status:
+        elif self._lookup.APPROVED not in status:
             self._disable_widget(self.disapproveButton)
-        elif self._approval_option.PENDING not in status and \
-                self._approval_option.UNAPPROVED not in status:
+        elif self._lookup.PENDING not in status and \
+                self._lookup.UNAPPROVED not in status:
             self._disable_widget(self.approveButton)
 
     def _get_stored_status(self):
@@ -369,7 +365,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Approves a Scheme
         """
-        status_option = self._approval_option.APPROVED
+        status_option = self._lookup.APPROVED
         values = self._approve_disapprove(status_option)
         self._model.update(values)
         self._update_checked_id()
@@ -378,7 +374,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Disapprove a Scheme
         """
-        status_option = self._approval_option.UNAPPROVED
+        status_option = self._lookup.UNAPPROVED
         values = self._approve_disapprove(status_option)
         self._model.update(values)
         self._update_checked_id()
@@ -395,8 +391,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for id_, (row, status) in self._checked_ids.iteritems():
             if status != status_option:
                 values[row] = (
-                    self._approval_option.column,
-                    self._approval_option.index,
+                    self._update_column.column,
+                    self._update_column.index,
                     status_option
                 )
         return values
@@ -407,6 +403,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         checked_ids = self._checked_ids.copy()
         for id_, (row, status) in checked_ids.iteritems():
-            index = self._model.create_index(row, self._col_position.CHECK)
+            index = self._model.create_index(row, self._lookup.CHECK)
             if index:
                 self._on_check(index)

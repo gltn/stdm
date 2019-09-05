@@ -169,7 +169,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             self.query_object = self.data_service.run_query()
             for row in self.query_object:
                 store = {}
-                for n, prop in enumerate(self.data_service.field_option):
+                for n, prop in enumerate(self.data_service.columns):
                     column = prop.values()[0]
                     header = prop.keys()[0]
                     if isinstance(column, dict):
