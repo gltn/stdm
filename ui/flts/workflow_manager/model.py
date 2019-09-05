@@ -300,9 +300,10 @@ class WorkflowManagerModel(QAbstractTableModel):
                 elif hasattr(data, column):
                     setattr(data, column, new_value)
                     data.update()
-                row[column_idx] = new_value
-                index = self.index(row_idx, column_idx)
-                self.dataChanged.emit(index, index)
+                index = self.create_index(row_idx, column_idx)
+                if index:
+                    row[column_idx] = new_value
+                    self.dataChanged.emit(index, index)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -336,3 +337,18 @@ class WorkflowManagerModel(QAbstractTableModel):
             return True
         except UnmappedInstanceError:
             return False
+
+    def create_index(self, row, column):
+        """
+        Safely creates and returns the index
+        :param row: Table view row index
+        :param column: Table view column
+        :return index: Table view item identifier or False
+        :rtype index: QModelIndex or Boolean
+        """
+        index = self.index(row, column)
+        if not index.isValid() and \
+                not (0 <= index.row() < len(self.results)) and \
+                not (0 <= index.column() < len(self._headers)):
+            return False
+        return index

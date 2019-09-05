@@ -407,5 +407,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         checked_ids = self._checked_ids.copy()
         for id_, (row, status) in checked_ids.iteritems():
-            index = self._model.index(row, self._col_position.CHECK)
-            self._on_check(index)
+            index = self._model.create_index(row, self._col_position.CHECK)
+            if index:
+                self._on_check(index)
