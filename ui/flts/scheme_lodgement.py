@@ -57,6 +57,9 @@ from stdm.data.flts.validators import(
     ValidatorException,
     ValidatorThread
 )
+from stdm.data.flts.db_importer import (
+    EntityVectorLayerDbImporter
+)
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
@@ -157,6 +160,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Progress dialog for showing validation status
         self._h_validation_prog_dlg = QProgressDialog(self)
+
+        # Database importer
+        self._holder_importer = None
 
         # Connect signals
         self.btn_brws_hld.clicked.connect(self.browse_holders_file)
@@ -493,7 +499,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self,
             'Browse Holders File',
             last_doc_path,
-            'Excel Files (*.xls *xlsx);;Comma Separated Value (*.csv)'
+            'Excel File (*.xls *xlsx);;CSV (Comma Delimited) (*.csv)'
         )
 
         if holders_file:
@@ -551,6 +557,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         )
         self._holders_validator.validationFinished.connect(
             self._on_holder_validation_complete
+        )
+
+        # Create holder importer
+        self._holder_importer = EntityVectorLayerDbImporter(
+            self._holder_entity,
+            ds,
+            unique_cols=['holder_identifier'],
+            parent=self
         )
 
         # Perform validation immediately after loading the data
@@ -1137,7 +1151,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'Saving supporting documents, please wait...'
         ))
         pg_dlg.setValue(2)
-        QgsApplication.processEvents()
         # Attach documents
         doc_objs = self._cmis_doc_mapper.persist_documents(
             scheme_obj.scheme_number
@@ -1146,20 +1159,26 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         QgsApplication.processEvents()
 
         pg_dlg.setLabelText(self.tr(
-            'Saving holders data...'
+            'Saving scheme data...'
         ))
         pg_dlg.setValue(3)
-        # Code for saving holders information
-
-        pg_dlg.setLabelText(self.tr(
-            'Saving scheme and notification data...'
-        ))
-        pg_dlg.setValue(4)
         scheme_obj.save()
-        QgsApplication.processEvents()
-
         # Update last value for generating scheme number
         self._save_ra_last_value(scheme_obj.scheme_number)
+        QgsApplication.processEvents()
+
+        pg_dlg.setLabelText(self.tr(
+            'Saving holders data...'
+        ))
+        pg_dlg.setValue(4)
+        # Attach the scheme object to the holders
+        self._holder_importer.set_extra_attribute_value(
+            'cb_scheme_collection',
+            [scheme_obj]
+        )
+        # Save holders data
+        self._holder_importer.start()
+        QgsApplication.processEvents()
 
         # Create notification
         # self.create_notification()

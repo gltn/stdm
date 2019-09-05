@@ -633,6 +633,9 @@ class EntityVectorLayerValidator(QObject):
         self._messages = OrderedDict()
         self._status = EntityVectorLayerValidator.NOT_STARTED
 
+        # Flag to enabling canceling of validation operation
+        self._is_cancelled = False
+
     @property
     def messages(self):
         """
@@ -678,6 +681,13 @@ class EntityVectorLayerValidator(QObject):
         """
         self._messages = OrderedDict()
         self._status = EntityVectorLayerValidator.NOT_STARTED
+        self._is_cancelled = False
+
+    def cancel(self):
+        """
+        Cancels an ongoing validation operation.
+        """
+        self._is_cancelled = True
 
     def _add_validation_result(self, row_index, v_res):
         # Adds validation result to the messages collection

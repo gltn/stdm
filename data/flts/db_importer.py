@@ -76,6 +76,19 @@ class AbstractValueTranslator(object):
         raise NotImplementedError
 
 
+class VarCharValueTranslator(AbstractValueTranslator):
+    """
+    Asserts that number values are correctly converted to string.
+    """
+    def transform(self, value):
+        try:
+            value = int(value)
+            return unicode(value)
+        except ValueError:
+            # It is a non-numeric value
+            return value
+
+
 class LookupValueTranslator(AbstractValueTranslator):
     """
     Transforms a lookup value to the corresponding primary key in the lookup
@@ -96,6 +109,7 @@ class LookupValueTranslator(AbstractValueTranslator):
 
 # Value translator class based on the column TYPE_INFO.
 value_translators = {
+    'VARCHAR': VarCharValueTranslator,
     'LOOKUP': LookupValueTranslator
 }
 
@@ -295,8 +309,9 @@ class EntityVectorLayerDbImporter(QObject):
 
                 # Check if there are existing records based on unique columns
                 if col_name in self._curated_unique_cols:
-                    records = entity_obj.queryObject().filter_by(
-                        col_name = attr_val
+                    col_attr = getattr(self._entity_cls, col_name)
+                    records = entity_obj.queryObject().filter(
+                        col_attr == attr_val
                     ).all()
 
                     if len(records) > 0:
