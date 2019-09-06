@@ -100,11 +100,21 @@
     </item>
     <item row="8" column="1">
      <widget class="QDateEdit" name="date_apprv">
+      <property name="minimumDateTime">
+       <datetime>
+        <hour>0</hour>
+        <minute>0</minute>
+        <second>0</second>
+        <year>2010</year>
+        <month>1</month>
+        <day>1</day>
+       </datetime>
+      </property>
       <property name="minimumDate">
        <date>
-        <year>2009</year>
-        <month>9</month>
-        <day>22</day>
+        <year>2010</year>
+        <month>1</month>
+        <day>1</day>
        </date>
       </property>
       <property name="calendarPopup">
@@ -168,11 +178,21 @@
     </item>
     <item row="9" column="1">
      <widget class="QDateEdit" name="date_establish">
+      <property name="minimumDateTime">
+       <datetime>
+        <hour>0</hour>
+        <minute>0</minute>
+        <second>0</second>
+        <year>2010</year>
+        <month>1</month>
+        <day>1</day>
+       </datetime>
+      </property>
       <property name="minimumDate">
        <date>
-        <year>2019</year>
-        <month>9</month>
-        <day>14</day>
+        <year>2010</year>
+        <month>1</month>
+        <day>1</day>
        </date>
       </property>
       <property name="calendarPopup">
@@ -207,7 +227,7 @@
     <item row="9" column="0">
      <widget class="QLabel" name="label_date_establish">
       <property name="text">
-       <string>Date of Esablishment</string>
+       <string>Date of Establishment</string>
       </property>
      </widget>
     </item>

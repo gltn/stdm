@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Thu Aug 29 10:21:11 2019
+# Created: Fri Sep  6 09:24:24 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -63,7 +63,8 @@ class Ui_ldg_wzd(object):
         self.label_schm_name.setObjectName(_fromUtf8("label_schm_name"))
         self.gridLayout_2.addWidget(self.label_schm_name, 7, 0, 1, 1)
         self.date_apprv = QtGui.QDateEdit(self.wizardPage1)
-        self.date_apprv.setMinimumDate(QtCore.QDate(2009, 9, 22))
+        self.date_apprv.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2010, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.date_apprv.setMinimumDate(QtCore.QDate(2010, 1, 1))
         self.date_apprv.setCalendarPopup(True)
         self.date_apprv.setObjectName(_fromUtf8("date_apprv"))
         self.gridLayout_2.addWidget(self.date_apprv, 8, 1, 1, 1)
@@ -99,7 +100,8 @@ class Ui_ldg_wzd(object):
         self.label_schm_num.setObjectName(_fromUtf8("label_schm_num"))
         self.gridLayout_2.addWidget(self.label_schm_num, 6, 0, 1, 1)
         self.date_establish = QtGui.QDateEdit(self.wizardPage1)
-        self.date_establish.setMinimumDate(QtCore.QDate(2019, 9, 14))
+        self.date_establish.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2010, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.date_establish.setMinimumDate(QtCore.QDate(2010, 1, 1))
         self.date_establish.setCalendarPopup(True)
         self.date_establish.setObjectName(_fromUtf8("date_establish"))
         self.gridLayout_2.addWidget(self.date_establish, 9, 1, 1, 1)
@@ -254,7 +256,7 @@ class Ui_ldg_wzd(object):
         self.label_schm_num.setText(QtGui.QApplication.translate("ldg_wzd", "Scheme Number", None, QtGui.QApplication.UnicodeUTF8))
         self.label_lro.setText(QtGui.QApplication.translate("ldg_wzd", "Land Rights Office", None, QtGui.QApplication.UnicodeUTF8))
         self.label_blck_area.setText(QtGui.QApplication.translate("ldg_wzd", "Block Area", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_date_establish.setText(QtGui.QApplication.translate("ldg_wzd", "Date of Esablishment", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_establish.setText(QtGui.QApplication.translate("ldg_wzd", "Date of Establishment", None, QtGui.QApplication.UnicodeUTF8))
         self.wizardPage.setSubTitle(QtGui.QApplication.translate("ldg_wzd", "Upload the supporting documents for the scheme", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_3.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))

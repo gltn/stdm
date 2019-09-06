@@ -23,6 +23,7 @@ from cmislib.exceptions import (
     CmisException
 )
 from PyQt4.QtCore import (
+    QDate,
     QDir,
     Qt,
     SIGNAL
@@ -184,6 +185,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Populate lookup comboboxes
         self._populate_lookups()
 
+        # Set date limits
+        self._configure_date_controls()
+
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
@@ -217,6 +221,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Sort region combobox items
         self.cbx_region.model().sort(0)
+
+    def _configure_date_controls(self):
+        # Set maximum dates for date widgets
+        self.date_apprv.setMaximumDate(QDate.currentDate())
+        self.date_establish.setMaximumDate(QDate.currentDate())
+
+        # Set the current dates
+        self.date_establish.setDate(QDate.currentDate())
+        self.date_apprv.setDate((QDate.currentDate()))
 
     def _update_entities_and_models(self):
         # Update the entity objects and db models related to selecting
