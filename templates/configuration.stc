@@ -58,11 +58,6 @@
     <CodeValue value="KL" code=""/>
     <CodeValue value="NSTV" code=""/>
    </ValueList>
-   <ValueList name="check_lht_approval_status">
-    <CodeValue value="Approved" code=""/>
-    <CodeValue value="Pending" code=""/>
-    <CodeValue value="Unapproved" code=""/>
-   </ValueList>
    <ValueList name="check_lht_notification">
     <CodeValue value="Sent" code=""/>
     <CodeValue value="Pending" code=""/>
@@ -100,9 +95,9 @@
     <CodeValue value="General" code=""/>
    </ValueList>
    <ValueList name="check_lht_income_level">
-    <CodeValue value="High" code=""/>
-    <CodeValue value="Mid" code=""/>
-    <CodeValue value="Low" code=""/>
+    <CodeValue value="0-1000" code=""/>
+    <CodeValue value="1001-5000" code=""/>
+    <CodeValue value="Above 5000" code=""/>
    </ValueList>
    <ValueList name="check_scheme_document_type">
     <CodeValue value="Notice of Scheme Establishment" code=""/>
@@ -114,6 +109,17 @@
     <CodeValue value="Documents Imposing Conditions" code=""/>
     <CodeValue value="Digital Layout Plan" code=""/>
     <CodeValue value="Field Book" code=""/>
+   </ValueList>
+   <ValueList name="check_lht_workflow">
+    <CodeValue value="Establishment" code=""/>
+    <CodeValue value="Fiirst Assessment" code=""/>
+    <CodeValue value="Second Assessment" code=""/>
+    <CodeValue value="Third Assessment" code=""/>
+   </ValueList>
+   <ValueList name="check_lht_approval_status">
+    <CodeValue value="Approved" code=""/>
+    <CodeValue value="Pending" code=""/>
+    <CodeValue value="Disapproved" code=""/>
    </ValueList>
   </ValueLists>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of LIS_Plot" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot_log" name="cb_lis_plot_log" label="">
@@ -169,6 +175,7 @@
     <Column unique="False" tip="" rowindex="14" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="consitution ref number" mandatory="False"/>
     <Column unique="False" tip="" rowindex="15" minimum="0" maximum="2147483647" description="Number of plots in the Scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="no of plots" mandatory="False"/>
     <Column unique="False" tip="" rowindex="16" minimum="0" maximum="32" description="The number representing the Scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme number" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="scheme id" index="False" name="scheme_id" searchable="True" TYPE_INFO="INT" label="scheme id" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Approval" proxy="False" createId="True" supportsDocuments="False" shortName="Approval_log" name="cb_approval_log" label="Approval Log">
@@ -199,7 +206,7 @@
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to users" proxy="False" createId="True" supportsDocuments="False" shortName="User" name="cb_user" label="User">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="True" tip="" rowindex="-1" minimum="0" maximum="30" description="Name of the system user" index="False" name="user_name" searchable="True" TYPE_INFO="VARCHAR" label="user name" mandatory="True"/>
+    <Column unique="True" tip="" rowindex="0" minimum="0" maximum="30" description="Name of the system user" index="False" name="user_name" searchable="True" TYPE_INFO="VARCHAR" label="user name" mandatory="True"/>
     <Column unique="False" tip="" rowindex="1" minimum="0" maximum="30" description="First name of the system user" index="False" name="first_name" searchable="True" TYPE_INFO="VARCHAR" label="first name" mandatory="False"/>
     <Column unique="False" tip="" rowindex="2" minimum="0" maximum="30" description="Last name of the user" index="False" name="last_name" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
    </Columns>
@@ -219,8 +226,25 @@
     <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="Relevant authoriy ID" index="False" name="relv_auth_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="Relevant Authority id" mandatory="True">
      <Relation name="fk_cb_relevant_authority_id_cb_relevant_auth_reg_division_relv_auth_id"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Registration division id" index="False" name="reg_division_id" searchable="True" TYPE_INFO="LOOKUP" label="reg division id" mandatory="True">
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Registration division id" index="False" name="reg_division_id" searchable="True" TYPE_INFO="LOOKUP" label="reg division id" mandatory="True">
      <Relation name="fk_cb_check_lht_reg_division_id_cb_relevant_auth_reg_division_reg_division_id"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link table between scheme and workflow processes" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_workflow" name="cb_scheme_workflow" label="scheme_workflow">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="True">
+     <Relation name="fk_cb_scheme_id_cb_scheme_workflow_scheme_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the workflow" index="False" name="workflow_id" searchable="True" TYPE_INFO="LOOKUP" label="workflow id" mandatory="True">
+     <Relation name="fk_cb_check_lht_workflow_id_cb_scheme_workflow_workflow_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="2147483647" description="User identifier" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="True">
+     <Relation name="fk_cb_user_id_cb_scheme_workflow_user_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="3" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Submit time of workflow" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="True">
+     <currentDateTime minimum="True" maximum="True"/>
     </Column>
    </Columns>
   </Entity>
@@ -352,20 +376,7 @@
     <Column unique="False" tip="" rowindex="10" minimum="0" maximum="30" description="Registration number of document imposing conditions" index="False" name="doc_imposing_conditions_number" searchable="True" TYPE_INFO="VARCHAR" label="doc imposing conditions" mandatory="False"/>
     <Column unique="False" tip="" rowindex="11" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="const ref no" mandatory="False"/>
     <Column unique="False" tip="" rowindex="12" minimum="0" maximum="2147483647" description="Number of polts in the scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="number of plots" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="32" description="The number representing the scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme_number" mandatory="True"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="3" associative="False" description="Refers to the approval of a scheme" proxy="False" createId="True" supportsDocuments="False" shortName="Approval" name="cb_approval" label="lht_approval">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="status of the approval" index="False" name="status" searchable="True" TYPE_INFO="LOOKUP" label="status" mandatory="False">
-     <Relation name="fk_cb_check_lht_approval_status_id_cb_approval_status"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="1" minimum="-2147483648" maximum="2147483647" description="user identifier " index="False" name="user_id" searchable="True" TYPE_INFO="INT" label="user" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="200" description="Additional comments on the approval" index="False" name="comments" searchable="True" TYPE_INFO="VARCHAR" label="comments" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="3" minimum="0001-01-01 00:00:00" maximum="9999-12-31 23:59:59.999999" description="time of creation of the approval" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="approval time" mandatory="False">
-     <currentDateTime minimum="False" maximum="False"/>
-    </Column>
+    <Column unique="False" tip="" rowindex="13" minimum="0" maximum="32" description="The number representing the scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme_number" mandatory="True"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="4" associative="False" description="Refers to the relation between holder and plot" proxy="False" createId="True" supportsDocuments="False" shortName="Holder_plot" name="cb_holder_plot" label="lht_holder_plot">
@@ -385,8 +396,15 @@
     <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="Scheme identifier" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="False">
      <Relation name="fk_cb_scheme_id_cb_scheme_approval_scheme_id"/>
     </Column>
-    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Approval identifier" index="False" name="approval_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_cb_approval_id_cb_scheme_approval_approval_id"/>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="status of te approval" index="False" name="approval_status" searchable="True" TYPE_INFO="LOOKUP" label="approval stage" mandatory="True">
+     <Relation name="fk_cb_check_lht_approval_status_id_cb_scheme_approval_approval_status"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="2147483647" description="User identifier" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="user id" mandatory="True">
+     <Relation name="fk_cb_user_id_cb_scheme_approval_user_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="3" minimum="0" maximum="255" description="Comments" index="False" name="comments" searchable="True" TYPE_INFO="VARCHAR" label="comments" mandatory="True"/>
+    <Column unique="False" tip="" rowindex="4" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Time of the approval" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="True">
+     <currentDateTime minimum="True" maximum="True"/>
     </Column>
    </Columns>
   </Entity>
@@ -427,17 +445,6 @@
     </Column>
    </Columns>
   </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Association table that links a holder to a scheme" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_Holder" name="cb_scheme_holder" label="">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Foreign key to scheme table" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_cb_scheme_id_cb_scheme_holder_scheme_id"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Foreign key to holder table" index="False" name="holder_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_cb_holder_id_cb_scheme_holder_holder_id"/>
-    </Column>
-   </Columns>
-  </Entity>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" showInParent="True" parent="check_social_tenure_relationship_document_type" name="fk_cb_check_social_tenure_relationship_document_type_id_cb_social_tenure_relationship_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
@@ -453,7 +460,6 @@
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_income_level" name="fk_cb_check_lht_income_level_id_cb_holder_income_level" parentColumn="id" showInChild="True" childColumn="income_level"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_occupation" name="fk_cb_check_lht_occupation_id_cb_holder_occupation" parentColumn="id" showInChild="True" childColumn="occupation"/>
    <EntityRelation displayColumns="name,code" child="Notification" showInParent="True" parent="check_lht_notification" name="fk_cb_check_lht_notification_id_cb_notification_status" parentColumn="id" showInChild="True" childColumn="status"/>
-   <EntityRelation displayColumns="name,code" child="Approval" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_approval_status" parentColumn="id" showInChild="True" childColumn="status"/>
    <EntityRelation displayColumns="name,code" child="Plot" showInParent="True" parent="check_lht_plot_use" name="fk_cb_check_lht_plot_use_id_cb_plot_use" parentColumn="id" showInChild="True" childColumn="use"/>
    <EntityRelation displayColumns="" child="check_tenure_type_str_attrs" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_check_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="" child="Relevant_auth_reg_division" showInParent="True" parent="Relevant_authority" name="fk_cb_relevant_authority_id_cb_relevant_auth_reg_division_relv_auth_id" parentColumn="id" showInChild="True" childColumn="relv_auth_id"/>
@@ -466,15 +472,17 @@
    <EntityRelation displayColumns="name,code" child="Scheme" showInParent="True" parent="check_lht_region" name="fk_cb_check_lht_region_id_cb_scheme_region" parentColumn="id" showInChild="True" childColumn="region"/>
    <EntityRelation displayColumns="" child="Scheme" showInParent="True" parent="Cdrs_title_deed" name="fk_cb_cdrs_title_deed_id_cb_scheme_title_deed_number" parentColumn="id" showInChild="True" childColumn="title_deed_number"/>
    <EntityRelation displayColumns="name,code" child="Scheme" showInParent="True" parent="check_lht_reg_division" name="fk_cb_check_lht_reg_division_id_cb_scheme_registration_division" parentColumn="id" showInChild="True" childColumn="registration_division"/>
+   <EntityRelation displayColumns="" child="Scheme_workflow" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_workflow_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
+   <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_workflow" name="fk_cb_check_lht_workflow_id_cb_scheme_workflow_workflow_id" parentColumn="id" showInChild="True" childColumn="workflow_id"/>
+   <EntityRelation displayColumns="" child="Scheme_workflow" showInParent="True" parent="User" name="fk_cb_user_id_cb_scheme_workflow_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_holder_plot_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_holder_plot_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
    <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_approval_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
-   <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="Approval" name="fk_cb_approval_id_cb_scheme_approval_approval_id" parentColumn="id" showInChild="True" childColumn="approval_id"/>
+   <EntityRelation displayColumns="name,code" child="Scheme_approval" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_scheme_approval_approval_status" parentColumn="id" showInChild="True" childColumn="approval_status"/>
+   <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="User" name="fk_cb_user_id_cb_scheme_approval_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
-   <EntityRelation displayColumns="" child="Scheme_Holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
-   <EntityRelation displayColumns="" child="Scheme_Holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
