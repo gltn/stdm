@@ -128,7 +128,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             index, self._lookup.CHECK
         )
         if None in (row, column):
-            return None, None
+            return None, None, None
         state = self._model.results[row].get(column)
         record_id = self._model.get_record_id(row)
         return row, int(state), int(record_id)
@@ -367,8 +367,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         status_option = self._lookup.APPROVED
         values = self._approve_disapprove(status_option)
+        # TODO: Before update show message with scheme numbers to be changed
         self._model.update(values)
         self._update_checked_id()
+        # TODO: On successful update show message to the user
 
     def _on_disapprove(self):
         """
@@ -376,8 +378,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         status_option = self._lookup.UNAPPROVED
         values = self._approve_disapprove(status_option)
+        # TODO: Before update show message with scheme numbers to be changed
         self._model.update(values)
         self._update_checked_id()
+        # TODO: On successful update show message to the user
 
     def _approve_disapprove(self, status_option):
         """
@@ -387,6 +391,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return values: Approval/disapproval values
         :rtype values: Dictionary
         """
+        # TODO: Find ways to include datetime update along
+        # TODO: status update
         values = {}
         for id_, (row, status) in self._checked_ids.iteritems():
             if status != status_option:

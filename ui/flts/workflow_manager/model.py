@@ -278,12 +278,15 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         # TODO: Too long/ugly method. To be broken potentially into class objects
         try:
+            self.layoutAboutToBeChanged.emit()
             for row_idx, (column, column_idx, new_value) in values.iteritems():
                 row = self.results[row_idx]
                 data = row["data"]
                 if isinstance(column, dict):
                     fk_name = column.keys()[0]
                     if fk_name in self.fk_entity_name and hasattr(data, fk_name):
+                        # TODO: refactored into _set_value method. See _get_value
+                        # TODO: as an example
                         fk_entity_object = getattr(data, fk_name, None)
                         setattr(fk_entity_object, column.get(fk_name), new_value)
                         fk_entity_object.update()
@@ -291,21 +294,30 @@ class WorkflowManagerModel(QAbstractTableModel):
                         for item in self._get_collection_item(data, self.collection_name):
                             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                                 if self._is_mapped(getattr(item, fk_name, None)):
+                                    # TODO: refactored into _set_value method. See _get_value
+                                    # TODO: as an example
                                     fk_entity_object = getattr(item, fk_name, None)
                                     setattr(fk_entity_object, column.get(fk_name), new_value)
                                     fk_entity_object.update()
                                 else:
+                                    # TODO: refactored into _set_value method. See _get_value
+                                    # TODO: as an example
                                     setattr(item, column.get(fk_name), new_value)
                                     item.update()
                 elif hasattr(data, column):
+                    # TODO: refactored into _set_value method. See _get_value
+                    # TODO: as an example
                     setattr(data, column, new_value)
                     data.update()
-                index = self.create_index(row_idx, column_idx)
-                if index:
-                    row[column_idx] = new_value
-                    self.dataChanged.emit(index, index)
+                row[column_idx] = new_value  # TODO: See how this can be put
+                # TODO: in its own method called within the exception else section
+
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+        else:
+            self.layoutChanged.emit()
+            # TODO: Call model update method in here
+            # TODO: Return a successful update flag to be used in the message
 
     @staticmethod
     def _get_collection_item(row, collection_name):

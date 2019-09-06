@@ -18,7 +18,7 @@ copyright            : (C) 2019
 from collections import namedtuple
 from PyQt4.QtCore import Qt
 
-Column = namedtuple("Column", ["name", "flag"])
+Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
 LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS"])
 UpdateColumn = namedtuple("UpdateColumn", ['column', 'index'])
 
