@@ -364,6 +364,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         for regdiv in reg_divs:
             self.cbx_reg_div.addItem(regdiv[1], regdiv[0])
 
+        # Select the first item automatically if there is only one division
+        if self.cbx_reg_div.count() ==  2:
+            self.cbx_reg_div.setCurrentIndex(1)
+
         scheme_code = self._gen_scheme_number(code, last_value)
         self.lnedit_schm_num.setText(scheme_code)
 
@@ -1171,6 +1175,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'Saving holders data...'
         ))
         pg_dlg.setValue(4)
+        QgsApplication.processEvents()
         # Attach the scheme object to the holders
         self._holder_importer.set_extra_attribute_value(
             'cb_scheme_collection',
