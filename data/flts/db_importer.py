@@ -332,6 +332,10 @@ class EntityVectorLayerDbImporter(QObject):
         for ent_obj in entity_objects:
             for attr, val in self._ext_attribute_vals.iteritems():
                 if hasattr(entity_obj, attr):
+                    # If it is a list then extend it
+                    if isinstance(val, list):
+                        init_val = getattr(ent_obj, attr)
+                        val.extend(init_val)
                     setattr(ent_obj, attr, val)
 
         return is_new, entity_objects
