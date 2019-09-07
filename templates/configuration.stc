@@ -115,6 +115,7 @@
     <CodeValue value="Fiirst Assessment" code=""/>
     <CodeValue value="Second Assessment" code=""/>
     <CodeValue value="Third Assessment" code=""/>
+    <CodeValue value="Lodgement" code=""/>
    </ValueList>
    <ValueList name="check_lht_approval_status">
     <CodeValue value="Approved" code=""/>
