@@ -90,7 +90,7 @@ class HoldersSheetView(QTableWidget):
         self._vl = None
 
         # Default ISO format for the date
-        self._date_format = '%Y-%m-%d'
+        self._date_format = '%d-%m-%Y'
 
         # Init default view
         self._init_ui()
@@ -250,7 +250,7 @@ class HoldersTableView(QWidget):
         self._init_ui()
 
         # Optional args
-        self._dt_format = kwargs.pop('date_format', '%Y-%m-%d')
+        self._dt_format = kwargs.pop('date_format', '%d-%m-%Y')
 
         # Map for sheet widgets
         self._ws_info = {}

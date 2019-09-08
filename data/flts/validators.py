@@ -24,6 +24,10 @@ from abc import (
     ABCMeta,
     abstractmethod
 )
+from datetime import (
+    date,
+    datetime
+)
 
 from PyQt4.QtCore import (
     pyqtSignal,
@@ -39,6 +43,7 @@ from stdm.utils.reverse_dict import ReverseDict
 from stdm.data.configuration import entity_model
 
 CONFIG_COL_MAPPING_SECTION = 'ColumnMapping'
+DATE_FORMAT = '%d-%m-%Y'
 
 # Validation result
 SUCCESS, WARNING, ERROR, UNDEFINED = range(4)
@@ -216,7 +221,8 @@ class ValidationMessage(object):
 
 class AbstractColumnValidator(object):
     """
-    Abstract class providing the framework for validating column values.
+    Abstract class providing the framework for validating column values
+    against the database column requirements.
     """
     __metaclass__ = ABCMeta
 
@@ -244,7 +250,7 @@ class AbstractColumnValidator(object):
         Sets the next validator object.
         :param validator: Validator object.
         :type validator: AbstractColumnValidator
-        :return: Returns the set validator to enable chaining
+        :return: Returns the specified validator to enable chaining
         i.e. validator1.set_next_validator(validator2).set_next_validator(
         validator3
         )
@@ -482,6 +488,60 @@ class LookupValidator(AbstractColumnValidator):
             return self._validation_messages
 
 
+class DateValueValidator(AbstractColumnValidator):
+    """
+    Check if the date is in the correct format i.e. dd-mm-yyyy.
+    """
+    def validate(self, value, messages=None):
+        if not messages:
+            messages = []
+
+        is_date_valid = False
+
+        if value:
+            # Convert to string for reconstruction based on format
+            if isinstance(value, (datetime, date)):
+                value = value.strftime(DATE_FORMAT)
+
+            # Check if date is in dd-mm-yyyy
+            try:
+                value = datetime.strptime(value, DATE_FORMAT)
+                is_date_valid = True
+            except ValueError:
+                msg = 'Incorrect date format.\nExpected format dd-mm-yyyy.'
+                v_msg = self._create_validation_message(ERROR, msg)
+                self.add_validation_message(v_msg)
+
+            if is_date_valid:
+                # Check date limits
+                if value.date() > self.column.maximum:
+                    max_str = self.column.maximum.strftime(DATE_FORMAT)
+                    msg = 'Date is greater than maximum, which is {0}.'.format(
+                        max_str
+                    )
+                    v_msg = self._create_validation_message(ERROR, msg)
+                    self.add_validation_message(v_msg)
+                    is_date_valid = False
+                if value.date() < self.column.minimum:
+                    min_str = self.column.maximum.strftime(DATE_FORMAT)
+                    msg = 'Date is less than minimum, which is {0}.'.format(
+                        min_str
+                    )
+                    v_msg = self._create_validation_message(ERROR, msg)
+                    self.add_validation_message(v_msg)
+                    is_date_valid = False
+
+            # Log success message
+            if is_date_valid:
+                v_msg = self._create_validation_message(SUCCESS, '')
+                self.add_validation_message(v_msg)
+
+        if self._next_validator:
+            return self._next_validator.validate(value, messages)
+        else:
+            return self._validation_messages
+
+
 """
 Specify validators based on column TYPE_INFO. Please note that all columns 
 will always use BaseColumnValidator hence the reason it is excluded from
@@ -491,15 +551,16 @@ in the list.
 col_type_validators = {
     'VARCHAR': [RangeValidator],
     'INT': [NumberValidator, IntegerValidator, RangeValidator],
-    'DOUBLE': [NumberValidator, RangeValidator,],
-    'LOOKUP': [LookupValidator]
+    'DOUBLE': [NumberValidator, RangeValidator],
+    'LOOKUP': [LookupValidator],
+    'DATE': [DateValueValidator]
 }
 
 
 def column_validator_factory(column):
     """
     Creates a chain of validators using the column TYPE_INFO as defined in
-    the mapping of col_type_validators. If the TYPE_INFO is not found in the
+    the mapping in col_type_validators. If the TYPE_INFO is not found in the
     collection then an instance of the BaseColumnValidator will be returned.
     :param column: Entity column object.
     :type column: stdm.data.configuration.columns.Column
