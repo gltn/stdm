@@ -20,7 +20,7 @@ from PyQt4.QtCore import Qt
 
 Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
 LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS"])
-UpdateColumn = namedtuple("UpdateColumn", ['column', 'index'])
+UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
 
 conf = {
     'document_columns': [
@@ -61,7 +61,10 @@ conf = {
         {Column(name='Registration Division', flag=False): 'registration_division'},
         {Column(name='Block Area', flag=False): 'area'}
     ],
-    'update_columns': UpdateColumn(column={'cb_approval': 'status'}, index=2)
+    'update_columns': [
+        UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
+    ]
+    # 'update_columns': UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)  TODO: Working
 }
 
 

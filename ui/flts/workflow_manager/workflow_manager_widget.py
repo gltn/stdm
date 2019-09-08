@@ -391,17 +391,33 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return values: Approval/disapproval values
         :rtype values: Dictionary
         """
-        # TODO: Find ways to include datetime update along
-        # TODO: status update
         values = {}
         for id_, (row, status) in self._checked_ids.iteritems():
             if status != status_option:
-                values[row] = (
-                    self._update_column.column,
-                    self._update_column.index,
-                    status_option
-                )
+                update_values = []
+                for updates in self._get_update_column(status_option):
+                    update_values.append(updates)
+                values[row] = update_values
         return values
+
+    def _get_update_column(self, value):
+        """
+        Returns the necessary configuration
+        update values per column
+        :param value: Input value
+        :rtype value: Multiple types
+        :return column: Column name as returned by SQLAlchemy query
+                        Table and column name in cases of relationship
+        :rtype column: String or Dictionary
+        :return index: Position of the column in the table view
+        :rtype index: Integer
+        :return new_value: New value to replace old value on update
+        :rtype new_value: Multiple types
+        """
+        for update in self._update_column:
+            new_value = value if value != update.new_value \
+                else update.new_value
+            yield update.column, update.index, new_value
 
     def _update_checked_id(self):
         """
