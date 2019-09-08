@@ -64,7 +64,6 @@ conf = {
     'update_columns': [
         UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
     ]
-    # 'update_columns': UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)  TODO: Working
 }
 
 
