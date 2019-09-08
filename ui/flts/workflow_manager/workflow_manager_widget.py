@@ -42,7 +42,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._profile = current_profile()
         self.data_service = SchemeDataService(self._profile)
         self._lookup = self.data_service.lookups
-        self._update_column = self.data_service.update_columns
+        self._scheme_update_column = self.data_service.update_columns
         _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
         self.setObjectName(object_name)
@@ -76,14 +76,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._model.load()
             self._enable_search() if self._model.results \
                 else self._disable_search()
-        except (exc.SQLAlchemyError, Exception) as e:
-            QMessageBox.critical(
-                self,
-                self.tr('{} Entity Model'.format(self._model.entity_name)),
-                self.tr("{0} failed to load: {1}".format(
-                    self._model.entity_name, e
-                ))
-            )
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to load: {}".format(e)
+            self._critical_message(msg)
         else:
             self.table_view.horizontalHeader().setStretchLastSection(True)
             self.table_view.horizontalHeader().\
@@ -368,9 +363,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status_option = self._lookup.APPROVED
         values = self._approve_disapprove(status_option)
         # TODO: Before update show message with scheme numbers to be changed
-        self._model.update(values)
-        self._update_checked_id()
-        # TODO: On successful update show message to the user
+        try:
+            self._model.update(values)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._critical_message(msg)
+        else:
+            self._update_checked_id()
+            # TODO: Update notification message
 
     def _on_disapprove(self):
         """
@@ -379,9 +379,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status_option = self._lookup.UNAPPROVED
         values = self._approve_disapprove(status_option)
         # TODO: Before update show message with scheme numbers to be changed
-        self._model.update(values)
-        self._update_checked_id()
-        # TODO: On successful update show message to the user
+        try:
+            self._model.update(values)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._critical_message(msg)
+        else:
+            self._update_checked_id()
+            # TODO: Update notification message
 
     def _approve_disapprove(self, status_option):
         """
@@ -395,16 +400,22 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for id_, (row, status) in self._checked_ids.iteritems():
             if status != status_option:
                 update_values = []
-                for updates in self._get_update_column(status_option):
+                for updates in self._get_update_column(
+                        status_option,
+                        self._scheme_update_column
+                ):
                     update_values.append(updates)
                 values[row] = update_values
         return values
 
-    def _get_update_column(self, value):
+    @ staticmethod
+    def _get_update_column(value, updates):
         """
         Returns the necessary configuration
         update values per column
         :param value: Input value
+        :rtype updates: Update column values
+        :param updates: List
         :rtype value: Multiple types
         :return column: Column name as returned by SQLAlchemy query
                         Table and column name in cases of relationship
@@ -414,7 +425,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return new_value: New value to replace old value on update
         :rtype new_value: Multiple types
         """
-        for update in self._update_column:
+        for update in updates:
             new_value = value if value != update.new_value \
                 else update.new_value
             yield update.column, update.index, new_value
@@ -428,3 +439,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             index = self._model.create_index(row, self._lookup.CHECK)
             if index:
                 self._on_check(index)
+
+    def _critical_message(self, msg):
+        """
+        Message box to communicate critical message
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        QMessageBox.critical(
+            self,
+            self.tr('{} Workflow Manager'),
+            self.tr(msg)
+        )

@@ -92,9 +92,9 @@ class SchemeDataService(DataService):
         """
         Scheme table view update column options
         :return: Update column options
-        :rtype: UpdateColumn
+        :rtype: List
         """
-        return SchemeConfig().update_columns
+        return SchemeConfig().scheme_update_columns
 
     def related_entity_name(self):
         """

@@ -318,7 +318,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         else:
             self.layoutChanged.emit()
             # TODO: Call model update method in here
-            # TODO: Return a successful update flag to be used in the message
 
     @staticmethod
     def _get_collection_item(row, collection_name):

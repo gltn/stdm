@@ -61,9 +61,11 @@ conf = {
         {Column(name='Registration Division', flag=False): 'registration_division'},
         {Column(name='Block Area', flag=False): 'area'}
     ],
-    'update_columns': [
-        UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
-    ]
+    'update_columns': {
+        'scheme_update': [
+            UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
+        ]
+    }
 }
 
 
@@ -137,13 +139,14 @@ class SchemeConfig(Config):
         return self.get_data('lookups')
 
     @property
-    def update_columns(self):
+    def scheme_update_columns(self):
         """
         Scheme table view update column options
-        :return: Update column options
-        :rtype: UpdateColumn
+        :return: Update column values
+        :rtype: List
         """
-        return self.get_data('update_columns')
+        return self.get_data('update_columns').\
+            get('scheme_update', None)
 
 
 
