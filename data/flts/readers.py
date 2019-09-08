@@ -139,7 +139,6 @@ def _create_qgs_fields(xl_sheet, headers_first_line):
                 col_name,
                 f_type
             )
-            print 'Name: {0}, Type: {1}'.format(col_name, field.typeName())
             # Set column index mapping
             xl_qgs_col_idx_mapping[i] = qgs_col_idx
             qgs_col_idx += 1
@@ -282,7 +281,5 @@ def csv_vector_layer(csv_path, **kwargs):
     uri = url.toEncoded().data()
     csv_vl = QgsVectorLayer(uri, layer_name, 'delimitedtext')
     fields = csv_vl.fields()
-    for f in fields:
-        print 'Name: {0}, Type: {1}'.format(f.name(), f.typeName())
 
     return csv_vl
