@@ -220,6 +220,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if not self._checked_ids:
             return
+        self._notif_bar.clear()
         last_id = self._checked_ids.keys()[-1]
         key, label = self._create_key(last_id)
         if key in store:
