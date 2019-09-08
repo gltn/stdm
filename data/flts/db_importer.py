@@ -22,6 +22,7 @@ from abc import (
     ABCMeta,
     abstractmethod
 )
+from datetime import datetime
 
 from PyQt4.QtCore import (
     pyqtSignal,
@@ -30,6 +31,7 @@ from PyQt4.QtCore import (
 
 from stdm.settings import current_profile
 from stdm.data.flts.validators import (
+    DATE_FORMAT,
     entity_vector_layer_mapping,
     lookup_values,
     ValidatorException
@@ -98,7 +100,7 @@ class LookupValueTranslator(AbstractValueTranslator):
         # Fetch the lookup items
         lookup_items = lookup_values(self.column.value_list)
 
-        # Collection indexed by lower case of the lookup values
+        # Collection indexed by lower case of the lookup values.
         self._lookup_values = {v.lower(): pk
                                for v, pk in lookup_items.reverse.iteritems()}
 
@@ -107,10 +109,23 @@ class LookupValueTranslator(AbstractValueTranslator):
         return self._lookup_values.get(value.lower(), None)
 
 
+class DateValueTranslator(AbstractValueTranslator):
+    """
+    Transforms values in string format to the correct dates.
+    """
+    def transform(self, value):
+        # Convert dates in string type to the corresponding date type.
+        if isinstance(value, basestring):
+            return datetime.strptime(value, DATE_FORMAT)
+
+        return value
+
+
 # Value translator class based on the column TYPE_INFO.
 value_translators = {
-    'VARCHAR': VarCharValueTranslator,
-    'LOOKUP': LookupValueTranslator
+    'DATE': DateValueTranslator,
+    'LOOKUP': LookupValueTranslator,
+    'VARCHAR': VarCharValueTranslator
 }
 
 

@@ -488,7 +488,7 @@ class LookupValidator(AbstractColumnValidator):
             return self._validation_messages
 
 
-class DateValueValidator(AbstractColumnValidator):
+class DateValidator(AbstractColumnValidator):
     """
     Check if the date is in the correct format i.e. dd-mm-yyyy.
     """
@@ -549,11 +549,11 @@ the collection. The validators will be chained based on the order specified
 in the list.
 """
 col_type_validators = {
-    'VARCHAR': [RangeValidator],
-    'INT': [NumberValidator, IntegerValidator, RangeValidator],
+    'DATE': [DateValidator],
     'DOUBLE': [NumberValidator, RangeValidator],
+    'INT': [NumberValidator, IntegerValidator, RangeValidator],
     'LOOKUP': [LookupValidator],
-    'DATE': [DateValueValidator]
+    'VARCHAR': [RangeValidator]
 }
 
 
