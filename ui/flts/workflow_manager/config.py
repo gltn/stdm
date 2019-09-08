@@ -19,7 +19,7 @@ from collections import namedtuple
 from PyQt4.QtCore import Qt
 
 Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
-LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS"])
+LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS", "SCHEME_NUMBER"])
 UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
 
 conf = {
@@ -46,7 +46,7 @@ conf = {
                          'border-bottom: 1px solid #A9A5A2;'
                          'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
-    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2),
+    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2, SCHEME_NUMBER=1),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},

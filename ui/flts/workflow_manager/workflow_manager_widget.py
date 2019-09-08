@@ -99,7 +99,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         row, check_state, record_id = self._check_state(index)
         if check_state == 1:
             status = self._get_approval_status(index)
-            self._checked_ids[record_id] = (row, status)
+            scheme_number = self._get_scheme_number(index)
+            self._checked_ids[record_id] = (row, status, scheme_number)
             self._on_check_enable_widgets()
 
     def _on_uncheck(self, index):
@@ -111,7 +112,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         row, check_state, record_id = self._check_state(index)
         if check_state == 0:
             self._remove_checked_id(record_id)
-            key, label = self._create_key(record_id)
+            scheme_number = self._get_scheme_number(index)
+            key, label = self._create_key(record_id, scheme_number)
             self._remove_stored_widget(key)
             self._on_check_disable_widgets()
 
@@ -142,9 +144,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return status: Scheme approval status
         :rtype status: Integer
         """
+        # TODO: Refactor into a method
         row = index.row()
         status = self._model.results[row].get(self._lookup.STATUS)
         return int(status)
+
+    def _get_scheme_number(self, index):
+        """
+        Return scheme unique number
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :return scheme_number: Scheme unique number
+        :rtype scheme_number: String
+        """
+        # TODO: Refactor into a method
+        row = index.row()
+        scheme_number = self._model.results[row].get(self._lookup.SCHEME_NUMBER)
+        return scheme_number
 
     def _remove_checked_id(self, record_id):
         """
@@ -222,7 +238,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         self._notif_bar.clear()
         last_id = self._checked_ids.keys()[-1]
-        key, label = self._create_key(last_id)
+        row, status, scheme_number = self._checked_ids[last_id]
+        key, label = self._create_key(last_id, scheme_number)
         if key in store:
             saved_widget = store[key]
             if self._is_alive(saved_widget):
@@ -234,7 +251,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else self._disable_search()
             store[key] = detail_table
 
-    def _create_key(self, id_):
+    def _create_key(self, id_, scheme_number):
         """
         Create key to be used as widget store ID
         :param id_: Unique integer value
@@ -249,19 +266,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if label is None:
             return None, None
         key = "{0}_{1}".format(str(id_), label)
+        label = "{0} - {1}".format(label, scheme_number)
         return key, label
 
     def _get_label(self):
         """
         Return label depending on the type of scheme
         details (holders or documents)
-        :return: Sender object name or detail tab name
+        :return: Sender object name
         :rtype: String
         """
         button = self._button_clicked()
         if button:
             return button.objectName()
-        return self._tab_name
+        object_name, scheme_number = self._tab_name.split(" - ")
+        return object_name
 
     def _enable_search(self):
         """
@@ -371,10 +390,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Approve or disapprove title text
         :type title: String
         """
-        values, rows = self._approval_columns(status)
+        values, scheme_numbers, rows = self._approval_columns(status)
         updated_rows = None
         try:
-            msg = self._approval_message(title.capitalize(), rows)
+            msg = self._approval_message(title.capitalize(), rows, scheme_numbers)
             reply = self._show_question_message(msg)
             if reply:
                 updated_rows = self._model.update(values)
@@ -401,8 +420,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype values: Dictionary
         """
         values = {}
+        scheme_numbers = []
         count = 0
-        for id_, (row, status) in self._checked_ids.iteritems():
+        for id_, (row, status, scheme_number) in self._checked_ids.iteritems():
             if status != status_option:
                 update_values = []
                 for updates in self._get_update_column(
@@ -411,8 +431,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 ):
                     update_values.append(updates)
                 values[row] = update_values
+                scheme_numbers.append(scheme_number)
                 count += 1
-        return values, count
+        return values, scheme_numbers, count
 
     @ staticmethod
     def _get_update_column(value, updates):
@@ -437,7 +458,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             yield update.column, update.index, new_value
 
     @staticmethod
-    def _approval_message(prefix, rows):
+    def _approval_message(prefix, rows, schemes=None):
         """
         Returns approve or disapprove message
         :param prefix: Prefix text
@@ -447,8 +468,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Approval message
         :rtype: String
         """
-
-        msg = 'records' if rows != 1 else 'record'
+        # TODO: Refactor based on schemes
+        msg = 'schemes' if rows != 1 else 'scheme'
+        if schemes:
+            return "{0} {1} {2}?\n({3})".format(prefix, rows, msg, ', '.join(schemes))
         return "{0} {1} {2}?".format(prefix, rows, msg)
 
     def _show_question_message(self, msg):
@@ -483,7 +506,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Update table view checked ids in the checked tracker
         """
         checked_ids = self._checked_ids.copy()
-        for id_, (row, status) in checked_ids.iteritems():
+        for id_, (row, status, scheme_number) in checked_ids.iteritems():
             index = self._model.create_index(row, self._lookup.CHECK)
             if index:
                 self._on_check(index)
