@@ -20,6 +20,7 @@ copyright            : (C) 2019
 from collections import OrderedDict
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
@@ -39,6 +40,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._checked_ids = OrderedDict()
         self._detail_store = {}
         self._tab_name = None
+        self._notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(self._profile)
         self._lookup = self.data_service.lookups
@@ -61,8 +63,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
-        self.approveButton.clicked.connect(self._on_approve)
-        self.disapproveButton.clicked.connect(self._on_disapprove)
+        self.approveButton.clicked.connect(
+            lambda: self._approval(self._lookup.APPROVED, "approve")
+        )
+        self.disapproveButton.clicked.connect(
+            lambda: self._approval(self._lookup.UNAPPROVED, "disapprove")
+        )
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
@@ -78,7 +84,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else self._disable_search()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to load: {}".format(e)
-            self._critical_message(msg)
+            self._show_critical_message(msg)
         else:
             self.table_view.horizontalHeader().setStretchLastSection(True)
             self.table_view.horizontalHeader().\
@@ -356,47 +362,45 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return False
         return True
 
-    def _on_approve(self):
-        """
-        Approves a Scheme
-        """
-        status_option = self._lookup.APPROVED
-        values = self._approve_disapprove(status_option)
-        # TODO: Before update show message with scheme numbers to be changed
-        try:
-            self._model.update(values)
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed to update: {}".format(e)
-            self._critical_message(msg)
-        else:
-            self._update_checked_id()
-            # TODO: Update notification message
-
-    def _on_disapprove(self):
-        """
-        Disapprove a Scheme
-        """
-        status_option = self._lookup.UNAPPROVED
-        values = self._approve_disapprove(status_option)
-        # TODO: Before update show message with scheme numbers to be changed
-        try:
-            self._model.update(values)
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed to update: {}".format(e)
-            self._critical_message(msg)
-        else:
-            self._update_checked_id()
-            # TODO: Update notification message
-
-    def _approve_disapprove(self, status_option):
+    def _approval(self, status, title):
         """
         Approve or disapprove a Scheme
+        :param status: Approve or disapprove status
+        :type status: Integer
+        :param title: Approve or disapprove title text
+        :type title: String
+        """
+        values, rows = self._approval_columns(status)
+        updated_rows = None
+        try:
+            msg = self._approval_message(title.capitalize(), rows)
+            reply = self._show_question_message(msg)
+            if reply:
+                updated_rows = self._model.update(values)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._show_critical_message(msg)
+        else:
+            if reply:
+                self._update_checked_id()
+                self._notif_bar.clear()
+                msg = self._approval_message(
+                    "Successfully {}".format(title), updated_rows
+                )
+                self._notif_bar.insertInformationNotification(msg)
+
+    def _approval_columns(self, status_option):
+        """
+        Returns approve or disapprove columns and
+        accompanying configurations for update
         :param status_option: Approve or disapprove status
         :type status_option: Integer
-        :return values: Approval/disapproval values
+        :return values: Approval/disapproval values and
+                        accompanying configurations
         :rtype values: Dictionary
         """
         values = {}
+        count = 0
         for id_, (row, status) in self._checked_ids.iteritems():
             if status != status_option:
                 update_values = []
@@ -406,7 +410,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 ):
                     update_values.append(updates)
                 values[row] = update_values
-        return values
+                count += 1
+        return values, count
 
     @ staticmethod
     def _get_update_column(value, updates):
@@ -430,6 +435,48 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else update.new_value
             yield update.column, update.index, new_value
 
+    @staticmethod
+    def _approval_message(prefix, rows):
+        """
+        Returns approve or disapprove message
+        :param prefix: Prefix text
+        :type prefix: String
+        :param rows: Number of rows
+        :type rows: Integer
+        :return: Approval message
+        :rtype: String
+        """
+
+        msg = 'records' if rows != 1 else 'record'
+        return "{0} {1} {2}?".format(prefix, rows, msg)
+
+    def _show_question_message(self, msg):
+        """
+        Message box to communicate a question
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        if QMessageBox.question(
+            self,
+            self.tr('Workflow Manager'),
+            self.tr(msg),
+            QMessageBox.Yes | QMessageBox.No
+        ) == QMessageBox.No:
+            return False
+        return True
+
+    def _show_critical_message(self, msg):
+        """
+        Message box to communicate critical message
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        QMessageBox.critical(
+            self,
+            self.tr('Workflow Manager'),
+            self.tr(msg)
+        )
+
     def _update_checked_id(self):
         """
         Update table view checked ids in the checked tracker
@@ -440,14 +487,3 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if index:
                 self._on_check(index)
 
-    def _critical_message(self, msg):
-        """
-        Message box to communicate critical message
-        :param msg: Message to be communicated
-        :type msg: String
-        """
-        QMessageBox.critical(
-            self,
-            self.tr('{} Workflow Manager'),
-            self.tr(msg)
-        )
