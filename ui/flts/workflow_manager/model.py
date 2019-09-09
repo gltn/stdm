@@ -173,11 +173,26 @@ class WorkflowManagerModel(QAbstractTableModel):
         item = self.results[row].get(column)
         return item
 
+    def create_index(self, row, column):
+        """
+        Safely creates and returns the index
+        :param row: Table view row index
+        :param column: Table view column
+        :return index: Table view item identifier or False
+        :rtype index: QModelIndex or Boolean
+        """
+        index = self.index(row, column)
+        if not index.isValid() and \
+                not (0 <= index.row() < len(self.results)) and \
+                not (0 <= index.column() < len(self._headers)):
+            return False
+        return index
+
     def load(self):
         """
         Loads query results to be used in the table view
         """
-        # TODO: Too long/ugly method. To be broken potentially into class objects
+        # TODO: Too long and ugly method. To be broken potentially into class objects
         try:
             self.query_object = self.data_service.run_query()
             for row in self.query_object:
@@ -195,7 +210,7 @@ class WorkflowManagerModel(QAbstractTableModel):
                             store[n] = None
                             for item in self._get_collection_item(row, self.collection_name):
                                 if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(getattr(item, fk_name, None)):
+                                    if self._is_mapped(self._get_value(item, fk_name)):
                                         store[n] = self._get_value(item, column, fk_name)
                                     else:
                                         store[n] = self._get_value(item, column.get(fk_name))
@@ -212,26 +227,6 @@ class WorkflowManagerModel(QAbstractTableModel):
                 self.results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
-
-    def _get_value(self, row_obj, column, attr=None):
-        """
-        Returns entity column value
-        :param row_obj: Entity row object
-        :type row_obj: Entity
-        :param column: Field or related entity name
-        :type column: String/Dictionary
-        :param attr: Related entity column
-        :type attr: String
-        :return value: Field value
-        :rtype value: Multiple types
-        """
-        if attr:
-            fk_entity_object = getattr(row_obj, attr, None)
-            value = getattr(fk_entity_object, column.get(attr), None)
-        else:
-            value = getattr(row_obj, column, None)
-        value = self._cast_data(value)
-        return value
 
     def _cast_data(self, value):
         """
@@ -288,58 +283,88 @@ class WorkflowManagerModel(QAbstractTableModel):
     def update(self, updates):
         """
         Update database record(s) on client edit
+        :param updates: Update items - values and column indexes
+        :type updates: Dictionary
+        :return count: Number of updated rows
+        :rtype count: Integer
         """
-        # TODO: Too long/ugly method. To be broken potentially into class objects
-        count = 0
+        # TODO: Too long and ugly method. To be broken potentially into class objects
+        update_items = {}
         try:
             self.layoutAboutToBeChanged.emit()
             for row_idx, columns in updates.iteritems():
                 row = self.results[row_idx]
                 data = row["data"]
-                updated = False
+                store = []
                 for column, column_idx, new_value in columns:
                     if isinstance(column, dict):
                         fk_name = column.keys()[0]
                         if fk_name in self.fk_entity_name and hasattr(data, fk_name):
-                            # TODO: refactored into _set_value method. See _get_value
-                            # TODO: as an example
-                            fk_entity_object = getattr(data, fk_name, None)
-                            setattr(fk_entity_object, column.get(fk_name), new_value)
-                            fk_entity_object.update()
-                            updated = True
+                            self._update_entity(data, column, new_value, fk_name)
+                            store.append((column_idx, new_value))
+                            continue
                         elif self.collection_name:
                             for item in self._get_collection_item(data, self.collection_name):
                                 if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(getattr(item, fk_name, None)):
-                                        # TODO: refactored into _set_value method. See _get_value
-                                        # TODO: as an example
-                                        fk_entity_object = getattr(item, fk_name, None)
-                                        setattr(fk_entity_object, column.get(fk_name), new_value)
-                                        fk_entity_object.update()
-                                        updated = True
+                                    if self._is_mapped(self._get_value(item, fk_name)):
+                                        self._update_entity(item, column, new_value, fk_name)
+                                        store.append((column_idx, new_value))
                                     else:
-                                        # TODO: refactored into _set_value method. See _get_value
-                                        # TODO: as an example
-                                        setattr(item, column.get(fk_name), new_value)
-                                        item.update()
-                                        updated = True
+                                        self._update_entity(item, column.get(fk_name), new_value)
+                                        store.append((column_idx, new_value))
+                            continue
                     elif hasattr(data, column):
-                        # TODO: refactored into _set_value method. See _get_value
-                        # TODO: as an example
-                        setattr(data, column, new_value)
-                        data.update()
-                        updated = True
-                    row[column_idx] = new_value  # TODO: See how this can be put
-                    # TODO: in its own method called within the exception else section
-                count = count + 1 if updated else count
-                updated = False
+                        self._update_entity(data, column, new_value)
+                        store.append((column_idx, new_value))
+                        continue
+                update_items if not store else update_items.update({row_idx: store})
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
+            self._update_model_items(update_items)
             self.layoutChanged.emit()
-            # TODO: Call model update method in here
         finally:
-            return count
+            return len(update_items)
+
+    def _update_entity(self, query_obj, column, value, attr=None):
+        """"
+        Update an entity record
+        :param query_obj: Entity query object
+        :type query_obj: Entity
+        :param column: Column or related entity name
+        :type column: String/Dictionary
+        :return value: New value for update
+        :rtype value: Multiple types
+        :param attr: Related entity column
+        :type attr: String
+        """
+        if attr:
+            fk_entity_obj = self._get_value(query_obj, attr)
+            setattr(fk_entity_obj, column.get(attr), value)
+            query_obj = fk_entity_obj
+        else:
+            setattr(query_obj, column, value)
+        query_obj.update()
+
+    def _get_value(self, query_obj, column, attr=None):
+        """
+        Returns entity column value
+        :param query_obj: Entity query object
+        :type query_obj: Entity
+        :param column: Column or related entity name
+        :type column: String/Dictionary
+        :param attr: Related entity column
+        :type attr: String
+        :return value: Field value
+        :rtype value: Multiple types
+        """
+        if attr:
+            fk_entity_object = getattr(query_obj, attr, None)
+            value = getattr(fk_entity_object, column.get(attr), None)
+        else:
+            value = getattr(query_obj, column, None)
+        value = self._cast_data(value)
+        return value
 
     @staticmethod
     def _get_collection_item(row, collection_name):
@@ -372,17 +397,15 @@ class WorkflowManagerModel(QAbstractTableModel):
         except UnmappedInstanceError:
             return False
 
-    def create_index(self, row, column):
+    def _update_model_items(self, updates):
         """
-        Safely creates and returns the index
-        :param row: Table view row index
-        :param column: Table view column
-        :return index: Table view item identifier or False
-        :rtype index: QModelIndex or Boolean
+        Update model items
+        :param updates: Model items to be updated
+        :type updates: Dictionary
         """
-        index = self.index(row, column)
-        if not index.isValid() and \
-                not (0 <= index.row() < len(self.results)) and \
-                not (0 <= index.column() < len(self._headers)):
-            return False
-        return index
+        for row_idx, columns in updates.iteritems():
+            row = self.results[row_idx]
+            if not columns:
+                return
+            for column_idx, new_value in columns:
+                row[column_idx] = new_value

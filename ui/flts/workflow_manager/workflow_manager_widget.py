@@ -395,6 +395,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         items, scheme_numbers, rows = self._approval_items(status)
         updated_rows = None
         try:
+            self._notif_bar.clear()
             msg = self._approval_message(title.capitalize(), rows, scheme_numbers)
             reply = self._show_question_message(msg)
             if reply:
@@ -405,7 +406,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             if reply:
                 self._update_checked_id()
-                self._notif_bar.clear()
                 msg = self._approval_message(
                     "Successfully {}".format(title), updated_rows
                 )
