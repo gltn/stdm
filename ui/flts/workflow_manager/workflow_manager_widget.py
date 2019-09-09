@@ -141,26 +141,39 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Return scheme approval status
         :param index: Table view item identifier
         :type index: QModelIndex
-        :return status: Scheme approval status
-        :rtype status: Integer
+        :return: Scheme approval status
+        :rtype: Integer
         """
-        # TODO: Refactor into a method
-        row = index.row()
-        status = self._model.results[row].get(self._lookup.STATUS)
-        return int(status)
+        return self._model_item(
+            index.row(),
+            self._lookup.STATUS
+        )
 
     def _get_scheme_number(self, index):
         """
         Return scheme unique number
         :param index: Table view item identifier
         :type index: QModelIndex
-        :return scheme_number: Scheme unique number
-        :rtype scheme_number: String
+        :return: Scheme unique number
+        :rtype: String
         """
-        # TODO: Refactor into a method
-        row = index.row()
-        scheme_number = self._model.results[row].get(self._lookup.SCHEME_NUMBER)
-        return scheme_number
+        return self._model_item(
+            index.row(),
+            self._lookup.SCHEME_NUMBER
+        )
+
+    def _model_item(self, row, column):
+        """
+        Return model item
+        :param row: Row index
+        :rtype row: Integer
+        :param column: Column index
+        :rtype column: Integer
+        :return table_item: Table field value
+        :rtype table_item: Multiple types
+        """
+        table_item = self._model.results[row].get(column)
+        return table_item
 
     def _remove_checked_id(self, record_id):
         """
@@ -276,10 +289,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Sender object name
         :rtype: String
         """
+        object_name = None
         button = self._button_clicked()
         if button:
             return button.objectName()
-        object_name, scheme_number = self._tab_name.split(" - ")
+        elif self._tab_name:
+            object_name, scheme_number = self._tab_name.split(" - ")
         return object_name
 
     def _enable_search(self):

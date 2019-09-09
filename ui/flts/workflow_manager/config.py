@@ -50,7 +50,7 @@ conf = {
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Approved', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Status', flag=False): {'cb_approval': 'status'}},
         {Column(name='Date of Approval', flag=False): 'date_of_approval'},
         {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
         {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
