@@ -392,13 +392,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Approve or disapprove title text
         :type title: String
         """
-        values, scheme_numbers, rows = self._approval_columns(status)
+        items, scheme_numbers, rows = self._approval_items(status)
         updated_rows = None
         try:
             msg = self._approval_message(title.capitalize(), rows, scheme_numbers)
             reply = self._show_question_message(msg)
             if reply:
-                updated_rows = self._model.update(values)
+                updated_rows = self._model.update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to update: {}".format(e)
             self._show_critical_message(msg)
@@ -411,41 +411,41 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 )
                 self._notif_bar.insertInformationNotification(msg)
 
-    def _approval_columns(self, status_option):
+    def _approval_items(self, status_option):
         """
         Returns approve or disapprove columns and
         accompanying configurations for update
         :param status_option: Approve or disapprove status
         :type status_option: Integer
-        :return values: Approval/disapproval values and
+        :return items: Approval/disapproval values and
                         accompanying configurations
-        :rtype values: Dictionary
+        :rtype items: Dictionary
         """
-        values = {}
+        items = {}
         scheme_numbers = []
         count = 0
         for id_, (row, status, scheme_number) in self._checked_ids.iteritems():
             if status != status_option:
-                update_values = []
-                for updates in self._get_update_column(
+                update_items = []
+                for updates in self._get_update_item(
                         status_option,
                         self._scheme_update_column
                 ):
-                    update_values.append(updates)
-                values[row] = update_values
+                    update_items.append(updates)
+                items[row] = update_items
                 scheme_numbers.append(scheme_number)
                 count += 1
-        return values, scheme_numbers, count
+        return items, scheme_numbers, count
 
     @ staticmethod
-    def _get_update_column(value, updates):
+    def _get_update_item(value, updates):
         """
         Returns the necessary configuration
-        update values per column
+        update items per column
         :param value: Input value
+        :rtype value: Multiple types
         :rtype updates: Update column values
         :param updates: List
-        :rtype value: Multiple types
         :return column: Column name as returned by SQLAlchemy query
                         Table and column name in cases of relationship
         :rtype column: String or Dictionary
@@ -460,20 +460,24 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             yield update.column, update.index, new_value
 
     @staticmethod
-    def _approval_message(prefix, rows, schemes=None):
+    def _approval_message(prefix, rows, scheme_numbers=None):
         """
         Returns approve or disapprove message
         :param prefix: Prefix text
         :type prefix: String
         :param rows: Number of rows
         :type rows: Integer
+        :param scheme_numbers: Scheme numbers
+        :param scheme_numbers: List
         :return: Approval message
         :rtype: String
         """
         # TODO: Refactor based on schemes
         msg = 'schemes' if rows != 1 else 'scheme'
-        if schemes:
-            return "{0} {1} {2}?\n({3})".format(prefix, rows, msg, ', '.join(schemes))
+        if scheme_numbers:
+            return "{0} {1} {2}?\n({3})".format(
+                prefix, rows, msg, ', '.join(scheme_numbers)
+            )
         return "{0} {1} {2}?".format(prefix, rows, msg)
 
     def _show_question_message(self, msg):

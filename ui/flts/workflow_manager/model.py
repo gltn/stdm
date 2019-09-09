@@ -285,7 +285,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         except (ValueError, TypeError, Exception):
             return False
 
-    def update(self, values):
+    def update(self, updates):
         """
         Update database record(s) on client edit
         """
@@ -293,7 +293,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         count = 0
         try:
             self.layoutAboutToBeChanged.emit()
-            for row_idx, columns in values.iteritems():
+            for row_idx, columns in updates.iteritems():
                 row = self.results[row_idx]
                 data = row["data"]
                 updated = False
