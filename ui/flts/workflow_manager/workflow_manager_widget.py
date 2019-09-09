@@ -144,7 +144,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Scheme approval status
         :rtype: Integer
         """
-        return self._model_item(
+        return self._model.model_item(
             index.row(),
             self._lookup.STATUS
         )
@@ -157,23 +157,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Scheme unique number
         :rtype: String
         """
-        return self._model_item(
+        return self._model.model_item(
             index.row(),
             self._lookup.SCHEME_NUMBER
         )
-
-    def _model_item(self, row, column):
-        """
-        Return model item
-        :param row: Row index
-        :rtype row: Integer
-        :param column: Column index
-        :rtype column: Integer
-        :return table_item: Table field value
-        :rtype table_item: Multiple types
-        """
-        table_item = self._model.results[row].get(column)
-        return table_item
 
     def _remove_checked_id(self, record_id):
         """

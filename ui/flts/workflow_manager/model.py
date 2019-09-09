@@ -160,6 +160,19 @@ class WorkflowManagerModel(QAbstractTableModel):
             return None, None
         return row, column
 
+    def model_item(self, row, column):
+        """
+        Return model item
+        :param row: Row index
+        :rtype row: Integer
+        :param column: Column index
+        :rtype column: Integer
+        :return item: Table field value
+        :rtype item: Multiple types
+        """
+        item = self.results[row].get(column)
+        return item
+
     def load(self):
         """
         Loads query results to be used in the table view
