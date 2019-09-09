@@ -228,23 +228,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _cast_data(self, value):
-        """
-        Cast data from one type to another
-        :param value: Item data
-        :type value: Multiple types
-        :return value: Cast data
-        :rtype value: Multiple types
-        """
-        value = float(value) if self._is_number(value) else value
-        if isinstance(value, (Decimal, int, float)):
-            return float(value)
-        elif type(value) is datetime.date:
-            return QDate(value)
-        elif type(value) is datetime.datetime:
-            return QDateTime(value).time()
-        return unicode(value) if value is not None else value
-
     @staticmethod
     def _append(item, container):
         """
@@ -365,6 +348,23 @@ class WorkflowManagerModel(QAbstractTableModel):
             value = getattr(query_obj, column, None)
         value = self._cast_data(value)
         return value
+
+    def _cast_data(self, value):
+        """
+        Cast data from one type to another
+        :param value: Item data
+        :type value: Multiple types
+        :return value: Cast data
+        :rtype value: Multiple types
+        """
+        value = float(value) if self._is_number(value) else value
+        if isinstance(value, (Decimal, int, float)):
+            return float(value)
+        elif type(value) is datetime.date:
+            return QDate(value)
+        elif type(value) is datetime.datetime:
+            return QDateTime(value).time()
+        return unicode(value) if value is not None else value
 
     @staticmethod
     def _get_collection_item(row, collection_name):
