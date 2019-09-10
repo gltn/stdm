@@ -17,8 +17,10 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+from collections import OrderedDict
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
@@ -32,54 +34,57 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
-
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
-        self._profile = current_profile()
-        self._checked_ids = []
+        self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._temp_store = {}
         self._tab_name = None
+        self._notif_bar = NotificationBar(self.vlNotification)
+        self._profile = current_profile()
+        self.data_service = SchemeDataService(self._profile)
+        self._lookup = self.data_service.lookups
+        self._scheme_update_column = self.data_service.update_columns
+        _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
         self.setObjectName(object_name)
-        self.data_service = SchemeDataService(self._profile)
-        self.model = WorkflowManagerModel(self.data_service)
+        self.holdersButton.setObjectName("Holders")
+        self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
-        self.table_view.setModel(self.model)
+        self._model = WorkflowManagerModel(self.data_service)
+        self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
         self.table_view.horizontalHeader().\
-            setStyleSheet(StyleSheet().header_style)
+            setStyleSheet(_header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
-        self.holdersButton.setObjectName("Holders")
-        self.documentsButton.setObjectName("Documents")
+        self.approveButton.clicked.connect(
+            lambda: self._approval(self._lookup.APPROVED, "approve")
+        )
+        self.disapproveButton.clicked.connect(
+            lambda: self._approval(self._lookup.UNAPPROVED, "disapprove")
+        )
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
-        self.initial_load()
+        self._initial_load()
 
-    def initial_load(self):
+    def _initial_load(self):
         """
         Initial table view data load
         """
         try:
-            self.model.load()
-            self._enable_search() if self.model.results \
+            self._model.load()
+            self._enable_search() if self._model.results \
                 else self._disable_search()
-        except (exc.SQLAlchemyError, Exception) as e:
-            QMessageBox.critical(
-                self,
-                self.tr('{} Entity Model'.format(self.model.entity_name)),
-                self.tr("{0} failed to load: {1}".format(
-                    self.model.entity_name, e
-                ))
-            )
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to load: {}".format(e)
+            self._show_critical_message(msg)
         else:
             self.table_view.horizontalHeader().setStretchLastSection(True)
             self.table_view.horizontalHeader().\
@@ -91,10 +96,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        state, record_id = self._check_state(index)
-        if state == 1:
-            self._add_checked_id(record_id)
-            self._enable_widget([self.holdersButton, self.documentsButton])
+        row, check_state, record_id = self._check_state(index)
+        if check_state == 1:
+            status = self._get_approval_status(index)
+            scheme_number = self._get_scheme_number(index)
+            self._checked_ids[record_id] = (row, status, scheme_number)
+            self._on_check_enable_widgets()
 
     def _on_uncheck(self, index):
         """
@@ -102,15 +109,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        state, record_id = self._check_state(index)
-        if state == 0:
+        row, check_state, record_id = self._check_state(index)
+        if check_state == 0:
             self._remove_checked_id(record_id)
-            key, label = self._create_key(record_id)
+            scheme_number = self._get_scheme_number(index)
+            key, label = self._create_key(record_id, scheme_number)
             self._remove_stored_widget(key)
-            if not self._checked_ids:
-                self._disable_widget([
-                    self.holdersButton, self.documentsButton
-                ])
+            self._on_check_disable_widgets()
 
     def _check_state(self, index):
         """
@@ -122,36 +127,50 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return record_id: Record/entity id (primary key)
         :rtype record_id: Integer
         """
-        position = 0
-        row, column = self.model.get_column_index(
-            index, position
+        row, column = self._model.get_column_index(
+            index, self._lookup.CHECK
         )
         if None in (row, column):
-            return None, None
-        state = self.model.results[row].get(column)
-        record_id = self.model.get_record_id(row)
-        return int(state), int(record_id)
+            return None, None, None
+        state = self._model.results[row].get(column)
+        record_id = self._model.get_record_id(row)
+        return row, int(state), int(record_id)
 
-    def _add_checked_id(self, record_id):
+    def _get_approval_status(self, index):
         """
-        Add table view record identifier
-        from checked tracker
-        :param record_id: Checked table view identifier
-        :rtype record_id: Integer
+        Return scheme approval status
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :return: Scheme approval status
+        :rtype: Integer
         """
-        if record_id not in self._checked_ids:
-            self._checked_ids.append(record_id)
+        return self._model.model_item(
+            index.row(),
+            self._lookup.STATUS
+        )
+
+    def _get_scheme_number(self, index):
+        """
+        Return scheme unique number
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :return: Scheme unique number
+        :rtype: String
+        """
+        return self._model.model_item(
+            index.row(),
+            self._lookup.SCHEME_NUMBER
+        )
 
     def _remove_checked_id(self, record_id):
         """
-        Remove table view record identifier
-        from checked tracker
+        Remove table view checked ids from checked tracker
         :param record_id: Checked table view identifier
         :rtype record_id: Integer
         """
         try:
-            self._checked_ids.remove(record_id)
-        except ValueError:
+            del self._checked_ids[record_id]
+        except KeyError:
             return
 
     def _remove_stored_widget(self, key):
@@ -169,6 +188,45 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             self._load_scheme_detail(self._detail_store)
 
+    def _on_check_enable_widgets(self):
+        """
+        Enable Workflow Manager widgets on check
+        """
+        status = self._get_stored_status()
+        self._enable_widget([self.holdersButton, self.documentsButton])
+        if self._lookup.PENDING in status or \
+                self._lookup.UNAPPROVED in status:
+            self._enable_widget(self.approveButton)
+        if self._lookup.APPROVED in status:
+            self._enable_widget(self.disapproveButton)
+        self._on_check_disable_widgets()
+
+    def _on_check_disable_widgets(self):
+        """
+        Disable Workflow Manager widgets on uncheck
+        """
+        status = self._get_stored_status()
+        if not self._checked_ids:
+            self._close_tab(1)
+            self._disable_widget([
+                self.holdersButton, self.documentsButton,
+                self.approveButton, self.disapproveButton
+            ])
+        elif self._lookup.APPROVED not in status:
+            self._disable_widget(self.disapproveButton)
+        elif self._lookup.PENDING not in status and \
+                self._lookup.UNAPPROVED not in status:
+            self._disable_widget(self.approveButton)
+
+    def _get_stored_status(self):
+        """
+        Return stored scheme approval status
+        :return status: Scheme approval status
+        :rtype status: List
+        """
+        status = [tup[1] for tup in self._checked_ids.values()]
+        return status
+
     def _load_scheme_detail(self, store):
         """
         On unchecking a record or clicking the 'Holders'
@@ -177,10 +235,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type store: Dictionary
         """
         if not self._checked_ids:
-            self._close_tab(1)
             return
-        last_id = self._checked_ids[-1]
-        key, label = self._create_key(last_id)
+        self._notif_bar.clear()
+        last_id = self._checked_ids.keys()[-1]
+        row, status, scheme_number = self._checked_ids[last_id]
+        key, label = self._create_key(last_id, scheme_number)
         if key in store:
             saved_widget = store[key]
             if self._is_alive(saved_widget):
@@ -192,7 +251,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else self._disable_search()
             store[key] = detail_table
 
-    def _create_key(self, id_):
+    def _create_key(self, id_, scheme_number):
         """
         Create key to be used as widget store ID
         :param id_: Unique integer value
@@ -207,19 +266,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if label is None:
             return None, None
         key = "{0}_{1}".format(str(id_), label)
+        label = "{0} - {1}".format(label, scheme_number)
         return key, label
 
     def _get_label(self):
         """
         Return label depending on the type of scheme
         details (holders or documents)
-        :return: Sender object name or detail tab name
+        :return: Sender object name
         :rtype: String
         """
+        object_name = None
         button = self._button_clicked()
         if button:
             return button.objectName()
-        return self._tab_name
+        elif self._tab_name:
+            object_name, scheme_number = self._tab_name.split(" - ")
+        return object_name
 
     def _enable_search(self):
         """
@@ -305,7 +368,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             widgets.setEnabled(False)
 
-    def _is_alive(self, widget):
+    @staticmethod
+    def _is_alive(widget):
         """
         Checks widget/tab for aliveness
         :param widget: Qt widget
@@ -319,3 +383,137 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         except RuntimeError:
             return False
         return True
+
+    def _approval(self, status, title):
+        """
+        Approve or disapprove a Scheme
+        :param status: Approve or disapprove status
+        :type status: Integer
+        :param title: Approve or disapprove title text
+        :type title: String
+        """
+        items, scheme_numbers, rows = self._approval_items(status)
+        updated_rows = None
+        try:
+            self._notif_bar.clear()
+            msg = self._approval_message(title.capitalize(), rows, scheme_numbers)
+            reply = self._show_question_message(msg)
+            if reply:
+                updated_rows = self._model.update(items)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._show_critical_message(msg)
+        else:
+            if reply:
+                self._update_checked_id()
+                msg = self._approval_message(
+                    "Successfully {}".format(title), updated_rows
+                )
+                self._notif_bar.insertInformationNotification(msg)
+
+    def _approval_items(self, status_option):
+        """
+        Returns approve or disapprove columns and
+        accompanying configurations for update
+        :param status_option: Approve or disapprove status
+        :type status_option: Integer
+        :return items: Approval/disapproval values and
+                        accompanying configurations
+        :rtype items: Dictionary
+        """
+        items = {}
+        scheme_numbers = []
+        count = 0
+        for id_, (row, status, scheme_number) in self._checked_ids.iteritems():
+            if status != status_option:
+                update_items = []
+                for updates in self._get_update_item(
+                        status_option,
+                        self._scheme_update_column
+                ):
+                    update_items.append(updates)
+                items[row] = update_items
+                scheme_numbers.append(scheme_number)
+                count += 1
+        return items, scheme_numbers, count
+
+    @ staticmethod
+    def _get_update_item(value, updates):
+        """
+        Returns the necessary configuration
+        update items per column
+        :param value: Input value
+        :rtype value: Multiple types
+        :rtype updates: Update column values
+        :param updates: List
+        :return column: Column name as returned by SQLAlchemy query
+                        Table and column name in cases of relationship
+        :rtype column: String or Dictionary
+        :return index: Position of the column in the table view
+        :rtype index: Integer
+        :return new_value: New value to replace old value on update
+        :rtype new_value: Multiple types
+        """
+        for update in updates:
+            new_value = value if value != update.new_value \
+                else update.new_value
+            yield update.column, update.index, new_value
+
+    @staticmethod
+    def _approval_message(prefix, rows, scheme_numbers=None):
+        """
+        Returns approve or disapprove message
+        :param prefix: Prefix text
+        :type prefix: String
+        :param rows: Number of rows
+        :type rows: Integer
+        :param scheme_numbers: Scheme numbers
+        :param scheme_numbers: List
+        :return: Approval message
+        :rtype: String
+        """
+        # TODO: Refactor based on schemes
+        msg = 'schemes' if rows != 1 else 'scheme'
+        if scheme_numbers:
+            return "{0} {1} {2}?\n({3})".format(
+                prefix, rows, msg, ', '.join(scheme_numbers)
+            )
+        return "{0} {1} {2}?".format(prefix, rows, msg)
+
+    def _show_question_message(self, msg):
+        """
+        Message box to communicate a question
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        if QMessageBox.question(
+            self,
+            self.tr('Workflow Manager'),
+            self.tr(msg),
+            QMessageBox.Yes | QMessageBox.No
+        ) == QMessageBox.No:
+            return False
+        return True
+
+    def _show_critical_message(self, msg):
+        """
+        Message box to communicate critical message
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        QMessageBox.critical(
+            self,
+            self.tr('Workflow Manager'),
+            self.tr(msg)
+        )
+
+    def _update_checked_id(self):
+        """
+        Update table view checked ids in the checked tracker
+        """
+        checked_ids = self._checked_ids.copy()
+        for id_, (row, status, scheme_number) in checked_ids.iteritems():
+            index = self._model.create_index(row, self._lookup.CHECK)
+            if index:
+                self._on_check(index)
+

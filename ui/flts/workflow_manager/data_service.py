@@ -34,9 +34,9 @@ class DataService:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def field_option(self):
+    def columns(self):
         """
-        Scheme field options
+        Scheme columns options
         """
         raise NotImplementedError
 
@@ -70,13 +70,31 @@ class SchemeDataService(DataService):
         self.entity_name = "Scheme"
 
     @property
-    def field_option(self):
+    def columns(self):
         """
-        Scheme table view field option
-        :return: Column and query field options
+        Scheme table view columns options
+        :return: Table view columns and query columns options
         :rtype: List
         """
-        return SchemeConfig().field_option
+        return SchemeConfig().columns
+
+    @property
+    def lookups(self):
+        """
+        Scheme table view lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return SchemeConfig().lookups
+
+    @property
+    def update_columns(self):
+        """
+        Scheme table view update column options
+        :return: Update column options
+        :rtype: List
+        """
+        return SchemeConfig().scheme_update_columns
 
     def related_entity_name(self):
         """
@@ -138,14 +156,14 @@ class DocumentDataService(DataService):
         self.entity_name = "supporting_document"
 
     @property
-    def field_option(self):
+    def columns(self):
         """
         Scheme supporting documents
-        table view field option
-        :return: Column and query field options
+        table view columns options
+        :return: Table view columns and query columns options
         :rtype: List
         """
-        return DocumentConfig().field_option
+        return DocumentConfig().columns
 
     def related_entity_name(self):
         """

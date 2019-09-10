@@ -282,7 +282,7 @@
      <Relation name="fk_cb_check_lht_gender_id_cb_holder_gender"/>
     </Column>
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="20" description="Identity number of the holder" index="False" name="holder_identifier" searchable="True" TYPE_INFO="VARCHAR" label="holder Id number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="4" minimum="1930-09-14" maximum="1930-12-31" description="Holder's date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" label="holder dob" mandatory="False">
+    <Column unique="False" tip="" rowindex="-1" minimum="1900-01-01" maximum="2099-12-31" description="Holder's date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" label="holder dob" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="" rowindex="5" minimum="0" maximum="50" description="The name of juristic/legal person" index="False" name="name_of_juristic_person" searchable="True" TYPE_INFO="VARCHAR" label="name of jusristic person" mandatory="False"/>
@@ -296,7 +296,7 @@
      <Relation name="fk_cb_check_lht_gender_id_cb_holder_spouse_gender"/>
     </Column>
     <Column unique="False" tip="" rowindex="11" minimum="0" maximum="20" description="Identity number of the spouse" index="False" name="spouse_identifier" searchable="True" TYPE_INFO="VARCHAR" label="spouse id number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="12" minimum="1930-09-14" maximum="1930-12-31" description="Date of birth of spouse" index="False" name="spouse_date_of_birth" searchable="False" TYPE_INFO="DATE" label="spouse dob" mandatory="False">
+    <Column unique="False" tip="" rowindex="-1" minimum="1900-01-01" maximum="2099-12-31" description="Date of birth of spouse" index="False" name="spouse_date_of_birth" searchable="False" TYPE_INFO="DATE" label="spouse dob" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="" rowindex="13" minimum="0" maximum="2147483647" description="Disability status of the holder" index="False" name="disability_status" searchable="True" TYPE_INFO="LOOKUP" label="disabled" mandatory="False">
