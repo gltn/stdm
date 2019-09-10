@@ -887,15 +887,23 @@ class EntityVectorLayerValidator(QObject):
         # Reset collection
         self._messages = OrderedDict()
 
+        # Column validator based on name
+        column_validators = {}
+
         for feat in feats:
             cidx = 0
             feat_messages = []
             for f in fields:
                 name = f.name()
                 if self._ent_vl_mapping.contains_source_column(name):
-                    col_name = self._ent_vl_mapping.destination_column(name)
+                    ent_col_name = self._ent_vl_mapping.destination_column(name)
 
-                    validator = self._column_validator(col_name)
+                    # Check if there is an existing validator
+                    if ent_col_name in column_validators:
+                        validator =  column_validators[ent_col_name]
+                    else:
+                        validator =  self._column_validator(ent_col_name)
+
                     if not validator:
                         continue
 
