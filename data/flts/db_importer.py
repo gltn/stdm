@@ -115,8 +115,14 @@ class DateValueTranslator(AbstractValueTranslator):
     """
     def transform(self, value):
         # Convert dates in string type to the corresponding date type.
+        if not value:
+            return None
+
         if isinstance(value, basestring):
-            return datetime.strptime(value, DATE_FORMAT)
+            try:
+                value = datetime.strptime(value, DATE_FORMAT)
+            except ValueError:
+                value = None
 
         return value
 

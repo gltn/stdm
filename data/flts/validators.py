@@ -727,6 +727,25 @@ class EntityVectorLayerValidator(QObject):
         return error_warning_collec
 
     @property
+    def row_errors(self):
+        """
+        Groups error validation results, from a
+        EntityVectorLayerValidator validation process, by row numbers.
+        :return: Returns a collection containing a list of error validation
+        results for each row, with the row number as the key.
+        :rtype: OrderedDict
+        """
+        error_collec = OrderedDict()
+
+        for row, results in self._messages.iteritems():
+            errors = [r for r in results if len(r.errors) > 0]
+
+            if len(errors) > 0:
+                error_collec[row] = errors
+
+        return error_collec
+
+    @property
     def status(self):
         """
         :return: Returns the validation status of the vector layer. Options
@@ -931,47 +950,6 @@ class EntityVectorLayerValidator(QObject):
 
         # Emit finished signal
         self.validationFinished.emit()
-
-
-class ValidatorThread(QThread):
-    """
-    Thread for performing the validation process in the background.
-    """
-    # Propagate signals
-    featureValidated = pyqtSignal(list)
-    validationFinished = pyqtSignal()
-    validationCanceled = pyqtSignal()
-
-    def __init__(self, entity_vl_validator, parent=None):
-        super(ValidatorThread, self).__init__(parent)
-        self._ent_vl_validator = entity_vl_validator
-
-        # Connect signals
-        self._ent_vl_validator.featureValidated.connect(
-            self._on_feature_validated
-        )
-        self._ent_vl_validator.validationFinished.connect(
-            self._on_validation_finished
-        )
-
-    def run(self):
-        # Start the validation process.
-        self._ent_vl_validator.start()
-
-    def _on_feature_validated(self, results):
-        # Propagate signal
-        self.featureValidated.emit(results)
-
-    def _on_validation_finished(self):
-        # Propagate signal
-        self.validationFinished.emit()
-
-    def stop(self):
-        """
-        Stop execution of the thread and raise validationCanceled signal.
-        """
-        self.exit(0)
-        self.validationCanceled.emit()
 
 
 

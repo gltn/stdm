@@ -55,8 +55,7 @@ from stdm.settings.registryconfig import (
 )
 from stdm.data.flts.validators import(
     EntityVectorLayerValidator,
-    ValidatorException,
-    ValidatorThread
+    ValidatorException
 )
 from stdm.data.flts.db_importer import (
     EntityVectorLayerDbImporter
@@ -157,7 +156,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Validator for holders data
         self._holders_validator = None
-        self._holders_validator_worker = None
 
         # Progress dialog for showing validation status
         self._h_validation_prog_dlg = QProgressDialog(self)
@@ -1007,9 +1005,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         'The validation process was interrupted.'
                     )
                 elif status == EntityVectorLayerValidator.FINISHED:
-                    # Check if there were errors
+                    # Check if there were errors (exclude warnings)
                     num_err_features = len(
-                        self._holders_validator.row_warnings_errors.keys()
+                        self._holders_validator.row_errors.keys()
                     )
                     if num_err_features > 0:
                         msg = self.tr(
