@@ -327,10 +327,14 @@
     <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="Status of the notification in the system" index="False" name="status" searchable="True" TYPE_INFO="LOOKUP" label="notification status" mandatory="True">
      <Relation name="fk_cb_check_lht_notification_id_cb_notification_status"/>
     </Column>
-    <Column unique="False" tip="" rowindex="1" minimum="-2147483648" maximum="2147483647" description="Identifier of the notification sender" index="False" name="source_user_id" searchable="True" TYPE_INFO="INT" label="sender id" mandatory="True"/>
-    <Column unique="False" tip="" rowindex="2" minimum="-2147483648" maximum="2147483647" description="Identifier of the notification receiver" index="False" name="target_user_id" searchable="True" TYPE_INFO="INT" label="receiver id" mandatory="True"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the notification sender" index="False" name="source_user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="sender id" mandatory="False">
+     <Relation name="fk_cb_user_id_cb_notification_source_user_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the notification receiver" index="False" name="target_user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="receiver id" mandatory="False">
+     <Relation name="fk_cb_user_id_cb_notification_target_user_id"/>
+    </Column>
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="100" description="Message contained in the notification" index="False" name="content" searchable="True" TYPE_INFO="VARCHAR" label="notification content" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="4" minimum="2019-08-06 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Notification timestamp" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="True">
+    <Column unique="False" tip="" rowindex="-1" minimum="2019-08-06 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Notification timestamp" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="True">
      <currentDateTime minimum="True" maximum="True"/>
     </Column>
    </Columns>
@@ -446,6 +450,17 @@
     </Column>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to the entity of scheme and holders link" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_holder" name="cb_scheme_holder" label="scheme_holer">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="scheme identifier" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="False">
+     <Relation name="fk_cb_scheme_id_cb_scheme_holder_scheme_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="holder id" index="False" name="holder_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="holder id" mandatory="False">
+     <Relation name="fk_cb_holder_id_cb_scheme_holder_holder_id"/>
+    </Column>
+   </Columns>
+  </Entity>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" showInParent="True" parent="check_social_tenure_relationship_document_type" name="fk_cb_check_social_tenure_relationship_document_type_id_cb_social_tenure_relationship_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
@@ -460,7 +475,6 @@
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_disability" name="fk_cb_check_lht_disability_id_cb_holder_disability_status" parentColumn="id" showInChild="True" childColumn="disability_status"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_income_level" name="fk_cb_check_lht_income_level_id_cb_holder_income_level" parentColumn="id" showInChild="True" childColumn="income_level"/>
    <EntityRelation displayColumns="name,code" child="Holder" showInParent="True" parent="check_lht_occupation" name="fk_cb_check_lht_occupation_id_cb_holder_occupation" parentColumn="id" showInChild="True" childColumn="occupation"/>
-   <EntityRelation displayColumns="name,code" child="Notification" showInParent="True" parent="check_lht_notification" name="fk_cb_check_lht_notification_id_cb_notification_status" parentColumn="id" showInChild="True" childColumn="status"/>
    <EntityRelation displayColumns="name,code" child="Plot" showInParent="True" parent="check_lht_plot_use" name="fk_cb_check_lht_plot_use_id_cb_plot_use" parentColumn="id" showInChild="True" childColumn="use"/>
    <EntityRelation displayColumns="" child="check_tenure_type_str_attrs" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_check_tenure_type_str_attrs_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
    <EntityRelation displayColumns="" child="Relevant_auth_reg_division" showInParent="True" parent="Relevant_authority" name="fk_cb_relevant_authority_id_cb_relevant_auth_reg_division_relv_auth_id" parentColumn="id" showInChild="True" childColumn="relv_auth_id"/>
@@ -476,6 +490,9 @@
    <EntityRelation displayColumns="" child="Scheme_workflow" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_workflow_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_workflow" name="fk_cb_check_lht_workflow_id_cb_scheme_workflow_workflow_id" parentColumn="id" showInChild="True" childColumn="workflow_id"/>
    <EntityRelation displayColumns="" child="Scheme_workflow" showInParent="True" parent="User" name="fk_cb_user_id_cb_scheme_workflow_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
+   <EntityRelation displayColumns="name,code" child="Notification" showInParent="True" parent="check_lht_notification" name="fk_cb_check_lht_notification_id_cb_notification_status" parentColumn="id" showInChild="True" childColumn="status"/>
+   <EntityRelation displayColumns="" child="Notification" showInParent="True" parent="User" name="fk_cb_user_id_cb_notification_source_user_id" parentColumn="id" showInChild="True" childColumn="source_user_id"/>
+   <EntityRelation displayColumns="" child="Notification" showInParent="True" parent="User" name="fk_cb_user_id_cb_notification_target_user_id" parentColumn="id" showInChild="True" childColumn="target_user_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_holder_plot_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_holder_plot_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
    <EntityRelation displayColumns="" child="Scheme_approval" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_approval_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
@@ -484,6 +501,8 @@
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
