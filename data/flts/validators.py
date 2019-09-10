@@ -891,6 +891,10 @@ class EntityVectorLayerValidator(QObject):
         column_validators = {}
 
         for feat in feats:
+            # Check if cancelled
+            if self._is_cancelled:
+                return
+
             cidx = 0
             feat_messages = []
             for f in fields:

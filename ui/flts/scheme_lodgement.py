@@ -718,10 +718,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def _on_validation_canceled(self):
         """"
-        Slot raised when the validation process has been cancelled by the user.
+        Slot raised when the validation process has been cancelled by the
+        user.
         """
-        if self._holders_validator_worker:
-            self._holders_validator_worker.stop()
+        if self._holders_validator:
+            self._holders_validator.cancel()
 
     def _on_holders_table_selection_changed(self):
         # Slot raised when selection changes in the holders table widget.
