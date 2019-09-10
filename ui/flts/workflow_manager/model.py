@@ -363,7 +363,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         elif type(value) is datetime.date:
             return QDate(value)
         elif type(value) is datetime.datetime:
-            return QDateTime(value).time()
+            return QDateTime(value).toLocalTime()
         return unicode(value) if value is not None else value
 
     @staticmethod
