@@ -210,7 +210,7 @@ class WorkflowManagerModel(QAbstractTableModel):
                             store[n] = None
                             for item in self._get_collection_item(row, self.collection_name):
                                 if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(self._get_value(item, fk_name)):
+                                    if self._is_mapped(getattr(item, fk_name, None)):
                                         store[n] = self._get_value(item, column, fk_name)
                                     else:
                                         store[n] = self._get_value(item, column.get(fk_name))
@@ -289,7 +289,7 @@ class WorkflowManagerModel(QAbstractTableModel):
                         elif self.collection_name:
                             for item in self._get_collection_item(data, self.collection_name):
                                 if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(self._get_value(item, fk_name)):
+                                    if self._is_mapped(getattr(item, fk_name, None)):
                                         self._update_entity(item, column, new_value, fk_name)
                                         store.append((column_idx, new_value))
                                     else:
