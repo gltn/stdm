@@ -43,9 +43,9 @@ class SchemeDetailTableView(QTableView):
         self.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.setSelectionBehavior(QTableView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.initial_load()
+        self._initial_load()
 
-    def initial_load(self):
+    def _initial_load(self):
         """
         Initial table view data load
         """

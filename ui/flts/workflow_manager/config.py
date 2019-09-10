@@ -18,25 +18,12 @@ copyright            : (C) 2019
 from collections import namedtuple
 from PyQt4.QtCore import Qt
 
-
-Column = namedtuple("Column", ["name", "flag"])
+Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
+LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS", "SCHEME_NUMBER"])
+UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
 
 conf = {
-    'scheme_options': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Approved', flag=False): {'status': 'status'}},
-        {Column(name='Date of Approval', flag=False): 'date_of_approval'},
-        {Column(name='Time', flag=False): {'cb_approval': 'timestamp'}},
-        {Column(name='Date of Establishment', flag=False): 'date_of_establishment'},
-        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', flag=False): 'township_name'}, 
-        {Column(name='Registration Division', flag=False): 'registration_division'},
-        {Column(name='Block Area', flag=False): 'area'}
-    ],
-    'document_options': [
+    'document_columns': [
         {Column(name='Number of Scheme', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
         {Column(name='Document Size', flag=False): 'document_size'},
@@ -58,7 +45,25 @@ conf = {
                          'border-right: 1px solid #C4C2BF;'
                          'border-bottom: 1px solid #A9A5A2;'
                          'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}'
+                         '}',
+    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2, SCHEME_NUMBER=1),
+    'scheme_columns': [
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Status', flag=False): {'cb_approval': 'status'}},
+        {Column(name='Date of Approval', flag=False): {'cb_approval': 'timestamp'}},
+        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', flag=False): 'township_name'}, 
+        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {Column(name='Block Area', flag=False): 'area'}
+    ],
+    'update_columns': {
+        'scheme_update': [
+            UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
+        ]
+    }
 }
 
 
@@ -79,34 +84,20 @@ class Config(object):
         return self._config.get(option, None)
 
 
-class SchemeConfig(Config):
-    """
-    Scheme table view configuration interface
-    """
-    @property
-    def field_option(self):
-        """
-        Scheme table view field option
-        :return: Column and query field options
-        :rtype: List
-        """
-        return self.get_data('scheme_options')
-
-
 class DocumentConfig(Config):
     """
     Scheme supporting documents table
     view configuration interface
     """
     @property
-    def field_option(self):
+    def columns(self):
         """
         Scheme supporting documents
-        table view field option
-        :return: Column and query field options
+        table view columns options
+        :return: Table view columns and query columns options
         :rtype: List
         """
-        return self.get_data('document_options')
+        return self.get_data('document_columns')
 
 
 class StyleSheet(Config):
@@ -121,3 +112,39 @@ class StyleSheet(Config):
         :rtype: String
         """
         return self.get_data('header_view_style')
+
+
+class SchemeConfig(Config):
+    """
+    Scheme table view configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Scheme table view columns options
+        :return: Table view columns and query columns options
+        :rtype: List
+        """
+        return self.get_data('scheme_columns')
+
+    @property
+    def lookups(self):
+        """
+        Scheme table view lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
+    @property
+    def scheme_update_columns(self):
+        """
+        Scheme table view update column options
+        :return: Update column values
+        :rtype: List
+        """
+        return self.get_data('update_columns').\
+            get('scheme_update', None)
+
+
+
