@@ -188,6 +188,46 @@ class WorkflowManagerModel(QAbstractTableModel):
             return False
         return index
 
+    # def load(self):
+    #     """
+    #     Loads query results to be used in the table view
+    #     """
+    #     # TODO: Too long and ugly method. To be broken potentially into class objects
+    #     try:
+    #         self.query_object = self.data_service.run_query()
+    #         for row in self.query_object:
+    #             store = {}
+    #             for n, prop in enumerate(self.data_service.columns):
+    #                 column = prop.values()[0]
+    #                 header = prop.keys()[0]
+    #                 if isinstance(column, dict):
+    #                     fk_name = column.keys()[0]
+    #                     if fk_name in self.fk_entity_name and hasattr(row, fk_name):
+    #                         store[n] = self._get_value(row, column, fk_name)
+    #                         self._append(header, self._headers)
+    #                         continue
+    #                     elif self.collection_name:
+    #                         store[n] = None
+    #                         for item in self._collection_item(row, self.collection_name):
+    #                             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+    #                                 if self._is_mapped(getattr(item, fk_name, None)):
+    #                                     store[n] = self._get_value(item, column, fk_name)
+    #                                 else:
+    #                                     store[n] = self._get_value(item, column.get(fk_name))
+    #                         self._append(header, self._headers)
+    #                         continue
+    #                 elif hasattr(row, column):
+    #                     store[n] = self._get_value(row, column)
+    #                     self._append(header, self._headers)
+    #                     continue
+    #                 else:
+    #                     store[n] = self._cast_data(column)
+    #                     self._append(header, self._headers)
+    #             store["data"] = row
+    #             self.results.append(store)
+    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+    #         raise e
+
     def load(self):
         """
         Loads query results to be used in the table view
@@ -206,23 +246,15 @@ class WorkflowManagerModel(QAbstractTableModel):
                             store[n] = self._get_value(row, column, fk_name)
                             self._append(header, self._headers)
                             continue
-                        elif self.collection_name:
-                            store[n] = None
-                            for item in self._get_collection_item(row, self.collection_name):
-                                if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(getattr(item, fk_name, None)):
-                                        store[n] = self._get_value(item, column, fk_name)
-                                    else:
-                                        store[n] = self._get_value(item, column.get(fk_name))
-                            self._append(header, self._headers)
-                            continue
+                        store[n] = self._on_collection(row, column)
+                        self._append(header, self._headers)
+                        continue
                     elif hasattr(row, column):
                         store[n] = self._get_value(row, column)
                         self._append(header, self._headers)
                         continue
-                    else:
-                        store[n] = self._cast_data(column)
-                        self._append(header, self._headers)
+                    store[n] = self._cast_data(column)
+                    self._append(header, self._headers)
                 store["data"] = row
                 self.results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -263,6 +295,52 @@ class WorkflowManagerModel(QAbstractTableModel):
         except (ValueError, TypeError, Exception):
             return False
 
+    # def update(self, updates):
+    #     """
+    #     Update database record(s) on client edit
+    #     :param updates: Update items - values and column indexes
+    #     :type updates: Dictionary
+    #     :return count: Number of updated rows
+    #     :rtype count: Integer
+    #     """
+    #     # TODO: Too long and ugly method. To be broken potentially into class objects
+    #     update_items = {}
+    #     try:
+    #         self.layoutAboutToBeChanged.emit()
+    #         for row_idx, columns in updates.iteritems():
+    #             row = self.results[row_idx]
+    #             data = row["data"]
+    #             store = []
+    #             for column, column_idx, new_value in columns:
+    #                 if isinstance(column, dict):
+    #                     fk_name = column.keys()[0]
+    #                     if fk_name in self.fk_entity_name and hasattr(data, fk_name):
+    #                         self._update_entity(data, column, new_value, fk_name)
+    #                         store.append((column_idx, new_value))
+    #                         continue
+    #                     elif self.collection_name:
+    #                         for item in self._collection_item(data, self.collection_name):
+    #                             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+    #                                 if self._is_mapped(getattr(item, fk_name, None)):
+    #                                     self._update_entity(item, column, new_value, fk_name)
+    #                                     store.append((column_idx, new_value))
+    #                                 else:
+    #                                     self._update_entity(item, column.get(fk_name), new_value)
+    #                                     store.append((column_idx, new_value))
+    #                         continue
+    #                 elif hasattr(data, column):
+    #                     self._update_entity(data, column, new_value)
+    #                     store.append((column_idx, new_value))
+    #                     continue
+    #             update_items if not store else update_items.update({row_idx: store})
+    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+    #         raise e
+    #     else:
+    #         self._update_model_items(update_items)
+    #         self.layoutChanged.emit()
+    #     finally:
+    #         return len(update_items)
+
     def update(self, updates):
         """
         Update database record(s) on client edit
@@ -286,16 +364,9 @@ class WorkflowManagerModel(QAbstractTableModel):
                             self._update_entity(data, column, new_value, fk_name)
                             store.append((column_idx, new_value))
                             continue
-                        elif self.collection_name:
-                            for item in self._get_collection_item(data, self.collection_name):
-                                if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                                    if self._is_mapped(getattr(item, fk_name, None)):
-                                        self._update_entity(item, column, new_value, fk_name)
-                                        store.append((column_idx, new_value))
-                                    else:
-                                        self._update_entity(item, column.get(fk_name), new_value)
-                                        store.append((column_idx, new_value))
-                            continue
+                        if self._on_collection(data, column, new_value):
+                            store.append((column_idx, new_value))
+                        continue
                     elif hasattr(data, column):
                         self._update_entity(data, column, new_value)
                         store.append((column_idx, new_value))
@@ -308,6 +379,26 @@ class WorkflowManagerModel(QAbstractTableModel):
             self.layoutChanged.emit()
         finally:
             return len(update_items)
+
+    def _on_collection(self, row, column, value=None):
+        fk_name = column.keys()[0]
+        for item in self._collection_item(row, self.collection_name):
+            if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+                return self._update_collection(item, column, value) if value \
+                    else self._collection_value(item, column)
+        return None
+
+    def _collection_value(self, item, column):
+        fk_name = column.keys()[0]
+        if self._is_mapped(getattr(item, fk_name, None)):
+            return self._get_value(item, column, fk_name)
+        return self._get_value(item, column.get(fk_name))
+
+    def _update_collection(self, item, column, value):
+        fk_name = column.keys()[0]
+        if self._is_mapped(getattr(item, fk_name, None)):
+            return self._update_entity(item, column, value, fk_name)
+        return self._update_entity(item, column.get(fk_name), value)
 
     def _update_entity(self, query_obj, column, value, attr=None):
         """"
@@ -328,6 +419,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         else:
             setattr(query_obj, column, value)
         query_obj.update()
+        return True
 
     def _get_value(self, query_obj, column, attr=None):
         """
@@ -367,7 +459,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         return unicode(value) if value is not None else value
 
     @staticmethod
-    def _get_collection_item(row, collection_name):
+    def _collection_item(row, collection_name):
         """
         Returns a collection of related entity values
         :param row: Entity record

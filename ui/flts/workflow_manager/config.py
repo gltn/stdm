@@ -15,6 +15,7 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+# import datetime
 from collections import namedtuple
 from PyQt4.QtCore import Qt
 
@@ -50,8 +51,8 @@ conf = {
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Status', flag=False): {'cb_approval': 'status'}},
-        {Column(name='Date of Approval', flag=False): {'cb_approval': 'timestamp'}},
+        {Column(name='Status', flag=False): {'approval_status': 'approval_status'}},
+        {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
         {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
         {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
         {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
@@ -61,7 +62,8 @@ conf = {
     ],
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'cb_approval': 'status'}, index=2, new_value=1)
+            UpdateColumn(column={'approval_status': 'approval_status'}, index=2, new_value=1)
+            # UpdateColumn(column={'timestamp': 'timestamp'}, index=3, new_value=unicode(datetime.datetime.now()))
         ]
     }
 }
