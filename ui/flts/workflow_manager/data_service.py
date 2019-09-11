@@ -115,8 +115,8 @@ class SchemeDataService(DataService):
     def run_query(self):
         """
         Run query on an entity
-        :return query_object: Query results
-        :rtype query_object: List
+        :return query_obj: Query results
+        :rtype query_obj: List
         """
         model = self._entity_model(self.entity_name)
         entity_object = model()
@@ -184,8 +184,8 @@ class DocumentDataService(DataService):
     def run_query(self):
         """
         Run query on an entity
-        :return query_object: Query results
-        :rtype query_object: List
+        :return query_obj: Query results
+        :rtype query_obj: List
         """
         model, sp_doc_model = self._entity_model(self.entity_name)
         scheme_model, sc_doc_model = self._entity_model("Scheme")

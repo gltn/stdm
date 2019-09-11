@@ -120,27 +120,37 @@ class Load(DataRoutine):
     Loads query results to be used in the table view
     """
     def __init__(self, data_service):
-        self.data_service = data_service
-        self.fk_entity_name, self.collection_name = \
+        """
+        :param data_service: Data service
+        :type data_service: DataService
+        """
+        self._data_service = data_service
+        self._fk_entity_name, self._collection_name = \
             data_service.related_entity_name()
         self._results = []
         self._headers = []
 
     def load(self):
         """
-        Loads query results to be used in the table view
+        Load query results to be used in the table view
         """
-        # TODO: Too long and ugly method. To be broken down
+        self._get_query_data()
+        return self._results, self._headers
+
+    def _get_query_data(self):
+        """
+        Get query results to be used in the table view
+        """
         try:
-            query_object = self.data_service.run_query()
-            for row in query_object:
+            query_obj = self._data_service.run_query()
+            for row in query_obj:
                 store = {}
-                for n, prop in enumerate(self.data_service.columns):
+                for n, prop in enumerate(self._data_service.columns):
                     column = prop.values()[0]
                     header = prop.keys()[0]
                     if isinstance(column, dict):
                         fk_name = column.keys()[0]
-                        if fk_name in self.fk_entity_name and hasattr(row, fk_name):
+                        if fk_name in self._fk_entity_name and hasattr(row, fk_name):
                             store[n] = self._get_value(row, column, fk_name)
                             self._append(header, self._headers)
                             continue
@@ -170,20 +180,21 @@ class Load(DataRoutine):
         if item not in container:
             container.append(item)
 
-    def _get_collection_value(self, row, column):
+    def _get_collection_value(self, query_obj, column):
+        """
+        Gets collection value(s)
+        :param query_obj: Query object
+        :type query_obj: Entity object
+        :param column: Column as it appears in the database
+        :type column: Dictionary
+        """
         fk_name = column.keys()[0]
-        for item in self._get_collection_item(row, self.collection_name):
+        for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                 if self._is_mapped(getattr(item, fk_name, None)):
                     return self._get_value(item, column, fk_name)
                 return self._get_value(item, column.get(fk_name))
         return None
-
-    def get_results(self):
-        return self._results
-
-    def get_headers(self):
-        return self._headers
 
 
 class Update(DataRoutine):
@@ -193,7 +204,6 @@ class Update(DataRoutine):
 
     def __init__(self, updates, model_items, data_service):
         """
-        Update database record(s) on client edit
         :param updates: Update items - values and column indexes
         :type updates: Dictionary
         :param model_items: Model items/records
@@ -287,10 +297,10 @@ class WorkflowManagerModel(QAbstractTableModel):
     def __init__(self, data_service):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
-        self.query_object = None
+        # self.query_obj = None
         self.results = []
         self._headers = []
-        # self.fk_entity_name, self._collection_name = \
+        # self._fk_entity_name, self._collection_name = \
         #     self._data_service.related_entity_name()
 
     def flags(self, index):
@@ -452,12 +462,9 @@ class WorkflowManagerModel(QAbstractTableModel):
 
     def load(self):
         """
-        Loads query results to be used in the table view
+        Load query results to be used in the table view
         """
-        data = Load(self._data_service)
-        data.load()
-        self.results = data.get_results()
-        self._headers = data.get_headers()
+        self.results, self._headers = Load(self._data_service).load()
 
     def update(self, updates):
         """
@@ -493,227 +500,3 @@ class WorkflowManagerModel(QAbstractTableModel):
                 return
             for column_idx, new_value in columns:
                 row[column_idx] = new_value
-
-
-
-
-
-
-
-    # def load(self):
-    #     """
-    #     Loads query results to be used in the table view
-    #     """
-    #     # TODO: Too long and ugly method. To be broken potentially into class objects
-    #     try:
-    #         self.query_object = self._data_service.run_query()
-    #         for row in self.query_object:
-    #             store = {}
-    #             for n, prop in enumerate(self._data_service.columns):
-    #                 column = prop.values()[0]
-    #                 header = prop.keys()[0]
-    #                 if isinstance(column, dict):
-    #                     fk_name = column.keys()[0]
-    #                     if fk_name in self.fk_entity_name and hasattr(row, fk_name):
-    #                         store[n] = self._get_value(row, column, fk_name)
-    #                         self._append(header, self._headers)
-    #                         continue
-    #                     store[n] = self._on_collection(row, column)
-    #                     self._append(header, self._headers)
-    #                     continue
-    #                 elif hasattr(row, column):
-    #                     store[n] = self._get_value(row, column)
-    #                     self._append(header, self._headers)
-    #                     continue
-    #                 store[n] = self._cast_data(column)
-    #                 self._append(header, self._headers)
-    #             store["data"] = row
-    #             self.results.append(store)
-    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-    #         raise e
-    #
-    # @staticmethod
-    # def _append(item, container):
-    #     """
-    #     Append unique items to a list
-    #     :param item: Data attribute
-    #     :type item: Multiple types
-    #     :param container: Items container
-    #     :type container: List
-    #     """
-    #     if item not in container:
-    #         container.append(item)
-    #
-    # @staticmethod
-    # def _is_number(value):
-    #     """
-    #     Checks if value is a number
-    #     :param value: Input value
-    #     :type value: Multiple types
-    #     :return: True if number otherwise return false
-    #     :rtype: Boolean
-    #     """
-    #     try:
-    #         float(value)
-    #         return True
-    #     except (ValueError, TypeError, Exception):
-    #         return False
-    #
-    # def update(self, updates):
-    #     """
-    #     Update database record(s) on client edit
-    #     :param updates: Update items - values and column indexes
-    #     :type updates: Dictionary
-    #     """
-    #     # TODO: Too long and ugly method. To be broken potentially into class objects
-    #     update_items = {}
-    #     try:
-    #         self.layoutAboutToBeChanged.emit()
-    #         for row_idx, columns in updates.iteritems():
-    #             row = self.results[row_idx]
-    #             data = row["data"]
-    #             store = []
-    #             for column, column_idx, new_value in columns:
-    #                 if isinstance(column, dict):
-    #                     fk_name = column.keys()[0]
-    #                     if fk_name in self.fk_entity_name and hasattr(data, fk_name):
-    #                         self._update_entity(data, column, new_value, fk_name)
-    #                         store.append((column_idx, new_value))
-    #                         continue
-    #                     if self._on_collection(data, column, new_value):
-    #                         store.append((column_idx, new_value))
-    #                     continue
-    #                 elif hasattr(data, column):
-    #                     self._update_entity(data, column, new_value)
-    #                     store.append((column_idx, new_value))
-    #                     continue
-    #             update_items if not store else update_items.update({row_idx: store})
-    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-    #         raise e
-    #     else:
-    #         self._update_model_items(update_items)
-    #         self.layoutChanged.emit()
-    #     finally:
-    #         return len(update_items)
-    #
-    # def _on_collection(self, row, column, value=None):
-    #     fk_name = column.keys()[0]
-    #     for item in self._collection_item(row, self._collection_name):
-    #         if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-    #             return self._update_collection(item, column, value) if value \
-    #                 else self._collection_value(item, column)
-    #     return None
-    #
-    # def _collection_value(self, item, column):
-    #     fk_name = column.keys()[0]
-    #     if self._is_mapped(getattr(item, fk_name, None)):
-    #         return self._get_value(item, column, fk_name)
-    #     return self._get_value(item, column.get(fk_name))
-    #
-    # def _update_collection(self, item, column, value):
-    #     fk_name = column.keys()[0]
-    #     if self._is_mapped(getattr(item, fk_name, None)):
-    #         return self._update_entity(item, column, value, fk_name)
-    #     return self._update_entity(item, column.get(fk_name), value)
-    #
-    # def _update_entity(self, query_obj, column, value, attr=None):
-    #     """"
-    #     Update an entity record
-    #     :param query_obj: Entity query object
-    #     :type query_obj: Entity
-    #     :param column: Column or related entity name
-    #     :type column: String/Dictionary
-    #     :return value: New value for update
-    #     :rtype value: Multiple types
-    #     :param attr: Related entity column
-    #     :type attr: String
-    #     """
-    #     if attr:
-    #         fk_entity_obj = self._get_value(query_obj, attr)
-    #         setattr(fk_entity_obj, column.get(attr), value)
-    #         query_obj = fk_entity_obj
-    #     else:
-    #         setattr(query_obj, column, value)
-    #     query_obj.update()
-    #     return True
-    #
-    # def _get_value(self, query_obj, column, attr=None):
-    #     """
-    #     Returns entity column value
-    #     :param query_obj: Entity query object
-    #     :type query_obj: Entity
-    #     :param column: Column or related entity name
-    #     :type column: String/Dictionary
-    #     :param attr: Related entity column
-    #     :type attr: String
-    #     :return value: Field value
-    #     :rtype value: Multiple types
-    #     """
-    #     if attr:
-    #         fk_entity_object = getattr(query_obj, attr, None)
-    #         value = getattr(fk_entity_object, column.get(attr), None)
-    #     else:
-    #         value = getattr(query_obj, column, None)
-    #     value = self._cast_data(value)
-    #     return value
-    #
-    # def _cast_data(self, value):
-    #     """
-    #     Cast data from one type to another
-    #     :param value: Item data
-    #     :type value: Multiple types
-    #     :return value: Cast data
-    #     :rtype value: Multiple types
-    #     """
-    #     value = float(value) if self._is_number(value) else value
-    #     if isinstance(value, (Decimal, int, float)):
-    #         return float(value)
-    #     elif type(value) is datetime.date:
-    #         return QDate(value)
-    #     elif type(value) is datetime.datetime:
-    #         return QDateTime(value).toLocalTime()
-    #     return unicode(value) if value is not None else value
-    #
-    # @staticmethod
-    # def _collection_item(row, _collection_name):
-    #     """
-    #     Returns a collection of related entity values
-    #     :param row: Entity record
-    #     :type row: Entity
-    #     :param _collection_name: Name of relationship
-    #     :return item: Collection item of values
-    #     :rtype item:
-    #     """
-    #     for name in _collection_name:
-    #         collection = getattr(row, name, None)
-    #         if isinstance(collection, InstrumentedList):
-    #             for item in collection:
-    #                 yield item
-    #
-    # @staticmethod
-    # def _is_mapped(value):
-    #     """
-    #     Check if value is an ORM mapped object
-    #     :param value: Input value
-    #     :type value: Multiple type
-    #     :return: True if mapped otherwise false
-    #     :rtype: Boolean
-    #     """
-    #     try:
-    #         object_mapper(value)
-    #         return True
-    #     except UnmappedInstanceError:
-    #         return False
-    #
-    # def _update_model_items(self, updates):
-    #     """
-    #     Update model items
-    #     :param updates: Model items to be updated
-    #     :type updates: Dictionary
-    #     """
-    #     for row_idx, columns in updates.iteritems():
-    #         row = self.results[row_idx]
-    #         if not columns:
-    #             return
-    #         for column_idx, new_value in columns:
-    #             row[column_idx] = new_value
