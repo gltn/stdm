@@ -64,10 +64,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
         self.approveButton.clicked.connect(
-            lambda: self._approval(self._lookup.APPROVED, "approve")
+            lambda: self._approval(self._lookup.APPROVED(), "approve")
         )
         self.disapproveButton.clicked.connect(
-            lambda: self._approval(self._lookup.UNAPPROVED, "disapprove")
+            lambda: self._approval(self._lookup.DISAPPROVED(), "disapprove")
         )
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
@@ -194,10 +194,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         status = self._get_stored_status()
         self._enable_widget([self.holdersButton, self.documentsButton])
-        if self._lookup.PENDING in status or \
-                self._lookup.UNAPPROVED in status:
+        if self._lookup.PENDING() in status or \
+                self._lookup.DISAPPROVED() in status:
             self._enable_widget(self.approveButton)
-        if self._lookup.APPROVED in status:
+        if self._lookup.APPROVED() in status:
             self._enable_widget(self.disapproveButton)
         self._on_check_disable_widgets()
 
@@ -212,10 +212,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.holdersButton, self.documentsButton,
                 self.approveButton, self.disapproveButton
             ])
-        elif self._lookup.APPROVED not in status:
+        elif self._lookup.APPROVED() not in status:
             self._disable_widget(self.disapproveButton)
-        elif self._lookup.PENDING not in status and \
-                self._lookup.UNAPPROVED not in status:
+        elif self._lookup.PENDING() not in status and \
+                self._lookup.DISAPPROVED() not in status:
             self._disable_widget(self.approveButton)
 
     def _get_stored_status(self):
@@ -472,7 +472,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Approval message
         :rtype: String
         """
-        # TODO: Refactor based on schemes
         msg = 'schemes' if rows != 1 else 'scheme'
         if scheme_numbers:
             return "{0} {1} {2}?\n({3})".format(
@@ -516,4 +515,3 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             index = self._model.create_index(row, self._lookup.CHECK)
             if index:
                 self._on_check(index)
-

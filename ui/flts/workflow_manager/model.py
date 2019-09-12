@@ -297,11 +297,8 @@ class WorkflowManagerModel(QAbstractTableModel):
     def __init__(self, data_service):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
-        # self.query_obj = None
         self.results = []
         self._headers = []
-        # self._fk_entity_name, self._collection_name = \
-        #     self._data_service.related_entity_name()
 
     def flags(self, index):
         """

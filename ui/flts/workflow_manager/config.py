@@ -18,55 +18,99 @@ copyright            : (C) 2019
 # import datetime
 from collections import namedtuple
 from PyQt4.QtCore import Qt
+from sqlalchemy import exc
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 
-Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
-LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS", "SCHEME_NUMBER"])
-UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
 
-conf = {
-    'document_columns': [
-        {Column(name='Number of Scheme', flag=False): 'name'},
-        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
-        {Column(name='Document Size', flag=False): 'document_size'},
-        {Column(name='Last Modified', flag=False): 'last_modified'},
-        {Column(name='Created By', flag=False): 'created_by'},
-        {Column(name='View Document', flag=False): 'View'}
-    ],
-    'header_view_style': 'QHeaderView::section{'
-                         'border-top:0px solid #C4C2BF;'
-                         'border-left:0px solid #C4C2BF;'
-                         'border-right: 1px solid #C4C2BF;'
-                         'border-bottom: 1px solid #A9A5A2;'
-                         'padding:4px;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}'
-                         'QTableCornerButton::section{'
-                         'border-top:0px solid #C4C2BF;'
-                         'border-left:0px solid #C4C2BF;'
-                         'border-right: 1px solid #C4C2BF;'
-                         'border-bottom: 1px solid #A9A5A2;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}',
-    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2, SCHEME_NUMBER=1),
-    'scheme_columns': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Status', flag=False): {'approval_status': 'approval_status'}},
-        {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
-        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', flag=False): 'township_name'}, 
-        {Column(name='Registration Division', flag=False): 'registration_division'},
-        {Column(name='Block Area', flag=False): 'area'}
-    ],
-    'update_columns': {
-        'scheme_update': [
-            UpdateColumn(column={'approval_status': 'approval_status'}, index=2, new_value=1)
-            # UpdateColumn(column={'timestamp': 'timestamp'}, index=3, new_value=unicode(datetime.datetime.now()))
-        ]
-    }
-}
+class FilterQueryBy:
+    """
+    Filters query result by a column value
+    """
+    def __init__(self):
+        self._profile = None
+
+    def __call__(self, entity_name, filters):
+        """
+        Return query object on filter by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return:
+        """
+        try:
+            if not self._profile:
+                self._profile = current_profile()
+            query_obj = self._entity_query_object(entity_name)
+            return self._filter_by(query_obj, filters)
+        except (exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    @staticmethod
+    def _filter_by(query_obj, filters):
+        """
+        Return filter entity query object
+        :param query_obj: Entity query object
+        :type query_obj: List
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter query entity object
+        :rtype: Entity object
+        """
+        try:
+            return query_obj.filter_by(**filters)
+        except (exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_query_object(self, entity_name):
+        """
+        Return query object of an entity
+        :param entity_name: Entity name
+        :type entity_name: String
+        :return:Entity query object
+        :rtype List
+        """
+        model = self._entity_model(entity_name)
+        entity_object = model()
+        try:
+            return entity_object.queryObject()
+        except (exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_model(self, name):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return model: Entity model;
+        :rtype model: DeclarativeMeta
+        """
+        try:
+            entity = self._profile.entity(name)
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e
+
+
+class EntityRecordId:
+    """
+    Returns entity record ID
+    """
+    def __init__(self, entity_name, filters):
+        self._entity_name = entity_name
+        self._filters = filters
+
+    def __call__(self):
+        """
+        Return entity record ID filtered by a column value
+        :return id: Entity record ID
+        :rtype id: Integer
+        """
+        filter_by = FilterQueryBy()
+        query_obj = filter_by(self._entity_name, self._filters)
+        return query_obj.first().id
 
 
 class Config(object):
@@ -149,4 +193,56 @@ class SchemeConfig(Config):
             get('scheme_update', None)
 
 
+Column = namedtuple("Column", ["name", "flag"])
+LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "DISAPPROVED", "CHECK", "STATUS", "SCHEME_NUMBER"])
+UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
 
+conf = {
+    'document_columns': [
+        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
+        {Column(name='Document Size', flag=False): 'document_size'},
+        {Column(name='Last Modified', flag=False): 'last_modified'},
+        {Column(name='Created By', flag=False): 'created_by'},
+        {Column(name='View Document', flag=False): 'View'}
+    ],
+    'header_view_style': 'QHeaderView::section{'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'padding:4px;'
+                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}'
+                         'QTableCornerButton::section{'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}',
+    'lookups': LookUp(
+        APPROVED=EntityRecordId("check_lht_approval_status", {"value": "Approved"}),
+        PENDING=EntityRecordId("check_lht_approval_status", {"value": "Pending"}),
+        DISAPPROVED=EntityRecordId("check_lht_approval_status", {"value": "Disapproved"}),
+        CHECK=0, STATUS=2, SCHEME_NUMBER=1
+    ),
+    'scheme_columns': [
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Status', flag=False): {'approval_id': 'approval_id'}},
+        {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
+        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
+        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
+        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {Column(name='Township', flag=False): 'township_name'}, 
+        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {Column(name='Block Area', flag=False): 'area'}
+    ],
+    'update_columns': {
+        'scheme_update': [
+            UpdateColumn(column={'approval_id': 'approval_id'}, index=2, new_value=1)
+            # UpdateColumn(column={'timestamp': 'timestamp'}, index=3, new_value=unicode(datetime.datetime.now()))
+        ]
+    }
+}

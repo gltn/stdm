@@ -20,7 +20,7 @@ copyright            : (C) 2019
 from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
-from stdm.ui.flts.workflow_manager.config import(
+from stdm.ui.flts.workflow_manager.config import (
     SchemeConfig,
     DocumentConfig,
 )
