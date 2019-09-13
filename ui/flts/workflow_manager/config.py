@@ -55,7 +55,7 @@ class FilterQueryBy:
         :type query_obj: List
         :param filters: Column filters - column name and value
         :type filters: Dictionary
-        :return: Filter query entity object
+        :return: Filter entity query object
         :rtype: Entity object
         """
         try:
@@ -101,6 +101,7 @@ class EntityRecordId:
     def __init__(self, entity_name, filters):
         self._entity_name = entity_name
         self._filters = filters
+        self._results = None
 
     def __call__(self):
         """
@@ -108,9 +109,12 @@ class EntityRecordId:
         :return id: Entity record ID
         :rtype id: Integer
         """
-        filter_by = FilterQueryBy()
-        query_obj = filter_by(self._entity_name, self._filters)
-        return query_obj.first().id
+        if not self._results:
+            filter_by = FilterQueryBy()
+            self._results = filter_by(
+                self._entity_name, self._filters
+            ).first().id
+        return self._results
 
 
 class Config(object):
@@ -231,6 +235,8 @@ conf = {
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {Column(name='Status', flag=False): {'approval_id': 'approval_id'}},
+        {Column(name='Workflow', flag=False): {'workflow_id': 'workflow_id'}},
+        {Column(name='Scheme ID', flag=False): {'scheme_id': 'scheme_id'}},
         {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
         {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
         {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
@@ -241,8 +247,8 @@ conf = {
     ],
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'}, index=2, new_value=1)
-            # UpdateColumn(column={'timestamp': 'timestamp'}, index=3, new_value=unicode(datetime.datetime.now()))
+            UpdateColumn(column={'approval_id': 'approval_id'}, index=2, new_value=1),
+            UpdateColumn(column={'workflow_id': 'workflow_id'}, index=3, new_value=4)
         ]
     }
 }

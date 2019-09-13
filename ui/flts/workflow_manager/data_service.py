@@ -21,8 +21,9 @@ from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
-    SchemeConfig,
     DocumentConfig,
+    FilterQueryBy,
+    SchemeConfig,
 )
 from stdm.data.configuration import entity_model
 
@@ -65,9 +66,10 @@ class SchemeDataService(DataService):
     """
     Scheme data model service
     """
-    def __init__(self, current_profile):
+    def __init__(self, current_profile, workflow_lookup):
         self._profile = current_profile
         self.entity_name = "Scheme"
+        self._workflow_lookup = workflow_lookup
 
     @property
     def columns(self):
@@ -118,6 +120,11 @@ class SchemeDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
+        workflow_id = self._get_record_id(
+            "check_lht_workflow", {"value": self._workflow_lookup}
+        )
+        scheme_workflow_model = self._entity_model("Scheme_workflow")
+
         model = self._entity_model(self.entity_name)
         entity_object = model()
         try:
@@ -125,10 +132,27 @@ class SchemeDataService(DataService):
                 options(joinedload(model.cb_check_lht_land_rights_office)). \
                 options(joinedload(model.cb_check_lht_region)). \
                 options(joinedload(model.cb_check_lht_relevant_authority)). \
-                options(joinedload(model.cb_cdrs_title_deed)).order_by(model.date_of_approval)
+                options(joinedload(model.cb_cdrs_title_deed)).\
+                filter(
+                    scheme_workflow_model.scheme_id == model.id,
+                    scheme_workflow_model.workflow_id == workflow_id
+                )
             return query_object.all()
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def _get_record_id(self, entity_name, filters):
+        """
+        Return entity filtered query results
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return id: Entity record ID
+        :rtype id: Integer
+        """
+        filter_by = FilterQueryBy()
+        return filter_by(entity_name, filters).first().id
 
     def _entity_model(self, name=None):
         """

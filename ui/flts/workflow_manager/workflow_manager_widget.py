@@ -34,20 +34,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
-    def __init__(self, title, object_name, parent=None):
+    def __init__(self, title, workflow_id, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
+        _object_name, _workflow_lookup = workflow_id
         self._checked_ids = OrderedDict()
         self._detail_store = {}
         self._tab_name = None
         self._notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
-        self.data_service = SchemeDataService(self._profile)
+        self.data_service = SchemeDataService(self._profile, _workflow_lookup)
         self._lookup = self.data_service.lookups
         self._scheme_update_column = self.data_service.update_columns
         _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
-        self.setObjectName(object_name)
+        self.setObjectName(_object_name)
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
