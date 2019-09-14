@@ -66,10 +66,11 @@ class SchemeDataService(DataService):
     """
     Scheme data model service
     """
-    def __init__(self, current_profile, workflow_lookup):
+    def __init__(self, current_profile, widget_obj_name, parent):
         self._profile = current_profile
         self.entity_name = "Scheme"
-        self._workflow_lookup = workflow_lookup
+        self._parent = parent
+        self._widget_obj_name = widget_obj_name
 
     @property
     def columns(self):
@@ -87,7 +88,7 @@ class SchemeDataService(DataService):
         :return: Lookup options
         :rtype: LookUp
         """
-        return SchemeConfig().lookups
+        return SchemeConfig(self._parent).lookups
 
     @property
     def update_columns(self):
@@ -120,11 +121,8 @@ class SchemeDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
-        workflow_id = self._get_record_id(
-            "check_lht_workflow", {"value": self._workflow_lookup}
-        )
+        workflow_id = self.get_workflow_id(self._widget_obj_name)
         scheme_workflow_model = self._entity_model("Scheme_workflow")
-
         model = self._entity_model(self.entity_name)
         entity_object = model()
         try:
@@ -141,18 +139,17 @@ class SchemeDataService(DataService):
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _get_record_id(self, entity_name, filters):
+    def get_workflow_id(self, attr):
         """
-        Return entity filtered query results
-        :param entity_name: Entity name
-        :type entity_name: String
-        :param filters: Column filters - column name and value
-        :type filters: Dictionary
-        :return id: Entity record ID
-        :rtype id: Integer
+        Return workflow id/primary key
+        :param attr: Workflow lookup attribute
+        :return workflow_id: Workflow id/primary key
+        :rtype workflow_id: Integer
         """
-        filter_by = FilterQueryBy()
-        return filter_by(entity_name, filters).first().id
+        workflow_id = getattr(self.lookups, attr, None)
+        if workflow_id:
+            workflow_id = workflow_id()
+        return workflow_id
 
     def _entity_model(self, name=None):
         """

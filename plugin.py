@@ -2403,10 +2403,9 @@ class STDMQGISLoader(object):
         """
         Docks Scheme establishment workflow manager widget
         """
-        workflow_id = ("schemeEstablishment", "Lodgement")
         workflow_manager = WorkflowManagerWidget(
             "Scheme Establishment Workflow Manager",
-            workflow_id
+            "schemeEstablishment"
         )
         dock_widget = DockWidgetFactory(workflow_manager, self.iface)
         dock_widget.show_dock_widget()
@@ -2415,10 +2414,9 @@ class STDMQGISLoader(object):
         """
         Docks First Examination workflow manager widget
         """
-        workflow_id = ("firstExamination", "Establishment")
         workflow_manager = WorkflowManagerWidget(
             "First Workflow Manager",
-            workflow_id
+            "firstExamination"
         )
         dock_widget = DockWidgetFactory(workflow_manager, self.iface)
         dock_widget.show_dock_widget()
@@ -2427,10 +2425,9 @@ class STDMQGISLoader(object):
         """
         Docks Second Examination workflow manager widget
         """
-        workflow_id = ("secondExamination", "First Assessment")
         workflow_manager = WorkflowManagerWidget(
             "Second Workflow Manager",
-            workflow_id
+            "secondExamination"
         )
         dock_widget = DockWidgetFactory(workflow_manager, self.iface)
         dock_widget.show_dock_widget()
@@ -2439,10 +2436,9 @@ class STDMQGISLoader(object):
         """
         Docks Third Examination workflow manager widget
         """
-        workflow_id = ("thirdExamination", "Second Assessment")
         workflow_manager = WorkflowManagerWidget(
             "Third Workflow Manager",
-            workflow_id
+            "thirdExamination"
         )
         dock_widget = DockWidgetFactory(workflow_manager, self.iface)
         dock_widget.show_dock_widget()

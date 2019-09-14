@@ -119,12 +119,15 @@ class Load(DataRoutine):
     """
     Loads query results to be used in the table view
     """
-    def __init__(self, data_service):
+    def __init__(self, data_service, view_data_id=None):
         """
         :param data_service: Data service
         :type data_service: DataService
+        :type view_data_id: View data collection identifier
+        :type view_data_id: Multiple types
         """
         self._data_service = data_service
+        self._view_data_id = view_data_id
         self._fk_entity_name, self._collection_name = \
             data_service.related_entity_name()
         self._results = []
@@ -187,14 +190,51 @@ class Load(DataRoutine):
         :type query_obj: Entity object
         :param column: Column as it appears in the database
         :type column: Dictionary
+        :return: Collection value
+        :rtype: Multiple types
         """
         fk_name = column.keys()[0]
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                if self._is_mapped(getattr(item, fk_name, None)):
-                    return self._get_value(item, column, fk_name)
-                return self._get_value(item, column.get(fk_name))
+                if self._view_data_id:
+                    value = getattr(item, "workflow_id", None)
+                    if hasattr(item, "workflow_id") and \
+                            value == self._view_data_id:
+                        return self._get_item_value(item, column)
+                else:
+                    return self._get_item_value(item, column)
         return None
+
+    def _get_item_value(self, item, column):
+        """
+        Returns collection item value
+        :param item: Query object
+        :type item: Entity object
+        :param column: Column as it appears in the database
+        :type column: Dictionary
+        :return: Collection value
+        :rtype: Multiple types
+        """
+        fk_name = column.keys()[0]
+        if self._is_mapped(getattr(item, fk_name, None)):
+            return self._get_value(item, column, fk_name)
+        return self._get_value(item, column.get(fk_name))
+
+    # def _get_collection_value(self, query_obj, column):
+    #     """
+    #     Gets collection value(s)
+    #     :param query_obj: Query object
+    #     :type query_obj: Entity object
+    #     :param column: Column as it appears in the database
+    #     :type column: Dictionary
+    #     """
+    #     fk_name = column.keys()[0]
+    #     for item in self._get_collection_item(query_obj, self._collection_name):
+    #         if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+    #             if self._is_mapped(getattr(item, fk_name, None)):
+    #                 return self._get_value(item, column, fk_name)
+    #             return self._get_value(item, column.get(fk_name))
+    #     return None
 
 
 class Update(DataRoutine):
@@ -294,9 +334,10 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
-    def __init__(self, data_service):
+    def __init__(self, data_service, view_data_id=None):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
+        self._view_data_id = view_data_id
         self.results = []
         self._headers = []
 
@@ -461,7 +502,9 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         Load query results to be used in the table view
         """
-        self.results, self._headers = Load(self._data_service).load()
+        self.results, self._headers = Load(
+            self._data_service, self._view_data_id
+        ).load()
 
     def update(self, updates):
         """
