@@ -221,11 +221,14 @@ class EntityRecordId(Config):
 
 
 Column = namedtuple('Column', ['name', 'flag'])
-LookUp = namedtuple('LookUp', [
-    'schemeEstablishment', 'firstExamination', 'secondExamination',
-    'thirdExamination', 'WORKFLOW_COLUMN', 'APPROVED', 'PENDING',
-    'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
-])
+LookUp = namedtuple(
+    'LookUp',
+    [
+        'schemeEstablishment', 'firstExamination', 'secondExamination',
+        'thirdExamination', 'WORKFLOW_COLUMN', 'APPROVED', 'PENDING',
+        'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
+    ]
+)
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'index', 'new_value'])
 
 configurations = {
