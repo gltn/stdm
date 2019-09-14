@@ -47,15 +47,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._profile, _object_name, self
         )
         self._lookup = self.data_service.lookups
+        _view_data_id = (
+            self._lookup.WORKFLOW_COLUMN,
+            self.data_service.get_workflow_id(_object_name)
+        )
         self._scheme_update_column = self.data_service.update_columns
-        workflow_id = self.data_service.get_workflow_id(_object_name)
         _header_style = StyleSheet().header_style
         self.setWindowTitle(title)
         self.setObjectName(_object_name)
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
-        self._model = WorkflowManagerModel(self.data_service, workflow_id)
+        self._model = WorkflowManagerModel(self.data_service, _view_data_id)
         self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)

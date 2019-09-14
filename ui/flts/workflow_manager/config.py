@@ -26,7 +26,7 @@ from sqlalchemy import exc
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
 
-configuration = None
+configurations = None
 
 
 class Config(object):
@@ -34,7 +34,7 @@ class Config(object):
     Workflow Manager configuration interface
     """
     def __init__(self):
-        self._config = configuration
+        self._configurations = configurations
         self._parent = None
 
     def get_data(self, option):
@@ -44,7 +44,7 @@ class Config(object):
         :return: Configuration data
         :rtype: Multiple types
         """
-        return self._config.get(option, None)
+        return self._configurations.get(option, None)
 
 
 class DocumentConfig(Config):
@@ -222,15 +222,18 @@ class EntityRecordId(Config):
 
 Column = namedtuple('Column', ['name', 'flag'])
 LookUp = namedtuple('LookUp', [
-    'schemeEstablishment', 'firstExamination', 'secondExamination', 'thirdExamination',
-    'APPROVED', 'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
+    'schemeEstablishment', 'firstExamination', 'secondExamination',
+    'thirdExamination', 'WORKFLOW_COLUMN', 'APPROVED', 'PENDING',
+    'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
 ])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'index', 'new_value'])
 
-configuration = {
+configurations = {
     'document_columns': [
         {Column(name='Number of Scheme', flag=False): 'name'},
-        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
+        {Column(name='Document Type', flag=False): {
+            'cb_check_scheme_document_type': 'value'
+        }},
         {Column(name='Document Size', flag=False): 'document_size'},
         {Column(name='Last Modified', flag=False): 'last_modified'},
         {Column(name='Created By', flag=False): 'created_by'},
@@ -242,38 +245,90 @@ configuration = {
                          'border-right: 1px solid #C4C2BF;'
                          'border-bottom: 1px solid #A9A5A2;'
                          'padding:4px;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         'background-color: qlineargradient'
+                         '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}'
                          'QTableCornerButton::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
                          'border-right: 1px solid #C4C2BF;'
                          'border-bottom: 1px solid #A9A5A2;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         'background-color: qlineargradient'
+                         '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
     'lookups': LookUp(
-        schemeEstablishment=EntityRecordId("check_lht_workflow", {"value": 'Lodgement'}),
-        firstExamination=EntityRecordId("check_lht_workflow", {"value": 'Establishment'}),
-        secondExamination=EntityRecordId("check_lht_workflow", {"value": 'Fiirst Assessment'}),
-        thirdExamination=EntityRecordId("check_lht_workflow", {"value": 'Second Assessment'}),
-        APPROVED=EntityRecordId("check_lht_approval_status", {"value": "Approved"}),
-        PENDING=EntityRecordId("check_lht_approval_status", {"value": "Pending"}),
-        DISAPPROVED=EntityRecordId("check_lht_approval_status", {"value": "Disapproved"}),
-        CHECK=0, STATUS=2, SCHEME_NUMBER=1
+        schemeEstablishment=EntityRecordId(
+            "check_lht_workflow", {"value": 'Lodgement'}
+        ),
+        firstExamination=EntityRecordId(
+            "check_lht_workflow", {"value": 'Establishment'}
+        ),
+        secondExamination=EntityRecordId(
+            "check_lht_workflow", {"value": 'Fiirst Assessment'}
+        ),
+        thirdExamination=EntityRecordId(
+            "check_lht_workflow", {"value": 'Second Assessment'}
+        ),
+        APPROVED=EntityRecordId(
+            "check_lht_approval_status", {"value": "Approved"}
+        ),
+        PENDING=EntityRecordId(
+            "check_lht_approval_status", {"value": "Pending"}
+        ),
+        DISAPPROVED=EntityRecordId(
+            "check_lht_approval_status", {"value": "Disapproved"}
+        ),
+        WORKFLOW_COLUMN='workflow_id', CHECK=0,
+        STATUS=2, SCHEME_NUMBER=1
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Status', flag=False): {'approval_id': 'approval_id'}},
-        {Column(name='Scheme ID', flag=False): {'scheme_id': 'scheme_id'}},
-        {Column(name='Workflow', flag=False): {'workflow_id': 'workflow_id'}},
-        {Column(name='Workflow Type', flag=False): {'cb_check_lht_workflow': 'value'}},
-        {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
-        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
+        {
+            Column(name='Status', flag=False): {
+                'approval_id': 'approval_id'
+            }
+        },
+        {
+            Column(name='Scheme ID', flag=False): {
+                'scheme_id': 'scheme_id'
+            }
+        },
+        {
+            Column(name='Workflow', flag=False): {
+                'workflow_id': 'workflow_id'
+            }
+        },
+        {
+            Column(name='Workflow Type', flag=False): {
+                'cb_check_lht_workflow': 'value'
+            }
+        },
+        {
+            Column(name='Date of Approval', flag=False): {
+                'timestamp': 'timestamp'
+            }
+        },
+        {
+            Column(name='Type of Relevant Authority', flag=False): {
+                'cb_check_lht_relevant_authority': 'value'
+            }
+        },
+        {
+            Column(name='Land Rights Office', flag=False): {
+                'cb_check_lht_land_rights_office': 'value'
+            }
+        },
+        {
+            Column(name='Region', flag=False): {
+                'cb_check_lht_region': 'value'
+            }
+        },
         {Column(name='Township', flag=False): 'township_name'}, 
-        {Column(name='Registration Division', flag=False): 'registration_division'},
+        {
+            Column(name='Registration Division', flag=False):
+                'registration_division'
+        },
         {Column(name='Block Area', flag=False): 'area'}
     ],
     'update_columns': {
