@@ -255,21 +255,21 @@ class Update(DataRoutine):
                 row = self._model_items[row_idx]
                 query_obj = row["data"]
                 store = []
-                for column, column_idx, new_value, collection_filter in columns:
+                for column, new_value, collection_filter in columns:
                     if isinstance(column, dict):
                         fk_name = column.keys()[0]
                         if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
                             self._update_entity(query_obj, column, new_value, fk_name)
-                            store.append((column_idx, new_value))
+                            store.append(new_value)
                             continue
                         if self._update_collection(
                                 query_obj, column, new_value, collection_filter
                         ):
-                            store.append((column_idx, new_value))
+                            store.append(new_value)
                         continue
                     elif hasattr(query_obj, column):
                         self._update_entity(query_obj, column, new_value)
-                        store.append((column_idx, new_value))
+                        store.append(new_value)
                         continue
                 update_items if not store else update_items.update({row_idx: store})
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -351,9 +351,10 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
-    def __init__(self, data_service):
+    def __init__(self, data_service, collection_filter):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
+        self._collection_filter = collection_filter
         self.results = []
         self._headers = []
 
@@ -514,14 +515,12 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         return self._data_service.entity_name
 
-    def load(self, collection_filter=None):
+    def load(self):
         """
         Load query results to be used in the table view
-        :param collection_filter: Collection data filter
-        :type collection_filter: Dictionary
         """
         self.results, self._headers = Load(
-            self._data_service, collection_filter
+            self._data_service, self._collection_filter
         ).load()
 
     def update(self, updates):
@@ -534,27 +533,22 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         update_items = {}
         try:
-            self.layoutAboutToBeChanged.emit()
             update_items = Update(
                 updates, self.results, self._data_service
             ).update()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
-            self._update_model_items(update_items)
-            self.layoutChanged.emit()
+            self.refresh()
         finally:
             return len(update_items)
 
-    def _update_model_items(self, updates):
+    def refresh(self):
         """
-        Update model items
-        :param updates: Model items to be updated
-        :type updates: Dictionary
+        Refresh model
         """
-        for row_idx, columns in updates.iteritems():
-            row = self.results[row_idx]
-            if not columns:
-                return
-            for column_idx, new_value in columns:
-                row[column_idx] = new_value
+        self.layoutAboutToBeChanged.emit()
+        self.results = []
+        self._headers = []
+        self.load()
+        self.layoutChanged.emit()

@@ -54,7 +54,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
-        self._model = WorkflowManagerModel(self.data_service)
+        self._model = WorkflowManagerModel(
+            self.data_service, self._workflow_load_filter
+        )
         self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
@@ -77,22 +79,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         )
         self._initial_load()
 
-    def _initial_load(self):
-        """
-        Initial table view data load
-        """
-        try:
-            self._model.load(self._workflow_load_filter)
-            self._enable_search() if self._model.results \
-                else self._disable_search()
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed to load: {}".format(e)
-            self._show_critical_message(msg)
-        else:
-            self.table_view.horizontalHeader().setStretchLastSection(True)
-            self.table_view.horizontalHeader().\
-                setResizeMode(QHeaderView.ResizeToContents)
-
     @property
     def _workflow_load_filter(self):
         """
@@ -105,6 +91,22 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.data_service.get_workflow_id(self._object_name)
         }
         return workflow_filter
+
+    def _initial_load(self):
+        """
+        Initial table view data load
+        """
+        try:
+            self._model.load()
+            self._enable_search() if self._model.results \
+                else self._disable_search()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to load: {}".format(e)
+            self._show_critical_message(msg)
+        else:
+            self.table_view.horizontalHeader().setStretchLastSection(True)
+            self.table_view.horizontalHeader().\
+                setResizeMode(QHeaderView.ResizeToContents)
 
     def _on_check(self, index):
         """
@@ -444,19 +446,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if status != status_option:
                 update_items = []
                 for updates in self._get_update_item(self._scheme_update_column):
+                    updates = [updates]
                     # TODO: Test. To be deleted
-                    if updates[1] == 4:
-                        updates = updates + (1, self._workflow_update_filter(scheme_id))
+                    if updates[0].get('workflow_id', None) == 'workflow_id':
+                        updates.extend([1, self._workflow_update_filter(scheme_id)])
                     else:
-                        updates = updates + (
+                        updates.extend([
                             status_option,
                             self._workflow_update_filter(scheme_id)
-                        )
+                        ])
                     # TODO: Working. Do not delete
-                    # updates = updates + (
+                    # updates = [updates]
+                    # updates.extend([
                     #     status_option,
                     #     self._workflow_update_filter(scheme_id)
-                    # )
+                    # ])
                     update_items.append(updates)
                 items[row] = update_items
                 scheme_numbers.append(scheme_number)
@@ -468,16 +472,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Returns the necessary configuration
         update items per column
-        :rtype updates: Update column values
+        :rtype updates: Update column items
         :param updates: List
         :return column: Column name as returned by SQLAlchemy query
                         Table and column name in cases of relationship
         :rtype column: String or Dictionary
-        :return index: Position of the column in the table view
-        :rtype index: Integer
         """
         for update in updates:
-            yield update.column, update.index
+            yield update.column
 
     def _workflow_update_filter(self, scheme_id):
         """
