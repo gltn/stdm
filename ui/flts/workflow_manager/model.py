@@ -188,7 +188,7 @@ class Load(DataRoutine):
         Gets collection value(s)
         :param query_obj: Query object
         :type query_obj: Entity object
-        :param column: Column as it appears in the database
+        :param column: Column or related entity name
         :type column: Dictionary
         :return: Collection value
         :rtype: Multiple types
@@ -210,8 +210,8 @@ class Load(DataRoutine):
     def _get_item_value(self, item, column):
         """
         Returns collection item value
-        :param item: Query object
-        :type item: Entity object
+        :param item: Entity query object
+        :type item: Entity
         :param column: Column as it appears in the database
         :type column: Dictionary
         :return: Collection value
@@ -255,14 +255,16 @@ class Update(DataRoutine):
                 row = self._model_items[row_idx]
                 query_obj = row["data"]
                 store = []
-                for column, column_idx, new_value in columns:
+                for column, column_idx, new_value, collection_filter in columns:
                     if isinstance(column, dict):
                         fk_name = column.keys()[0]
                         if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
                             self._update_entity(query_obj, column, new_value, fk_name)
                             store.append((column_idx, new_value))
                             continue
-                        if self._update_collection(query_obj, column, new_value):
+                        if self._update_collection(
+                                query_obj, column, new_value, collection_filter
+                        ):
                             store.append((column_idx, new_value))
                         continue
                     elif hasattr(query_obj, column):
@@ -275,23 +277,50 @@ class Update(DataRoutine):
         finally:
             return update_items
 
-    def _update_collection(self, query_obj, column, new_value):
+    def _update_collection(self, query_obj, column, new_value, collection_filter):
         """
         Updates collection object(s)
         :param query_obj: Query object
         :type query_obj: Entity object
-        :param column: Column as it appears in the database
+        :param column: Column or related entity name
         :type column: Dictionary
-        :param new_value: Value to replace the old one
-        :return new_value: Multiple types
+        :param new_value: New value for update
+        :type new_value: Multiple types
+        :type collection_filter: Collection record data filter
+        :type collection_filter: Dictionary
+        :return: True on update or None
+        :rtype: Boolean or NoneType
         """
         fk_name = column.keys()[0]
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                if self._is_mapped(getattr(item, fk_name, None)):
-                    return self._update_entity(item, column, new_value, fk_name)
-                return self._update_entity(item, column.get(fk_name), new_value)
+                if isinstance(collection_filter, dict):
+                    item_values = {
+                        k: getattr(item, k, None) for k, v in
+                        collection_filter.iteritems()
+                    }
+                    if item_values == collection_filter:
+                        return self._update_item(item, column, new_value)
+                else:
+                    return self._update_item(item, column, new_value)
         return None
+
+    def _update_item(self, item, column, new_value):
+        """
+        Update collection item
+        :param item: Entity query object
+        :type item: Entity
+        :param column: Column or related entity name
+        :type column: String/Dictionary
+        :param new_value: New value for update
+        :type new_value: Multiple types
+        :return: True on update
+        :rtype: Boolean
+        """
+        fk_name = column.keys()[0]
+        if self._is_mapped(getattr(item, fk_name, None)):
+            return self._update_entity(item, column, new_value, fk_name)
+        return self._update_entity(item, column.get(fk_name), new_value)
 
     def _update_entity(self, query_obj, column, value, attr=None):
         """"
@@ -300,10 +329,12 @@ class Update(DataRoutine):
         :type query_obj: Entity
         :param column: Column or related entity name
         :type column: String/Dictionary
-        :return value: New value for update
-        :rtype value: Multiple types
-        :param attr: Related entity column
+        :param value: New value for update
+        :type value: Multiple types
+        :type attr: Related entity column
         :type attr: String
+        :return: True on update
+        :rtype: Boolean
         """
         if attr:
             fk_entity_obj = self._get_value(query_obj, attr)

@@ -444,36 +444,24 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if status != status_option:
                 update_items = []
                 for updates in self._get_update_item(self._scheme_update_column):
+                    # TODO: Test. To be deleted
+                    if updates[1] == 4:
+                        updates = updates + (1, self._workflow_update_filter(scheme_id))
+                    else:
+                        updates = updates + (
+                            status_option,
+                            self._workflow_update_filter(scheme_id)
+                        )
+                    # TODO: Working. Do not delete
                     # updates = updates + (
                     #     status_option,
                     #     self._workflow_update_filter(scheme_id)
                     # )
-
-                    # if updates[1] == 4:
-                    #     updates = updates + (1,)
-                    # else:
-                    #     updates = updates + (status_option,)
-                    updates = updates + (status_option,)
                     update_items.append(updates)
                 items[row] = update_items
                 scheme_numbers.append(scheme_number)
                 count += 1
         return items, scheme_numbers, count
-
-    def _workflow_update_filter(self, scheme_id):
-        """
-        On update, return workflow type data filter
-        :param scheme_id: Scheme id
-        :type scheme_id: Integer
-        :return workflow_filter: Workflow type data filter
-        :rtype workflow_filter: Dictionary
-        """
-        workflow_filter = {
-            self._lookup.SCHEME_COLUMN: scheme_id,
-            self._lookup.WORKFLOW_COLUMN:
-                self.data_service.get_workflow_id(self._object_name)
-        }
-        return workflow_filter
 
     @ staticmethod
     def _get_update_item(updates):
@@ -490,6 +478,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         for update in updates:
             yield update.column, update.index
+
+    def _workflow_update_filter(self, scheme_id):
+        """
+        On update, return workflow type data filter
+        :param scheme_id: Scheme id
+        :type scheme_id: Integer
+        :return workflow_filter: Workflow type data filter
+        :rtype workflow_filter: Dictionary
+        """
+        workflow_filter = {
+            self._lookup.SCHEME_COLUMN: scheme_id,
+            self._lookup.WORKFLOW_COLUMN:
+                self.data_service.get_workflow_id(self._object_name)
+        }
+        return workflow_filter
 
     @staticmethod
     def _approval_message(prefix, rows, scheme_numbers=None):
