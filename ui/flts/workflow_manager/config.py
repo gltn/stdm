@@ -229,7 +229,7 @@ LookUp = namedtuple(
         'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
     ]
 )
-UpdateColumn = namedtuple('UpdateColumn', ['column', 'index', 'new_value'])
+UpdateColumn = namedtuple('UpdateColumn', ['column', 'index'])
 
 configurations = {
     'document_columns': [
@@ -336,8 +336,8 @@ configurations = {
     ],
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'}, index=2, new_value=1),
-            UpdateColumn(column={'workflow_id': 'workflow_id'}, index=3, new_value=4)
+            UpdateColumn(column={'approval_id': 'approval_id'}, index=2),
+            UpdateColumn(column={'workflow_id': 'workflow_id'}, index=4)
         ]
     }
 }

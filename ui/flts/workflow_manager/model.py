@@ -119,7 +119,7 @@ class Load(DataRoutine):
     """
     Loads query results to be used in the table view
     """
-    def __init__(self, data_service, _view_data_id=None):
+    def __init__(self, data_service, collection_filter=None):
         """
         :param data_service: Data service
         :type data_service: DataService
@@ -131,9 +131,7 @@ class Load(DataRoutine):
             data_service.related_entity_name()
         self._results = []
         self._headers = []
-        self._view_id_column = self._view_id = None
-        if _view_data_id:
-            self._view_id_column, self._view_id = _view_data_id
+        self._collection_filter = collection_filter
 
     def load(self):
         """
@@ -198,9 +196,12 @@ class Load(DataRoutine):
         fk_name = column.keys()[0]
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                if self._view_id and self._view_id_column:
-                    value = getattr(item, self._view_id_column, None)
-                    if value == self._view_id:
+                if isinstance(self._collection_filter, dict):
+                    item_values = {
+                        k: getattr(item, k, None) for k, v in
+                        self._collection_filter.iteritems()
+                    }
+                    if item_values == self._collection_filter:
                         return self._get_item_value(item, column)
                 else:
                     return self._get_item_value(item, column)
@@ -319,10 +320,9 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
-    def __init__(self, data_service, _view_data_id=None):
+    def __init__(self, data_service):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
-        self._view_data_id = _view_data_id
         self.results = []
         self._headers = []
 
@@ -483,12 +483,14 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         return self._data_service.entity_name
 
-    def load(self):
+    def load(self, collection_filter=None):
         """
         Load query results to be used in the table view
+        :param collection_filter: Collection data filter
+        :type collection_filter: Dictionary
         """
         self.results, self._headers = Load(
-            self._data_service, self._view_data_id
+            self._data_service, collection_filter
         ).load()
 
     def update(self, updates):
