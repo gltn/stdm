@@ -226,7 +226,7 @@ LookUp = namedtuple(
     [
         'schemeEstablishment', 'firstExamination', 'secondExamination',
         'thirdExamination', 'WORKFLOW_COLUMN', 'APPROVED', 'PENDING',
-        'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_NUMBER'
+        'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN', 'SCHEME_NUMBER'
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'index'])
@@ -281,8 +281,8 @@ configurations = {
         DISAPPROVED=EntityRecordId(
             "check_lht_approval_status", {"value": "Disapproved"}
         ),
-        WORKFLOW_COLUMN='workflow_id', CHECK=0,
-        STATUS=2, SCHEME_NUMBER=1
+        WORKFLOW_COLUMN='workflow_id', SCHEME_COLUMN='scheme_id',
+        SCHEME_NUMBER=1, CHECK=0, STATUS=2
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},

@@ -82,7 +82,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Initial table view data load
         """
         try:
-            self._model.load(self._workflow_filter)
+            self._model.load(self._workflow_load_filter)
             self._enable_search() if self._model.results \
                 else self._disable_search()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -94,16 +94,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 setResizeMode(QHeaderView.ResizeToContents)
 
     @property
-    def _workflow_filter(self):
+    def _workflow_load_filter(self):
         """
-        Return workflow type data filter
+        On load, return workflow type data filter
         :return workflow_filter: Workflow type data filter
         :rtype workflow_filter: Dictionary
         """
-        workflow_filter = ({
+        workflow_filter = {
             self._lookup.WORKFLOW_COLUMN:
                 self.data_service.get_workflow_id(self._object_name)
-        })
+        }
         return workflow_filter
 
     def _on_check(self, index):
@@ -440,19 +440,40 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         items = {}
         scheme_numbers = []
         count = 0
-        for id_, (row, status, scheme_number) in self._checked_ids.iteritems():
+        for scheme_id, (row, status, scheme_number) in self._checked_ids.iteritems():
             if status != status_option:
                 update_items = []
                 for updates in self._get_update_item(self._scheme_update_column):
-                    if updates[1] == 4:
-                        updates = updates + (1,)
-                    else:
-                        updates = updates + (status_option,)
+                    # updates = updates + (
+                    #     status_option,
+                    #     self._workflow_update_filter(scheme_id)
+                    # )
+
+                    # if updates[1] == 4:
+                    #     updates = updates + (1,)
+                    # else:
+                    #     updates = updates + (status_option,)
+                    updates = updates + (status_option,)
                     update_items.append(updates)
                 items[row] = update_items
                 scheme_numbers.append(scheme_number)
                 count += 1
         return items, scheme_numbers, count
+
+    def _workflow_update_filter(self, scheme_id):
+        """
+        On update, return workflow type data filter
+        :param scheme_id: Scheme id
+        :type scheme_id: Integer
+        :return workflow_filter: Workflow type data filter
+        :rtype workflow_filter: Dictionary
+        """
+        workflow_filter = {
+            self._lookup.SCHEME_COLUMN: scheme_id,
+            self._lookup.WORKFLOW_COLUMN:
+                self.data_service.get_workflow_id(self._object_name)
+        }
+        return workflow_filter
 
     @ staticmethod
     def _get_update_item(updates):
