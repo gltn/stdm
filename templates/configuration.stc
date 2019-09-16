@@ -176,7 +176,7 @@
     <Column unique="False" tip="" rowindex="14" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="consitution ref number" mandatory="False"/>
     <Column unique="False" tip="" rowindex="15" minimum="0" maximum="2147483647" description="Number of plots in the Scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="no of plots" mandatory="False"/>
     <Column unique="False" tip="" rowindex="16" minimum="0" maximum="32" description="The number representing the Scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="scheme id" index="False" name="scheme_id" searchable="True" TYPE_INFO="INT" label="scheme id" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="17" minimum="-2147483648" maximum="2147483647" description="scheme id" index="False" name="scheme_id" searchable="True" TYPE_INFO="INT" label="scheme id" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Approval" proxy="False" createId="True" supportsDocuments="False" shortName="Approval_log" name="cb_approval_log" label="Approval Log">
@@ -241,10 +241,10 @@
     <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the workflow" index="False" name="workflow_id" searchable="True" TYPE_INFO="LOOKUP" label="workflow id" mandatory="True">
      <Relation name="fk_cb_check_lht_workflow_id_cb_scheme_workflow_workflow_id"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="approval id" index="False" name="approval_id" searchable="True" TYPE_INFO="LOOKUP" label="approval id" mandatory="False">
+    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="2147483647" description="approval id" index="False" name="approval_id" searchable="True" TYPE_INFO="LOOKUP" label="approval id" mandatory="False">
      <Relation name="fk_cb_check_lht_approval_status_id_cb_scheme_workflow_approval_id"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="timestamp" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
+    <Column unique="False" tip="" rowindex="3" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="timestamp" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
      <currentDateTime minimum="False" maximum="False"/>
     </Column>
    </Columns>
@@ -270,7 +270,7 @@
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="2147483647" description="region" index="False" name="region" searchable="True" TYPE_INFO="LOOKUP" label="region" mandatory="True">
      <Relation name="fk_cb_check_lht_region_id_cb_relevant_authority_region"/>
     </Column>
-    <Column unique="False" tip="" rowindex="5" minimum="0" maximum="1000000000" description="last value" index="False" name="last_val" searchable="True" TYPE_INFO="INT" label="last value" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="4" minimum="0" maximum="1000000000" description="last value" index="False" name="last_val" searchable="True" TYPE_INFO="INT" label="last value" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="10" associative="False" description="Refers to the holder of Land Hold Title" proxy="False" createId="True" supportsDocuments="False" shortName="Holder" name="cb_holder" label="lht_holder">
@@ -282,7 +282,7 @@
      <Relation name="fk_cb_check_lht_gender_id_cb_holder_gender"/>
     </Column>
     <Column unique="False" tip="" rowindex="3" minimum="0" maximum="20" description="Identity number of the holder" index="False" name="holder_identifier" searchable="True" TYPE_INFO="VARCHAR" label="holder Id number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="1900-01-01" maximum="2099-12-31" description="Holder's date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" label="holder dob" mandatory="False">
+    <Column unique="False" tip="" rowindex="4" minimum="1900-01-01" maximum="2099-12-31" description="Holder's date of birth" index="False" name="date_of_birth" searchable="False" TYPE_INFO="DATE" label="holder dob" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="" rowindex="5" minimum="0" maximum="50" description="The name of juristic/legal person" index="False" name="name_of_juristic_person" searchable="True" TYPE_INFO="VARCHAR" label="name of jusristic person" mandatory="False"/>
@@ -296,7 +296,7 @@
      <Relation name="fk_cb_check_lht_gender_id_cb_holder_spouse_gender"/>
     </Column>
     <Column unique="False" tip="" rowindex="11" minimum="0" maximum="20" description="Identity number of the spouse" index="False" name="spouse_identifier" searchable="True" TYPE_INFO="VARCHAR" label="spouse id number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="1900-01-01" maximum="2099-12-31" description="Date of birth of spouse" index="False" name="spouse_date_of_birth" searchable="False" TYPE_INFO="DATE" label="spouse dob" mandatory="False">
+    <Column unique="False" tip="" rowindex="12" minimum="1900-01-01" maximum="2099-12-31" description="Date of birth of spouse" index="False" name="spouse_date_of_birth" searchable="False" TYPE_INFO="DATE" label="spouse dob" mandatory="False">
      <currentDate minimum="False" maximum="False"/>
     </Column>
     <Column unique="False" tip="" rowindex="13" minimum="0" maximum="2147483647" description="Disability status of the holder" index="False" name="disability_status" searchable="True" TYPE_INFO="LOOKUP" label="disabled" mandatory="False">
@@ -428,6 +428,17 @@
     </Column>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link for scheme and holer entities" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_holder" name="cb_scheme_holder" label="scheme holder">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="False">
+     <Relation name="fk_cb_scheme_id_cb_scheme_holder_scheme_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the holders" index="False" name="holder_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="holder id" mandatory="False">
+     <Relation name="fk_cb_holder_id_cb_scheme_holder_holder_id"/>
+    </Column>
+   </Columns>
+  </Entity>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" showInParent="True" parent="check_social_tenure_relationship_document_type" name="fk_cb_check_social_tenure_relationship_document_type_id_cb_social_tenure_relationship_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
@@ -463,6 +474,8 @@
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
