@@ -351,7 +351,7 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
-    def __init__(self, data_service, collection_filter):
+    def __init__(self, data_service, collection_filter=None):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
         self._collection_filter = collection_filter
