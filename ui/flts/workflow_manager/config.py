@@ -128,7 +128,8 @@ class FilterQueryBy:
         :type entity_name: String
         :param filters: Column filters - column name and value
         :type filters: Dictionary
-        :return:
+        :return: Filter entity query object
+        :rtype: Entity object
         """
         try:
             if not self._profile:
@@ -224,9 +225,10 @@ Column = namedtuple('Column', ['name', 'flag'])
 LookUp = namedtuple(
     'LookUp',
     [
-        'schemeEstablishment', 'firstExamination', 'secondExamination',
-        'thirdExamination', 'WORKFLOW_COLUMN', 'APPROVED', 'PENDING',
-        'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN', 'SCHEME_NUMBER'
+        'schemeLodgement', 'schemeEstablishment', 'firstExamination',
+        'secondExamination', 'thirdExamination', 'WORKFLOW_COLUMN',
+        'APPROVED', 'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS',
+        'SCHEME_COLUMN', 'SCHEME_NUMBER'
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
@@ -260,26 +262,42 @@ configurations = {
                          '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
     'lookups': LookUp(
+        # TODO: Working. Do not delete until tested
+        # schemeEstablishment=EntityRecordId(
+        #     'check_lht_workflow', {'value': 'Lodgement'}
+        # ),
+        # firstExamination=EntityRecordId(
+        #     'check_lht_workflow', {'value': 'Establishment'}
+        # ),
+        # secondExamination=EntityRecordId(
+        #     'check_lht_workflow', {'value': 'Fiirst Assessment'}
+        # ),
+        # thirdExamination=EntityRecordId(
+        #     'check_lht_workflow', {'value': 'Second Assessment'}
+        # ),
+        schemeLodgement=EntityRecordId(
+            'check_lht_workflow', {'value': 'Lodgement'}
+        ),
         schemeEstablishment=EntityRecordId(
-            "check_lht_workflow", {"value": 'Lodgement'}
+            'check_lht_workflow', {'value': 'Establishment'}
         ),
         firstExamination=EntityRecordId(
-            "check_lht_workflow", {"value": 'Establishment'}
+            'check_lht_workflow', {'value': 'Fiirst Assessment'}
         ),
         secondExamination=EntityRecordId(
-            "check_lht_workflow", {"value": 'Fiirst Assessment'}
+            'check_lht_workflow', {'value': 'Second Assessment'}
         ),
         thirdExamination=EntityRecordId(
-            "check_lht_workflow", {"value": 'Second Assessment'}
+            'check_lht_workflow', {'value': 'Third Assessment'}
         ),
         APPROVED=EntityRecordId(
-            "check_lht_approval_status", {"value": "Approved"}
+            'check_lht_approval_status', {'value': 'Approved'}
         ),
         PENDING=EntityRecordId(
-            "check_lht_approval_status", {"value": "Pending"}
+            'check_lht_approval_status', {'value': 'Pending'}
         ),
         DISAPPROVED=EntityRecordId(
-            "check_lht_approval_status", {"value": "Disapproved"}
+            'check_lht_approval_status', {'value': 'Disapproved'}
         ),
         WORKFLOW_COLUMN='workflow_id', SCHEME_COLUMN='scheme_id',
         SCHEME_NUMBER=1, CHECK=0, STATUS=2

@@ -136,7 +136,7 @@ class SchemeDataService(DataService):
                     scheme_workflow_model.workflow_id == workflow_id
                 )
             return query_object.all()
-        except (exc.SQLAlchemyError, Exception) as e:
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
     def get_workflow_id(self, attr):
@@ -164,6 +164,23 @@ class SchemeDataService(DataService):
             model = entity_model(entity)
             return model
         except AttributeError as e:
+            raise e
+
+    @staticmethod
+    def filter_query_by(entity_name, filters):
+        """
+        Filters query result by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            filter_by = FilterQueryBy()
+            return filter_by(entity_name, filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
 

@@ -68,6 +68,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
+        # self.approveButton.clicked.connect(
+        #     lambda: self._approve(self._lookup.APPROVED(), "approve")
+        # )
         self.approveButton.clicked.connect(
             lambda: self._approval(self._lookup.APPROVED(), "approve")
         )
@@ -402,6 +405,113 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return False
         return True
 
+
+    # TODO: Start of approve test
+    def _approve(self, status, title):
+        """
+        Approve a Scheme
+        :param status: Approve or disapprove status
+        :type status: Integer
+        :param title: Approve or disapprove title text
+        :type title: String
+        """
+        items, scheme_numbers, rows = self._approval_items(status)
+        items, scheme_numbers = self._valid_for_approval(items)
+
+    def _valid_for_approval(self, approval_item):
+        """
+        Valid for approval only if the preceding workflow
+        status of an item record is approved
+        :param approval_item: Item checked for approval
+        :type approval_item: Dictionary
+        :return valid_items: Approval values and update filters
+        :rtype valid_items: Dictionary
+        :return scheme_numbers: Scheme numbers
+        :return scheme_numbers: Dictionary
+        """
+        valid_items = {}
+        scheme_numbers = {"valid": [], "invalid": []}
+        for row, columns, scheme_number in approval_item.iteritems():
+            update_items = []
+            for column, new_value, update_filter in columns:
+                updates = []
+                record_id = update_filter[self._lookup.SCHEME_COLUMN]
+                workflow_id = self._prev_workflow_id()
+                result = self._query_scheme_workflow(record_id, workflow_id)
+                approval_id = result.approval_id
+                if approval_id == self._lookup.APPROVED():
+                    updates.extend([column, new_value, update_filter])
+                    scheme_numbers["valid"] = scheme_number
+                    continue
+                scheme_numbers["invalid"] = (scheme_number, workflow_id, approval_id)
+                update_items.append(updates)
+            valid_items[row] = update_items
+        return valid_items, scheme_numbers
+
+    def _prev_workflow_id(self):
+        """
+        Return preceding workflow record id
+        :return workflow_id: Preceding workflow record id
+        :rtype workflow_id: Integer
+        """
+        workflow_id = self.data_service.get_workflow_id(
+            self._object_name
+        )
+        workflow_id = self._workflow_ids.index(workflow_id) - 1
+        return workflow_id
+
+    def _workflow_ids(self):
+        """
+        Returns workflow IDs
+        :return workflow_ids: Workflow record ID
+        :rtype workflow_ids: List
+        """
+        workflow_ids = [
+            self._lookup.schemeLodgement(),
+            self._lookup.schemeEstablishment(),
+            self._lookup.firstExamination(),
+            self._lookup.secondExamination(),
+            self._lookup.thirdExamination()
+        ]
+        return workflow_ids
+
+    def _query_scheme_workflow(self, record_id, workflow_id):
+        """
+        Queries scheme workflow by scheme record ID
+        and workflow ID
+        :param record_id: Scheme record ID
+        :type record_id: Integer
+        :param workflow_id: Workflow ID
+        :type workflow_id: Integer
+        :return result: Query object
+        :rtype result: Entity object
+        """
+        filters = {
+            self._lookup.SCHEME_COLUMN: record_id,
+            self._lookup.WORKFLOW_COLUMN: workflow_id
+        }
+        result = self._query_entity_by("Scheme_workflow", filters).first()
+        return result
+
+    def _filter_query_by(self, entity_name, filters):
+        """
+        Filters query result by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        result = self.data_service.filter_query_by(
+            entity_name, filters
+        )
+        return result
+
+    # TODO: End of approve test
+
+
+
     def _approval(self, status, title):
         """
         Approve or disapprove a Scheme
@@ -442,25 +552,26 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         items = {}
         scheme_numbers = []
         count = 0
-        for scheme_id, (row, status, scheme_number) in self._checked_ids.iteritems():
+        for record_id, (row, status, scheme_number) in self._checked_ids.iteritems():
             if status != status_option:
                 update_items = []
                 for updates in self._get_update_item(self._scheme_update_column):
-                    updates = [updates]
-                    # TODO: Test. To be deleted
-                    if updates[0].get('workflow_id', None) == 'workflow_id':
-                        updates.extend([1, self._workflow_update_filter(scheme_id)])
-                    else:
-                        updates.extend([
-                            status_option,
-                            self._workflow_update_filter(scheme_id)
-                        ])
-                    # TODO: Working. Do not delete
+                    # TODO: Test purposes. To be deleted
                     # updates = [updates]
-                    # updates.extend([
-                    #     status_option,
-                    #     self._workflow_update_filter(scheme_id)
-                    # ])
+                    # if updates[0].get('workflow_id', None) == 'workflow_id':
+                    #     updates.extend([1, self._workflow_update_filter(record_id)])
+                    # else:
+                    #     updates.extend([
+                    #         status_option,
+                    #         self._workflow_update_filter(record_id)
+                    #     ])
+                    # TODO: Working. Do not delete
+
+                    updates = [updates]
+                    updates.extend([
+                        status_option,
+                        self._workflow_update_filter(record_id)
+                    ])
                     update_items.append(updates)
                 items[row] = update_items
                 scheme_numbers.append(scheme_number)
@@ -481,16 +592,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for update in updates:
             yield update.column
 
-    def _workflow_update_filter(self, scheme_id):
+    def _workflow_update_filter(self, record_id):
         """
         On update, return workflow type data filter
-        :param scheme_id: Scheme id
-        :type scheme_id: Integer
+        :param record_id: Scheme record id
+        :type record_id: Integer
         :return workflow_filter: Workflow type data filter
         :rtype workflow_filter: Dictionary
         """
         workflow_filter = {
-            self._lookup.SCHEME_COLUMN: scheme_id,
+            self._lookup.SCHEME_COLUMN: record_id,
             self._lookup.WORKFLOW_COLUMN:
                 self.data_service.get_workflow_id(self._object_name)
         }
