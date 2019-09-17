@@ -406,6 +406,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         return True
 
 
+
     # TODO: Start of approve test
     def _approve(self, status, title):
         """
@@ -415,8 +416,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Approve or disapprove title text
         :type title: String
         """
-        items, scheme_numbers, rows = self._approval_items(status)
-        items, scheme_numbers = self._valid_for_approval(items)
+        items, scheme_numbers = self._test_approve_items(status)
         # TODO: Customise the lines below. Remember scheme number is
         # TODO: a dictionary with valid and invalid scheme numbers for customization
         # updated_rows = None
@@ -437,7 +437,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         #         )
         #         self._notif_bar.insertInformationNotification(msg)
 
-    def _valid_for_approval(self, approval_item):
+    def _test_approve_items(self, status_option):
         """
         Return valid approval record configurations.
         Only valid for approval if the preceding workflow
@@ -450,24 +450,43 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return scheme_numbers: Dictionary
         """
         valid_items = {}
+        prev_workflow_id = self._prev_workflow_id()
         scheme_numbers = {"valid": [], "invalid": []}
-        for row, columns, scheme_number in approval_item.iteritems():
-            update_items = []
-            for column, new_value, update_filter in columns:
-                updates = []
-                record_id = update_filter[self._lookup.SCHEME_COLUMN]
-                workflow_id = self._prev_workflow_id()
-                result = self._query_scheme_workflow(record_id, workflow_id)
-                approval_id = result.approval_id
-                if approval_id == self._lookup.APPROVED():
-                    updates.extend([column, new_value, update_filter])
-                    update_items.append(updates)
+        for record_id, (row, status, scheme_number) in self._checked_ids.iteritems():
+            if status != status_option:
+                prev_approval_id = self._query_scheme_workflow(
+                    record_id, prev_workflow_id
+                ).approval_id  # TODO: Use getattr instead from config file
+                update_items = []
+                for updates in self._get_update_item(self._scheme_update_column):
+                    if prev_approval_id == self._lookup.APPROVED():
+                        updates = [updates]
+                        update_filters = self._workflow_update_filter(
+                            record_id,
+                            self.data_service.get_workflow_id(self._object_name)
+                        )
+                        updates.extend([status_option, update_filters])
+                        update_items.append(updates)
+                if update_items:
+                    valid_items[row] = update_items
                     scheme_numbers["valid"] = scheme_number
                     continue
-                scheme_numbers["invalid"] = (scheme_number, workflow_id, approval_id)
-            if update_items:
-                valid_items[row] = update_items
+                scheme_numbers["invalid"] = (
+                    scheme_number, prev_workflow_id, prev_approval_id
+                )
         return valid_items, scheme_numbers
+
+    def _next_workflow_id(self):
+        """
+        Return succeeding workflow record id
+        :return workflow_id: Succeeding workflow record id
+        :rtype workflow_id: Integer
+        """
+        workflow_id = self.data_service.get_workflow_id(
+            self._object_name
+        )
+        workflow_id = self._workflow_ids.index(workflow_id) + 1
+        return workflow_id
 
     def _prev_workflow_id(self):
         """
@@ -496,6 +515,32 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         ]
         return workflow_ids
 
+    # def _next_approval_id(self, record_id, workflow_id):
+    #     """
+    #     Return preceding approval ID
+    #     :param record_id: Scheme record ID
+    #     :param record_id: Scheme record ID
+    #     :param workflow_id: Workflow record ID
+    #     :type workflow_id: Integer
+    #     :return: Preceding approval ID
+    #     :rtype: Integer
+    #     """
+    #     result = self._query_scheme_workflow(record_id, workflow_id)
+    #     return result.workflow_id  # TODO: Use getattr instead from config file
+
+    # def _scheme_workflow_id(self, record_id, workflow_id):
+    #     """
+    #     Return preceding approval ID
+    #     :param record_id: Scheme record ID
+    #     :param record_id: Scheme record ID
+    #     :param workflow_id: Workflow record ID
+    #     :type workflow_id: Integer
+    #     :return: Preceding approval ID
+    #     :rtype: Integer
+    #     """
+    #     result = self._query_scheme_workflow(record_id, workflow_id)
+    #     return result.approval_id  # TODO: Use getattr instead from config file
+
     def _query_scheme_workflow(self, record_id, workflow_id):
         """
         Queries scheme workflow by scheme record ID
@@ -511,7 +556,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._lookup.SCHEME_COLUMN: record_id,
             self._lookup.WORKFLOW_COLUMN: workflow_id
         }
-        result = self._query_entity_by("Scheme_workflow", filters).first()
+        result = self._filter_query_by("Scheme_workflow", filters).first()  # TODO: Place name in config file
         return result
 
     def _filter_query_by(self, entity_name, filters):
@@ -525,9 +570,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype: Entity object
         """
         try:
-            result = self.data_service.filter_query_by(
-                entity_name, filters
-            )
+            result = self.data_service.filter_query_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
             # TODO: Return critical message instead of raise
@@ -618,18 +661,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for update in updates:
             yield update.column
 
-    def _workflow_update_filter(self, record_id):
+    def _workflow_update_filter(self, record_id, workflow_id):
         """
         On update, return workflow type data filter
         :param record_id: Scheme record id
         :type record_id: Integer
+        :param workflow_id: Workflow record id
+        :type workflow_id: Integer
         :return workflow_filter: Workflow type data filter
         :rtype workflow_filter: Dictionary
         """
         workflow_filter = {
             self._lookup.SCHEME_COLUMN: record_id,
-            self._lookup.WORKFLOW_COLUMN:
-                self.data_service.get_workflow_id(self._object_name)
+            self._lookup.WORKFLOW_COLUMN: workflow_id
         }
         return workflow_filter
 
