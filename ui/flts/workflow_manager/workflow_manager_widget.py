@@ -417,10 +417,30 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         items, scheme_numbers, rows = self._approval_items(status)
         items, scheme_numbers = self._valid_for_approval(items)
+        # TODO: Customise the lines below. Remember scheme number is
+        # TODO: a dictionary with valid and invalid scheme numbers for customization
+        # updated_rows = None
+        # try:
+        #     self._notif_bar.clear()
+        #     msg = self._approval_message(title.capitalize(), rows, scheme_numbers)
+        #     reply = self._show_question_message(msg)
+        #     if reply:
+        #         updated_rows = self._model.update(items)
+        # except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+        #     msg = "Failed to update: {}".format(e)
+        #     self._show_critical_message(msg)
+        # else:
+        #     if reply:
+        #         self._update_checked_id()
+        #         msg = self._approval_message(
+        #             "Successfully {}".format(title), updated_rows
+        #         )
+        #         self._notif_bar.insertInformationNotification(msg)
 
     def _valid_for_approval(self, approval_item):
         """
-        Valid for approval only if the preceding workflow
+        Return valid approval record configurations.
+        Only valid for approval if the preceding workflow
         status of an item record is approved
         :param approval_item: Item checked for approval
         :type approval_item: Dictionary
