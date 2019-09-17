@@ -461,11 +461,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 approval_id = result.approval_id
                 if approval_id == self._lookup.APPROVED():
                     updates.extend([column, new_value, update_filter])
+                    update_items.append(updates)
                     scheme_numbers["valid"] = scheme_number
                     continue
                 scheme_numbers["invalid"] = (scheme_number, workflow_id, approval_id)
-                update_items.append(updates)
-            valid_items[row] = update_items
+            if update_items:
+                valid_items[row] = update_items
         return valid_items, scheme_numbers
 
     def _prev_workflow_id(self):
@@ -523,10 +524,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Filter entity query object
         :rtype: Entity object
         """
-        result = self.data_service.filter_query_by(
-            entity_name, filters
-        )
-        return result
+        try:
+            result = self.data_service.filter_query_by(
+                entity_name, filters
+            )
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+            # TODO: Return critical message instead of raise
+        else:
+            return result
 
     # TODO: End of approve test
 
