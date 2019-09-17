@@ -416,66 +416,49 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Approve or disapprove title text
         :type title: String
         """
-        update_items, scheme_numbers = self._approve_items(status)
-        next_update_items, next_save_items = \
-            self._next_approval_items(update_items)
-
-
-        # TODO: Customise the lines below. Remember scheme number is
-        # TODO: a dictionary with valid and invalid scheme numbers for customization
-        # updated_rows = None
-        # try:
-        #     self._notif_bar.clear()
-        #     msg = self._approval_message(
-        #         title.capitalize(), len(scheme_numbers["valid"]), scheme_numbers["valid"]
-        #     )
-        #     reply = self._show_question_message(msg)
-        #     if reply:
-        #         updated_rows = self._model.update(items)
-        # except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-        #     msg = "Failed to update: {}".format(e)
-        #     self._show_critical_message(msg)
-        # else:
-        #     if reply:
-        #         self._update_checked_id()
-        #         msg = self._approval_message(
-        #             "Successfully {}".format(title), updated_rows
-        #         )
-        #         self._notif_bar.insertInformationNotification(msg)
-
-    def _next_approval_items(self, approval_items):
-        """
-        Returns succeeding workflow approval update
-        values, columns and filters
-        :param approval_items: Valid approval items
-        :type approval_items: Dictionary
-        :return update_items: Approve update values, columns and filters
-        :rtype update_items: Dictionary
-        :rtype save_items: Approve save values, columns and filters
-        :rtype save_items: Dictionary
-        """
-        update_items = {}
-        save_items = {}
-        next_workflow_id = self._next_workflow_id()
-        scheme_column = self._lookup.SCHEME_COLUMN
-        workflow_column = self._lookup.WORKFLOW_COLUMN
-        for row, columns in approval_items.iteritems():
-            items = []
-            record_id = None
-            for column, new_value, update_filters in columns:
-                record_id = update_filters[scheme_column]
-                update_filters[workflow_column] = next_workflow_id
-                items.append([
-                    column, self._lookup.PENDING(), update_filters
-                ])
-            workflow_id = self._scheme_workflow_id(
-                record_id, next_workflow_id, workflow_column
+        updated_rows = None
+        items, scheme_numbers = self._approve_items(status)
+        next_items, save_items = self._next_approval_items(items)
+        try:
+            self._notif_bar.clear()
+            msg = self._approval_message(
+                title.capitalize(), len(scheme_numbers["valid"]), scheme_numbers["valid"]
             )
-            if items and workflow_id is not None:
-                update_items[row] = items
-            elif items:
-                save_items[row] = items
-        return update_items, save_items
+            reply = self._show_question_message(msg)
+            if reply:
+                updated_rows = self._update_on_approve(items, next_items, save_items)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._show_critical_message(msg)
+        else:
+            if reply:
+                self._update_checked_id()
+                msg = self._approval_message(
+                    "Successfully {}".format(title), updated_rows
+                )
+                self._notif_bar.insertInformationNotification(msg)
+
+    def _update_on_approve(self, items, next_items, save_items):
+        """
+        Update approval status on approve
+        :param items: Current workflow approval items
+        :type items: Dictionary
+        :Param next_items: Next workflow update values, columns and filters
+        :type next_items: Dictionary
+        :Param save_items: Next workflow save values, columns and filters
+        :type save_items: Dictionary
+        :return updated_rows: Number of updated rows
+        :rtype updated_rows: Integer
+        """
+        if next_items:
+            updated_rows = self._model.update(items)  # Update current workflow
+            self._model.update(next_items)  # Update preceding workflow
+        elif save_items:
+            updated_rows = self._model.update(items)
+            # TODO: Call model's save method from here and pass save_items
+        else:
+            updated_rows = self._model.update(items)
+        return updated_rows
 
     def _approve_items(self, status_option):
         """
@@ -508,20 +491,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 ))
         return valid_items, scheme_numbers
 
-    def _next_workflow_id(self):
-        """
-        Return succeeding workflow record id
-        :return workflow_id: Succeeding workflow record id
-        :rtype workflow_id: Integer
-        """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
-        index = self._workflow_ids.index(workflow_id)
-        if index == len(self._workflow_ids) - 1:
-            return self._workflow_ids[index]
-        return self._workflow_ids[(index + 1)]
-
     def _prev_workflow_id(self):
         """
         Return preceding workflow record id
@@ -551,6 +520,81 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._lookup.thirdExamination()
         ]
         return workflow_ids
+
+    def _approval_updates(self, approval_id, record_id, status):
+        """
+        Return valid approval update items
+        :param approval_id: Preceding workflow approval record ID
+        :type approval_id: Integer
+        :param record_id: Checked items scheme record ID
+        :type record_id: Integer
+        :param status: Approve record ID status
+        :type status: Integer
+        :return update_items: Valid approval update items
+        :rtype update_items: List
+        """
+        update_items = []
+        for updates in self._get_update_item(self._scheme_update_column):
+            if approval_id == self._lookup.APPROVED():
+                updates = [updates]
+                update_filters = self._workflow_update_filter(
+                    record_id,
+                    self.data_service.get_workflow_id(self._object_name)
+                )
+                updates.extend([status, update_filters])
+                update_items.append(updates)
+        return update_items
+
+    def _next_approval_items(self, approval_items):
+        """
+        Returns succeeding workflow approval update
+        values, columns and filters
+        :param approval_items: Current work flow update values,
+                                columns and filters
+        :type approval_items: Dictionary
+        :return update_items: Next workflow update values,
+                                columns and filters
+        :rtype update_items: Dictionary
+        :return save_items: Next workflow save values,
+                            columns and filters
+        :rtype save_items: Dictionary
+        """
+        update_items = {}
+        save_items = {}
+        next_workflow_id = self._next_workflow_id()
+        scheme_column = self._lookup.SCHEME_COLUMN
+        workflow_column = self._lookup.WORKFLOW_COLUMN
+        for row, columns in approval_items.iteritems():
+            items = []
+            record_id = None
+            for column, new_value, update_filters in columns:
+                record_id = update_filters[scheme_column]
+                update_filters[workflow_column] = next_workflow_id
+                items.append([
+                    column, self._lookup.PENDING(), update_filters
+                ])
+            workflow_id = self._scheme_workflow_id(
+                record_id, next_workflow_id, workflow_column
+            )
+            if items and workflow_id is not None:
+                update_items[row] = items
+            elif items:
+                save_items[row] = items
+        return update_items, save_items
+
+    def _next_workflow_id(self):
+        """
+        Return succeeding workflow record id
+        :return workflow_id: Succeeding workflow record id
+        :rtype workflow_id: Integer
+        """
+        workflow_id = self.data_service.get_workflow_id(
+            self._object_name
+        )
+        index = self._workflow_ids.index(workflow_id)
+        if index == len(self._workflow_ids) - 1:
+            return self._workflow_ids[index]
+        return self._workflow_ids[(index + 1)]
 
     def _scheme_workflow_id(self, record_id, workflow_id, attr):
         """
@@ -604,30 +648,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             # TODO: Return critical message instead of raise
         else:
             return result
-
-    def _approval_updates(self, approval_id, record_id, status):
-        """
-        Return valid approval update items
-        :param approval_id: Preceding workflow approval record ID
-        :type approval_id: Integer
-        :param record_id: Checked items scheme record ID
-        :type record_id: Integer
-        :param status: Approve record ID status
-        :type status: Integer
-        :return update_items: Valid approval update items
-        :rtype update_items: List
-        """
-        update_items = []
-        for updates in self._get_update_item(self._scheme_update_column):
-            if approval_id == self._lookup.APPROVED():
-                updates = [updates]
-                update_filters = self._workflow_update_filter(
-                    record_id,
-                    self.data_service.get_workflow_id(self._object_name)
-                )
-                updates.extend([status, update_filters])
-                update_items.append(updates)
-        return update_items
 
     # TODO: End of approve test
 
