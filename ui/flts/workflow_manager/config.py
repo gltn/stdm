@@ -18,55 +18,15 @@ copyright            : (C) 2019
 # import datetime
 from collections import namedtuple
 from PyQt4.QtCore import Qt
+from PyQt4.QtGui import (
+    QApplication,
+    QMessageBox,
+)
+from sqlalchemy import exc
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
 
-Column = namedtuple("Column", ["name", "flag"])  # TODO: Add types to handle date and time in datetime type
-LookUp = namedtuple("LookUp", ["APPROVED", "PENDING", "UNAPPROVED", "CHECK", "STATUS", "SCHEME_NUMBER"])
-UpdateColumn = namedtuple("UpdateColumn", ['column', 'index', 'new_value'])
-
-conf = {
-    'document_columns': [
-        {Column(name='Number of Scheme', flag=False): 'name'},
-        {Column(name='Document Type', flag=False): {'cb_check_scheme_document_type': 'value'}},
-        {Column(name='Document Size', flag=False): 'document_size'},
-        {Column(name='Last Modified', flag=False): 'last_modified'},
-        {Column(name='Created By', flag=False): 'created_by'},
-        {Column(name='View Document', flag=False): 'View'}
-    ],
-    'header_view_style': 'QHeaderView::section{'
-                         'border-top:0px solid #C4C2BF;'
-                         'border-left:0px solid #C4C2BF;'
-                         'border-right: 1px solid #C4C2BF;'
-                         'border-bottom: 1px solid #A9A5A2;'
-                         'padding:4px;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}'
-                         'QTableCornerButton::section{'
-                         'border-top:0px solid #C4C2BF;'
-                         'border-left:0px solid #C4C2BF;'
-                         'border-right: 1px solid #C4C2BF;'
-                         'border-bottom: 1px solid #A9A5A2;'
-                         'background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
-                         '}',
-    'lookups': LookUp(APPROVED=1, PENDING=2, UNAPPROVED=3, CHECK=0, STATUS=2, SCHEME_NUMBER=1),
-    'scheme_columns': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
-        {Column(name='Status', flag=False): {'approval_status': 'approval_status'}},
-        {Column(name='Date of Approval', flag=False): {'timestamp': 'timestamp'}},
-        {Column(name='Type of Relevant Authority', flag=False): {'cb_check_lht_relevant_authority': 'value'}},
-        {Column(name='Land Rights Office', flag=False): {'cb_check_lht_land_rights_office': 'value'}},
-        {Column(name='Region', flag=False): {'cb_check_lht_region': 'value'}},
-        {Column(name='Township', flag=False): 'township_name'}, 
-        {Column(name='Registration Division', flag=False): 'registration_division'},
-        {Column(name='Block Area', flag=False): 'area'}
-    ],
-    'update_columns': {
-        'scheme_update': [
-            UpdateColumn(column={'approval_status': 'approval_status'}, index=2, new_value=1)
-            # UpdateColumn(column={'timestamp': 'timestamp'}, index=3, new_value=unicode(datetime.datetime.now()))
-        ]
-    }
-}
+configurations = None
 
 
 class Config(object):
@@ -74,7 +34,8 @@ class Config(object):
     Workflow Manager configuration interface
     """
     def __init__(self):
-        self._config = conf
+        self._configurations = configurations
+        self._parent = None
 
     def get_data(self, option):
         """
@@ -83,7 +44,7 @@ class Config(object):
         :return: Configuration data
         :rtype: Multiple types
         """
-        return self._config.get(option, None)
+        return self._configurations.get(option, None)
 
 
 class DocumentConfig(Config):
@@ -100,6 +61,20 @@ class DocumentConfig(Config):
         :rtype: List
         """
         return self.get_data('document_columns')
+
+
+class HolderConfig(Config):
+    """
+    Scheme holders table view configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Scheme holders table view columns options
+        :return: Table view columns and query columns options
+        :rtype: List
+        """
+        return self.get_data('holder_columns')
 
 
 class StyleSheet(Config):
@@ -120,6 +95,10 @@ class SchemeConfig(Config):
     """
     Scheme table view configuration interface
     """
+    def __init__(self, parent=None):
+        super(SchemeConfig, self).__init__()
+        self._parent = parent
+
     @property
     def columns(self):
         """
@@ -149,4 +128,280 @@ class SchemeConfig(Config):
             get('scheme_update', None)
 
 
+class FilterQueryBy:
+    """
+    Filters query result by a column value
+    """
+    def __init__(self):
+        self._profile = None
 
+    def __call__(self, entity_name, filters):
+        """
+        Return query object on filter by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            if not self._profile:
+                self._profile = current_profile()
+            query_obj = self._entity_query_object(entity_name)
+            return self._filter_by(query_obj, filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    @staticmethod
+    def _filter_by(query_obj, filters):
+        """
+        Return filter entity query object
+        :param query_obj: Entity query object
+        :type query_obj: List
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            return query_obj.filter_by(**filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_query_object(self, entity_name):
+        """
+        Return query object of an entity
+        :param entity_name: Entity name
+        :type entity_name: String
+        :return:Entity query object
+        :rtype List
+        """
+        model = self._entity_model(entity_name)
+        entity_object = model()
+        try:
+            return entity_object.queryObject()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_model(self, name):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return model: Entity model;
+        :rtype model: DeclarativeMeta
+        """
+        try:
+            entity = self._profile.entity(name)
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e
+
+
+class EntityRecordId(Config):
+    """
+    Returns entity record ID
+    """
+    def __init__(self, entity_name, filters):
+        super(EntityRecordId, self).__init__()
+        self._entity_name = entity_name
+        self._filters = filters
+        self._results = None
+
+    def __call__(self):
+        """
+        Return entity record ID filtered by a column value
+        :return id: Entity record ID
+        :rtype id: Integer
+        """
+        if not self._results:
+            try:
+                filter_by = FilterQueryBy()
+                self._results = filter_by(
+                    self._entity_name, self._filters
+                ).first().id
+            except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+                msg = QApplication.translate(
+                    'Workflow Manager',
+                    "Failed to get record id: {}".format(e)
+                )
+                QMessageBox.critical(
+                    self._parent,
+                    'Workflow Manager',
+                    msg
+                )
+        return self._results
+
+
+Column = namedtuple('Column', ['name', 'flag'])
+LookUp = namedtuple(
+    'LookUp',
+    [
+        'schemeLodgement', 'schemeEstablishment', 'firstExamination',
+        'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
+        'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
+        'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN',
+        'SCHEME_NUMBER'
+    ]
+)
+UpdateColumn = namedtuple('UpdateColumn', ['column'])
+
+configurations = {
+    'document_columns': [
+        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Document Type', flag=False): {
+            'cb_check_scheme_document_type': 'value'
+        }},
+        {Column(name='Document Size', flag=False): 'document_size'},
+        {Column(name='Last Modified', flag=False): 'last_modified'},
+        {Column(name='Created By', flag=False): 'created_by'},
+        {Column(name='View Document', flag=False): 'View'}
+    ],
+    'header_view_style': 'QHeaderView::section{'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'padding:4px;'
+                         'background-color: qlineargradient'
+                         '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}'
+                         'QTableCornerButton::section{'
+                         'border-top:0px solid #C4C2BF;'
+                         'border-left:0px solid #C4C2BF;'
+                         'border-right: 1px solid #C4C2BF;'
+                         'border-bottom: 1px solid #A9A5A2;'
+                         'background-color: qlineargradient'
+                         '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
+                         '}',
+    'holder_columns': [
+        {Column(name='First Name', flag=False): 'first_name'},
+        {Column(name='Surname', flag=False): 'surname'},
+        {
+            Column(name='Gender', flag=False): {
+                'cb_check_lht_gender': 'value'
+            }
+        },
+        {Column(name='Holder Identifier', flag=False): 'holder_identifier'},
+        {Column(name='Date of Birth', flag=False): 'date_of_birth'},
+        {Column(name='Name of Juristic Person', flag=False): 'name_of_juristic_person'},
+        {Column(name='Reg. No. of Juristic Person', flag=False): 'reg_no_of_juristic_person'},
+        {
+            Column(name='Marital Status', flag=False): {
+                'cb_check_lht_marital_status': 'value'
+            }
+        },
+        {Column(name='Spouse Surname', flag=False): 'spouse_surname'},
+        {Column(name='Spouse First Name', flag=False): 'spouse_first_name'},
+        {
+            Column(name='Spouse Gender', flag=False): {
+                'cb_check_lht_gender': 'value'
+            }
+        },
+        {Column(name='Spouse Identifier', flag=False): 'spouse_identifier'},
+        {Column(name='Spouse Date of Birth', flag=False): 'spouse_date_of_birth'},
+        {
+            Column(name='Disability Status', flag=False): {
+                'cb_check_lht_disability': 'value'
+            }
+        },
+        {
+            Column(name='Income Level', flag=False): {
+                'cb_check_lht_income_level': 'value'
+            }
+        },
+        {
+            Column(name='Occupation', flag=False): {
+                'cb_check_lht_occupation': 'value'
+            }
+        },
+        {Column(name='Other Dependants', flag=False): 'other_dependants'},
+    ],
+    'lookups': LookUp(
+        APPROVAL_STATUS='check_lht_approval_status',
+        WORKFLOW='check_lht_workflow',
+        schemeLodgement=EntityRecordId(
+            'check_lht_workflow', {'value': 'Lodgement'}
+        ),
+        schemeEstablishment=EntityRecordId(
+            'check_lht_workflow', {'value': 'Establishment'}
+        ),
+        firstExamination=EntityRecordId(
+            'check_lht_workflow', {'value': 'Fiirst Assessment'}
+        ),
+        secondExamination=EntityRecordId(
+            'check_lht_workflow', {'value': 'Second Assessment'}
+        ),
+        thirdExamination=EntityRecordId(
+            'check_lht_workflow', {'value': 'Third Assessment'}
+        ),
+        APPROVED=EntityRecordId(
+            'check_lht_approval_status', {'value': 'Approved'}
+        ),
+        PENDING=EntityRecordId(
+            'check_lht_approval_status', {'value': 'Pending'}
+        ),
+        DISAPPROVED=EntityRecordId(
+            'check_lht_approval_status', {'value': 'Disapproved'}
+        ),
+        WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
+        SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2
+    ),
+    'scheme_columns': [
+        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
+        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {
+            Column(name='Status', flag=False): {
+                'approval_id': 'approval_id'
+            }
+        },
+        {
+            Column(name='Scheme ID', flag=False): {
+                'scheme_id': 'scheme_id'
+            }
+        },
+        {
+            Column(name='Workflow', flag=False): {
+                'workflow_id': 'workflow_id'
+            }
+        },
+        {
+            Column(name='Workflow Type', flag=False): {
+                'cb_check_lht_workflow': 'value'
+            }
+        },
+        {
+            Column(name='Date of Approval', flag=False): {
+                'timestamp': 'timestamp'
+            }
+        },
+        {
+            Column(name='Type of Relevant Authority', flag=False): {
+                'cb_check_lht_relevant_authority': 'value'
+            }
+        },
+        {
+            Column(name='Land Rights Office', flag=False): {
+                'cb_check_lht_land_rights_office': 'value'
+            }
+        },
+        {
+            Column(name='Region', flag=False): {
+                'cb_check_lht_region': 'value'
+            }
+        },
+        {Column(name='Township', flag=False): 'township_name'}, 
+        {
+            Column(name='Registration Division', flag=False):
+                'registration_division'
+        },
+        {Column(name='Block Area', flag=False): 'area'}
+    ],
+    'update_columns': {
+        'scheme_update': [
+            UpdateColumn(column={'approval_id': 'approval_id'})
+        ]
+    }
+}
