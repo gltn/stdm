@@ -577,7 +577,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         valid_items = {}
         scheme_numbers = []
         workflow_ids = self._next_workflow_ids()
-        workflow_ids.extend(self.prev_workflow_id())
+        workflow_ids.append(self._prev_workflow_id())
         for record_id, (row, status, scheme_number) in self._checked_ids.iteritems():
             if int(status) != status_option:
                 workflow_ids = self._query_workflow_ids(record_id, workflow_ids)
@@ -595,16 +595,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return ids: Preceding and succeeding workflow record ids
         :rtype ids: List
         """
-        # ids = []
         workflow_id = self.data_service.get_workflow_id(
             self._object_name
         )
         index = self._workflow_ids.index(workflow_id)
-        # if index == 0:
-        #     ids.append(self._workflow_ids[index])
-        # else:
-        #     ids.append(self._workflow_ids[index - 1])
-        # ids.extend(self._workflow_ids[index:])
         return self._workflow_ids[index:]
 
     def _prev_workflow_id(self):
