@@ -354,8 +354,7 @@ configurations = {
     ],
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'}),
-            UpdateColumn(column={'workflow_id': 'workflow_id'})
+            UpdateColumn(column={'approval_id': 'approval_id'})
         ]
     }
 }

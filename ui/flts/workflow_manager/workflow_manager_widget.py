@@ -69,8 +69,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
         self.approveButton.clicked.connect(
-            lambda: self._approve(self._lookup.APPROVED(), "approve")
+            lambda: self._on_approve(self._lookup.APPROVED(), "approve")
         )
+        # self.disapproveButton.clicked.connect(
+        #     lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "disapprove")
+        # )
         # self.approveButton.clicked.connect(
         #     lambda: self._approval(self._lookup.APPROVED(), "approve")
         # )
@@ -408,7 +411,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
 
     # TODO: Start of approve test
-    def _approve(self, status, title):
+    def _on_approve(self, status, title):
         """
         Approve a Scheme
         :param status: Approve or disapprove status
@@ -419,10 +422,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         updated_rows = None
         items, scheme_numbers = self._approve_items(status)
         next_items, save_items = self._next_approval_items(items)
+        num_records = len(scheme_numbers["valid"])
+        self._format_message(scheme_numbers)
         try:
             self._notif_bar.clear()
             msg = self._approval_message(
-                title.capitalize(), len(scheme_numbers["valid"]), scheme_numbers["valid"]
+                title.capitalize(), num_records, scheme_numbers["valid"]
             )
             reply = self._show_question_message(msg)
             if reply:
@@ -438,27 +443,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 )
                 self._notif_bar.insertInformationNotification(msg)
 
-    def _update_on_approve(self, items, next_items, save_items):
-        """
-        Update approval status on approve
-        :param items: Current workflow approval items
-        :type items: Dictionary
-        :Param next_items: Next workflow update values, columns and filters
-        :type next_items: Dictionary
-        :Param save_items: Next workflow save values, columns and filters
-        :type save_items: Dictionary
-        :return updated_rows: Number of updated rows
-        :rtype updated_rows: Integer
-        """
-        if next_items:
-            updated_rows = self._model.update(items)  # Update current workflow
-            self._model.update(next_items)  # Update preceding workflow
-        elif save_items:
-            updated_rows = self._model.update(items)
-            # TODO: Call model's save method from here and pass save_items
-        else:
-            updated_rows = self._model.update(items)
-        return updated_rows
+    def _format_message(self, scheme_numbers):
+        invalid_msg = []
+        for scheme_number, workflow_id, approval_id in scheme_numbers["invalid"]:
+            approval = self._filter_query_by('check_lht_approval_status', {'id': approval_id}).first()
+            workflow = self._filter_query_by('check_lht_workflow', {'id': workflow_id}).first()
+            msg = "\n{0} - {1} in {2}".format(scheme_number, approval.value, workflow.value)
+            invalid_msg.append(msg)
+        return scheme_numbers["valid"].extend(invalid_msg)
 
     def _approve_items(self, status_option):
         """
@@ -486,7 +478,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     valid_items[row] = update_items
                     scheme_numbers["valid"].append(scheme_number)
                     continue
-                scheme_numbers["invalid"] .append((
+                scheme_numbers["invalid"].append((
                     scheme_number, prev_workflow_id, prev_approval_id
                 ))
         return valid_items, scheme_numbers
@@ -547,16 +539,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _next_approval_items(self, approval_items):
         """
-        Returns succeeding workflow approval update
-        values, columns and filters
-        :param approval_items: Current work flow update values,
-                                columns and filters
+        Returns succeeding workflow approval update values, columns and filters
+        :param approval_items: Current work flow update values, columns and filters
         :type approval_items: Dictionary
-        :return update_items: Next workflow update values,
-                                columns and filters
+        :return update_items: Next workflow update values, columns and filters
         :rtype update_items: Dictionary
-        :return save_items: Next workflow save values,
-                            columns and filters
+        :return save_items: Next workflow save values, columns and filters
         :rtype save_items: Dictionary
         """
         update_items = {}
@@ -569,9 +557,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             record_id = None
             for column, new_value, update_filters in columns:
                 record_id = update_filters[scheme_column]
-                update_filters[workflow_column] = next_workflow_id
+                filters = update_filters.copy()
+                filters[workflow_column] = next_workflow_id
                 items.append([
-                    column, self._lookup.PENDING(), update_filters
+                    column, self._lookup.PENDING(), filters
                 ])
             workflow_id = self._scheme_workflow_id(
                 record_id, next_workflow_id, workflow_column
@@ -648,8 +637,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             # TODO: Return critical message instead of raise
         else:
             return result
-
     # TODO: End of approve test
+
 
 
     # TODO: Start delete incase the test works
@@ -755,6 +744,29 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         }
         return workflow_filter
 
+    def _update_on_approve(self, items, next_items, save_items):
+        """
+        Update approval status on approve
+        :param items: Current workflow approval items
+        :type items: Dictionary
+        :Param next_items: Next workflow update values, columns and filters
+        :type next_items: Dictionary
+        :Param save_items: Next workflow save values, columns and filters
+        :type save_items: Dictionary
+        :return updated_rows: Number of updated rows
+        :rtype updated_rows: Integer
+        """
+        updated_rows = 0
+        if next_items:
+            updated_rows = self._model.update(items)  # Update current workflow
+            self._model.update(next_items)  # Update preceding workflow
+        elif save_items:
+            updated_rows = self._model.update(items)
+            # TODO: Call model's save method from here and pass save_items
+        elif items:
+            updated_rows = self._model.update(items)
+        return updated_rows
+
     @staticmethod
     def _approval_message(prefix, rows, scheme_numbers=None):
         """
@@ -770,7 +782,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         msg = 'schemes' if rows != 1 else 'scheme'
         if scheme_numbers:
-            return "{0} {1} {2}?\n({3})".format(
+            return "{0} {1} {2}?\n{3}".format(
                 prefix, rows, msg, ', '.join(scheme_numbers)
             )
         return "{0} {1} {2}?".format(prefix, rows, msg)
