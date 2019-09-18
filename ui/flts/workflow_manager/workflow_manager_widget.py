@@ -856,3 +856,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             index = self._model.create_index(row, self._lookup.CHECK)
             if index:
                 self._on_check(index)
+
+    def refresh(self):
+        self._model.refresh()
