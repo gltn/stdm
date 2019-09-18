@@ -496,20 +496,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 ))
         return valid_items, scheme_numbers
 
-    def _prev_workflow_id(self):
-        """
-        Return preceding workflow record id
-        :return workflow_id: Preceding workflow record id
-        :rtype workflow_id: Integer
-        """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
-        index = self._workflow_ids.index(workflow_id)
-        if index == 0:
-            return self._workflow_ids[index]
-        return self._workflow_ids[(index - 1)]
-
     def _approval_updates(self, approval_id, record_id, status):
         """
         Return valid approval update items
@@ -590,15 +576,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         valid_items = {}
         scheme_numbers = []
-        workflow_column = self._lookup.WORKFLOW_COLUMN
-        prev_next_workflow_ids = self._prev_next_workflow_ids()
+        workflow_ids = self._next_workflow_ids()
+        workflow_ids.extend(self.prev_workflow_id())
         for record_id, (row, status, scheme_number) in self._checked_ids.iteritems():
             if int(status) != status_option:
-                workflow_ids = [
-                    self._scheme_workflow_id(
-                        record_id, workflow_id, workflow_column
-                    ) for workflow_id in prev_next_workflow_ids
-                ]
+                workflow_ids = self._query_workflow_ids(record_id, workflow_ids)
                 update_items = self._disapproval_updates(
                     workflow_ids, record_id, status_option
                 )
@@ -607,23 +589,71 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     scheme_numbers.append(scheme_number)
         return valid_items, scheme_numbers
 
-    def _prev_next_workflow_ids(self):
+    def _next_workflow_ids(self):
         """
-        Return preceding and succeeding workflow record IDs
+        Return succeeding workflow record IDs
         :return ids: Preceding and succeeding workflow record ids
         :rtype ids: List
         """
-        ids = []
+        # ids = []
+        workflow_id = self.data_service.get_workflow_id(
+            self._object_name
+        )
+        index = self._workflow_ids.index(workflow_id)
+        # if index == 0:
+        #     ids.append(self._workflow_ids[index])
+        # else:
+        #     ids.append(self._workflow_ids[index - 1])
+        # ids.extend(self._workflow_ids[index:])
+        return self._workflow_ids[index:]
+
+    def _prev_workflow_id(self):
+        """
+        Return preceding workflow record id
+        :return workflow_id: Preceding workflow record id
+        :rtype workflow_id: Integer
+        """
         workflow_id = self.data_service.get_workflow_id(
             self._object_name
         )
         index = self._workflow_ids.index(workflow_id)
         if index == 0:
-            ids.append(self._workflow_ids[index])
-        else:
-            ids.append(self._workflow_ids[index - 1])
-        ids.extend(self._workflow_ids[index:])
-        return ids
+            return self._workflow_ids[index]
+        return self._workflow_ids[(index - 1)]
+
+    @property
+    def _workflow_ids(self):
+        """
+        Returns workflow IDs
+        :return workflow_ids: Workflow record ID
+        :rtype workflow_ids: List
+        """
+        workflow_ids = [
+            self._lookup.schemeLodgement(),
+            self._lookup.schemeEstablishment(),
+            self._lookup.firstExamination(),
+            self._lookup.secondExamination(),
+            self._lookup.thirdExamination()
+        ]
+        return workflow_ids
+
+    def _query_workflow_ids(self, record_id, workflow_ids):
+        """
+        Queries for preceding and succeeding workflow record IDs
+        :param record_id: Checked items scheme record ID
+        :type record_id: Integer
+        :param workflow_ids: Preceding and succeeding workflow record IDs
+        :type workflow_ids: List
+        :return query_workflow_ids: Queried workflow record IDs
+        :rtype query_workflow_ids: List
+        """
+        workflow_column = self._lookup.WORKFLOW_COLUMN
+        query_workflow_ids = [
+            self._scheme_workflow_id(
+                record_id, workflow_id, workflow_column
+            ) for workflow_id in workflow_ids
+        ]
+        return query_workflow_ids
 
     def _disapproval_updates(self, workflow_ids, record_id, status):
         """
@@ -646,22 +676,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     )
                     update_items.append([updates, status, update_filters])
         return update_items
-
-    @property
-    def _workflow_ids(self):
-        """
-        Returns workflow IDs
-        :return workflow_ids: Workflow record ID
-        :rtype workflow_ids: List
-        """
-        workflow_ids = [
-            self._lookup.schemeLodgement(),
-            self._lookup.schemeEstablishment(),
-            self._lookup.firstExamination(),
-            self._lookup.secondExamination(),
-            self._lookup.thirdExamination()
-        ]
-        return workflow_ids
 
     def _scheme_workflow_id(self, record_id, workflow_id, attr):
         """
