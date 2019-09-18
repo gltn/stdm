@@ -560,11 +560,20 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Create validator object
         ds = self.tw_hld_prv.current_sheet_view().vector_layer
-        self._holders_validator = EntityVectorLayerValidator(
-            self._holder_entity,
-            ds,
-            parent=self
-        )
+        try:
+            self._holders_validator = EntityVectorLayerValidator(
+                self._holder_entity,
+                ds,
+                parent=self
+            )
+        except Exception as ex:
+            QMessageBox.critical(
+                self,
+                self.tr('Validator Initialization'),
+                str(ex)
+            )
+
+            return
 
         # Connect signals
         self._holders_validator.featureValidated.connect(
@@ -995,6 +1004,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     )
                 )
             else:
+                if not self._holders_validator:
+                    QMessageBox.critical(
+                        self,
+                        self.tr('Validation Initialization'),
+                        self.tr('Validator object could not be initialized.')
+                    )
+                    return False
+
                 status = self._holders_validator.status
                 if status == EntityVectorLayerValidator.NOT_STARTED:
                     msg = self.tr(
