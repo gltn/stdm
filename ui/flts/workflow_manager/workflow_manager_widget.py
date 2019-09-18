@@ -74,15 +74,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.disapproveButton.clicked.connect(
             lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "disapprove")
         )
-        # self.approveButton.clicked.connect(
-        #     lambda: self._approval(self._lookup.APPROVED(), "approve")
-        # )
-        # self.disapproveButton.clicked.connect(
-        #     lambda: self._approval(self._lookup.DISAPPROVED(), "disapprove")
-        # )
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
+        # self.holdersButton.clicked.connect(
+        #     lambda: self._load_scheme_detail(self._detail_store)
+        # )
         self._initial_load()
 
     @property

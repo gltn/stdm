@@ -63,6 +63,20 @@ class DocumentConfig(Config):
         return self.get_data('document_columns')
 
 
+class HolderConfig(Config):
+    """
+    Scheme holders table view configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Scheme holders table view columns options
+        :return: Table view columns and query columns options
+        :rtype: List
+        """
+        return self.get_data('holder_columns')
+
+
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -262,20 +276,50 @@ configurations = {
                          'background-color: qlineargradient'
                          '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
+    'holder_columns': [
+        {Column(name='First Name', flag=False): 'first_name'},
+        {Column(name='Surname', flag=False): 'surname'},
+        {
+            Column(name='Gender', flag=False): {
+                'cb_check_lht_gender': 'value'
+            }
+        },
+        {Column(name='Holder Identifier', flag=False): 'holder_identifier'},
+        {Column(name='Date of Birth', flag=False): 'date_of_birth'},
+        {Column(name='Name of Juristic Person', flag=False): 'name_of_juristic_person'},
+        {Column(name='Reg. No. of Juristic Person', flag=False): 'reg_no_of_juristic_person'},
+        {
+            Column(name='Marital Status', flag=False): {
+                'cb_check_lht_marital_status': 'value'
+            }
+        },
+        {Column(name='Spouse Surname', flag=False): 'spouse_surname'},
+        {Column(name='Spouse First Name', flag=False): 'spouse_first_name'},
+        {
+            Column(name='Spouse Gender', flag=False): {
+                'cb_check_lht_gender': 'value'
+            }
+        },
+        {Column(name='Spouse Identifier', flag=False): 'spouse_identifier'},
+        {Column(name='Spouse Date of Birth', flag=False): 'spouse_date_of_birth'},
+        {
+            Column(name='Disability Status', flag=False): {
+                'cb_check_lht_disability': 'value'
+            }
+        },
+        {
+            Column(name='Income Level', flag=False): {
+                'cb_check_lht_income_level': 'value'
+            }
+        },
+        {
+            Column(name='Occupation', flag=False): {
+                'cb_check_lht_occupation': 'value'
+            }
+        },
+        {Column(name='Other Dependants', flag=False): 'other_dependants'},
+    ],
     'lookups': LookUp(
-        # TODO: Working. Do not delete until tested
-        # schemeEstablishment=EntityRecordId(
-        #     'check_lht_workflow', {'value': 'Lodgement'}
-        # ),
-        # firstExamination=EntityRecordId(
-        #     'check_lht_workflow', {'value': 'Establishment'}
-        # ),
-        # secondExamination=EntityRecordId(
-        #     'check_lht_workflow', {'value': 'Fiirst Assessment'}
-        # ),
-        # thirdExamination=EntityRecordId(
-        #     'check_lht_workflow', {'value': 'Second Assessment'}
-        # ),
         APPROVAL_STATUS='check_lht_approval_status',
         WORKFLOW='check_lht_workflow',
         schemeLodgement=EntityRecordId(
