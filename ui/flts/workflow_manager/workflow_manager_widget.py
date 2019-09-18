@@ -423,7 +423,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         items, scheme_numbers = self._approve_items(status)
         next_items, save_items = self._next_approval_items(items)
         num_records = len(scheme_numbers["valid"])
-        self._format_message(scheme_numbers)
+        self._format_scheme_number(scheme_numbers)
         try:
             self._notif_bar.clear()
             msg = self._approval_message(
@@ -443,14 +443,24 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 )
                 self._notif_bar.insertInformationNotification(msg)
 
-    def _format_message(self, scheme_numbers):
-        invalid_msg = []
+    def _format_scheme_number(self, scheme_numbers):
+        """
+        Formats the scheme message
+        :param scheme_numbers: Scheme number
+        :param scheme_numbers: String
+        :return: Formatted scheme numbers
+        :return: Dictionary
+        """
+        msg = []
+        approval = self._lookup.APPROVAL_STATUS
+        workflow = self._lookup.WORKFLOW
         for scheme_number, workflow_id, approval_id in scheme_numbers["invalid"]:
-            approval = self._filter_query_by('check_lht_approval_status', {'id': approval_id}).first()
-            workflow = self._filter_query_by('check_lht_workflow', {'id': workflow_id}).first()
-            msg = "\n{0} - {1} in {2}".format(scheme_number, approval.value, workflow.value)
-            invalid_msg.append(msg)
-        return scheme_numbers["valid"].extend(invalid_msg)
+            approval = self._filter_query_by(approval, {'id': approval_id}).first()
+            workflow = self._filter_query_by(workflow, {'id': workflow_id}).first()
+            msg.append("\n{0} - {1} in {2}".format(
+                scheme_number, approval.value, workflow.value
+            ))
+        return scheme_numbers["valid"].extend(msg)
 
     def _approve_items(self, status_option):
         """

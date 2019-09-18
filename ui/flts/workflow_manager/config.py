@@ -226,9 +226,10 @@ LookUp = namedtuple(
     'LookUp',
     [
         'schemeLodgement', 'schemeEstablishment', 'firstExamination',
-        'secondExamination', 'thirdExamination', 'WORKFLOW_COLUMN',
-        'APPROVAL_COLUMN', 'APPROVED', 'PENDING', 'DISAPPROVED', 'CHECK',
-        'STATUS', 'SCHEME_COLUMN', 'SCHEME_NUMBER'
+        'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
+        'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
+        'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN',
+        'SCHEME_NUMBER'
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
@@ -275,6 +276,8 @@ configurations = {
         # thirdExamination=EntityRecordId(
         #     'check_lht_workflow', {'value': 'Second Assessment'}
         # ),
+        APPROVAL_STATUS='check_lht_approval_status',
+        WORKFLOW='check_lht_workflow',
         schemeLodgement=EntityRecordId(
             'check_lht_workflow', {'value': 'Lodgement'}
         ),
