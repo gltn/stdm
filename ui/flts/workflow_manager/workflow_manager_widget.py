@@ -531,24 +531,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         update_items = {}
         save_items = {}
         next_workflow_id = self._next_workflow_id()
-        scheme_column = self._lookup.SCHEME_COLUMN
         workflow_column = self._lookup.WORKFLOW_COLUMN
+        current_id = self.data_service.get_workflow_id(self._object_name)
         for row, columns in approval_items.iteritems():
-            items = []
-            record_id = None
-            for column, new_value, update_filters in columns:
-                record_id = update_filters[scheme_column]
-                filters = update_filters.copy()
-                filters[workflow_column] = next_workflow_id
-                items.append([
-                    column, self._lookup.PENDING(), filters
-                ])
+            items, record_id = self._modify_update_filters(
+                columns, next_workflow_id
+            )
             workflow_id = self._scheme_workflow_id(
                 record_id, next_workflow_id, workflow_column
             )
-            if items and workflow_id is not None:
-                update_items[row] = items
-            elif items:
+            if items and current_id != self._workflow_ids[-1]:
+                if workflow_id is not None:
+                    update_items[row] = items
+                    continue
                 save_items[row] = items
         return update_items, save_items
 
@@ -565,6 +560,27 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if index == len(self._workflow_ids) - 1:
             return self._workflow_ids[index]
         return self._workflow_ids[(index + 1)]
+
+    def _modify_update_filters(self, columns, next_workflow_id):
+        """
+        Modified the update filters
+        :param columns: Update column name as it appears in the entity
+        :param next_workflow_id: Succeeding workflow record ID
+        :return items: Updated items
+        :rtype items: List
+        :return items: Scheme record ID
+        :rtype record_id: Integer
+        """
+        items = []
+        record_id = None
+        for column, new_value, update_filters in columns:
+            record_id = update_filters[self._lookup.SCHEME_COLUMN]
+            filters = update_filters.copy()
+            filters[self._lookup.WORKFLOW_COLUMN] = next_workflow_id
+            items.append([
+                column, self._lookup.PENDING(), filters
+            ])
+        return items, record_id
 
     def _disapprove_items(self, status_option):
         """
