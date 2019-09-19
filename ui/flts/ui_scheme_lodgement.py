@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Fri Sep  6 09:24:24 2019
+# Created: Thu Sep 19 09:27:18 2019
 #      by: PyQt4 UI code generator 4.9.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -140,6 +140,18 @@ class Ui_ldg_wzd(object):
         self.label_desc_3.setMargin(1)
         self.label_desc_3.setObjectName(_fromUtf8("label_desc_3"))
         self.gridLayout.addWidget(self.label_desc_3, 1, 0, 1, 2)
+        self.label_upld_multi = QtGui.QLabel(self.wizardPage)
+        self.label_upld_multi.setObjectName(_fromUtf8("label_upld_multi"))
+        self.gridLayout.addWidget(self.label_upld_multi, 3, 0, 1, 1)
+        self.tbw_documents = DocumentTableWidget(self.wizardPage)
+        self.tbw_documents.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tbw_documents.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
+        self.tbw_documents.setObjectName(_fromUtf8("tbw_documents"))
+        self.gridLayout.addWidget(self.tbw_documents, 2, 0, 1, 2)
+        self.vlNotification_docs = QtGui.QVBoxLayout()
+        self.vlNotification_docs.setContentsMargins(-1, -1, -1, 10)
+        self.vlNotification_docs.setObjectName(_fromUtf8("vlNotification_docs"))
+        self.gridLayout.addLayout(self.vlNotification_docs, 0, 0, 1, 2)
         self.btn_upload_dir = QtGui.QPushButton(self.wizardPage)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
@@ -154,22 +166,6 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setIconSize(QtCore.QSize(16, 16))
         self.btn_upload_dir.setObjectName(_fromUtf8("btn_upload_dir"))
         self.gridLayout.addWidget(self.btn_upload_dir, 3, 1, 1, 1)
-        self.label_upld_multi = QtGui.QLabel(self.wizardPage)
-        self.label_upld_multi.setObjectName(_fromUtf8("label_upld_multi"))
-        self.gridLayout.addWidget(self.label_upld_multi, 3, 0, 1, 1)
-        self.vlNotification_docs = QtGui.QVBoxLayout()
-        self.vlNotification_docs.setContentsMargins(-1, -1, -1, 10)
-        self.vlNotification_docs.setObjectName(_fromUtf8("vlNotification_docs"))
-        self.gridLayout.addLayout(self.vlNotification_docs, 0, 0, 1, 2)
-        self.tbw_documents = DocumentTableWidget(self.wizardPage)
-        self.tbw_documents.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tbw_documents.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
-        self.tbw_documents.setObjectName(_fromUtf8("tbw_documents"))
-        self.gridLayout.addWidget(self.tbw_documents, 2, 0, 1, 2)
-        self.gp_preview_docs = QgsCollapsibleGroupBox(self.wizardPage)
-        self.gp_preview_docs.setEnabled(False)
-        self.gp_preview_docs.setObjectName(_fromUtf8("gp_preview_docs"))
-        self.gridLayout.addWidget(self.gp_preview_docs, 4, 0, 1, 2)
         ldg_wzd.addPage(self.wizardPage)
         self.wizardPage2 = QtGui.QWizardPage()
         self.wizardPage2.setObjectName(_fromUtf8("wizardPage2"))
@@ -259,9 +255,8 @@ class Ui_ldg_wzd(object):
         self.label_date_establish.setText(QtGui.QApplication.translate("ldg_wzd", "Date of Establishment", None, QtGui.QApplication.UnicodeUTF8))
         self.wizardPage.setSubTitle(QtGui.QApplication.translate("ldg_wzd", "Upload the supporting documents for the scheme", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_3.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.gp_preview_docs.setTitle(QtGui.QApplication.translate("ldg_wzd", "Preview Documents", None, QtGui.QApplication.UnicodeUTF8))
+        self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
         self.lnEdit_hld_path.setPlaceholderText(QtGui.QApplication.translate("ldg_wzd", "Path to the Holders Excel or CSV file...", None, QtGui.QApplication.UnicodeUTF8))
         self.btn_brws_hld.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Browse file", None, QtGui.QApplication.UnicodeUTF8))
         self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None, QtGui.QApplication.UnicodeUTF8))
@@ -273,5 +268,4 @@ class Ui_ldg_wzd(object):
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
 from stdm.ui.customcontrols.table_widget import HoldersTableView
 from stdm.ui.customcontrols.documents_table_widget import DocumentTableWidget
-from qgis.gui import QgsCollapsibleGroupBox
 from stdm import resources_rc
