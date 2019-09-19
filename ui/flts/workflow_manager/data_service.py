@@ -20,9 +20,11 @@ copyright            : (C) 2019
 from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
-from stdm.ui.flts.workflow_manager.config import(
-    SchemeConfig,
+from stdm.ui.flts.workflow_manager.config import (
     DocumentConfig,
+    HolderConfig,
+    FilterQueryBy,
+    SchemeConfig,
 )
 from stdm.data.configuration import entity_model
 
@@ -65,9 +67,11 @@ class SchemeDataService(DataService):
     """
     Scheme data model service
     """
-    def __init__(self, current_profile):
+    def __init__(self, current_profile, widget_obj_name, parent):
         self._profile = current_profile
         self.entity_name = "Scheme"
+        self._parent = parent
+        self._widget_obj_name = widget_obj_name
 
     @property
     def columns(self):
@@ -85,7 +89,7 @@ class SchemeDataService(DataService):
         :return: Lookup options
         :rtype: LookUp
         """
-        return SchemeConfig().lookups
+        return SchemeConfig(self._parent).lookups
 
     @property
     def update_columns(self):
@@ -115,9 +119,11 @@ class SchemeDataService(DataService):
     def run_query(self):
         """
         Run query on an entity
-        :return query_object: Query results
-        :rtype query_object: List
+        :return query_obj: Query results
+        :rtype query_obj: List
         """
+        workflow_id = self.get_workflow_id(self._widget_obj_name)
+        scheme_workflow_model = self._entity_model("Scheme_workflow")
         model = self._entity_model(self.entity_name)
         entity_object = model()
         try:
@@ -125,10 +131,26 @@ class SchemeDataService(DataService):
                 options(joinedload(model.cb_check_lht_land_rights_office)). \
                 options(joinedload(model.cb_check_lht_region)). \
                 options(joinedload(model.cb_check_lht_relevant_authority)). \
-                options(joinedload(model.cb_cdrs_title_deed)).order_by(model.date_of_approval)
+                options(joinedload(model.cb_cdrs_title_deed)).\
+                filter(
+                    scheme_workflow_model.scheme_id == model.id,
+                    scheme_workflow_model.workflow_id == workflow_id
+                )
             return query_object.all()
-        except (exc.SQLAlchemyError, Exception) as e:
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def get_workflow_id(self, attr):
+        """
+        Return workflow id/primary key
+        :param attr: Workflow lookup attribute
+        :return workflow_id: Workflow id/primary key
+        :rtype workflow_id: Integer
+        """
+        workflow_id = getattr(self.lookups, attr, None)
+        if workflow_id:
+            workflow_id = workflow_id()
+        return workflow_id
 
     def _entity_model(self, name=None):
         """
@@ -143,6 +165,23 @@ class SchemeDataService(DataService):
             model = entity_model(entity)
             return model
         except AttributeError as e:
+            raise e
+
+    @staticmethod
+    def filter_query_by(entity_name, filters):
+        """
+        Filters query result by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            filter_by = FilterQueryBy()
+            return filter_by(entity_name, filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
 
@@ -184,8 +223,8 @@ class DocumentDataService(DataService):
     def run_query(self):
         """
         Run query on an entity
-        :return query_object: Query results
-        :rtype query_object: List
+        :return query_obj: Query results
+        :rtype query_obj: List
         """
         model, sp_doc_model = self._entity_model(self.entity_name)
         scheme_model, sc_doc_model = self._entity_model("Scheme")
@@ -217,4 +256,78 @@ class DocumentDataService(DataService):
             return model, document_model
         except AttributeError as e:
             raise e
+
+
+# class HolderDataService(DataService):
+#     """
+#     Scheme holders data model service
+#     """
+#     def __init__(self, current_profile, scheme_id):
+#         self._profile = current_profile
+#         self._scheme_id = scheme_id
+#         self.entity_name = "Holder"
+#
+#     @property
+#     def columns(self):
+#         """
+#         Scheme holder table view columns options
+#         :return: Table view columns and query columns options
+#         :rtype: List
+#         """
+#         return HolderConfig().columns
+#
+#     def related_entity_name(self):
+#         """
+#         Related entity name
+#         :return entity_name: Related entity name
+#         :rtype entity_name: List
+#         """
+#         fk_entity_name = []
+#         collection_name = []
+#         model, sp_doc_model = self._entity_model(self.entity_name)
+#         for relation in model.__mapper__.relationships.keys():
+#             if relation.endswith("_collection"):
+#                 collection_name.append(relation)
+#             else:
+#                 fk_entity_name.append(relation)
+#         return fk_entity_name, collection_name
+#
+#     def run_query(self):
+#         """
+#         Run query on an entity
+#         :return query_obj: Query results
+#         :rtype query_obj: List
+#         """
+#         scheme_holder_model = self._entity_model("Scheme_holder")
+#         model = self._entity_model(self.entity_name)
+#         entity_object = model()
+#         try:
+#             query_object = entity_object.queryObject(). \
+#                 options(joinedload(model.cb_check_lht_gender)). \
+#                 options(joinedload(model.cb_check_lht_marital_status)). \
+#                 options(joinedload(model.cb_check_lht_disability)). \
+#                 options(joinedload(model.cb_check_lht_income_level)). \
+#                 options(joinedload(model.cb_check_lht_occupation)). \
+#                 filter(
+#                     scheme_holder_model.holder_id == model.id,
+#                     scheme_holder_model.scheme_id == self._scheme_id
+#                 )
+#             return query_object.all()
+#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+#             raise e
+#
+#     def _entity_model(self, name=None):
+#         """
+#         Gets entity model
+#         :param name: Name of the entity
+#         :type name: String
+#         :return model: Entity model;
+#         :rtype model: DeclarativeMeta
+#         """
+#         try:
+#             entity = self._profile.entity(name)
+#             model = entity_model(entity)
+#             return model
+#         except AttributeError as e:
+#             raise e
 

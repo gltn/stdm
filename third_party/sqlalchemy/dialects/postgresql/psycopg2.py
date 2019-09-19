@@ -100,10 +100,10 @@ extension, such that the DBAPI receives and returns all strings as Python
 Unicode objects directly - SQLAlchemy passes these values through without
 change.   Psycopg2 here will encode/decode string values based on the
 current "client encoding" setting; by default this is the value in
-the ``postgresql.conf`` file, which often defaults to ``SQL_ASCII``.
+the ``postgresql.configuration`` file, which often defaults to ``SQL_ASCII``.
 Typically, this can be changed to ``utf8``, as a more useful default::
 
-    # postgresql.conf file
+    # postgresql.configuration file
 
     # client_encoding = sql_ascii # actually, defaults to database
                                  # encoding

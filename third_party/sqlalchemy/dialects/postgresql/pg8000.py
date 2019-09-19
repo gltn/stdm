@@ -20,7 +20,7 @@ When communicating with the server, pg8000 **always uses the server-side
 character set**.  SQLAlchemy has no ability to modify what character set
 pg8000 chooses to use, and additionally SQLAlchemy does no unicode conversion
 of any kind with the pg8000 backend. The origin of the client encoding setting
-is ultimately the CLIENT_ENCODING setting in postgresql.conf.
+is ultimately the CLIENT_ENCODING setting in postgresql.configuration.
 
 It is not necessary, though is also harmless, to pass the "encoding" parameter
 to :func:`.create_engine` when using pg8000.

@@ -96,6 +96,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
         self._holders_entity_name = 'Holder'
+        self._workflow_entity_name = 'check_lht_workflow'
+        self._approval_entity_name = 'check_lht_approval_status'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -1227,3 +1229,38 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.tr('New Scheme'),
             msg
         )
+
+    def populate_workflow(self):
+        """
+        Update the workflow link table once lodgement has been done
+        :return:
+        """
+        # Lookups
+        workflow_lookup = self.curr_p.entity('check_lht_workflow')
+        approval_lookup = self.curr_p.entity('check_lht_approval_status')
+
+        # Models
+        workflow_model = entity_model(workflow_lookup)
+        approval_model = entity_model(approval_lookup)
+
+        # Entity objects
+        scheme_obj = self.schm_model()
+        chk_workflow_obj = workflow_model()
+        chk_approval_obj = approval_model()
+
+        # Get last lodged scheme ID
+        scheme_res = scheme_obj.queryObject().order_by(
+            self.schm_model.id.desc()
+        ).first()
+
+        # Filter the lookup IDs based on values
+        workflow_res = chk_workflow_obj.queryObject().filter(
+            workflow_model.value == 'Lodgement'
+        ).one()
+
+        approval_res = chk_approval_obj.queryObject().filter(
+            approval_model.value == 'Pending'
+        ).one()
+
+
+
