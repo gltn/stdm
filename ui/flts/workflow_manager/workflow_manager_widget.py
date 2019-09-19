@@ -496,6 +496,20 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 ))
         return valid_items, scheme_numbers
 
+    def _prev_workflow_id(self):
+        """
+        Return preceding workflow record id
+        :return workflow_id: Preceding workflow record id
+        :rtype workflow_id: Integer
+        """
+        workflow_id = self.data_service.get_workflow_id(
+            self._object_name
+        )
+        index = self._workflow_ids.index(workflow_id)
+        if index == 0:
+            return self._workflow_ids[index]
+        return self._workflow_ids[(index - 1)]
+
     def _approval_updates(self, approval_id, record_id, status):
         """
         Return valid approval update items
@@ -592,11 +606,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         valid_items = {}
         scheme_numbers = []
-        workflow_ids = self._next_workflow_ids()
-        workflow_ids.append(self._prev_workflow_id())
-        for record_id, (row, status, scheme_number) in self._checked_ids.iteritems():
+        for record_id, (row, status, scheme_number) in \
+                self._checked_ids.iteritems():
             if int(status) != status_option:
-                workflow_ids = self._query_workflow_ids(record_id, workflow_ids)
+                workflow_ids = self._query_workflow_ids(record_id)
                 update_items = self._disapproval_updates(
                     workflow_ids, record_id, status_option
                 )
@@ -605,31 +618,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     scheme_numbers.append(scheme_number)
         return valid_items, scheme_numbers
 
-    def _next_workflow_ids(self):
+    def _query_workflow_ids(self, record_id):
         """
-        Return succeeding workflow record IDs
-        :return ids: Preceding and succeeding workflow record ids
-        :rtype ids: List
+        Queries for current and preceding workflow record IDs
+        :param record_id: Checked items scheme record ID
+        :type record_id: Integer
+        :return query_workflow_ids: Queried workflow record IDs
+        :rtype query_workflow_ids: List
         """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
-        index = self._workflow_ids.index(workflow_id)
-        return self._workflow_ids[index:]
-
-    def _prev_workflow_id(self):
-        """
-        Return preceding workflow record id
-        :return workflow_id: Preceding workflow record id
-        :rtype workflow_id: Integer
-        """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
-        index = self._workflow_ids.index(workflow_id)
-        if index == 0:
-            return self._workflow_ids[index]
-        return self._workflow_ids[(index - 1)]
+        workflow_column = self._lookup.WORKFLOW_COLUMN
+        query_workflow_ids = [
+            self._scheme_workflow_id(
+                record_id, workflow_id, workflow_column
+            ) for workflow_id in self._workflow_ids
+        ]
+        return query_workflow_ids
 
     @property
     def _workflow_ids(self):
@@ -646,24 +649,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._lookup.thirdExamination()
         ]
         return workflow_ids
-
-    def _query_workflow_ids(self, record_id, workflow_ids):
-        """
-        Queries for preceding and succeeding workflow record IDs
-        :param record_id: Checked items scheme record ID
-        :type record_id: Integer
-        :param workflow_ids: Preceding and succeeding workflow record IDs
-        :type workflow_ids: List
-        :return query_workflow_ids: Queried workflow record IDs
-        :rtype query_workflow_ids: List
-        """
-        workflow_column = self._lookup.WORKFLOW_COLUMN
-        query_workflow_ids = [
-            self._scheme_workflow_id(
-                record_id, workflow_id, workflow_column
-            ) for workflow_id in workflow_ids
-        ]
-        return query_workflow_ids
 
     def _disapproval_updates(self, workflow_ids, record_id, status):
         """
