@@ -862,4 +862,5 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._on_check(index)
 
     def refresh(self):
+        self._checked_ids = OrderedDict()
         self._model.refresh()
