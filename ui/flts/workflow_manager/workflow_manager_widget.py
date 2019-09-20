@@ -405,18 +405,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return False
         return True
 
-    def _on_disapprove(self, status, title):
-        """
-        Disapprove a Scheme
-        :param status: Disapprove status
-        :type status: Integer
-        :param title: Disapprove title text
-        :type title: String
-        """
-        items, scheme_numbers = self._disapprove_items(status)
-        scheme_numbers = (len(scheme_numbers), scheme_numbers)
-        self._approval(items, title, scheme_numbers)
-
     def _on_approve(self, status, title):
         """
         Approve a Scheme
@@ -430,35 +418,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         num_records = len(scheme_numbers["valid"])
         self._format_scheme_number(scheme_numbers)
         scheme_numbers = (num_records, scheme_numbers["valid"])
-        self._approval(items, title, scheme_numbers)
-
-    def _approval(self, items, title, scheme_numbers):
-        updated_rows = None
-        rows, scheme_numbers = scheme_numbers
-        try:
-            self._notif_bar.clear()
-            msg = self._approval_message(
-                title.capitalize(), rows, scheme_numbers
-            )
-            reply = self._show_question_message(msg)
-            if reply:
-                if isinstance(items, tuple):
-                    items, next_items, save_items = items
-                    updated_rows = self._update_on_approve(
-                        items, next_items, save_items
-                    )
-                else:
-                    updated_rows = self._model.update(items)
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed to update: {}".format(e)
-            self._show_critical_message(msg)
-        else:
-            if reply:
-                self._update_checked_id()
-                msg = self._approval_message(
-                    "Successfully {}".format(title), updated_rows
-                )
-                self._notif_bar.insertInformationNotification(msg)
+        self._update_scheme(items, title, scheme_numbers)
 
     def _approve_items(self, status_option):
         """
@@ -589,6 +549,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 column, self._lookup.PENDING(), filters
             ])
         return items, record_id
+
+    def _on_disapprove(self, status, title):
+        """
+        Disapprove a Scheme
+        :param status: Disapprove status
+        :type status: Integer
+        :param title: Disapprove title text
+        :type title: String
+        """
+        items, scheme_numbers = self._disapprove_items(status)
+        scheme_numbers = (len(scheme_numbers), scheme_numbers)
+        self._update_scheme(items, title, scheme_numbers)
 
     def _disapprove_items(self, status_option):
         """
@@ -741,6 +713,43 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             # TODO: Return critical message instead of raise
         else:
             return result
+
+    def _update_scheme(self, items, title, scheme_numbers):
+        """
+        On approve or disapprove update scheme record
+        :param items: Update items
+        :param items: Dictionary
+        :param title: Message title
+        :param title: String
+        :param scheme_numbers: Scheme numbers and rows
+        :param scheme_numbers: Tuple
+        """
+        updated_rows = None
+        rows, scheme_numbers = scheme_numbers
+        try:
+            self._notif_bar.clear()
+            msg = self._approval_message(
+                title.capitalize(), rows, scheme_numbers
+            )
+            reply = self._show_question_message(msg)
+            if reply:
+                if isinstance(items, tuple):
+                    items, next_items, save_items = items
+                    updated_rows = self._update_on_approve(
+                        items, next_items, save_items
+                    )
+                else:
+                    updated_rows = self._model.update(items)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            msg = "Failed to update: {}".format(e)
+            self._show_critical_message(msg)
+        else:
+            if reply:
+                self._update_checked_id()
+                msg = self._approval_message(
+                    "Successfully {}".format(title), updated_rows
+                )
+                self._notif_bar.insertInformationNotification(msg)
 
     @ staticmethod
     def _get_update_item(updates):
