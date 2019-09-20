@@ -275,6 +275,30 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_upld_multi">
+      <property name="text">
+       <string>Add multiple files from a source directory</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="2">
+     <widget class="DocumentTableWidget" name="tbw_documents">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vlNotification_docs">
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
+     </layout>
+    </item>
     <item row="3" column="1">
      <widget class="QPushButton" name="btn_upload_dir">
       <property name="sizePolicy">
@@ -307,40 +331,6 @@
         <width>16</width>
         <height>16</height>
        </size>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_upld_multi">
-      <property name="text">
-       <string>Add multiple files from a source directory</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="vlNotification_docs">
-      <property name="bottomMargin">
-       <number>10</number>
-      </property>
-     </layout>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="DocumentTableWidget" name="tbw_documents">
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
-      </property>
-      <property name="selectionMode">
-       <enum>QAbstractItemView::NoSelection</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0" colspan="2">
-     <widget class="QgsCollapsibleGroupBox" name="gp_preview_docs">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="title">
-       <string>Preview Documents</string>
       </property>
      </widget>
     </item>
@@ -493,12 +483,6 @@
    <class>SchemeSummaryWidget</class>
    <extends>QTreeView</extends>
    <header>stdm.ui.customcontrols.scheme_summary_widget</header>
-  </customwidget>
-  <customwidget>
-   <class>QgsCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>qgis.gui</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

@@ -127,11 +127,26 @@ class DateValueTranslator(AbstractValueTranslator):
         return value
 
 
+class NumberValueTranslator(AbstractValueTranslator):
+    """
+    Correctly handles empty string values to None for number-based target
+    column types.
+    """
+    def transform(self, value):
+        # If empty string then return None.
+        if not value:
+            return None
+
+        return value
+
+
 # Value translator class based on the column TYPE_INFO.
 value_translators = {
     'DATE': DateValueTranslator,
     'LOOKUP': LookupValueTranslator,
-    'VARCHAR': VarCharValueTranslator
+    'VARCHAR': VarCharValueTranslator,
+    'INT': NumberValueTranslator,
+    'DOUBLE': NumberValueTranslator
 }
 
 
