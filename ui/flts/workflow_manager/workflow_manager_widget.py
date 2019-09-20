@@ -136,7 +136,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             scheme_number = self._get_scheme_number(index)
             key, label = self._create_key(record_id, scheme_number)
             self._remove_stored_widget(key)
-            self._on_check_disable_widgets()
+            self._on_uncheck_disable_widgets()
 
     def _check_state(self, index):
         """
@@ -183,17 +183,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._lookup.SCHEME_NUMBER
         )
 
-    def _remove_checked_id(self, record_id):
-        """
-        Remove table view checked ids from checked tracker
-        :param record_id: Checked table view identifier
-        :rtype record_id: Integer
-        """
-        try:
-            del self._checked_ids[record_id]
-        except KeyError:
-            return
-
     def _remove_stored_widget(self, key):
         """
         Removed archived table view widget
@@ -220,24 +209,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._enable_widget(self.approveButton)
         if self._lookup.APPROVED() in status:
             self._enable_widget(self.disapproveButton)
-        self._on_check_disable_widgets()
-
-    def _on_check_disable_widgets(self):
-        """
-        Disable Workflow Manager widgets on uncheck
-        """
-        status = self._get_stored_status()
-        if not self._checked_ids:
-            self._close_tab(1)
-            self._disable_widget([
-                self.holdersButton, self.documentsButton,
-                self.approveButton, self.disapproveButton
-            ])
-        elif self._lookup.APPROVED() not in status:
-            self._disable_widget(self.disapproveButton)
-        elif self._lookup.PENDING() not in status and \
-                self._lookup.DISAPPROVED() not in status:
-            self._disable_widget(self.approveButton)
+        self._on_uncheck_disable_widgets()
 
     def _get_stored_status(self):
         """
@@ -856,10 +828,37 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Update table view checked ids in the checked tracker
         """
         checked_ids = self._checked_ids.copy()
-        for id_, (row, status, scheme_number) in checked_ids.iteritems():
-            index = self._model.create_index(row, self._lookup.CHECK)
-            if index:
-                self._on_check(index)
+        for record_id, (row, status, scheme_number) in checked_ids.iteritems():
+            self._remove_checked_id(record_id)
+        self._on_uncheck_disable_widgets()
+
+    def _remove_checked_id(self, record_id):
+        """
+        Remove table view checked ids from checked tracker
+        :param record_id: Checked table view identifier
+        :rtype record_id: Integer
+        """
+        try:
+            del self._checked_ids[record_id]
+        except KeyError:
+            return
+
+    def _on_uncheck_disable_widgets(self):
+        """
+        Disable Workflow Manager widgets on uncheck
+        """
+        status = self._get_stored_status()
+        if not self._checked_ids:
+            self._close_tab(1)
+            self._disable_widget([
+                self.holdersButton, self.documentsButton,
+                self.approveButton, self.disapproveButton
+            ])
+        elif self._lookup.APPROVED() not in status:
+            self._disable_widget(self.disapproveButton)
+        elif self._lookup.PENDING() not in status and \
+                self._lookup.DISAPPROVED() not in status:
+            self._disable_widget(self.approveButton)
 
     def refresh(self):
         self._checked_ids = OrderedDict()
