@@ -413,26 +413,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Disapprove title text
         :type title: String
         """
-        updated_rows = None
         items, scheme_numbers = self._disapprove_items(status)
-        try:
-            self._notif_bar.clear()
-            msg = self._approval_message(
-                title.capitalize(), len(scheme_numbers), scheme_numbers
-            )
-            reply = self._show_question_message(msg)
-            if reply:
-                updated_rows = self._model.update(items)
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed to update: {}".format(e)
-            self._show_critical_message(msg)
-        else:
-            if reply:
-                self._update_checked_id()
-                msg = self._approval_message(
-                    "Successfully {}".format(title), updated_rows
-                )
-                self._notif_bar.insertInformationNotification(msg)
+        scheme_numbers = (len(scheme_numbers), scheme_numbers)
+        self._approval(items, title, scheme_numbers)
 
     def _on_approve(self, status, title):
         """
@@ -442,19 +425,30 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param title: Approve title text
         :type title: String
         """
-        updated_rows = None
         items, scheme_numbers = self._approve_items(status)
-        next_items, save_items = self._next_approval_items(items)
+        items = (items,) + self._next_approval_items(items)
         num_records = len(scheme_numbers["valid"])
         self._format_scheme_number(scheme_numbers)
+        scheme_numbers = (num_records, scheme_numbers["valid"])
+        self._approval(items, title, scheme_numbers)
+
+    def _approval(self, items, title, scheme_numbers):
+        updated_rows = None
+        rows, scheme_numbers = scheme_numbers
         try:
             self._notif_bar.clear()
             msg = self._approval_message(
-                title.capitalize(), num_records, scheme_numbers["valid"]
+                title.capitalize(), rows, scheme_numbers
             )
             reply = self._show_question_message(msg)
             if reply:
-                updated_rows = self._update_on_approve(items, next_items, save_items)
+                if isinstance(items, tuple):
+                    items, next_items, save_items = items
+                    updated_rows = self._update_on_approve(
+                        items, next_items, save_items
+                    )
+                else:
+                    updated_rows = self._model.update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to update: {}".format(e)
             self._show_critical_message(msg)
