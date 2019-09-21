@@ -40,7 +40,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._object_name = object_name
         self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._tab_name = None
+        self._tab_name = self._workflow_pks = None
         self._notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -402,15 +402,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype valid_items: Dictionary
         """
         valid_items = {}
-        approval_column = self._lookup.APPROVAL_COLUMN
-        prev_workflow_id = self._prev_workflow_id()
         scheme_numbers = {"valid": [], "invalid": []}
+        scheme_ids = self._check_item_ids
+        prev_workflow_id = self._prev_workflow_id()
+        filters = self._scheme_workflow_filters(scheme_ids, [prev_workflow_id])
+        query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
+
         for record_id, (row, status, scheme_number) in \
                 self._checked_ids.iteritems():
             if int(status) != status_option:
-                prev_approval_id = self._scheme_workflow_id(
-                    record_id, prev_workflow_id, approval_column
-                )
+
+                # TODO: Refactor
+                prev_approval_id = [
+                    getattr(q, self._lookup.APPROVAL_COLUMN, None) for q in query_objects
+                    if getattr(q, self._lookup.SCHEME_COLUMN, None) == record_id and
+                       getattr(q, self._lookup.WORKFLOW_COLUMN, None) == prev_workflow_id
+                ][0]
+
                 update_items = self._approval_updates(
                     prev_approval_id, record_id, status_option
                 )
@@ -422,6 +430,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     scheme_number, prev_workflow_id, prev_approval_id
                 ))
         return valid_items, scheme_numbers
+
+    @property
+    def _check_item_ids(self):
+        """
+        Return scheme checked IDs
+        :return scheme_ids: Check scheme IDs/primary keys
+        :rtype scheme_ids: List
+        """
+        scheme_ids = [
+            record_id for record_id, (row, status, scheme_number)
+            in self._checked_ids.iteritems()
+        ]
+        return scheme_ids
 
     def _prev_workflow_id(self):
         """
@@ -469,19 +490,27 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         update_items = {}
         save_items = {}
-        pending_id = self._lookup.PENDING()
-        workflow_column = self._lookup.WORKFLOW_COLUMN
         next_workflow_id = self._next_workflow_id()
+        modified_items, scheme_ids = self._modify_approval_items(
+            approval_items, self._lookup.PENDING(), next_workflow_id
+        )
+        filters = self._scheme_workflow_filters(
+            scheme_ids, [next_workflow_id]
+        )
+        query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
         current_id = self._get_workflow_id()
         for row, columns in approval_items.iteritems():
-            items, record_id = self._modify_update_filters(
-                columns, pending_id, next_workflow_id
-            )
-            workflow_id = self._scheme_workflow_id(
-                record_id, next_workflow_id, workflow_column
-            )
+            items, scheme_id = modified_items[row]
+
+            # TODO: Refactor
+            workflow_id = [
+                getattr(q, self._lookup.WORKFLOW_COLUMN, None) for q in query_objects
+                if getattr(q, self._lookup.SCHEME_COLUMN, None) == scheme_id and
+                   getattr(q, self._lookup.WORKFLOW_COLUMN, None) == next_workflow_id
+            ]
+
             if items and current_id != self._workflow_ids[-1]:
-                if workflow_id is not None:
+                if workflow_id and workflow_id[0] is not None:
                     update_items[row] = items
                     continue
                 save_items[row] = items
@@ -499,6 +528,34 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_ids[index]
         return self._workflow_ids[(index + 1)]
 
+    def _modify_approval_items(self, approval_items, new_value, workflow_id):
+        """
+        Returns modified approval items
+        :param approval_items: Current work flow update values, columns and filters
+        :type approval_items: Dictionary
+        :param new_value: Update value
+        :type new_value: Multiple types
+        :param workflow_id: Workflow record ID
+        :type workflow_id: Integer
+        :return modified_items: Modified approval items
+        :rtype modified_items: Dictionary
+        :return scheme_ids: Check scheme IDs/primary keys
+        :rtype scheme_ids: List
+        """
+        modified_items = {}
+        scheme_ids = []
+        for row, columns in approval_items.iteritems():
+            items = []
+            scheme_id = None
+            for column, value, update_filters in columns:
+                scheme_id = update_filters[self._lookup.SCHEME_COLUMN]
+                filters = update_filters.copy()
+                filters[self._lookup.WORKFLOW_COLUMN] = workflow_id
+                items.append([column, new_value, filters])
+            scheme_ids.append(scheme_id)
+            modified_items[row] = (items, scheme_id)
+        return modified_items, scheme_ids
+
     def _get_workflow_id(self):
         """
         Return workflow id/primary key
@@ -509,30 +566,33 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_filter[self._lookup.WORKFLOW_COLUMN]
         return self.data_service.get_workflow_id(self._object_name)
 
-    def _modify_update_filters(self, columns, new_value, next_workflow_id):
+    def _scheme_workflow_filters(self, scheme_id, workflow_id):
         """
-        Modified the update filters
-        :param columns: Update column name as it appears in the entity
-        :type columns: List
-        :param new_value: Update value
-        :type new_value: Multiple types
-        :param next_workflow_id: Succeeding workflow record ID
-        :type next_workflow_id: Integer
-        :return items: Updated items
-        :rtype items: List
-        :return items: Scheme record ID
-        :rtype record_id: Integer
+        Scheme workflow entity filters
+        :param scheme_id: Scheme record IDs/primary keys
+        :rtype scheme_id: List or Integer
+        :param workflow_id: Workflow record IDs/primary keys
+        :rtype workflow_id: List or Integer
+        :return filters: Scheme workflow entity filters
+        :rtype filters: Dictionary
         """
-        items = []
-        record_id = None
-        for column, value, update_filters in columns:
-            record_id = update_filters[self._lookup.SCHEME_COLUMN]
-            filters = update_filters.copy()
-            filters[self._lookup.WORKFLOW_COLUMN] = next_workflow_id
-            items.append([
-                column, new_value, filters
-            ])
-        return items, record_id
+        filters = {
+            self._lookup.SCHEME_COLUMN: scheme_id,
+            self._lookup.WORKFLOW_COLUMN: workflow_id
+        }
+        return filters
+
+    def _filter_in(self, entity_name, filters):
+        """
+        Return query objects as a collection of filter using in_ operator
+        :param entity_name: Name of entity to be queried
+        :type entity_name: String
+        :param filters: Query filter columns and values
+        :type filters: Dictionary
+        :return: Query object results
+        :rtype: InstrumentedList
+        """
+        return self.data_service.filter_in(entity_name, filters).all()
 
     def _on_disapprove(self, status, title):
         """
@@ -587,12 +647,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     @property
     def _workflow_ids(self):
         """
-        Returns workflow IDs
-        :return workflow_ids: Workflow record ID
-        :rtype workflow_ids: List
+        Returns workflow IDs/primary keys
+        :return _workflow_pks: Workflow record ID/primary keys
+        :rtype _workflow_pks: List
         """
-        workflow_ids = self.data_service.workflow_ids()
-        return workflow_ids
+        if self._workflow_pks is None:
+            self._workflow_pks = self.data_service.workflow_ids()
+        return self._workflow_pks
 
     def _disapproval_updates(self, workflow_ids, record_id, status):
         """

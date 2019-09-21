@@ -72,7 +72,6 @@ class SchemeDataService(DataService):
         self.entity_name = "Scheme"
         self._parent = parent
         self._widget_obj_name = widget_obj_name
-        self._workflow_ids = None
 
     @property
     def columns(self):
@@ -153,6 +152,23 @@ class SchemeDataService(DataService):
             workflow_id = workflow_id()
         return workflow_id
 
+    def filter_in(self, entity_name, filters):
+        """
+        Return query objects as a collection of filter using in_ operator
+        :param entity_name: Name of entity to be queried
+        :type entity_name: String
+        :param filters: Query filter columns and values
+        :type filters: Dictionary
+        :return: Query object results
+        :rtype: Query
+        """
+        model = self._entity_model(entity_name)
+        entity_object = model()
+        filters = [
+            getattr(model, key).in_(value) for key, value in filters.iteritems()
+        ]
+        return entity_object.queryObject().filter(*filters)
+
     def _entity_model(self, name=None):
         """
         Gets entity model
@@ -191,15 +207,14 @@ class SchemeDataService(DataService):
         :return workflow_ids: Workflow record ID
         :rtype workflow_ids: List
         """
-        if not self._workflow_ids:
-            self._workflow_ids = [
-                self.lookups.schemeLodgement(),
-                self.lookups.schemeEstablishment(),
-                self.lookups.firstExamination(),
-                self.lookups.secondExamination(),
-                self.lookups.thirdExamination()
-            ]
-        return self._workflow_ids
+        workflow_ids = [
+            self.lookups.schemeLodgement(),
+            self.lookups.schemeEstablishment(),
+            self.lookups.firstExamination(),
+            self.lookups.secondExamination(),
+            self.lookups.thirdExamination()
+        ]
+        return workflow_ids
 
 
 class DocumentDataService(DataService):
