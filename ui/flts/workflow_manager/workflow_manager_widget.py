@@ -54,6 +54,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.table_view = QTableView()
+        self._workflow_filter = self._workflow_load_filter
         self._model = WorkflowManagerModel(
             self.data_service, self._workflow_load_filter
         )
@@ -428,9 +429,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return workflow_id: Preceding workflow record id
         :rtype workflow_id: Integer
         """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
+        workflow_id = self._get_workflow_id()
         index = self._workflow_ids.index(workflow_id)
         if index == 0:
             return self._workflow_ids[index]
@@ -453,7 +452,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if approval_id == status:
                 update_filters = self._workflow_update_filter(
                     record_id,
-                    self.data_service.get_workflow_id(self._object_name)
+                    self._get_workflow_id()
                 )
                 update_items.append([updates, status, update_filters])
         return update_items
@@ -473,7 +472,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         pending_id = self._lookup.PENDING()
         workflow_column = self._lookup.WORKFLOW_COLUMN
         next_workflow_id = self._next_workflow_id()
-        current_id = self.data_service.get_workflow_id(self._object_name)
+        current_id = self._get_workflow_id()
         for row, columns in approval_items.iteritems():
             items, record_id = self._modify_update_filters(
                 columns, pending_id, next_workflow_id
@@ -494,13 +493,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return workflow_id: Succeeding workflow record id
         :rtype workflow_id: Integer
         """
-        workflow_id = self.data_service.get_workflow_id(
-            self._object_name
-        )
+        workflow_id = self._get_workflow_id()
         index = self._workflow_ids.index(workflow_id)
         if index == len(self._workflow_ids) - 1:
             return self._workflow_ids[index]
         return self._workflow_ids[(index + 1)]
+
+    def _get_workflow_id(self):
+        """
+        Return workflow id/primary key
+        :return: Workflow id/primary key
+        :rtype: Integer
+        """
+        if self._workflow_filter:
+            return self._workflow_filter[self._lookup.WORKFLOW_COLUMN]
+        return self.data_service.get_workflow_id(self._object_name)
 
     def _modify_update_filters(self, columns, new_value, next_workflow_id):
         """
