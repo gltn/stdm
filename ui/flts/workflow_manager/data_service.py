@@ -72,6 +72,7 @@ class SchemeDataService(DataService):
         self.entity_name = "Scheme"
         self._parent = parent
         self._widget_obj_name = widget_obj_name
+        self._workflow_ids = None
 
     @property
     def columns(self):
@@ -183,6 +184,22 @@ class SchemeDataService(DataService):
             return filter_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def workflow_ids(self):
+        """
+        Returns workflow IDs
+        :return workflow_ids: Workflow record ID
+        :rtype workflow_ids: List
+        """
+        if not self._workflow_ids:
+            self._workflow_ids = [
+                self.lookups.schemeLodgement(),
+                self.lookups.schemeEstablishment(),
+                self.lookups.firstExamination(),
+                self.lookups.secondExamination(),
+                self.lookups.thirdExamination()
+            ]
+        return self._workflow_ids
 
 
 class DocumentDataService(DataService):

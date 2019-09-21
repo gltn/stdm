@@ -401,14 +401,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype valid_items: Dictionary
         """
         valid_items = {}
-        approval_id = self._lookup.APPROVAL_COLUMN
+        approval_column = self._lookup.APPROVAL_COLUMN
         prev_workflow_id = self._prev_workflow_id()
         scheme_numbers = {"valid": [], "invalid": []}
         for record_id, (row, status, scheme_number) in \
                 self._checked_ids.iteritems():
             if int(status) != status_option:
                 prev_approval_id = self._scheme_workflow_id(
-                    record_id, prev_workflow_id, approval_id
+                    record_id, prev_workflow_id, approval_column
                 )
                 update_items = self._approval_updates(
                     prev_approval_id, record_id, status_option
@@ -450,7 +450,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         update_items = []
         for updates in self._get_update_item(self._scheme_update_column):
-            if approval_id == self._lookup.APPROVED():
+            if approval_id == status:
                 update_filters = self._workflow_update_filter(
                     record_id,
                     self.data_service.get_workflow_id(self._object_name)
@@ -470,12 +470,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         update_items = {}
         save_items = {}
-        next_workflow_id = self._next_workflow_id()
+        pending_id = self._lookup.PENDING()
         workflow_column = self._lookup.WORKFLOW_COLUMN
+        next_workflow_id = self._next_workflow_id()
         current_id = self.data_service.get_workflow_id(self._object_name)
         for row, columns in approval_items.iteritems():
             items, record_id = self._modify_update_filters(
-                columns, next_workflow_id
+                columns, pending_id, next_workflow_id
             )
             workflow_id = self._scheme_workflow_id(
                 record_id, next_workflow_id, workflow_column
@@ -501,11 +502,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_ids[index]
         return self._workflow_ids[(index + 1)]
 
-    def _modify_update_filters(self, columns, next_workflow_id):
+    def _modify_update_filters(self, columns, new_value, next_workflow_id):
         """
         Modified the update filters
         :param columns: Update column name as it appears in the entity
+        :type columns: List
+        :param new_value: Update value
+        :type new_value: Multiple types
         :param next_workflow_id: Succeeding workflow record ID
+        :type next_workflow_id: Integer
         :return items: Updated items
         :rtype items: List
         :return items: Scheme record ID
@@ -513,12 +518,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         items = []
         record_id = None
-        for column, new_value, update_filters in columns:
+        for column, value, update_filters in columns:
             record_id = update_filters[self._lookup.SCHEME_COLUMN]
             filters = update_filters.copy()
             filters[self._lookup.WORKFLOW_COLUMN] = next_workflow_id
             items.append([
-                column, self._lookup.PENDING(), filters
+                column, new_value, filters
             ])
         return items, record_id
 
@@ -579,13 +584,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return workflow_ids: Workflow record ID
         :rtype workflow_ids: List
         """
-        workflow_ids = [
-            self._lookup.schemeLodgement(),
-            self._lookup.schemeEstablishment(),
-            self._lookup.firstExamination(),
-            self._lookup.secondExamination(),
-            self._lookup.thirdExamination()
-        ]
+        workflow_ids = self.data_service.workflow_ids()
         return workflow_ids
 
     def _disapproval_updates(self, workflow_ids, record_id, status):
