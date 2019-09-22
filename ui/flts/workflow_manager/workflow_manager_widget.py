@@ -403,24 +403,20 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         valid_items = {}
         scheme_numbers = {"valid": [], "invalid": []}
-        scheme_ids = self._check_item_ids
+        scheme_ids = self._checked_scheme_ids
         prev_workflow_id = self._prev_workflow_id()
-        filters = self._scheme_workflow_filters(scheme_ids, [prev_workflow_id])
+        filters = self._scheme_workflow_filter(scheme_ids, [prev_workflow_id])
         query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
 
-        for record_id, (row, status, scheme_number) in \
+        for scheme_id, (row, status, scheme_number) in \
                 self._checked_ids.iteritems():
             if int(status) != status_option:
-
-                # TODO: Refactor
-                prev_approval_id = [
-                    getattr(q, self._lookup.APPROVAL_COLUMN, None) for q in query_objects
-                    if getattr(q, self._lookup.SCHEME_COLUMN, None) == record_id and
-                       getattr(q, self._lookup.WORKFLOW_COLUMN, None) == prev_workflow_id
-                ][0]
-
+                prev_approval_id = self._test_scheme_workflow_id(
+                    query_objects, self._lookup.APPROVAL_COLUMN,
+                    scheme_id, prev_workflow_id
+                )
                 update_items = self._approval_updates(
-                    prev_approval_id, record_id, status_option
+                    prev_approval_id, scheme_id, status_option
                 )
                 if update_items:
                     valid_items[row] = update_items
@@ -432,14 +428,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         return valid_items, scheme_numbers
 
     @property
-    def _check_item_ids(self):
+    def _checked_scheme_ids(self):
         """
-        Return scheme checked IDs
-        :return scheme_ids: Check scheme IDs/primary keys
+        Return checked scheme IDs
+        :return scheme_ids: Checked scheme IDs/primary keys
         :rtype scheme_ids: List
         """
         scheme_ids = [
-            record_id for record_id, (row, status, scheme_number)
+            scheme_id for scheme_id, (row, status, scheme_number)
             in self._checked_ids.iteritems()
         ]
         return scheme_ids
@@ -456,13 +452,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_ids[index]
         return self._workflow_ids[(index - 1)]
 
-    def _approval_updates(self, approval_id, record_id, status):
+    def _approval_updates(self, approval_id, scheme_id, status):
         """
         Return valid approval update items
         :param approval_id: Preceding workflow approval record ID
         :type approval_id: Integer
-        :param record_id: Checked items scheme record ID
-        :type record_id: Integer
+        :param scheme_id: Checked items scheme record ID
+        :type scheme_id: Integer
         :param status: Approve record ID status
         :type status: Integer
         :return update_items: Valid approval update items
@@ -471,8 +467,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         update_items = []
         for updates in self._get_update_item(self._scheme_update_column):
             if approval_id == status:
-                update_filters = self._workflow_update_filter(
-                    record_id,
+                update_filters = self._scheme_workflow_filter(
+                    scheme_id,
                     self._get_workflow_id()
                 )
                 update_items.append([updates, status, update_filters])
@@ -494,23 +490,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         modified_items, scheme_ids = self._modify_approval_items(
             approval_items, self._lookup.PENDING(), next_workflow_id
         )
-        filters = self._scheme_workflow_filters(
+        filters = self._scheme_workflow_filter(
             scheme_ids, [next_workflow_id]
         )
         query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
         current_id = self._get_workflow_id()
         for row, columns in approval_items.iteritems():
             items, scheme_id = modified_items[row]
-
-            # TODO: Refactor
-            workflow_id = [
-                getattr(q, self._lookup.WORKFLOW_COLUMN, None) for q in query_objects
-                if getattr(q, self._lookup.SCHEME_COLUMN, None) == scheme_id and
-                   getattr(q, self._lookup.WORKFLOW_COLUMN, None) == next_workflow_id
-            ]
-
+            workflow_id = self._test_scheme_workflow_id(
+                query_objects, self._lookup.WORKFLOW_COLUMN,
+                scheme_id, next_workflow_id
+            )
             if items and current_id != self._workflow_ids[-1]:
-                if workflow_id and workflow_id[0] is not None:
+                if workflow_id is not None:
                     update_items[row] = items
                     continue
                 save_items[row] = items
@@ -566,21 +558,27 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_filter[self._lookup.WORKFLOW_COLUMN]
         return self.data_service.get_workflow_id(self._object_name)
 
-    def _scheme_workflow_filters(self, scheme_id, workflow_id):
+    def _test_scheme_workflow_id(self, query, column, scheme_id, workflow_id):
         """
-        Scheme workflow entity filters
-        :param scheme_id: Scheme record IDs/primary keys
-        :rtype scheme_id: List or Integer
-        :param workflow_id: Workflow record IDs/primary keys
-        :rtype workflow_id: List or Integer
-        :return filters: Scheme workflow entity filters
-        :rtype filters: Dictionary
+        Return scheme workflow record IDs
+        :return: Query object results
+        :type: Query
+        :param column: Column name
+        :param column: String
+        :param scheme_id: Scheme record ID
+        :type scheme_id: Integer
+        :param workflow_id: Workflow record ID
+        :type workflow_id: Integer
+        :return record_id: Scheme workflow record ID
+        :return record_id: Integer or NoneType
         """
-        filters = {
-            self._lookup.SCHEME_COLUMN: scheme_id,
-            self._lookup.WORKFLOW_COLUMN: workflow_id
-        }
-        return filters
+        record_id = [
+            getattr(q, column, None) for q in query
+            if getattr(q, self._lookup.SCHEME_COLUMN, None) == scheme_id and
+               getattr(q, self._lookup.WORKFLOW_COLUMN, None) == workflow_id
+        ]
+        if record_id:
+            return record_id[0]
 
     def _filter_in(self, entity_name, filters):
         """
@@ -671,7 +669,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for updates in self._get_update_item(self._scheme_update_column):
             for workflow_id in workflow_ids:
                 if workflow_id is not None:
-                    update_filters = self._workflow_update_filter(
+                    update_filters = self._scheme_workflow_filter(
                         record_id, workflow_id
                     )
                     update_items.append([updates, status, update_filters])
@@ -804,18 +802,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for update in updates:
             yield update.column
 
-    def _workflow_update_filter(self, record_id, workflow_id):
+    def _scheme_workflow_filter(self, scheme_id, workflow_id):
         """
-        On update, return workflow type data filter
-        :param record_id: Scheme record id
-        :type record_id: Integer
+        Scheme workflow update/query filters
+        :param scheme_id: Scheme record id
+        :type scheme_id: Integer
         :param workflow_id: Workflow record id
         :type workflow_id: Integer
         :return workflow_filter: Workflow type data filter
         :rtype workflow_filter: Dictionary
         """
         workflow_filter = {
-            self._lookup.SCHEME_COLUMN: record_id,
+            self._lookup.SCHEME_COLUMN: scheme_id,
             self._lookup.WORKFLOW_COLUMN: workflow_id
         }
         return workflow_filter
