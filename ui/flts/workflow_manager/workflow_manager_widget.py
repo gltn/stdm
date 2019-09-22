@@ -407,7 +407,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         prev_workflow_id = self._prev_workflow_id()
         filters = self._scheme_workflow_filter(scheme_ids, [prev_workflow_id])
         query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
-
         for scheme_id, (row, status, scheme_number) in \
                 self._checked_ids.iteritems():
             if int(status) != status_option:
@@ -468,8 +467,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         for updates in self._get_update_item(self._scheme_update_column):
             if approval_id == status:
                 update_filters = self._scheme_workflow_filter(
-                    scheme_id,
-                    self._get_workflow_id()
+                    scheme_id, self._get_workflow_id()
                 )
                 update_items.append([updates, status, update_filters])
         return update_items
@@ -487,21 +485,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         update_items = {}
         save_items = {}
         next_workflow_id = self._next_workflow_id()
-        modified_items, scheme_ids = self._modify_approval_items(
+        approval_updates, scheme_ids = self._next_approval_updates(
             approval_items, self._lookup.PENDING(), next_workflow_id
         )
-        filters = self._scheme_workflow_filter(
-            scheme_ids, [next_workflow_id]
-        )
+        filters = self._scheme_workflow_filter(scheme_ids, [next_workflow_id])
         query_objects = self._filter_in("Scheme_workflow", filters)  # TODO: Place name in the config file
-        current_id = self._get_workflow_id()
+        current_workflow_id = self._get_workflow_id()
         for row, columns in approval_items.iteritems():
-            items, scheme_id = modified_items[row]
+            items, scheme_id = approval_updates[row]
             workflow_id = self._test_scheme_workflow_id(
                 query_objects, self._lookup.WORKFLOW_COLUMN,
                 scheme_id, next_workflow_id
             )
-            if items and current_id != self._workflow_ids[-1]:
+            if items and current_workflow_id != self._workflow_ids[-1]:
                 if workflow_id is not None:
                     update_items[row] = items
                     continue
@@ -520,21 +516,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return self._workflow_ids[index]
         return self._workflow_ids[(index + 1)]
 
-    def _modify_approval_items(self, approval_items, new_value, workflow_id):
+    def _next_approval_updates(self, approval_items, new_value, workflow_id):
         """
-        Returns modified approval items
-        :param approval_items: Current work flow update values, columns and filters
+        Return valid succeeding workflow approval update items
+        :param approval_items: Current workflow update values, columns and filters
         :type approval_items: Dictionary
         :param new_value: Update value
         :type new_value: Multiple types
         :param workflow_id: Workflow record ID
         :type workflow_id: Integer
+        :return update_items: Valid approval update items
+        :rtype update_items: List
         :return modified_items: Modified approval items
         :rtype modified_items: Dictionary
         :return scheme_ids: Check scheme IDs/primary keys
         :rtype scheme_ids: List
         """
-        modified_items = {}
+        update_items = {}
         scheme_ids = []
         for row, columns in approval_items.iteritems():
             items = []
@@ -545,8 +543,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 filters[self._lookup.WORKFLOW_COLUMN] = workflow_id
                 items.append([column, new_value, filters])
             scheme_ids.append(scheme_id)
-            modified_items[row] = (items, scheme_id)
-        return modified_items, scheme_ids
+            update_items[row] = (items, scheme_id)
+        return update_items, scheme_ids
 
     def _get_workflow_id(self):
         """
