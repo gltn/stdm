@@ -6,6 +6,14 @@ class Status(object):
         self._checked_ids = self._workflow_pks = None
         self.data_service = self._lookup = None
 
+    def set_check_ids(self, checked_ids):
+        """
+        Sets checked scheme record IDs
+        :param checked_ids: Checked scheme record IDs
+        :type checked_ids: OrderedDict
+        """
+        self._checked_ids = checked_ids
+
     def _checked_scheme_ids(self, status_option):
         """
         Return checked scheme IDs
@@ -112,14 +120,6 @@ class Approve(Status):
         self._object_name = object_name
         self._workflow_filter = None
         self._update_columns = self.data_service.update_columns
-
-    def set_check_ids(self, checked_ids):
-        """
-        Sets checked scheme record IDs
-        :param checked_ids: Checked scheme record IDs
-        :type checked_ids: OrderedDict
-        """
-        self._checked_ids = checked_ids
 
     def approve_items(self, status_option):
         """
@@ -283,14 +283,6 @@ class Disapprove(Status):
         self._lookup = self.data_service.lookups
         self._checked_ids = None
         self._update_columns = self.data_service.update_columns
-
-    def set_check_ids(self, checked_ids):
-        """
-        Sets checked scheme record IDs
-        :param checked_ids: Checked scheme record IDs
-        :type checked_ids: OrderedDict
-        """
-        self._checked_ids = checked_ids
 
     def disapprove_items(self, status_option):
         """
