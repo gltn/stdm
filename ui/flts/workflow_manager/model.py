@@ -135,21 +135,21 @@ class Load(DataRoutine):
 
     def load(self):
         """
-        Load query results to be used in the table view
+        Load data based on query results
         """
-        self._get_query_data()
+        self._query_data()
         return self._results, self._headers
 
     def load_collection(self):
         """
-        Load query results to be used in the table view from a collection
+        Loads data based on collection items in the query results
         """
-        self._get_query_collection()
+        self._query_collection()
         return self._results, self._headers
 
-    def _get_query_collection(self):
+    def _query_collection(self):
         """
-        Gets collection query results to be used in the table view
+        Gets data based on collection items in the query results
         """
         try:
             query_obj = self._data_service.run_query()
@@ -180,9 +180,9 @@ class Load(DataRoutine):
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _get_query_data(self):
+    def _query_data(self):
         """
-        Gets query results to be used in the table view
+        Gets data based on query results
         """
         try:
             query_obj = self._data_service.run_query()

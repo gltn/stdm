@@ -22,7 +22,6 @@ copyright            : (C) 2019
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import StyleSheet
-from stdm.ui.flts.workflow_manager.data_service import DocumentDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 
 
@@ -32,8 +31,11 @@ class SchemeDetailTableView(QTableView):
     manager modules; Scheme Establishment and First, Second and
     Third Examination FLTS modules.
     """
-    def __init__(self, data_service, parent=None):
+    def __init__(self, detail_service, profile, record_id, parent=None):
         super(QTableView, self).__init__(parent)
+        self._load_collections = detail_service['load_collections']
+        data_service = detail_service['data_service']
+        data_service = data_service(profile, record_id)
         self.model = WorkflowManagerModel(data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
@@ -48,8 +50,10 @@ class SchemeDetailTableView(QTableView):
         Initial table view data load
         """
         try:
-            # self.model.load()
-            self.model.load_collection()
+            if self._load_collections:
+                self.model.load_collection()
+            else:
+                self.model.load()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,

@@ -247,11 +247,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
-            # TODO: Start refactor
             detail_service = self._get_detail_service()
-            detail_service = detail_service(self._profile, last_id)
-            detail_table = SchemeDetailTableView(detail_service, self)
-            # TODO: End refactor
+            detail_table = SchemeDetailTableView(
+                detail_service, self._profile, last_id, self
+            )
             self._replace_tab(1, detail_table, label)
             self._enable_search() if detail_table.model.results \
                 else self._disable_search()
@@ -274,8 +273,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype: Dictionary
         """
         detail_service = {
-            self.documentsButton.objectName(): DocumentDataService,
-            self.holdersButton.objectName(): HolderDataService
+            self.documentsButton.objectName(): {
+                'data_service': DocumentDataService,
+                'load_collections': False
+            },
+            self.holdersButton.objectName(): {
+                'data_service': HolderDataService,
+                'load_collections': True
+            }
         }
         return detail_service
 
