@@ -42,9 +42,15 @@ class DataService:
         """
         raise NotImplementedError
 
-    def related_entity_name(self):
+    def collections(self):
         """
         Related entity name
+        """
+        raise NotImplementedError
+
+    def related_entities(self):
+        """
+        Related entity name identified by a foreign key
         """
         raise NotImplementedError
 
@@ -100,21 +106,27 @@ class SchemeDataService(DataService):
         """
         return SchemeConfig().scheme_update_columns
 
-    def related_entity_name(self):
+    @property
+    def collections(self):
         """
-        Related entity name
-        :return entity_name: Related entity name
-        :rtype entity_name: List
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return SchemeConfig().collections
+
+    def related_entities(self):
+        """
+        Related entity name identified by foreign keys
+        :return fk_entity_name: Related entity name
+        :rtype fk_entity_name: List
         """
         fk_entity_name = []
-        collection_name = []
         model = self._entity_model(self.entity_name)
         for relation in model.__mapper__.relationships.keys():
-            if relation.endswith("_collection"):
-                collection_name.append(relation)
-            else:
+            if not relation.endswith("_collection"):
                 fk_entity_name.append(relation)
-        return fk_entity_name, collection_name
+        return fk_entity_name
 
     def run_query(self):
         """
@@ -236,21 +248,27 @@ class DocumentDataService(DataService):
         """
         return DocumentConfig().columns
 
-    def related_entity_name(self):
+    @property
+    def collections(self):
         """
-        Related entity name
-        :return entity_name: Related entity name
-        :rtype entity_name: List
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return list()
+
+    def related_entities(self):
+        """
+        Related entity name identified by foreign keys
+        :return fk_entity_name: Related entity name
+        :rtype fk_entity_name: List
         """
         fk_entity_name = []
-        collection_name = []
         model, sp_doc_model = self._entity_model(self.entity_name)
         for relation in model.__mapper__.relationships.keys():
-            if relation.endswith("_collection"):
-                collection_name.append(relation)
-            else:
+            if not relation.endswith("_collection"):
                 fk_entity_name.append(relation)
-        return fk_entity_name, collection_name
+        return fk_entity_name
 
     def run_query(self):
         """
@@ -265,8 +283,8 @@ class DocumentDataService(DataService):
             query_object = entity_object.queryObject().filter(
                 sc_doc_model.supporting_doc_id == model.id,
                 sc_doc_model.scheme_id == self._scheme_id
-            ).order_by(model.last_modified).all()
-            return query_object
+            ).order_by(model.last_modified)
+            return query_object.all()
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -297,8 +315,7 @@ class HolderDataService(DataService):
     def __init__(self, current_profile, scheme_id):
         self._profile = current_profile
         self._scheme_id = scheme_id
-        self.entity_name = "Holder"
-        # self.entity_name = "Scheme"
+        self.entity_name = "Scheme"
 
     @property
     def columns(self):
@@ -309,36 +326,37 @@ class HolderDataService(DataService):
         """
         return HolderConfig().columns
 
-    def related_entity_name(self):
+    @property
+    def load_collections(self):
         """
-        Related entity name
-        :return entity_name: Related entity name
-        :rtype entity_name: List
+        Related entity collection names to be used as
+        primary table view load
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return HolderConfig().load_collections
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return HolderConfig().collections
+
+    def related_entities(self):
+        """
+        Related entity name identified by foreign keys
+        :return fk_entity_name: Related entity name
+        :rtype fk_entity_name: List
         """
         fk_entity_name = []
-        collection_name = []
-        model = self._entity_model(self.entity_name)
+        model = self._entity_model("Holder")
         for relation in model.__mapper__.relationships.keys():
-            if relation.endswith("_collection"):
-                collection_name.append(relation)
-            else:
+            if not relation.endswith("_collection"):
                 fk_entity_name.append(relation)
-        return fk_entity_name, collection_name
-
-    # def run_query(self):
-    #     """
-    #     Run query on an entity
-    #     :return query_obj: Query results
-    #     :rtype query_obj: List
-    #     """
-    #     model = self._entity_model(self.entity_name)
-    #     entity_object = model()
-    #     try:
-    #         query_object = entity_object.queryObject(). \
-    #             filter(model.id == self._scheme_id)
-    #         return query_object.all()
-    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-    #         raise e
+        return fk_entity_name
 
     def run_query(self):
         """
@@ -350,11 +368,7 @@ class HolderDataService(DataService):
         entity_object = model()
         try:
             query_object = entity_object.queryObject(). \
-                options(joinedload(model.cb_check_lht_gender)). \
-                options(joinedload(model.cb_check_lht_marital_status)). \
-                options(joinedload(model.cb_check_lht_disability)). \
-                options(joinedload(model.cb_check_lht_income_level)). \
-                options(joinedload(model.cb_check_lht_occupation))
+                filter(model.id == self._scheme_id)
             return query_object.all()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
@@ -373,4 +387,3 @@ class HolderDataService(DataService):
             return model
         except AttributeError as e:
             raise e
-

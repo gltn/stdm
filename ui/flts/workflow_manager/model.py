@@ -127,8 +127,8 @@ class Load(DataRoutine):
         :type _view_data_id: Multiple types
         """
         self._data_service = data_service
-        self._fk_entity_name, self._collection_name = \
-            data_service.related_entity_name()
+        self._fk_entity_name = data_service.related_entities()
+        self._collection_name = data_service.collections
         self._results = []
         self._headers = []
         self._collection_filter = collection_filter
@@ -140,9 +140,49 @@ class Load(DataRoutine):
         self._get_query_data()
         return self._results, self._headers
 
+    def load_collection(self):
+        """
+        Load query results to be used in the table view from a collection
+        """
+        self._get_query_collection()
+        return self._results, self._headers
+
+    def _get_query_collection(self):
+        """
+        Gets collection query results to be used in the table view
+        """
+        try:
+            query_obj = self._data_service.run_query()
+            load_collections = self._data_service.load_collections
+            for row in query_obj:
+                for item in self._get_collection_item(row, load_collections):
+                    store = {}
+                    for n, prop in enumerate(self._data_service.columns):
+                        column = prop.values()[0]
+                        header = prop.keys()[0]
+                        if isinstance(column, dict):
+                            fk_name = column.keys()[0]
+                            if fk_name in self._fk_entity_name and hasattr(item, fk_name):
+                                store[n] = self._get_value(item, column, fk_name)
+                                self._append(header, self._headers)
+                                continue
+                            store[n] = self._get_collection_value(item, column)
+                            self._append(header, self._headers)
+                            continue
+                        elif hasattr(item, column):
+                            store[n] = self._get_value(item, column)
+                            self._append(header, self._headers)
+                            continue
+                        store[n] = self._cast_data(column)
+                        self._append(header, self._headers)
+                    store["data"] = item
+                    self._results.append(store)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
     def _get_query_data(self):
         """
-        Get query results to be used in the table view
+        Gets query results to be used in the table view
         """
         try:
             query_obj = self._data_service.run_query()
@@ -239,8 +279,8 @@ class Update(DataRoutine):
         """
         self._updates = updates
         self._model_items = model_items
-        self._fk_entity_name, self._collection_name = \
-            data_service.related_entity_name()
+        self._fk_entity_name = data_service.related_entities()
+        self._collection_name = data_service.collections
 
     def update(self):
         """
@@ -522,6 +562,14 @@ class WorkflowManagerModel(QAbstractTableModel):
         self.results, self._headers = Load(
             self._data_service, self._collection_filter
         ).load()
+
+    def load_collection(self):
+        """
+        Load collection query results to be used in the table view
+        """
+        self.results, self._headers = Load(
+            self._data_service, self._collection_filter
+        ).load_collection()
 
     def update(self, updates):
         """

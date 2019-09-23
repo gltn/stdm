@@ -48,7 +48,8 @@ class SchemeDetailTableView(QTableView):
         Initial table view data load
         """
         try:
-            self.model.load()
+            # self.model.load()
+            self.model.load_collection()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,

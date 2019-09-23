@@ -76,6 +76,25 @@ class HolderConfig(Config):
         """
         return self.get_data('holder_columns')
 
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('holder_collections')
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary table view load
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('holder_load_collections')
+
 
 class StyleSheet(Config):
     """
@@ -107,6 +126,15 @@ class SchemeConfig(Config):
         :rtype: List
         """
         return self.get_data('scheme_columns')
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('scheme_collections')
 
     @property
     def lookups(self):
@@ -324,6 +352,8 @@ configurations = {
         },
         {Column(name='Other Dependants', flag=False): 'other_dependants'},
     ],
+    'holder_collections': ['cb_scheme_collection'],
+    'holder_load_collections': ['cb_holder_collection'],
     'lookups': LookUp(
         APPROVAL_STATUS='check_lht_approval_status',
         WORKFLOW='check_lht_workflow',
@@ -404,6 +434,7 @@ configurations = {
         },
         {Column(name='Block Area', flag=False): 'area'}
     ],
+    'scheme_collections': ['cb_scheme_workflow_collection'],
     'update_columns': {
         'scheme_update': [
             UpdateColumn(column={'approval_id': 'approval_id'})
