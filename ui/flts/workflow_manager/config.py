@@ -250,7 +250,7 @@ UpdateColumn = namedtuple('UpdateColumn', ['column'])
 
 configurations = {
     'document_columns': [
-        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Scheme Number', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {
             'cb_check_scheme_document_type': 'value'
         }},
@@ -277,6 +277,11 @@ configurations = {
                          '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
     'holder_columns': [
+        {
+            Column(name='Scheme Number', flag=False): {
+                'scheme_number': 'scheme_number'
+            }
+        },
         {Column(name='First Name', flag=False): 'first_name'},
         {Column(name='Surname', flag=False): 'surname'},
         {

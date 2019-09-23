@@ -23,7 +23,11 @@ from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
-from stdm.ui.flts.workflow_manager.data_service import SchemeDataService
+from stdm.ui.flts.workflow_manager.data_service import (
+    DocumentDataService,
+    HolderDataService,
+    SchemeDataService
+)
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.scheme_approval import (
     Approve,
@@ -82,9 +86,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
         )
-        # self.holdersButton.clicked.connect(
-        #     lambda: self._load_scheme_detail(self._detail_store)
-        # )
+        self.holdersButton.clicked.connect(
+            lambda: self._load_scheme_detail(self._detail_store)
+        )
         self._initial_load()
 
     @property
@@ -243,11 +247,37 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
-            detail_table = SchemeDetailTableView(last_id, self._profile, self)
+            # TODO: Start refactor
+            detail_service = self._get_detail_service()
+            detail_service = detail_service(self._profile, last_id)
+            detail_table = SchemeDetailTableView(detail_service, self)
+            # TODO: End refactor
             self._replace_tab(1, detail_table, label)
             self._enable_search() if detail_table.model.results \
                 else self._disable_search()
             store[key] = detail_table
+
+    def _get_detail_service(self):
+        """
+        Returns scheme details data service
+        :return: Scheme details data service
+        :rtype: DocumentDataService or HolderDataService
+        """
+        label = self._get_label()
+        return self._detail_services[label]
+
+    @property
+    def _detail_services(self):
+        """
+        Scheme details data services
+        :return: Scheme details data services
+        :rtype: Dictionary
+        """
+        detail_service = {
+            self.documentsButton.objectName(): DocumentDataService,
+            self.holdersButton.objectName(): HolderDataService
+        }
+        return detail_service
 
     def _create_key(self, id_, scheme_number):
         """

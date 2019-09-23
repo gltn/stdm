@@ -32,11 +32,9 @@ class SchemeDetailTableView(QTableView):
     manager modules; Scheme Establishment and First, Second and
     Third Examination FLTS modules.
     """
-    def __init__(self, scheme_id, current_profile, parent=None):
+    def __init__(self, data_service, parent=None):
         super(QTableView, self).__init__(parent)
-        self._profile = current_profile
-        self.data_service = DocumentDataService(self._profile, scheme_id)
-        self.model = WorkflowManagerModel(self.data_service)
+        self.model = WorkflowManagerModel(data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)

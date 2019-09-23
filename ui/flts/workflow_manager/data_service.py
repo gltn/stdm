@@ -290,76 +290,87 @@ class DocumentDataService(DataService):
             raise e
 
 
-# class HolderDataService(DataService):
-#     """
-#     Scheme holders data model service
-#     """
-#     def __init__(self, current_profile, scheme_id):
-#         self._profile = current_profile
-#         self._scheme_id = scheme_id
-#         self.entity_name = "Holder"
-#
-#     @property
-#     def columns(self):
-#         """
-#         Scheme holder table view columns options
-#         :return: Table view columns and query columns options
-#         :rtype: List
-#         """
-#         return HolderConfig().columns
-#
-#     def related_entity_name(self):
-#         """
-#         Related entity name
-#         :return entity_name: Related entity name
-#         :rtype entity_name: List
-#         """
-#         fk_entity_name = []
-#         collection_name = []
-#         model, sp_doc_model = self._entity_model(self.entity_name)
-#         for relation in model.__mapper__.relationships.keys():
-#             if relation.endswith("_collection"):
-#                 collection_name.append(relation)
-#             else:
-#                 fk_entity_name.append(relation)
-#         return fk_entity_name, collection_name
-#
-#     def run_query(self):
-#         """
-#         Run query on an entity
-#         :return query_obj: Query results
-#         :rtype query_obj: List
-#         """
-#         scheme_holder_model = self._entity_model("Scheme_holder")
-#         model = self._entity_model(self.entity_name)
-#         entity_object = model()
-#         try:
-#             query_object = entity_object.queryObject(). \
-#                 options(joinedload(model.cb_check_lht_gender)). \
-#                 options(joinedload(model.cb_check_lht_marital_status)). \
-#                 options(joinedload(model.cb_check_lht_disability)). \
-#                 options(joinedload(model.cb_check_lht_income_level)). \
-#                 options(joinedload(model.cb_check_lht_occupation)). \
-#                 filter(
-#                     scheme_holder_model.holder_id == model.id,
-#                     scheme_holder_model.scheme_id == self._scheme_id
-#                 )
-#             return query_object.all()
-#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-#             raise e
-#
-#     def _entity_model(self, name=None):
-#         """
-#         Gets entity model
-#         :param name: Name of the entity
-#         :type name: String
-#         :return model: Entity model;
-#         :rtype model: DeclarativeMeta
-#         """
-#         try:
-#             entity = self._profile.entity(name)
-#             model = entity_model(entity)
-#             return model
-#         except AttributeError as e:
-#             raise e
+class HolderDataService(DataService):
+    """
+    Scheme holders data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self.entity_name = "Holder"
+        # self.entity_name = "Scheme"
+
+    @property
+    def columns(self):
+        """
+        Scheme holder table view columns options
+        :return: Table view columns and query columns options
+        :rtype: List
+        """
+        return HolderConfig().columns
+
+    def related_entity_name(self):
+        """
+        Related entity name
+        :return entity_name: Related entity name
+        :rtype entity_name: List
+        """
+        fk_entity_name = []
+        collection_name = []
+        model = self._entity_model(self.entity_name)
+        for relation in model.__mapper__.relationships.keys():
+            if relation.endswith("_collection"):
+                collection_name.append(relation)
+            else:
+                fk_entity_name.append(relation)
+        return fk_entity_name, collection_name
+
+    # def run_query(self):
+    #     """
+    #     Run query on an entity
+    #     :return query_obj: Query results
+    #     :rtype query_obj: List
+    #     """
+    #     model = self._entity_model(self.entity_name)
+    #     entity_object = model()
+    #     try:
+    #         query_object = entity_object.queryObject(). \
+    #             filter(model.id == self._scheme_id)
+    #         return query_object.all()
+    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+    #         raise e
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return query_obj: Query results
+        :rtype query_obj: List
+        """
+        model = self._entity_model(self.entity_name)
+        entity_object = model()
+        try:
+            query_object = entity_object.queryObject(). \
+                options(joinedload(model.cb_check_lht_gender)). \
+                options(joinedload(model.cb_check_lht_marital_status)). \
+                options(joinedload(model.cb_check_lht_disability)). \
+                options(joinedload(model.cb_check_lht_income_level)). \
+                options(joinedload(model.cb_check_lht_occupation))
+            return query_object.all()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_model(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return model: Entity model;
+        :rtype model: DeclarativeMeta
+        """
+        try:
+            entity = self._profile.entity(name)
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e
 
