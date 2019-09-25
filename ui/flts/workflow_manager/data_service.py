@@ -255,7 +255,7 @@ class DocumentDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return list()
+        return DocumentConfig().collections
 
     def related_entities(self):
         """

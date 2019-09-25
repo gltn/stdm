@@ -216,7 +216,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if self._lookup.PENDING() in status or \
                 self._lookup.DISAPPROVED() in status:
             self._enable_widget(self.approveButton)
-        if self._lookup.APPROVED() in status:
+        if self._lookup.PENDING() in status or \
+                self._lookup.APPROVED() in status:
             self._enable_widget(self.disapproveButton)
         self._on_uncheck_disable_widgets()
 
@@ -625,7 +626,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.holdersButton, self.documentsButton,
                 self.approveButton, self.disapproveButton
             ])
-        elif self._lookup.APPROVED() not in status:
+        elif self._lookup.PENDING() not in status and \
+                self._lookup.APPROVED() not in status:
             self._disable_widget(self.disapproveButton)
         elif self._lookup.PENDING() not in status and \
                 self._lookup.DISAPPROVED() not in status:

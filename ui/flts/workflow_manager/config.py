@@ -62,6 +62,15 @@ class DocumentConfig(Config):
         """
         return self.get_data('document_columns')
 
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('document_collections')
+
 
 class HolderConfig(Config):
     """
@@ -287,6 +296,7 @@ configurations = {
         {Column(name='Created By', flag=False): 'created_by'},
         {Column(name='View Document', flag=False): 'View'}
     ],
+    'document_collections': ['cb_scheme_supporting_document_collection'],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
