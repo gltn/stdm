@@ -35,6 +35,7 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Disapprove
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
+from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
@@ -76,6 +77,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
+        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
@@ -126,6 +128,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 setResizeMode(QHeaderView.ResizeToContents)
 
     def _on_comment(self, index):
+        """
+        Handles click on a scheme record to view scheme comments
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        """
         if index.column() != self._lookup.CHECK:
             row, value, scheme_id = self._get_model_item(index)
             scheme_number = self._get_scheme_number(index)
@@ -133,10 +140,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _load_comments(self, store, scheme_id, scheme_number):
         """
-        On unchecking a record or clicking the 'Holders'
-        or'Documents' buttons, open scheme detail tab
+        On click a scheme record, open scheme comments tab
         :param store: Archived QWidget
         :type store: Dictionary
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
+        :param scheme_number: Scheme number
+        :type scheme_number: String
         """
         self._notif_bar.clear()
         title = "Comments"
@@ -324,11 +334,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         }
         return detail_service
 
-    def _create_key(self, id_, scheme_number, comment=None):
+    def _create_key(self, scheme_id, scheme_number, comment=None):
         """
         Create key to be used as widget store ID
-        :param id_: Unique integer value
-        :type id_: Integer
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
         :param scheme_number: Scheme number
         :type scheme_number: String
         :param comment: Comment label
@@ -341,7 +351,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         label = comment if comment else self._get_label()
         if label is None:
             return None, None
-        key = "{0}_{1}".format(str(id_), label)
+        key = "{0}_{1}".format(str(scheme_id), label)
         label = "{0} - {1}".format(label, scheme_number)
         return key, label
 

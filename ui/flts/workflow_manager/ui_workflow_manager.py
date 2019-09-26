@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_workflow_manager.ui'
 #
-# Created: Thu Aug 22 23:13:49 2019
+# Created: Fri Sep 27 00:47:35 2019
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,8 +27,8 @@ class Ui_WorkflowManagerWidget(object):
     def setupUi(self, WorkflowManagerWidget):
         WorkflowManagerWidget.setObjectName(_fromUtf8("WorkflowManagerWidget"))
         WorkflowManagerWidget.resize(1043, 745)
-        self.horizontalLayout_3 = QtGui.QHBoxLayout(WorkflowManagerWidget)
-        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(WorkflowManagerWidget)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.vlNotification = QtGui.QVBoxLayout()
@@ -76,30 +76,12 @@ class Ui_WorkflowManagerWidget(object):
         self.tabWidget = QtGui.QTabWidget(WorkflowManagerWidget)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.verticalLayout.addWidget(self.tabWidget)
-        self.horizontalLayout_2 = QtGui.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
-        self.firstButton = QtGui.QPushButton(WorkflowManagerWidget)
-        self.firstButton.setEnabled(False)
-        self.firstButton.setObjectName(_fromUtf8("firstButton"))
-        self.horizontalLayout_2.addWidget(self.firstButton)
-        self.previousButton = QtGui.QPushButton(WorkflowManagerWidget)
-        self.previousButton.setEnabled(False)
-        self.previousButton.setObjectName(_fromUtf8("previousButton"))
-        self.horizontalLayout_2.addWidget(self.previousButton)
-        self.paginationEdit = QtGui.QLineEdit(WorkflowManagerWidget)
-        self.paginationEdit.setAlignment(QtCore.Qt.AlignCenter)
-        self.paginationEdit.setObjectName(_fromUtf8("paginationEdit"))
-        self.horizontalLayout_2.addWidget(self.paginationEdit)
-        self.nextButton = QtGui.QPushButton(WorkflowManagerWidget)
-        self.nextButton.setEnabled(False)
-        self.nextButton.setObjectName(_fromUtf8("nextButton"))
-        self.horizontalLayout_2.addWidget(self.nextButton)
-        self.lastButton = QtGui.QPushButton(WorkflowManagerWidget)
-        self.lastButton.setEnabled(False)
-        self.lastButton.setObjectName(_fromUtf8("lastButton"))
-        self.horizontalLayout_2.addWidget(self.lastButton)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.horizontalLayout_3.addLayout(self.verticalLayout)
+        self.paginationFrame = QtGui.QFrame(WorkflowManagerWidget)
+        self.paginationFrame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.paginationFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.paginationFrame.setObjectName(_fromUtf8("paginationFrame"))
+        self.verticalLayout.addWidget(self.paginationFrame)
+        self.horizontalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(WorkflowManagerWidget)
         self.tabWidget.setCurrentIndex(-1)
@@ -114,9 +96,4 @@ class Ui_WorkflowManagerWidget(object):
         self.searchEdit.setPlaceholderText(_translate("WorkflowManagerWidget", "Type to search...", None))
         self.filterComboBox.setItemText(0, _translate("WorkflowManagerWidget", "Apply Filter", None))
         self.searchButton.setText(_translate("WorkflowManagerWidget", "Search", None))
-        self.firstButton.setText(_translate("WorkflowManagerWidget", "First", None))
-        self.previousButton.setText(_translate("WorkflowManagerWidget", "Previous", None))
-        self.paginationEdit.setText(_translate("WorkflowManagerWidget", "No Records Found", None))
-        self.nextButton.setText(_translate("WorkflowManagerWidget", "Next", None))
-        self.lastButton.setText(_translate("WorkflowManagerWidget", "Last", None))
 

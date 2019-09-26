@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_comment_manager.ui'
 #
-# Created: Thu Sep 26 13:29:54 2019
+# Created: Fri Sep 27 01:13:28 2019
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,6 +28,7 @@ class Ui_CommentManagerWidget(object):
         CommentManagerWidget.setObjectName(_fromUtf8("CommentManagerWidget"))
         CommentManagerWidget.resize(979, 596)
         self.horizontalLayout_3 = QtGui.QHBoxLayout(CommentManagerWidget)
+        self.horizontalLayout_3.setContentsMargins(0, -1, 0, 0)
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -36,6 +37,7 @@ class Ui_CommentManagerWidget(object):
         self.newCommetGroupBox.setCheckable(False)
         self.newCommetGroupBox.setObjectName(_fromUtf8("newCommetGroupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.newCommetGroupBox)
+        self.verticalLayout.setContentsMargins(-1, -1, -1, 0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.newCommentTextEdit = QtGui.QTextEdit(self.newCommetGroupBox)
         self.newCommentTextEdit.setObjectName(_fromUtf8("newCommentTextEdit"))
@@ -52,13 +54,16 @@ class Ui_CommentManagerWidget(object):
         self.oldCommetGroupBox = QtGui.QGroupBox(CommentManagerWidget)
         self.oldCommetGroupBox.setObjectName(_fromUtf8("oldCommetGroupBox"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.oldCommetGroupBox)
+        self.verticalLayout_2.setContentsMargins(9, 9, 9, 0)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.oldCommentTextEdit = QtGui.QTextEdit(self.oldCommetGroupBox)
         self.oldCommentTextEdit.setObjectName(_fromUtf8("oldCommentTextEdit"))
         self.verticalLayout_2.addWidget(self.oldCommentTextEdit)
-        self.horizontalLayout_4 = QtGui.QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
-        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+        self.paginationFrame = QtGui.QFrame(self.oldCommetGroupBox)
+        self.paginationFrame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.paginationFrame.setFrameShadow(QtGui.QFrame.Raised)
+        self.paginationFrame.setObjectName(_fromUtf8("paginationFrame"))
+        self.verticalLayout_2.addWidget(self.paginationFrame)
         self.horizontalLayout_2.addWidget(self.oldCommetGroupBox)
         self.horizontalLayout_2.setStretch(0, 4)
         self.horizontalLayout_2.setStretch(1, 6)
