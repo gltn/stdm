@@ -96,8 +96,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
         self._holders_entity_name = 'Holder'
-        self._workflow_entity_name = 'check_lht_workflow'
-        self._approval_entity_name = 'check_lht_approval_status'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -562,20 +560,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Create validator object
         ds = self.tw_hld_prv.current_sheet_view().vector_layer
-        try:
-            self._holders_validator = EntityVectorLayerValidator(
-                self._holder_entity,
-                ds,
-                parent=self
-            )
-        except Exception as ex:
-            QMessageBox.critical(
-                self,
-                self.tr('Validator Initialization'),
-                str(ex)
-            )
-
-            return
+        self._holders_validator = EntityVectorLayerValidator(
+            self._holder_entity,
+            ds,
+            parent=self
+        )
 
         # Connect signals
         self._holders_validator.featureValidated.connect(
@@ -1006,14 +995,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     )
                 )
             else:
-                if not self._holders_validator:
-                    QMessageBox.critical(
-                        self,
-                        self.tr('Validation Initialization'),
-                        self.tr('Validator object could not be initialized.')
-                    )
-                    return False
-
                 status = self._holders_validator.status
                 if status == EntityVectorLayerValidator.NOT_STARTED:
                     msg = self.tr(
@@ -1081,6 +1062,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # This is the last page
             try:
                 self.save_scheme()
+                self.populate_workflow()
                 ret_status = True
 
             except Exception as err:
@@ -1198,6 +1180,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         ))
         pg_dlg.setValue(3)
         scheme_obj.save()
+
         # Update last value for generating scheme number
         self._save_ra_last_value(scheme_obj.scheme_number)
         QgsApplication.processEvents()
@@ -1216,9 +1199,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._holder_importer.start()
         QgsApplication.processEvents()
 
-        # Create notification
-        # self.create_notification()
-
         msg = self.tr(
             u'A new scheme (No. {0}) has been successfully lodged.'.format(
                 scheme_obj.scheme_number
@@ -1235,18 +1215,69 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Update the workflow link table once lodgement has been done
         :return:
         """
-        # Lookups
-        workflow_lookup = self.curr_p.entity('check_lht_workflow')
-        approval_lookup = self.curr_p.entity('check_lht_approval_status')
+        # Entities
+        chk_workflow_lookup = self.curr_p.entity('check_lht_workflow')
+        chk_approval_lookup = self.curr_p.entity('check_lht_approval_status')
+        scheme_workflow = self.curr_p.entity('Scheme_workflow')
+
+        # Check if entity exists
+        if chk_workflow_lookup is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing workflow Entity'),
+                self.tr("The workflow entity is missing in the "
+                        "profile.")
+            )
+
+        if chk_approval_lookup is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing approval Entity'),
+                self.tr("The approval entity is missing in the "
+                        "profile.")
+            )
+
+        if scheme_workflow is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Missing scheme workflow Entity'),
+                self.tr("The scheme workflow entity is missing in the "
+                        "profile.")
+            )
 
         # Models
-        workflow_model = entity_model(workflow_lookup)
-        approval_model = entity_model(approval_lookup)
+        workflow_model = entity_model(chk_workflow_lookup)
+        approval_model = entity_model(chk_approval_lookup)
+        scheme_workflow_model = entity_model(scheme_workflow)
+
+        # Check if model exists
+        if workflow_model is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Workflow Entity Model'),
+                self.tr("The workflow entity model could not be generated.")
+            )
+
+        if approval_model is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Workflow Entity Model'),
+                self.tr("The approval entity model could not be generated.")
+            )
+
+        if scheme_workflow_model is None:
+            QMessageBox.critical(
+                self,
+                self.tr('Scheme Workflow Entity Model'),
+                self.tr("The scheme workflow entity model could not be "
+                        "generated.")
+            )
 
         # Entity objects
         scheme_obj = self.schm_model()
         chk_workflow_obj = workflow_model()
         chk_approval_obj = approval_model()
+        scheme_workflow_obj = scheme_workflow_model()
 
         # Get last lodged scheme ID
         scheme_res = scheme_obj.queryObject().order_by(
@@ -1262,5 +1293,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             approval_model.value == 'Pending'
         ).one()
 
+        approval_lodge_res = chk_approval_obj.queryObject().filter(
+            approval_model.value == 'Approved'
+        ).one()
+
+        # Save details
+        if approval_res:
+            scheme_workflow_obj.scheme_id = scheme_res.id
+            scheme_workflow_obj.workflow_id = workflow_res.id
+            scheme_workflow_obj.approval_id = approval_res.id
+            scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
+            scheme_workflow_obj.save()
 
 
