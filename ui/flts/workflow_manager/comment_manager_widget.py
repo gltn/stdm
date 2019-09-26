@@ -6,7 +6,9 @@ from stdm.ui.flts.workflow_manager.ui_comment_manager import Ui_CommentManagerWi
 
 
 class Comment(object):
-
+    """
+    Comment factory
+    """
     def __init__(self, comment):
         self.comment,  self.user_name, self.first_name, \
         self.last_name, self.timestamp = comment
