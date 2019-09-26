@@ -25,7 +25,10 @@ from cmislib import (
     CmisClient
 )
 from PyQt4.QtCore import (
-    QFileInfo
+    QFileInfo,
+    QObject,
+    QProcess,
+    pyqtSignal
 )
 from cmislib.exceptions import (
     CmisException,
@@ -46,6 +49,10 @@ CMIS_CREATED_BY = 'cmis:createdBy'
 CMIS_CREATION_DATE = 'cmis:creationDate'
 CMIS_CONTENT_STREAM_LENGTH = 'cmis:contentStreamLength'
 CMIS_CONTENT_STREAM_ID = 'cmis:contentStreamId'
+
+# PDF Viewer constants
+PDF_VIEWER_EXEC = 'chrome'
+DOC_ID_PROP = 'document_id'
 
 
 class CmisManager(object):
@@ -1007,12 +1014,3 @@ class CmisEntityDocumentMapper(object):
             uploaded_type_docs.append(doc_info)
 
         return cmis_doc
-
-
-
-
-
-
-
-
-
