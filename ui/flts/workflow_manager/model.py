@@ -157,6 +157,7 @@ class Load(DataRoutine):
             for row in query_obj:
                 for item in self._get_collection_item(row, load_collections):
                     store = {}
+                    # TODO: Refactor repeating for loop in _query_data
                     for n, prop in enumerate(self._data_service.columns):
                         column = prop.values()[0]
                         header = prop.keys()[0]
@@ -188,6 +189,7 @@ class Load(DataRoutine):
             query_obj = self._data_service.run_query()
             for row in query_obj:
                 store = {}
+                # TODO: Refactor repeating for loop in _query_collection
                 for n, prop in enumerate(self._data_service.columns):
                     column = prop.values()[0]
                     header = prop.keys()[0]
