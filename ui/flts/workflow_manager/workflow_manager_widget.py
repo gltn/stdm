@@ -24,6 +24,7 @@ from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import (
+    CommentDataService,
     DocumentDataService,
     HolderDataService,
     SchemeDataService
@@ -33,6 +34,7 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Approve,
     Disapprove
 )
+from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
@@ -74,6 +76,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
+        self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
@@ -81,7 +84,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             lambda: self._on_approve(self._lookup.APPROVED(), "approve")
         )
         self.disapproveButton.clicked.connect(
-            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "disapprove")
+            lambda: self._on_disapprove(
+                self._lookup.DISAPPROVED(), "disapprove"
+            )
         )
         self.documentsButton.clicked.connect(
             lambda: self._load_scheme_detail(self._detail_store)
@@ -120,18 +125,48 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.table_view.horizontalHeader().\
                 setResizeMode(QHeaderView.ResizeToContents)
 
+    def _on_comment(self, index):
+        if index.column() != self._lookup.CHECK:
+            row, value, scheme_id = self._get_model_item(index)
+            scheme_number = self._get_scheme_number(index)
+            self._load_comments(self._detail_store, scheme_id, scheme_number)
+
+    def _load_comments(self, store, scheme_id, scheme_number):
+        """
+        On unchecking a record or clicking the 'Holders'
+        or'Documents' buttons, open scheme detail tab
+        :param store: Archived QWidget
+        :type store: Dictionary
+        """
+        self._notif_bar.clear()
+        title = "Comments"
+        key, label = self._create_key(scheme_id, scheme_number, title)
+        if key in store:
+            saved_widget = store[key]
+            if self._is_alive(saved_widget):
+                self._replace_tab(1, saved_widget, label)
+        elif None not in (key, label):
+            detail_service = self._get_detail_service(title)
+            detail_table = CommentManagerWidget(
+                detail_service, self._profile, scheme_id, self
+            )
+            self._replace_tab(1, detail_table, label)
+            self._disable_search()
+            store[key] = detail_table
+
     def _on_check(self, index):
         """
         Handle checkbox check event
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        row, check_state, record_id = self._check_state(index)
-        if check_state == 1:
-            status = self._get_approval_status(index)
-            scheme_number = self._get_scheme_number(index)
-            self._checked_ids[record_id] = (row, status, scheme_number)
-            self._on_check_enable_widgets()
+        if index.column() == self._lookup.CHECK:
+            row, check_state, record_id = self._get_model_item(index)
+            if int(check_state) == 1:
+                status = self._get_approval_status(index)
+                scheme_number = self._get_scheme_number(index)
+                self._checked_ids[record_id] = (row, status, scheme_number)
+                self._on_check_enable_widgets()
 
     def _on_uncheck(self, index):
         """
@@ -139,32 +174,30 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        row, check_state, record_id = self._check_state(index)
-        if check_state == 0:
-            self._remove_checked_id(record_id)
-            scheme_number = self._get_scheme_number(index)
-            key, label = self._create_key(record_id, scheme_number)
-            self._remove_stored_widget(key)
-            self._on_uncheck_disable_widgets()
+        if index.column() == self._lookup.CHECK:
+            row, check_state, record_id = self._get_model_item(index)
+            if int(check_state) == 0:
+                self._remove_checked_id(record_id)
+                scheme_number = self._get_scheme_number(index)
+                key, label = self._create_key(record_id, scheme_number)
+                self._remove_stored_widget(key)
+                self._on_uncheck_disable_widgets()
 
-    def _check_state(self, index):
+    def _get_model_item(self, index):
         """
-        Returns checkbox check state
+        Returns model items
         :param index: Table view item identifier
         :type index: QModelIndex
-        :return state: Checkbox check or uncheck flag/value
-        :rtype state: Integer
+        :return value: Model item value represented by a row and column
+        :rtype value: Multiple types
         :return record_id: Record/entity id (primary key)
         :rtype record_id: Integer
         """
-        row, column = self._model.get_column_index(
-            index, self._lookup.CHECK
-        )
-        if None in (row, column):
-            return None, None, None
-        state = self._model.results[row].get(column)
+        row = index.row()
+        column = index.column()
+        value = self._model.results[row].get(column)
         record_id = self._model.get_record_id(row)
-        return row, int(state), int(record_id)
+        return row, value, int(record_id)
 
     def _get_approval_status(self, index):
         """
@@ -257,13 +290,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else self._disable_search()
             store[key] = detail_table
 
-    def _get_detail_service(self):
+    def _get_detail_service(self, comment=None):
         """
-        Returns scheme details data service
+        Returns scheme details and comments data service
+        :param comment: Comment label
+        :type comment: String
         :return: Scheme details data service
         :rtype: DocumentDataService or HolderDataService
         """
-        label = self._get_label()
+        label = comment if comment else self._get_label()
         return self._detail_services[label]
 
     @property
@@ -281,22 +316,29 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.holdersButton.objectName(): {
                 'data_service': HolderDataService,
                 'load_collections': True
+            },
+            'Comments': {
+                'data_service': CommentDataService,
+                'load_collections': True
             }
         }
         return detail_service
 
-    def _create_key(self, id_, scheme_number):
+    def _create_key(self, id_, scheme_number, comment=None):
         """
         Create key to be used as widget store ID
         :param id_: Unique integer value
         :type id_: Integer
+        :param scheme_number: Scheme number
+        :type scheme_number: String
+        :param comment: Comment label
+        :type comment: String
         :return key: Dictionary store ID
         :rtype key: String
-        :return label: Label identify type of scheme
-        details (holders or documents)
+        :return label: Scheme details/comments identifier
         :rtype label: String
         """
-        label = self._get_label()
+        label = comment if comment else self._get_label()
         if label is None:
             return None, None
         key = "{0}_{1}".format(str(id_), label)
@@ -349,7 +391,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.setTabsClosable(True)
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
-        if self._button_clicked():
+        if self._button_clicked() or widget.objectName() == "Comments":
             self.tabWidget.setCurrentIndex(index)
         self._tab_name = label
 

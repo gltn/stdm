@@ -499,25 +499,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         return self.results[row]["data"].id
 
-    @staticmethod
-    def get_column_index(index, position):
-        """
-        Get item index at a column position
-        :param index: Table view item identifier
-        :type index: QModelIndex
-        :param position: Required column position
-        :type position: Integer
-        :return row: Row position or None
-        :rtype row: Integer
-        :return column: Column position or None
-        :rtype column: Integer
-        """
-        row = index.row()
-        column = index.column()
-        if column != position:
-            return None, None
-        return row, column
-
     def model_item(self, row, column):
         """
         Return model item

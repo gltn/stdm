@@ -21,6 +21,7 @@ from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
+    CommentConfig,
     DocumentConfig,
     HolderConfig,
     FilterQueryBy,
@@ -353,6 +354,88 @@ class HolderDataService(DataService):
         """
         fk_entity_name = []
         model = self._entity_model("Holder")
+        for relation in model.__mapper__.relationships.keys():
+            if not relation.endswith("_collection"):
+                fk_entity_name.append(relation)
+        return fk_entity_name
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return query_obj: Query results
+        :rtype query_obj: List
+        """
+        model = self._entity_model(self.entity_name)
+        entity_object = model()
+        try:
+            query_object = entity_object.queryObject(). \
+                filter(model.id == self._scheme_id)
+            return query_object.all()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _entity_model(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return model: Entity model;
+        :rtype model: DeclarativeMeta
+        """
+        try:
+            entity = self._profile.entity(name)
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+
+            raise e
+
+
+class CommentDataService(DataService):
+    """
+    Comment Manager data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self.entity_name = "Scheme"
+
+    @property
+    def columns(self):
+        """
+        Comment Manager widget columns options
+        :return: Comment Manager widget columns and query columns options
+        :rtype: List
+        """
+        return CommentConfig().columns
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary load data for the Comment Manager widget
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return CommentConfig().load_collections
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return CommentConfig().collections
+
+    def related_entities(self):
+        """
+        Related entity name identified by foreign keys
+        :return fk_entity_name: Related entity name
+        :rtype fk_entity_name: List
+        """
+        fk_entity_name = []
+        model = self._entity_model("Comment")
         for relation in model.__mapper__.relationships.keys():
             if not relation.endswith("_collection"):
                 fk_entity_name.append(relation)

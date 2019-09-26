@@ -47,6 +47,39 @@ class Config(object):
         return self._configurations.get(option, None)
 
 
+class CommentConfig(Config):
+    """
+    Comment Manager widget configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Comment Manager widget columns options
+        :return: Comment Manager widget columns and query columns options
+        :rtype: List
+        """
+        return self.get_data('comment_columns')
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('comment_collections')
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary load data for the Comment Manager widget
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('comment_load_collections')
+
+
 class DocumentConfig(Config):
     """
     Scheme supporting documents table
@@ -286,6 +319,27 @@ LookUp = namedtuple(
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
 
 configurations = {
+    'comment_columns': [
+        {Column(name='Comment', flag=False): 'comment'},
+        {
+            Column(name='User', flag=False): {
+                'cb_user': 'user_name'
+            }
+        },
+        {
+            Column(name='First Name', flag=False): {
+                'cb_user': 'first_name'
+            }
+        },
+        {
+            Column(name='Last Name', flag=False): {
+                'cb_user': 'last_name'
+            }
+        },
+        {Column(name='Post Date', flag=False): 'timestamp'}
+    ],
+    'comment_collections': ['cb_scheme_collection'],
+    'comment_load_collections': ['cb_comment_collection'],
     'document_columns': [
         {Column(name='Scheme Number', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {

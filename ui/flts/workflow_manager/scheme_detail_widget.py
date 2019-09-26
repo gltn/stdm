@@ -31,11 +31,11 @@ class SchemeDetailTableView(QTableView):
     manager modules; Scheme Establishment and First, Second and
     Third Examination FLTS modules.
     """
-    def __init__(self, detail_service, profile, record_id, parent=None):
+    def __init__(self, detail_service, profile, scheme_id, parent=None):
         super(QTableView, self).__init__(parent)
         self._load_collections = detail_service['load_collections']
         data_service = detail_service['data_service']
-        data_service = data_service(profile, record_id)
+        data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
