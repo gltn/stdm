@@ -148,6 +148,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param scheme_number: Scheme number
         :type scheme_number: String
         """
+        # TODO: Refactor. Repetion refer to _load_scheme_detail
         self._notif_bar.clear()
         title = "Comments"
         key, label = self._create_key(scheme_id, scheme_number, title)
@@ -280,6 +281,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param store: Archived QWidget
         :type store: Dictionary
         """
+        # TODO: Refactor. Repetion refer to _load_comment
         if not self._checked_ids:
             return
         self._notif_bar.clear()
