@@ -51,7 +51,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._object_name = object_name
         self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._tab_name = None
+        self._tab_name = self._detail_table = None
         self._notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -161,12 +161,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
             detail_service = self._get_detail_service(self._comments_title)
-            detail_table = CommentManagerWidget(
+            comments = CommentManagerWidget(
                 detail_service, self._profile, scheme_id, self
             )
-            self._replace_tab(1, detail_table, label)
+            self._replace_tab(1, comments, label)
             self._disable_search()
-            store[key] = detail_table
+            store[key] = comments
 
     def _on_check(self, index):
         """
@@ -297,13 +297,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
             detail_service = self._get_detail_service()
-            detail_table = SchemeDetailTableView(
+            self._detail_table = SchemeDetailTableView(
                 detail_service, self._profile, last_id, self
             )
-            self._replace_tab(1, detail_table, label)
-            self._enable_search() if detail_table.model.results \
+            self._replace_tab(1, self._detail_table, label)
+            self._enable_search() if self._detail_table.model.results \
                 else self._disable_search()
-            store[key] = detail_table
+            store[key] = self._detail_table
 
     def _get_detail_service(self, comment=None):
         """
@@ -657,7 +657,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Update table view checked ids in the checked tracker
         """
         checked_ids = self._checked_ids.copy()
-        for record_id, (row, status, scheme_number) in checked_ids.iteritems():
+        for record_id, (row, status, scheme_number) in \
+                checked_ids.iteritems():
             self._remove_checked_id(record_id)
         self._on_uncheck_disable_widgets()
 
@@ -704,25 +705,36 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         )
         if index == 0 or active_tab_label in tabs_label:
             self._show_widget(self.paginationFrame)
+            self._enable_search() if self._model.results or \
+                self._detail_table.model.results else \
+                self._disable_search()
         elif active_tab_label not in tabs_label:
             self._hide_widget(self.paginationFrame)
+            self._disable_search()
 
     @staticmethod
     def _show_widget(widget):
         """
-        Shows widget
+        Shows a widget
         :param widget:
         :type widget: QWidget
-        :return:
         """
         if not widget.isVisible():
             widget.show()
 
     @staticmethod
     def _hide_widget(widget):
+        """
+        Hides a widget
+        :param widget:
+        :type widget: QWidget
+        """
         if widget.isVisible():
             widget.hide()
 
     def refresh(self):
+        """
+        Refresh checked items store and model
+        """
         self._checked_ids = OrderedDict()
         self._model.refresh()
