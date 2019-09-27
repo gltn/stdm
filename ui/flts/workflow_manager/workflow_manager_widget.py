@@ -61,6 +61,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._disapprove = Disapprove(self.data_service,)
         self._lookup = self.data_service.lookups
         _header_style = StyleSheet().header_style
+        self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
         self.holdersButton.setObjectName("Holders")
@@ -78,6 +79,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
@@ -150,14 +152,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         # TODO: Refactor. Repetion refer to _load_scheme_detail
         self._notif_bar.clear()
-        title = "Comments"
-        key, label = self._create_key(scheme_id, scheme_number, title)
+        key, label = self._create_key(
+            scheme_id, scheme_number, self._comments_title
+        )
         if key in store:
             saved_widget = store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
-            detail_service = self._get_detail_service(title)
+            detail_service = self._get_detail_service(self._comments_title)
             detail_table = CommentManagerWidget(
                 detail_service, self._profile, scheme_id, self
             )
@@ -686,6 +689,39 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         elif self._lookup.PENDING() not in status and \
                 self._lookup.DISAPPROVED() not in status:
             self._disable_widget(self.approveButton)
+
+    def _on_tab_change(self, index):
+        """
+        Shows or hides widget on tab change
+        :param index: Tab index
+        :type index: Integer
+        """
+        active_tab_label = self.tabWidget.tabText(index)
+        active_tab_label = active_tab_label.split(" - ")[0]
+        tabs_label = (
+            self.holdersButton.objectName(),
+            self.documentsButton.objectName()
+        )
+        if index == 0 or active_tab_label in tabs_label:
+            self._show_widget(self.paginationFrame)
+        elif active_tab_label not in tabs_label:
+            self._hide_widget(self.paginationFrame)
+
+    @staticmethod
+    def _show_widget(widget):
+        """
+        Shows widget
+        :param widget:
+        :type widget: QWidget
+        :return:
+        """
+        if not widget.isVisible():
+            widget.show()
+
+    @staticmethod
+    def _hide_widget(widget):
+        if widget.isVisible():
+            widget.hide()
 
     def refresh(self):
         self._checked_ids = OrderedDict()
