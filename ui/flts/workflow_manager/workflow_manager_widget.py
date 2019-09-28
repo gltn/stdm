@@ -92,12 +92,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._lookup.DISAPPROVED(), "disapprove"
             )
         )
-        self.documentsButton.clicked.connect(
-            lambda: self._load_scheme_detail(self._detail_store)
-        )
-        self.holdersButton.clicked.connect(
-            lambda: self._load_scheme_detail(self._detail_store)
-        )
+        self.documentsButton.clicked.connect(self._load_scheme_detail)
+        self.holdersButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
 
     @property
@@ -138,13 +134,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if index.column() != self._lookup.CHECK:
             row, value, scheme_id = self._get_model_item(index)
             scheme_number = self._get_scheme_number(index)
-            self._load_comments(self._detail_store, scheme_id, scheme_number)
+            self._load_comments(scheme_id, scheme_number)
 
-    def _load_comments(self, store, scheme_id, scheme_number):
+    def _load_comments(self, scheme_id, scheme_number):
         """
         On click a scheme record, open scheme comments tab
-        :param store: Archived QWidget
-        :type store: Dictionary
         :param scheme_id: Scheme record ID/primary key
         :type scheme_id: Integer
         :param scheme_number: Scheme number
@@ -155,8 +149,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         key, label = self._create_key(
             scheme_id, scheme_number, self._comments_title
         )
-        if key in store:
-            saved_widget = store[key]
+        if key in self._detail_store:
+            saved_widget = self._detail_store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
@@ -166,7 +160,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             )
             self._replace_tab(1, comments, label)
             self._disable_search()
-            store[key] = comments
+            self._detail_store[key] = comments
 
     def _on_check(self, index):
         """
@@ -252,7 +246,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         except KeyError:
             return
         else:
-            self._load_scheme_detail(self._detail_store)
+            self._load_scheme_detail()
 
     def _on_check_enable_widgets(self):
         """
@@ -277,12 +271,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status = [tup[1] for tup in self._checked_ids.values()]
         return status
 
-    def _load_scheme_detail(self, store):
+    def _load_scheme_detail(self):
         """
         On unchecking a record or clicking the 'Holders'
         or'Documents' buttons, open scheme detail tab
-        :param store: Archived QWidget
-        :type store: Dictionary
         """
         # TODO: Refactor. Repetion refer to _load_comment
         if not self._checked_ids:
@@ -291,8 +283,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
         key, label = self._create_key(last_id, scheme_number)
-        if key in store:
-            saved_widget = store[key]
+        if key in self._detail_store:
+            saved_widget = self._detail_store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
@@ -303,7 +295,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._replace_tab(1, self._detail_table, label)
             self._enable_search() if self._detail_table.model.results \
                 else self._disable_search()
-            store[key] = self._detail_table
+            self._detail_store[key] = self._detail_table
 
     def _get_detail_service(self, comment=None):
         """
