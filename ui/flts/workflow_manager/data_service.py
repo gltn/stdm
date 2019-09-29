@@ -71,12 +71,19 @@ class DataService:
         """
         raise NotImplementedError
 
-    def _entity_model(self, name=None):
+    def _entity_model(self, entity):
         """
-        Scheme entity model
-        :return:
+        Gets entity model
+        :param entity: Profile entity
+        :type entity: Entity
+        :return model: Entity model;
+        :rtype model: DeclarativeMeta
         """
-        raise NotImplementedError
+        try:
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e
 
 # TODO: Refactor repeating methods in all these classes
 
@@ -135,9 +142,12 @@ class SchemeDataService(DataService):
         :return: Related entity names
         :rtype: List
         """
-        entity_name = entity_name if entity_name else self.entity_name
-        entity = self._profile.entity(entity_name)
-        return super(SchemeDataService, self).related_entities(entity)
+        try:
+            entity_name = entity_name if entity_name else self.entity_name
+            entity = self._profile.entity(entity_name)
+            return super(SchemeDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -197,15 +207,11 @@ class SchemeDataService(DataService):
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
-        :rtype model: DeclarativeMeta
+        :return: Entity model;
+        :rtype: DeclarativeMeta
         """
-        try:
-            entity = self._profile.entity(name)
-            model = entity_model(entity)
-            return model
-        except AttributeError as e:
-            raise e
+        entity = self._profile.entity(name)
+        return super(SchemeDataService, self)._entity_model(entity)
 
     @staticmethod
     def filter_query_by(entity_name, filters):
@@ -276,9 +282,12 @@ class DocumentDataService(DataService):
         :return: Related entity names
         :rtype: List
         """
-        entity_name = entity_name if entity_name else self.entity_name
-        entity = self._profile.entity(entity_name)
-        return super(DocumentDataService, self).related_entities(entity)
+        try:
+            entity_name = entity_name if entity_name else self.entity_name
+            entity = self._profile.entity(entity_name)
+            return super(DocumentDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -363,9 +372,12 @@ class HolderDataService(DataService):
         :return: Related entity names
         :rtype: List
         """
-        entity_name = entity_name if entity_name else "Holder"
-        entity = self._profile.entity(entity_name)
-        return super(HolderDataService, self).related_entities(entity)
+        try:
+            entity_name = entity_name if entity_name else "Holder"
+            entity = self._profile.entity(entity_name)
+            return super(HolderDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -387,16 +399,11 @@ class HolderDataService(DataService):
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
-        :rtype model: DeclarativeMeta
+        :return: Entity model;
+        :rtype: DeclarativeMeta
         """
-        try:
-            entity = self._profile.entity(name)
-            model = entity_model(entity)
-            return model
-        except AttributeError as e:
-
-            raise e
+        entity = self._profile.entity(name)
+        return super(HolderDataService, self)._entity_model(entity)
 
 
 class CommentDataService(DataService):
@@ -444,9 +451,12 @@ class CommentDataService(DataService):
         :return: Related entity names
         :rtype: List
         """
-        entity_name = entity_name if entity_name else "Comment"
-        entity = self._profile.entity(entity_name)
-        return super(CommentDataService, self).related_entities(entity)
+        try:
+            entity_name = entity_name if entity_name else "Comment"
+            entity = self._profile.entity(entity_name)
+            return super(CommentDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -468,12 +478,8 @@ class CommentDataService(DataService):
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
-        :rtype model: DeclarativeMeta
+        :return: Entity model;
+        :rtype: DeclarativeMeta
         """
-        try:
-            entity = self._profile.entity(name)
-            model = entity_model(entity)
-            return model
-        except AttributeError as e:
-            raise e
+        entity = self._profile.entity(name)
+        return super(CommentDataService, self)._entity_model(entity)
