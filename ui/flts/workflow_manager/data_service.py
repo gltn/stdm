@@ -49,11 +49,20 @@ class DataService:
         """
         raise NotImplementedError
 
-    def related_entities(self):
+    def related_entities(self, entity):
         """
         Related entity name identified by a foreign key
+        :param entity: Profile entity
+        :type entity: Entity
+        :return: Related entity names
+        :rtype: List
         """
-        raise NotImplementedError
+        fk_entity_name = []
+        for col in entity.columns.values():
+            if col.TYPE_INFO == 'FOREIGN_KEY' or \
+                    col.TYPE_INFO == 'LOOKUP':
+                fk_entity_name.append(col.parent.name)
+        return fk_entity_name
 
     def run_query(self):
         """
@@ -118,18 +127,17 @@ class SchemeDataService(DataService):
         """
         return SchemeConfig().collections
 
-    def related_entities(self):
+    def related_entities(self, entity_name=None):
         """
         Related entity name identified by foreign keys
-        :return fk_entity_name: Related entity name
-        :rtype fk_entity_name: List
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
         """
-        fk_entity_name = []
-        model = self._entity_model(self.entity_name)
-        for relation in model.__mapper__.relationships.keys():
-            if not relation.endswith("_collection"):
-                fk_entity_name.append(relation)
-        return fk_entity_name
+        entity_name = entity_name if entity_name else self.entity_name
+        entity = self._profile.entity(entity_name)
+        return super(SchemeDataService, self).related_entities(entity)
 
     def run_query(self):
         """
@@ -260,18 +268,17 @@ class DocumentDataService(DataService):
         """
         return DocumentConfig().collections
 
-    def related_entities(self):
+    def related_entities(self, entity_name=None):
         """
         Related entity name identified by foreign keys
-        :return fk_entity_name: Related entity name
-        :rtype fk_entity_name: List
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
         """
-        fk_entity_name = []
-        model, sp_doc_model = self._entity_model(self.entity_name)
-        for relation in model.__mapper__.relationships.keys():
-            if not relation.endswith("_collection"):
-                fk_entity_name.append(relation)
-        return fk_entity_name
+        entity_name = entity_name if entity_name else self.entity_name
+        entity = self._profile.entity(entity_name)
+        return super(DocumentDataService, self).related_entities(entity)
 
     def run_query(self):
         """
@@ -348,18 +355,17 @@ class HolderDataService(DataService):
         """
         return HolderConfig().collections
 
-    def related_entities(self):
+    def related_entities(self, entity_name=None):
         """
         Related entity name identified by foreign keys
-        :return fk_entity_name: Related entity name
-        :rtype fk_entity_name: List
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
         """
-        fk_entity_name = []
-        model = self._entity_model("Holder")
-        for relation in model.__mapper__.relationships.keys():
-            if not relation.endswith("_collection"):
-                fk_entity_name.append(relation)
-        return fk_entity_name
+        entity_name = entity_name if entity_name else "Holder"
+        entity = self._profile.entity(entity_name)
+        return super(HolderDataService, self).related_entities(entity)
 
     def run_query(self):
         """
@@ -430,18 +436,17 @@ class CommentDataService(DataService):
         """
         return CommentConfig().collections
 
-    def related_entities(self):
+    def related_entities(self, entity_name=None):
         """
         Related entity name identified by foreign keys
-        :return fk_entity_name: Related entity name
-        :rtype fk_entity_name: List
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
         """
-        fk_entity_name = []
-        model = self._entity_model("Comment")
-        for relation in model.__mapper__.relationships.keys():
-            if not relation.endswith("_collection"):
-                fk_entity_name.append(relation)
-        return fk_entity_name
+        entity_name = entity_name if entity_name else "Comment"
+        entity = self._profile.entity(entity_name)
+        return super(CommentDataService, self).related_entities(entity)
 
     def run_query(self):
         """
