@@ -1,3 +1,4 @@
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
@@ -32,8 +33,19 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setObjectName("Comments")
+        pagination = PaginationWidget()
+        pagination.first_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"))
+        pagination.first_button.setIconSize(QSize(24, 24))
+        pagination.previous_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"))
+        pagination.previous_button.setIconSize(QSize(24, 24))
+        pagination.next_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"))
+        pagination.next_button.setIconSize(QSize(24, 24))
+        pagination.last_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"))
+        pagination.last_button.setIconSize(QSize(24, 24))
+        self.submitButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_comment_reply.png"))
+        self.submitButton.setIconSize(QSize(24, 24))
         self._parent.paginationFrame.hide()
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.paginationFrame.setLayout(pagination.pagination_layout)
         self._initial_load()
         self._get_comments()
         self._populate_comments()

@@ -348,7 +348,7 @@ configurations = {
         {Column(name='Document Size', flag=False): 'document_size'},
         {Column(name='Last Modified', flag=False): 'last_modified'},
         {Column(name='Created By', flag=False): 'created_by'},
-        {Column(name='View Document', flag=False): 'View'}
+        {Column(name='View Document', flag=Qt.DecorationRole): 'View'}
     ],
     'document_collections': ['cb_scheme_supporting_document_collection'],
     'header_view_style': 'QHeaderView::section{'
@@ -452,20 +452,20 @@ configurations = {
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {
-            Column(name='Status', flag=False): {
+            Column(name='Status', flag=Qt.DecorationRole): {
                 'approval_id': 'approval_id'
             }
         },
-        {
-            Column(name='Scheme ID', flag=False): {
-                'scheme_id': 'scheme_id'
-            }
-        },
-        {
-            Column(name='Workflow', flag=False): {
-                'workflow_id': 'workflow_id'
-            }
-        },
+        # {
+        #     Column(name='Scheme ID', flag=False): {
+        #         'scheme_id': 'scheme_id'
+        #     }
+        # },
+        # {
+        #     Column(name='Workflow', flag=False): {
+        #         'workflow_id': 'workflow_id'
+        #     }
+        # },
         {
             Column(name='Workflow Type', flag=False): {
                 'cb_check_lht_workflow': 'value'

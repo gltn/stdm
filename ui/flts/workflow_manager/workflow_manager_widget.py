@@ -18,6 +18,7 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from collections import OrderedDict
+from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from ...notification import NotificationBar
@@ -64,8 +65,27 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
+        self.approveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"))
+        self.approveButton.setIconSize(QSize(24, 24))
+        self.disapproveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"))
+        self.disapproveButton.setIconSize(QSize(24, 24))
+        self.holdersButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"))
+        self.holdersButton.setIconSize(QSize(24, 24))
         self.holdersButton.setObjectName("Holders")
+        self.documentsButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"))
+        self.documentsButton.setIconSize(QSize(24, 24))
         self.documentsButton.setObjectName("Documents")
+        self.searchButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_search.png"))
+        self.searchButton.setIconSize(QSize(24, 24))
+        pagination = PaginationWidget()
+        pagination.first_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"))
+        pagination.first_button.setIconSize(QSize(24, 24))
+        pagination.previous_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"))
+        pagination.previous_button.setIconSize(QSize(24, 24))
+        pagination.next_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"))
+        pagination.next_button.setIconSize(QSize(24, 24))
+        pagination.last_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"))
+        pagination.last_button.setIconSize(QSize(24, 24))
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
             self.data_service, self._workflow_load_filter
@@ -78,7 +98,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.tabWidget.setTabIcon(0, QIcon(":/plugins/stdm/images/icons/flts_scheme.png"))
+        self.paginationFrame.setLayout(pagination.pagination_layout)
         self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
@@ -396,6 +417,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.removeTab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
+
+        # TODO: Start refactor
+        if label.startswith("Holders"):
+            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"))
+        elif label.startswith("Documents"):
+            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"))
+        elif label.startswith("Comments"):
+            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"))
+        elif label.startswith("Withdraw"):
+            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"))
+        # TODO: End refactor
+
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
         if self._button_clicked() or widget.objectName() == "Comments":
