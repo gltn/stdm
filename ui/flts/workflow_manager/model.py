@@ -165,32 +165,14 @@ class Load(DataRoutine):
         Gets data based on collection items in the query results
         """
         try:
-            query_obj = self._data_service.run_query()
+            query_objs = self._data_service.run_query()
             load_collections = self._data_service.load_collections
-            for row in query_obj:
+            for row in query_objs:
                 for item in self._get_collection_item(row, load_collections):
-                    store = {}
-                    # TODO: Refactor repeating for loop in _query_data
-                    for n, prop in enumerate(self._data_service.columns):
-                        column = prop.values()[0]
-                        header = prop.keys()[0]
-                        if isinstance(column, dict):
-                            fk_name = column.keys()[0]
-                            if fk_name in self._fk_entity_name and hasattr(item, fk_name):
-                                store[n] = self._get_value(item, column, fk_name)
-                                self._append(header, self._headers)
-                                continue
-                            store[n] = self._get_collection_value(item, column)
-                            self._append(header, self._headers)
-                            continue
-                        elif hasattr(item, column):
-                            store[n] = self._get_value(item, column)
-                            self._append(header, self._headers)
-                            continue
-                        store[n] = self._cast_data(column)
-                        self._append(header, self._headers)
-                    store["data"] = item
-                    self._results.append(store)
+                    store = self._get_query_data(item)
+                    if store:
+                        store["data"] = item
+                        self._results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -199,38 +181,49 @@ class Load(DataRoutine):
         Gets data based on query results
         """
         try:
-            query_obj = self._data_service.run_query()
-            for row in query_obj:
-                store = {}
-                # TODO: Refactor repeating for loop in _query_collection
-                for n, prop in enumerate(self._data_service.columns):
-                    column = prop.values()[0]
-                    header = prop.keys()[0]
-                    if isinstance(column, dict):
-                        fk_name = column.keys()[0]
-                        if fk_name in self._fk_entity_name and hasattr(row, fk_name):
-                            store[n] = self._get_value(row, column, fk_name)
-                            self._append(header, self._headers)
-                            continue
-                        store[n] = self._get_collection_value(row, column)
-                        self._append(header, self._headers)
-                        continue
-                    elif hasattr(row, column):
-                        store[n] = self._get_value(row, column)
-                        self._append(header, self._headers)
-                        continue
-                    store[n] = self._cast_data(column)
-                    self._append(header, self._headers)
-                store["data"] = row
-                self._results.append(store)
+            query_objs = self._data_service.run_query()
+            for row in query_objs:
+                store = self._get_query_data(row)
+                if store:
+                    store["data"] = row
+                    self._results.append(store)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def _get_query_data(self, query_obj):
+        """
+        Returns query data from specific columns
+        :param query_obj: Query object
+        :type query_obj: Entity
+        :return store: Query data from specific columns
+        :rtype store: Dictionary
+        """
+        store = {}
+        for n, prop in enumerate(self._data_service.columns):
+            column = prop.values()[0]
+            header = prop.keys()[0]
+            if isinstance(column, dict):
+                fk_name = column.keys()[0]
+                if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
+                    store[n] = self._get_value(query_obj, column, fk_name)
+                    self._append(header, self._headers)
+                    continue
+                store[n] = self._get_collection_value(query_obj, column)
+                self._append(header, self._headers)
+                continue
+            elif hasattr(query_obj, column):
+                store[n] = self._get_value(query_obj, column)
+                self._append(header, self._headers)
+                continue
+            store[n] = self._cast_data(column)
+            self._append(header, self._headers)
+        return store
 
     def _get_collection_value(self, query_obj, column):
         """
         Gets collection value(s)
         :param query_obj: Query object
-        :type query_obj: Entity object
+        :type query_obj: Entity
         :param column: Column or related entity name
         :type column: Dictionary
         :return: Collection value
