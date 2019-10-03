@@ -49,10 +49,9 @@ class DataRoutine:
             value = getattr(fk_entity_object, column.get(attr), None)
         else:
             value = getattr(query_obj, column, None)
-        value = self._cast_data(value)
         return value
 
-    def _cast_data(self, value):
+    def cast_data(self, value):
         """
         Cast data from one type to another
         :param value: Item data
@@ -205,17 +204,19 @@ class Load(DataRoutine):
             if isinstance(column, dict):
                 fk_name = column.keys()[0]
                 if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
-                    store[n] = self._get_value(query_obj, column, fk_name)
+                    value = self._get_value(query_obj, column, fk_name)
+                    store[n] = self.cast_data(value)
                     self._append(header, self._headers)
                     continue
                 store[n] = self._get_collection_value(query_obj, column)
                 self._append(header, self._headers)
                 continue
             elif hasattr(query_obj, column):
-                store[n] = self._get_value(query_obj, column)
+                value = self._get_value(query_obj, column)
+                store[n] = self.cast_data(value)
                 self._append(header, self._headers)
                 continue
-            store[n] = self._cast_data(column)
+            store[n] = self.cast_data(column)
             self._append(header, self._headers)
         return store
 
@@ -255,8 +256,10 @@ class Load(DataRoutine):
         """
         fk_name = column.keys()[0]
         if self._is_mapped(getattr(item, fk_name, None)):
-            return self._get_value(item, column, fk_name)
-        return self._get_value(item, column.get(fk_name))
+            value = self._get_value(item, column, fk_name)
+            return self.cast_data(value)
+        value = self._get_value(item, column.get(fk_name))
+        return self.cast_data(value)
 
 
 class Update(DataRoutine):
