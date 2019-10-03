@@ -288,40 +288,50 @@ class Update(DataRoutine):
     def update(self):
         """
         Update database record(s) on client edit
-        :return update_items: Updated items -
-                              column index and new value
-        :rtype update_items: List
+        :return count: Number of updated items
+        :rtype count: Integer
         """
-        query_obj = None
-        update_items = {}
         try:
-            for row_idx, columns in self._updates.iteritems():
-                row = self._model_items[row_idx]
-                query_obj = row["data"]
-                store = []
-                for column, new_value, collection_filter in columns:
-                    if isinstance(column, dict):
-                        fk_name = column.keys()[0]
-                        if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
-                            self._set_update(query_obj, column, new_value, fk_name)
-                            store.append(new_value)
-                            continue
-                        if self._set_collection_value(
-                                query_obj, column, new_value, collection_filter
-                        ):
-                            store.append(new_value)
-                        continue
-                    elif hasattr(query_obj, column):
-                        self._set_update(query_obj, column, new_value)
-                        store.append(new_value)
-                        continue
-                update_items if not store else update_items.update({row_idx: store})
+            query_obj, count = self._set_update()
             if query_obj:
                 query_obj.update()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
-        finally:
-            return update_items
+        else:
+            return count
+
+    def _set_update(self):
+        """
+        Sets update attribute value for the appropriate field
+        :return count: Number of updated items
+        :rtype count: Integer
+        """
+        try:
+            count = 0
+            query_obj = None
+            for row_idx, columns in self._updates.iteritems():
+                updated = None
+                query_obj = self._model_items[row_idx].get("data")
+                for column, new_value, collection_filter in columns:
+                    if isinstance(column, dict):
+                        fk_name = column.keys()[0]
+                        if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
+                            updated = self._set_update_value(
+                                query_obj, column, new_value, fk_name
+                            )
+                            continue
+                        updated = self._set_collection_value(
+                            query_obj, column, new_value, collection_filter
+                        )
+                        continue
+                    elif hasattr(query_obj, column):
+                        updated = self._set_update_value(query_obj, column, new_value)
+                        continue
+                count = count + 1 if updated else count
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        else:
+            return query_obj, count
 
     def _set_collection_value(self, query_obj, column, new_value, collection_filter):
         """
@@ -347,10 +357,10 @@ class Update(DataRoutine):
                     }
                     if item_values == collection_filter:
                         column, fk_name = self._get_update_attr(item, column)
-                        return self._set_update(item, column, new_value, fk_name)
+                        return self._set_update_value(item, column, new_value, fk_name)
                 else:
                     column, fk_name = self._get_update_attr(item, column)
-                    return self._set_update(item, column, new_value, fk_name)
+                    return self._set_update_value(item, column, new_value, fk_name)
         return None
 
     def _get_update_attr(self, item, column):
@@ -371,7 +381,7 @@ class Update(DataRoutine):
             return column, fk_name
         return column.get(fk_name), None
 
-    def _set_update(self, query_obj, column, value, attr=None):
+    def _set_update_value(self, query_obj, column, value, attr=None):
         """"
         Sets update attribute value
         :param query_obj: Entity query object
@@ -391,129 +401,6 @@ class Update(DataRoutine):
             return query_obj
         setattr(query_obj, column, value)
         return query_obj
-
-
-# class Update(DataRoutine):
-#     """
-#     Update database record(s) on edit
-#     """
-#
-#     def __init__(self, updates, model_items, data_service):
-#         """
-#         :param updates: Update items - values and column indexes
-#         :type updates: Dictionary
-#         :param model_items: Model items/records
-#         :type model_items: List
-#         :param data_service: Data service
-#         :type data_service: DataService
-#         """
-#         self._updates = updates
-#         self._model_items = model_items
-#         self._fk_entity_name = data_service.related_entities()
-#         self._collection_name = data_service.collections
-#
-#     def update(self):
-#         """
-#         Update database record(s) on client edit
-#         :return update_items: Updated items -
-#                               column index and new value
-#         :rtype update_items: List
-#         """
-#         update_items = {}
-#         try:
-#             for row_idx, columns in self._updates.iteritems():
-#                 row = self._model_items[row_idx]
-#                 query_obj = row["data"]
-#                 store = []
-#                 for column, new_value, collection_filter in columns:
-#                     if isinstance(column, dict):
-#                         fk_name = column.keys()[0]
-#                         if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
-#                             self._update_entity(query_obj, column, new_value, fk_name)
-#                             store.append(new_value)
-#                             continue
-#                         if self._update_collection(
-#                                 query_obj, column, new_value, collection_filter
-#                         ):
-#                             store.append(new_value)
-#                         continue
-#                     elif hasattr(query_obj, column):
-#                         self._update_entity(query_obj, column, new_value)
-#                         store.append(new_value)
-#                         continue
-#                 update_items if not store else update_items.update({row_idx: store})
-#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-#             raise e
-#         finally:
-#             return update_items
-#
-#     def _update_collection(self, query_obj, column, new_value, collection_filter):
-#         """
-#         Updates collection object(s)
-#         :param query_obj: Query object
-#         :type query_obj: Entity object
-#         :param column: Column or related entity name
-#         :type column: Dictionary
-#         :param new_value: New value for update
-#         :type new_value: Multiple types
-#         :type collection_filter: Collection record data filter
-#         :type collection_filter: Dictionary
-#         :return: True on update or None
-#         :rtype: Boolean or NoneType
-#         """
-#         fk_name = column.keys()[0]
-#         for item in self._get_collection_item(query_obj, self._collection_name):
-#             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-#                 if isinstance(collection_filter, dict):
-#                     item_values = {
-#                         k: getattr(item, k, None) for k, v in
-#                         collection_filter.iteritems()
-#                     }
-#                     if item_values == collection_filter:
-#                         return self._update_item(item, column, new_value)
-#                 else:
-#                     return self._update_item(item, column, new_value)
-#         return None
-#
-#     def _update_item(self, item, column, new_value):
-#         """
-#         Update collection item
-#         :param item: Entity query object
-#         :type item: Entity
-#         :param column: Column or related entity name
-#         :type column: String/Dictionary
-#         :param new_value: New value for update
-#         :type new_value: Multiple types
-#         :return: True on update
-#         :rtype: Boolean
-#         """
-#         fk_name = column.keys()[0]
-#         if self._is_mapped(getattr(item, fk_name, None)):
-#             return self._update_entity(item, column, new_value, fk_name)
-#         return self._update_entity(item, column.get(fk_name), new_value)
-#
-#     def _update_entity(self, query_obj, column, value, attr=None):
-#         """"
-#         Update an entity record
-#         :param query_obj: Entity query object
-#         :type query_obj: Entity
-#         :param column: Column or related entity name
-#         :type column: String/Dictionary
-#         :param value: New value for update
-#         :type value: Multiple types
-#         :type attr: Related entity column
-#         :type attr: String
-#         :return: True on update
-#         :rtype: Boolean
-#         """
-#         if attr:
-#             fk_entity_obj = self._get_value(query_obj, attr)
-#             setattr(fk_entity_obj, column.get(attr), value)
-#             query_obj = fk_entity_obj
-#         else:
-#             setattr(query_obj, column, value)
-#         query_obj.update()
-#         return True
 
 
 class WorkflowManagerModel(QAbstractTableModel):
@@ -712,9 +599,9 @@ class WorkflowManagerModel(QAbstractTableModel):
         :return: Number of updated items
         :rtype: Integer
         """
-        update_items = {}
+        updated = 0
         try:
-            update_items = Update(
+            updated = Update(
                 updates, self.results, self._data_service
             ).update()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -722,7 +609,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         else:
             self.refresh()
         finally:
-            return len(update_items)
+            return updated
 
     def refresh(self):
         """
