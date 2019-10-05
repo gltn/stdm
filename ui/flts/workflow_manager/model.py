@@ -27,7 +27,7 @@ from sqlalchemy.orm.collections import InstrumentedList
 from sqlalchemy.orm.exc import UnmappedInstanceError
 
 
-class DataRoutine:
+class DataRoutine(object):
     """
     Common data manipulation methods
     """
@@ -46,27 +46,25 @@ class DataRoutine:
         """
         if attr:
             fk_entity_object = getattr(query_obj, attr, None)
-            value = getattr(fk_entity_object, column.get(attr), None)
-        else:
-            value = getattr(query_obj, column, None)
-        return value
+            return getattr(fk_entity_object, column.get(attr), None)
+        return getattr(query_obj, column, None)
 
-    def cast_data(self, value):
+    def to_pyqt(self, obj):
         """
-        Cast data from one type to another
-        :param value: Item data
-        :type value: Multiple types
-        :return value: Cast data
-        :rtype value: Multiple types
+        Converts data from python object type to PyQt equivalent
+        :param obj: Python object
+        :type obj: Multiple types
+        :return: Converted value
+        :rtype: Multiple types
         """
-        value = float(value) if self._is_number(value) else value
-        if isinstance(value, (Decimal, int, float)):
-            return float(value)
-        elif type(value) is datetime.date:
-            return QDate(value)
-        elif type(value) is datetime.datetime:
-            return QDateTime(value).toLocalTime()
-        return unicode(value) if value is not None else value
+        obj = float(obj) if self._is_number(obj) else obj
+        if isinstance(obj, (Decimal, int, float)):
+            return float(obj)
+        elif type(obj) is datetime.date:
+            return QDate(obj)
+        elif type(obj) is datetime.datetime:
+            return QDateTime(obj).toLocalTime()
+        return unicode(obj) if obj is not None else obj
 
     @staticmethod
     def _is_number(value):
@@ -204,19 +202,17 @@ class Load(DataRoutine):
             if isinstance(column, dict):
                 fk_name = column.keys()[0]
                 if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
-                    value = self._get_value(query_obj, column, fk_name)
-                    store[n] = self.cast_data(value)
+                    store[n] = self._cast_value(query_obj, column, fk_name)
                     self._append(header, self._headers)
                     continue
                 store[n] = self._get_collection_value(query_obj, column)
                 self._append(header, self._headers)
                 continue
             elif hasattr(query_obj, column):
-                value = self._get_value(query_obj, column)
-                store[n] = self.cast_data(value)
+                store[n] = self._cast_value(query_obj, column)
                 self._append(header, self._headers)
                 continue
-            store[n] = self.cast_data(column)
+            store[n] = self.to_pyqt(column)
             self._append(header, self._headers)
         return store
 
@@ -256,10 +252,26 @@ class Load(DataRoutine):
         """
         fk_name = column.keys()[0]
         if self._is_mapped(getattr(item, fk_name, None)):
-            value = self._get_value(item, column, fk_name)
-            return self.cast_data(value)
-        value = self._get_value(item, column.get(fk_name))
-        return self.cast_data(value)
+            return self._cast_value(item, column, fk_name)
+        return self._cast_value(item, column.get(fk_name))
+
+    def _cast_value(self, query_obj, column, attr=None):
+        """
+        Returns type converted entity column value
+        :param query_obj: Entity query object
+        :type query_obj: Entity
+        :param column: Column or related entity name
+        :type column: String/Dictionary
+        :param attr: Related entity column
+        :type attr: String
+        :return value: Cast value
+        :rtype value: Multiple types
+        """
+        if attr:
+            value = self._get_value(query_obj, column, attr)
+        else:
+            value = self._get_value(query_obj, column)
+        return self.to_pyqt(value)
 
 
 class Update(DataRoutine):

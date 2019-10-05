@@ -249,6 +249,40 @@
     </Column>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link for scheme and holer entities" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_holder" name="cb_scheme_holder" label="scheme holder">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="False">
+     <Relation name="fk_cb_scheme_id_cb_scheme_holder_scheme_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the holders" index="False" name="holder_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="holder id" mandatory="False">
+     <Relation name="fk_cb_holder_id_cb_scheme_holder_holder_id"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to user comment on a scheme" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="lht_comment">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="User comment on a scheme" rowindex="0" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="" mandatory="False"/>
+    <Column unique="False" tip="Identifier of the user" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the user" index="True" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="Scheme ID" mandatory="False">
+     <Relation name="fk_cb_user_id_cb_comment_user_id"/>
+    </Column>
+    <Column unique="False" tip="Time and date of comment submission" rowindex="2" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="" mandatory="False">
+     <currentDateTime minimum="False" maximum="False"/>
+    </Column>
+   </Columns>
+  </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link for scheme and comment entities" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_comment" name="cb_scheme_comment" label="scheme comment">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="True" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
+     <Relation name="fk_cb_scheme_id_cb_scheme_comment_scheme_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the comment" index="True" name="comment_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
+     <Relation name="fk_cb_comment_id_cb_scheme_comment_comment_id"/>
+    </Column>
+   </Columns>
+  </Entity>
   <Entity editable="True" global="False" rowindex="0" associative="False" description="Staging table for plots imported from LIS" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot" name="cb_lis_plot" label="LIS Plot">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
@@ -428,17 +462,6 @@
     </Column>
    </Columns>
   </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link for scheme and holer entities" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_holder" name="cb_scheme_holder" label="scheme holder">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="False" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="scheme id" mandatory="False">
-     <Relation name="fk_cb_scheme_id_cb_scheme_holder_scheme_id"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the holders" index="False" name="holder_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="holder id" mandatory="False">
-     <Relation name="fk_cb_holder_id_cb_scheme_holder_holder_id"/>
-    </Column>
-   </Columns>
-  </Entity>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" showInParent="True" parent="check_social_tenure_relationship_document_type" name="fk_cb_check_social_tenure_relationship_document_type_id_cb_social_tenure_relationship_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
@@ -469,13 +492,17 @@
    <EntityRelation displayColumns="" child="Scheme_workflow" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_workflow_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_workflow" name="fk_cb_check_lht_workflow_id_cb_scheme_workflow_workflow_id" parentColumn="id" showInChild="True" childColumn="workflow_id"/>
    <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_scheme_workflow_approval_id" parentColumn="id" showInChild="True" childColumn="approval_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
+   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_holder_plot_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_holder_plot_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
+   <EntityRelation displayColumns="first_name,last_name" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
+   <EntityRelation displayColumns="first_name,surname" child="Scheme_comment" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_comment_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
+   <EntityRelation displayColumns="" child="Scheme_comment" showInParent="True" parent="Comment" name="fk_cb_comment_id_cb_scheme_comment_comment_id" parentColumn="id" showInChild="True" childColumn="comment_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
-   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
-   <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
+   <EntityRelation displayColumns="" child="Scheme_comment" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_comment_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
