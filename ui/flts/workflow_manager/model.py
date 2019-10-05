@@ -398,6 +398,8 @@ class Update(DataRoutine):
         :type item: Entity
         :param column: Column as it appears in the database
         :type column: Dictionary
+        :param new_value: New value for update
+        :type new_value: Multiple types
         :return: Collection value
         :rtype: Multiple types
         """
