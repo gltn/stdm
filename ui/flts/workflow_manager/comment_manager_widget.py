@@ -61,7 +61,6 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
                 self.model.load_collection()
             else:
                 self.model.load()
-            print(0)
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
