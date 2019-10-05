@@ -31,8 +31,12 @@ class DataRoutine(object):
     """
     Common data manipulation methods
     """
+    def __int__(self):
+        self._collection_name = None
+        self._collection_filter = None
 
-    def _get_value(self, query_obj, column, attr=None):
+    @staticmethod
+    def get_value(query_obj, column, attr=None):
         """
         Returns entity column value
         :param query_obj: Entity query object
@@ -81,8 +85,28 @@ class DataRoutine(object):
         except (ValueError, TypeError, Exception):
             return False
 
+    def valid_collection_item(self, query_obj, column):
+        """
+        Return valid collection item
+        :param query_obj: Query object
+        :type query_obj: Entity
+        :param column: Column or related entity name
+        :type column: Dictionary
+        :return item: Entity query object
+        :rtype item: Entity
+        """
+        fk_name = column.keys()[0]
+        for item in self.get_collection_item(query_obj, self._collection_name):
+            if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
+                if isinstance(self._collection_filter, dict):
+                    item_filter = self.item_filter(item, self._collection_filter)
+                    if item_filter == self._collection_filter:
+                        return item
+                else:
+                    return item
+
     @staticmethod
-    def _get_collection_item(query_obj, collection_name):
+    def get_collection_item(query_obj, collection_name):
         """
         Returns a collection of related entity values
         :param query_obj: Entity query object
@@ -98,7 +122,7 @@ class DataRoutine(object):
                     yield item
 
     @staticmethod
-    def _is_mapped(value):
+    def is_mapped(value):
         """
         Check if value is an ORM mapped object
         :param value: Input value
@@ -113,7 +137,7 @@ class DataRoutine(object):
             return False
 
     @staticmethod
-    def _append(item, container):
+    def append_(item, container):
         """
         Append unique items to a list
         :param item: Data attribute
@@ -153,6 +177,7 @@ class Load(DataRoutine):
         :type collection_filter: View data collection identifier
         :type collection_filter: Multiple types
         """
+        super(Load, self).__int__()
         self._data_service = data_service
         self._fk_entity_name = data_service.related_entities()
         self._collection_name = data_service.collections
@@ -182,7 +207,7 @@ class Load(DataRoutine):
             query_objs = self._data_service.run_query()
             load_collections = self._data_service.load_collections
             for row in query_objs:
-                for item in self._get_collection_item(row, load_collections):
+                for item in self.get_collection_item(row, load_collections):
                     store = self._get_query_data(item)
                     if store:
                         store["data"] = item
@@ -220,17 +245,17 @@ class Load(DataRoutine):
                 fk_name = column.keys()[0]
                 if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
                     store[n] = self._cast_value(query_obj, column, fk_name)
-                    self._append(header, self._headers)
+                    self.append_(header, self._headers)
                     continue
                 store[n] = self._get_collection_value(query_obj, column)
-                self._append(header, self._headers)
+                self.append_(header, self._headers)
                 continue
             elif hasattr(query_obj, column):
                 store[n] = self._cast_value(query_obj, column)
-                self._append(header, self._headers)
+                self.append_(header, self._headers)
                 continue
             store[n] = self.to_pyqt(column)
-            self._append(header, self._headers)
+            self.append_(header, self._headers)
         return store
 
     def _get_collection_value(self, query_obj, column):
@@ -243,18 +268,10 @@ class Load(DataRoutine):
         :return: Collection value
         :rtype: Multiple types
         """
-        # TODO: Start refactor - same as _set_collection_value
-        fk_name = column.keys()[0]
-        for item in self._get_collection_item(query_obj, self._collection_name):
-            if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                if isinstance(self._collection_filter, dict):
-                    item_filter = self.item_filter(item, self._collection_filter)
-                    if item_filter == self._collection_filter:
-                        return self._get_item_value(item, column)
-                else:
-                    return self._get_item_value(item, column)
+        item = self.valid_collection_item(query_obj, column)
+        if item:
+            return self._get_item_value(item, column)
         return None
-        # TODO: End refactor
 
     def _get_item_value(self, item, column):
         """
@@ -267,7 +284,7 @@ class Load(DataRoutine):
         :rtype: Multiple types
         """
         fk_name = column.keys()[0]
-        if self._is_mapped(getattr(item, fk_name, None)):
+        if self.is_mapped(getattr(item, fk_name, None)):
             return self._cast_value(item, column, fk_name)
         return self._cast_value(item, column.get(fk_name))
 
@@ -284,9 +301,9 @@ class Load(DataRoutine):
         :rtype value: Multiple types
         """
         if attr:
-            value = self._get_value(query_obj, column, attr)
+            value = self.get_value(query_obj, column, attr)
         else:
-            value = self._get_value(query_obj, column)
+            value = self.get_value(query_obj, column)
         return self.to_pyqt(value)
 
 
@@ -304,6 +321,7 @@ class Update(DataRoutine):
         :param data_service: Data service
         :type data_service: DataService
         """
+        super(Update, self).__int__()
         self._updates = updates
         self._model_items = model_items
         self._fk_entity_name = data_service.related_entities()
@@ -344,9 +362,8 @@ class Update(DataRoutine):
                                 query_obj, column, new_value, fk_name
                             )
                             continue
-                        updated = self._set_collection_value(
-                            query_obj, column, new_value, collection_filter
-                        )
+                        self._collection_filter = collection_filter
+                        updated = self._set_collection_value(query_obj, column, new_value)
                         continue
                     elif hasattr(query_obj, column):
                         updated = self._set_update_value(query_obj, column, new_value)
@@ -357,36 +374,26 @@ class Update(DataRoutine):
         else:
             return query_obj, count
 
-    def _set_collection_value(self, query_obj, column, new_value, collection_filter):
+    def _set_collection_value(self, query_obj, column, new_value):
         """
         Sets collection update attribute value
         :param query_obj: Query object
-        :type query_obj: Entity object
+        :type query_obj: Entity
         :param column: Column or related entity name
         :type column: Dictionary
         :param new_value: New value for update
         :type new_value: Multiple types
-        :param collection_filter: Collection record data filter
-        :type collection_filter: Dictionary
         :return: Entity query object or None
         :rtype: Entity, NoneType
         """
-        # TODO: Start refactor - same as _get_collection_value
-        fk_name = column.keys()[0]
-        for item in self._get_collection_item(query_obj, self._collection_name):
-            if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
-                if isinstance(collection_filter, dict):
-                    item_filter = self.item_filter(item, collection_filter)
-                    if item_filter == collection_filter:
-                        return self._set_item_value(item, column, new_value)
-                else:
-                    return self._set_item_value(item, column, new_value)
+        item = self.valid_collection_item(query_obj, column)
+        if item:
+            return self._set_item_value(item, column, new_value)
         return None
-        # TODO: End refactor
 
     def _set_item_value(self, item, column, new_value):
         """
-        Returns collection item value
+        Sets collection item value
         :param item: Entity query object
         :type item: Entity
         :param column: Column as it appears in the database
@@ -411,7 +418,7 @@ class Update(DataRoutine):
         :rtype : String, NoneType
         """
         fk_name = column.keys()[0]
-        if self._is_mapped(getattr(item, fk_name, None)):
+        if self.is_mapped(getattr(item, fk_name, None)):
             return column, fk_name
         return column.get(fk_name), None
 
@@ -430,7 +437,7 @@ class Update(DataRoutine):
         :rtype query_obj: Entity
         """
         if attr:
-            query_obj = self._get_value(query_obj, attr)
+            query_obj = self.get_value(query_obj, attr)
             setattr(query_obj, column.get(attr), value)
             return query_obj
         setattr(query_obj, column, value)
