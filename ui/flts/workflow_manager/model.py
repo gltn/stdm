@@ -139,9 +139,9 @@ class Load(DataRoutine):
         self._data_service = data_service
         self._fk_entity_name = data_service.related_entities()
         self._collection_name = data_service.collections
+        self._collection_filter = collection_filter
         self._results = []
         self._headers = []
-        self._collection_filter = collection_filter
 
     def load(self):
         """
@@ -364,12 +364,23 @@ class Update(DataRoutine):
                         collection_filter.iteritems()
                     }
                     if item_values == collection_filter:
-                        column, fk_name = self._get_update_attr(item, column)
-                        return self._set_update_value(item, column, new_value, fk_name)
+                        return self._set_item_value(item, column, new_value)
                 else:
-                    column, fk_name = self._get_update_attr(item, column)
-                    return self._set_update_value(item, column, new_value, fk_name)
+                    return self._set_item_value(item, column, new_value)
         return None
+
+    def _set_item_value(self, item, column, new_value):
+        """
+        Returns collection item value
+        :param item: Entity query object
+        :type item: Entity
+        :param column: Column as it appears in the database
+        :type column: Dictionary
+        :return: Collection value
+        :rtype: Multiple types
+        """
+        column, fk_name = self._get_update_attr(item, column)
+        return self._set_update_value(item, column, new_value, fk_name)
 
     def _get_update_attr(self, item, column):
         """
