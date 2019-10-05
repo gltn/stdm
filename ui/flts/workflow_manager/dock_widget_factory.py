@@ -105,10 +105,3 @@ class DockWidgetFactory:
         """
         if cls.active_widget and cls.active_widget.isVisible():
             cls.active_widget.hide()
-
-
-
-
-
-
-
