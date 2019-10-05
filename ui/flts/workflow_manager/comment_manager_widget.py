@@ -33,6 +33,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setObjectName("Comments")
+        # TODO: Start refactor icons and size
         pagination = PaginationWidget()
         pagination.first_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"))
         pagination.first_button.setIconSize(QSize(24, 24))
@@ -44,6 +45,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         pagination.last_button.setIconSize(QSize(24, 24))
         self.submitButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_comment_reply.png"))
         self.submitButton.setIconSize(QSize(24, 24))
+        # TODO: End refactor
         self._parent.paginationFrame.hide()
         self.paginationFrame.setLayout(pagination.pagination_layout)
         self._initial_load()
