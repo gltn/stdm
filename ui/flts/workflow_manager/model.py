@@ -243,6 +243,7 @@ class Load(DataRoutine):
         :return: Collection value
         :rtype: Multiple types
         """
+        # TODO: Start refactor - same as _set_collection_value
         fk_name = column.keys()[0]
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
@@ -253,6 +254,7 @@ class Load(DataRoutine):
                 else:
                     return self._get_item_value(item, column)
         return None
+        # TODO: End refactor
 
     def _get_item_value(self, item, column):
         """
@@ -369,6 +371,7 @@ class Update(DataRoutine):
         :return: Entity query object or None
         :rtype: Entity, NoneType
         """
+        # TODO: Start refactor - same as _get_collection_value
         fk_name = column.keys()[0]
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
@@ -379,6 +382,7 @@ class Update(DataRoutine):
                 else:
                     return self._set_item_value(item, column, new_value)
         return None
+        # TODO: End refactor
 
     def _set_item_value(self, item, column, new_value):
         """
