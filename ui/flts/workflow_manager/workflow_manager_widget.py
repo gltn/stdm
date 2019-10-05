@@ -65,6 +65,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
+        # TODO: Start refactor icons and size
         self.approveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"))
         self.approveButton.setIconSize(QSize(24, 24))
         self.disapproveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"))
@@ -86,6 +87,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         pagination.next_button.setIconSize(QSize(24, 24))
         pagination.last_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"))
         pagination.last_button.setIconSize(QSize(24, 24))
+        # TODO: End refactor
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
             self.data_service, self._workflow_load_filter
@@ -418,7 +420,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
 
-        # TODO: Start refactor
+        # TODO: Start refactor icons
         if label.startswith("Holders"):
             self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"))
         elif label.startswith("Documents"):

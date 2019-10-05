@@ -476,7 +476,7 @@ class WorkflowManagerModel(QAbstractTableModel):
 
         if role == Qt.DecorationRole and flag == Qt.DecorationRole:
 
-            # TODO: Start refactor
+            # TODO: Start refactor icons
             icon = None
             if isinstance(value, float):
                 value = float(value)
