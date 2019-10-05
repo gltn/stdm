@@ -124,6 +124,23 @@ class DataRoutine(object):
         if item not in container:
             container.append(item)
 
+    @staticmethod
+    def item_filter(item, collection_filter):
+        """
+        Returns item filter
+        :param item: Entity query object
+        :type item: Entity
+        :param collection_filter: Collection record data filter
+        :type collection_filter: Dictionary
+        :return item_filter: Item record data filter
+        :rtype item_filter: Dictionary
+        """
+        item_filter = {
+            column: getattr(item, column, None) for column, value in
+            collection_filter.iteritems()
+        }
+        return item_filter
+
 
 class Load(DataRoutine):
     """
@@ -230,11 +247,8 @@ class Load(DataRoutine):
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                 if isinstance(self._collection_filter, dict):
-                    item_values = {
-                        k: getattr(item, k, None) for k, v in
-                        self._collection_filter.iteritems()
-                    }
-                    if item_values == self._collection_filter:
+                    item_filter = self.item_filter(item, self._collection_filter)
+                    if item_filter == self._collection_filter:
                         return self._get_item_value(item, column)
                 else:
                     return self._get_item_value(item, column)
@@ -350,7 +364,7 @@ class Update(DataRoutine):
         :type column: Dictionary
         :param new_value: New value for update
         :type new_value: Multiple types
-        :type collection_filter: Collection record data filter
+        :param collection_filter: Collection record data filter
         :type collection_filter: Dictionary
         :return: Entity query object or None
         :rtype: Entity, NoneType
@@ -359,11 +373,8 @@ class Update(DataRoutine):
         for item in self._get_collection_item(query_obj, self._collection_name):
             if hasattr(item, fk_name) or hasattr(item, column.get(fk_name)):
                 if isinstance(collection_filter, dict):
-                    item_values = {
-                        k: getattr(item, k, None) for k, v in
-                        collection_filter.iteritems()
-                    }
-                    if item_values == collection_filter:
+                    item_filter = self.item_filter(item, collection_filter)
+                    if item_filter == collection_filter:
                         return self._set_item_value(item, column, new_value)
                 else:
                     return self._set_item_value(item, column, new_value)
