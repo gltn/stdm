@@ -749,3 +749,4 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         self._checked_ids = OrderedDict()
         self._model.refresh()
+        self._on_uncheck_disable_widgets()
