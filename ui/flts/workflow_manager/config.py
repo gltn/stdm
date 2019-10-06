@@ -17,10 +17,11 @@ copyright            : (C) 2019
 """
 # import datetime
 from collections import namedtuple
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
     QApplication,
     QMessageBox,
+    QIcon,
 )
 from sqlalchemy import exc
 from stdm.settings import current_profile
@@ -136,6 +137,75 @@ class HolderConfig(Config):
         :rtype: List
         """
         return self.get_data('holder_load_collections')
+
+
+class ButtonIcons(Config):
+    """
+    QPushButton icons configuration interface
+    """
+    def __init__(self, parent=None):
+        super(ButtonIcons, self).__init__()
+        self._parent = parent
+        self._icons = None
+
+    @property
+    def scheme_buttons(self):
+        """
+        Scheme QPushButton icons options
+        :return: Scheme QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._scheme_button_config()
+        return self._button_icons(config)
+
+    def _scheme_button_config(self):
+        """
+        Returns Scheme QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.approveButton,
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
+                QSize(24, 24)
+            ),
+            (
+                self._parent.disapproveButton,
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
+                QSize(24, 24)
+            ),
+            (
+                self._parent.holdersButton,
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
+                QSize(24, 24)
+            ),
+            (
+                self._parent.documentsButton,
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
+                QSize(24, 24)
+            ),
+            (
+                self._parent.searchButton,
+                QIcon(":/plugins/stdm/images/icons/flts_search.png"),
+                QSize(24, 24)
+            )
+        )
+
+    @staticmethod
+    def _button_icons(config):
+        """
+        QPushButton icon configuration options
+        :param config: QPushButton icon configurations
+        :type config: Tuple
+        :return: QPushButton icon options
+        :rtype: Dictionary
+        """
+        Icon = namedtuple('Icon', ['button', 'icon', 'size'])
+        return {
+            button.objectName(): Icon(button=button, icon=icon, size=qsize)
+            for button, icon, qsize in config
+        }
 
 
 class StyleSheet(Config):

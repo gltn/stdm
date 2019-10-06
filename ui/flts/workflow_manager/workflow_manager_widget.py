@@ -22,7 +22,10 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from ...notification import NotificationBar
-from stdm.ui.flts.workflow_manager.config import StyleSheet
+from stdm.ui.flts.workflow_manager.config import (
+    StyleSheet,
+    ButtonIcons,
+)
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import (
     CommentDataService,
@@ -66,18 +69,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
         # TODO: Start refactor icons and size
-        self.approveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"))
-        self.approveButton.setIconSize(QSize(24, 24))
-        self.disapproveButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"))
-        self.disapproveButton.setIconSize(QSize(24, 24))
-        self.holdersButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"))
-        self.holdersButton.setIconSize(QSize(24, 24))
         self.holdersButton.setObjectName("Holders")
-        self.documentsButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"))
-        self.documentsButton.setIconSize(QSize(24, 24))
         self.documentsButton.setObjectName("Documents")
-        self.searchButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_search.png"))
-        self.searchButton.setIconSize(QSize(24, 24))
+        self._set_button_icons()
+
         pagination = PaginationWidget()
         pagination.first_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"))
         pagination.first_button.setIconSize(QSize(24, 24))
@@ -118,6 +113,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
+
+    def _set_button_icons(self):
+        """
+        Sets QPushButton icons
+        """
+        icons = ButtonIcons(self)
+        for object_name, options in icons.scheme_buttons.iteritems():
+            options.button.setIcon(options.icon)
+            options.button.setIconSize(options.size)
 
     @property
     def _workflow_load_filter(self):
