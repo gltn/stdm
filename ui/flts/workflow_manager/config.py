@@ -115,7 +115,7 @@ class SchemeButtonIcons(ButtonIcons):
             (
                 self._parent.searchButton, QSize(24, 24),
                 QIcon(":/plugins/stdm/images/icons/flts_search.png")
-            )
+            ),
         )
 
 
@@ -160,7 +160,40 @@ class PaginationButtonIcons(ButtonIcons):
             (
                 self._parent.last_button, QSize(24, 24),
                 QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
-            )
+            ),
+        )
+
+
+class CommentManagerButtonIcons(ButtonIcons):
+    """
+    Comment Manager QPushButton icons configuration interface
+    """
+
+    def __init__(self, parent=None):
+        super(CommentManagerButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Comment Manager QPushButton icons options
+        :return: Comment Manager QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(CommentManagerButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Comment Manager QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.submitButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_comment_reply.png")
+            ),
         )
 
 

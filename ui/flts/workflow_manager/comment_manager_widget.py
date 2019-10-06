@@ -1,6 +1,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from stdm.ui.flts.workflow_manager.config import CommentManagerButtonIcons
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_comment_manager import Ui_CommentManagerWidget
@@ -33,15 +34,22 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setObjectName("Comments")
-        # TODO: Start refactor icons and size
-        self.submitButton.setIcon(QIcon(":/plugins/stdm/images/icons/flts_comment_reply.png"))
-        self.submitButton.setIconSize(QSize(24, 24))
-        # TODO: End refactor
+        self._set_button_icons()
         self._parent.paginationFrame.hide()
         self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
         self._initial_load()
         self._get_comments()
         self._populate_comments()
+
+    def _set_button_icons(self):
+        """
+        Sets QPushButton icons
+        """
+        icons = CommentManagerButtonIcons(self)
+        buttons = icons.buttons
+        for button, options in buttons.iteritems():
+            button.setIcon(options.icon)
+            button.setIconSize(options.size)
 
     def _initial_load(self):
         """
