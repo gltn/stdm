@@ -1,6 +1,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from stdm.ui.flts.workflow_manager.config import ButtonIcons
+from stdm.ui.flts.workflow_manager.config import PaginationButtonIcons
 
 
 class PaginationWidget:
@@ -27,8 +27,8 @@ class PaginationWidget:
         """
         Sets QPushButton icons
         """
-        icons = ButtonIcons(self)
-        pagination_buttons = icons.pagination_buttons
-        for button, options in pagination_buttons.iteritems():
+        icons = PaginationButtonIcons(self)
+        buttons = icons.buttons
+        for button, options in buttons.iteritems():
             button.setIcon(options.icon)
             button.setIconSize(options.size)

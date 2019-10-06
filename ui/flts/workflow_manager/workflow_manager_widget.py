@@ -22,7 +22,7 @@ from PyQt4.QtGui import *
 from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
-    ButtonIcons,
+    SchemeButtonIcons,
     StyleSheet,
     TabIcons,
 )
@@ -106,9 +106,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         Sets QPushButton icons
         """
-        icons = ButtonIcons(self)
-        scheme_buttons = icons.scheme_buttons
-        for button, options in scheme_buttons.iteritems():
+        icons = SchemeButtonIcons(self)
+        buttons = icons.buttons
+        for button, options in buttons.iteritems():
             button.setIcon(options.icon)
             button.setIconSize(options.size)
 

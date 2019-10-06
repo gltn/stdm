@@ -52,23 +52,44 @@ class ButtonIcons(Config):
     """
     QPushButton icons configuration interface
     """
-    def __init__(self, parent=None):
+    def __init__(self):
         super(ButtonIcons, self).__init__()
-        self._parent = parent
-        self._icons = None
         self.Icon = namedtuple('Icon', ['icon', 'size'])
 
+    def button_icons(self, config):
+        """
+        QPushButton icon configuration options
+        :param config: QPushButton icon configurations
+        :type config: Tuple
+        :return: QPushButton icon options
+        :rtype: Dictionary
+        """
+
+        return {
+            button: self.Icon(icon=icon, size=qsize)
+            for button, qsize, icon in config
+        }
+
+
+class SchemeButtonIcons(ButtonIcons):
+    """
+    Scheme QPushButton icons configuration interface
+    """
+    def __init__(self, parent=None):
+        super(SchemeButtonIcons, self).__init__()
+        self._parent = parent
+
     @property
-    def scheme_buttons(self):
+    def buttons(self):
         """
         Scheme QPushButton icons options
         :return: Scheme QPushButton icon options
         :rtype: Dictionary
         """
-        config = self._scheme_buttons_config()
-        return self._button_icons(config)
+        config = self._buttons_config()
+        return super(SchemeButtonIcons, self).button_icons(config)
 
-    def _scheme_buttons_config(self):
+    def _buttons_config(self):
         """
         Returns Scheme QPushButton icon configurations
         :return: QPushButton icon configurations
@@ -97,17 +118,27 @@ class ButtonIcons(Config):
             )
         )
 
+
+class PaginationButtonIcons(ButtonIcons):
+    """
+    Pagination QPushButton icons configuration interface
+    """
+
+    def __init__(self, parent=None):
+        super(PaginationButtonIcons, self).__init__()
+        self._parent = parent
+
     @property
-    def pagination_buttons(self):
+    def buttons(self):
         """
         Pagination QPushButton icons options
         :return: Pagination QPushButton icon options
         :rtype: Dictionary
         """
-        config = self._pagination_buttons_config()
-        return self._button_icons(config)
+        config = self._buttons_config()
+        return super(PaginationButtonIcons, self).button_icons(config)
 
-    def _pagination_buttons_config(self):
+    def _buttons_config(self):
         """
         Returns Pagination QPushButton icon configurations
         :return: QPushButton icon configurations
@@ -131,20 +162,6 @@ class ButtonIcons(Config):
                 QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
             )
         )
-
-    def _button_icons(self, config):
-        """
-        QPushButton icon configuration options
-        :param config: QPushButton icon configurations
-        :type config: Tuple
-        :return: QPushButton icon options
-        :rtype: Dictionary
-        """
-
-        return {
-            button: self.Icon(icon=icon, size=qsize)
-            for button, qsize, icon in config
-        }
 
 
 class CommentConfig(Config):
