@@ -98,6 +98,8 @@ class SchemeDataService(DataService):
         self.entity_name = "Scheme"
         self._parent = parent
         self._widget_obj_name = widget_obj_name
+        self._scheme_config = SchemeConfig(self._parent)
+        self._table_model_icons = TableModelIcons()
 
     @property
     def columns(self):
@@ -106,7 +108,7 @@ class SchemeDataService(DataService):
         :return: Table view columns and query columns options
         :rtype: List
         """
-        return SchemeConfig().columns
+        return self._scheme_config.columns
 
     @property
     def icons(self):
@@ -115,7 +117,7 @@ class SchemeDataService(DataService):
         :return: QAbstractTableModel icon options
         :rtype: Dictionary
         """
-        return TableModelIcons().icons
+        return self._table_model_icons.icons
 
     @property
     def lookups(self):
@@ -124,7 +126,7 @@ class SchemeDataService(DataService):
         :return: Lookup options
         :rtype: LookUp
         """
-        return SchemeConfig(self._parent).lookups
+        return self._scheme_config.lookups
 
     @property
     def update_columns(self):
@@ -133,7 +135,7 @@ class SchemeDataService(DataService):
         :return: Update column options
         :rtype: List
         """
-        return SchemeConfig().scheme_update_columns
+        return self._scheme_config.scheme_update_columns
 
     @property
     def collections(self):
@@ -142,7 +144,7 @@ class SchemeDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return SchemeConfig().collections
+        return self._scheme_config.collections
 
     def related_entities(self, entity_name=None):
         """
@@ -264,6 +266,8 @@ class DocumentDataService(DataService):
         self._profile = current_profile
         self._scheme_id = scheme_id
         self.entity_name = "supporting_document"
+        self._document_config = DocumentConfig()
+        self._table_model_icons = TableModelIcons()
 
     @property
     def columns(self):
@@ -273,7 +277,7 @@ class DocumentDataService(DataService):
         :return: Table view columns and query columns options
         :rtype: List
         """
-        return DocumentConfig().columns
+        return self._document_config.columns
 
     @property
     def icons(self):
@@ -282,7 +286,7 @@ class DocumentDataService(DataService):
         :return: QAbstractTableModel icon options
         :rtype: Dictionary
         """
-        return TableModelIcons().icons
+        return self._table_model_icons.icons
 
     @property
     def collections(self):
@@ -291,7 +295,7 @@ class DocumentDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return DocumentConfig().collections
+        return self._document_config.collections
 
     def related_entities(self, entity_name=None):
         """
@@ -354,6 +358,7 @@ class HolderDataService(DataService):
         self._profile = current_profile
         self._scheme_id = scheme_id
         self.entity_name = "Scheme"
+        self._holder_config = HolderConfig()
 
     @property
     def columns(self):
@@ -362,7 +367,7 @@ class HolderDataService(DataService):
         :return: Table view columns and query columns options
         :rtype: List
         """
-        return HolderConfig().columns
+        return self._holder_config.columns
 
     @property
     def load_collections(self):
@@ -372,7 +377,7 @@ class HolderDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return HolderConfig().load_collections
+        return self._holder_config.load_collections
 
     @property
     def collections(self):
@@ -381,7 +386,7 @@ class HolderDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return HolderConfig().collections
+        return self._holder_config.collections
 
     def related_entities(self, entity_name=None):
         """
@@ -433,6 +438,7 @@ class CommentDataService(DataService):
         self._profile = current_profile
         self._scheme_id = scheme_id
         self.entity_name = "Scheme"
+        self._comment_config = CommentConfig()
 
     @property
     def columns(self):
@@ -441,7 +447,7 @@ class CommentDataService(DataService):
         :return: Comment Manager widget columns and query columns options
         :rtype: List
         """
-        return CommentConfig().columns
+        return self._comment_config.columns
 
     @property
     def load_collections(self):
@@ -451,7 +457,7 @@ class CommentDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return CommentConfig().load_collections
+        return self._comment_config.load_collections
 
     @property
     def collections(self):
@@ -460,7 +466,7 @@ class CommentDataService(DataService):
         :return: Related entity collection names
         :rtype: List
         """
-        return CommentConfig().collections
+        return self._comment_config.collections
 
     def related_entities(self, entity_name=None):
         """
