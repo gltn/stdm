@@ -676,6 +676,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         except KeyError:
             return
 
+    def refresh(self):
+        """
+        Refresh checked items store and model
+        """
+        self._checked_ids = OrderedDict()
+        self._model.refresh()
+        self._on_uncheck_disable_widgets()
+
     def _on_uncheck_disable_widgets(self):
         """
         Disable Workflow Manager widgets on uncheck
@@ -732,11 +740,3 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if widget.isVisible():
             widget.hide()
-
-    def refresh(self):
-        """
-        Refresh checked items store and model
-        """
-        self._checked_ids = OrderedDict()
-        self._model.refresh()
-        self._on_uncheck_disable_widgets()
