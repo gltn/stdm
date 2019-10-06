@@ -490,8 +490,8 @@ class WorkflowManagerModel(QAbstractTableModel):
                     value = float(value)
                 return self._icons[value]
             return None
-        elif role == Qt.DisplayRole and (
-                flag != Qt.ItemIsUserCheckable and flag != Qt.DecorationRole
+        elif role == Qt.DisplayRole and flag not in(
+                Qt.ItemIsUserCheckable, Qt.DecorationRole
         ):
             return value
         elif role == Qt.CheckStateRole and flag == Qt.ItemIsUserCheckable:
