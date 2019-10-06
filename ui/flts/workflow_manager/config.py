@@ -71,106 +71,13 @@ class ButtonIcons(Config):
         }
 
 
-class SchemeButtonIcons(ButtonIcons):
-    """
-    Scheme QPushButton icons configuration interface
-    """
-    def __init__(self, parent=None):
-        super(SchemeButtonIcons, self).__init__()
-        self._parent = parent
-
-    @property
-    def buttons(self):
-        """
-        Scheme QPushButton icons options
-        :return: Scheme QPushButton icon options
-        :rtype: Dictionary
-        """
-        config = self._buttons_config()
-        return super(SchemeButtonIcons, self).button_icons(config)
-
-    def _buttons_config(self):
-        """
-        Returns Scheme QPushButton icon configurations
-        :return: QPushButton icon configurations
-        :rtype: Tuple
-        """
-        return (
-            (
-                self._parent.approveButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
-            ),
-            (
-                self._parent.disapproveButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
-            ),
-            (
-                self._parent.holdersButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
-            ),
-            (
-                self._parent.documentsButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
-            ),
-            (
-                self._parent.searchButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_search.png")
-            ),
-        )
-
-
-class PaginationButtonIcons(ButtonIcons):
-    """
-    Pagination QPushButton icons configuration interface
-    """
-
-    def __init__(self, parent=None):
-        super(PaginationButtonIcons, self).__init__()
-        self._parent = parent
-
-    @property
-    def buttons(self):
-        """
-        Pagination QPushButton icons options
-        :return: Pagination QPushButton icon options
-        :rtype: Dictionary
-        """
-        config = self._buttons_config()
-        return super(PaginationButtonIcons, self).button_icons(config)
-
-    def _buttons_config(self):
-        """
-        Returns Pagination QPushButton icon configurations
-        :return: QPushButton icon configurations
-        :rtype: Tuple
-        """
-        return (
-            (
-                self._parent.first_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
-            ),
-            (
-                self._parent.previous_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
-            ),
-            (
-                self._parent.next_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
-            ),
-            (
-                self._parent.last_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
-            ),
-        )
-
-
-class CommentManagerButtonIcons(ButtonIcons):
+class CommentButtonIcons(ButtonIcons):
     """
     Comment Manager QPushButton icons configuration interface
     """
 
     def __init__(self, parent=None):
-        super(CommentManagerButtonIcons, self).__init__()
+        super(CommentButtonIcons, self).__init__()
         self._parent = parent
 
     @property
@@ -181,7 +88,7 @@ class CommentManagerButtonIcons(ButtonIcons):
         :rtype: Dictionary
         """
         config = self._buttons_config()
-        return super(CommentManagerButtonIcons, self).button_icons(config)
+        return super(CommentButtonIcons, self).button_icons(config)
 
     def _buttons_config(self):
         """
@@ -288,6 +195,51 @@ class HolderConfig(Config):
         return self.get_data('holder_load_collections')
 
 
+class PaginationButtonIcons(ButtonIcons):
+    """
+    Pagination QPushButton icons configuration interface
+    """
+
+    def __init__(self, parent=None):
+        super(PaginationButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Pagination QPushButton icons options
+        :return: Pagination QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(PaginationButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Pagination QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.first_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
+            ),
+            (
+                self._parent.previous_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
+            ),
+            (
+                self._parent.next_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
+            ),
+            (
+                self._parent.last_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
+            ),
+        )
+
+
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -300,6 +252,54 @@ class StyleSheet(Config):
         :rtype: String
         """
         return self.get_data('header_view_style')
+
+
+class SchemeButtonIcons(ButtonIcons):
+    """
+    Scheme QPushButton icons configuration interface
+    """
+    def __init__(self, parent=None):
+        super(SchemeButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Scheme QPushButton icons options
+        :return: Scheme QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(SchemeButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Scheme QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.approveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
+            ),
+            (
+                self._parent.disapproveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
+            ),
+            (
+                self._parent.holdersButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
+            ),
+            (
+                self._parent.documentsButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
+            ),
+            (
+                self._parent.searchButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_search.png")
+            ),
+        )
 
 
 class SchemeConfig(Config):
@@ -358,11 +358,28 @@ class TabIcons(Config):
     @property
     def icons(self):
         """
-        QTabWidget options
-        :return: QTabWidget options
+        QTabWidget icon options
+        :return: QTabWidget icon options
         :rtype: Dictionary
         """
         return self.get_data('tab_icons')
+
+
+class TableModelIcons(Config):
+    """
+    QAbstractTableModel icons configuration interface
+    """
+    def __init__(self):
+        super(TableModelIcons, self).__init__()
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self.get_data('table_model_icons')
 
 
 class FilterQueryBy:
@@ -672,6 +689,13 @@ configurations = {
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
         'Comments': QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
         'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+    },
+    'table_model_icons': {
+        1: QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+        2: QIcon(":/plugins/stdm/images/icons/flts_pending.png"),
+        3: QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+        4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
+        'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
     },
     'update_columns': {
         'scheme_update': [

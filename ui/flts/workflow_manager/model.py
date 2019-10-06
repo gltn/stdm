@@ -454,6 +454,8 @@ class WorkflowManagerModel(QAbstractTableModel):
     def __init__(self, data_service, collection_filter=None):
         super(WorkflowManagerModel, self).__init__()
         self._data_service = data_service
+        self._icons = self._data_service.icons \
+            if hasattr(self._data_service, "icons") else None
         self._collection_filter = collection_filter
         self.results = []
         self._headers = []
@@ -482,26 +484,12 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         value = result.get(column, None)
         flag = self._headers[column].flag
-
         if role == Qt.DecorationRole and flag == Qt.DecorationRole:
-
-            # TODO: Start refactor icons
-            icon = None
-            if isinstance(value, float):
-                value = float(value)
-                if value == 1:
-                    icon = QIcon(":/plugins/stdm/images/icons/flts_approve.png")
-                elif value == 2:
-                    icon = QIcon(":/plugins/stdm/images/icons/flts_pending.png")
-                elif value == 3:
-                    icon = QIcon(":/plugins/stdm/images/icons/flts_disapprove.png")
-                elif value == 4:
-                    icon = QIcon(":/plugins/stdm/images/icons/flts_withdraw.png")
-            elif value == "View":
-                icon = QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
-            return icon
-            # TODO: End refactor
-
+            if self._icons:
+                if isinstance(value, float):
+                    value = float(value)
+                return self._icons[value]
+            return None
         elif role == Qt.DisplayRole and (
                 flag != Qt.ItemIsUserCheckable and flag != Qt.DecorationRole
         ):

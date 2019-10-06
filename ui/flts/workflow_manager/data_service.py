@@ -23,9 +23,10 @@ from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
     CommentConfig,
     DocumentConfig,
-    HolderConfig,
     FilterQueryBy,
+    HolderConfig,
     SchemeConfig,
+    TableModelIcons,
 )
 from stdm.data.configuration import entity_model
 
@@ -106,6 +107,15 @@ class SchemeDataService(DataService):
         :rtype: List
         """
         return SchemeConfig().columns
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return TableModelIcons().icons
 
     @property
     def lookups(self):
@@ -264,6 +274,15 @@ class DocumentDataService(DataService):
         :rtype: List
         """
         return DocumentConfig().columns
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return TableModelIcons().icons
 
     @property
     def collections(self):

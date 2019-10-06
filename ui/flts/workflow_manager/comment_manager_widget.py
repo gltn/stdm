@@ -1,7 +1,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
-from stdm.ui.flts.workflow_manager.config import CommentManagerButtonIcons
+from stdm.ui.flts.workflow_manager.config import CommentButtonIcons
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_comment_manager import Ui_CommentManagerWidget
@@ -45,7 +45,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         Sets QPushButton icons
         """
-        icons = CommentManagerButtonIcons(self)
+        icons = CommentButtonIcons(self)
         buttons = icons.buttons
         for button, options in buttons.iteritems():
             button.setIcon(options.icon)
