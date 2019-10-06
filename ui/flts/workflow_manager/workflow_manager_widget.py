@@ -68,21 +68,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
-        # TODO: Start refactor icons and size
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self._set_button_icons()
-
-        pagination = PaginationWidget()
-        pagination.first_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"))
-        pagination.first_button.setIconSize(QSize(24, 24))
-        pagination.previous_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"))
-        pagination.previous_button.setIconSize(QSize(24, 24))
-        pagination.next_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"))
-        pagination.next_button.setIconSize(QSize(24, 24))
-        pagination.last_button.setIcon(QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"))
-        pagination.last_button.setIconSize(QSize(24, 24))
-        # TODO: End refactor
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
             self.data_service, self._workflow_load_filter
@@ -96,7 +84,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tabWidget.insertTab(0, self.table_view, 'Scheme')
         self.tabWidget.setTabIcon(0, QIcon(":/plugins/stdm/images/icons/flts_scheme.png"))
-        self.paginationFrame.setLayout(pagination.pagination_layout)
+        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
         self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
@@ -119,9 +107,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Sets QPushButton icons
         """
         icons = ButtonIcons(self)
-        for object_name, options in icons.scheme_buttons.iteritems():
-            options.button.setIcon(options.icon)
-            options.button.setIconSize(options.size)
+        scheme_buttons = icons.scheme_buttons
+        for button, options in scheme_buttons.iteritems():
+            button.setIcon(options.icon)
+            button.setIconSize(options.size)
 
     @property
     def _workflow_load_filter(self):
