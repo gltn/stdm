@@ -553,8 +553,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         try:
             result = self.data_service.filter_query_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            raise e
-            # TODO: Return critical message instead of raise
+            msg = "Failed query: {}".format(e)
+            self._show_critical_message(msg)
         else:
             return result
 
