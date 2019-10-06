@@ -18,13 +18,13 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
-    StyleSheet,
     ButtonIcons,
+    StyleSheet,
+    TabIcons,
 )
 from stdm.settings import current_profile
 from stdm.ui.flts.workflow_manager.data_service import (
@@ -412,18 +412,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.removeTab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
-
-        # TODO: Start refactor icons
-        if label.startswith("Holders"):
-            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"))
-        elif label.startswith("Documents"):
-            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"))
-        elif label.startswith("Comments"):
-            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"))
-        elif label.startswith("Withdraw"):
-            self.tabWidget.setTabIcon(index, QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"))
-        # TODO: End refactor
-
+        icons = TabIcons().icons
+        for key, icon in icons.iteritems():
+            if label.startswith(key):
+                self.tabWidget.setTabIcon(index, icon)
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
         if self._button_clicked() or widget.objectName() == "Comments":

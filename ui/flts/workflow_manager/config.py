@@ -15,7 +15,7 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-# import datetime
+
 from collections import namedtuple
 from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
@@ -65,10 +65,10 @@ class ButtonIcons(Config):
         :return: Scheme QPushButton icon options
         :rtype: Dictionary
         """
-        config = self._scheme_button_config()
+        config = self._scheme_buttons_config()
         return self._button_icons(config)
 
-    def _scheme_button_config(self):
+    def _scheme_buttons_config(self):
         """
         Returns Scheme QPushButton icon configurations
         :return: QPushButton icon configurations
@@ -76,29 +76,24 @@ class ButtonIcons(Config):
         """
         return (
             (
-                self._parent.approveButton,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
-                QSize(24, 24)
+                self._parent.approveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
             ),
             (
-                self._parent.disapproveButton,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
-                QSize(24, 24)
+                self._parent.disapproveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
             ),
             (
-                self._parent.holdersButton,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
-                QSize(24, 24)
+                self._parent.holdersButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
             ),
             (
-                self._parent.documentsButton,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
-                QSize(24, 24)
+                self._parent.documentsButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
             ),
             (
-                self._parent.searchButton,
-                QIcon(":/plugins/stdm/images/icons/flts_search.png"),
-                QSize(24, 24)
+                self._parent.searchButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_search.png")
             )
         )
 
@@ -109,10 +104,10 @@ class ButtonIcons(Config):
         :return: Pagination QPushButton icon options
         :rtype: Dictionary
         """
-        config = self._pagination_button_config()
+        config = self._pagination_buttons_config()
         return self._button_icons(config)
 
-    def _pagination_button_config(self):
+    def _pagination_buttons_config(self):
         """
         Returns Pagination QPushButton icon configurations
         :return: QPushButton icon configurations
@@ -120,24 +115,20 @@ class ButtonIcons(Config):
         """
         return (
             (
-                self._parent.first_button,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"),
-                QSize(24, 24)
+                self._parent.first_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
             ),
             (
-                self._parent.previous_button,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"),
-                QSize(24, 24)
+                self._parent.previous_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
             ),
             (
-                self._parent.next_button,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"),
-                QSize(24, 24)
+                self._parent.next_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
             ),
             (
-                self._parent.last_button,
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"),
-                QSize(24, 24)
+                self._parent.last_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
             )
         )
 
@@ -152,7 +143,7 @@ class ButtonIcons(Config):
 
         return {
             button: self.Icon(icon=icon, size=qsize)
-            for button, icon, qsize in config
+            for button, qsize, icon in config
         }
 
 
@@ -307,6 +298,23 @@ class SchemeConfig(Config):
             get('scheme_update', None)
 
 
+class TabIcons(Config):
+    """
+    QTabWidget icons configuration interface
+    """
+    def __init__(self):
+        super(TabIcons, self).__init__()
+
+    @property
+    def icons(self):
+        """
+        QTabWidget options
+        :return: QTabWidget options
+        :rtype: Dictionary
+        """
+        return self.get_data('tab_icons')
+
+
 class FilterQueryBy:
     """
     Filters query result by a column value
@@ -426,6 +434,7 @@ LookUp = namedtuple(
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
+Icon = namedtuple('Icon', ['icon', 'size'])
 
 configurations = {
     'comment_columns': [
@@ -608,6 +617,12 @@ configurations = {
         {Column(name='Block Area', flag=False): 'area'}
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
+    'tab_icons': {
+        'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
+        'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
+        'Comments': QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
+        'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+    },
     'update_columns': {
         'scheme_update': [
             UpdateColumn(column={'approval_id': 'approval_id'})
