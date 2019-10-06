@@ -28,14 +28,13 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []
-        self._parent = parent
         self._load_collections = detail_service['load_collections']
         data_service = detail_service['data_service']
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setObjectName("Comments")
         self._set_button_icons()
-        self._parent.paginationFrame.hide()
+        parent.paginationFrame.hide()
         self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
         self._initial_load()
         self._get_comments()

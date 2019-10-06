@@ -340,7 +340,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 'data_service': HolderDataService,
                 'load_collections': True
             },
-            'Comments': {
+            self._comments_title: {
                 'data_service': CommentDataService,
                 'load_collections': True
             }
@@ -418,7 +418,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self.tabWidget.setTabIcon(index, icon)
         tab_bar = self.tabWidget.tabBar()
         tab_bar.setTabButton(0, QTabBar.RightSide, None)
-        if self._button_clicked() or widget.objectName() == "Comments":
+        if self._button_clicked() or widget.objectName() \
+                == self._comments_title:
             self.tabWidget.setCurrentIndex(index)
         self._tab_name = label
 
@@ -711,10 +712,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         active_tab_label = self.tabWidget.tabText(index)
         active_tab_label = active_tab_label.split(" - ")[0]
-        tabs_label = (
-            self.holdersButton.objectName(),
-            self.documentsButton.objectName()
-        )
+        tabs_label = (self.holdersButton.objectName())
         if index == 0 or active_tab_label in tabs_label:
             self._show_widget(self.paginationFrame)
             self._enable_search() if self._model.results or \
@@ -722,7 +720,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._disable_search()
         elif active_tab_label not in tabs_label:
             self._hide_widget(self.paginationFrame)
-            self._disable_search()
+            if active_tab_label != self.documentsButton.objectName():
+                self._disable_search()
 
     @staticmethod
     def _show_widget(widget):

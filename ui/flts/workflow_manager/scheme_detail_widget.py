@@ -43,6 +43,7 @@ class SchemeDetailTableView(QTableView):
         self.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.setSelectionBehavior(QTableView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
+        parent.paginationFrame.hide()
         self._initial_load()
 
     def _initial_load(self):
