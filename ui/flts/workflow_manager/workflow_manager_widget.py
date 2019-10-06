@@ -82,8 +82,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             setStyleSheet(_header_style)
         self.table_view.setSelectionBehavior(QTableView.SelectRows)
         self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.tabWidget.insertTab(0, self.table_view, 'Scheme')
-        self.tabWidget.setTabIcon(0, QIcon(":/plugins/stdm/images/icons/flts_scheme.png"))
+        self.tabWidget.insertTab(0, self.table_view, "Scheme")
+        self._tab_icons = TabIcons().icons
+        self.tabWidget.setTabIcon(0, self._tab_icons["Scheme"])
         self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
         self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
@@ -412,8 +413,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.removeTab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
-        icons = TabIcons().icons
-        for key, icon in icons.iteritems():
+        for key, icon in self._tab_icons.iteritems():
             if label.startswith(key):
                 self.tabWidget.setTabIcon(index, icon)
         tab_bar = self.tabWidget.tabBar()

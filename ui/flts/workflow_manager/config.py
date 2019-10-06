@@ -688,7 +688,8 @@ configurations = {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
         'Comments': QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
-        'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+        'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
+        'Scheme': QIcon(":/plugins/stdm/images/icons/flts_scheme.png")
     },
     'table_model_icons': {
         1: QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
