@@ -637,8 +637,6 @@ class WorkflowManagerModel(QAbstractTableModel):
             ).update()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
-        else:
-            self.refresh()
         finally:
             return updated
 

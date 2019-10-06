@@ -589,7 +589,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._show_critical_message(msg)
         else:
             if reply:
-                self._update_checked_id()
+                self.refresh()
                 msg = self._approval_message(
                     "Successfully {}".format(title), updated_rows
                 )
@@ -664,16 +664,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.tr('Workflow Manager'),
             self.tr(msg)
         )
-
-    def _update_checked_id(self):
-        """
-        Update table view checked ids in the checked tracker
-        """
-        checked_ids = self._checked_ids.copy()
-        for record_id, (row, status, scheme_number) in \
-                checked_ids.iteritems():
-            self._remove_checked_id(record_id)
-        self._on_uncheck_disable_widgets()
 
     def _remove_checked_id(self, record_id):
         """
