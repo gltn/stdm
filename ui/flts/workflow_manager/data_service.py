@@ -129,6 +129,15 @@ class SchemeDataService(DataService):
         return self._scheme_config.lookups
 
     @property
+    def save_columns(self):
+        """
+        Scheme table view save column options
+        :return: Save column options
+        :rtype: List
+        """
+        return self._scheme_config.scheme_save_columns
+
+    @property
     def update_columns(self):
         """
         Scheme table view update column options

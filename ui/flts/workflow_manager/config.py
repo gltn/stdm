@@ -338,6 +338,16 @@ class SchemeConfig(Config):
         return self.get_data('lookups')
 
     @property
+    def scheme_save_columns(self):
+        """
+        Scheme table view save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self.get_data('update_columns').\
+            get('scheme_save', None)
+
+    @property
     def scheme_update_columns(self):
         """
         Scheme table view update column options
@@ -501,6 +511,7 @@ LookUp = namedtuple(
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
+SaveColumn = namedtuple('SaveColumn', ['column'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 
 configurations = {
@@ -701,6 +712,13 @@ configurations = {
     'update_columns': {
         'scheme_update': [
             UpdateColumn(column={'approval_id': 'approval_id'})
+        ]
+    },
+    'save_columns': {
+        'scheme_save': [
+            SaveColumn(column={'scheme_id': 'scheme_id'}),
+            SaveColumn(column={'workflow_id': 'workflow_id'}),
+            SaveColumn(column={'approval_id': 'approval_id'})
         ]
     }
 }
