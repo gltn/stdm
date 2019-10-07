@@ -623,13 +623,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype updated_rows: Integer
         """
         updated_rows = 0
-        if next_items:
-            updated_rows = self._model.update(items)  # Update current workflow
-            self._model.update(next_items)  # Update preceding workflow
+        if next_items and save_items:
+            self._model.update(next_items)  # Update succeeding workflow
+            self._model.save(save_items)  # Save succeeding workflow
+        elif next_items:
+            self._model.update(next_items)
         elif save_items:
-            updated_rows = self._model.update(items)
+            self._model.save(save_items)
             # TODO: Call model's save method from here and pass save_items
-        elif items:
+        if items:
             updated_rows = self._model.update(items)
         return updated_rows
 

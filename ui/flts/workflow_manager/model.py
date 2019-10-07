@@ -446,6 +446,145 @@ class Update(DataRoutine):
         return query_obj
 
 
+# class Save(DataRoutine):
+#     """
+#     Update database record(s) on edit
+#     """
+#
+#     def __init__(self, updates, model_items, data_service):
+#         """
+#         :param updates: Update items - values and column indexes
+#         :type updates: Dictionary
+#         :param model_items: Model items/records
+#         :type model_items: List
+#         :param data_service: Data service
+#         :type data_service: DataService
+#         """
+#         super(Save, self).__int__()
+#         self._updates = updates
+#         self._model_items = model_items
+#         self._fk_entity_name = data_service.related_entities()
+#         self._collection_name = data_service.collections
+#
+#     def update(self):
+#         """
+#         Update database record(s) on client edit
+#         :return count: Number of updated items
+#         :rtype count: Integer
+#         """
+#         try:
+#             query_obj, count = self._set_update()
+#             if query_obj:
+#                 query_obj.add()
+#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+#             raise e
+#         else:
+#             return count
+#
+#     def _set_update(self):
+#         """
+#         Sets update attribute value for the appropriate field
+#         :return count: Number of updated items
+#         :rtype count: Integer
+#         """
+#         try:
+#             count = 0
+#             query_obj = None
+#             for row_idx, columns in self._updates.iteritems():
+#                 updated = None
+#                 query_obj = self._model_items[row_idx].get("data")
+#                 for column, new_value, collection_filter in columns:
+#                     if isinstance(column, dict):
+#                         fk_name = column.keys()[0]
+#                         if fk_name in self._fk_entity_name and hasattr(query_obj, fk_name):
+#                             updated = self._set_update_value(
+#                                 query_obj, column, new_value, fk_name
+#                             )
+#                             continue
+#                         self._collection_filter = collection_filter
+#                         updated = self._set_collection_value(query_obj, column, new_value)
+#                         continue
+#                     elif hasattr(query_obj, column):
+#                         updated = self._set_update_value(query_obj, column, new_value)
+#                         continue
+#                 count = count + 1 if updated else count
+#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+#             raise e
+#         else:
+#             return query_obj, count
+#
+#     def _set_collection_value(self, query_obj, column, new_value):
+#         """
+#         Sets collection update attribute value
+#         :param query_obj: Query object
+#         :type query_obj: Entity
+#         :param column: Column or related entity name
+#         :type column: Dictionary
+#         :param new_value: New value for update
+#         :type new_value: Multiple types
+#         :return: Entity query object or None
+#         :rtype: Entity, NoneType
+#         """
+#         item = self.valid_collection_item(query_obj, column)
+#         if item:
+#             return self._set_item_value(item, column, new_value)
+#         return None
+#
+#     def _set_item_value(self, item, column, new_value):
+#         """
+#         Sets collection item value
+#         :param item: Entity query object
+#         :type item: Entity
+#         :param column: Column as it appears in the database
+#         :type column: Dictionary
+#         :param new_value: New value for update
+#         :type new_value: Multiple types
+#         :return: Collection value
+#         :rtype: Multiple types
+#         """
+#         column, fk_name = self._get_update_attr(item, column)
+#         return self._set_update_value(item, column, new_value, fk_name)
+#
+#     def _get_update_attr(self, item, column):
+#         """
+#         Return update item attribute (column name or
+#         related entity name)
+#         :param item: Entity query object
+#         :type item: Entity
+#         :param column: Column or related entity name
+#         :type column: Dictionary
+#         :return: Entity query object or value
+#         :rtype: Entity, Multiple types
+#         :return: Related entity column or None
+#         :rtype : String, NoneType
+#         """
+#         fk_name = column.keys()[0]
+#         if self.is_mapped(getattr(item, fk_name, None)):
+#             return column, fk_name
+#         return column.get(fk_name), None
+#
+#     def _set_update_value(self, query_obj, column, value, attr=None):
+#         """"
+#         Sets update attribute value
+#         :param query_obj: Entity query object
+#         :type query_obj: Entity
+#         :param column: Column or related entity name
+#         :type column: String/Dictionary
+#         :param value: New value for update
+#         :type value: Multiple types
+#         :param attr: Related entity column or None
+#         :type attr: String, NoneType
+#         :return query_obj: Entity query object
+#         :rtype query_obj: Entity
+#         """
+#         if attr:
+#             query_obj = self.get_value(query_obj, attr)
+#             setattr(query_obj, column.get(attr), value)
+#             return query_obj
+#         setattr(query_obj, column, value)
+#         return query_obj
+
+
 class WorkflowManagerModel(QAbstractTableModel):
     """
     Handles data for Scheme Establishment and First, Second
@@ -639,6 +778,25 @@ class WorkflowManagerModel(QAbstractTableModel):
             raise e
         finally:
             return updated
+
+    def save(self, updates):
+        """
+        Update database record(s) on client edit
+        :param updates: Update items - values and column indexes
+        :type updates: Dictionary
+        :return: Number of updated items
+        :rtype: Integer
+        """
+        pass
+        # updated = 0
+        # try:
+        #     updated = Save(
+        #         updates, self.results, self._data_service
+        #     ).update()
+        # except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+        #     raise e
+        # finally:
+        #     return updated
 
     def refresh(self):
         """
