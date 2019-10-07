@@ -216,8 +216,43 @@ class Approve(Status):
                 if workflow_id is not None:
                     update_items[row] = items
                     continue
-                save_items[row] = items
+                save_items[row] = self._save_items(items[0])
         return update_items, save_items
+
+    def _save_items(self, items):
+        """
+        Returns save items
+        :Param items: Save items; columns, values and entity
+        :type items: List
+        :return save_items: Valid approval update items
+        :rtype save_items: List
+        """
+        save_items = []
+        col, status, filters = items
+        for option in self._get_config_option(self._save_columns):
+            column = option.column
+            name = self._get_dict_value(column)
+            if name in filters:
+                save_items.append([column, filters[name], option.entity])
+            elif name == self._get_dict_value(col):
+                status = status if status else self._lookup.PENDING()
+                save_items.append([column, status, option.entity])
+        return save_items
+
+    @staticmethod
+    def _get_dict_value(attr):
+        """
+        Returns values of a dictionary
+        :param attr: Attribute
+        :return: Attribute value
+        :rtype: Dictionary/non-dictionary
+        """
+        if isinstance(attr, dict):
+            value = attr.values()
+            if len(value) == 1:
+                value = value[0]
+            return value
+        return attr
 
     def _next_workflow_id(self):
         """

@@ -630,7 +630,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._model.update(next_items)
         elif save_items:
             self._model.save(save_items)
-            # TODO: Call model's save method from here and pass save_items
         if items:
             updated_rows = self._model.update(items)
         return updated_rows

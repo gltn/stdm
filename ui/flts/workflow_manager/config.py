@@ -344,7 +344,7 @@ class SchemeConfig(Config):
         :return: Save column values
         :rtype: List
         """
-        return self.get_data('update_columns').\
+        return self.get_data('save_columns').\
             get('scheme_save', None)
 
     @property
