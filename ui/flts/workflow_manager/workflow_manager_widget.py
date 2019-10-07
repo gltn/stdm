@@ -500,7 +500,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         items, scheme_numbers = self._approve.approve_items(status)
         items = (items,) + self._approve.next_approval_items(items)
         num_records = len(scheme_numbers["valid"])
-        self._format_scheme_number(scheme_numbers)
+        if scheme_numbers["invalid"]:
+            self._invalid_approval_msg(scheme_numbers)
         scheme_numbers = (num_records, scheme_numbers["valid"])
         self._update_scheme(items, title, scheme_numbers)
 
@@ -517,46 +518,60 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         scheme_numbers = (len(scheme_numbers), scheme_numbers)
         self._update_scheme(items, title, scheme_numbers)
 
-    def _format_scheme_number(self, scheme_numbers):
+    def _invalid_approval_msg(self, scheme_numbers):
         """
-        Formats the scheme message
+        Return Scheme message for invalid approval
         :param scheme_numbers: Scheme number
         :param scheme_numbers: String
         :return: Formatted scheme numbers
         :return: Dictionary
         """
         msg = []
-        approval_entity = self._lookup.APPROVAL_STATUS
-        workflow_entity = self._lookup.WORKFLOW
-        for scheme_number, workflow_id, approval_id in scheme_numbers["invalid"]:
-            approval = self._filter_query_by(
-                approval_entity, {'id': approval_id}
-            ).first()
-            workflow = self._filter_query_by(
-                workflow_entity, {'id': workflow_id}
-            ).first()
+        column = "id"
+        invalid_schemes = scheme_numbers["invalid"]
+        numbers, workflow_ids, approval_ids = zip(*invalid_schemes)
+        workflow_query = self._filter_in(
+            self._lookup.WORKFLOW, {column: set(workflow_ids)}
+        )
+        approval_query = self._filter_in(
+            self._lookup.APPROVAL_STATUS, {column: set(approval_ids)}
+        )
+        for scheme_number, workflow_id, approval_id in invalid_schemes:
+            approval = self._get_valid_query(approval_query, column, approval_id)
+            workflow = self._get_valid_query(workflow_query, column, workflow_id)
             msg.append("\n{0} - {1} in {2}".format(
                 scheme_number, approval.value, workflow.value
             ))
         return scheme_numbers["valid"].extend(msg)
 
-    def _filter_query_by(self, entity_name, filters):
+    def _filter_in(self, entity_name, filters):
         """
-        Filters query result by a column value
-        :param entity_name: Entity name
+        Return query objects as a collection of filter using in_ operator
+        :param entity_name: Name of entity to be queried
         :type entity_name: String
-        :param filters: Column filters - column name and value
+        :param filters: Query filter columns and values
         :type filters: Dictionary
-        :return: Filter entity query object
-        :rtype: Entity object
+        :return: Query object results
+        :rtype: InstrumentedList
         """
-        try:
-            result = self.data_service.filter_query_by(entity_name, filters)
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-            msg = "Failed query: {}".format(e)
-            self._show_critical_message(msg)
-        else:
-            return result
+        return self.data_service.filter_in(entity_name, filters).all()
+
+    @staticmethod
+    def _get_valid_query(query_objs, column, value):
+        """
+        Returns valid query object form a List
+        :param query_objs: InstrumentedList of query objects
+        :type query_objs: InstrumentedList
+        :param column: Column name to be filtered against
+        :type column: String
+        :param value: Value to identify valid query object
+        :type value: Multiple
+        :return: Entity query object
+        :rtype: Entity
+        """
+        for query_obj in query_objs:
+            if getattr(query_obj, column, None) == value:
+                return query_obj
 
     def _update_scheme(self, items, title, scheme_numbers):
         """
