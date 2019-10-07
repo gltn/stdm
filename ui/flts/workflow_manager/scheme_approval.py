@@ -94,17 +94,16 @@ class Status(object):
             return record_id[0]
 
     @ staticmethod
-    def _get_update_item(updates):
+    def _get_config_option(config):
         """
-        Returns the necessary configuration update items per column
-        :param updates: Update column items
-        :type updates: List
-        :return column: Column name as returned by SQLAlchemy query
-                        Table and column name in cases of relationship
-        :rtype column: String or Dictionary
+        Returns save/update configuration options
+        :param config: Save/update configuration options
+        :type config: Named
+        :return option: Save/update configuration option
+        :rtype option: named tuple
         """
-        for update in updates:
-            yield update.column
+        for option in config:
+            yield option
 
 
 class Approve(Status):
@@ -120,6 +119,7 @@ class Approve(Status):
         self._object_name = object_name
         self._workflow_filter = None
         self._update_columns = self.data_service.update_columns
+        self._save_columns = self.data_service.save_columns
 
     def approve_items(self, status_option):
         """
@@ -179,12 +179,12 @@ class Approve(Status):
         :rtype update_items: List
         """
         update_items = []
-        for updates in self._get_update_item(self._update_columns):
+        for updates in self._get_config_option(self._update_columns):
             if approval_id == status:
                 update_filters = self._scheme_workflow_filter(
                     scheme_id, self._get_workflow_id()
                 )
-                update_items.append([updates, status, update_filters])
+                update_items.append([updates.column, status, update_filters])
         return update_items
 
     def next_approval_items(self, approval_items):
@@ -325,11 +325,11 @@ class Disapprove(Status):
         :rtype update_items: List
         """
         update_items = []
-        for updates in self._get_update_item(self._update_columns):
+        for updates in self._get_config_option(self._update_columns):
             for workflow_id in workflow_ids:
                 if workflow_id is not None:
                     update_filters = self._scheme_workflow_filter(
                         record_id, workflow_id
                     )
-                    update_items.append([updates, status, update_filters])
+                    update_items.append([updates.column, status, update_filters])
         return update_items

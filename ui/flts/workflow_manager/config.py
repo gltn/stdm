@@ -511,7 +511,7 @@ LookUp = namedtuple(
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
-SaveColumn = namedtuple('SaveColumn', ['column'])
+SaveColumn = namedtuple('SaveColumn', ['column', 'entity'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 
 configurations = {
@@ -716,9 +716,15 @@ configurations = {
     },
     'save_columns': {
         'scheme_save': [
-            SaveColumn(column={'scheme_id': 'scheme_id'}),
-            SaveColumn(column={'workflow_id': 'workflow_id'}),
-            SaveColumn(column={'approval_id': 'approval_id'})
+            SaveColumn(
+                column={'scheme_id': 'scheme_id'}, entity='cb_scheme_workflow'
+            ),
+            SaveColumn(
+                column={'workflow_id': 'workflow_id'}, entity='cb_scheme_workflow'
+            ),
+            SaveColumn(
+                column={'approval_id': 'approval_id'}, entity='cb_scheme_workflow'
+            )
         ]
     }
 }
