@@ -617,22 +617,30 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type items: Dictionary
         :Param next_items: Next workflow update values, columns and filters
         :type next_items: Dictionary
-        :Param save_items: Next workflow save values, columns and filters
-        :type save_items: Dictionary
+        :return save_items: Save items; columns, values and entity
+        :rtype save_items: Dictionary
         :return updated_rows: Number of updated rows
         :rtype updated_rows: Integer
         """
+        # TODO: Refactor each save/update into a function. The succeeding
+        #  function in the execution chain should only be triggered if
+        #  preceding save/update function returns successfully. The chained
+        #  execution should stop on an error
         updated_rows = 0
-        if next_items and save_items:
-            self._model.update(next_items)  # Update succeeding workflow
-            self._model.save(save_items)  # Save succeeding workflow
-        elif next_items:
-            self._model.update(next_items)
-        elif save_items:
-            self._model.save(save_items)
-        if items:
-            updated_rows = self._model.update(items)
-        return updated_rows
+        try:
+            if next_items and save_items:
+                self._model.update(next_items)  # Update succeeding workflow
+                self._model.save(save_items)  # Save succeeding workflow
+            elif next_items:
+                self._model.update(next_items)
+            elif save_items:
+                self._model.save(save_items)
+            if items:
+                updated_rows = self._model.update(items)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return updated_rows
 
     @staticmethod
     def _approval_message(prefix, rows, scheme_numbers=None):

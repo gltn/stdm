@@ -717,13 +717,13 @@ configurations = {
     'save_columns': {
         'scheme_save': [
             SaveColumn(
-                column={'scheme_id': 'scheme_id'}, entity='cb_scheme_workflow'
+                column={'scheme_id': 'scheme_id'}, entity=None
             ),
             SaveColumn(
-                column={'workflow_id': 'workflow_id'}, entity='cb_scheme_workflow'
+                column={'workflow_id': 'workflow_id'}, entity=None
             ),
             SaveColumn(
-                column={'approval_id': 'approval_id'}, entity='cb_scheme_workflow'
+                column={'approval_id': 'approval_id'}, entity=None
             )
         ]
     }

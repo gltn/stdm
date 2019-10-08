@@ -72,12 +72,12 @@ class DataService:
         """
         raise NotImplementedError
 
-    def _entity_model(self, entity):
+    def entity_model_(self, entity):
         """
         Gets entity model
         :param entity: Profile entity
         :type entity: Entity
-        :return model: Entity model;
+        :return model: Entity model
         :rtype model: DeclarativeMeta
         """
         try:
@@ -177,8 +177,8 @@ class SchemeDataService(DataService):
         :rtype query_obj: List
         """
         workflow_id = self.get_workflow_id(self._widget_obj_name)
-        scheme_workflow_model = self._entity_model("Scheme_workflow")
-        model = self._entity_model(self.entity_name)
+        scheme_workflow_model = self.entity_model_("Scheme_workflow")
+        model = self.entity_model_(self.entity_name)
         entity_object = model()
         try:
             query_object = entity_object.queryObject(). \
@@ -216,23 +216,23 @@ class SchemeDataService(DataService):
         :return: Query object results
         :rtype: Query
         """
-        model = self._entity_model(entity_name)
+        model = self.entity_model_(entity_name)
         entity_object = model()
         filters = [
             getattr(model, key).in_(value) for key, value in filters.iteritems()
         ]
         return entity_object.queryObject().filter(*filters)
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, name=None):
         """
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return: Entity model;
+        :return: Entity model
         :rtype: DeclarativeMeta
         """
         entity = self._profile.entity(name)
-        return super(SchemeDataService, self)._entity_model(entity)
+        return super(SchemeDataService, self).entity_model_(entity)
 
     @staticmethod
     def filter_query_by(entity_name, filters):
@@ -327,8 +327,8 @@ class DocumentDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
-        model, sp_doc_model = self._entity_model(self.entity_name)
-        scheme_model, sc_doc_model = self._entity_model("Scheme")
+        model, sp_doc_model = self.entity_model_(self.entity_name)
+        scheme_model, sc_doc_model = self.entity_model_("Scheme")
         entity_object = model()
         try:
             query_object = entity_object.queryObject().filter(
@@ -339,14 +339,14 @@ class DocumentDataService(DataService):
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, name=None):
         """
         Gets entity and supporting document model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
+        :return model: Entity model
         :rtype model: DeclarativeMeta
-        :return document_model: Supporting document entity model;
+        :return document_model: Supporting document entity model
         :rtype document_model: DeclarativeMeta
         """
         try:
@@ -418,7 +418,7 @@ class HolderDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
-        model = self._entity_model(self.entity_name)
+        model = self.entity_model_(self.entity_name)
         entity_object = model()
         try:
             query_object = entity_object.queryObject(). \
@@ -427,16 +427,16 @@ class HolderDataService(DataService):
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, name=None):
         """
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return: Entity model;
+        :return: Entity model
         :rtype: DeclarativeMeta
         """
         entity = self._profile.entity(name)
-        return super(HolderDataService, self)._entity_model(entity)
+        return super(HolderDataService, self).entity_model_(entity)
 
 
 class CommentDataService(DataService):
@@ -498,7 +498,7 @@ class CommentDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
-        model = self._entity_model(self.entity_name)
+        model = self.entity_model_(self.entity_name)
         entity_object = model()
         try:
             query_object = entity_object.queryObject(). \
@@ -507,13 +507,13 @@ class CommentDataService(DataService):
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, name=None):
         """
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return: Entity model;
+        :return: Entity model
         :rtype: DeclarativeMeta
         """
         entity = self._profile.entity(name)
-        return super(CommentDataService, self)._entity_model(entity)
+        return super(CommentDataService, self).entity_model_(entity)

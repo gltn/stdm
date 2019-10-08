@@ -222,9 +222,9 @@ class Approve(Status):
     def _save_items(self, items):
         """
         Returns save items
-        :Param items: Save items; columns, values and entity
+        :Param items: Save items; columns, values and filters
         :type items: List
-        :return save_items: Valid approval update items
+        :return save_items: Save items; columns, values and entity
         :rtype save_items: List
         """
         save_items = []
