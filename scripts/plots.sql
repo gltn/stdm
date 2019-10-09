@@ -16,3 +16,18 @@ $insert_plots$ LANGUAGE plpgsql;
 CREATE TRIGGER insert_plots
 AFTER INSERT ON cb_lis_plot
     FOR EACH ROW EXECUTE PROCEDURE insert_plots();
+
+-- delete rows from staging table
+
+CREATE OR REPLACE FUNCTION clear_staging() RETURNS TRIGGER AS $clear_staging$
+    BEGIN
+        --- clear rows
+        TRUNCATE cb_lis_plot;
+        RETURN NULL;
+    END;
+
+$clear_staging$ LANGUAGE plpgsql;
+
+CREATE TRIGGER clear_staging
+AFTER INSERT ON cb_lis_plot
+    FOR EACH ROW EXECUTE PROCEDURE clear_staging();
