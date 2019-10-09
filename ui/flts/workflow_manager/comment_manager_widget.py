@@ -24,12 +24,12 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
     DATE_FORMAT = "ddd MMM dd yyyy"
     TIME_FORMAT = "hh:mm ap"
 
-    def __init__(self, detail_service, profile, scheme_id, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []
-        self._load_collections = detail_service['load_collections']
-        data_service = detail_service['data_service']
+        self._load_collections = widget_properties['load_collections']
+        data_service = widget_properties['data_service']
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setObjectName("Comments")
