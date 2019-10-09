@@ -136,6 +136,16 @@ class CommentConfig(Config):
         """
         return self.get_data('comment_load_collections')
 
+    @property
+    def comment_save_columns(self):
+        """
+        Comment text edit save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self.get_data('save_columns').\
+            get('comment_save', None)
+
 
 class DocumentConfig(Config):
     """
@@ -724,6 +734,11 @@ configurations = {
             ),
             SaveColumn(
                 column={'approval_id': 'approval_id'}, entity=None
+            )
+        ],
+        'comment_save': [
+            SaveColumn(
+                column='comment', entity=None
             )
         ]
     }
