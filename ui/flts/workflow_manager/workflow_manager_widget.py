@@ -142,6 +142,43 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.table_view.horizontalHeader().\
                 setResizeMode(QHeaderView.ResizeToContents)
 
+    # def _on_comment(self, index):
+    #     """
+    #     Handles click on a scheme record to view scheme comments
+    #     :param index: Table view item identifier
+    #     :type index: QModelIndex
+    #     """
+    #     if index.column() != self._lookup.CHECK:
+    #         row, value, scheme_id = self._get_model_item(index)
+    #         scheme_number = self._get_scheme_number(index)
+    #         self._load_comments(scheme_id, scheme_number)
+
+    # def _load_comments(self, scheme_id, scheme_number):
+    #     """
+    #     On click a scheme record, open scheme comments tab
+    #     :param scheme_id: Scheme record ID/primary key
+    #     :type scheme_id: Integer
+    #     :param scheme_number: Scheme number
+    #     :type scheme_number: String
+    #     """
+    #     # TODO: Refactor. Repetion refer to _load_scheme_detail
+    #     self._notif_bar.clear()
+    #     key, label = self._create_key(
+    #         scheme_id, scheme_number, self._comments_title
+    #     )
+    #     if key in self._detail_store:
+    #         saved_widget = self._detail_store[key]
+    #         if self._is_alive(saved_widget):
+    #             self._replace_tab(1, saved_widget, label)
+    #     elif None not in (key, label):
+    #         detail_service = self._get_widget_properties(self._comments_title)
+    #         comments = CommentManagerWidget(
+    #             detail_service, self._profile, scheme_id, self
+    #         )
+    #         self._replace_tab(1, comments, label)
+    #         self._disable_search()
+    #         self._detail_store[key] = comments
+
     def _on_comment(self, index):
         """
         Handles click on a scheme record to view scheme comments
@@ -155,29 +192,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _load_comments(self, scheme_id, scheme_number):
         """
-        On click a scheme record, open scheme comments tab
+        On click a scheme record, open Scheme comments tab
         :param scheme_id: Scheme record ID/primary key
         :type scheme_id: Integer
         :param scheme_number: Scheme number
         :type scheme_number: String
         """
-        # TODO: Refactor. Repetion refer to _load_scheme_detail
-        self._notif_bar.clear()
-        key, label = self._create_key(
+        widget_id = self._create_key(
             scheme_id, scheme_number, self._comments_title
         )
-        if key in self._detail_store:
-            saved_widget = self._detail_store[key]
-            if self._is_alive(saved_widget):
-                self._replace_tab(1, saved_widget, label)
-        elif None not in (key, label):
-            detail_service = self._get_detail_service(self._comments_title)
-            comments = CommentManagerWidget(
-                detail_service, self._profile, scheme_id, self
-            )
-            self._replace_tab(1, comments, label)
-            self._disable_search()
-            self._detail_store[key] = comments
+        widget_prop = self._get_widget_properties(self._comments_title)
+        self._load_details(widget_prop, widget_id, scheme_id)
 
     def _on_check(self, index):
         """
@@ -288,65 +313,107 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status = [tup[1] for tup in self._checked_ids.values()]
         return status
 
+    # def _load_scheme_detail(self):
+    #     """
+    #     On unchecking a record or clicking the 'Holders'
+    #     or'Documents' buttons, open scheme detail tab
+    #     """
+    #     # TODO: Refactor. Repetion refer to _load_comment
+    #     if not self._checked_ids:
+    #         return
+    #     self._notif_bar.clear()
+    #     last_id = self._checked_ids.keys()[-1]
+    #     row, status, scheme_number = self._checked_ids[last_id]
+    #     key, label = self._create_key(last_id, scheme_number)
+    #     if key in self._detail_store:
+    #         saved_widget = self._detail_store[key]
+    #         if self._is_alive(saved_widget):
+    #             self._replace_tab(1, saved_widget, label)
+    #     elif None not in (key, label):
+    #         detail_service = self._get_widget_properties()
+    #         self._detail_table = SchemeDetailTableView(
+    #             detail_service, self._profile, last_id, self
+    #         )
+    #         self._replace_tab(1, self._detail_table, label)
+    #         self._enable_search() if self._detail_table.model.results \
+    #             else self._disable_search()
+    #         self._detail_store[key] = self._detail_table
+
     def _load_scheme_detail(self):
         """
-        On unchecking a record or clicking the 'Holders'
-        or'Documents' buttons, open scheme detail tab
+        On unchecking a record or clicking the 'Holders', 'Documents' or
+        'Comments' buttons, open scheme detail tab
         """
-        # TODO: Refactor. Repetion refer to _load_comment
         if not self._checked_ids:
             return
-        self._notif_bar.clear()
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
-        key, label = self._create_key(last_id, scheme_number)
+        widget_id = self._create_key(last_id, scheme_number)
+        widget_prop = self._get_widget_properties()
+        self._load_details(widget_prop, widget_id, last_id)
+
+    def _load_details(self, widget_prop, widget_id, scheme_id):
+        """
+        Add Scheme details tab
+        :param widget_prop: Scheme details service items
+        :type widget_prop: Scheme widgets properties
+        :param widget_id: Dictionary
+        :type widget_id: Widget key and label
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
+        :type scheme_id: Integer
+        """
+        self._notif_bar.clear()
+        key, label = widget_id
         if key in self._detail_store:
             saved_widget = self._detail_store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
-            detail_service = self._get_detail_service()
-            self._detail_table = SchemeDetailTableView(
-                detail_service, self._profile, last_id, self
+            self._detail_table = widget_prop['widget'](
+                widget_prop, self._profile, scheme_id, self
             )
             self._replace_tab(1, self._detail_table, label)
             self._enable_search() if self._detail_table.model.results \
                 else self._disable_search()
             self._detail_store[key] = self._detail_table
 
-    def _get_detail_service(self, comment=None):
+    def _get_widget_properties(self, comment=None):
         """
-        Returns scheme details and comments data service
+        Returns Scheme widgets properties
         :param comment: Comment label
         :type comment: String
-        :return: Scheme details data service
-        :rtype: DocumentDataService or HolderDataService
-        """
-        label = comment if comment else self._get_label()
-        return self._detail_services[label]
-
-    @property
-    def _detail_services(self):
-        """
-        Scheme details data services
-        :return: Scheme details data services
+        :return: Scheme widgets properties
         :rtype: Dictionary
         """
-        detail_service = {
+        label = comment if comment else self._get_label()
+        return self._widget_properties[label]
+
+    @property
+    def _widget_properties(self):
+        """
+        Scheme widgets properties
+        :return: Scheme widgets properties
+        :rtype: Dictionary
+        """
+        widget_prop = {
             self.documentsButton.objectName(): {
                 'data_service': DocumentDataService,
+                'widget': SchemeDetailTableView,
                 'load_collections': False
             },
             self.holdersButton.objectName(): {
                 'data_service': HolderDataService,
+                'widget': SchemeDetailTableView,
                 'load_collections': True
             },
             self._comments_title: {
                 'data_service': CommentDataService,
+                'widget': CommentManagerWidget,
                 'load_collections': True
             }
         }
-        return detail_service
+        return widget_prop
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
         """
