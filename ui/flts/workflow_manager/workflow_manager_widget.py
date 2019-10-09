@@ -188,9 +188,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if index.column() != self._lookup.CHECK:
             row, value, scheme_id = self._get_model_item(index)
             scheme_number = self._get_scheme_number(index)
-            self._load_comments(scheme_id, scheme_number)
+            self._load_comments(row, scheme_id, scheme_number)
 
-    def _load_comments(self, scheme_id, scheme_number):
+    def _load_comments(self, row, scheme_id, scheme_number):
         """
         On click a scheme record, open Scheme comments tab
         :param scheme_id: Scheme record ID/primary key
@@ -202,6 +202,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             scheme_id, scheme_number, self._comments_title
         )
         widget_prop = self._get_widget_properties(self._comments_title)
+        widget_prop['scheme_data'] = [self._model.results[row].get("data")]
         self._load_details(widget_prop, widget_id, scheme_id)
 
     def _on_check(self, index):
@@ -350,7 +351,20 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         row, status, scheme_number = self._checked_ids[last_id]
         widget_id = self._create_key(last_id, scheme_number)
         widget_prop = self._get_widget_properties()
+        widget_prop['scheme_data'] = self._get_model_data()
         self._load_details(widget_prop, widget_id, last_id)
+
+    def _get_model_data(self):
+        """
+        Returns Scheme model query data
+        :return: Scheme model query data
+        :rtype: List
+        """
+        return [
+            self._model.results[row].get("data")
+            for scheme_id, (row, status, scheme_number) in
+            self._checked_ids.iteritems()
+        ]
 
     def _load_details(self, widget_prop, widget_id, scheme_id):
         """
@@ -370,7 +384,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
         elif None not in (key, label):
-            self._detail_table = widget_prop['widget'](
+            details_widget = widget_prop['widget']
+            self._detail_table = details_widget(
                 widget_prop, self._profile, scheme_id, self
             )
             self._replace_tab(1, self._detail_table, label)
@@ -378,16 +393,16 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 else self._disable_search()
             self._detail_store[key] = self._detail_table
 
-    def _get_widget_properties(self, comment=None):
+    def _get_widget_properties(self, key=None):
         """
         Returns Scheme widgets properties
-        :param comment: Comment label
-        :type comment: String
+        :param key: Properties key
+        :type key: String
         :return: Scheme widgets properties
         :rtype: Dictionary
         """
-        label = comment if comment else self._get_label()
-        return self._widget_properties[label]
+        key = key if key else self._get_label()
+        return self._widget_properties[key]
 
     @property
     def _widget_properties(self):
