@@ -459,6 +459,15 @@ class CommentDataService(DataService):
         return self._comment_config.columns
 
     @property
+    def save_columns(self):
+        """
+        Comment text edit save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self._comment_config.comment_save_columns
+
+    @property
     def load_collections(self):
         """
         Related entity collection names to be used as
@@ -467,15 +476,6 @@ class CommentDataService(DataService):
         :rtype: List
         """
         return self._comment_config.load_collections
-
-    @property
-    def save_columns(self):
-        """
-        Comment text edit save column options
-        :return: Save column values
-        :rtype: List
-        """
-        return self._comment_config.comment_save_columns
 
     @property
     def collections(self):

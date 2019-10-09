@@ -56,7 +56,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._checked_ids = OrderedDict()
         self._detail_store = {}
         self._tab_name = self._detail_table = None
-        self._notif_bar = NotificationBar(self.vlNotification)
+        self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
             self._profile, self._object_name, self
@@ -162,7 +162,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     #     :type scheme_number: String
     #     """
     #     # TODO: Refactor. Repetion refer to _load_scheme_detail
-    #     self._notif_bar.clear()
+    #     self.notif_bar.clear()
     #     key, label = self._create_key(
     #         scheme_id, scheme_number, self._comments_title
     #     )
@@ -202,7 +202,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             scheme_id, scheme_number, self._comments_title
         )
         widget_prop = self._get_widget_properties(self._comments_title)
-        widget_prop['scheme_data'] = [self._model.results[row].get("data")]
+        widget_prop["scheme_query"] = {row: self._model.results[row].get("data")}
         self._load_details(widget_prop, widget_id, scheme_id)
 
     def _on_check(self, index):
@@ -322,7 +322,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     #     # TODO: Refactor. Repetion refer to _load_comment
     #     if not self._checked_ids:
     #         return
-    #     self._notif_bar.clear()
+    #     self.notif_bar.clear()
     #     last_id = self._checked_ids.keys()[-1]
     #     row, status, scheme_number = self._checked_ids[last_id]
     #     key, label = self._create_key(last_id, scheme_number)
@@ -351,20 +351,20 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         row, status, scheme_number = self._checked_ids[last_id]
         widget_id = self._create_key(last_id, scheme_number)
         widget_prop = self._get_widget_properties()
-        widget_prop['scheme_data'] = self._get_model_data()
+        widget_prop["scheme_query"] = self._get_model_query()
         self._load_details(widget_prop, widget_id, last_id)
 
-    def _get_model_data(self):
+    def _get_model_query(self):
         """
-        Returns Scheme model query data
+        Returns Scheme model query object
         :return: Scheme model query data
         :rtype: List
         """
-        return [
-            self._model.results[row].get("data")
+        return {
+            row: self._model.results[row].get("data")
             for scheme_id, (row, status, scheme_number) in
             self._checked_ids.iteritems()
-        ]
+        }
 
     def _load_details(self, widget_prop, widget_id, scheme_id):
         """
@@ -377,7 +377,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type scheme_id: Integer
         :type scheme_id: Integer
         """
-        self._notif_bar.clear()
+        self.notif_bar.clear()
         key, label = widget_id
         if key in self._detail_store:
             saved_widget = self._detail_store[key]
@@ -668,7 +668,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         updated_rows = None
         rows, scheme_numbers = scheme_numbers
         try:
-            self._notif_bar.clear()
+            self.notif_bar.clear()
             msg = self._approval_message(
                 title.capitalize(), rows, scheme_numbers
             )
@@ -690,7 +690,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 msg = self._approval_message(
                     "Successfully {}".format(title), updated_rows
                 )
-                self._notif_bar.insertInformationNotification(msg)
+                self.notif_bar.insertInformationNotification(msg)
 
     def _update_on_approve(self, items, next_items, save_items):
         """

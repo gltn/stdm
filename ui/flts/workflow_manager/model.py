@@ -448,7 +448,7 @@ class Save(DataRoutine):
     Update database record(s) on edit
     """
 
-    def __init__(self, save_items, model_items, data_service):
+    def __init__(self, save_items, model_items, data_service, parents=None):
         """
         :return save_items: Save items; columns, values and entity
         :rtype save_items: List
@@ -456,6 +456,8 @@ class Save(DataRoutine):
         :type model_items: List
         :param data_service: Data service
         :type data_service: DataService
+        :param parents: Parent entity query objects
+        :type parents: Dictionary
         """
         super(Save, self).__int__()
         self._save_items = save_items
@@ -463,8 +465,8 @@ class Save(DataRoutine):
         self._data_service = data_service
         self._fk_entity_name = data_service.related_entities()
         self._collection_name = data_service.collections
+        self._parents = parents
         self._entity_items = {}
-        self._entity_models = {}
 
     def save(self):
         """
@@ -480,6 +482,30 @@ class Save(DataRoutine):
                     entity_obj = model()
                     model = [model(**columns) for columns in items]
                     entity_obj.saveMany(model)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        else:
+            count = 0
+            return count
+
+    def save_collection(self):
+        """
+        Saves related collection values to database
+        :return count: Number of saved items
+        :rtype count: Integer
+        """
+        try:
+            self._set_save_items()
+            for row, parent_entity_obj in self._parents.iteritems():
+                for entity_name, items in self._entity_items.iteritems():
+                        model = self._data_service.entity_model_(entity_name)
+                        model = [model(**columns) for columns in items]
+                        collection = self._data_service.load_collections[0]
+                        if hasattr(parent_entity_obj, collection):
+                            collection = getattr(parent_entity_obj, collection)
+                            collection.extend(model)
+            entity_obj = self._parents.values()[0]
+            entity_obj.save()  # Commit session
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
@@ -566,7 +592,7 @@ class Save(DataRoutine):
         """
         prefix = "cb_"
         if name.startswith(prefix):
-            name = name.strip(prefix)
+            name = name.split(prefix, 1)[1]
             return name.capitalize()
         return name.capitalize()
 
@@ -789,8 +815,10 @@ class WorkflowManagerModel(QAbstractTableModel):
     def save(self, save_items):
         """
         Saves values to database
-        :return save_items: Save items; columns, values and entity
-        :rtype save_items: List
+        :param save_items: Save items; columns, values and entity
+        :type save_items: Dictionary
+        :param parent: Parent entity query objects
+        :type parent: List
         :return: Number of saved items
         :rtype: Integer
         """
@@ -799,6 +827,26 @@ class WorkflowManagerModel(QAbstractTableModel):
             saved = Save(
                 save_items, self.results, self._data_service
             ).save()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return saved
+
+    def save_collection(self, save_items, parents=None):
+        """
+        Saves related collection values to database
+        :param save_items: Save items; columns, values and entity
+        :type save_items: Dictionary
+        :param parents: Parent entity query objects
+        :type parents: Dictionary
+        :return: Number of saved items
+        :rtype: Integer
+        """
+        saved = 0
+        try:
+            saved = Save(
+                save_items, self.results, self._data_service, parents
+            ).save_collection()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         finally:

@@ -33,8 +33,8 @@ class SchemeDetailTableView(QTableView):
     """
     def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QTableView, self).__init__(parent)
-        self._load_collections = widget_properties['load_collections']
-        data_service = widget_properties['data_service']
+        self._load_collections = widget_properties["load_collections"]
+        data_service = widget_properties["data_service"]
         data_service = data_service(profile, scheme_id)
         self.model = WorkflowManagerModel(data_service)
         self.setModel(self.model)

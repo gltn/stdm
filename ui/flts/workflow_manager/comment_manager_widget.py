@@ -28,14 +28,17 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []
-        self._load_collections = widget_properties['load_collections']
-        data_service = widget_properties['data_service']
-        data_service = data_service(profile, scheme_id)
-        self.model = WorkflowManagerModel(data_service)
+        self._load_collections = widget_properties["load_collections"]
+        self._data_service = widget_properties["data_service"]
+        self._data_service = self._data_service(profile, scheme_id)
+        self._scheme_query_objs = widget_properties["scheme_query"]
+        self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
         self._set_button_icons()
-        parent.paginationFrame.hide()
+        self._parent = parent
+        self._parent.paginationFrame.hide()
         self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.submitButton.clicked.connect(self._on_submit)
         self._initial_load()
         self._get_comments()
         self._populate_comments()
@@ -106,6 +109,58 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
                     comment.comment
                 ))
         self.oldCommentTextEdit.setHtml(html)
+
+    def _on_submit(self):
+        """
+        Submit new comment
+        """
+        save_items = self._save_items()
+        if not save_items:
+            msg = "Comment is empty. Kindly type your comments to submit."
+            self._notification_warning(msg)
+            return
+        items = {}
+        row = self._scheme_query_objs.keys()[0]  # Any row can do
+        items[row] = save_items
+        try:
+            self.model.save_collection(items, self._scheme_query_objs)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def _save_items(self):
+        """
+        Returns save items
+        :return save_items: Save items; columns, values and entity
+        :rtype save_items: List
+        """
+        save_items = []
+        new_comment = self.newCommentTextEdit.toPlainText()
+        if not new_comment.strip():
+            return
+        for option in self._get_config_option(self._data_service.save_columns):
+            save_items.append([option.column, new_comment, option.entity])
+        return save_items
+
+    @ staticmethod
+    def _get_config_option(config):
+        """
+        Returns save/update configuration options
+        :param config: Save/update configuration options
+        :type config: Named
+        :return option: Save/update configuration option
+        :rtype option: named tuple
+        """
+        for option in config:
+            yield option
+
+    def _notification_warning(self, msg):
+        """
+        Shows warning notification
+        :param msg: Warning message
+        :type msg: Warning message
+        """
+        self._parent.notif_bar.clear()
+        self._parent.notif_bar.insertWarningNotification(msg)
 
 
 
