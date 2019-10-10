@@ -34,6 +34,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._scheme_query_objs = widget_properties["scheme_query"]
         self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
+        self.oldCommentTextEdit.setReadOnly(True)
         self._set_button_icons()
         self._parent = parent
         self._parent.paginationFrame.hide()
@@ -120,9 +121,16 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             self._notification_warning(msg)
             return
         try:
-            self.model.save_collection(save_items, self._scheme_query_objs)
+            saved_comments = self.model.save_collection(
+                save_items, self._scheme_query_objs
+            )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+        else:
+            if saved_comments > 0:
+                self.newCommentTextEdit.document().clear()
+                msg = "Comment submitted. Thank you."
+                self._notification_information(msg)
 
     def _save_items(self):
         """
@@ -166,6 +174,15 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         self._parent.notif_bar.clear()
         self._parent.notif_bar.insertWarningNotification(msg)
+
+    def _notification_information(self, msg):
+        """
+        Shows warning notification
+        :param msg: Warning message
+        :type msg: Warning message
+        """
+        self._parent.notif_bar.clear()
+        self._parent.notif_bar.insertInformationNotification(msg)
 
 
 

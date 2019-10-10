@@ -475,6 +475,7 @@ class Save(DataRoutine):
         :rtype count: Integer
         """
         try:
+            count = 0
             if not self._valid_save_items(self._save_items):
                 self._set_save_items()
             if self._entity_items:
@@ -483,10 +484,10 @@ class Save(DataRoutine):
                     entity_obj = model()
                     model = [model(**columns) for columns in items]
                     entity_obj.saveMany(model)
+                    count += 1
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
-            count = 0
             return count
 
     def save_collection(self):
@@ -496,23 +497,24 @@ class Save(DataRoutine):
         :rtype count: Integer
         """
         try:
+            count = 0
             if not self._valid_save_items(self._save_items):
                 self._set_save_items()
             if self._entity_items:
                 for row, parent_entity_obj in self._parents.iteritems():
                     for entity_name, items in self._entity_items.iteritems():
-                            model = self._data_service.entity_model_(entity_name)
-                            model = [model(**columns) for columns in items]
-                            collection = self._data_service.load_collections[0]
-                            if hasattr(parent_entity_obj, collection):
-                                collection = getattr(parent_entity_obj, collection)
-                                collection.extend(model)
+                        model = self._data_service.entity_model_(entity_name)
+                        model = [model(**columns) for columns in items]
+                        collection = self._data_service.load_collections[0]
+                        if hasattr(parent_entity_obj, collection):
+                            collection = getattr(parent_entity_obj, collection)
+                            collection.extend(model)
+                        count += 1
                 entity_obj = self._parents.values()[0]
                 entity_obj.save()  # Commit session
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
-            count = 0
             return count
 
     def _valid_save_items(self, items):
