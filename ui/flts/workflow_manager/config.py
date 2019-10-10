@@ -138,6 +138,15 @@ class CommentConfig(Config):
         return self.get_data('comment_load_collections')
 
     @property
+    def lookups(self):
+        """
+        Comment text edit lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
+    @property
     def comment_save_columns(self):
         """
         Comment text edit save column options
@@ -518,7 +527,7 @@ LookUp = namedtuple(
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN',
-        'SCHEME_NUMBER'
+        'SCHEME_NUMBER', 'COMMENT_COLUMN'
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
@@ -653,7 +662,8 @@ configurations = {
             'check_lht_approval_status', {'value': 'Disapproved'}
         ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
-        SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2
+        SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
+        COMMENT_COLUMN='comment'
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},

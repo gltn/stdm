@@ -459,6 +459,15 @@ class CommentDataService(DataService):
         return self._comment_config.columns
 
     @property
+    def lookups(self):
+        """
+        Comment text edit lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self._comment_config.lookups
+
+    @property
     def save_columns(self):
         """
         Comment text edit save column options

@@ -133,12 +133,16 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         :return save_items: Save items; columns, values and entity
         :rtype save_items: List
         """
+        lookup = self._data_service.lookups
         save_items = []
         new_comment = self.newCommentTextEdit.toPlainText()
         if not new_comment.strip():
             return
         for option in self._get_config_option(self._data_service.save_columns):
-            save_items.append([option.column, new_comment, option.entity])
+            if option.column == lookup.COMMENT_COLUMN:
+                save_items.append([option.column, new_comment, option.entity])
+            else:
+                save_items.append([option.column, option.value, option.entity])
         return save_items
 
     @ staticmethod
