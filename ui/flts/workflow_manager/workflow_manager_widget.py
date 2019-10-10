@@ -677,9 +677,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Approval message
         :rtype: String
         """
-        msg = 'schemes' if rows != 1 else 'scheme'
+        msg = 'schemes' if rows > 1 else 'scheme'
         if scheme_numbers:
-            return "{0} {1} {2}?\n{3}".format(
+            return "{0} {1} {2}\n{3}".format(
                 prefix, rows, msg, ', '.join(scheme_numbers)
             )
         return "{0} {1} {2}?".format(prefix, rows, msg)
