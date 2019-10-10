@@ -118,7 +118,7 @@ class DataRoutine(object):
         for name in collection_name:
             collection = getattr(query_obj, name, None)
             if isinstance(collection, InstrumentedList):
-                for item in collection:
+                for item in reversed(collection):
                     yield item
 
     @staticmethod
