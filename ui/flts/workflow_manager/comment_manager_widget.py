@@ -133,10 +133,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         else:
             if saved_comments > 0:
                 self.newCommentTextEdit.document().clear()
-                msg = self._submit_message(
-                    "Thank you. Comments submitted for Scheme: ",
-                    scheme_numbers
-                )
+                msg = "Comments successfully submitted. Thank you."
                 self._notification_information(msg)
 
     def _save_items(self):
