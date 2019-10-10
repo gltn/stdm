@@ -121,9 +121,12 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             self._notification_warning(msg)
             return
         try:
-            saved_comments = self.model.save_collection(
-                save_items, self._scheme_query_objs
-            )
+            saved_comments = 0
+            msg = "Submit comments?"
+            if self._show_question_message(msg):
+                saved_comments = self.model.save_collection(
+                    save_items, self._scheme_query_objs
+                )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
@@ -165,6 +168,21 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         for option in config:
             yield option
+
+    def _show_question_message(self, msg):
+        """
+        Message box to communicate a question
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        if QMessageBox.question(
+            self,
+            self.tr('Comment Manager'),
+            self.tr(msg),
+            QMessageBox.Yes | QMessageBox.No
+        ) == QMessageBox.No:
+            return False
+        return True
 
     def _notification_warning(self, msg):
         """
