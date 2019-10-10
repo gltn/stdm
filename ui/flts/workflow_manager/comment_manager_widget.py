@@ -123,7 +123,9 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         try:
             saved_comments = 0
             scheme_numbers = self._scheme_numbers
-            msg = self._submit_message("Submit comments for Scheme: ", scheme_numbers)
+            msg = self._submit_message(
+                "Submit comments for Scheme: ", scheme_numbers
+            )
             if self._show_question_message(msg):
                 saved_comments = self.model.save_collection(
                     save_items, self._parent_query_objs
