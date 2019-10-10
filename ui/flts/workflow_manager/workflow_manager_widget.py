@@ -142,43 +142,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.table_view.horizontalHeader().\
                 setResizeMode(QHeaderView.ResizeToContents)
 
-    # def _on_comment(self, index):
-    #     """
-    #     Handles click on a scheme record to view scheme comments
-    #     :param index: Table view item identifier
-    #     :type index: QModelIndex
-    #     """
-    #     if index.column() != self._lookup.CHECK:
-    #         row, value, scheme_id = self._get_model_item(index)
-    #         scheme_number = self._get_scheme_number(index)
-    #         self._load_comments(scheme_id, scheme_number)
-
-    # def _load_comments(self, scheme_id, scheme_number):
-    #     """
-    #     On click a scheme record, open scheme comments tab
-    #     :param scheme_id: Scheme record ID/primary key
-    #     :type scheme_id: Integer
-    #     :param scheme_number: Scheme number
-    #     :type scheme_number: String
-    #     """
-    #     # TODO: Refactor. Repetion refer to _load_scheme_detail
-    #     self.notif_bar.clear()
-    #     key, label = self._create_key(
-    #         scheme_id, scheme_number, self._comments_title
-    #     )
-    #     if key in self._detail_store:
-    #         saved_widget = self._detail_store[key]
-    #         if self._is_alive(saved_widget):
-    #             self._replace_tab(1, saved_widget, label)
-    #     elif None not in (key, label):
-    #         detail_service = self._get_widget_properties(self._comments_title)
-    #         comments = CommentManagerWidget(
-    #             detail_service, self._profile, scheme_id, self
-    #         )
-    #         self._replace_tab(1, comments, label)
-    #         self._disable_search()
-    #         self._detail_store[key] = comments
-
     def _on_comment(self, index):
         """
         Handles click on a scheme record to view scheme comments
@@ -313,32 +276,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         status = [tup[1] for tup in self._checked_ids.values()]
         return status
-
-    # def _load_scheme_detail(self):
-    #     """
-    #     On unchecking a record or clicking the 'Holders'
-    #     or'Documents' buttons, open scheme detail tab
-    #     """
-    #     # TODO: Refactor. Repetion refer to _load_comment
-    #     if not self._checked_ids:
-    #         return
-    #     self.notif_bar.clear()
-    #     last_id = self._checked_ids.keys()[-1]
-    #     row, status, scheme_number = self._checked_ids[last_id]
-    #     key, label = self._create_key(last_id, scheme_number)
-    #     if key in self._detail_store:
-    #         saved_widget = self._detail_store[key]
-    #         if self._is_alive(saved_widget):
-    #             self._replace_tab(1, saved_widget, label)
-    #     elif None not in (key, label):
-    #         detail_service = self._get_widget_properties()
-    #         self._detail_table = SchemeDetailTableView(
-    #             detail_service, self._profile, last_id, self
-    #         )
-    #         self._replace_tab(1, self._detail_table, label)
-    #         self._enable_search() if self._detail_table.model.results \
-    #             else self._disable_search()
-    #         self._detail_store[key] = self._detail_table
 
     def _load_scheme_detail(self):
         """

@@ -475,7 +475,8 @@ class Save(DataRoutine):
         :rtype count: Integer
         """
         try:
-            self._set_save_items()
+            if not self._valid_save_items(self._save_items):
+                self._set_save_items()
             if self._entity_items:
                 for entity_name, items in self._entity_items.iteritems():
                     model = self._data_service.entity_model_(entity_name)
@@ -495,7 +496,8 @@ class Save(DataRoutine):
         :rtype count: Integer
         """
         try:
-            self._set_save_items()
+            if not self._valid_save_items(self._save_items):
+                self._set_save_items()
             if self._entity_items:
                 for row, parent_entity_obj in self._parents.iteritems():
                     for entity_name, items in self._entity_items.iteritems():
@@ -512,6 +514,22 @@ class Save(DataRoutine):
         else:
             count = 0
             return count
+
+    def _valid_save_items(self, items):
+        """
+        Checks if items are valid for save
+        :param items: Dictionary
+        :type items: Dictionary
+        :return: True if valid otherwise False
+        :rtype: Boolean
+        """
+        valid = all(
+            isinstance(k, str) or isinstance(k, unicode)
+            for k in items.keys()
+        )
+        if valid:
+            self._entity_items = items
+        return valid
 
     def _set_save_items(self):
         """

@@ -119,11 +119,8 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             msg = "Comment is empty. Kindly type your comments to submit."
             self._notification_warning(msg)
             return
-        items = {}
-        row = self._scheme_query_objs.keys()[0]  # Any row can do
-        items[row] = save_items
         try:
-            self.model.save_collection(items, self._scheme_query_objs)
+            self.model.save_collection(save_items, self._scheme_query_objs)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -131,18 +128,22 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         Returns save items
         :return save_items: Save items; columns, values and entity
-        :rtype save_items: List
+        :rtype save_items: Dictionary
         """
-        lookup = self._data_service.lookups
-        save_items = []
         new_comment = self.newCommentTextEdit.toPlainText()
         if not new_comment.strip():
             return
-        for option in self._get_config_option(self._data_service.save_columns):
+        columns = {}
+        save_items = {}
+        lookup = self._data_service.lookups
+        save_columns = self._data_service.save_columns
+        for option in self._get_config_option(save_columns):
             if option.column == lookup.COMMENT_COLUMN:
-                save_items.append([option.column, new_comment, option.entity])
+                columns[option.column] = new_comment
             else:
-                save_items.append([option.column, option.value, option.entity])
+                columns[option.column] = option.value
+        entity_name = save_columns[0].entity
+        save_items[entity_name] = [columns]
         return save_items
 
     @ staticmethod
