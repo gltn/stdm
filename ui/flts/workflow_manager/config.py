@@ -16,6 +16,7 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 
+from datetime import datetime
 from collections import namedtuple
 from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
@@ -521,7 +522,7 @@ LookUp = namedtuple(
     ]
 )
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
-SaveColumn = namedtuple('SaveColumn', ['column', 'entity'])
+SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 
 configurations = {
@@ -727,18 +728,24 @@ configurations = {
     'save_columns': {
         'scheme_save': [
             SaveColumn(
-                column={'scheme_id': 'scheme_id'}, entity=None
+                column={'scheme_id': 'scheme_id'}, value=None, entity=None
             ),
             SaveColumn(
-                column={'workflow_id': 'workflow_id'}, entity=None
+                column={'workflow_id': 'workflow_id'}, value=None, entity=None
             ),
             SaveColumn(
-                column={'approval_id': 'approval_id'}, entity=None
+                column={'approval_id': 'approval_id'}, value=None, entity=None
             )
         ],
         'comment_save': [
             SaveColumn(
-                column='comment', entity=None
+                column='comment', value=None, entity='Comment'
+            ),
+            SaveColumn(
+                column='user_id', value=1, entity='Comment'
+            ),
+            SaveColumn(
+                column='timestamp', value=datetime.now(), entity='Comment'
             )
         ]
     }

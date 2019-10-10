@@ -496,16 +496,17 @@ class Save(DataRoutine):
         """
         try:
             self._set_save_items()
-            for row, parent_entity_obj in self._parents.iteritems():
-                for entity_name, items in self._entity_items.iteritems():
-                        model = self._data_service.entity_model_(entity_name)
-                        model = [model(**columns) for columns in items]
-                        collection = self._data_service.load_collections[0]
-                        if hasattr(parent_entity_obj, collection):
-                            collection = getattr(parent_entity_obj, collection)
-                            collection.extend(model)
-            entity_obj = self._parents.values()[0]
-            entity_obj.save()  # Commit session
+            if self._entity_items:
+                for row, parent_entity_obj in self._parents.iteritems():
+                    for entity_name, items in self._entity_items.iteritems():
+                            model = self._data_service.entity_model_(entity_name)
+                            model = [model(**columns) for columns in items]
+                            collection = self._data_service.load_collections[0]
+                            if hasattr(parent_entity_obj, collection):
+                                collection = getattr(parent_entity_obj, collection)
+                                collection.extend(model)
+                entity_obj = self._parents.values()[0]
+                entity_obj.save()  # Commit session
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
