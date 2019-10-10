@@ -76,6 +76,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         Get comments from the model
         """
+        self._comments = []
         for row in self.model.results:
             comment = Comment(
                 [value for column, value in row.iteritems() if column != "data"]
@@ -134,7 +135,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             raise e
         else:
             if saved_comments > 0:
-                self.newCommentTextEdit.document().clear()
+                self._refresh()
                 msg = "Comments successfully submitted. Thank you."
                 self._notification_information(msg)
 
@@ -245,7 +246,12 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._parent.notif_bar.clear()
         self._parent.notif_bar.insertInformationNotification(msg)
 
-
-
-
-
+    def _refresh(self):
+        """
+        Refresh checked items store and model
+        """
+        self.newCommentTextEdit.document().clear()
+        self.oldCommentTextEdit.document().clear()
+        self._initial_load()
+        self._get_comments()
+        self._populate_comments()
