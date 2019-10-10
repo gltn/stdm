@@ -322,6 +322,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             saved_widget = self._detail_store[key]
             if self._is_alive(saved_widget):
                 self._replace_tab(1, saved_widget, label)
+                saved_widget.refresh()
         elif None not in (key, label):
             details_widget = widget_prop['widget']
             self._detail_table = details_widget(

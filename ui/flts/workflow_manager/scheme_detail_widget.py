@@ -66,3 +66,9 @@ class SchemeDetailTableView(QTableView):
         else:
             self.horizontalHeader().setStretchLastSection(True)
             self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+
+    def refresh(self):
+        """
+        Refresh checked items store and model
+        """
+        self._initial_load()

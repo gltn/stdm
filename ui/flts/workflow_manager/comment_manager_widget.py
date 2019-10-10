@@ -135,7 +135,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             raise e
         else:
             if saved_comments > 0:
-                self._refresh()
+                self.refresh()
                 msg = "Comments successfully submitted. Thank you."
                 self._notification_information(msg)
 
@@ -246,7 +246,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._parent.notif_bar.clear()
         self._parent.notif_bar.insertInformationNotification(msg)
 
-    def _refresh(self):
+    def refresh(self):
         """
         Refresh checked items store and model
         """
