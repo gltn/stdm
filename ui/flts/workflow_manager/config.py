@@ -21,8 +21,9 @@ from collections import namedtuple
 from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
     QApplication,
-    QMessageBox,
     QIcon,
+    QMessageBox,
+    QPushButton,
 )
 from sqlalchemy import exc
 from stdm.settings import current_profile
@@ -378,6 +379,23 @@ class SchemeConfig(Config):
             get('scheme_update', None)
 
 
+class SchemeMessageBox(ButtonIcons):
+    """
+    Scheme QMessageBox configuration interface
+    """
+    def __init__(self):
+        super(SchemeMessageBox, self).__init__()
+
+    @property
+    def message_box(self):
+        """
+        QMessageBox configuration options
+        :return: QMessageBox configuration options
+        :rtype: List
+        """
+        return self.get_data('scheme_message_box')
+
+
 class TabIcons(Config):
     """
     QTabWidget icons configuration interface
@@ -520,6 +538,7 @@ class EntityRecordId(Config):
 
 
 Column = namedtuple('Column', ['name', 'flag'])
+Icon = namedtuple('Icon', ['icon', 'size'])
 LookUp = namedtuple(
     'LookUp',
     [
@@ -530,9 +549,9 @@ LookUp = namedtuple(
         'SCHEME_NUMBER', 'COMMENT_COLUMN'
     ]
 )
-UpdateColumn = namedtuple('UpdateColumn', ['column'])
+MessageBox = namedtuple('MessageBox', ['name', 'pushButton', 'role', 'icon'])
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
-Icon = namedtuple('Icon', ['icon', 'size'])
+UpdateColumn = namedtuple('UpdateColumn', ['column'])
 
 configurations = {
     'comment_columns': [
@@ -716,6 +735,26 @@ configurations = {
         {Column(name='Block Area', flag=False): 'area'}
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
+    'scheme_message_box': [
+        MessageBox(
+            name='approveMsgButton',
+            pushButton=QPushButton("Approve"),
+            role=QMessageBox.YesRole,
+            icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+        ),
+        MessageBox(
+            name='commentApproveMsgButton',
+            pushButton=QPushButton("Comment && Approve"),
+            role=QMessageBox.YesRole,
+            icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+        ),
+        MessageBox(
+            name=None,
+            pushButton=QPushButton("Cancel"),
+            role=QMessageBox.RejectRole,
+            icon=None,
+        )
+    ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),

@@ -22,6 +22,7 @@ from PyQt4.QtGui import *
 from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
+    SchemeMessageBox,
     SchemeButtonIcons,
     StyleSheet,
     TabIcons,
@@ -39,6 +40,7 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Disapprove
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
+from stdm.ui.flts.workflow_manager.message_box_widget import MessageBoxWidget
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
@@ -55,7 +57,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._object_name = object_name
         self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._tab_name = self._detail_table = None
+        self._tab_name = self._detail_table = self._message_box = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -698,6 +700,38 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         ) == QMessageBox.No:
             return False
         return True
+
+    def _show_approval_message(self, msg):
+        """
+        Custom Message box
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        values = (0, 1)
+        if self._message_box:
+            return self._message_box_result(self._message_box, values)
+        options = SchemeMessageBox().message_box
+        self._message_box = MessageBoxWidget(
+            options,
+            self.tr('Workflow Manager'),
+            self.tr(msg),
+            self
+        )
+        return self._message_box_result(self._message_box, values)
+
+    @staticmethod
+    def _message_box_result(message_box, values):
+        """
+        Returns custom message box results
+        :param message_box: Custom QMessageBox
+        :type message_box: QMessageBox
+        :param values: Positive button click result
+        :type values: Tuple
+        :rtype: Integer
+        """
+        result = message_box.exec_()
+        if result in values:
+            return result
 
     def _show_critical_message(self, msg):
         """

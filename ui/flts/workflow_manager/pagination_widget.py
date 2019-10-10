@@ -1,5 +1,9 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import (
+    QHBoxLayout,
+    QLineEdit,
+    QPushButton,
+)
 from stdm.ui.flts.workflow_manager.config import PaginationButtonIcons
 
 
