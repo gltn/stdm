@@ -1,4 +1,4 @@
-from PyQt4.QtCore import *
+from datetime import datetime
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import CommentButtonIcons
@@ -151,6 +151,8 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         for option in self._get_config_option(save_columns):
             if option.column == lookup.COMMENT_COLUMN:
                 columns[option.column] = new_comment
+            elif type(option.value) is datetime:
+                columns[option.column] = datetime.now()
             else:
                 columns[option.column] = option.value
         entity_name = save_columns[0].entity
