@@ -501,7 +501,7 @@ class Save(DataRoutine):
             if not self._valid_save_items(self._save_items):
                 self._set_save_items()
             if self._entity_items:
-                for row, (parent_entity_obj, ids) in self._parents.iteritems():
+                for row, parent_entity_obj in self._parents.iteritems():
                     for entity_name, items in self._entity_items.iteritems():
                         model = self._data_service.entity_model_(entity_name)
                         model = [model(**columns) for columns in items]

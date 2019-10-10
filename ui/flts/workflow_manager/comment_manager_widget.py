@@ -126,7 +126,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             msg = self._submit_message("Submit comments for Scheme: ", scheme_numbers)
             if self._show_question_message(msg):
                 saved_comments = self.model.save_collection(
-                    save_items, self._scheme_items
+                    save_items, self._parent_query_objs
                 )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
@@ -199,6 +199,19 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         :rtype: String
         """
         return "{0} \n{1}".format(prefix, ', '.join(scheme_numbers))
+
+    @property
+    def _parent_query_objs(self):
+        """
+        Returns parent query objects
+        :return: Parent query objects
+        :rtype: Dictionary
+        """
+        return {
+            row: scheme_query_obj
+            for row, (scheme_query_obj, scheme_number) in
+            self._scheme_items.iteritems()
+        }
 
     def _show_question_message(self, msg):
         """
