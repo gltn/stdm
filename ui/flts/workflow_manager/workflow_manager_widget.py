@@ -165,7 +165,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             scheme_id, scheme_number, self._comments_title
         )
         widget_prop = self._get_widget_properties(self._comments_title)
-        widget_prop["scheme_query"] = {row: self._model.results[row].get("data")}
+        widget_prop["scheme_items"] = {row: (
+            self._model.results[row].get("data"), scheme_number
+        )}
         self._load_details(widget_prop, widget_id, scheme_id)
 
     def _on_check(self, index):
@@ -288,7 +290,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         row, status, scheme_number = self._checked_ids[last_id]
         widget_id = self._create_key(last_id, scheme_number)
         widget_prop = self._get_widget_properties()
-        widget_prop["scheme_query"] = self._get_model_query()
+        widget_prop["scheme_items"] = self._get_model_query()
         self._load_details(widget_prop, widget_id, last_id)
 
     def _get_model_query(self):
@@ -298,7 +300,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :rtype: List
         """
         return {
-            row: self._model.results[row].get("data")
+            row: (self._model.results[row].get("data"), scheme_number)
             for scheme_id, (row, status, scheme_number) in
             self._checked_ids.iteritems()
         }

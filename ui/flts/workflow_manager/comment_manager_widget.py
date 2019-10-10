@@ -31,7 +31,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._load_collections = widget_properties["load_collections"]
         self._data_service = widget_properties["data_service"]
         self._data_service = self._data_service(profile, scheme_id)
-        self._scheme_query_objs = widget_properties["scheme_query"]
+        self._scheme_items = widget_properties["scheme_items"]
         self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
         self.oldCommentTextEdit.setReadOnly(True)
@@ -122,17 +122,21 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             return
         try:
             saved_comments = 0
-            msg = "Submit comments?"
+            scheme_numbers = self._scheme_numbers
+            msg = self._submit_message("Submit comments for Scheme: ", scheme_numbers)
             if self._show_question_message(msg):
                 saved_comments = self.model.save_collection(
-                    save_items, self._scheme_query_objs
+                    save_items, self._scheme_items
                 )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
             if saved_comments > 0:
                 self.newCommentTextEdit.document().clear()
-                msg = "Comment submitted. Thank you."
+                msg = self._submit_message(
+                    "Thank you. Comments submitted for Scheme: ",
+                    scheme_numbers
+                )
                 self._notification_information(msg)
 
     def _save_items(self):
@@ -170,6 +174,31 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         for option in config:
             yield option
+
+    @property
+    def _scheme_numbers(self):
+        """
+        Returns Scheme numbers
+        :return: Scheme numbers
+        :rtype: List
+        """
+        return [
+            scheme_number for scheme_query_obj, scheme_number in
+            self._scheme_items.values()
+        ]
+
+    @staticmethod
+    def _submit_message(prefix, scheme_numbers):
+        """
+        Returns comment submit message
+        :param prefix: Prefix text
+        :type prefix: String
+        :param scheme_numbers: Scheme numbers
+        :param scheme_numbers: List
+        :return: Comment submit message
+        :rtype: String
+        """
+        return "{0} \n{1}".format(prefix, ', '.join(scheme_numbers))
 
     def _show_question_message(self, msg):
         """
