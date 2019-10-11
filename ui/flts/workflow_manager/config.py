@@ -383,17 +383,73 @@ class SchemeMessageBox(ButtonIcons):
     """
     Scheme QMessageBox configuration interface
     """
-    def __init__(self):
+    def __init__(self, parent=None):
         super(SchemeMessageBox, self).__init__()
+        self._parent = parent
+        self.MessageBox = namedtuple(
+            'MessageBox', ['name', 'pushButton', 'role', 'icon']
+        )
 
     @property
     def message_box(self):
         """
         QMessageBox configuration options
         :return: QMessageBox configuration options
-        :rtype: List
+        :rtype: Dictionary
         """
-        return self.get_data('scheme_message_box')
+        return self._message_box_config()
+
+    def _message_box_config(self):
+        """
+        Returns QMessageBox icon configurations
+        :return: QMessageBox icon configurations
+        :rtype: Dictionary
+        """
+        # TODO: Explore the possibility of placing this config
+        # TODO: in the configurations
+        config = {
+            self._parent.approveButton.objectName(): [
+                self.MessageBox(
+                    name='approveMsgButton',
+                    pushButton=QPushButton("Approve"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+                ),
+                self.MessageBox(
+                    name='commentApproveMsgButton',
+                    pushButton=QPushButton("Comment && Approve"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                ),
+                self.MessageBox(
+                    name=None,
+                    pushButton=QPushButton("Cancel"),
+                    role=QMessageBox.RejectRole,
+                    icon=None,
+                )
+            ],
+            self._parent.disapproveButton.objectName(): [
+                self.MessageBox(
+                    name='disapproveMsgButton',
+                    pushButton=QPushButton("Disapprove"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                ),
+                self.MessageBox(
+                    name='commentDisapproveMsgButton',
+                    pushButton=QPushButton("Comment && Disapprove"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                ),
+                self.MessageBox(
+                    name=None,
+                    pushButton=QPushButton("Cancel"),
+                    role=QMessageBox.RejectRole,
+                    icon=None,
+                )
+            ]
+        }
+        return config
 
 
 class TabIcons(Config):
@@ -549,7 +605,6 @@ LookUp = namedtuple(
         'SCHEME_NUMBER', 'COMMENT_COLUMN'
     ]
 )
-MessageBox = namedtuple('MessageBox', ['name', 'pushButton', 'role', 'icon'])
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
 
@@ -735,26 +790,6 @@ configurations = {
         {Column(name='Block Area', flag=False): 'area'}
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
-    'scheme_message_box': [
-        MessageBox(
-            name='approveMsgButton',
-            pushButton=QPushButton("Approve"),
-            role=QMessageBox.YesRole,
-            icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
-        ),
-        MessageBox(
-            name='commentApproveMsgButton',
-            pushButton=QPushButton("Comment && Approve"),
-            role=QMessageBox.YesRole,
-            icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
-        ),
-        MessageBox(
-            name=None,
-            pushButton=QPushButton("Cancel"),
-            role=QMessageBox.RejectRole,
-            icon=None,
-        )
-    ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
