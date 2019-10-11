@@ -24,10 +24,15 @@ from collections import OrderedDict
 from cmislib import (
     CmisClient
 )
+import subprocess
+import requests
+from requests.exceptions import Timeout
+
 from PyQt4.QtCore import (
     QFileInfo,
     QObject,
     QProcess,
+    QUrl,
     pyqtSignal
 )
 from cmislib.exceptions import (
@@ -51,7 +56,7 @@ CMIS_CONTENT_STREAM_LENGTH = 'cmis:contentStreamLength'
 CMIS_CONTENT_STREAM_ID = 'cmis:contentStreamId'
 
 # PDF Viewer constants
-PDF_VIEWER_EXEC = 'chrome'
+PDF_VIEWER_EXEC = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
 DOC_ID_PROP = 'document_id'
 
 
@@ -1014,3 +1019,184 @@ class CmisEntityDocumentMapper(object):
             uploaded_type_docs.append(doc_info)
 
         return cmis_doc
+
+
+def cmis_base_url():
+    """
+    Constructs the base URL from the CMIS Atom service end point.
+    :return: Returns the base URL of the CMIS server or an empty string if
+    the URL cannot be constructed or if the CMIS service has not been defined.
+    :rtype: str
+    """
+    atom_pub_url = cmis_atom_pub_url()
+    if not atom_pub_url:
+        return ''
+
+    url = QUrl(atom_pub_url)
+    if not url.isValid():
+        return ''
+
+    if url.port() == -1:
+        port = ''
+    else:
+        port = ':{0}'.format(url.port())
+
+    return '{0}://{1}{2}'.format(
+        url.scheme(),
+        url.host(),
+        port
+    )
+
+
+def cmis_auth_ticket():
+    """
+    Retrieves the authentication ticket for use in accessing resources in the
+    CMIS server.
+    :return: Returns a tuple containing the HTTP response from the server and
+    the Alfresco authentication ticket. If the status code in the response
+    object is not 200 then the authentication ticket will be empty.
+    :rtype: tuple(response, auth_ticket)
+    """
+
+
+class PDFViewerException(Exception):
+    """
+    Exceptions related to the PDF document viewer (proxy).
+    """
+    pass
+
+
+class PDFViewerProxy(QObject):
+    """
+    Provides an interface for browsing PDF documents using Google Chrome.
+    It utilizes the QProcess framework to span new processes but Google
+    Chrome's process model - where one parent process spans additional child
+    processes - makes is difficult to manage (i.e. close/terminate) the
+    individual processes.
+    """
+    error = pyqtSignal(tuple)  # (document_id, error_msg)
+
+    def __init__(self, parent=None):
+        super(PDFViewerProxy, self).__init__(parent)
+        self._processes = {}
+        # Control whether PDF print and save operations are allowed
+        # Does not control Chrome's right-click context menu
+        self.restricted = True
+
+        self._base_url = cmis_base_url()
+        if not self._base_url:
+            msg = self.tr(
+                'Invalid base URL. Check CMIS service end point.'
+            )
+            raise PDFViewerException(msg)
+        doc_path = '/share/proxy/alfresco/slingshot/node/content/workspace/' \
+                   'SpacesStore'
+        self._root_doc_url = '{0}{1}'.format(
+            self._base_url,
+            doc_path
+        )
+
+    @property
+    def root_doc_url(self):
+        """
+        :return: Returns the root document URL which, when prefixed with the
+        document ID and name, provides the absolute document URL in the CMIS
+        server.
+        :rtype: str
+        """
+        return self._root_doc_url
+
+    @property
+    def processes(self):
+        """
+        :return: Returns a list of running QProcess objects where each
+        process corresponds to an instance of a document view in Google
+        Chrome.
+        :rtype: list
+        """
+        return self._processes.values()
+
+    def process(self, document_id):
+        """
+        Gets the QProcess instance corresponding to the 'id' that was
+        specified during its creation.
+        :param document_id: Unique process identifier.
+        :type document_id: str
+        :return: Returns the QProcess instance that matches the 'id' used
+        during the process creation, otherwise returns None if not found.
+        :rtype: QProcess
+        """
+        return self._processes.get(document_id, None)
+
+    def view_document(self, document_identifier, document_name):
+        """
+        Opens the document with the given unique identifier in Google Chrome.
+        :param document_identifier: Unique document identifier.
+        :type document_identifier: str
+        :param document_name: Name of the document as stored in the CMIS
+        server.
+        :type document_name: str
+        """
+        doc_proc = QProcess(self)
+        doc_proc.setProperty(DOC_ID_PROP, document_identifier)
+        doc_proc.error.connect(
+            self._on_error
+        )
+
+        # Full document path
+        abs_doc_path = '{0}/{1}/{2}'.format(
+            self._root_doc_url,
+            document_identifier,
+            document_name
+        )
+        if self.restricted:
+            abs_doc_path = '{0}#toolbar=0'.format(abs_doc_path)
+
+        # Build args
+        cmd_inputs = []
+        cmd_inputs.append(PDF_VIEWER_EXEC)
+        cmd_inputs.append('--app={0}'.format(abs_doc_path))
+        cmd_path = ' '.join(cmd_inputs)
+
+        # Add to the collection
+        self._processes[document_identifier] = doc_proc
+
+        subprocess.call(cmd_path)
+
+    def view_from_doc_model(self, document_model):
+        """
+        Opens the document based on the information contained in the document
+        model object.
+        :param document_model: Document model object containing the document
+        identifier and document name.
+        :type document_model: object
+        """
+        self.view_document(
+            document_model.document_identifier,
+            document_model.name
+        )
+
+    def _on_error(self, error):
+        doc_id = ''
+        doc_proc = self.sender()
+        if doc_proc:
+            doc_id = doc_proc.property(DOC_ID_PROP)
+
+        err_msg = ''
+        if error == QProcess.FailedToStart:
+            err_msg = 'Viewer failed to start. Check to ensure that Chrome ' \
+                      'has been installed correctly and the program has ' \
+                      'sufficient permissions to invoke Chrome.'
+        elif error == QProcess.Crashed:
+            err_msg = 'Chrome crashed after starting.'
+        elif error == QProcess.ReadError:
+            err_msg = 'An error occured when attempting to read from the ' \
+                      'process.'
+        elif error == QProcess.UnknownError:
+            err_msg = 'Unknown error.'
+
+        # Emit signal
+        self.error.emit((
+            doc_id,
+            err_msg
+        ))
