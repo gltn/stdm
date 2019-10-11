@@ -360,6 +360,18 @@
     </Column>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refer to the comment table" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="comment">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="message" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the user" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="user" mandatory="False">
+     <Relation name="fk_cb_user_id_cb_comment_user_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="-1" minimum="0001-01-01 00:00:00" maximum="9999-12-31 23:59:59.999999" description="time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
+     <currentDateTime minimum="False" maximum="False"/>
+    </Column>
+   </Columns>
+  </Entity>
   <Relations>
    <EntityRelation displayColumns="name,code" child="social_tenure_relationship_supporting_document" showInParent="True" parent="check_social_tenure_relationship_document_type" name="fk_cb_check_social_tenure_relationship_document_type_id_cb_social_tenure_relationship_supporting_document_document_type" parentColumn="id" showInChild="True" childColumn="document_type"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship_supporting_document" showInParent="True" parent="social_tenure_relationship" name="fk_cb_social_tenure_relationship_id_cb_social_tenure_relationship_supporting_document_social_tenure_relationship_id" parentColumn="id" showInChild="True" childColumn="social_tenure_relationship_id"/>
@@ -397,6 +409,9 @@
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
+   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
+   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
+   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
