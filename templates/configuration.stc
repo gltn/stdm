@@ -181,11 +181,23 @@
     </Column>
    </Columns>
   </Entity>
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refer to the comment table" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="comment">
+   <Columns>
+    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="message" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the user" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="user" mandatory="False">
+     <Relation name="fk_cb_user_id_cb_comment_user_id"/>
+    </Column>
+    <Column unique="False" tip="" rowindex="2" minimum="0001-01-01 00:00:00" maximum="9999-12-31 23:59:59.999999" description="time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
+     <currentDateTime minimum="False" maximum="False"/>
+    </Column>
+   </Columns>
+  </Entity>
   <Entity editable="True" global="False" rowindex="0" associative="False" description="Staging table for plots imported from LIS" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot" name="cb_lis_plot" label="LIS Plot">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="0" description="Geometry" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="" mandatory="False">
-     <Geometry layerDisplay="" srid="4326" type="2"/>
+    <Column unique="False" tip="" rowindex="-1" description="Geometry" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="" mandatory="False">
+     <Geometry layerDisplay="" srid="4006" type="2"/>
     </Column>
     <Column unique="True" tip="" rowindex="1" minimum="0" maximum="30" description="Unique Parcel Identifier" index="False" name="upi" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="" rowindex="2" minimum="0" maximum="50" description="Plot use type" index="False" name="use" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
@@ -342,7 +354,7 @@
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
     <Column unique="False" tip="" rowindex="0" minimum="0" maximum="32" description="Unique parcel identifier" index="False" name="upi" searchable="True" TYPE_INFO="VARCHAR" label="upi" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="1" description="Geometry column of the plot" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="geometry" mandatory="False">
+    <Column unique="False" tip="" rowindex="-1" description="Geometry column of the plot" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="geometry" mandatory="False">
      <Geometry layerDisplay="" srid="4006" type="2"/>
     </Column>
     <Column unique="False" tip="" rowindex="2" minimum="0" maximum="2147483647" description="Use of the plot of land" index="False" name="use" searchable="True" TYPE_INFO="LOOKUP" label="plot use" mandatory="False">
@@ -357,18 +369,6 @@
     <Column unique="False" tip="" rowindex="1" minimum="-2147483648" maximum="2147483647" description="identifier of the big plot(erf)" index="False" name="erf_id" searchable="True" TYPE_INFO="INT" label="erf identifier" mandatory="False"/>
     <Column unique="False" tip="" rowindex="2" minimum="-2.225073858507201383090232717332404064219215980462331830553327416887204434813918195854283159012511020564067339731035811005152434161553460108856012385377718821130777993532002330479610147442583636071921565046942503734208375250806650616658158948720491179968591639648500635908770118304874799780887753749949451580451605050915399856582470818645113537935804992115981085766051992433352114352390148795699609591288891602992641511063466313393663477586513029371762047325631781485664350872122828637642044846811407613911477062801689853244110024161447421618567166150540154285084716752901903161322778896729707373123334086988983175067838846926092773977972858659654941091369095406136467568702398678315290680984617210924625396728515625E-308" maximum="179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368" description="size of the big plot" index="False" name="erf_size" searchable="True" TYPE_INFO="DOUBLE" label="erf area" mandatory="False">
      <Numeric scale="6" precision="18"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refer to the comment table" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="comment">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="message" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the user" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="user" mandatory="False">
-     <Relation name="fk_cb_user_id_cb_comment_user_id"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="0001-01-01 00:00:00" maximum="9999-12-31 23:59:59.999999" description="time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
-     <currentDateTime minimum="False" maximum="False"/>
     </Column>
    </Columns>
   </Entity>
@@ -404,14 +404,12 @@
    <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_scheme_workflow_approval_id" parentColumn="id" showInChild="True" childColumn="approval_id"/>
    <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
+   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_holder_plot_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_holder_plot_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
-   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
-   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
-   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
