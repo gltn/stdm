@@ -1,4 +1,5 @@
 from datetime import datetime
+from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import CommentButtonIcons
@@ -23,6 +24,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
     """
     DATE_FORMAT = "ddd MMM dd yyyy"
     TIME_FORMAT = "hh:mm ap"
+    submitted = pyqtSignal()
 
     def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QWidget, self).__init__(parent)
@@ -138,6 +140,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
                 self.refresh()
                 msg = "Comments successfully submitted. Thank you."
                 self._notification_information(msg)
+                self.submitted.emit()
 
     def _save_items(self):
         """

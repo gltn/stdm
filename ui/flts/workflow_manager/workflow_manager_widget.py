@@ -57,7 +57,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._object_name = object_name
         self._checked_ids = OrderedDict()
         self._detail_store = {}
-        self._tab_name = self._detail_table = self._message_box = None
+        self._tab_name = self._detail_table = None
+        self._message_box = self._msg_box_button = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -283,17 +284,40 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _load_scheme_detail(self):
         """
-        On unchecking a record or clicking the 'Holders', 'Documents' or
-        'Comments' buttons, open scheme detail tab
+        On unchecking a record or clicking the 'Holders', 'Documents',
+        'Comments' or 'Comment & Approve' buttons, open scheme detail tab
         """
         if not self._checked_ids:
             return
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
-        widget_id = self._create_key(last_id, scheme_number)
-        widget_prop = self._get_widget_properties()
+        # TODO: Start. Refactor to different methods
+        if self._msg_box_button:
+            widget_id = self._create_key(
+                last_id, scheme_number, self._comments_title
+            )
+            widget_prop = self._get_widget_properties(self._msg_box_button)
+            self._msg_box_button = None
+        else:
+            widget_id = self._create_key(last_id, scheme_number)
+            widget_prop = self._get_widget_properties()
+        # TODO: End. Refactor to different methods
         widget_prop["scheme_items"] = self._get_model_query()
         self._load_details(widget_prop, widget_id, last_id)
+
+    # def _load_scheme_detail(self):
+    #     """
+    #     On unchecking a record or clicking the 'Holders', 'Documents' or
+    #     'Comments' buttons, open scheme detail tab
+    #     """
+    #     if not self._checked_ids:
+    #         return
+    #     last_id = self._checked_ids.keys()[-1]
+    #     row, status, scheme_number = self._checked_ids[last_id]
+    #     widget_id = self._create_key(last_id, scheme_number)
+    #     widget_prop = self._get_widget_properties()
+    #     widget_prop["scheme_items"] = self._get_model_query()
+    #     self._load_details(widget_prop, widget_id, last_id)
 
     def _get_model_query(self):
         """
@@ -368,9 +392,40 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 'data_service': CommentDataService,
                 'widget': CommentManagerWidget,
                 'load_collections': True
+            },
+            self._msg_box_button: {
+                'data_service': CommentDataService,
+                'widget': CommentManagerWidget,
+                'load_collections': True
             }
         }
         return widget_prop
+
+    # @property
+    # def _widget_properties(self):
+    #     """
+    #     Scheme widgets properties
+    #     :return: Scheme widgets properties
+    #     :rtype: Dictionary
+    #     """
+    #     widget_prop = {
+    #         self.documentsButton.objectName(): {
+    #             'data_service': DocumentDataService,
+    #             'widget': SchemeDetailTableView,
+    #             'load_collections': False
+    #         },
+    #         self.holdersButton.objectName(): {
+    #             'data_service': HolderDataService,
+    #             'widget': SchemeDetailTableView,
+    #             'load_collections': True
+    #         },
+    #         self._comments_title: {
+    #             'data_service': CommentDataService,
+    #             'widget': CommentManagerWidget,
+    #             'load_collections': True
+    #         }
+    #     }
+    #     return widget_prop
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
         """
@@ -527,7 +582,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if scheme_numbers["invalid"]:
             self._invalid_approval_msg(scheme_numbers)
         scheme_numbers = (num_records, scheme_numbers["valid"])
-        self._update_scheme(items, title, scheme_numbers)
+        self._approval_comment(items, title, scheme_numbers)
 
     def _on_disapprove(self, status, title):
         """
@@ -540,7 +595,51 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._disapprove.set_check_ids(self._checked_ids)
         items, scheme_numbers = self._disapprove.disapprove_items(status)
         scheme_numbers = (len(scheme_numbers), scheme_numbers)
-        self._update_scheme(items, title, scheme_numbers)
+        self._approval_comment(items, title, scheme_numbers)
+
+    def _approval_comment(self, items, title, scheme_numbers):
+        rows, scheme_numbers = scheme_numbers
+        msg = self._approval_message(
+            title.capitalize(), rows, scheme_numbers
+        )
+        result, self._msg_box_button = self._show_approval_message(msg)
+        if result == 0:
+            self._update_scheme(items, title)
+        elif result == 1:
+            self._load_scheme_detail()
+            self._detail_table.submitted.connect(
+                lambda: self._update_scheme(items, title)
+            )
+
+    # def _on_approve(self, status, title):
+    #     """
+    #     Approve a Scheme
+    #     :param status: Approve status
+    #     :type status: Integer
+    #     :param title: Approve title text
+    #     :type title: String
+    #     """
+    #     self._approve.set_check_ids(self._checked_ids)
+    #     items, scheme_numbers = self._approve.approve_items(status)
+    #     items = (items,) + self._approve.next_approval_items(items)
+    #     num_records = len(scheme_numbers["valid"])
+    #     if scheme_numbers["invalid"]:
+    #         self._invalid_approval_msg(scheme_numbers)
+    #     scheme_numbers = (num_records, scheme_numbers["valid"])
+    #     self._update_scheme(items, title, scheme_numbers)
+    #
+    # def _on_disapprove(self, status, title):
+    #     """
+    #     Disapprove a Scheme
+    #     :param status: Disapprove status
+    #     :type status: Integer
+    #     :param title: Disapprove title text
+    #     :type title: String
+    #     """
+    #     self._disapprove.set_check_ids(self._checked_ids)
+    #     items, scheme_numbers = self._disapprove.disapprove_items(status)
+    #     scheme_numbers = (len(scheme_numbers), scheme_numbers)
+    #     self._update_scheme(items, title, scheme_numbers)
 
     def _invalid_approval_msg(self, scheme_numbers):
         """
@@ -597,42 +696,69 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if getattr(query_obj, column, None) == value:
                 return query_obj
 
-    def _update_scheme(self, items, title, scheme_numbers):
+    def _update_scheme(self, items, title):
         """
         On approve or disapprove update scheme record
         :param items: Update items
         :param items: Dictionary
         :param title: Message title
         :param title: String
-        :param scheme_numbers: Scheme numbers and rows
-        :param scheme_numbers: Tuple
         """
-        updated_rows = None
-        rows, scheme_numbers = scheme_numbers
         try:
             self.notif_bar.clear()
-            msg = self._approval_message(
-                title.capitalize(), rows, scheme_numbers
-            )
-            reply = self._show_question_message(msg)
-            if reply:
-                if isinstance(items, tuple):
-                    items, next_items, save_items = items
-                    updated_rows = self._update_on_approve(
-                        items, next_items, save_items
-                    )
-                else:
-                    updated_rows = self._model.update(items)
+            if isinstance(items, tuple):
+                items, next_items, save_items = items
+                updated_rows = self._update_on_approve(
+                    items, next_items, save_items
+                )
+            else:
+                updated_rows = self._model.update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to update: {}".format(e)
             self._show_critical_message(msg)
         else:
-            if reply:
-                self.refresh()
-                msg = self._approval_message(
-                    "Successfully {}".format(title), updated_rows
-                )
-                self.notif_bar.insertInformationNotification(msg)
+            self.refresh()
+            msg = self._approval_message(
+                "Successfully {}".format(title), updated_rows
+            )
+            self.notif_bar.insertInformationNotification(msg)
+
+    # def _update_scheme(self, items, title, scheme_numbers):
+    #     """
+    #     On approve or disapprove update scheme record
+    #     :param items: Update items
+    #     :param items: Dictionary
+    #     :param title: Message title
+    #     :param title: String
+    #     :param scheme_numbers: Scheme numbers and rows
+    #     :param scheme_numbers: Tuple
+    #     """
+    #     updated_rows = None
+    #     rows, scheme_numbers = scheme_numbers
+    #     try:
+    #         self.notif_bar.clear()
+    #         msg = self._approval_message(
+    #             title.capitalize(), rows, scheme_numbers
+    #         )
+    #         reply = self._show_question_message(msg)
+    #         if reply:
+    #             if isinstance(items, tuple):
+    #                 items, next_items, save_items = items
+    #                 updated_rows = self._update_on_approve(
+    #                     items, next_items, save_items
+    #                 )
+    #             else:
+    #                 updated_rows = self._model.update(items)
+    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+    #         msg = "Failed to update: {}".format(e)
+    #         self._show_critical_message(msg)
+    #     else:
+    #         if reply:
+    #             self.refresh()
+    #             msg = self._approval_message(
+    #                 "Successfully {}".format(title), updated_rows
+    #             )
+    #             self.notif_bar.insertInformationNotification(msg)
 
     def _update_on_approve(self, items, next_items, save_items):
         """
@@ -709,6 +835,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         values = (0, 1)
         if self._message_box:
+            self._message_box.setWindowTitle(self.tr('Workflow Manager'))
+            self._message_box.setText(self.tr(msg))
             return self._message_box_result(self._message_box, values)
         options = SchemeMessageBox().message_box
         self._message_box = MessageBoxWidget(
@@ -731,7 +859,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         result = message_box.exec_()
         if result in values:
-            return result
+            clicked_button = message_box.clickedButton()
+            return result, clicked_button.objectName()
+        return None, None
 
     def _show_critical_message(self, msg):
         """
