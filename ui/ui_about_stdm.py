@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_about_stdm.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Fri Oct 11 10:15:06 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,8 +34,6 @@ class Ui_frmAbout(object):
         frmAbout.setSizePolicy(sizePolicy)
         frmAbout.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.gridLayout = QtGui.QGridLayout(frmAbout)
-        self.gridLayout.setMargin(9)
-        self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.txtAbout = QtGui.QTextEdit(frmAbout)
         self.txtAbout.setReadOnly(True)
@@ -71,8 +70,8 @@ class Ui_frmAbout(object):
 "<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">An approach of collecting data about land    </li>\n"
 "<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\" style=\" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">A way of using and disseminating information about land</li></ul>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt; font-weight:600;\">Core Values</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br />STDM\'s core values and principles are pro-poor, good governance, equity, subsidiarity, sustainability, affordability, systematic large scale, and gender responsiveness.</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /><br />Copyright © 2018 UN Habitat and its implementing partners. All rights reserved.</span></p></body></html>", None))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /><br />Copyright © 2017 UN Habitat and its implementing partners. All rights reserved.</span></p></body></html>", None))
         self.btnSTDMHome.setText(_translate("frmAbout", "STDM Home Page", None))
         self.btnContactUs.setText(_translate("frmAbout", "Contact Us", None))
 
-from stdm import resources_rc
+import resources_rc
