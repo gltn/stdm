@@ -405,8 +405,7 @@ class SchemeMessageBox(ButtonIcons):
         :return: QMessageBox icon configurations
         :rtype: Dictionary
         """
-        # TODO: Explore the possibility of placing this config
-        # TODO: in the configurations
+        # TODO: Explore the possibility of placing this config in the configurations
         config = {
             self._parent.approveButton.objectName(): [
                 self.MessageBox(
