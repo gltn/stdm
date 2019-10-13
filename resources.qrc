@@ -1,8 +1,27 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
     <file>images/icons/flts_about.png</file>
+    <file>images/icons/flts2.png</file>
     <file>images/icons/flts_back_action.png</file>
     <file>images/icons/flts_certificate.png</file>
+    <file>images/icons/flts_comment_reply.png</file>
+    <file>images/icons/flts_comment_reply_2.png</file>
+    <file>images/icons/flts_document_view.png</file>
+    <file>images/icons/flts_approve.png</file>
+    <file>images/icons/flts_disapprove.png</file>
+    <file>images/icons/flts_pending.png</file>
+    <file>images/icons/flts_withdraw.png</file>
+    <file>images/icons/flts_scheme.png</file>
+    <file>images/icons/flts_scheme_approve.png</file>
+    <file>images/icons/flts_scheme_disapprove.png</file>
+    <file>images/icons/flts_scheme_documents.png</file>
+    <file>images/icons/flts_scheme_holders.png</file>
+    <file>images/icons/flts_scheme_comment.png</file>
+    <file>images/icons/flts_scheme_first_record.png</file>
+    <file>images/icons/flts_scheme_last_record.png</file>
+    <file>images/icons/flts_scheme_next_record.png</file>
+    <file>images/icons/flts_scheme_previous_record.png</file>
+    <file>images/icons/flts_scheme_withdraw.png</file>
     <file>images/icons/flts_password_change.png</file>
     <file>images/icons/flts_error.png</file>
     <file>images/icons/flts_export_file.png</file>

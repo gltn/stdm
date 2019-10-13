@@ -44,6 +44,7 @@ ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 CMIS_AUTH_CONFIG_ID = 'CmisAuthConfigId'
 CMIS_ATOM_PUB_URL = 'CmisAtomPubUrl'
 HOLDERS_CONFIG = 'HolderConfigPath'
+SHOW_LOGIN_DIALOG = 'ShowLoginDialog'
 
 def registry_value(key_name):
     """

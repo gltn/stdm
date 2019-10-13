@@ -33,7 +33,7 @@ from PyQt4.QtCore import (
     QUrl
 )
 from stdm.utils.util import PLUGIN_DIR, version_from_metadata
-from ui_about_stdm import Ui_frmAbout
+from ui_about_flts import Ui_frmAbout
 
 
 class AboutSTDMDialog(QDialog,Ui_frmAbout):
@@ -67,7 +67,7 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         #Insert installed version text
         version_msg = QApplication.translate(
             'AboutSTDMDialog',
-            'STDM version'
+            'Based on STDM version'
         )
         version_text = u'{0} {1}'.format(version_msg, installed_version)
         char_format = cursor.blockCharFormat()
