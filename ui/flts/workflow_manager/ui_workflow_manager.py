@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_workflow_manager.ui'
 #
-# Created: Fri Sep 27 00:47:35 2019
+# Created: Sun Oct 13 14:11:41 2019
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,6 +29,8 @@ class Ui_WorkflowManagerWidget(object):
         WorkflowManagerWidget.resize(1043, 745)
         self.horizontalLayout_2 = QtGui.QHBoxLayout(WorkflowManagerWidget)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.vlNotification = QtGui.QVBoxLayout()
@@ -52,7 +54,11 @@ class Ui_WorkflowManagerWidget(object):
         self.documentsButton.setEnabled(False)
         self.documentsButton.setObjectName(_fromUtf8("documentsButton"))
         self.horizontalLayout.addWidget(self.documentsButton)
-        spacerItem = QtGui.QSpacerItem(178, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.commentsButton = QtGui.QPushButton(WorkflowManagerWidget)
+        self.commentsButton.setEnabled(False)
+        self.commentsButton.setObjectName(_fromUtf8("commentsButton"))
+        self.horizontalLayout.addWidget(self.commentsButton)
+        spacerItem = QtGui.QSpacerItem(98, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.searchEdit = QtGui.QLineEdit(WorkflowManagerWidget)
         self.searchEdit.setEnabled(False)
@@ -68,20 +74,21 @@ class Ui_WorkflowManagerWidget(object):
         self.searchButton.setObjectName(_fromUtf8("searchButton"))
         self.horizontalLayout.addWidget(self.searchButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addLayout(self.verticalLayout)
         self.line = QtGui.QFrame(WorkflowManagerWidget)
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
-        self.verticalLayout.addWidget(self.line)
+        self.verticalLayout_2.addWidget(self.line)
         self.tabWidget = QtGui.QTabWidget(WorkflowManagerWidget)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
-        self.verticalLayout.addWidget(self.tabWidget)
+        self.verticalLayout_2.addWidget(self.tabWidget)
         self.paginationFrame = QtGui.QFrame(WorkflowManagerWidget)
         self.paginationFrame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.paginationFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.paginationFrame.setObjectName(_fromUtf8("paginationFrame"))
-        self.verticalLayout.addWidget(self.paginationFrame)
-        self.horizontalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout_2.addWidget(self.paginationFrame)
+        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
         self.retranslateUi(WorkflowManagerWidget)
         self.tabWidget.setCurrentIndex(-1)
@@ -93,6 +100,7 @@ class Ui_WorkflowManagerWidget(object):
         self.disapproveButton.setText(_translate("WorkflowManagerWidget", "Disapprove", None))
         self.holdersButton.setText(_translate("WorkflowManagerWidget", "Holders", None))
         self.documentsButton.setText(_translate("WorkflowManagerWidget", "Documents", None))
+        self.commentsButton.setText(_translate("WorkflowManagerWidget", "Comments", None))
         self.searchEdit.setPlaceholderText(_translate("WorkflowManagerWidget", "Type to search...", None))
         self.filterComboBox.setItemText(0, _translate("WorkflowManagerWidget", "Apply Filter", None))
         self.searchButton.setText(_translate("WorkflowManagerWidget", "Search", None))

@@ -317,6 +317,10 @@ class SchemeButtonIcons(ButtonIcons):
                 QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
             ),
             (
+                self._parent.commentsButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
+            ),
+            (
                 self._parent.searchButton, QSize(24, 24),
                 QIcon(":/plugins/stdm/images/icons/flts_search.png")
             ),

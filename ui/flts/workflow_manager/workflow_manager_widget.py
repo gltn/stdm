@@ -72,6 +72,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setObjectName(self._object_name)
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
+        self.commentsButton.setObjectName(self._comments_title)
         self._set_button_icons()
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
@@ -103,6 +104,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         )
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
+        self.commentsButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
 
     def _set_button_icons(self):
@@ -246,7 +248,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Enable Workflow Manager widgets on check
         """
         status = self._get_stored_status()
-        self._enable_widget([self.holdersButton, self.documentsButton])
+        self._enable_widget([
+            self.holdersButton, self.documentsButton,
+            self.commentsButton
+        ])
         if self._lookup.PENDING() in status or \
                 self._lookup.DISAPPROVED() in status:
             self._enable_widget(self.approveButton)
@@ -284,8 +289,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             widget_id = self._create_key(last_id, scheme_number)
             widget_prop = self._get_widget_properties()
-        if scheme_items:
-            widget_prop["scheme_items"] = scheme_items
+        widget_prop["scheme_items"] = self._checked_scheme_items() \
+            if not scheme_items else scheme_items
         self._load_details(widget_prop, widget_id, last_id)
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
@@ -820,8 +825,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if not self._checked_ids:
             self._close_tab(1)
             self._disable_widget([
+                self.approveButton, self.disapproveButton,
                 self.holdersButton, self.documentsButton,
-                self.approveButton, self.disapproveButton
+                self.commentsButton
             ])
         elif self._lookup.PENDING() not in status and \
                 self._lookup.APPROVED() not in status:
