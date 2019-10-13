@@ -1043,7 +1043,7 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records, True)
 
-        return getattr(str_records[0], self.layer_table).id  # Nast hack!!
+        return getattr(str_records[0], self.layer_table).id  # Nasty hack!!
 
         #self.layer.selectByIds(
             #self.feature_models.keys()

@@ -298,14 +298,20 @@ class STRDBHandler():
             if len(new_doc_objs) > 0:
                 row.documents.extend([doc for doc in new_doc_objs])
 
+            #for r in row.in_check_tenure_type_str_attrs_collection:
             # Update custom tenure information
             if party_id in party_keys:
-                for r in row.in_check_tenure_type_str_attrs_collection:
+                attrs_column = str_store.current_party.name[:2]+'_check_tenure_type_str_attrs_collection'
+                attrs = getattr(row, attrs_column)
+                for r in attrs:
                     custom_tenure = str_store.custom_tenure
                     if custom_tenure:
-                        r.dispute_status = custom_tenure[party_id].dispute_status
-                        r.dispute_type = custom_tenure[party_id].dispute_type
-                        r.period_of_stay_in_years = custom_tenure[party_id].period_of_stay_in_years
+                        if 'dispute_status' in custom_tenure:
+                            r.dispute_status = custom_tenure[party_id].dispute_status
+                        if 'dispute_type' in custom_tenure:
+                            r.dispute_type = custom_tenure[party_id].dispute_type
+                        if 'period_of_stay_in_years' in custom_tenure:
+                            r.period_of_stay_in_years = custom_tenure[party_id].period_of_stay_in_years
             row.update()  # Commit updates to DB
         return rows
 
@@ -317,22 +323,19 @@ class STRDBHandler():
         isValid = True
         # Create a progress dialog
         try:
-
             self.progress.show()
+
             if not self.str_edit_node:
                 QApplication.processEvents()
                 self.progress.setRange(0, len(self.data_store))
-                self.progress.overall_progress(
-                    'Creating a STR...',
-                )
+                self.progress.overall_progress('Creating a STR...',)
 
                 for i, str_store in enumerate(self.data_store.values()):
                     self.progress.progress_message(
-                        'Saving STR {}'.format(i+1), ''
-                    )
+                        'Saving STR {}'.format(i+1), '')
                     self.progress.setValue(i + 1)
 
-                    self.on_add_str(str_store)
+                    self.on_add_str(str_store)     #==>
 
                 self.progress.hide()
                 strMsg = QApplication.translate(
@@ -350,14 +353,11 @@ class STRDBHandler():
                 QApplication.processEvents()
                 self.progress.setRange(0, 1)
                 self.progress.setValue(0)
-                self.progress.overall_progress(
-                    'Editing a STR...',
-                )
+                self.progress.overall_progress('Editing a STR...',)
 
                 self.progress.progress_message('Updating STR', '')
-                updated_str_obj = self.on_edit_str(
-                    self.data_store[1]
-                )
+
+                updated_str_obj = self.on_edit_str(self.data_store[1])  #===>
 
                 self.progress.setValue(1)
 
@@ -368,12 +368,14 @@ class STRDBHandler():
                     "The social tenure relationship has "
                     "been successfully updated!"
                 )
+
                 QMessageBox.information(
                     iface.mainWindow(), QApplication.translate(
                         "STRDBHandler", "Social Tenure Relationship"
                     ),
                     strMsg
                 )
+
                 return updated_str_obj
 
         except exc.OperationalError as oe:
