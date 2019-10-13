@@ -87,17 +87,18 @@
     <CodeValue value="Single" code=""/>
     <CodeValue value="Married - Customary" code=""/>
     <CodeValue value="Married - In Community of Property" code=""/>
-    <CodeValue value="Married - Outside Community of Property" code=""/>
     <CodeValue value="Divorced" code=""/>
     <CodeValue value="Widowed" code=""/>
+    <CodeValue value="Married - Out of Community of Property" code=""/>
    </ValueList>
    <ValueList name="check_social_tenure_relationship">
     <CodeValue value="General" code=""/>
    </ValueList>
    <ValueList name="check_lht_income_level">
-    <CodeValue value="0-1000" code=""/>
+    <CodeValue value="Below 1000" code=""/>
     <CodeValue value="1001-5000" code=""/>
-    <CodeValue value="Above 5000" code=""/>
+    <CodeValue value="5001-8000" code=""/>
+    <CodeValue value="Above 8000" code=""/>
    </ValueList>
    <ValueList name="check_scheme_document_type">
     <CodeValue value="Notice of Scheme Establishment" code=""/>
@@ -121,89 +122,9 @@
     <CodeValue value="Approved" code="AP"/>
     <CodeValue value="Pending" code="PD"/>
     <CodeValue value="Disapproved" code="DAP"/>
+    <CodeValue value="Withdrawn" code=""/>
    </ValueList>
   </ValueLists>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of LIS_Plot" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot_log" name="cb_lis_plot_log" label="">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Relevant_authority" proxy="False" createId="True" supportsDocuments="False" shortName="Relevant_authority_log" name="cb_relevant_authority_log" label="Relevant Authority Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Holder" proxy="False" createId="True" supportsDocuments="False" shortName="Holder_log" name="cb_holder_log" label="Holder Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Notification" proxy="False" createId="True" supportsDocuments="False" shortName="Notification Log" name="cb_notification_log" label="Notification Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Report" proxy="False" createId="True" supportsDocuments="False" shortName="Report Log" name="cb_report_log" label="">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Scheme" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_log" name="cb_scheme_log" label="Scheme Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="1" description="operation on row" index="False" name="operation" searchable="True" TYPE_INFO="VARCHAR" label="operation" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="1" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="timestamp of action on row" index="False" name="stamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
-     <currentDateTime minimum="True" maximum="True"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="2" minimum="0" maximum="1073741823" description="user who performed action" index="False" name="user_id" searchable="False" TYPE_INFO="TEXT" label="user id" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="3" minimum="0" maximum="50" description="Name of Scheme" index="False" name="scheme_name" searchable="True" TYPE_INFO="VARCHAR" label="scheme name" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="4" minimum="1752-09-14" maximum="7999-12-31" description="Date of approval" index="False" name="date_of_approval" searchable="False" TYPE_INFO="DATE" label="date of approval" mandatory="False">
-     <currentDate minimum="False" maximum="True"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="5" minimum="1752-09-14" maximum="7999-12-31" description="Date of Establishment" index="False" name="date_of_establishment" searchable="False" TYPE_INFO="DATE" label="date of establishment" mandatory="False">
-     <currentDate minimum="False" maximum="True"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="6" minimum="0" maximum="2147483647" description="Relevant authority" index="False" name="relevant_authority" searchable="True" TYPE_INFO="INT" label="relevant authority" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="7" minimum="0" maximum="2147483647" description="Land Rights Office" index="False" name="land_rights_office" searchable="True" TYPE_INFO="INT" label="land rights office" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="8" minimum="0" maximum="2147483647" description="Region" index="False" name="region" searchable="True" TYPE_INFO="INT" label="region" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="9" minimum="0" maximum="30" description="The number/code of the title deed" index="False" name="title_deed_number" searchable="True" TYPE_INFO="VARCHAR" label="title deed number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="10" minimum="0" maximum="100" description="Name of Township" index="False" name="township_name" searchable="True" TYPE_INFO="VARCHAR" label="township name" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="11" minimum="0" maximum="2147483647" description="registration division" index="False" name="registration_division" searchable="True" TYPE_INFO="INT" label="registration division" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="12" minimum="-0" maximum="179769313485999993463412110191957867872176903147024190229169150664616720223488549064776002732213849498804348433116986060126989671666306060788674238031081950882294921586851551818012975619342999042256679071052330673321513805402276774228700884740900574397999799640549171929913383207407537025048827210712192385024" description="Area of Scheme" index="False" name="area" searchable="True" TYPE_INFO="DOUBLE" label="area" mandatory="False">
-     <Numeric scale="4" precision="15"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="13" minimum="0" maximum="30" description="Registration number of document imposing conditions" index="False" name="doc_imposing_conditions" searchable="True" TYPE_INFO="VARCHAR" label="doc imposing conditions" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="14" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="consitution ref number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="15" minimum="0" maximum="2147483647" description="Number of plots in the Scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="no of plots" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="16" minimum="0" maximum="32" description="The number representing the Scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme number" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="17" minimum="-2147483648" maximum="2147483647" description="scheme id" index="False" name="scheme_id" searchable="True" TYPE_INFO="INT" label="scheme id" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Approval" proxy="False" createId="True" supportsDocuments="False" shortName="Approval_log" name="cb_approval_log" label="Approval Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Holder_plot" proxy="False" createId="True" supportsDocuments="False" shortName="Holder_plot_log" name="cb_holder_plot_log" label="Holder plot Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Lis_erf" proxy="False" createId="True" supportsDocuments="False" shortName="Lis_erf_log" name="cb_lis_erf_log" label="">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Plot" proxy="False" createId="True" supportsDocuments="False" shortName="Plot_log" name="cb_plot_log" label="Plot Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of Cdrs_title_deed" proxy="False" createId="True" supportsDocuments="False" shortName="Cdrs_title_deed_log" name="cb_cdrs_title_deed_log" label="Cdrs_title_deed Log">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-   </Columns>
-  </Entity>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to users" proxy="False" createId="True" supportsDocuments="False" shortName="User" name="cb_user" label="User">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
@@ -260,34 +181,23 @@
     </Column>
    </Columns>
   </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to user comment on a scheme" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="lht_comment">
+  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refer to the comment table" proxy="False" createId="True" supportsDocuments="False" shortName="Comment" name="cb_comment" label="comment">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="User comment on a scheme" rowindex="0" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="" mandatory="False"/>
-    <Column unique="False" tip="Identifier of the user" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the user" index="True" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="Scheme ID" mandatory="False">
+    <Column unique="False" tip="" rowindex="0" minimum="0" maximum="1073741823" description="User comment on a scheme" index="False" name="comment" searchable="False" TYPE_INFO="TEXT" label="message" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the user" index="False" name="user_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="user" mandatory="False">
      <Relation name="fk_cb_user_id_cb_comment_user_id"/>
     </Column>
-    <Column unique="False" tip="Time and date of comment submission" rowindex="2" minimum="1752-09-14 00:00:00" maximum="9999-12-31 23:59:59.999999" description="Time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="" mandatory="False">
+    <Column unique="False" tip="" rowindex="2" minimum="0001-01-01 00:00:00" maximum="9999-12-31 23:59:59.999999" description="time and date of comment submission" index="False" name="timestamp" searchable="False" TYPE_INFO="DATETIME" label="timestamp" mandatory="False">
      <currentDateTime minimum="False" maximum="False"/>
-    </Column>
-   </Columns>
-  </Entity>
-  <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to link for scheme and comment entities" proxy="False" createId="True" supportsDocuments="False" shortName="Scheme_comment" name="cb_scheme_comment" label="scheme comment">
-   <Columns>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Identifier of the scheme" index="True" name="scheme_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_cb_scheme_id_cb_scheme_comment_scheme_id"/>
-    </Column>
-    <Column unique="False" tip="" rowindex="1" minimum="0" maximum="2147483647" description="Identifier of the comment" index="True" name="comment_id" searchable="False" TYPE_INFO="FOREIGN_KEY" label="" mandatory="False">
-     <Relation name="fk_cb_comment_id_cb_scheme_comment_comment_id"/>
     </Column>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="0" associative="False" description="Staging table for plots imported from LIS" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot" name="cb_lis_plot" label="LIS Plot">
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="0" description="Geometry" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="" mandatory="False">
-     <Geometry layerDisplay="" srid="4326" type="2"/>
+    <Column unique="False" tip="" rowindex="-1" description="Geometry" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="" mandatory="False">
+     <Geometry layerDisplay="" srid="4006" type="2"/>
     </Column>
     <Column unique="True" tip="" rowindex="1" minimum="0" maximum="30" description="Unique Parcel Identifier" index="False" name="upi" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
     <Column unique="False" tip="" rowindex="2" minimum="0" maximum="50" description="Plot use type" index="False" name="use" searchable="True" TYPE_INFO="VARCHAR" label="" mandatory="False"/>
@@ -444,7 +354,7 @@
    <Columns>
     <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="" index="False" name="id" searchable="True" TYPE_INFO="SERIAL" label="" mandatory="False"/>
     <Column unique="False" tip="" rowindex="0" minimum="0" maximum="32" description="Unique parcel identifier" index="False" name="upi" searchable="True" TYPE_INFO="VARCHAR" label="upi" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="1" description="Geometry column of the plot" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="geometry" mandatory="False">
+    <Column unique="False" tip="" rowindex="-1" description="Geometry column of the plot" index="False" name="geom" searchable="False" TYPE_INFO="GEOMETRY" label="geometry" mandatory="False">
      <Geometry layerDisplay="" srid="4006" type="2"/>
     </Column>
     <Column unique="False" tip="" rowindex="2" minimum="0" maximum="2147483647" description="Use of the plot of land" index="False" name="use" searchable="True" TYPE_INFO="LOOKUP" label="plot use" mandatory="False">
@@ -494,15 +404,12 @@
    <EntityRelation displayColumns="name,code" child="Scheme_workflow" showInParent="True" parent="check_lht_approval_status" name="fk_cb_check_lht_approval_status_id_cb_scheme_workflow_approval_id" parentColumn="id" showInChild="True" childColumn="approval_id"/>
    <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_holder_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
    <EntityRelation displayColumns="" child="Scheme_holder" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_holder_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
+   <EntityRelation displayColumns="" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_holder_plot_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="Holder_plot" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_holder_plot_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
    <EntityRelation displayColumns="" child="Lis_erf" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_lis_erf_scheme_identifier" parentColumn="id" showInChild="True" childColumn="scheme_identifier"/>
-   <EntityRelation displayColumns="first_name,last_name" child="Comment" showInParent="True" parent="User" name="fk_cb_user_id_cb_comment_user_id" parentColumn="id" showInChild="True" childColumn="user_id"/>
-   <EntityRelation displayColumns="first_name,surname" child="Scheme_comment" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_scheme_comment_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
-   <EntityRelation displayColumns="" child="Scheme_comment" showInParent="True" parent="Comment" name="fk_cb_comment_id_cb_scheme_comment_comment_id" parentColumn="id" showInChild="True" childColumn="comment_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Holder" name="fk_cb_holder_id_cb_social_tenure_relationship_holder_id" parentColumn="id" showInChild="True" childColumn="holder_id"/>
    <EntityRelation displayColumns="" child="social_tenure_relationship" showInParent="True" parent="Plot" name="fk_cb_plot_id_cb_social_tenure_relationship_plot_id" parentColumn="id" showInChild="True" childColumn="plot_id"/>
-   <EntityRelation displayColumns="" child="Scheme_comment" showInParent="True" parent="Scheme" name="fk_cb_scheme_id_cb_scheme_comment_scheme_id" parentColumn="id" showInChild="True" childColumn="scheme_id"/>
   </Relations>
   <SocialTenure layerDisplay="" tenureTypeList="check_tenure_type" spatialUnit="Plot" supportsMultipleParties="True" party="Holder">
    <SpatialUnitTenureMappings>
