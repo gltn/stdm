@@ -602,12 +602,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         msg = self._approval_message(
             title.capitalize(), num_records, scheme_numbers
         )
-        result, self._msg_box_button = self._show_approval_message(msg)
+        rows = self._approval_rows(items)
+        scheme_items = self._approval_scheme_items(rows)
+        result, self._msg_box_button = self._show_approval_message(
+            msg, scheme_items
+        )
         if result == 0:
             self._update_scheme(items, title)
         elif result == 1:
-            rows = self._approval_rows(items)
-            scheme_items = self._approval_scheme_items(rows)
             self._load_scheme_detail(scheme_items)
             self._lambda_args = (items, title)  # Ensures lambda gets current value
             self._detail_table.submitted.connect(
@@ -735,20 +737,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return False
         return True
 
-    def _show_approval_message(self, msg):
+    def _show_approval_message(self, msg, items):
         """
         Custom Message box
         :param msg: Message to be communicated
         :type msg: String
+        :param items: Approval items
+        :type items: Dictionary
         """
-        values = (0, 1)
         button = self._button_clicked()
         button = button.objectName()
         msg_box = self._message_box.get(button)
         if msg_box:
             msg_box.setWindowTitle(self.tr('Workflow Manager'))
             msg_box.setText(self.tr(msg))
-            return self._message_box_result(msg_box, values)
+            return self._message_box_result(msg_box, items)
         options = SchemeMessageBox(self).message_box[button]
         msg_box = MessageBoxWidget(
             options,
@@ -757,20 +760,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self
         )
         self._message_box[button] = msg_box
-        return self._message_box_result(msg_box, values)
+        return self._message_box_result(msg_box, items)
 
-    @staticmethod
-    def _message_box_result(message_box, values):
+    def _message_box_result(self, message_box, items):
         """
         Returns custom message box results
         :param message_box: Custom QMessageBox
         :type message_box: QMessageBox
-        :param values: Positive button click result
-        :type values: Tuple
-        :rtype: Integer
+        :param items: Approval items
+        :type items: Dictionary
+        :return: Clicked button index or None
+        :rtype: Integer, NoneType
         """
+        if not items:
+            buttons = [button for button in message_box.buttons() if button.text() != "Cancel"]
+            self._disable_widget(buttons)
         result = message_box.exec_()
-        if result in values:
+        if result in (0, 1):
             clicked_button = message_box.clickedButton()
             return result, clicked_button.objectName()
         return None, None
