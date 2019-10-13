@@ -30,10 +30,10 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []
-        self._load_collections = widget_properties["load_collections"]
-        self._data_service = widget_properties["data_service"]
+        self._load_collections = widget_properties.get("load_collections")
+        self._data_service = widget_properties.get("data_service")
         self._data_service = self._data_service(profile, scheme_id)
-        self._scheme_items = widget_properties["scheme_items"]
+        self._scheme_items = widget_properties.get("scheme_items")
         self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
         self.oldCommentTextEdit.setReadOnly(True)
@@ -125,14 +125,15 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             return
         try:
             saved_comments = 0
-            scheme_numbers = self._scheme_numbers
-            msg = self._submit_message(
-                "Submit comments for Scheme: ", scheme_numbers
-            )
-            if self._show_question_message(msg):
-                saved_comments = self.model.save_collection(
-                    save_items, self._parent_query_objs
+            if self._scheme_items:
+                scheme_numbers = self._scheme_numbers
+                msg = self._submit_message(
+                    "Submit comments for Scheme: ", scheme_numbers
                 )
+                if self._show_question_message(msg):
+                    saved_comments = self.model.save_collection(
+                        save_items, self._parent_query_objs
+                    )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         else:
@@ -141,6 +142,9 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
                 msg = "Comments successfully submitted. Thank you."
                 self._notification_information(msg)
                 self.submitted.emit()
+            else:
+                msg = 'Comments not submitted. Preceding Scheme is "Pending" or "Disapproved"'
+                self._notification_warning(msg)
 
     def _save_items(self):
         """
@@ -185,6 +189,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         :return: Scheme numbers
         :rtype: List
         """
+
         return [
             scheme_number for scheme_query_obj, scheme_number in
             self._scheme_items.values()

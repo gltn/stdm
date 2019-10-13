@@ -56,10 +56,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._object_name = object_name
         self._checked_ids = OrderedDict()
-        self._detail_store = {}
         self._message_box = {}
-        self._tab_name = self._detail_table = None
-        self._update_rows = self._msg_box_button = None
+        self._tab_name = self._detail_table = self._msg_box_button = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -198,9 +196,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             row, check_state, record_id = self._get_model_item(index)
             if int(check_state) == 0:
                 self._remove_checked_id(record_id)
-                scheme_number = self._get_scheme_number(index)
-                key, label = self._create_key(record_id, scheme_number)
-                self._remove_stored_widget(key)
+                self._load_scheme_detail()
                 self._on_uncheck_disable_widgets()
 
     def _get_model_item(self, index):
@@ -245,21 +241,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._lookup.SCHEME_NUMBER
         )
 
-    def _remove_stored_widget(self, key):
-        """
-        Removed archived table view widget
-        :param key: Archived widget identifier
-        :type key: String
-        :return: True if widget is removed otherwise False
-        :rtype: Boolean
-        """
-        try:
-            del self._detail_store[key]
-        except KeyError:
-            return
-        else:
-            self._load_scheme_detail()
-
     def _on_check_enable_widgets(self):
         """
         Enable Workflow Manager widgets on check
@@ -283,16 +264,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status = [tup[1] for tup in self._checked_ids.values()]
         return status
 
-    def _load_scheme_detail(self):
+    def _load_scheme_detail(self, scheme_items=None):
         """
         On unchecking a record or clicking the 'Holders', 'Documents',
         'Comments' or 'Comment & Approve' buttons, open scheme detail tab
+        :param scheme_items: Scheme items
+        :type scheme_items: Dictionary
         """
         if not self._checked_ids:
             return
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
-        # TODO: Start. Refactor to different methods
         if self._msg_box_button:
             widget_id = self._create_key(
                 last_id, scheme_number, self._comments_title
@@ -302,72 +284,42 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         else:
             widget_id = self._create_key(last_id, scheme_number)
             widget_prop = self._get_widget_properties()
-        # TODO: End. Refactor to different methods
-        widget_prop["scheme_items"] = self._get_model_query()
+        if scheme_items:
+            widget_prop["scheme_items"] = scheme_items
         self._load_details(widget_prop, widget_id, last_id)
 
-    # def _load_scheme_detail(self):
-    #     """
-    #     On unchecking a record or clicking the 'Holders', 'Documents' or
-    #     'Comments' buttons, open scheme detail tab
-    #     """
-    #     if not self._checked_ids:
-    #         return
-    #     last_id = self._checked_ids.keys()[-1]
-    #     row, status, scheme_number = self._checked_ids[last_id]
-    #     widget_id = self._create_key(last_id, scheme_number)
-    #     widget_prop = self._get_widget_properties()
-    #     widget_prop["scheme_items"] = self._get_model_query()
-    #     self._load_details(widget_prop, widget_id, last_id)
+    def _create_key(self, scheme_id, scheme_number, comment=None):
+        """
+        Create key to be used as widget store ID
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
+        :param scheme_number: Scheme number
+        :type scheme_number: String
+        :param comment: Comment label
+        :type comment: String
+        :return key: Dictionary store ID
+        :rtype key: String
+        :return label: Scheme details/comments identifier
+        :rtype label: String
+        """
+        label = comment if comment else self._get_label()
+        if label is None:
+            return None, None
+        key = "{0}_{1}".format(str(scheme_id), label)
+        label = "{0} - {1}".format(label, scheme_number)
+        return key, label
 
-    def _get_model_query(self):
+    def _checked_scheme_items(self):
         """
-        Returns Scheme model query object
-        :return: Scheme model query data
-        :rtype: List
+        Returns checked scheme items; query object, scheme numbers
+        :return: Scheme items of approval rows
+        :rtype: Dictionary
         """
-        # TODO: Start. Refactor by putting each in its function and return
-        if self._update_rows:
-            query_items = {
-                row: (self._model.results[row].get("data"), scheme_number)
-                for scheme_id, (row, status, scheme_number) in self._checked_ids.items()
-                if row in self._update_rows
-            }
-            self._update_rows = None
-            return query_items
         return {
             row: (self._model.results[row].get("data"), scheme_number)
             for scheme_id, (row, status, scheme_number) in
             self._checked_ids.iteritems()
         }
-        # TODO: End. Refactor by putting each in its function and return
-
-    def _load_details(self, widget_prop, widget_id, scheme_id):
-        """
-        Add Scheme details tab
-        :param widget_prop: Scheme details service items
-        :type widget_prop: Scheme widgets properties
-        :param widget_id: Dictionary
-        :type widget_id: Widget key and label
-        :param scheme_id: Scheme record ID/primary key
-        :type scheme_id: Integer
-        """
-        self.notif_bar.clear()
-        key, label = widget_id
-        if key in self._detail_store:
-            self._detail_table = self._detail_store[key]
-            if self._is_alive(self._detail_table):
-                self._replace_tab(1, self._detail_table, label)
-                self._detail_table.refresh()
-        elif None not in (key, label):
-            details_widget = widget_prop['widget']
-            self._detail_table = details_widget(
-                widget_prop, self._profile, scheme_id, self
-            )
-            self._replace_tab(1, self._detail_table, label)
-            self._enable_search() if self._detail_table.model.results \
-                else self._disable_search()
-            self._detail_store[key] = self._detail_table
 
     def _get_widget_properties(self, key=None):
         """
@@ -379,6 +331,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         key = key if key else self._get_label()
         return self._widget_properties[key]
+
+    def _get_label(self):
+        """
+        Return label depending on the type of scheme
+        details (holders or documents)
+        :return: Sender object name
+        :rtype: String
+        """
+        object_name = None
+        button = self._button_clicked()
+        if button:
+            return button.objectName()
+        elif self._tab_name:
+            object_name, scheme_number = self._tab_name.split(" - ")
+        return object_name
 
     @property
     def _widget_properties(self):
@@ -411,67 +378,26 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         }
         return widget_prop
 
-    # @property
-    # def _widget_properties(self):
-    #     """
-    #     Scheme widgets properties
-    #     :return: Scheme widgets properties
-    #     :rtype: Dictionary
-    #     """
-    #     widget_prop = {
-    #         self.documentsButton.objectName(): {
-    #             'data_service': DocumentDataService,
-    #             'widget': SchemeDetailTableView,
-    #             'load_collections': False
-    #         },
-    #         self.holdersButton.objectName(): {
-    #             'data_service': HolderDataService,
-    #             'widget': SchemeDetailTableView,
-    #             'load_collections': True
-    #         },
-    #         self._comments_title: {
-    #             'data_service': CommentDataService,
-    #             'widget': CommentManagerWidget,
-    #             'load_collections': True
-    #         }
-    #     }
-    #     return widget_prop
-
-    def _create_key(self, scheme_id, scheme_number, comment=None):
+    def _load_details(self, widget_prop, widget_id, scheme_id):
         """
-        Create key to be used as widget store ID
+        Add Scheme details tab
+        :param widget_prop: Scheme details service items
+        :type widget_prop: Scheme widgets properties
+        :param widget_id: Dictionary
+        :type widget_id: Widget key and label
         :param scheme_id: Scheme record ID/primary key
         :type scheme_id: Integer
-        :param scheme_number: Scheme number
-        :type scheme_number: String
-        :param comment: Comment label
-        :type comment: String
-        :return key: Dictionary store ID
-        :rtype key: String
-        :return label: Scheme details/comments identifier
-        :rtype label: String
         """
-        label = comment if comment else self._get_label()
-        if label is None:
-            return None, None
-        key = "{0}_{1}".format(str(scheme_id), label)
-        label = "{0} - {1}".format(label, scheme_number)
-        return key, label
-
-    def _get_label(self):
-        """
-        Return label depending on the type of scheme
-        details (holders or documents)
-        :return: Sender object name
-        :rtype: String
-        """
-        object_name = None
-        button = self._button_clicked()
-        if button:
-            return button.objectName()
-        elif self._tab_name:
-            object_name, scheme_number = self._tab_name.split(" - ")
-        return object_name
+        self.notif_bar.clear()
+        key, label = widget_id
+        if None not in (key, label):
+            details_widget = widget_prop['widget']
+            self._detail_table = details_widget(
+                widget_prop, self._profile, scheme_id, self
+            )
+            self._replace_tab(1, self._detail_table, label)
+            self._enable_search() if self._detail_table.model.results \
+                else self._disable_search()
 
     def _enable_search(self):
         """
@@ -529,10 +455,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param index: Index of the tab to be closed
         :type index: Integer
         """
-        # tab = self.tabWidget.widget(index)
+        tab = self.tabWidget.widget(index)
         self.tabWidget.removeTab(index)
-        # if tab is not None:
-        #     tab.deleteLater()
+        if tab is not None:
+            tab.deleteLater()
         self._tab_name = None
 
     @staticmethod
@@ -607,70 +533,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         scheme_numbers = (len(scheme_numbers), scheme_numbers)
         self._approval_comment(items, title, scheme_numbers)
 
-    def _approval_comment(self, items, title, scheme_numbers):
-        num_records, scheme_numbers = scheme_numbers
-        msg = self._approval_message(
-            title.capitalize(), num_records, scheme_numbers
-        )
-        result, self._msg_box_button = self._show_approval_message(msg)
-        if result == 0:
-            self._update_scheme(items, title)
-        elif result == 1:
-            self._update_rows = self._get_update_rows(items)
-            self._load_scheme_detail()
-            self._lambda_args = (items, title)  # Ensures lambda gets current value
-            self._detail_table.submitted.connect(
-                lambda: self._update_scheme(*self._lambda_args)
-            )
-
-    @staticmethod
-    def _get_update_rows(items):
-        """
-        Returns table view rows to be updated
-        :param items: Update items
-        :type items: Tuple, Dictionary
-        :return: Table view rows to be updated
-        :rtype: List
-        """
-        if isinstance(items, tuple):
-            items, next_items, save_items = items
-        return items.keys()
-
-    # def _on_approve(self, status, title):
-    #     """
-    #     Approve a Scheme
-    #     :param status: Approve status
-    #     :type status: Integer
-    #     :param title: Approve title text
-    #     :type title: String
-    #     """
-    #     self._approve.set_check_ids(self._checked_ids)
-    #     items, scheme_numbers = self._approve.approve_items(status)
-    #     items = (items,) + self._approve.next_approval_items(items)
-    #     num_records = len(scheme_numbers["valid"])
-    #     if scheme_numbers["invalid"]:
-    #         self._invalid_approval_msg(scheme_numbers)
-    #     scheme_numbers = (num_records, scheme_numbers["valid"])
-    #     self._update_scheme(items, title, scheme_numbers)
-
-    # def _on_disapprove(self, status, title):
-    #     """
-    #     Disapprove a Scheme
-    #     :param status: Disapprove status
-    #     :type status: Integer
-    #     :param title: Disapprove title text
-    #     :type title: String
-    #     """
-    #     self._disapprove.set_check_ids(self._checked_ids)
-    #     items, scheme_numbers = self._disapprove.disapprove_items(status)
-    #     scheme_numbers = (len(scheme_numbers), scheme_numbers)
-    #     self._update_scheme(items, title, scheme_numbers)
-
     def _invalid_approval_msg(self, scheme_numbers):
         """
         Return Scheme message for invalid approval
         :param scheme_numbers: Scheme number
-        :param scheme_numbers: String
+        :type scheme_numbers: String
         :return: Formatted scheme numbers
         :return: Dictionary
         """
@@ -721,6 +588,59 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             if getattr(query_obj, column, None) == value:
                 return query_obj
 
+    def _approval_comment(self, items, title, scheme_numbers):
+        """
+        Comment and approve or disapprove a Scheme
+        :param items: Update items
+        :type items: Tuple, Dictionary
+        :param title: Approve title text
+        :type title: String
+        :param scheme_numbers: Scheme numbers and rows
+        :type scheme_numbers: Tuple
+        """
+        num_records, scheme_numbers = scheme_numbers
+        msg = self._approval_message(
+            title.capitalize(), num_records, scheme_numbers
+        )
+        result, self._msg_box_button = self._show_approval_message(msg)
+        if result == 0:
+            self._update_scheme(items, title)
+        elif result == 1:
+            rows = self._approval_rows(items)
+            scheme_items = self._approval_scheme_items(rows)
+            self._load_scheme_detail(scheme_items)
+            self._lambda_args = (items, title)  # Ensures lambda gets current value
+            self._detail_table.submitted.connect(
+                lambda: self._update_scheme(*self._lambda_args)
+            )
+
+    @staticmethod
+    def _approval_rows(items):
+        """
+        Returns row indexes of valid checked approval table view items
+        :param items: Update items
+        :type items: Tuple, Dictionary
+        :return: Table view rows to be updated
+        :rtype: List
+        """
+        if isinstance(items, tuple):
+            items, next_items, save_items = items
+        return items.keys()
+
+    def _approval_scheme_items(self, approval_rows):
+        """
+        Returns valid checked approval scheme items; query object, scheme numbers
+        :param approval_rows: Approval table view rows
+        :type approval_rows: List
+        :return: Scheme items of approval rows
+        :rtype: Dictionary
+        """
+        return {
+            row: (self._model.results[row].get("data"), scheme_number)
+            for scheme_id, (row, status, scheme_number) in self._checked_ids.items()
+            if row in approval_rows
+        }
+
     def _update_scheme(self, items, title):
         """
         On approve or disapprove update scheme record
@@ -747,43 +667,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 "Successfully {}".format(title), updated_rows
             )
             self.notif_bar.insertInformationNotification(msg)
-
-    # def _update_scheme(self, items, title, scheme_numbers):
-    #     """
-    #     On approve or disapprove update scheme record
-    #     :param items: Update items
-    #     :param items: Dictionary
-    #     :param title: Message title
-    #     :param title: String
-    #     :param scheme_numbers: Scheme numbers and rows
-    #     :param scheme_numbers: Tuple
-    #     """
-    #     updated_rows = None
-    #     rows, scheme_numbers = scheme_numbers
-    #     try:
-    #         self.notif_bar.clear()
-    #         msg = self._approval_message(
-    #             title.capitalize(), rows, scheme_numbers
-    #         )
-    #         reply = self._show_question_message(msg)
-    #         if reply:
-    #             if isinstance(items, tuple):
-    #                 items, next_items, save_items = items
-    #                 updated_rows = self._update_on_approve(
-    #                     items, next_items, save_items
-    #                 )
-    #             else:
-    #                 updated_rows = self._model.update(items)
-    #     except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-    #         msg = "Failed to update: {}".format(e)
-    #         self._show_critical_message(msg)
-    #     else:
-    #         if reply:
-    #             self.refresh()
-    #             msg = self._approval_message(
-    #                 "Successfully {}".format(title), updated_rows
-    #             )
-    #             self.notif_bar.insertInformationNotification(msg)
 
     def _update_on_approve(self, items, next_items, save_items):
         """
@@ -826,7 +709,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param num_records: Number of rows
         :type num_records: Integer
         :param scheme_numbers: Scheme numbers
-        :param scheme_numbers: List
+        :type scheme_numbers: List
         :return: Approval message
         :rtype: String
         """
@@ -858,7 +741,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param msg: Message to be communicated
         :type msg: String
         """
-        # TODO: Refactor for readability
         values = (0, 1)
         button = self._button_clicked()
         button = button.objectName()
