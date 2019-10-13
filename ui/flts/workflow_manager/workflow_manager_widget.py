@@ -480,19 +480,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             widgets.setEnabled(True)
 
     @staticmethod
-    def _disable_widget(widgets):
-        """
-        Disable a widget
-        :param widgets: A widget/group of widgets to be enabled
-        :rtype widgets: List or QWidget
-        """
-        if isinstance(widgets, list):
-            for widget in widgets:
-                widget.setEnabled(False)
-        else:
-            widgets.setEnabled(False)
-
-    @staticmethod
     def _is_alive(widget):
         """
         Checks widget/tab for aliveness
@@ -836,6 +823,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._lookup.DISAPPROVED() not in status:
             self._disable_widget(self.approveButton)
 
+    @staticmethod
+    def _disable_widget(widgets):
+        """
+        Disable a widget
+        :param widgets: A widget/group of widgets to be enabled
+        :rtype widgets: List or QWidget
+        """
+        if isinstance(widgets, list):
+            for widget in widgets:
+                widget.setEnabled(False)
+        else:
+            widgets.setEnabled(False)
+
     def _on_tab_change(self, index):
         """
         Shows or hides widget on tab change
@@ -874,4 +874,3 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if widget.isVisible():
             widget.hide()
-
