@@ -1048,15 +1048,38 @@ def cmis_base_url():
     )
 
 
-def cmis_auth_ticket():
+def login_rest_url():
     """
-    Retrieves the authentication ticket for use in accessing resources in the
-    CMIS server.
-    :return: Returns a tuple containing the HTTP response from the server and
-    the Alfresco authentication ticket. If the status code in the response
-    object is not 200 then the authentication ticket will be empty.
-    :rtype: tuple(response, auth_ticket)
+    :return: Returns the REST login URL.
+    :rtype: str
     """
+    return u'{0}/alfresco/s/api/login'.format(cmis_base_url())
+
+
+def rest_ticket_url(ticket):
+    """
+    Builds the full rest URL based on the specified authentication ticket.
+    :param ticket: Alfresco authentication ticket.
+    :type ticket: str
+    :return: Returns the full rest URL of the authentication ticket.
+    :rtype: str
+    """
+    return u'{0}/ticket/{1}'.format(
+        login_rest_url(),
+        ticket
+    )
+
+
+def auth_credentials():
+    # Returns a tuple containing the username and password as stored in the
+    # QGIS configuration.
+    u, pw = '', ''
+    auth_conf = auth_config_from_id(cmis_auth_config_id())
+    if auth_conf:
+        u = auth_conf.config('username')
+        pw = auth_conf.config('password')
+
+    return u, pw
 
 
 class PDFViewerException(Exception):
@@ -1064,6 +1087,102 @@ class PDFViewerException(Exception):
     Exceptions related to the PDF document viewer (proxy).
     """
     pass
+
+
+# Number of seconds to wait on a response from the CMIS server.
+TIMEOUT = 7
+
+
+def cmis_auth_ticket():
+    """
+    Retrieves the authentication ticket for use in accessing resources in the
+    CMIS server.
+    :raises:
+        Timeout: When the client fails to connect to the server within the
+        specified timeout period.
+    :return: Returns a tuple containing the HTTP response from the server and
+    the Alfresco authentication ticket. If the status code in the response
+    object is not 200 then the authentication ticket will be empty.
+    :rtype: tuple(response, auth_ticket)
+    """
+    response, auth_ticket = None, ''
+    u, pw = auth_credentials()
+
+    try:
+        response = requests.post(
+            login_rest_url(),
+            json={
+                'username': u,
+                'password': pw
+            },
+            timeout=TIMEOUT
+        )
+    except Timeout:
+        raise PDFViewerException('Connection to server timed out')
+
+    if response and response.status_code == 200:
+        resp_body = response.json()
+        if 'data' in resp_body:
+            auth_ticket = resp_body['data']['ticket']
+
+    return response, auth_ticket
+
+
+# Enum of auth ticket operations
+VALIDATE, LOGOUT = range(0, 2)
+
+
+def _manage_auth_ticket(auth_ticket, auth_ticket_op):
+    # Convenience method for validating or logging out the authentication ticket.
+    req_op = None
+    response = None
+
+    if auth_ticket_op == VALIDATE:
+        req_op = requests.get
+    elif auth_ticket_op == LOGOUT:
+        req_op = requests.delete
+
+    if not req_op:
+        raise ValueError('Request operation could not be determined.')
+
+    auth_ticket_url = rest_ticket_url(auth_ticket)
+    try:
+        response = req_op(
+            auth_ticket_url,
+            params={
+                'alf_ticket': auth_ticket
+            },
+            timeout=TIMEOUT
+        )
+    except Timeout:
+        raise PDFViewerException('Connection to server timed out')
+
+    if response and response.status_code == 200:
+        return True
+
+    return False
+
+
+def is_auth_ticket_valid(auth_ticket):
+    """
+    Check if the given authentication ticket is valid.
+    :param auth_ticket: Authentication ticket.
+    :type auth_ticket: str
+    :return: Returns True if the authentication ticket is valid, else False.
+    :rtype: bool
+    """
+    return _manage_auth_ticket(auth_ticket, VALIDATE)
+
+
+def logout_auth_ticket(auth_ticket):
+    """
+    Logout and delete authentication ticket.
+    :param auth_ticket: Authentication ticket to be logged out and deleted.
+    :type auth_ticket: str
+    :return: Returns True if the logout was successful, else False.
+    :rtype: bool
+    """
+    return _manage_auth_ticket(auth_ticket, LOGOUT)
 
 
 class PDFViewerProxy(QObject):
@@ -1089,12 +1208,40 @@ class PDFViewerProxy(QObject):
                 'Invalid base URL. Check CMIS service end point.'
             )
             raise PDFViewerException(msg)
-        doc_path = '/share/proxy/alfresco/slingshot/node/content/workspace/' \
-                   'SpacesStore'
+        doc_path = '/alfresco/d/d/workspace/SpacesStore'
         self._root_doc_url = '{0}{1}'.format(
             self._base_url,
             doc_path
         )
+        self._auth_ticket = None
+
+        # Try to set the authentication ticket
+        self._gen_auth_ticket()
+
+        # Logout from the CMIS server when the object is about to be destroyed
+        self.destroyed.connect(
+            self.invalidate_auth_ticket
+        )
+
+    def _gen_auth_ticket(self):
+        # Generate an authentication ticket that can be used in the session.
+        resp, auth_ticket = cmis_auth_ticket()
+        if resp.status_code != 200:
+            msg = 'Status {0:d} - {1}'.format(
+                resp.status_code,
+                self.tr('Unable to load the document viewer as the '
+                        'authentication ticket could not be created.'
+                        )
+            )
+            raise PDFViewerException(msg)
+
+        self._auth_ticket = auth_ticket
+
+    def _check_auth_ticket(self):
+        # Checks if the authentication ticket is valid and if not, refreshes
+        # it prior to loading the document viewer.
+        if not is_auth_ticket_valid(self._auth_ticket):
+            self._gen_auth_ticket()
 
     @property
     def root_doc_url(self):
@@ -1150,7 +1297,17 @@ class PDFViewerProxy(QObject):
             document_name
         )
         if self.restricted:
-            abs_doc_path = '{0}#toolbar=0'.format(abs_doc_path)
+            # abs_doc_path = '{0}#toolbar=0'.format(abs_doc_path)
+            abs_doc_path = '{0}'.format(abs_doc_path)
+
+        # Check and update authentication ticket if required
+        self._check_auth_ticket()
+
+        # Append ticket to URL
+        abs_doc_path = '{0}?ticket={1}'.format(
+            abs_doc_path,
+            self._auth_ticket
+        )
 
         # Build args
         cmd_inputs = []
@@ -1175,6 +1332,13 @@ class PDFViewerProxy(QObject):
             document_model.document_identifier,
             document_model.name
         )
+
+    def invalidate_auth_ticket(self):
+        """
+        Logs out and deletes the current authentication ticket.
+        """
+        print 'Logout ticket'
+        logout_auth_ticket(self._auth_ticket)
 
     def _on_error(self, error):
         doc_id = ''
