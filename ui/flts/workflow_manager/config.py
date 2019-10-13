@@ -15,12 +15,15 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-# import datetime
+
+from datetime import datetime
 from collections import namedtuple
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
     QApplication,
+    QIcon,
     QMessageBox,
+    QPushButton,
 )
 from sqlalchemy import exc
 from stdm.settings import current_profile
@@ -47,6 +50,114 @@ class Config(object):
         return self._configurations.get(option, None)
 
 
+class ButtonIcons(Config):
+    """
+    QPushButton icons configuration interface
+    """
+    def __init__(self):
+        super(ButtonIcons, self).__init__()
+        self.Icon = namedtuple('Icon', ['icon', 'size'])
+
+    def button_icons(self, config):
+        """
+        QPushButton icon configuration options
+        :param config: QPushButton icon configurations
+        :type config: Tuple
+        :return: QPushButton icon options
+        :rtype: Dictionary
+        """
+
+        return {
+            button: self.Icon(icon=icon, size=qsize)
+            for button, qsize, icon in config
+        }
+
+
+class CommentButtonIcons(ButtonIcons):
+    """
+    Comment Manager QPushButton icons configuration interface
+    """
+
+    def __init__(self, parent=None):
+        super(CommentButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Comment Manager QPushButton icons options
+        :return: Comment Manager QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(CommentButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Comment Manager QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.submitButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_comment_reply.png")
+            ),
+        )
+
+
+class CommentConfig(Config):
+    """
+    Comment Manager widget configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Comment Manager widget columns options
+        :return: Comment Manager widget columns and query columns options
+        :rtype: List
+        """
+        return self.get_data('comment_columns')
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('comment_collections')
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary load data for the Comment Manager widget
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('comment_load_collections')
+
+    @property
+    def lookups(self):
+        """
+        Comment text edit lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
+    @property
+    def comment_save_columns(self):
+        """
+        Comment text edit save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self.get_data('save_columns').\
+            get('comment_save', None)
+
+
 class DocumentConfig(Config):
     """
     Scheme supporting documents table
@@ -62,6 +173,15 @@ class DocumentConfig(Config):
         """
         return self.get_data('document_columns')
 
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('document_collections')
+
 
 class HolderConfig(Config):
     """
@@ -76,6 +196,70 @@ class HolderConfig(Config):
         """
         return self.get_data('holder_columns')
 
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('holder_collections')
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary table view load
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('holder_load_collections')
+
+
+class PaginationButtonIcons(ButtonIcons):
+    """
+    Pagination QPushButton icons configuration interface
+    """
+
+    def __init__(self, parent=None):
+        super(PaginationButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Pagination QPushButton icons options
+        :return: Pagination QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(PaginationButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Pagination QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.first_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
+            ),
+            (
+                self._parent.previous_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
+            ),
+            (
+                self._parent.next_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
+            ),
+            (
+                self._parent.last_button, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
+            ),
+        )
+
 
 class StyleSheet(Config):
     """
@@ -89,6 +273,58 @@ class StyleSheet(Config):
         :rtype: String
         """
         return self.get_data('header_view_style')
+
+
+class SchemeButtonIcons(ButtonIcons):
+    """
+    Scheme QPushButton icons configuration interface
+    """
+    def __init__(self, parent=None):
+        super(SchemeButtonIcons, self).__init__()
+        self._parent = parent
+
+    @property
+    def buttons(self):
+        """
+        Scheme QPushButton icons options
+        :return: Scheme QPushButton icon options
+        :rtype: Dictionary
+        """
+        config = self._buttons_config()
+        return super(SchemeButtonIcons, self).button_icons(config)
+
+    def _buttons_config(self):
+        """
+        Returns Scheme QPushButton icon configurations
+        :return: QPushButton icon configurations
+        :rtype: Tuple
+        """
+        return (
+            (
+                self._parent.approveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
+            ),
+            (
+                self._parent.disapproveButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
+            ),
+            (
+                self._parent.holdersButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
+            ),
+            (
+                self._parent.documentsButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
+            ),
+            (
+                self._parent.commentsButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
+            ),
+            (
+                self._parent.searchButton, QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_search.png")
+            ),
+        )
 
 
 class SchemeConfig(Config):
@@ -109,6 +345,15 @@ class SchemeConfig(Config):
         return self.get_data('scheme_columns')
 
     @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self.get_data('scheme_collections')
+
+    @property
     def lookups(self):
         """
         Scheme table view lookup options
@@ -116,6 +361,16 @@ class SchemeConfig(Config):
         :rtype: LookUp
         """
         return self.get_data('lookups')
+
+    @property
+    def scheme_save_columns(self):
+        """
+        Scheme table view save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self.get_data('save_columns').\
+            get('scheme_save', None)
 
     @property
     def scheme_update_columns(self):
@@ -126,6 +381,112 @@ class SchemeConfig(Config):
         """
         return self.get_data('update_columns').\
             get('scheme_update', None)
+
+
+class SchemeMessageBox(ButtonIcons):
+    """
+    Scheme QMessageBox configuration interface
+    """
+    def __init__(self, parent=None):
+        super(SchemeMessageBox, self).__init__()
+        self._parent = parent
+        self.MessageBox = namedtuple(
+            'MessageBox', ['name', 'pushButton', 'role', 'icon']
+        )
+
+    @property
+    def message_box(self):
+        """
+        QMessageBox configuration options
+        :return: QMessageBox configuration options
+        :rtype: Dictionary
+        """
+        return self._message_box_config()
+
+    def _message_box_config(self):
+        """
+        Returns QMessageBox icon configurations
+        :return: QMessageBox icon configurations
+        :rtype: Dictionary
+        """
+        # TODO: Explore the possibility of placing this config in the configurations
+        config = {
+            self._parent.approveButton.objectName(): [
+                self.MessageBox(
+                    name='approveMsgButton',
+                    pushButton=QPushButton("Approve"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+                ),
+                self.MessageBox(
+                    name='commentApproveMsgButton',
+                    pushButton=QPushButton("Comment && Approve"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                ),
+                self.MessageBox(
+                    name=None,
+                    pushButton=QPushButton("Cancel"),
+                    role=QMessageBox.RejectRole,
+                    icon=None,
+                )
+            ],
+            self._parent.disapproveButton.objectName(): [
+                self.MessageBox(
+                    name='disapproveMsgButton',
+                    pushButton=QPushButton("Disapprove"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                ),
+                self.MessageBox(
+                    name='commentDisapproveMsgButton',
+                    pushButton=QPushButton("Comment && Disapprove"),
+                    role=QMessageBox.YesRole,
+                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                ),
+                self.MessageBox(
+                    name=None,
+                    pushButton=QPushButton("Cancel"),
+                    role=QMessageBox.RejectRole,
+                    icon=None,
+                )
+            ]
+        }
+        return config
+
+
+class TabIcons(Config):
+    """
+    QTabWidget icons configuration interface
+    """
+    def __init__(self):
+        super(TabIcons, self).__init__()
+
+    @property
+    def icons(self):
+        """
+        QTabWidget icon options
+        :return: QTabWidget icon options
+        :rtype: Dictionary
+        """
+        return self.get_data('tab_icons')
+
+
+class TableModelIcons(Config):
+    """
+    QAbstractTableModel icons configuration interface
+    """
+    def __init__(self):
+        super(TableModelIcons, self).__init__()
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self.get_data('table_model_icons')
 
 
 class FilterQueryBy:
@@ -236,6 +597,7 @@ class EntityRecordId(Config):
 
 
 Column = namedtuple('Column', ['name', 'flag'])
+Icon = namedtuple('Icon', ['icon', 'size'])
 LookUp = namedtuple(
     'LookUp',
     [
@@ -243,22 +605,45 @@ LookUp = namedtuple(
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN',
-        'SCHEME_NUMBER'
+        'SCHEME_NUMBER', 'COMMENT_COLUMN'
     ]
 )
+SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
 
 configurations = {
+    'comment_columns': [
+        {Column(name='Comment', flag=False): 'comment'},
+        {
+            Column(name='User', flag=False): {
+                'cb_user': 'user_name'
+            }
+        },
+        {
+            Column(name='First Name', flag=False): {
+                'cb_user': 'first_name'
+            }
+        },
+        {
+            Column(name='Last Name', flag=False): {
+                'cb_user': 'last_name'
+            }
+        },
+        {Column(name='Post Date', flag=False): 'timestamp'}
+    ],
+    'comment_collections': ['cb_scheme_collection'],
+    'comment_load_collections': ['cb_comment_collection'],
     'document_columns': [
-        {Column(name='Number of Scheme', flag=False): 'name'},
+        {Column(name='Scheme Number', flag=False): 'name'},
         {Column(name='Document Type', flag=False): {
             'cb_check_scheme_document_type': 'value'
         }},
         {Column(name='Document Size', flag=False): 'document_size'},
         {Column(name='Last Modified', flag=False): 'last_modified'},
         {Column(name='Created By', flag=False): 'created_by'},
-        {Column(name='View Document', flag=False): 'View'}
+        {Column(name='View Document', flag=Qt.DecorationRole): 'View'}
     ],
+    'document_collections': ['cb_scheme_supporting_document_collection'],
     'header_view_style': 'QHeaderView::section{'
                          'border-top:0px solid #C4C2BF;'
                          'border-left:0px solid #C4C2BF;'
@@ -277,6 +662,11 @@ configurations = {
                          '(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #E4E3E2);'
                          '}',
     'holder_columns': [
+        {
+            Column(name='Scheme Number', flag=False): {
+                'scheme_number': 'scheme_number'
+            }
+        },
         {Column(name='First Name', flag=False): 'first_name'},
         {Column(name='Surname', flag=False): 'surname'},
         {
@@ -319,6 +709,8 @@ configurations = {
         },
         {Column(name='Other Dependants', flag=False): 'other_dependants'},
     ],
+    'holder_collections': ['cb_scheme_collection'],
+    'holder_load_collections': ['cb_holder_collection'],
     'lookups': LookUp(
         APPROVAL_STATUS='check_lht_approval_status',
         WORKFLOW='check_lht_workflow',
@@ -347,26 +739,27 @@ configurations = {
             'check_lht_approval_status', {'value': 'Disapproved'}
         ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
-        SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2
+        SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
+        COMMENT_COLUMN='comment'
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
         {Column(name='Number of Scheme', flag=False): 'scheme_number'},
         {
-            Column(name='Status', flag=False): {
+            Column(name='Status', flag=Qt.DecorationRole): {
                 'approval_id': 'approval_id'
             }
         },
-        {
-            Column(name='Scheme ID', flag=False): {
-                'scheme_id': 'scheme_id'
-            }
-        },
-        {
-            Column(name='Workflow', flag=False): {
-                'workflow_id': 'workflow_id'
-            }
-        },
+        # {
+        #     Column(name='Scheme ID', flag=False): {
+        #         'scheme_id': 'scheme_id'
+        #     }
+        # },
+        # {
+        #     Column(name='Workflow', flag=False): {
+        #         'workflow_id': 'workflow_id'
+        #     }
+        # },
         {
             Column(name='Workflow Type', flag=False): {
                 'cb_check_lht_workflow': 'value'
@@ -399,9 +792,48 @@ configurations = {
         },
         {Column(name='Block Area', flag=False): 'area'}
     ],
+    'scheme_collections': ['cb_scheme_workflow_collection'],
+    'tab_icons': {
+        'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
+        'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
+        'Comments': QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
+        'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
+        'Scheme': QIcon(":/plugins/stdm/images/icons/flts_scheme.png")
+    },
+    'table_model_icons': {
+        1: QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+        2: QIcon(":/plugins/stdm/images/icons/flts_pending.png"),
+        3: QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+        4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
+        'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
+    },
     'update_columns': {
         'scheme_update': [
             UpdateColumn(column={'approval_id': 'approval_id'})
+        ]
+    },
+    'save_columns': {
+        'scheme_save': [
+            SaveColumn(
+                column={'scheme_id': 'scheme_id'}, value=None, entity=None
+            ),
+            SaveColumn(
+                column={'workflow_id': 'workflow_id'}, value=None, entity=None
+            ),
+            SaveColumn(
+                column={'approval_id': 'approval_id'}, value=None, entity=None
+            )
+        ],
+        'comment_save': [
+            SaveColumn(
+                column='comment', value=None, entity='Comment'
+            ),
+            SaveColumn(
+                column='user_id', value=1, entity='Comment'
+            ),
+            SaveColumn(
+                column='timestamp', value=datetime.now(), entity='Comment'
+            )
         ]
     }
 }

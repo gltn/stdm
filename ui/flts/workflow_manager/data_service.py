@@ -21,10 +21,12 @@ from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
+    CommentConfig,
     DocumentConfig,
-    HolderConfig,
     FilterQueryBy,
+    HolderConfig,
     SchemeConfig,
+    TableModelIcons,
 )
 from stdm.data.configuration import entity_model
 
@@ -42,11 +44,26 @@ class DataService:
         """
         raise NotImplementedError
 
-    def related_entity_name(self):
+    def collections(self):
         """
         Related entity name
         """
         raise NotImplementedError
+
+    def related_entities(self, entity):
+        """
+        Related entity name identified by a foreign key
+        :param entity: Profile entity
+        :type entity: Entity
+        :return: Related entity names
+        :rtype: List
+        """
+        fk_entity_name = []
+        for col in entity.columns.values():
+            if col.TYPE_INFO == 'FOREIGN_KEY' or \
+                    col.TYPE_INFO == 'LOOKUP':
+                fk_entity_name.append(col.parent.name)
+        return fk_entity_name
 
     def run_query(self):
         """
@@ -55,12 +72,21 @@ class DataService:
         """
         raise NotImplementedError
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, entity):
         """
-        Scheme entity model
-        :return:
+        Gets entity model
+        :param entity: Profile entity
+        :type entity: Entity
+        :return model: Entity model
+        :rtype model: DeclarativeMeta
         """
-        raise NotImplementedError
+        try:
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e
+
+# TODO: Refactor repeating methods in all these classes
 
 
 class SchemeDataService(DataService):
@@ -72,6 +98,8 @@ class SchemeDataService(DataService):
         self.entity_name = "Scheme"
         self._parent = parent
         self._widget_obj_name = widget_obj_name
+        self._scheme_config = SchemeConfig(self._parent)
+        self._table_model_icons = TableModelIcons()
 
     @property
     def columns(self):
@@ -80,7 +108,16 @@ class SchemeDataService(DataService):
         :return: Table view columns and query columns options
         :rtype: List
         """
-        return SchemeConfig().columns
+        return self._scheme_config.columns
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self._table_model_icons.icons
 
     @property
     def lookups(self):
@@ -89,7 +126,16 @@ class SchemeDataService(DataService):
         :return: Lookup options
         :rtype: LookUp
         """
-        return SchemeConfig(self._parent).lookups
+        return self._scheme_config.lookups
+
+    @property
+    def save_columns(self):
+        """
+        Scheme table view save column options
+        :return: Save column options
+        :rtype: List
+        """
+        return self._scheme_config.scheme_save_columns
 
     @property
     def update_columns(self):
@@ -98,23 +144,31 @@ class SchemeDataService(DataService):
         :return: Update column options
         :rtype: List
         """
-        return SchemeConfig().scheme_update_columns
+        return self._scheme_config.scheme_update_columns
 
-    def related_entity_name(self):
+    @property
+    def collections(self):
         """
-        Related entity name
-        :return entity_name: Related entity name
-        :rtype entity_name: List
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
         """
-        fk_entity_name = []
-        collection_name = []
-        model = self._entity_model(self.entity_name)
-        for relation in model.__mapper__.relationships.keys():
-            if relation.endswith("_collection"):
-                collection_name.append(relation)
-            else:
-                fk_entity_name.append(relation)
-        return fk_entity_name, collection_name
+        return self._scheme_config.collections
+
+    def related_entities(self, entity_name=None):
+        """
+        Related entity name identified by foreign keys
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
+        """
+        try:
+            entity_name = entity_name if entity_name else self.entity_name
+            entity = self._profile.entity(entity_name)
+            return super(SchemeDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -123,8 +177,8 @@ class SchemeDataService(DataService):
         :rtype query_obj: List
         """
         workflow_id = self.get_workflow_id(self._widget_obj_name)
-        scheme_workflow_model = self._entity_model("Scheme_workflow")
-        model = self._entity_model(self.entity_name)
+        scheme_workflow_model = self.entity_model_("Scheme_workflow")
+        model = self.entity_model_(self.entity_name)
         entity_object = model()
         try:
             query_object = entity_object.queryObject(). \
@@ -152,20 +206,33 @@ class SchemeDataService(DataService):
             workflow_id = workflow_id()
         return workflow_id
 
-    def _entity_model(self, name=None):
+    def filter_in(self, entity_name, filters):
+        """
+        Return query objects as a collection of filter using in_ operator
+        :param entity_name: Name of entity to be queried
+        :type entity_name: String
+        :param filters: Query filter columns and values
+        :type filters: Dictionary
+        :return: Query object results
+        :rtype: Query
+        """
+        model = self.entity_model_(entity_name)
+        entity_object = model()
+        filters = [
+            getattr(model, key).in_(value) for key, value in filters.iteritems()
+        ]
+        return entity_object.queryObject().filter(*filters)
+
+    def entity_model_(self, name=None):
         """
         Gets entity model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
-        :rtype model: DeclarativeMeta
+        :return: Entity model
+        :rtype: DeclarativeMeta
         """
-        try:
-            entity = self._profile.entity(name)
-            model = entity_model(entity)
-            return model
-        except AttributeError as e:
-            raise e
+        entity = self._profile.entity(name)
+        return super(SchemeDataService, self).entity_model_(entity)
 
     @staticmethod
     def filter_query_by(entity_name, filters):
@@ -184,6 +251,21 @@ class SchemeDataService(DataService):
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
+    def workflow_ids(self):
+        """
+        Returns workflow IDs
+        :return workflow_ids: Workflow record ID
+        :rtype workflow_ids: List
+        """
+        workflow_ids = [
+            self.lookups.schemeLodgement(),
+            self.lookups.schemeEstablishment(),
+            self.lookups.firstExamination(),
+            self.lookups.secondExamination(),
+            self.lookups.thirdExamination()
+        ]
+        return workflow_ids
+
 
 class DocumentDataService(DataService):
     """
@@ -193,6 +275,8 @@ class DocumentDataService(DataService):
         self._profile = current_profile
         self._scheme_id = scheme_id
         self.entity_name = "supporting_document"
+        self._document_config = DocumentConfig()
+        self._table_model_icons = TableModelIcons()
 
     @property
     def columns(self):
@@ -202,23 +286,40 @@ class DocumentDataService(DataService):
         :return: Table view columns and query columns options
         :rtype: List
         """
-        return DocumentConfig().columns
+        return self._document_config.columns
 
-    def related_entity_name(self):
+    @property
+    def icons(self):
         """
-        Related entity name
-        :return entity_name: Related entity name
-        :rtype entity_name: List
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
         """
-        fk_entity_name = []
-        collection_name = []
-        model, sp_doc_model = self._entity_model(self.entity_name)
-        for relation in model.__mapper__.relationships.keys():
-            if relation.endswith("_collection"):
-                collection_name.append(relation)
-            else:
-                fk_entity_name.append(relation)
-        return fk_entity_name, collection_name
+        return self._table_model_icons.icons
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self._document_config.collections
+
+    def related_entities(self, entity_name=None):
+        """
+        Related entity name identified by foreign keys
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
+        """
+        try:
+            entity_name = entity_name if entity_name else self.entity_name
+            entity = self._profile.entity(entity_name)
+            return super(DocumentDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
 
     def run_query(self):
         """
@@ -226,26 +327,26 @@ class DocumentDataService(DataService):
         :return query_obj: Query results
         :rtype query_obj: List
         """
-        model, sp_doc_model = self._entity_model(self.entity_name)
-        scheme_model, sc_doc_model = self._entity_model("Scheme")
+        model, sp_doc_model = self.entity_model_(self.entity_name)
+        scheme_model, sc_doc_model = self.entity_model_("Scheme")
         entity_object = model()
         try:
             query_object = entity_object.queryObject().filter(
                 sc_doc_model.supporting_doc_id == model.id,
                 sc_doc_model.scheme_id == self._scheme_id
-            ).order_by(model.last_modified).all()
-            return query_object
+            ).order_by(model.last_modified)
+            return query_object.all()
         except (exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def _entity_model(self, name=None):
+    def entity_model_(self, name=None):
         """
         Gets entity and supporting document model
         :param name: Name of the entity
         :type name: String
-        :return model: Entity model;
+        :return model: Entity model
         :rtype model: DeclarativeMeta
-        :return document_model: Supporting document entity model;
+        :return document_model: Supporting document entity model
         :rtype document_model: DeclarativeMeta
         """
         try:
@@ -258,76 +359,179 @@ class DocumentDataService(DataService):
             raise e
 
 
-# class HolderDataService(DataService):
-#     """
-#     Scheme holders data model service
-#     """
-#     def __init__(self, current_profile, scheme_id):
-#         self._profile = current_profile
-#         self._scheme_id = scheme_id
-#         self.entity_name = "Holder"
-#
-#     @property
-#     def columns(self):
-#         """
-#         Scheme holder table view columns options
-#         :return: Table view columns and query columns options
-#         :rtype: List
-#         """
-#         return HolderConfig().columns
-#
-#     def related_entity_name(self):
-#         """
-#         Related entity name
-#         :return entity_name: Related entity name
-#         :rtype entity_name: List
-#         """
-#         fk_entity_name = []
-#         collection_name = []
-#         model, sp_doc_model = self._entity_model(self.entity_name)
-#         for relation in model.__mapper__.relationships.keys():
-#             if relation.endswith("_collection"):
-#                 collection_name.append(relation)
-#             else:
-#                 fk_entity_name.append(relation)
-#         return fk_entity_name, collection_name
-#
-#     def run_query(self):
-#         """
-#         Run query on an entity
-#         :return query_obj: Query results
-#         :rtype query_obj: List
-#         """
-#         scheme_holder_model = self._entity_model("Scheme_holder")
-#         model = self._entity_model(self.entity_name)
-#         entity_object = model()
-#         try:
-#             query_object = entity_object.queryObject(). \
-#                 options(joinedload(model.cb_check_lht_gender)). \
-#                 options(joinedload(model.cb_check_lht_marital_status)). \
-#                 options(joinedload(model.cb_check_lht_disability)). \
-#                 options(joinedload(model.cb_check_lht_income_level)). \
-#                 options(joinedload(model.cb_check_lht_occupation)). \
-#                 filter(
-#                     scheme_holder_model.holder_id == model.id,
-#                     scheme_holder_model.scheme_id == self._scheme_id
-#                 )
-#             return query_object.all()
-#         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
-#             raise e
-#
-#     def _entity_model(self, name=None):
-#         """
-#         Gets entity model
-#         :param name: Name of the entity
-#         :type name: String
-#         :return model: Entity model;
-#         :rtype model: DeclarativeMeta
-#         """
-#         try:
-#             entity = self._profile.entity(name)
-#             model = entity_model(entity)
-#             return model
-#         except AttributeError as e:
-#             raise e
+class HolderDataService(DataService):
+    """
+    Scheme holders data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self.entity_name = "Scheme"
+        self._holder_config = HolderConfig()
 
+    @property
+    def columns(self):
+        """
+        Scheme holder table view columns options
+        :return: Table view columns and query columns options
+        :rtype: List
+        """
+        return self._holder_config.columns
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary table view load
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self._holder_config.load_collections
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self._holder_config.collections
+
+    def related_entities(self, entity_name=None):
+        """
+        Related entity name identified by foreign keys
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
+        """
+        try:
+            entity_name = entity_name if entity_name else "Holder"
+            entity = self._profile.entity(entity_name)
+            return super(HolderDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return query_obj: Query results
+        :rtype query_obj: List
+        """
+        model = self.entity_model_(self.entity_name)
+        entity_object = model()
+        try:
+            query_object = entity_object.queryObject(). \
+                filter(model.id == self._scheme_id)
+            return query_object.all()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def entity_model_(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return: Entity model
+        :rtype: DeclarativeMeta
+        """
+        entity = self._profile.entity(name)
+        return super(HolderDataService, self).entity_model_(entity)
+
+
+class CommentDataService(DataService):
+    """
+    Comment Manager data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self.entity_name = "Scheme"
+        self._comment_config = CommentConfig()
+
+    @property
+    def columns(self):
+        """
+        Comment Manager widget columns options
+        :return: Comment Manager widget columns and query columns options
+        :rtype: List
+        """
+        return self._comment_config.columns
+
+    @property
+    def lookups(self):
+        """
+        Comment text edit lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self._comment_config.lookups
+
+    @property
+    def save_columns(self):
+        """
+        Comment text edit save column options
+        :return: Save column values
+        :rtype: List
+        """
+        return self._comment_config.comment_save_columns
+
+    @property
+    def load_collections(self):
+        """
+        Related entity collection names to be used as
+        primary load data for the Comment Manager widget
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self._comment_config.load_collections
+
+    @property
+    def collections(self):
+        """
+        Related entity collection names
+        :return: Related entity collection names
+        :rtype: List
+        """
+        return self._comment_config.collections
+
+    def related_entities(self, entity_name=None):
+        """
+        Related entity name identified by foreign keys
+        :param entity_name:
+        :type entity_name: String
+        :return: Related entity names
+        :rtype: List
+        """
+        try:
+            entity_name = entity_name if entity_name else "Comment"
+            entity = self._profile.entity(entity_name)
+            return super(CommentDataService, self).related_entities(entity)
+        except AttributeError as e:
+            raise e
+
+    def run_query(self):
+        """
+        Run query on an entity
+        :return query_obj: Query results
+        :rtype query_obj: List
+        """
+        model = self.entity_model_(self.entity_name)
+        entity_object = model()
+        try:
+            query_object = entity_object.queryObject(). \
+                filter(model.id == self._scheme_id)
+            return query_object.all()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def entity_model_(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return: Entity model
+        :rtype: DeclarativeMeta
+        """
+        entity = self._profile.entity(name)
+        return super(CommentDataService, self).entity_model_(entity)

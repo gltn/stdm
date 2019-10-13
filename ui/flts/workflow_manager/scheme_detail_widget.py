@@ -22,7 +22,6 @@ copyright            : (C) 2019
 from PyQt4.QtGui import *
 from sqlalchemy import exc
 from stdm.ui.flts.workflow_manager.config import StyleSheet
-from stdm.ui.flts.workflow_manager.data_service import DocumentDataService
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 
 
@@ -32,17 +31,19 @@ class SchemeDetailTableView(QTableView):
     manager modules; Scheme Establishment and First, Second and
     Third Examination FLTS modules.
     """
-    def __init__(self, scheme_id, current_profile, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QTableView, self).__init__(parent)
-        self._profile = current_profile
-        self.data_service = DocumentDataService(self._profile, scheme_id)
-        self.model = WorkflowManagerModel(self.data_service)
+        self._load_collections = widget_properties["load_collections"]
+        data_service = widget_properties["data_service"]
+        data_service = data_service(profile, scheme_id)
+        self.model = WorkflowManagerModel(data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.horizontalHeader().setStyleSheet(StyleSheet().header_style)
         self.setSelectionBehavior(QTableView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
+        parent.paginationFrame.hide()
         self._initial_load()
 
     def _initial_load(self):
@@ -50,7 +51,10 @@ class SchemeDetailTableView(QTableView):
         Initial table view data load
         """
         try:
-            self.model.load()
+            if self._load_collections:
+                self.model.load_collection()
+            else:
+                self.model.load()
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
@@ -62,3 +66,9 @@ class SchemeDetailTableView(QTableView):
         else:
             self.horizontalHeader().setStretchLastSection(True)
             self.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+
+    def refresh(self):
+        """
+        Refresh checked items store and model
+        """
+        self._initial_load()

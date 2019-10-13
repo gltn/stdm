@@ -69,7 +69,9 @@ class DockWidgetFactory:
         DockWidgetFactory.hide_active_dock_widget()
         if dock_widget and dock_widget.isHidden():
             DockWidgetFactory.active_widget = dock_widget
-            return dock_widget.show()
+            dock_widget.show()
+            dock_widget.widget().refresh()
+            return
         self.set_dock_widget()
 
     def get_dock_widget(self):
@@ -103,10 +105,3 @@ class DockWidgetFactory:
         """
         if cls.active_widget and cls.active_widget.isVisible():
             cls.active_widget.hide()
-
-
-
-
-
-
-
