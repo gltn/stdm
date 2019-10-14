@@ -58,6 +58,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._checked_ids = OrderedDict()
         self._message_box = {}
         self._tab_name = self._detail_table = self._msg_box_button = None
+        # self.disapproveButton = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
         self.data_service = SchemeDataService(
@@ -73,6 +74,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.commentsButton.setObjectName(self._comments_title)
+        self._add_button()
         self._set_button_icons()
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
@@ -106,6 +108,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self.commentsButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
+
+    def _add_button(self):
+        """
+        Adds Workflow Manager button
+        """
+        button = QPushButton()
+        button.setDisabled(True)
+        layout = QHBoxLayout()
+        layout.addWidget(button)
+        layout.setMargin(0)
+        self.disapproveFrame.setLayout(layout)
+        if self._object_name == "lodgeScheme":
+            button.setText("Withdraw")
+            self.withdrawButton = button
+            return
+        button.setText("Disapprove")
+        self.disapproveButton = button
 
     def _set_button_icons(self):
         """
