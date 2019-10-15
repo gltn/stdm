@@ -52,7 +52,9 @@ from stdm.settings.registryconfig import (
     set_last_document_path
 )
 from stdm.network.cmis_manager import (
-    CmisDocumentMapperException
+    CmisDocumentMapperException,
+    PDFViewerException,
+    PDFViewerProxy
 )
 from stdm.ui.notification import (
     NotificationBar
@@ -108,6 +110,20 @@ class DocumentTableWidget(QTableWidget):
                     'Container for document information should be a subclass '
                     'of <DocumentRowInfo>'
                 )
+            )
+
+        # Helper object for viewing PDF documents
+        self._pdf_proxy = None
+        try:
+            self._pdf_proxy = PDFViewerProxy(self)
+            self._pdf_proxy.error.connect(
+                self._on_pdf_view_error
+            )
+        except PDFViewerException as pve:
+            QMessageBox.critical(
+                self,
+                self.tr('PDF Viewer Initialization'),
+                str(pve)
             )
 
         self._docs_info = OrderedDict()
@@ -486,11 +502,36 @@ class DocumentTableWidget(QTableWidget):
                 msg
             )
         elif status == DocumentTableWidget.SUCCESS:
-            # Load document viewer
-            pass
+            # Get document object
+            doc = self.uploaded_document_by_type(doc_info.document_type)
+            if not doc:
+                msg = self.tr(
+                    'The document information could not be extracted.'
+                )
+                QMessageBox.warning(
+                    self,
+                    self.tr('PDF View'),
+                    msg
+                )
+
+                return
+
+            self._pdf_proxy.view_document(
+                doc_info.uuid,
+                doc.name
+            )
 
         # Emit signal
         self.view_requested.emit(doc_info)
+
+    def _on_pdf_view_error(self, err_info):
+        # Slot raised when an error has occured on request to view a document.
+        err_msg = err_info[1]
+        QMessageBox.critical(
+            self,
+            self.tr('View PDF'),
+            err_msg
+        )
 
     def on_upload_error(self, error_info):
         """
