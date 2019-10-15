@@ -874,3 +874,4 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if widget.isVisible():
             widget.hide()
+
