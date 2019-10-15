@@ -2443,6 +2443,17 @@ class STDMQGISLoader(object):
         dock_widget = DockWidgetFactory(workflow_manager, self.iface)
         dock_widget.show_dock_widget()
 
+    def revise_scheme(self):
+        """
+        Docks Revise Scheme workflow manager widget
+        """
+        workflow_manager = WorkflowManagerWidget(
+            "Revise Workflow Manager",
+            "schemeLodgement"
+        )
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
+
     def import_plots(self):
         """
         Load the wizard to import plots
@@ -2450,12 +2461,12 @@ class STDMQGISLoader(object):
         import_plot_dialog = ImportPlotWizard(self.iface.mainWindow())
         import_plot_dialog.exec_()
 
-    def revise_scheme(self):
-        """
-        Load the wizard for revision of scheme.
-        """
-        scheme_revision = SchemeRevisionWizard(self.iface.mainWindow())
-        scheme_revision.exec_()
+    # def revise_scheme(self):
+    #     """
+    #     Load the wizard for revision of scheme.
+    #     """
+    #     scheme_revision = SchemeRevisionWizard(self.iface.mainWindow())
+    #     scheme_revision.exec_()
 
     def scan_certificate(self):
         """
