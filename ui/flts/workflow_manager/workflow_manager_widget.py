@@ -56,7 +56,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._object_name = object_name
         self._checked_ids = OrderedDict()
-        self._message_box = {}
+        self._message_box = MessageBoxWidget(self)
         self._tab_name = self._detail_table = self._msg_box_button = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
@@ -759,46 +759,44 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _show_approval_message(self, msg, items):
         """
-        Custom Message box
+        Shows custom Message box
         :param msg: Message to be communicated
         :type msg: String
         :param items: Approval items
         :type items: Dictionary
-        """
-        button = self._button_clicked()
-        button = button.objectName()
-        msg_box = self._message_box.get(button)
-        if msg_box:
-            msg_box.setWindowTitle(self.tr('Workflow Manager'))
-            msg_box.setText(self.tr(msg))
-            return self._message_box_result(msg_box, items)
-        options = SchemeMessageBox().message_box
-        options = options[button]
-        msg_box = MessageBoxWidget(
-            options,
-            self.tr('Workflow Manager'),
-            self.tr(msg),
-            self
-        )
-        self._message_box[button] = msg_box
-        return self._message_box_result(msg_box, items)
-
-    def _message_box_result(self, message_box, items):
-        """
-        Returns custom message box results
-        :param message_box: Custom QMessageBox
-        :type message_box: QMessageBox
-        :param items: Approval items
-        :type items: Dictionary
         :return: Clicked button index or None
         :rtype: Integer, NoneType
+        :return: Clicked button object name
+        :rtype: String, NoneType
         """
-        if not items:
-            buttons = [button for button in message_box.buttons() if button.text() != "Cancel"]
-            self._disable_widget(buttons)
-        result = message_box.exec_()
+        button = self._button_clicked()
+        options = SchemeMessageBox().message_box
+        options = options[button.objectName()]
+        self._message_box.setWindowTitle(self.tr('Workflow Manager'))
+        self._message_box.setText(self.tr(msg))
+        self._message_box.remove_buttons()
+        self._message_box.create_buttons(options)
+        return self._message_box_result(items)
+
+    def _message_box_result(self, items):
+        """
+        Returns custom message box results
+        :param items: Approval items
+        :type items: Dictionary
+        :return result: Clicked button index or None
+        :rtype result: Integer, NoneType
+        :return: Clicked button object name
+        :rtype: String, NoneType
+        """
+        # buttons = [button for button in self._message_box.buttons() if button.text() != "Cancel"]
+        # if not items:
+        #     self._disable_widget(buttons)
+        # else:
+        #     self._enable_widget(buttons)
+        self._message_box.enable_buttons(items)
+        result = self._message_box.exec_()
         if result in (0, 1):
-            clicked_button = message_box.clickedButton()
+            clicked_button = self._message_box.clickedButton()
             return result, clicked_button.objectName()
         return None, None
 
