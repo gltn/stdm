@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_workflow_manager.ui'
+# Form implementation generated from reading ui file 'ui_workflow_manager.ui'
 #
-# Created: Mon Oct 14 14:03:01 2019
-#      by: PyQt4 UI code generator 4.10.2
+# Created: Wed Oct 16 19:00:49 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,8 +26,10 @@ except AttributeError:
 class Ui_WorkflowManagerWidget(object):
     def setupUi(self, WorkflowManagerWidget):
         WorkflowManagerWidget.setObjectName(_fromUtf8("WorkflowManagerWidget"))
-        WorkflowManagerWidget.resize(837, 467)
-        self.verticalLayout_2 = QtGui.QVBoxLayout(WorkflowManagerWidget)
+        WorkflowManagerWidget.resize(1043, 745)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(WorkflowManagerWidget)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
@@ -40,11 +42,10 @@ class Ui_WorkflowManagerWidget(object):
         self.approveButton.setEnabled(False)
         self.approveButton.setObjectName(_fromUtf8("approveButton"))
         self.horizontalLayout.addWidget(self.approveButton)
-        self.disapproveFrame = QtGui.QFrame(WorkflowManagerWidget)
-        self.disapproveFrame.setFrameShape(QtGui.QFrame.StyledPanel)
-        self.disapproveFrame.setFrameShadow(QtGui.QFrame.Raised)
-        self.disapproveFrame.setObjectName(_fromUtf8("disapproveFrame"))
-        self.horizontalLayout.addWidget(self.disapproveFrame)
+        self.disapproveButton = QtGui.QPushButton(WorkflowManagerWidget)
+        self.disapproveButton.setEnabled(False)
+        self.disapproveButton.setObjectName(_fromUtf8("disapproveButton"))
+        self.horizontalLayout.addWidget(self.disapproveButton)
         self.holdersButton = QtGui.QPushButton(WorkflowManagerWidget)
         self.holdersButton.setEnabled(False)
         self.holdersButton.setObjectName(_fromUtf8("holdersButton"))
@@ -73,20 +74,21 @@ class Ui_WorkflowManagerWidget(object):
         self.searchButton.setObjectName(_fromUtf8("searchButton"))
         self.horizontalLayout.addWidget(self.searchButton)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addLayout(self.verticalLayout)
         self.line = QtGui.QFrame(WorkflowManagerWidget)
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
-        self.verticalLayout.addWidget(self.line)
+        self.verticalLayout_2.addWidget(self.line)
         self.tabWidget = QtGui.QTabWidget(WorkflowManagerWidget)
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
-        self.verticalLayout.addWidget(self.tabWidget)
+        self.verticalLayout_2.addWidget(self.tabWidget)
         self.paginationFrame = QtGui.QFrame(WorkflowManagerWidget)
         self.paginationFrame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.paginationFrame.setFrameShadow(QtGui.QFrame.Raised)
         self.paginationFrame.setObjectName(_fromUtf8("paginationFrame"))
-        self.verticalLayout.addWidget(self.paginationFrame)
-        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.verticalLayout_2.addWidget(self.paginationFrame)
+        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
         self.retranslateUi(WorkflowManagerWidget)
         self.tabWidget.setCurrentIndex(-1)
@@ -94,7 +96,8 @@ class Ui_WorkflowManagerWidget(object):
 
     def retranslateUi(self, WorkflowManagerWidget):
         WorkflowManagerWidget.setWindowTitle(_translate("WorkflowManagerWidget", "Workflow Manager", None))
-        self.approveButton.setText(_translate("WorkflowManagerWidget", "Approve", None))
+        self.approveButton.setText(_translate("WorkflowManagerWidget", "Pass", None))
+        self.disapproveButton.setText(_translate("WorkflowManagerWidget", "Reject", None))
         self.holdersButton.setText(_translate("WorkflowManagerWidget", "Holders", None))
         self.documentsButton.setText(_translate("WorkflowManagerWidget", "Documents", None))
         self.commentsButton.setText(_translate("WorkflowManagerWidget", "Comments", None))
