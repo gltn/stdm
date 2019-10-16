@@ -1208,6 +1208,7 @@ class PDFViewerProxy(QObject):
                 'Invalid base URL. Check CMIS service end point.'
             )
             raise PDFViewerException(msg)
+
         doc_path = '/alfresco/d/d/workspace/SpacesStore'
         self._root_doc_url = '{0}{1}'.format(
             self._base_url,
@@ -1337,8 +1338,8 @@ class PDFViewerProxy(QObject):
         """
         Logs out and deletes the current authentication ticket.
         """
-        print 'Logout ticket'
-        logout_auth_ticket(self._auth_ticket)
+        if self._auth_ticket:
+            logout_auth_ticket(self._auth_ticket)
 
     def _on_error(self, error):
         doc_id = ''

@@ -1246,3 +1246,18 @@ def string_to_boolean(string_bool, default):
 def is_ascii(s):
     """Checks if a string contains non ASCII characters."""
     return bool(re.match(r'[\x00-\x7F]+$', s))
+
+
+def is_chrome_installed():
+    """
+    Checks the system registry to assert if Chrome has been installed and
+    the corresponding installation path.
+    :return: Returns a tuple containing the installation status and if True
+    the installation path.
+    :rtype: tuple(status,inst_path)
+    """
+    status, inst_path = False, ''
+
+    chrome_reg_key = 'Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'
+
+    return status, inst_path
