@@ -33,7 +33,10 @@ from PyQt4.QtCore import (
     Qt,
     QSettings,
     QFileInfo,
-    QSize, SIGNAL)
+    QSettings,
+    QSize,
+    SIGNAL
+)
 from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
@@ -1257,7 +1260,15 @@ def is_chrome_installed():
     :rtype: tuple(status,inst_path)
     """
     status, inst_path = False, ''
+    default_key = '.'
 
-    chrome_reg_key = 'Software\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe'
+    chrome_reg_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\' \
+                     'CurrentVersion\\App Paths\\chrome.xe'
+    settings = QSettings(chrome_reg_key, QSettings.NativeFormat)
+    if len(settings.childKeys()) > 0:
+        if settings.contains(default_key):
+            inst_path = settings.value(default_key)
+            status = True
 
     return status, inst_path
+
