@@ -17,6 +17,31 @@ CREATE TRIGGER insert_plots
 AFTER INSERT ON cb_lis_plot
     FOR EACH ROW EXECUTE PROCEDURE insert_plots();
 
+--- Delete duplicate plots if any
+
+CREATE OR REPLACE FUNCTION delete_duplicate_plots()
+  RETURNS trigger AS
+$$
+BEGIN
+ DELETE FROM cb_plot
+ WHERE key IN
+    (SELECT key
+    FROM
+        (SELECT key,
+         ROW_NUMBER() OVER( PARTITION BY transactiondate,
+         upi,geom
+        ORDER BY  key ) AS row_num
+        FROM cb_plot ) t
+        WHERE t.row_num > 1 );
+        RETURN NULL;
+        END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_duplicate_plots()
+  AFTER INSERT ON cb_plot
+  FOR EACH ROW EXECUTE PROCEDURE delete_duplicate_plots();
+
 -- delete rows from staging table
 
 CREATE OR REPLACE FUNCTION clear_staging() RETURNS TRIGGER AS $clear_staging$
