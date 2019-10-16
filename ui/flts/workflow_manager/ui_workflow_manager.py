@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/nkoec/.qgis2/python/plugins/stdm/ui/flts/workflow_manager/ui_workflow_manager.ui'
+# Form implementation generated from reading ui file 'ui_workflow_manager.ui'
 #
-# Created: Sun Oct 13 14:11:41 2019
-#      by: PyQt4 UI code generator 4.10.2
+# Created: Wed Oct 16 19:00:49 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -96,8 +96,8 @@ class Ui_WorkflowManagerWidget(object):
 
     def retranslateUi(self, WorkflowManagerWidget):
         WorkflowManagerWidget.setWindowTitle(_translate("WorkflowManagerWidget", "Workflow Manager", None))
-        self.approveButton.setText(_translate("WorkflowManagerWidget", "Approve", None))
-        self.disapproveButton.setText(_translate("WorkflowManagerWidget", "Disapprove", None))
+        self.approveButton.setText(_translate("WorkflowManagerWidget", "Pass", None))
+        self.disapproveButton.setText(_translate("WorkflowManagerWidget", "Reject", None))
         self.holdersButton.setText(_translate("WorkflowManagerWidget", "Holders", None))
         self.documentsButton.setText(_translate("WorkflowManagerWidget", "Documents", None))
         self.commentsButton.setText(_translate("WorkflowManagerWidget", "Comments", None))

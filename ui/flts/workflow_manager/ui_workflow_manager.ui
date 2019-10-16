@@ -29,7 +29,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>Approve</string>
+            <string>Pass</string>
            </property>
           </widget>
          </item>
@@ -39,7 +39,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>Disapprove</string>
+            <string>Reject</string>
            </property>
           </widget>
          </item>
