@@ -46,6 +46,9 @@ from stdm.settings.registryconfig import (
     cmis_atom_pub_url,
     cmis_auth_config_id
 )
+from stdm.utils.util import (
+    is_chrome_installed
+)
 
 CMIS_NAME = 'cmis:name'
 CMIS_TITLE = 'cmis:title'
@@ -56,7 +59,6 @@ CMIS_CONTENT_STREAM_LENGTH = 'cmis:contentStreamLength'
 CMIS_CONTENT_STREAM_ID = 'cmis:contentStreamId'
 
 # PDF Viewer constants
-PDF_VIEWER_EXEC = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'
 DOC_ID_PROP = 'document_id'
 
 
@@ -1208,6 +1210,15 @@ class PDFViewerProxy(QObject):
                 'Invalid base URL. Check CMIS service end point.'
             )
             raise PDFViewerException(msg)
+
+        # CHeck Google Chrome installation
+        self._chrome_installed, self._chrome_path = is_chrome_installed()
+        if not self._chrome_installed:
+            msg = self.tr(
+                'Google Chrome is required to view PDF documents.'
+            )
+            raise PDFViewerException(msg)
+
         doc_path = '/alfresco/d/d/workspace/SpacesStore'
         self._root_doc_url = '{0}{1}'.format(
             self._base_url,
@@ -1311,7 +1322,7 @@ class PDFViewerProxy(QObject):
 
         # Build args
         cmd_inputs = []
-        cmd_inputs.append(PDF_VIEWER_EXEC)
+        cmd_inputs.append(self._chrome_path)
         cmd_inputs.append('--app={0}'.format(abs_doc_path))
         cmd_path = ' '.join(cmd_inputs)
 
@@ -1337,8 +1348,8 @@ class PDFViewerProxy(QObject):
         """
         Logs out and deletes the current authentication ticket.
         """
-        print 'Logout ticket'
-        logout_auth_ticket(self._auth_ticket)
+        if self._auth_ticket:
+            logout_auth_ticket(self._auth_ticket)
 
     def _on_error(self, error):
         doc_id = ''

@@ -33,7 +33,10 @@ from PyQt4.QtCore import (
     Qt,
     QSettings,
     QFileInfo,
-    QSize, SIGNAL)
+    QSettings,
+    QSize,
+    SIGNAL
+)
 from PyQt4.QtGui import (
     QPixmap,
     QFileDialog,
@@ -1246,3 +1249,26 @@ def string_to_boolean(string_bool, default):
 def is_ascii(s):
     """Checks if a string contains non ASCII characters."""
     return bool(re.match(r'[\x00-\x7F]+$', s))
+
+
+def is_chrome_installed():
+    """
+    Checks the system registry to assert if Chrome has been installed and
+    the corresponding installation path.
+    :return: Returns a tuple containing the installation status and if True
+    the installation path.
+    :rtype: tuple(status,inst_path)
+    """
+    status, inst_path = False, ''
+    default_key = '.'
+
+    chrome_reg_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\' \
+                     'CurrentVersion\\App Paths\\chrome.xe'
+    settings = QSettings(chrome_reg_key, QSettings.NativeFormat)
+    if len(settings.childKeys()) > 0:
+        if settings.contains(default_key):
+            inst_path = settings.value(default_key)
+            status = True
+
+    return status, inst_path
+

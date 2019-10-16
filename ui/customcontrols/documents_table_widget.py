@@ -516,10 +516,11 @@ class DocumentTableWidget(QTableWidget):
 
                 return
 
-            self._pdf_proxy.view_document(
-                doc_info.uuid,
-                doc.name
-            )
+            if self._pdf_proxy:
+                self._pdf_proxy.view_document(
+                    doc_info.uuid,
+                    doc.name
+                )
 
         # Emit signal
         self.view_requested.emit(doc_info)
