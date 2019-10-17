@@ -712,12 +712,12 @@ configurations = {
             Column(name='Registration Division', flag=False):
                 'registration_division'
         },
-        {Column(name='Block Area', flag=False): 'area'},
-        {
-            Column(name='Date/Time', flag=False): {
-                'timestamp': 'timestamp'
-            }
-        },
+        {Column(name='Block Area', flag=False): 'area'}
+        # {
+        #     Column(name='Date/Time', flag=False): {
+        #         'timestamp': 'timestamp'
+        #     }
+        # },
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'tab_icons': {
