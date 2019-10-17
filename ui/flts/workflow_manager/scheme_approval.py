@@ -109,7 +109,7 @@ class Status(object):
 class Approve(Status):
     """
     Manages scheme approval in Scheme Establishment and
-    First, Second and Third Examination FLTS workflows
+    First, Second and Third Examination and Scheme Revision FLTS workflows
     """
     def __init__(self, data_service, object_name):
         super(Approve, self).__init__()
