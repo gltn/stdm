@@ -178,14 +178,23 @@ class Approve(Status):
         :return update_items: Valid approval update items
         :rtype update_items: List
         """
+        # TODO: Start Refactor. Refer to _disapproval_updates
         update_items = []
         for updates in self._get_config_option(self._update_columns):
             if approval_id == status or self._object_name == "schemeLodgement":
                 update_filters = self._scheme_workflow_filter(
                     scheme_id, self._get_workflow_id()
                 )
+                # TODO: Start Refactor
+                # value = status
+                # if updates.value:
+                #     value = updates.value
+                # update_items.append([updates.column, value, update_filters])
+                # TODO: End Refactor
                 update_items.append([updates.column, status, update_filters])
         return update_items
+
+    # TODO: End Refactor. Refer to _disapproval_updates
 
     def next_approval_items(self, approval_items):
         """
@@ -359,6 +368,7 @@ class Disapprove(Status):
         :return update_items: Disapproval update items
         :rtype update_items: List
         """
+        # TODO: Start Refactor. Refer to _approval_updates
         update_items = []
         for updates in self._get_config_option(self._update_columns):
             for workflow_id in workflow_ids:
@@ -366,5 +376,12 @@ class Disapprove(Status):
                     update_filters = self._scheme_workflow_filter(
                         record_id, workflow_id
                     )
+                    # TODO: Start Refactor
+                    # value = status
+                    # if updates.value:
+                    #     value = updates.value
+                    # update_items.append([updates.column, value, update_filters])
+                    # TODO: End Refactor
                     update_items.append([updates.column, status, update_filters])
         return update_items
+        # TODO: End Refactor. Refer to _approval_updates

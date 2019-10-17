@@ -530,7 +530,7 @@ MessageBox = namedtuple(
     'MessageBox', ['name', 'pushButton', 'role', 'icon']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
-UpdateColumn = namedtuple('UpdateColumn', ['column'])
+UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
 
 configurations = {
     'comment_columns': [
@@ -828,7 +828,8 @@ configurations = {
     },
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'})
+            UpdateColumn(column={'approval_id': 'approval_id'}, value=None)
+            # UpdateColumn(column={'timestamp': 'timestamp'}, value=datetime.now())
         ]
     },
     'save_columns': {
