@@ -37,7 +37,7 @@ from stdm.ui.flts.workflow_manager.data_service import (
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.scheme_approval import (
     Approve,
-    Disapprove
+    Disapprove,
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
 from stdm.ui.flts.workflow_manager.message_box_widget import MessageBoxWidget
@@ -56,7 +56,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._object_name = object_name
         self._checked_ids = OrderedDict()
-        self._message_box = {}
+        self._message_box = MessageBoxWidget(self)
         self._tab_name = self._detail_table = self._msg_box_button = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
@@ -64,7 +64,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._profile, self._object_name, self
         )
         self._approve = Approve(self.data_service, self._object_name)
-        self._disapprove = Disapprove(self.data_service,)
+        self._disapprove = Disapprove(self.data_service)
         self._lookup = self.data_service.lookups
         _header_style = StyleSheet().header_style
         self._comments_title = "Comments"
@@ -73,6 +73,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.holdersButton.setObjectName("Holders")
         self.documentsButton.setObjectName("Documents")
         self.commentsButton.setObjectName(self._comments_title)
+        self._add_button()
         self._set_button_icons()
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
@@ -97,15 +98,35 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.approveButton.clicked.connect(
             lambda: self._on_approve(self._lookup.APPROVED(), "approve")
         )
-        self.disapproveButton.clicked.connect(
-            lambda: self._on_disapprove(
-                self._lookup.DISAPPROVED(), "disapprove"
-            )
-        )
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self.commentsButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
+
+    def _add_button(self):
+        """
+        Adds Workflow Manager button
+        """
+        button = QPushButton()
+        button.setDisabled(True)
+        layout = QHBoxLayout()
+        layout.addWidget(button)
+        layout.setMargin(0)
+        self.disapproveFrame.setLayout(layout)
+        if self._object_name == "schemeLodgement":
+            button.setText("Withdraw")
+            button.setObjectName("withdrawButton")
+            self.withdrawButton = button
+            self.withdrawButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.WITHDRAW(), "withdraw")
+            )
+            return
+        button.setText("Disapprove")
+        self.disapproveButton = button
+        button.setObjectName("disapproveButton")
+        self.disapproveButton.clicked.connect(
+            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "disapprove")
+        )
 
     def _set_button_icons(self):
         """
@@ -252,13 +273,20 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.holdersButton, self.documentsButton,
             self.commentsButton
         ])
+        # TODO: Start refactor. Combine with _on_uncheck_disable_widgets
         if self._lookup.PENDING() in status or \
-                self._lookup.DISAPPROVED() in status:
+                self._lookup.DISAPPROVED() in status or \
+                self._lookup.WITHDRAW() in status:
             self._enable_widget(self.approveButton)
         if self._lookup.PENDING() in status or \
-                self._lookup.APPROVED() in status:
-            self._enable_widget(self.disapproveButton)
+                self._lookup.APPROVED() in status and \
+                hasattr(self, "disapproveButton"):
+            self._enable_widget(getattr(self, "disapproveButton"))
+        if self._lookup.DISAPPROVED() in status and \
+                hasattr(self, "withdrawButton"):
+            self._enable_widget(getattr(self, "withdrawButton"))
         self._on_uncheck_disable_widgets()
+        # TODO: End refactor
 
     def _get_stored_status(self):
         """
@@ -731,45 +759,39 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
     def _show_approval_message(self, msg, items):
         """
-        Custom Message box
+        Shows custom Message box
         :param msg: Message to be communicated
         :type msg: String
         :param items: Approval items
         :type items: Dictionary
-        """
-        button = self._button_clicked()
-        button = button.objectName()
-        msg_box = self._message_box.get(button)
-        if msg_box:
-            msg_box.setWindowTitle(self.tr('Workflow Manager'))
-            msg_box.setText(self.tr(msg))
-            return self._message_box_result(msg_box, items)
-        options = SchemeMessageBox(self).message_box[button]
-        msg_box = MessageBoxWidget(
-            options,
-            self.tr('Workflow Manager'),
-            self.tr(msg),
-            self
-        )
-        self._message_box[button] = msg_box
-        return self._message_box_result(msg_box, items)
-
-    def _message_box_result(self, message_box, items):
-        """
-        Returns custom message box results
-        :param message_box: Custom QMessageBox
-        :type message_box: QMessageBox
-        :param items: Approval items
-        :type items: Dictionary
         :return: Clicked button index or None
         :rtype: Integer, NoneType
+        :return: Clicked button object name
+        :rtype: String, NoneType
         """
-        if not items:
-            buttons = [button for button in message_box.buttons() if button.text() != "Cancel"]
-            self._disable_widget(buttons)
-        result = message_box.exec_()
+        button = self._button_clicked()
+        options = SchemeMessageBox().message_box
+        options = options[button.objectName()]
+        self._message_box.setWindowTitle(self.tr('Workflow Manager'))
+        self._message_box.setText(self.tr(msg))
+        self._message_box.remove_buttons()
+        self._message_box.create_buttons(options)
+        return self._message_box_result(items)
+
+    def _message_box_result(self, items):
+        """
+        Returns custom message box results
+        :param items: Approval items
+        :type items: Dictionary
+        :return result: Clicked button index or None
+        :rtype result: Integer, NoneType
+        :return: Clicked button object name
+        :rtype: String, NoneType
+        """
+        self._message_box.enable_buttons(items)
+        result = self._message_box.exec_()
         if result in (0, 1):
-            clicked_button = message_box.clickedButton()
+            clicked_button = self._message_box.clickedButton()
             return result, clicked_button.objectName()
         return None, None
 
@@ -809,19 +831,30 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Disable Workflow Manager widgets on uncheck
         """
         status = self._get_stored_status()
+        # TODO: Start refactor. Combine with _on_check_enable_widgets
         if not self._checked_ids:
             self._close_tab(1)
+            if hasattr(self, "disapproveButton"):
+                self._disable_widget(getattr(self, "disapproveButton"))
+            elif hasattr(self, "withdrawButton"):
+                self._disable_widget(getattr(self, "withdrawButton"))
             self._disable_widget([
-                self.approveButton, self.disapproveButton,
-                self.holdersButton, self.documentsButton,
-                self.commentsButton
+                self.approveButton, self.holdersButton,
+                self.documentsButton, self.commentsButton
             ])
+
         elif self._lookup.PENDING() not in status and \
-                self._lookup.APPROVED() not in status:
-            self._disable_widget(self.disapproveButton)
+                self._lookup.APPROVED() not in status and \
+                hasattr(self, "disapproveButton"):
+            self._disable_widget(getattr(self, "disapproveButton"))
         elif self._lookup.PENDING() not in status and \
-                self._lookup.DISAPPROVED() not in status:
+                self._lookup.DISAPPROVED() not in status and \
+                self._lookup.WITHDRAW() not in status:
             self._disable_widget(self.approveButton)
+        elif self._lookup.DISAPPROVED() not in status and \
+                hasattr(self, "withdrawButton"):
+            self._disable_widget(getattr(self, "withdrawButton"))
+        # TODO: End refactor
 
     @staticmethod
     def _disable_widget(widgets):

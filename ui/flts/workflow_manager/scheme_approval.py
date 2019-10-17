@@ -75,7 +75,7 @@ class Status(object):
         :param scheme_id: Scheme record ID
         :type scheme_id: Integer
         :param workflow_id: Workflow record ID
-        :type workflow_id: Integer
+        :type workflow_id: Integer, List
         :return record_id: Scheme workflow record ID
         :return record_id: Integer or NoneType
         """
@@ -109,7 +109,7 @@ class Status(object):
 class Approve(Status):
     """
     Manages scheme approval in Scheme Establishment and
-    First, Second and Third Examination FLTS workflows
+    First, Second and Third Examination and Scheme Revision FLTS workflows
     """
     def __init__(self, data_service, object_name):
         super(Approve, self).__init__()
@@ -180,7 +180,7 @@ class Approve(Status):
         """
         update_items = []
         for updates in self._get_config_option(self._update_columns):
-            if approval_id == status:
+            if approval_id == status or self._object_name == "schemeLodgement":
                 update_filters = self._scheme_workflow_filter(
                     scheme_id, self._get_workflow_id()
                 )

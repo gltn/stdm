@@ -290,41 +290,16 @@ class SchemeButtonIcons(ButtonIcons):
         :return: Scheme QPushButton icon options
         :rtype: Dictionary
         """
-        config = self._buttons_config()
+        config = self._create_config()
         return super(SchemeButtonIcons, self).button_icons(config)
 
-    def _buttons_config(self):
-        """
-        Returns Scheme QPushButton icon configurations
-        :return: QPushButton icon configurations
-        :rtype: Tuple
-        """
-        return (
-            (
-                self._parent.approveButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
-            ),
-            (
-                self._parent.disapproveButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
-            ),
-            (
-                self._parent.holdersButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
-            ),
-            (
-                self._parent.documentsButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
-            ),
-            (
-                self._parent.commentsButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
-            ),
-            (
-                self._parent.searchButton, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_search.png")
-            ),
-        )
+    def _create_config(self):
+        configs = self.get_data('scheme_button_icons')
+        return [
+            (getattr(self._parent, button), size, icon)
+            for button, size, icon in configs
+            if hasattr(self._parent, button)
+        ]
 
 
 class SchemeConfig(Config):
@@ -383,76 +358,19 @@ class SchemeConfig(Config):
             get('scheme_update', None)
 
 
-class SchemeMessageBox(ButtonIcons):
+class SchemeMessageBox(Config):
     """
     Scheme QMessageBox configuration interface
     """
-    def __init__(self, parent=None):
-        super(SchemeMessageBox, self).__init__()
-        self._parent = parent
-        self.MessageBox = namedtuple(
-            'MessageBox', ['name', 'pushButton', 'role', 'icon']
-        )
 
     @property
     def message_box(self):
         """
-        QMessageBox configuration options
+        Returns QMessageBox icon configurations
         :return: QMessageBox configuration options
         :rtype: Dictionary
         """
-        return self._message_box_config()
-
-    def _message_box_config(self):
-        """
-        Returns QMessageBox icon configurations
-        :return: QMessageBox icon configurations
-        :rtype: Dictionary
-        """
-        # TODO: Explore the possibility of placing this config in the configurations
-        config = {
-            self._parent.approveButton.objectName(): [
-                self.MessageBox(
-                    name='approveMsgButton',
-                    pushButton=QPushButton("Approve"),
-                    role=QMessageBox.YesRole,
-                    icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
-                ),
-                self.MessageBox(
-                    name='commentApproveMsgButton',
-                    pushButton=QPushButton("Comment && Approve"),
-                    role=QMessageBox.YesRole,
-                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
-                ),
-                self.MessageBox(
-                    name=None,
-                    pushButton=QPushButton("Cancel"),
-                    role=QMessageBox.RejectRole,
-                    icon=None,
-                )
-            ],
-            self._parent.disapproveButton.objectName(): [
-                self.MessageBox(
-                    name='disapproveMsgButton',
-                    pushButton=QPushButton("Disapprove"),
-                    role=QMessageBox.YesRole,
-                    icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
-                ),
-                self.MessageBox(
-                    name='commentDisapproveMsgButton',
-                    pushButton=QPushButton("Comment && Disapprove"),
-                    role=QMessageBox.YesRole,
-                    icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
-                ),
-                self.MessageBox(
-                    name=None,
-                    pushButton=QPushButton("Cancel"),
-                    role=QMessageBox.RejectRole,
-                    icon=None,
-                )
-            ]
-        }
-        return config
+        return self.get_data('message_box')
 
 
 class TabIcons(Config):
@@ -604,9 +522,12 @@ LookUp = namedtuple(
         'schemeLodgement', 'schemeEstablishment', 'firstExamination',
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
-        'PENDING', 'DISAPPROVED', 'CHECK', 'STATUS', 'SCHEME_COLUMN',
-        'SCHEME_NUMBER', 'COMMENT_COLUMN'
+        'PENDING', 'DISAPPROVED', 'WITHDRAW', 'CHECK', 'STATUS',
+        'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN'
     ]
+)
+MessageBox = namedtuple(
+    'MessageBox', ['name', 'pushButton', 'role', 'icon']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column'])
@@ -738,9 +659,12 @@ configurations = {
         DISAPPROVED=EntityRecordId(
             'check_lht_approval_status', {'value': 'Disapproved'}
         ),
+        WITHDRAW=EntityRecordId(
+            'check_lht_approval_status', {'value': 'Withdraw'}
+        ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
         SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
-        COMMENT_COLUMN='comment'
+        COMMENT_COLUMN='comment',
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
@@ -806,6 +730,98 @@ configurations = {
         3: QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
         4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
         'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
+    },
+    'scheme_button_icons': [
+            (
+                "approveButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
+            ),
+            (
+                "disapproveButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
+            ),
+            (
+                "withdrawButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+            ),
+            (
+                "holdersButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
+            ),
+            (
+                "documentsButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
+            ),
+            (
+                "commentsButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
+            ),
+            (
+                "searchButton", QSize(24, 24),
+                QIcon(":/plugins/stdm/images/icons/flts_search.png")
+            ),
+    ],
+    'message_box': {
+        'approveButton': [
+            MessageBox(
+                name='approveMsgButton',
+                pushButton=QPushButton("Approve"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+            ),
+            MessageBox(
+                name='commentApproveMsgButton',
+                pushButton=QPushButton("Comment && Approve"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+            ),
+            MessageBox(
+                name=None,
+                pushButton=QPushButton("Cancel"),
+                role=QMessageBox.RejectRole,
+                icon=None,
+            )
+        ],
+        'disapproveButton': [
+            MessageBox(
+                name='disapproveMsgButton',
+                pushButton=QPushButton("Disapprove"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+            ),
+            MessageBox(
+                name='commentDisapproveMsgButton',
+                pushButton=QPushButton("Comment && Disapprove"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+            ),
+            MessageBox(
+                name=None,
+                pushButton=QPushButton("Cancel"),
+                role=QMessageBox.RejectRole,
+                icon=None,
+            )
+        ],
+        'withdrawButton': [
+            MessageBox(
+                name='withdrawMsgButton',
+                pushButton=QPushButton("Withdraw"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
+            ),
+            MessageBox(
+                name='commentWithdrawMsgButton',
+                pushButton=QPushButton("Comment && Withdraw"),
+                role=QMessageBox.YesRole,
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+            ),
+            MessageBox(
+                name=None,
+                pushButton=QPushButton("Cancel"),
+                role=QMessageBox.RejectRole,
+                icon=None,
+            )
+        ]
     },
     'update_columns': {
         'scheme_update': [
