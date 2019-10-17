@@ -1263,7 +1263,7 @@ def is_chrome_installed():
     default_key = '.'
 
     chrome_reg_key = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\' \
-                     'CurrentVersion\\App Paths\\chrome.xe'
+                     'CurrentVersion\\App Paths\\chrome.exe'
     settings = QSettings(chrome_reg_key, QSettings.NativeFormat)
     if len(settings.childKeys()) > 0:
         if settings.contains(default_key):
