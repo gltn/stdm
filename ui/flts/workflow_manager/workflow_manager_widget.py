@@ -279,9 +279,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._lookup.WITHDRAW() in status:
             self._enable_widget(self.approveButton)
         if self._lookup.PENDING() in status or \
-                self._lookup.APPROVED() in status and \
-                hasattr(self, "disapproveButton"):
-            self._enable_widget(getattr(self, "disapproveButton"))
+                self._lookup.APPROVED() in status:
+            if hasattr(self, "disapproveButton"):
+                self._enable_widget(getattr(self, "disapproveButton"))
         if self._lookup.DISAPPROVED() in status and \
                 hasattr(self, "withdrawButton"):
             self._enable_widget(getattr(self, "withdrawButton"))
@@ -348,11 +348,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Scheme items of approval rows
         :rtype: Dictionary
         """
+        # TODO: Start Refactor. Refer to _approval_scheme_items
         return {
             row: (self._model.results[row].get("data"), scheme_number)
             for scheme_id, (row, status, scheme_number) in
             self._checked_ids.iteritems()
         }
+        # TODO: End Refactor
 
     def _get_widget_properties(self, key=None):
         """
@@ -387,15 +389,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Scheme widgets properties
         :rtype: Dictionary
         """
+        # TODO: Start Refactor by moving them to the configuration file
         widget_prop = {
             self.documentsButton.objectName(): {
                 'data_service': DocumentDataService,
                 'widget': SchemeDetailTableView,
+                'object_name': 'schemeDocuments',
                 'load_collections': False
             },
             self.holdersButton.objectName(): {
                 'data_service': HolderDataService,
                 'widget': SchemeDetailTableView,
+                'object_name': 'schemeHolders',
                 'load_collections': True
             },
             self._comments_title: {
@@ -410,6 +415,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             }
         }
         return widget_prop
+
+        # TODO: End Refactor
 
     def _load_details(self, widget_prop, widget_id, scheme_id):
         """
@@ -657,11 +664,13 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Scheme items of approval rows
         :rtype: Dictionary
         """
+        # TODO: Start Refactor. Refer to _checked_scheme_items
         return {
             row: (self._model.results[row].get("data"), scheme_number)
             for scheme_id, (row, status, scheme_number) in self._checked_ids.items()
             if row in approval_rows
         }
+        # TODO: End Refactor
 
     def _update_scheme(self, items, title):
         """

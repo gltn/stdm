@@ -298,6 +298,15 @@ class DocumentDataService(DataService):
         return self._table_model_icons.icons
 
     @property
+    def lookups(self):
+        """
+        Scheme supporting documents lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self._document_config.lookups
+
+    @property
     def collections(self):
         """
         Related entity collection names

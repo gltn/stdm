@@ -182,6 +182,15 @@ class DocumentConfig(Config):
         """
         return self.get_data('document_collections')
 
+    @property
+    def lookups(self):
+        """
+        Scheme supporting documents lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
 
 class HolderConfig(Config):
     """
@@ -523,14 +532,14 @@ LookUp = namedtuple(
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'WITHDRAW', 'CHECK', 'STATUS',
-        'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN'
+        'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN', 'VIEW_PDF'
     ]
 )
 MessageBox = namedtuple(
     'MessageBox', ['name', 'pushButton', 'role', 'icon']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
-UpdateColumn = namedtuple('UpdateColumn', ['column'])
+UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
 
 configurations = {
     'comment_columns': [
@@ -664,16 +673,17 @@ configurations = {
         ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
         SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
-        COMMENT_COLUMN='comment',
+        COMMENT_COLUMN='comment', VIEW_PDF=5
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Scheme Number', flag=False): 'scheme_number'},
         {
             Column(name='Status', flag=Qt.DecorationRole): {
                 'approval_id': 'approval_id'
             }
         },
+
         # {
         #     Column(name='Scheme ID', flag=False): {
         #         'scheme_id': 'scheme_id'
@@ -684,16 +694,13 @@ configurations = {
         #         'workflow_id': 'workflow_id'
         #     }
         # },
-        {
-            Column(name='Workflow Type', flag=False): {
-                'cb_check_lht_workflow': 'value'
-            }
-        },
-        {
-            Column(name='Date of Approval', flag=False): {
-                'timestamp': 'timestamp'
-            }
-        },
+        # {
+        #     Column(name='Workflow Type', flag=False): {
+        #         'cb_check_lht_workflow': 'value'
+        #     }
+        # },
+        {Column(name='Approval Date', flag=False): 'date_of_approval'},
+        {Column(name='Establishment Date', flag=False): 'date_of_establishment'},
         {
             Column(name='Type of Relevant Authority', flag=False): {
                 'cb_check_lht_relevant_authority': 'value'
@@ -715,6 +722,11 @@ configurations = {
                 'registration_division'
         },
         {Column(name='Block Area', flag=False): 'area'}
+        # {
+        #     Column(name='Date/Time', flag=False): {
+        #         'timestamp': 'timestamp'
+        #     }
+        # },
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'tab_icons': {
@@ -825,7 +837,8 @@ configurations = {
     },
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'})
+            UpdateColumn(column={'approval_id': 'approval_id'}, value=None)
+            # UpdateColumn(column={'timestamp': 'timestamp'}, value=datetime.now())
         ]
     },
     'save_columns': {
