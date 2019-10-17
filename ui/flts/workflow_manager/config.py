@@ -182,6 +182,15 @@ class DocumentConfig(Config):
         """
         return self.get_data('document_collections')
 
+    @property
+    def lookups(self):
+        """
+        Scheme supporting documents lookup options
+        :return: Lookup options
+        :rtype: LookUp
+        """
+        return self.get_data('lookups')
+
 
 class HolderConfig(Config):
     """
@@ -523,7 +532,7 @@ LookUp = namedtuple(
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'WITHDRAW', 'CHECK', 'STATUS',
-        'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN'
+        'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN', 'VIEW_PDF'
     ]
 )
 MessageBox = namedtuple(
@@ -664,7 +673,7 @@ configurations = {
         ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
         SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
-        COMMENT_COLUMN='comment',
+        COMMENT_COLUMN='comment', VIEW_PDF=5
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
