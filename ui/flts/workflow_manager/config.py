@@ -530,7 +530,7 @@ MessageBox = namedtuple(
     'MessageBox', ['name', 'pushButton', 'role', 'icon']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
-UpdateColumn = namedtuple('UpdateColumn', ['column'])
+UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
 
 configurations = {
     'comment_columns': [
@@ -642,7 +642,7 @@ configurations = {
             'check_lht_workflow', {'value': 'Establishment'}
         ),
         firstExamination=EntityRecordId(
-            'check_lht_workflow', {'value': 'Fiirst Assessment'}
+            'check_lht_workflow', {'value': 'First Assessment'}
         ),
         secondExamination=EntityRecordId(
             'check_lht_workflow', {'value': 'Second Assessment'}
@@ -668,12 +668,13 @@ configurations = {
     ),
     'scheme_columns': [
         {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Number of Scheme', flag=False): 'scheme_number'},
+        {Column(name='Scheme Number', flag=False): 'scheme_number'},
         {
             Column(name='Status', flag=Qt.DecorationRole): {
                 'approval_id': 'approval_id'
             }
         },
+
         # {
         #     Column(name='Scheme ID', flag=False): {
         #         'scheme_id': 'scheme_id'
@@ -684,16 +685,13 @@ configurations = {
         #         'workflow_id': 'workflow_id'
         #     }
         # },
-        {
-            Column(name='Workflow Type', flag=False): {
-                'cb_check_lht_workflow': 'value'
-            }
-        },
-        {
-            Column(name='Date of Approval', flag=False): {
-                'timestamp': 'timestamp'
-            }
-        },
+        # {
+        #     Column(name='Workflow Type', flag=False): {
+        #         'cb_check_lht_workflow': 'value'
+        #     }
+        # },
+        {Column(name='Approval Date', flag=False): 'date_of_approval'},
+        {Column(name='Establishment Date', flag=False): 'date_of_establishment'},
         {
             Column(name='Type of Relevant Authority', flag=False): {
                 'cb_check_lht_relevant_authority': 'value'
@@ -714,7 +712,12 @@ configurations = {
             Column(name='Registration Division', flag=False):
                 'registration_division'
         },
-        {Column(name='Block Area', flag=False): 'area'}
+        {Column(name='Block Area', flag=False): 'area'},
+        {
+            Column(name='Date/Time', flag=False): {
+                'timestamp': 'timestamp'
+            }
+        },
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'tab_icons': {
@@ -825,7 +828,8 @@ configurations = {
     },
     'update_columns': {
         'scheme_update': [
-            UpdateColumn(column={'approval_id': 'approval_id'})
+            UpdateColumn(column={'approval_id': 'approval_id'}, value=None)
+            # UpdateColumn(column={'timestamp': 'timestamp'}, value=datetime.now())
         ]
     },
     'save_columns': {
