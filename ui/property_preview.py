@@ -232,6 +232,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         if geom is not None:
 
+
             self.highlight_spatial_unit(
                 spatial_unit, geom, self.local_map.canvas
             )

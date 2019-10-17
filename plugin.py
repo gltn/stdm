@@ -443,32 +443,32 @@ class STDMQGISLoader(object):
             'Database Table Error'
         )
 
-        if not pg_table_exists(entity.name):
-            message = QApplication.translate(
-                "STDMQGISLoader",
-                u'The system has detected that '
-                'a required database table - \n'
-                '{} is missing. \n'
-                'Do you want to re-run the '
-                'Configuration Wizard now?'.format(
-                    entity.short_name
-                ),
-                None,
-                QCoreApplication.UnicodeUTF8
-            )
-            database_check = QMessageBox.critical(
-                self.iface.mainWindow(),
-                title,
-                message,
-                QMessageBox.Yes,
-                QMessageBox.No
-            )
-            if database_check == QMessageBox.Yes:
-                self.load_config_wizard()
-            else:
-                return False
-        else:
+        if pg_table_exists(entity.name):
             return True
+        message = QApplication.translate(
+            "STDMQGISLoader",
+            u'The system has detected that '
+            'a required database table - \n'
+            '{} is missing. \n'
+            'Do you want to re-run the '
+            'Configuration Wizard now?'.format(
+                entity.short_name
+            ),
+            None,
+            QCoreApplication.UnicodeUTF8
+        )
+        database_check = QMessageBox.critical(
+            self.iface.mainWindow(),
+            title,
+            message,
+            QMessageBox.Yes,
+            QMessageBox.No
+        )
+
+        if database_check == QMessageBox.Yes:
+            self.load_config_wizard()
+        else:
+            return False
 
     def run_wizard(self):
         """
@@ -479,13 +479,10 @@ class STDMQGISLoader(object):
         host = self.reg_config.read([HOST])
         host_val = host[HOST]
 
-        if host_val != u'localhost':
-            if host_val != u'127.0.0.1':
-                return
+        if host_val not in [u'localhost', u'127.0.0.1']:
+            return
 
-        wizard_key = self.reg_config.read(
-            [WIZARD_RUN]
-        )
+        wizard_key = self.reg_config.read([WIZARD_RUN])
 
         title = QApplication.translate(
             "STDMQGISLoader",

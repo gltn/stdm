@@ -619,6 +619,9 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
     #         self.plugin.feature_details_act
     #     )
 
+class SelectedItem(object):
+    def __init__(self, q_standard_item):
+        self.standard_item = q_standard_item
 
 class DetailsTreeView(DetailsDBHandler):
     """
@@ -699,6 +702,11 @@ class DetailsTreeView(DetailsDBHandler):
         self.view_selection.currentChanged.connect(
             self.disable_delete_btn
         )
+
+        self.selected_model = None
+        self.selected_index = None
+        self.selected_item  = None
+
         # show tree message if dock is open and button clicked
         if self.plugin is not None:
             not_feature_msg = QApplication.translate(
@@ -1656,6 +1664,12 @@ class DetailsTreeView(DetailsDBHandler):
         """
 
         item = None
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        #item = self.selected_item.standard_item #self.model.itemFromIndex(self.selected_index)
+        result = self.selected_item.standard_item.data()
+        return result, item
+        
         # One item is selected and number of feature is also 1
         if len(results) == 1 and len(self.view.selectedIndexes()) == 1:
             index = self.view.selectedIndexes()[0]
@@ -1687,13 +1701,15 @@ class DetailsTreeView(DetailsDBHandler):
         return result, item
 
 
-    def edit_selected_node(self):
+    def edit_selected_node(self, self_ref=None):
         """
         Edits the record based on the selected item in the tree view.
         """
-
         self.edit_btn_connected = True
-        data, item = self.node_data('edit', self._selected_features)
+        #data, item = self.node_data('edit', self._selected_features)
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        data = self.selected_item.standard_item.data()
 
         feature_edit = True
 
@@ -1715,13 +1731,19 @@ class DetailsTreeView(DetailsDBHandler):
         # STR steam - edit social tenure relationship
         if item.text() == self.str_text:
             str_model_doc = []
+
+            str_model_rec = self.selected_model.__dict__
+
             for i in range(item.parent().rowCount()):
                 child_ = item.parent().child(i)
                 try:
                     model_ = self.str_models[child_.data()]
                     child_model_rec = model_.__dict__
-                    str_model_rec = self.str_models[item.data()].__dict__
+
+                    #str_model_rec = self.str_models[item.data()].__dict__
+
                     spatial_unit_id = self.current_spatial_unit(child_model_rec)[1]
+
                     if child_model_rec[spatial_unit_id] == str_model_rec[spatial_unit_id]:
                         documents = self._supporting_doc_models(self.social_tenure.name, model_)
                         str_model_doc.append((model_, documents))
@@ -1731,6 +1753,7 @@ class DetailsTreeView(DetailsDBHandler):
             feature_edit = False
             edit_str = EditSTREditor(str_model_doc)
             edit_str.exec_()
+
         # party steam - edit party
         elif item in self.party_items.keys():
 
