@@ -279,9 +279,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._lookup.WITHDRAW() in status:
             self._enable_widget(self.approveButton)
         if self._lookup.PENDING() in status or \
-                self._lookup.APPROVED() in status and \
-                hasattr(self, "disapproveButton"):
-            self._enable_widget(getattr(self, "disapproveButton"))
+                self._lookup.APPROVED() in status:
+            if hasattr(self, "disapproveButton"):
+                self._enable_widget(getattr(self, "disapproveButton"))
         if self._lookup.DISAPPROVED() in status and \
                 hasattr(self, "withdrawButton"):
             self._enable_widget(getattr(self, "withdrawButton"))
