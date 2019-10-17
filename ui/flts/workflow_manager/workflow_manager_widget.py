@@ -37,7 +37,7 @@ from stdm.ui.flts.workflow_manager.data_service import (
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.scheme_approval import (
     Approve,
-    Disapprove
+    Disapprove,
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
 from stdm.ui.flts.workflow_manager.message_box_widget import MessageBoxWidget
@@ -64,7 +64,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._profile, self._object_name, self
         )
         self._approve = Approve(self.data_service, self._object_name)
-        self._disapprove = Disapprove(self.data_service,)
+        self._disapprove = Disapprove(self.data_service)
         self._lookup = self.data_service.lookups
         _header_style = StyleSheet().header_style
         self._comments_title = "Comments"
@@ -118,7 +118,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             button.setObjectName("withdrawButton")
             self.withdrawButton = button
             self.withdrawButton.clicked.connect(
-                lambda: self._on_withdraw(self._lookup.WITHDRAW(), "withdraw")
+                lambda: self._on_disapprove(self._lookup.WITHDRAW(), "withdraw")
             )
             return
         button.setText("Disapprove")
@@ -788,11 +788,6 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Clicked button object name
         :rtype: String, NoneType
         """
-        # buttons = [button for button in self._message_box.buttons() if button.text() != "Cancel"]
-        # if not items:
-        #     self._disable_widget(buttons)
-        # else:
-        #     self._enable_widget(buttons)
         self._message_box.enable_buttons(items)
         result = self._message_box.exec_()
         if result in (0, 1):
