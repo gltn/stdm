@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Thu Sep 19 09:27:18 2019
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Thu Oct 17 05:08:37 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_ldg_wzd(object):
     def setupUi(self, ldg_wzd):
@@ -147,6 +156,8 @@ class Ui_ldg_wzd(object):
         self.tbw_documents.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
         self.tbw_documents.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
         self.tbw_documents.setObjectName(_fromUtf8("tbw_documents"))
+        # self.tbw_documents.setColumnCount(0)
+        # self.tbw_documents.setRowCount(0)
         self.gridLayout.addWidget(self.tbw_documents, 2, 0, 1, 2)
         self.vlNotification_docs = QtGui.QVBoxLayout()
         self.vlNotification_docs.setContentsMargins(-1, -1, -1, 10)
@@ -173,6 +184,8 @@ class Ui_ldg_wzd(object):
         self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.tw_hld_prv = HoldersTableView(self.wizardPage2)
         self.tw_hld_prv.setObjectName(_fromUtf8("tw_hld_prv"))
+        # self.tw_hld_prv.setColumnCount(0)
+        # self.tw_hld_prv.setRowCount(0)
         self.gridLayout_3.addWidget(self.tw_hld_prv, 4, 0, 1, 3)
         self.lnEdit_hld_path = QtGui.QLineEdit(self.wizardPage2)
         self.lnEdit_hld_path.setEnabled(True)
@@ -240,30 +253,30 @@ class Ui_ldg_wzd(object):
         QtCore.QMetaObject.connectSlotsByName(ldg_wzd)
 
     def retranslateUi(self, ldg_wzd):
-        ldg_wzd.setWindowTitle(QtGui.QApplication.translate("ldg_wzd", "Lodgement of Scheme", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p>Enter scheme information below. Please note the scheme number will be automatically generated</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_rel_auth_type.setText(QtGui.QApplication.translate("ldg_wzd", "Type of Relevant Authority", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_region.setText(QtGui.QApplication.translate("ldg_wzd", "Region", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_schm_name.setText(QtGui.QApplication.translate("ldg_wzd", "Scheme Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_rel_auth_name.setText(QtGui.QApplication.translate("ldg_wzd", "Name of Relevant Authority", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_twn_name.setText(QtGui.QApplication.translate("ldg_wzd", "Township Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_reg_div.setText(QtGui.QApplication.translate("ldg_wzd", "Registration Division", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_date_apprv.setText(QtGui.QApplication.translate("ldg_wzd", "Date of Approval", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_schm_num.setText(QtGui.QApplication.translate("ldg_wzd", "Scheme Number", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_lro.setText(QtGui.QApplication.translate("ldg_wzd", "Land Rights Office", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_blck_area.setText(QtGui.QApplication.translate("ldg_wzd", "Block Area", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_date_establish.setText(QtGui.QApplication.translate("ldg_wzd", "Date of Establishment", None, QtGui.QApplication.UnicodeUTF8))
-        self.wizardPage.setSubTitle(QtGui.QApplication.translate("ldg_wzd", "Upload the supporting documents for the scheme", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc_3.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_upld_multi.setText(QtGui.QApplication.translate("ldg_wzd", "Add multiple files from a source directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_upload_dir.setText(QtGui.QApplication.translate("ldg_wzd", "Upload From Directory...", None, QtGui.QApplication.UnicodeUTF8))
-        self.lnEdit_hld_path.setPlaceholderText(QtGui.QApplication.translate("ldg_wzd", "Path to the Holders Excel or CSV file...", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_brws_hld.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Browse file", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc_2.setText(QtGui.QApplication.translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None, QtGui.QApplication.UnicodeUTF8))
-        self.chk_holders_validate.setText(QtGui.QApplication.translate("ldg_wzd", "Perform validation upon loading data", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_reload_holders.setToolTip(QtGui.QApplication.translate("ldg_wzd", "Reload file", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("ldg_wzd", "<html><head/><body><p><span style=\" font-weight:600;\">Validation Result</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_desc_4.setText(QtGui.QApplication.translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None, QtGui.QApplication.UnicodeUTF8))
+        ldg_wzd.setWindowTitle(_translate("ldg_wzd", "Lodgement of Scheme", None))
+        self.label_desc.setText(_translate("ldg_wzd", "<html><head/><body><p>Enter scheme information below. Please note the scheme number will be automatically generated</p></body></html>", None))
+        self.label_rel_auth_type.setText(_translate("ldg_wzd", "Type of Relevant Authority", None))
+        self.label_region.setText(_translate("ldg_wzd", "Region", None))
+        self.label_schm_name.setText(_translate("ldg_wzd", "Scheme Name", None))
+        self.label_rel_auth_name.setText(_translate("ldg_wzd", "Name of Relevant Authority", None))
+        self.label_twn_name.setText(_translate("ldg_wzd", "Township Name", None))
+        self.label_reg_div.setText(_translate("ldg_wzd", "Registration Division", None))
+        self.label_date_apprv.setText(_translate("ldg_wzd", "Date of Approval (RA)", None))
+        self.label_schm_num.setText(_translate("ldg_wzd", "Scheme Number", None))
+        self.label_lro.setText(_translate("ldg_wzd", "Land Rights Office", None))
+        self.label_blck_area.setText(_translate("ldg_wzd", "Block Area", None))
+        self.label_date_establish.setText(_translate("ldg_wzd", "Date of Establishment (RoD)", None))
+        self.wizardPage.setSubTitle(_translate("ldg_wzd", "Upload the supporting documents for the scheme", None))
+        self.label_desc_3.setText(_translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None))
+        self.label_upld_multi.setText(_translate("ldg_wzd", "Add multiple files from a source directory", None))
+        self.btn_upload_dir.setText(_translate("ldg_wzd", "Upload From Directory...", None))
+        self.lnEdit_hld_path.setPlaceholderText(_translate("ldg_wzd", "Path to the Holders Excel or CSV file...", None))
+        self.btn_brws_hld.setToolTip(_translate("ldg_wzd", "Browse file", None))
+        self.label_desc_2.setText(_translate("ldg_wzd", "Select the Excel or CSV file containing the holders information", None))
+        self.chk_holders_validate.setText(_translate("ldg_wzd", "Perform validation upon loading data", None))
+        self.btn_reload_holders.setToolTip(_translate("ldg_wzd", "Reload file", None))
+        self.label.setText(_translate("ldg_wzd", "<html><head/><body><p><span style=\" font-weight:600;\">Validation Result</span></p></body></html>", None))
+        self.label_desc_4.setText(_translate("ldg_wzd", "Confirm the scheme information.Click Back to edit the information or Finish to save.  ", None))
 
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
 from stdm.ui.customcontrols.table_widget import HoldersTableView
