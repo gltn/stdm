@@ -642,7 +642,7 @@ configurations = {
             'check_lht_workflow', {'value': 'Establishment'}
         ),
         firstExamination=EntityRecordId(
-            'check_lht_workflow', {'value': 'Fiirst Assessment'}
+            'check_lht_workflow', {'value': 'First Assessment'}
         ),
         secondExamination=EntityRecordId(
             'check_lht_workflow', {'value': 'Second Assessment'}
