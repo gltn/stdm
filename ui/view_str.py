@@ -502,7 +502,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         QApplication.processEvents()
 
-        # STR steam - edit social tenure relationship
+        # STR node - edit social tenure relationship
         if item.text() == self.details_tree_view.str_text:
             entity = self.curr_profile.social_tenure
             str_model = self.details_tree_view.str_models[item.data()]
@@ -522,7 +522,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self.disable_buttons(False)
 
 
-        # party steam - edit party
+        # party node - edit party
         elif item in self.details_tree_view.spatial_unit_items.keys():
             self.toolBox.setCurrentIndex(0)
             entity = self.details_tree_view.spatial_unit_items[item]

@@ -840,6 +840,21 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.prepare_for_selection()
 
+        if self.selected_item is None:
+            sel_model = self.view.selectionModel()
+            sel_model.selectionChanged.connect(self.on_view_select)
+
+    def on_view_select(self):
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        # STR Node
+        if item.text() == self.str_text:
+            entity = self.social_tenure
+            str_model = self.str_models[item.data()]
+            self.selected_model = str_model
+            self.selected_item = SelectedItem(item)
+
+
     def prepare_for_selection(self):
         """
         Prepares the dock widget for data loading.
@@ -862,6 +877,7 @@ class DetailsTreeView(DetailsDBHandler):
             return
         # set entity from active layer in the child class
         self.set_layer_entity()
+
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
 
