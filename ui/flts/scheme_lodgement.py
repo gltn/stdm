@@ -889,6 +889,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Scheme Number'
         )
         self.addMapping(
+            'sg_number',
+            self.lnedit_sg_num,
+            pseudoname='Surveyor General Number'
+        )
+        self.addMapping(
             'scheme_name',
             self.lnedit_schm_nam,
             pseudoname='Scheme Name'
@@ -922,6 +927,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'no_of_plots',
             self.dbl_spinbx_num_plots,
             pseudoname='Number of Plots'
+        )
+        self.addMapping(
+            'constitution_ref_no',
+            self.lnedit_const_ref_num,
+            pseudoname='Constitution Reference Number'
         )
 
     def create_notification(self):

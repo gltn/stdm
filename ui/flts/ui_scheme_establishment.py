@@ -114,4 +114,4 @@ class Ui_scheme_establish_dialog(object):
         self.chk_approve.setText(_translate("scheme_establish_dialog", "Approve", None))
 
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
-import resources_rc
+from stdm import resources_rc
