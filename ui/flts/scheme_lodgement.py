@@ -383,12 +383,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.lnedit_schm_num.setText(scheme_code)
 
     def _gen_scheme_number(self, code, last_value):
+        current_year = strftime('%Y')
         # Generates a new scheme number
         if not last_value:
             last_value = 0
         last_value += 1
         self._abs_last_scheme_value = last_value
-        scheme_code = u'{0}.{1}'.format(code, str(last_value).zfill(3))
+        scheme_code = u'{0}.{1}.{2}'.format(code, str(last_value).zfill(4), current_year)
 
         return scheme_code
 
@@ -917,6 +918,11 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.dbl_spinbx_block_area,
             pseudoname='Area'
         )
+        self.addMapping(
+            'no_of_plots',
+            self.dbl_spinbx_num_plots,
+            pseudoname='Number of Plots'
+        )
 
     def create_notification(self):
         """
@@ -972,6 +978,22 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         else:
             return True
 
+    def validate_num_plots(self):
+        """
+        Check whether the number of plots is zero
+        """
+        # Preset minimum value equals to zero
+        min_value_plots = self.dbl_spinbx_num_plots.minimum()
+
+        if self.dbl_spinbx_num_plots.value() == min_value_plots:
+            self.notif_bar.insertWarningNotification(
+                self.tr(
+                    "Number of Plots cannot be zero."
+                )
+            )
+        else:
+            return True
+
     def validateCurrentPage(self):
         # Validate each page
         current_id = self.currentId()
@@ -982,7 +1004,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
             if self.validate_block_area() and len(errors) == 0:
-                ret_status = True
+                if self.validate_num_plots():
+                    ret_status = True
 
         # Holders page
         elif current_id == 2:

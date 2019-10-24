@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_establishment.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Thu Oct 24 20:19:50 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -113,4 +114,4 @@ class Ui_scheme_establish_dialog(object):
         self.chk_approve.setText(_translate("scheme_establish_dialog", "Approve", None))
 
 from stdm.ui.customcontrols.scheme_summary_widget import SchemeSummaryWidget
-from stdm import resources_rc
+import resources_rc
