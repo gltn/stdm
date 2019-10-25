@@ -128,3 +128,36 @@ $insert_plots$ LANGUAGE plpgsql;
 CREATE TRIGGER insert_plots
 AFTER INSERT ON cb_lis_plot
     FOR EACH ROW EXECUTE PROCEDURE insert_plots();
+
+---- INSERT TIMESTAMP AFTER INSERT COMMENTS
+
+CREATE OR REPLACE FUNCTION insert_comment_timestamp() RETURNS TRIGGER AS $insert_comment_timestamp$
+    BEGIN
+        --- Update plot from lis_plot
+        NEW.timestamp = NOW();
+				RETURN NEW;
+        RETURN NULL;
+    END;
+
+$insert_comment_timestamp$ LANGUAGE plpgsql;
+
+CREATE TRIGGER insert_comment_timestamp
+BEFORE INSERT ON cb_comment
+    FOR EACH ROW EXECUTE PROCEDURE insert_comment_timestamp();
+
+---- INSERT TIMESTAMP AFTER INSERT WORKFLOW VALUES
+
+CREATE OR REPLACE FUNCTION insert_workflow_timestamp() RETURNS TRIGGER AS $insert_workflow_timestamp$
+    BEGIN
+        --- Update plot from lis_plot
+        NEW.timestamp = NOW();
+				RETURN NEW;
+        RETURN NULL;
+    END;
+
+$insert_workflow_timestamp$ LANGUAGE plpgsql;
+
+CREATE TRIGGER insert_workflow_timestamp
+BEFORE INSERT ON cb_scheme_workflow
+    FOR EACH ROW EXECUTE PROCEDURE insert_workflow_timestamp();
+

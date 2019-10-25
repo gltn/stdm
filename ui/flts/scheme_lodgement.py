@@ -1335,7 +1335,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             scheme_workflow_obj.scheme_id = scheme_res.id
             scheme_workflow_obj.workflow_id = workflow_res.id
             scheme_workflow_obj.approval_id = approval_lodge_res.id
-            scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S") #TODO: from backend
+            # scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
             scheme_workflow_obj.save()
 
             self.populate_establishment_workflow()
@@ -1437,7 +1437,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             scheme_workflow_obj.scheme_id = scheme_res.id
             scheme_workflow_obj.workflow_id = workflow_res.id
             scheme_workflow_obj.approval_id = approval_res.id
-            scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
+            # scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
             scheme_workflow_obj.save()
 
 
