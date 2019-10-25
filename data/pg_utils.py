@@ -88,23 +88,25 @@ def pg_tables(schema="public", exclude_lookups=False):
     result = _execute(t, tschema=schema, tbtype="BASE TABLE")
         
     pgTables = []
+
         
     for r in result:
         tableName = r["table_name"]
         
         #Remove default PostGIS tables
         tableIndex = getIndex(_postGISTables, tableName)
-        if tableIndex == -1:
-            if exclude_lookups:
-                #Validate if table is a lookup table and if it is, then omit
-                rx = QRegExp("check_*")
-                rx.setPatternSyntax(QRegExp.Wildcard)
-                
-                if not rx.exactMatch(tableName):
-                    pgTables.append(tableName)
-                    
-            else:
+        if tableIndex <> -1:
+            continue
+        if exclude_lookups:
+            #Validate if table is a lookup table and if it is, then omit
+            rx = QRegExp("check_*")
+            rx.setPatternSyntax(QRegExp.Wildcard)
+            
+            if not rx.exactMatch(tableName):
                 pgTables.append(tableName)
+                
+        else:
+            pgTables.append(tableName)
             
     return pgTables
 

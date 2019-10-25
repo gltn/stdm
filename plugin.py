@@ -55,7 +55,8 @@ from stdm.ui.options_base import OptionsDialog
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
-    EntityBrowserWithEditor
+    EntityBrowserWithEditor,
+    ContentGroupEntityBrowser
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -451,7 +452,7 @@ class STDMQGISLoader(object):
                 '{} is missing. \n'
                 'Do you want to re-run the '
                 'Configuration Wizard now?'.format(
-                    entity.short_name
+                    entity.name
                 ),
                 None,
                 QCoreApplication.UnicodeUTF8
@@ -1762,8 +1763,6 @@ class STDMQGISLoader(object):
 
             if database_status:
                 self.newSTR()
-
-
         else:
             table_name = self._moduleItems[dispName]
             if self.current_profile is None:
