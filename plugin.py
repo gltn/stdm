@@ -55,7 +55,8 @@ from stdm.ui.options_base import OptionsDialog
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
-    EntityBrowserWithEditor
+    EntityBrowserWithEditor,
+    ContentGroupEntityBrowser
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -443,7 +444,31 @@ class STDMQGISLoader(object):
             'Database Table Error'
         )
 
-        if pg_table_exists(entity.name):
+        if not pg_table_exists(entity.name):
+            message = QApplication.translate(
+                "STDMQGISLoader",
+                u'The system has detected that '
+                'a required database table - \n'
+                '{} is missing. \n'
+                'Do you want to re-run the '
+                'Configuration Wizard now?'.format(
+                    entity.name
+                ),
+                None,
+                QCoreApplication.UnicodeUTF8
+            )
+            database_check = QMessageBox.critical(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+            if database_check == QMessageBox.Yes:
+                self.load_config_wizard()
+            else:
+                return False
+        else:
             return True
         message = QApplication.translate(
             "STDMQGISLoader",
@@ -1759,8 +1784,6 @@ class STDMQGISLoader(object):
 
             if database_status:
                 self.newSTR()
-
-
         else:
             table_name = self._moduleItems[dispName]
             if self.current_profile is None:
