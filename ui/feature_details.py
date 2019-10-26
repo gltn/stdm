@@ -619,6 +619,9 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
     #         self.plugin.feature_details_act
     #     )
 
+class SelectedItem(object):
+    def __init__(self, q_standard_item):
+        self.standard_item = q_standard_item
 
 class DetailsTreeView(DetailsDBHandler):
     """
@@ -667,6 +670,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.view.setEditTriggers(
             QAbstractItemView.NoEditTriggers
         )
+
         self.str_text = QApplication.translate(
             'DetailsTreeView',
             'Social Tenure Relationship'
@@ -679,8 +683,8 @@ class DetailsTreeView(DetailsDBHandler):
             '''
         )
         self.current_profile = current_profile()
-        if self.current_profile is None:
-            return
+        if self.current_profile is None: return
+
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_units = self.social_tenure.spatial_units
 
@@ -692,11 +696,17 @@ class DetailsTreeView(DetailsDBHandler):
         self.doc_viewer = _EntityDocumentViewerHandler(
             self.doc_viewer_title, self.iface.mainWindow()
         )
+
         self.view_selection = self.view.selectionModel()
 
         self.view_selection.currentChanged.connect(
             self.disable_delete_btn
         )
+
+        self.selected_model = None
+        self.selected_index = None
+        self.selected_item  = None
+
         # show tree message if dock is open and button clicked
         if self.plugin is not None:
             not_feature_msg = QApplication.translate(
@@ -785,15 +795,13 @@ class DetailsTreeView(DetailsDBHandler):
         because of button click or because of change in the active layer.
         :type button_clicked: Boolean
         """
-        if not button_clicked:
-            return
+        if not button_clicked: return
 
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
 
-        if not self.db_configuration_done():
-            return
+        if not self.db_configuration_done(): return
 
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
@@ -832,6 +840,21 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.prepare_for_selection()
 
+        if self.selected_item is None:
+            sel_model = self.view.selectionModel()
+            sel_model.selectionChanged.connect(self.on_view_select)
+
+    def on_view_select(self):
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        # STR Node
+        if item.text() == self.str_text:
+            entity = self.social_tenure
+            str_model = self.str_models[item.data()]
+            self.selected_model = str_model
+            self.selected_item = SelectedItem(item)
+
+
     def prepare_for_selection(self):
         """
         Prepares the dock widget for data loading.
@@ -854,6 +877,7 @@ class DetailsTreeView(DetailsDBHandler):
             return
         # set entity from active layer in the child class
         self.set_layer_entity()
+
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
 
@@ -923,9 +947,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         str_records = []
 
-        if self._selected_features is None:
-            return
-
+        if self._selected_features is None: return
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -1044,6 +1066,8 @@ class DetailsTreeView(DetailsDBHandler):
                 db_model = self.feature_model(entity, spu_id)
 
             self.add_root_children(db_model, root, str_records, True)
+
+        return getattr(str_records[0], self.layer_table).id  # Nasty hack!!
 
         #self.layer.selectByIds(
             #self.feature_models.keys()
@@ -1656,6 +1680,12 @@ class DetailsTreeView(DetailsDBHandler):
         """
 
         item = None
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        #item = self.selected_item.standard_item #self.model.itemFromIndex(self.selected_index)
+        result = self.selected_item.standard_item.data()
+        return result, item
+        
         # One item is selected and number of feature is also 1
         if len(results) == 1 and len(self.view.selectedIndexes()) == 1:
             index = self.view.selectedIndexes()[0]
@@ -1683,24 +1713,27 @@ class DetailsTreeView(DetailsDBHandler):
                 result = item.data()
             else:
                 result = item.parent().data()
+
         return result, item
 
-    # def edit_selected_node(self):
-    #     cProfile.runctx('self._edit_selected_steam()', globals(), locals())
 
-    def edit_selected_node(self):
+    def edit_selected_node(self, self_ref=None):
         """
         Edits the record based on the selected item in the tree view.
         """
         self.edit_btn_connected = True
-        id, item = self.node_data('edit', self._selected_features)
+        #data, item = self.node_data('edit', self._selected_features)
+        index = self.view.selectedIndexes()[0]
+        item = self.model.itemFromIndex(index)
+        data = self.selected_item.standard_item.data()
 
         feature_edit = True
-        if id is None:
-            return
-        if isinstance(id, str):
+
+        if data is None: return
+
+        if isinstance(data, str):
             data_error = QApplication.translate(
-                'DetailsTreeView', id
+                'DetailsTreeView', data
             )
             QMessageBox.warning(
                 self.iface.mainWindow(),
@@ -1710,16 +1743,23 @@ class DetailsTreeView(DetailsDBHandler):
                 data_error
             )
             return
+
         # STR steam - edit social tenure relationship
         if item.text() == self.str_text:
             str_model_doc = []
+
+            str_model_rec = self.selected_model.__dict__
+
             for i in range(item.parent().rowCount()):
                 child_ = item.parent().child(i)
                 try:
                     model_ = self.str_models[child_.data()]
                     child_model_rec = model_.__dict__
-                    str_model_rec = self.str_models[item.data()].__dict__
+
+                    #str_model_rec = self.str_models[item.data()].__dict__
+
                     spatial_unit_id = self.current_spatial_unit(child_model_rec)[1]
+
                     if child_model_rec[spatial_unit_id] == str_model_rec[spatial_unit_id]:
                         documents = self._supporting_doc_models(self.social_tenure.name, model_)
                         str_model_doc.append((model_, documents))
@@ -1729,12 +1769,13 @@ class DetailsTreeView(DetailsDBHandler):
             feature_edit = False
             edit_str = EditSTREditor(str_model_doc)
             edit_str.exec_()
+
         # party steam - edit party
         elif item in self.party_items.keys():
 
             entity = self.party_items[item]
 
-            model = self.feature_model(self.party_items[item], id)
+            model = self.feature_model(self.party_items[item], data)
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
             )
@@ -1743,7 +1784,7 @@ class DetailsTreeView(DetailsDBHandler):
         elif item in self.spatial_unit_items.keys():
             entity = self.spatial_unit_items[item]
 
-            model = self.feature_model(entity, id)
+            model = self.feature_model(entity, data)
 
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
@@ -1753,9 +1794,9 @@ class DetailsTreeView(DetailsDBHandler):
             return
         self.view.expand(item.index())
         if feature_edit:
-            self.update_edited_node(self.social_tenure, id)
+            self.update_edited_node(self.social_tenure, data)
         else:
-            self.update_edited_node(self.social_tenure, id)
+            self.update_edited_node(self.social_tenure, data)
 
     def delete_selected_item(self):
         """

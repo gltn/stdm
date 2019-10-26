@@ -21,6 +21,8 @@ email                : stdm@unhabitat.org
 from datetime import date
 from sqlalchemy import exc
 from collections import OrderedDict
+import copy
+
 import logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -62,7 +64,7 @@ from stdm.utils.util import (
 
 from stdm.data.pg_utils import pg_table_count
 
-from stdm.ui.feature_details import DetailsTreeView
+from stdm.ui.feature_details import DetailsTreeView, SelectedItem
 from .notification import (
     NotificationBar
 )
@@ -76,7 +78,6 @@ from ui_str_view_entity import Ui_frmSTRViewEntity
 
 
 LOGGER = logging.getLogger('stdm')
-
 
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
@@ -163,6 +164,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 self.windowTitle(), '- ' + str(count) +' rows'
             ))
         )
+
+        self.active_spu_id = -1
 
         self.toolBox.setStyleSheet(
             '''
@@ -452,13 +455,16 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             if entity_name in party_names:
 
-                self.details_tree_view.search_party(
+                self.active_spu_id = self.details_tree_view.search_party(
                     entity, result_ids
                 )
             else:
                 self.details_tree_view.search_spatial_unit(
                     entity, result_ids
                 )
+
+            #self.tbPropertyPreview._iface.activeLayer().selectByExpression("id={}".format(self.active_spu_id))
+            #self.details_tree_view._selected_features = self.tbPropertyPreview._iface.activeLayer().selectedFeatures()
             #self._load_root_node(entity_name, formattedNode)
 
     def clearSearch(self):
@@ -486,19 +492,24 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         is changed in the tree view
         selection model.
         """
-
         if len(self.details_tree_view.view.selectedIndexes()) < 1:
             self.disable_buttons()
             return
         self.search_done = True
+
         index = self.details_tree_view.view.selectedIndexes()[0]
         item = self.details_tree_view.model.itemFromIndex(index)
 
         QApplication.processEvents()
-        # STR steam - edit social tenure relationship
+
+        # STR node - edit social tenure relationship
         if item.text() == self.details_tree_view.str_text:
             entity = self.curr_profile.social_tenure
             str_model = self.details_tree_view.str_models[item.data()]
+
+            self.details_tree_view.selected_model = str_model
+            self.details_tree_view.selected_item = SelectedItem(item)
+
             documents = self.details_tree_view._supporting_doc_models(
                 entity.name, str_model
             )
@@ -510,7 +521,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 self.toolBox.setCurrentIndex(1)
             self.disable_buttons(False)
 
-        # party steam - edit party
+
+        # party node - edit party
         elif item in self.details_tree_view.spatial_unit_items.keys():
             self.toolBox.setCurrentIndex(0)
             entity = self.details_tree_view.spatial_unit_items[item]
@@ -518,6 +530,11 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             model = self.details_tree_view.feature_model(entity, item.data())
             self.draw_spatial_unit(entity.name, model)
             self.disable_buttons()
+
+            canvas = iface.mapCanvas()
+            if canvas:
+                canvas.zoomToFullExtent()
+
         else:
             self.disable_buttons()
 
@@ -547,7 +564,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                 return party_id_obj
 
     def load_edit_str_editor(self):
-        self.details_tree_view.edit_selected_node()
+        self.details_tree_view.edit_selected_node(self.details_tree_view)
         self.btnSearch.click()
         self.disable_buttons()
 
@@ -852,13 +869,12 @@ class EntitySearchItem(QObject):
         """
         pass
 
-class STRViewEntityWidget(QWidget,Ui_frmSTRViewEntity,EntitySearchItem):
+class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
     """
     A widget that represents options for searching through an entity.
     """
     asyncStarted = pyqtSignal()
     asyncFinished = pyqtSignal()
-
 
     def __init__(self, config, formatter=None, parent=None):
         QWidget.__init__(self, parent)

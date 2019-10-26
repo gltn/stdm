@@ -1159,8 +1159,10 @@ def profile_and_user_views(profile, check_party=False):
         all_str_views.extend(prof.social_tenure.views.keys())
 
     for value in pg_views():
-        if value not in all_str_views:  #and value not in source_tables:
-            source_tables.append(value)
+        #if value not in all_str_views:  #and value not in source_tables:
+        if value[:2] == profile.prefix:
+            if value not in source_tables:
+                source_tables.append(value)
     return source_tables
 
 def user_non_profile_views():
