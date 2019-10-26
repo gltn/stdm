@@ -194,8 +194,8 @@ class TableContentGroup(ContentGroup):
     update_op = QApplication.translate("DatabaseContentGroup", "Update")
     delete_op = QApplication.translate("DatabaseContentGroup", "Delete")
     
-    def __init__(self, username, groupName, action = None):
-        ContentGroup.__init__(self,username,action)
+    def __init__(self, username, groupName, action=None):
+        ContentGroup.__init__(self, username, action)
         self._groupName = groupName
         self._createDbOpContent()
         
@@ -220,11 +220,12 @@ class TableContentGroup(ContentGroup):
         self._deleteCnt.name = self._buildName(self.delete_op)
         self.addContentItem(self._deleteCnt)
         
-    def _buildName(self,contentName):
+    def _buildName(self, db_operation):
         """
-        Appends group name to the content name
+        Appends group name to the database operation 
+        `Create Person`
         """
-        return u"{0} {1}".format(contentName, self._groupName)
+        return u"{0} {1}".format(db_operation, self._groupName)
         
     def createContentItem(self):
         """
