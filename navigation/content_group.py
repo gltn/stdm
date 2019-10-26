@@ -206,18 +206,22 @@ class TableContentGroup(ContentGroup):
         """
         self._createCnt = Content()
         self._createCnt.name = self._buildName(self.create_op)
+        self._createCnt.code = self.hash_code(self._createCnt.name)
         self.addContentItem(self._createCnt)
         
         self._readCnt = Content()
         self._readCnt.name = self._buildName(self.read_op)
+        self._readCnt.code = self.hash_code(self._readCnt.name)
         self.addContentItem(self._readCnt)
         
         self._updateCnt = Content()
         self._updateCnt.name = self._buildName(self.update_op)
+        self._updateCnt.code = self.hash_code(self._updateCnt.name)
         self.addContentItem(self._updateCnt)
         
         self._deleteCnt = Content()
         self._deleteCnt.name = self._buildName(self.delete_op)
+        self._deleteCnt.code = self.hash_code(self._deleteCnt.name)
         self.addContentItem(self._deleteCnt)
         
     def _buildName(self, db_operation):

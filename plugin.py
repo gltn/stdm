@@ -1811,7 +1811,6 @@ class STDMQGISLoader(object):
                         self._reportModules.keys(), dispName
                     )
 
-
                     table_content = TableContentGroup(self.current_user.UserName, dispName)
                     self.entity_browser = ContentGroupEntityBrowser(
                             sel_entity, table_content, self.iface.mainWindow(),  plugin=self)
