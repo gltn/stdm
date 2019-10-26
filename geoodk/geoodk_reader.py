@@ -305,7 +305,7 @@ class GeoODKReader:
         for col in cols_obj:
             if col.TYPE_INFO == 'FOREIGN_KEY':
                 relations = col.entity_relation
-                return relations.show_in_parent
+                return relations.show_in_parent()
 
 
 

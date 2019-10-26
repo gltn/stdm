@@ -743,6 +743,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref", self.model_category_group(parent_path, key))
                 label_text_info = self.entity_read.col_label(key)
+                if label_text_info == '' or label_text_info is None:
+                    label_text_info = key.replace('_', ' ').title()
                 label_txt = self.create_text_node(label_text_info)
                 # label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
@@ -800,7 +802,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.entity_read.read_attributes()
-        child_node = self.lookup_formatter(self.entity_read.default_entity(),col)
+        child_node = self.lookup_formatter(
+            self.entity_read.default_entity(),col)
         parent_node.appendChild(child_node)
 
     def lookup_formatter(self, entity, col):
@@ -853,12 +856,12 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")
-            encode_key = key.encode('utf_8')
-            lk_item_label_txt = self.create_text_node(encode_key)
+            #encode_key = key.encode('utf_8')
+            lk_item_label_txt = self.create_text_node(key)
             lk_item_label_txt_val = self.create_node("value")
             if val == "":
                 val = key
-            lk_item_label_txt_val_txt = self.create_text_node(val.encode('utf_8'))
+            lk_item_label_txt_val_txt = self.create_text_node(val)
 
             lk_item_label.appendChild(lk_item_label_txt)
             lk_item_label_txt_val.appendChild(lk_item_label_txt_val_txt)
@@ -877,8 +880,11 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node = self.create_node('select1')
         lk_node.setAttribute("ref", self.set_model_xpath(key, 'social_tenure'))
         lk_node_label = self.create_node("label")
-        lk_node_label_txt = self.create_text_node(
-            self.entity_read.col_label(key))
+        label_text = self.entity_read.col_label(key)
+        if label_text == '' or label_text is None:
+            label_text = key.replace("_", ' ').title()
+        lk_node_label_txt = self.create_text_node(label_text)
+
         lk_node_label.appendChild(lk_node_label_txt)
         lk_node.appendChild(lk_node_label)
 

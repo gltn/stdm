@@ -45,8 +45,9 @@ if third_party_dir not in sys.path:
     sys.path.append(font_dir)
 
 #Root to the path plugin directory
-USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
-             + '/.stdm'
+#USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+#            + '/.stdm'
+USER_PLUGIN_DIR = 'C:\Users\SOLOMON\.stdm'
 
 #Setup logging
 LOG_DIR = u'{0}/logs'.format(USER_PLUGIN_DIR)

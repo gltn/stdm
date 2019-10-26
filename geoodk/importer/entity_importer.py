@@ -307,7 +307,9 @@ class Save2DB:
         for k, v in attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
-                col_prop = self.entity.columns[k]
+                print 'k is {} '.format(col_type)
+                col_prop = self.model.columns[k]
+                print 'property is  {}'.format(col_prop)
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
 
@@ -453,13 +455,16 @@ class Save2DB:
             if var == '' or var is None:
                 return None
             else:
-                print var
                 col_parent = col_prop.association.first_parent
                 lk_val_list = col_parent.values.values()
+                col_parent_model = entity_model(col_parent)
+                col_parent_inst= col_parent_model()
+                var_list = var.split(' ')
                 choices_list = []
-                for code in lk_val_list:
-                    choices_list.append(entity_attr_to_id(
-                        col_parent.association.first_parent, 'value', code.value))
+                print var_list
+                for vl in var_list:
+                    choices_list.append(col_parent_inst.queryObject().filter
+                                        (col_parent_inst.value == vl).first().id)
                 print choices_list
 
                 if len(choices_list) > 1:
@@ -508,6 +513,14 @@ class Save2DB:
 
         else:
             return var
+
+    def string_list_separator(self,list_str, sep):
+        '''
+        Pass a stringlist and split it into a list based on the separator
+        :param list_str:
+        :return: list
+        '''
+        return list_str.split(sep)
 
     def abort_action(self):
         """
