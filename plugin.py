@@ -167,6 +167,10 @@ class STDMQGISLoader(object):
 
         self._user_logged_in = False
         self.current_profile = None
+
+        # current logged-in user
+        self.current_user = None
+
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
@@ -300,6 +304,8 @@ class STDMQGISLoader(object):
         if retstatus == QDialog.Accepted:
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
+
+            self.current_user = frmLogin.dbConn.User
 
             #Initialize the whole STDM database
 
@@ -1775,22 +1781,30 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 sel_entity
             )
+
             QApplication.processEvents()
+
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    self.entity_browser = EntityBrowserWithEditor(
-                        sel_entity,
-                        self.iface.mainWindow(),
-                        plugin=self
-                    )
+
+
+                    table_content = TableContentGroup(self.current_user.UserName, dispName)
+                    self.entity_browser = ContentGroupEntityBrowser(
+                            sel_entity, table_content, self.iface.mainWindow(),  plugin=self)
+                           
+                    #self.entity_browser = EntityBrowserWithEditor(
+                        #sel_entity,
+                        #self.iface.mainWindow(),
+                        #plugin=self
+                    #)
+
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()
                     else:
                         self.entity_browser.exec_()
-
                 else:
                     return
 

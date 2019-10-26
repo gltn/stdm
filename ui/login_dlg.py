@@ -46,7 +46,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         self.initGui()
         
         #class properties
-        self.User = None
+        self.user = None
         self.dbConn = None
         
     def initGui(self):
@@ -122,7 +122,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         '''      
         username = self.txtUserName.text()
         password = self.txtPassword.text()
-        self.User = User(username, password)
+        self.user = User(username, password)
 
     def settingsDialog(self):
         '''
@@ -188,7 +188,7 @@ class loginDlg(QDialog, Ui_frmLogin):
             if dbconn is None:
                 return
 
-            dbconn.User = self.User
+            dbconn.User = self.user
 
             #Test connection
             success, msg = dbconn.validateConnection()

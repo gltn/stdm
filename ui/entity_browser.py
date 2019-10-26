@@ -839,7 +839,7 @@ class EntityBrowserWithEditor(EntityBrowser):
     Entity browser with added functionality for carrying out CRUD operations
     directly.
     """
-    def __init__(self,entity, parent=None, state=MANAGE, load_records=True, plugin=None):
+    def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
         EntityBrowser.__init__(self, entity, parent, state, load_records, plugin)
         self.record_id = 0
 
@@ -1381,14 +1381,22 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
     settings defined by the administrator.
     This is an abstract class that needs to be implemented for subclasses
     representing specific entities.
+    :param dataModel: Entity
+    :param tableContentGroup: Instance of TableContentGroup
+    :param parent: Owner of this entity browser
+    :param state: Constants to indicate the funtions of a entity browser,
+        VIEW=2301, MANAGE=2302,
+        SELECT=2303 #When widget is used to select one or more records from the table list
     """
-    def __init__(self,dataModel,tableContentGroup,parent = None,state = VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, dataModel, parent, state)
+    def __init__(self, dataModel, tableContentGroup, parent=None, plugin=None, state=VIEW|MANAGE):
+        EntityBrowserWithEditor.__init__(self, dataModel, parent, state, plugin)
         
         self.resize(700,500)
         
         if not isinstance(tableContentGroup, TableContentGroup):
             raise TypeError("Content group is not of type 'TableContentGroup'")
+
+        import pydevd; pydevd.settrace()
         
         self._tableContentGroup = tableContentGroup
         
