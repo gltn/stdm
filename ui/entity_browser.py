@@ -1396,8 +1396,6 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         if not isinstance(tableContentGroup, TableContentGroup):
             raise TypeError("Content group is not of type 'TableContentGroup'")
 
-        import pydevd; pydevd.settrace()
-        
         self._tableContentGroup = tableContentGroup
         
         #Enable/disable tools based on permissions
