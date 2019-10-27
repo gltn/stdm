@@ -536,7 +536,7 @@ LookUp = namedtuple(
     ]
 )
 MessageBox = namedtuple(
-    'MessageBox', ['name', 'pushButton', 'role', 'icon']
+    'MessageBox', ['name', 'label', 'role', 'icon']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
@@ -777,19 +777,13 @@ configurations = {
         'approveButton': [
             MessageBox(
                 name='approveMsgButton',
-                pushButton=QPushButton("Approve"),
+                label="Approve",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
             ),
             MessageBox(
-                name='commentApproveMsgButton',
-                pushButton=QPushButton("Comment && Approve"),
-                role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
-            ),
-            MessageBox(
                 name=None,
-                pushButton=QPushButton("Cancel"),
+                label="Cancel",
                 role=QMessageBox.RejectRole,
                 icon=None,
             )
@@ -797,19 +791,19 @@ configurations = {
         'disapproveButton': [
             MessageBox(
                 name='disapproveMsgButton',
-                pushButton=QPushButton("Disapprove"),
+                label="Disapprove",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
             ),
             MessageBox(
                 name='commentDisapproveMsgButton',
-                pushButton=QPushButton("Comment && Disapprove"),
+                label="Comment && Disapprove",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
             ),
             MessageBox(
                 name=None,
-                pushButton=QPushButton("Cancel"),
+                label="Cancel",
                 role=QMessageBox.RejectRole,
                 icon=None,
             )
@@ -817,19 +811,19 @@ configurations = {
         'withdrawButton': [
             MessageBox(
                 name='withdrawMsgButton',
-                pushButton=QPushButton("Withdraw"),
+                label="Withdraw",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
             ),
             MessageBox(
                 name='commentWithdrawMsgButton',
-                pushButton=QPushButton("Comment && Withdraw"),
+                label="Comment && Withdraw",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
             ),
             MessageBox(
                 name=None,
-                pushButton=QPushButton("Cancel"),
+                label="Cancel",
                 role=QMessageBox.RejectRole,
                 icon=None,
             )
