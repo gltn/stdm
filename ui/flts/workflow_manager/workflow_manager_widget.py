@@ -40,7 +40,10 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Disapprove,
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
-from stdm.ui.flts.workflow_manager.message_box_widget import MessageBoxWidget
+from stdm.ui.flts.workflow_manager.message_box_widget import(
+    MessageBoxButtons,
+    get_message_box,
+)
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
@@ -56,7 +59,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setupUi(self)
         self._object_name = object_name
         self._checked_ids = OrderedDict()
-        self._message_box = MessageBoxWidget(self)
+        self._message_box = {}
         self._tab_name = self._detail_table = self._msg_box_button = None
         self.notif_bar = NotificationBar(self.vlNotification)
         self._profile = current_profile()
@@ -778,18 +781,43 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Clicked button object name
         :rtype: String, NoneType
         """
-        button = self._button_clicked()
-        options = SchemeMessageBox().message_box
-        options = options[button.objectName()]
-        self._message_box.setWindowTitle(self.tr('Workflow Manager'))
-        self._message_box.setText(self.tr(msg))
-        self._message_box.remove_buttons()
-        self._message_box.create_buttons(options)
-        return self._message_box_result(items)
+        msg = self.tr(msg)
+        button_name = self._button_clicked().objectName()
+        if button_name not in self._message_box:
+            title = self.tr('Workflow Manager')
+            message_box = get_message_box(button_name)
+            message_box = message_box(title, msg, self)
+            buttons = self._message_box_buttons(button_name, message_box)
+            message_box.add_buttons(buttons)
+            self._message_box[button_name] = message_box
+        else:
+            message_box = self._message_box[button_name]
+            message_box.setText(msg)
+        return self._message_box_result(message_box, items)
 
-    def _message_box_result(self, items):
+    @staticmethod
+    def _message_box_buttons(name, message_box):
+        """
+        Dynamically creates buttons from the options
+        :param name: Clicked toolbar button object name
+        :type name: String
+        :param message_box: Parent QMessageBox
+        :type message_box: QMessageBox
+        :return buttons: QPushButton and roles
+        :rtype buttons: List
+        """
+        options = SchemeMessageBox().message_box
+        options = options[name]
+        buttons = MessageBoxButtons(options, message_box)
+        buttons = buttons.create_buttons()
+        return buttons
+
+    @staticmethod
+    def _message_box_result(message_box, items):
         """
         Returns custom message box results
+        :param message_box: QMessageBox
+        :type message_box: QMessageBox
         :param items: Approval items
         :type items: Dictionary
         :return result: Clicked button index or None
@@ -797,10 +825,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :return: Clicked button object name
         :rtype: String, NoneType
         """
-        self._message_box.enable_buttons(items)
-        result = self._message_box.exec_()
-        if result in (0, 1):
-            clicked_button = self._message_box.clickedButton()
+        message_box.enable_buttons(items)
+        result = message_box.exec_()
+        button_label = message_box.clickedButton().text()
+        if button_label != "Cancel" and result in (0, 1):
+            clicked_button = message_box.clickedButton()
             return result, clicked_button.objectName()
         return None, None
 
