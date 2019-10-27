@@ -90,11 +90,11 @@ class _DocumentTemplate(object):
         return _DocumentTemplate(**kwargs)
 
 
-class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
+class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
     """
     Dialog for selecting a document template from the saved list.
     """
-    def __init__(self, parent=None,selectMode=True, filter_data_source=''):
+    def __init__(self, parent=None, selectMode=True, filter_data_source='', access_templates=[]):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         
@@ -112,6 +112,8 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
 
         #Load current profile templates
         self._load_current_profile_templates()
+
+        self.access_templates=access_templates
         
         if selectMode:
             self.buttonBox.setVisible(True)
@@ -152,7 +154,7 @@ class TemplateDocumentSelector(QDialog,Ui_frmDocumentSelector):
         #Append current profile templates to the model.
         for dt in self._profile_templates:
 
-            if self._template_contains_filter_table(dt):
+            if self._template_contains_filter_table(dt) and dt.name in self.access_templates:
                 doc_name_item = self._createDocNameItem(dt.name)
                 file_path_item = QStandardItem(dt.path)
                 self._docItemModel.appendRow([doc_name_item,file_path_item])

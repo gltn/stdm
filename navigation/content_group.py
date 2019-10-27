@@ -70,6 +70,12 @@ class ContentGroup(QObject,HashableMixin):
         cnt.name = qAction.text()
         
         return cnt
+
+    @staticmethod
+    def contentItemFromName(name):
+        cnt = Content()
+        cnt.name = name
+        return cnt
     
     def contentItems(self):
         """
