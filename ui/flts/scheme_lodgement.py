@@ -96,6 +96,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._reg_div_chk_entity_name = 'check_lht_reg_division'
         self._scheme_doc_type_lookup = 'cb_check_scheme_document_type'
         self._holders_entity_name = 'Holder'
+        self._workflow_chk_entity_name = 'check_lht_workflow'
+        self._approval_chk_entity_name = 'check_lht_approval_status'
+        self._sch_workflow_entity_name = 'Scheme_workflow'
 
         # Check if the current profile exists
         if self.curr_p is None:
@@ -130,12 +133,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._region_lookup = None
         self._reg_div_lookup = None
         self._holder_entity = None
+        self._workflow_lookup = None
+        self._approval_lookup = None
+        self._sch_workflow_entity = None
 
         # Entity models
         self._relevant_auth_type_model = None
         self._region_lookup_model = None
         self._relevant_auth_model = None
         self._regdiv_lookup_model = None
+        self._workflow_lookup_model = None
+        self._approval_lookup_model = None
+        self._sch_workflow_model = None
 
         # Initialize Mappermixin for saving attribute data
         MapperMixin.__init__(self, self.schm_model, self.sch_entity)
@@ -1245,16 +1254,21 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
     def populate_workflow(self):
         """
-        Update the workflow link table once lodgement has been done
-        :return:
+        Update the workflow table once lodgement has been done
         """
         # Entities
-        chk_workflow_lookup = self.curr_p.entity('check_lht_workflow')
-        chk_approval_lookup = self.curr_p.entity('check_lht_approval_status')
-        scheme_workflow = self.curr_p.entity('Scheme_workflow')
+        self._workflow_lookup = self.curr_p.entity(
+            self._workflow_chk_entity_name
+        )
+        self._approval_lookup = self.curr_p.entity(
+            self._approval_chk_entity_name
+        )
+        self._sch_workflow_entity = self.curr_p.entity(
+            self._sch_workflow_entity_name
+        )
 
         # Check if entity exists
-        if chk_workflow_lookup is None:
+        if self._workflow_lookup is None:
             QMessageBox.critical(
                 self,
                 self.tr('Missing workflow Entity'),
@@ -1262,7 +1276,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         "profile.")
             )
 
-        if chk_approval_lookup is None:
+        if self._approval_lookup is None:
             QMessageBox.critical(
                 self,
                 self.tr('Missing approval Entity'),
@@ -1270,7 +1284,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                         "profile.")
             )
 
-        if scheme_workflow is None:
+        if self._sch_workflow_entity is None:
             QMessageBox.critical(
                 self,
                 self.tr('Missing scheme workflow Entity'),
@@ -1279,26 +1293,32 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
 
         # Models
-        workflow_model = entity_model(chk_workflow_lookup)
-        approval_model = entity_model(chk_approval_lookup)
-        scheme_workflow_model = entity_model(scheme_workflow)
+        self._workflow_lookup_model = entity_model(
+            self._workflow_lookup
+        )
+        self._approval_lookup_model = entity_model(
+            self._approval_lookup
+        )
+        self._sch_workflow_model = entity_model(
+            self._sch_workflow_entity
+        )
 
         # Check if model exists
-        if workflow_model is None:
+        if self._workflow_lookup_model is None:
             QMessageBox.critical(
                 self,
                 self.tr('Workflow Entity Model'),
                 self.tr("The workflow entity model could not be generated.")
             )
 
-        if approval_model is None:
+        if self._approval_lookup_model is None:
             QMessageBox.critical(
                 self,
                 self.tr('Workflow Entity Model'),
                 self.tr("The approval entity model could not be generated.")
             )
 
-        if scheme_workflow_model is None:
+        if self._sch_workflow_model is None:
             QMessageBox.critical(
                 self,
                 self.tr('Scheme Workflow Entity Model'),
@@ -1308,9 +1328,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Entity objects
         scheme_obj = self.schm_model()
-        chk_workflow_obj = workflow_model()
-        chk_approval_obj = approval_model()
-        scheme_workflow_obj = scheme_workflow_model()
+        chk_workflow_obj = self._workflow_lookup_model()
+        chk_approval_obj = self._approval_lookup_model()
+        scheme_workflow_obj = self._sch_workflow_model()
 
         # Get last lodged scheme ID
         scheme_res = scheme_obj.queryObject().order_by(
@@ -1319,126 +1339,49 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Filter the lookup IDs based on values
         workflow_res = chk_workflow_obj.queryObject().filter(
-            workflow_model.value == 'Lodgement'
+            self._workflow_lookup_model.value == 'Lodgement'
         ).one()
 
-        # approval_res = chk_approval_obj.queryObject().filter(
-        #     approval_model.value == 'Pending'
-        # ).one()
-
         approval_lodge_res = chk_approval_obj.queryObject().filter(
-            approval_model.value == 'Approved'
+            self._approval_lookup_model.value == 'Approved'
         ).one()
 
         # Save details
-        if approval_lodge_res:
-            scheme_workflow_obj.scheme_id = scheme_res.id
-            scheme_workflow_obj.workflow_id = workflow_res.id
-            scheme_workflow_obj.approval_id = approval_lodge_res.id
-            # scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
-            scheme_workflow_obj.save()
+        scheme_workflow_obj.scheme_id = scheme_res.id
+        scheme_workflow_obj.workflow_id = workflow_res.id
+        scheme_workflow_obj.approval_id = approval_lodge_res.id
+        scheme_workflow_obj.save()
 
-            self.populate_establishment_workflow()
+        self.populate_establishment_workflow()
 
     def populate_establishment_workflow(self):
         """
         Update the workflow link table with establishment as unapproved.
         :return:
         """
-        # Entities
-        chk_workflow_lookup = self.curr_p.entity('check_lht_workflow')
-        chk_approval_lookup = self.curr_p.entity('check_lht_approval_status')
-        scheme_workflow = self.curr_p.entity('Scheme_workflow')
-
-        # Check if entity exists
-        if chk_workflow_lookup is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing workflow Entity'),
-                self.tr("The workflow entity is missing in the "
-                        "profile.")
-            )
-
-        if chk_approval_lookup is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing approval Entity'),
-                self.tr("The approval entity is missing in the "
-                        "profile.")
-            )
-
-        if scheme_workflow is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Missing scheme workflow Entity'),
-                self.tr("The scheme workflow entity is missing in the "
-                        "profile.")
-            )
-
-        # Models
-        workflow_model = entity_model(chk_workflow_lookup)
-        approval_model = entity_model(chk_approval_lookup)
-        scheme_workflow_model = entity_model(scheme_workflow)
-
-        # Check if model exists
-        if workflow_model is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Workflow Entity Model'),
-                self.tr("The workflow entity model could not be generated.")
-            )
-
-        if approval_model is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Workflow Entity Model'),
-                self.tr("The approval entity model could not be generated.")
-            )
-
-        if scheme_workflow_model is None:
-            QMessageBox.critical(
-                self,
-                self.tr('Scheme Workflow Entity Model'),
-                self.tr("The scheme workflow entity model could not be "
-                        "generated.")
-            )
-
         # Entity objects
         scheme_obj = self.schm_model()
-        chk_workflow_obj = workflow_model()
-        chk_approval_obj = approval_model()
-        scheme_workflow_obj = scheme_workflow_model()
-
+        chk_workflow_obj = self._workflow_lookup_model()
+        chk_approval_obj = self._approval_lookup_model()
+        scheme_workflow_obj = self._sch_workflow_model()
         # Get last lodged scheme ID
+
         scheme_res = scheme_obj.queryObject().order_by(
             self.schm_model.id.desc()
         ).first()
 
         # Filter the lookup IDs based on values
-        # workflow_res = chk_workflow_obj.queryObject().filter(
-        #     workflow_model.value == 'Lodgement'
-        # ).one()
-
-        # Filter the lookup IDs based on values
         workflow_res = chk_workflow_obj.queryObject().filter(
-            workflow_model.value == 'Establishment'
+            self._workflow_lookup_model.value == 'Establishment'
         ).one()
 
         approval_res = chk_approval_obj.queryObject().filter(
-            approval_model.value == 'Pending'
-        ).one()
-
-        approval_lodge_res = chk_approval_obj.queryObject().filter(
-            approval_model.value == 'Approved'
+            self._approval_lookup_model.value == 'Pending'
         ).one()
 
         # Save details
-        if approval_lodge_res:
-            scheme_workflow_obj.scheme_id = scheme_res.id
-            scheme_workflow_obj.workflow_id = workflow_res.id
-            scheme_workflow_obj.approval_id = approval_res.id
-            # scheme_workflow_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
-            scheme_workflow_obj.save()
-
-
+        scheme_workflow_obj.scheme_id = scheme_res.id
+        scheme_workflow_obj.workflow_id = workflow_res.id
+        scheme_workflow_obj.approval_id = approval_res.id
+        scheme_workflow_obj.save()
 
