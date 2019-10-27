@@ -153,15 +153,17 @@ class DocumentGeneratorDialogWrapper(object):
     and creates the corresponding EntityConfig objects, which are then
     added to the DocumentGeneratorDialog.
     """
-    def __init__(self, iface, parent=None, plugin=None):
+    def __init__(self, iface, access_templates, parent=None, plugin=None):
         self._iface = iface
 
-        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, parent, plugin=plugin)
+        self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, access_templates, parent, plugin=plugin)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
 
         self.curr_profile = current_profile()
         #Load entity configurations
         self._load_entity_configurations()
+
+        self.access_templates = access_templates
 
     def _load_entity_configurations(self):
         """
@@ -232,7 +234,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     Dialog that enables a user to generate documents by using configuration
     information for different entities.
     """
-    def __init__(self, iface, parent=None, plugin=None):
+    def __init__(self, iface, access_templates, parent=None, plugin=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -249,6 +251,8 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         self._doc_generator = DocumentGenerator(self._iface, self)
 
         self._data_source = ""
+
+        self.access_templates = access_templates
 
         enable_drag_sort(self.lstDocNaming)
 
@@ -437,7 +441,8 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         filter_table = current_config.data_source()
         templateSelector = TemplateDocumentSelector(
             self,
-            filter_data_source=filter_table
+            filter_data_source=filter_table,
+            access_templates=self.access_templates
         )
 
         if templateSelector.exec_() == QDialog.Accepted:
