@@ -840,12 +840,17 @@ class EntityBrowserWithEditor(EntityBrowser):
     directly.
     """
     def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
+        print plugin.current_user
         EntityBrowser.__init__(self, entity, parent, state, load_records, plugin)
+
+        print plugin.current_user
+
         self.record_id = 0
 
         self.highlight = None
         self.load_records = load_records
         self.selection_layer = None
+        self.plugin = plugin
 
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
@@ -1389,7 +1394,8 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         SELECT=2303 #When widget is used to select one or more records from the table list
     """
     def __init__(self, dataModel, tableContentGroup, parent=None, plugin=None, state=VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, dataModel, parent, state, plugin)
+        EntityBrowserWithEditor.__init__(self, dataModel, parent, state, plugin=plugin)
+
         
         self.resize(700,500)
         
