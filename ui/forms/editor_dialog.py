@@ -65,6 +65,9 @@ from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
 from stdm.ui.forms import entity_dlg_extension
 
+from stdm.navigation import (
+    TableContentGroup
+)
 
 class EntityEditorDialog(QDialog, MapperMixin):
     """
@@ -621,7 +624,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Create and add foreign key
         # browser to the collection
         from stdm.ui.entity_browser import (
-            EntityBrowserWithEditor
+            EntityBrowserWithEditor,
+            ContentGroupEntityBrowser
         )
 
         attr = u'{0}_collection'.format(child_entity.name)
@@ -629,13 +633,20 @@ class EntityEditorDialog(QDialog, MapperMixin):
         # Return if the attribute does not exist
         if not hasattr(self._model, attr):
             return
-        entity_browser = EntityBrowserWithEditor(
-            child_entity,
-            self,
-            MANAGE,
-            False,
-            plugin=self.plugin
-        )
+
+        table_content = TableContentGroup(self.plugin.current_user.UserName, child_entity.short_name)
+
+        entity_browser = ContentGroupEntityBrowser(
+                child_entity, table_content, self,  plugin=self.plugin)
+
+        #entity_browser = EntityBrowserWithEditor(
+            #child_entity,
+            #self,
+            #MANAGE,
+            #False,
+            #plugin=self.plugin
+        #)
+
         entity_browser.buttonBox.setVisible(False)
         entity_browser.record_filter = []
 

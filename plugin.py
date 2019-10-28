@@ -1230,7 +1230,6 @@ class STDMQGISLoader(object):
                 if not self._doc_temp_exist(doc_temp, self.profile_templates):
                     self.profile_templates.append(doc_temp)
 
-        #import pydevd; pydevd.settrace()
         template_content_group = ContentGroup(username)
         for template in self.profile_templates:
             #template_content = ContentGroup.contentItemFromName(template.name)

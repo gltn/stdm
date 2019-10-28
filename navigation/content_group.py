@@ -44,7 +44,7 @@ class ContentGroup(QObject,HashableMixin):
     """
     contentAuthorized = pyqtSignal(Content)
     
-    def __init__(self,username,containerItem = None,parent = None):
+    def __init__(self, username, containerItem=None, parent=None):
         from stdm.security.authorization import Authorizer
 
         QObject.__init__(self,parent)
@@ -284,31 +284,5 @@ class TableContentGroup(ContentGroup):
         Returns whether the current user has delete permissions.
         """
         return self.hasPermission(self._deleteCnt)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         
