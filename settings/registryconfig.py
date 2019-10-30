@@ -41,6 +41,7 @@ FIRST_LOGIN = 'FirstLogin'
 STDM_PLUGIN = 'stdm'
 STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
+IMPORT_MAPFILE='ImportMapFile'
 
 def registry_value(key_name):
     """

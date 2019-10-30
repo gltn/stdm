@@ -983,7 +983,7 @@ class STDMQGISLoader(object):
             QIcon(":/plugins/stdm/images/icons/content_auth.png"),
             QApplication.translate(
                 "ContentAuthorizationToolbarAction",
-                "Content Authorization XXX"
+                "Content Authorization"
             ),
             self.iface.mainWindow()
         )

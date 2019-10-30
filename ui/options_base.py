@@ -41,7 +41,9 @@ from stdm.settings import (
     save_configuration,
     save_current_profile,
     get_entity_browser_record_limit,
-    save_entity_browser_record_limit
+    save_entity_browser_record_limit,
+    get_import_mapfile,
+    save_import_mapfile
 )
 
 from stdm.settings.registryconfig import (
@@ -122,6 +124,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.manage_upgrade
         )
 
+        self.btnMapfile.clicked.connect(self.on_set_mapfile)
+
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
@@ -153,6 +157,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
+
+        self.edtMapfile.setText(get_import_mapfile())
 
         # Debug logging
         lvl = debug_logging()
@@ -263,6 +269,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._set_selected_directory(self.txt_output_dir, self.tr(
             'Document Generator Output Directory')
         )
+
+    def on_set_mapfile(self):
+        def_path = self.edtMapfile.text()
+        title = self.tr("Import map file")
+        mapfile = QFileDialog.getOpenFileName(self, title, def_path)
+        if mapfile:
+            self.edtMapfile.setText(mapfile)
 
     def _set_selected_directory(self, txt_box, title):
         def_path= txt_box.text()
@@ -518,6 +531,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
+
+        save_import_mapfile(self.edtMapfile.text())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)

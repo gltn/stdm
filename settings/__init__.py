@@ -3,7 +3,8 @@ from PyQt4.QtGui import QDesktopServices
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
     RegistryConfig,
-    ENTITY_BROWSER_RECORD_LIMIT
+    ENTITY_BROWSER_RECORD_LIMIT,
+    IMPORT_MAPFILE
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -64,4 +65,14 @@ def save_entity_browser_record_limit(limit):
     """
     reg_config = RegistryConfig()
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT:limit})
+
+def get_import_mapfile():
+    reg_config = RegistryConfig()
+    mapfile = reg_config.read([IMPORT_MAPFILE])
+    import_mapfile = mapfile.get(IMPORT_MAPFILE, '')
+    return import_mapfile
+
+def save_import_mapfile(mapfile):
+    reg_config = RegistryConfig()
+    reg_config.write({IMPORT_MAPFILE:mapfile})
 

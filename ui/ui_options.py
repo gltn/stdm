@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Thu Aug 09 08:43:38 2018
+# Created: Wed Oct 30 13:54:36 2019
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 600)
+        DlgOptions.resize(626, 617)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,7 +43,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 545))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 562))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
@@ -51,6 +51,7 @@ class Ui_DlgOptions(object):
         self.groupBox_3.setMaximumSize(QtCore.QSize(16777215, 100))
         self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
         self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_3)
+        self.gridLayout_4.setContentsMargins(-1, 6, -1, 6)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.btn_template_folder = QtGui.QToolButton(self.groupBox_3)
         icon = QtGui.QIcon()
@@ -93,10 +94,8 @@ class Ui_DlgOptions(object):
         self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
         self.gridLayout_5.addWidget(self.chk_logging, 9, 0, 1, 1)
         self.gridLayout_6 = QtGui.QGridLayout()
+        self.gridLayout_6.setVerticalSpacing(4)
         self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
-        self.label_6 = QtGui.QLabel(self.scrollAreaWidgetContents)
-        self.label_6.setObjectName(_fromUtf8("label_6"))
-        self.gridLayout_6.addWidget(self.label_6, 0, 0, 1, 1)
         self.txtRepoLocation = QtGui.QLineEdit(self.scrollAreaWidgetContents)
         self.txtRepoLocation.setMinimumSize(QtCore.QSize(0, 30))
         self.txtRepoLocation.setMaxLength(500)
@@ -115,6 +114,19 @@ class Ui_DlgOptions(object):
         self.edtEntityRecords.setMinimumSize(QtCore.QSize(0, 30))
         self.edtEntityRecords.setObjectName(_fromUtf8("edtEntityRecords"))
         self.gridLayout_6.addWidget(self.edtEntityRecords, 1, 1, 1, 1)
+        self.label_6 = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.gridLayout_6.addWidget(self.label_6, 0, 0, 1, 1)
+        self.lblMapFile = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.lblMapFile.setObjectName(_fromUtf8("lblMapFile"))
+        self.gridLayout_6.addWidget(self.lblMapFile, 2, 0, 1, 1)
+        self.edtMapfile = QtGui.QLineEdit(self.scrollAreaWidgetContents)
+        self.edtMapfile.setObjectName(_fromUtf8("edtMapfile"))
+        self.gridLayout_6.addWidget(self.edtMapfile, 2, 1, 1, 1)
+        self.btnMapfile = QtGui.QToolButton(self.scrollAreaWidgetContents)
+        self.btnMapfile.setIcon(icon)
+        self.btnMapfile.setObjectName(_fromUtf8("btnMapfile"))
+        self.gridLayout_6.addWidget(self.btnMapfile, 2, 2, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_6, 7, 0, 1, 5)
         self.groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -133,6 +145,7 @@ class Ui_DlgOptions(object):
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setContentsMargins(-1, -1, 6, -1)
+        self.gridLayout.setVerticalSpacing(2)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label_3 = QtGui.QLabel(self.frame)
         self.label_3.setObjectName(_fromUtf8("label_3"))
@@ -184,6 +197,8 @@ class Ui_DlgOptions(object):
         self.gridLayout_3.addWidget(self.frame, 1, 0, 2, 3)
         self.gridLayout_5.addWidget(self.groupBox, 3, 0, 1, 5)
         self.gridLayout_7 = QtGui.QGridLayout()
+        self.gridLayout_7.setHorizontalSpacing(6)
+        self.gridLayout_7.setVerticalSpacing(4)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
         self.label = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.label.setObjectName(_fromUtf8("label"))
@@ -222,10 +237,12 @@ class Ui_DlgOptions(object):
         self.upgradeButton.setText(_translate("DlgOptions", "Upgrade", None))
         self.label_9.setText(_translate("DlgOptions", "Upgrade STDM Configuration to 1.4 ", None))
         self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
-        self.label_6.setText(_translate("DlgOptions", "Supporting documents folder", None))
         self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))
         self.btn_supporting_docs.setText(_translate("DlgOptions", "...", None))
         self.label_10.setText(_translate("DlgOptions", "Entity browser records limit", None))
+        self.label_6.setText(_translate("DlgOptions", "Supporting documents folder", None))
+        self.lblMapFile.setText(_translate("DlgOptions", "Import Map File", None))
+        self.btnMapfile.setText(_translate("DlgOptions", "...", None))
         self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
         self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
         self.label_3.setText(_translate("DlgOptions", "Port", None))
