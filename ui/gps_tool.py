@@ -33,7 +33,7 @@ from stdm.settings.registryconfig import (
 
 class GPSToolDialog(qg.QDialog, Ui_Dialog):
     def __init__(self, iface, entity, sp_table, sp_col,
-                 model=None, reload=True, row_number=None, entity_browser=None):
+                 model=None, reload=True, row_number=None, entity_browser=None, plugin=None):
         qg.QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
@@ -47,7 +47,10 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.row_number = row_number
         self.entity_editor = None
         gpx_view.enable_drag_drop(self.table_widget)
+
+        self.plugin = plugin
         self._init_entity_editor()
+
         self.active_layer = self.iface.activeLayer()
         self.map_canvas = self.iface.mapCanvas()
         self.init_gpx_file = None
@@ -69,6 +72,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.drag_drop = None
         self.item_changed = None
         self.enable_save = False
+
 
         # Source and slot signal connections
         self.file_select_bt.clicked.connect(self._set_file_path)
@@ -109,7 +113,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype:None
         """
-        self.entity_editor = EntityEditorDialog(self.entity, self.model, self)
+        self.entity_editor = EntityEditorDialog(self.entity, self.model, self, plugin=self.plugin)
         self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():

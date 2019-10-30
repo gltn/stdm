@@ -954,7 +954,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self._entity.name,
                 self.sp_unit_manager.active_sp_col,
                 reload=False,
-                entity_browser=self
+                entity_browser=self,
+                plugin=self.plugin
             )
 
             result = gps_tool.exec_()
@@ -1151,7 +1152,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                 model=model_obj,
                 reload=False,
                 row_number=rownumber,
-                entity_browser=self
+                entity_browser=self,
+                plugin=self.plugin
             )
 
             result = gps_tool.exec_()
