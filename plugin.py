@@ -378,7 +378,10 @@ class STDMQGISLoader(object):
             self.run_wizard()
             self.copy_designer_template()
 
-            self.load_shortcut_dlg()
+            # self.load_shortcut_dlg()
+            shortcut_dlg_status = self.load_shortcut_dlg()
+            if not shortcut_dlg_status:
+                return
 
     def create_custom_tenure_dummy_col(self):
         """
@@ -2367,7 +2370,8 @@ class STDMQGISLoader(object):
         Load the dialog for user to select actions.
         """
         shortcut_dlg = UserShortcutDialog(self.iface.mainWindow())
-        if shortcut_dlg.exec_() == QDialog.Accepted:
+        shortcut_dlg.show_dialog()
+        if shortcut_dlg.accepted:
             action_code = shortcut_dlg.action_code
             if action_code == 'LDG_SCM':
                 self.lodge_scheme()
@@ -2391,6 +2395,9 @@ class STDMQGISLoader(object):
                 self.flts_search()
             elif action_code == 'RPT':
                 self.flts_report()
+            return True
+        else:
+            return False
 
     def lodge_scheme(self):
         """

@@ -29,6 +29,11 @@ from PyQt4.QtGui import (
     QApplication
 )
 
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    SHOW_SHORTCUT_DIALOG
+)
+
 from .ui_user_shortcut import Ui_UserShortcutDialog
 from ..notification import NotificationBar,ERROR
 
@@ -40,6 +45,8 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+        self.reg_config = RegistryConfig()
+        self.accepted = True
 
         # Scale widget sizes in the splitter
         self.splitter.setSizes([250, 400])
@@ -66,6 +73,40 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
 
         # User selected action code upon accept
         self._action_code = ''
+
+    def check_show_dialog(self):
+        """
+        Checks if flag in the registry has been set.
+        Returns True to show shortcut dialog. If registry key
+        is not yet set, show the dialog.
+        :rtype: boolean
+        """
+        show_dlg = 1
+        dialog_key = self.reg_config.read(
+            [SHOW_SHORTCUT_DIALOG]
+        )
+
+        if len(dialog_key) > 0:
+            show_dlg = dialog_key[SHOW_SHORTCUT_DIALOG]
+
+        if show_dlg == 1 or show_dlg == unicode(1):
+            return True
+        elif show_dlg == 0 or show_dlg == unicode(0):
+            self.accepted = True
+            return False
+
+    def show_dialog(self):
+        """
+        Show shortcut dialog after login if the user has never
+        selected to hide dialog.
+        :return: None
+        :rtype: NoneType
+        """
+        # validate if to show dialog
+        show_dlg = self.check_show_dialog()
+        # THe user didn't accept license
+        if show_dlg:
+            self.exec_()
 
     @property
     def action_code(self):
@@ -263,5 +304,10 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
             return
 
         self._action_code = selected_items[0].data(Qt.UserRole)
+
+        if self.chb_donotshow.isChecked():
+            self.reg_config.write({SHOW_SHORTCUT_DIALOG: 0})
+            self.accepted = True
+
         self.accept()
 
