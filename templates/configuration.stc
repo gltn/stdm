@@ -82,6 +82,7 @@
     <CodeValue value="Employed" code=""/>
     <CodeValue value="Unemployed" code=""/>
     <CodeValue value="Self-Employed" code=""/>
+    <CodeValue value="Pensioner" code=""/>
    </ValueList>
    <ValueList name="check_lht_marital_status">
     <CodeValue value="Single" code=""/>
@@ -95,9 +96,11 @@
     <CodeValue value="General" code=""/>
    </ValueList>
    <ValueList name="check_lht_income_level">
-    <CodeValue value="1001-5000" code=""/>
-    <CodeValue value="Above 5000" code=""/>
     <CodeValue value="Below 1000" code=""/>
+    <CodeValue value="1000-3000" code=""/>
+    <CodeValue value="3000-5000" code=""/>
+    <CodeValue value="5000-8000" code=""/>
+    <CodeValue value="Above 8000" code=""/>
    </ValueList>
    <ValueList name="check_scheme_document_type">
     <CodeValue value="Notice of Scheme Establishment" code=""/>

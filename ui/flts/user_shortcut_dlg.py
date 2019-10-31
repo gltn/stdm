@@ -290,7 +290,7 @@ class UserShortcutDialog(QDialog, Ui_UserShortcutDialog):
         # get selected items
         data = item.data(Qt.UserRole)
         self._action_code = data
-        self.accept()
+        self.accept_dlg()
 
     def accept_dlg(self):
         # Check if the user has selected an action from the list widget
