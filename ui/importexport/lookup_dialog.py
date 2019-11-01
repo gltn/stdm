@@ -41,7 +41,7 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
     Dialog for defining configuration settings for the lookup translation
     implementation.
     """
-    def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
+    def __init__(self, parent, source_cols, dest_table, dest_col, src_col, dflt_lookups):
         QDialog.__init__(self, parent)
         self.setupUi(self)
         TranslatorDialogBase.__init__(
@@ -51,6 +51,8 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
             dest_col,
             src_col
         )
+
+        self.dflt_lookups = dflt_lookups
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
@@ -75,7 +77,10 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
 
             return
 
-        lookups = [e.name for e in c_profile.value_lists()]
+        if len(self.dflt_lookups) > 0:
+            lookups = [e.name for e in c_profile.value_lists() if e.name in self.dflt_lookups]
+        else:
+            lookups = [e.name for e in c_profile.value_lists()]
 
         self.cbo_lookup.clear()
         self.cbo_lookup.addItem('')

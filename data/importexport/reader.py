@@ -104,7 +104,7 @@ class OGRReader(object):
 
         for l in range(feat_defn.GetFieldCount()):
             field_defn = feat_defn.GetFieldDefn(l)
-            fields.append(str(field_defn.GetNameRef()))
+            fields.append(unicode(field_defn.GetNameRef(),'utf-8'))
 
         return fields
 
@@ -201,7 +201,6 @@ class OGRReader(object):
                         value = None
 
                 elif entity.columns[col_name].TYPE_INFO in int_type:
-
                     try:
                         if value is not None:
                             value = int(value)
@@ -211,7 +210,7 @@ class OGRReader(object):
                                         ['LOOKUP', 'ADMIN_SPATIAL_UNIT',
                                         'FOREIGN_KEY']:
                                         value = None
-                    except ValueError:
+                    except:
                         #TODO show warning to the user that
                         #  some values cannot be converted to integer.
                         value = None
@@ -383,6 +382,7 @@ class OGRReader(object):
 
         # Container for mapping column names to their corresponding values
 
+
         lyr = self.getLayer()
         lyr.ResetReading()
         feat_defn = lyr.GetLayerDefn()
@@ -397,6 +397,10 @@ class OGRReader(object):
 
         # Set entity for use in translators
         destination_entity = self._data_source_entity(targettable)
+
+        acols = {}
+        for k,v in columnmatch.iteritems():
+            acols[k.encode('ascii', 'ignore')]= v
 
         for feat in lyr:
             column_value_mapping = {}
@@ -418,8 +422,11 @@ class OGRReader(object):
                 field_name = field_defn.GetNameRef()
 
                 # Append value only if it has been defined by the user
-                if field_name in columnmatch:
-                    dest_column = columnmatch[field_name]
+                #if field_name in columnmatch:
+                    #dest_column = columnmatch[field_name]
+                a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
+                if a_field_name in acols:
+                    dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
 
@@ -477,6 +484,7 @@ class OGRReader(object):
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
                         )
+
 
                     if not isinstance(field_value, IgnoreType):
                         column_value_mapping[dest_column] = field_value
@@ -573,11 +581,26 @@ class OGRReader(object):
         if len(source_cols) == 0:
             return col_values
 
+
         for f in range(feature_defn.GetFieldCount()):
             field_defn = feature_defn.GetFieldDefn(f)
             field_name = field_defn.GetNameRef()
 
-            match_idx = getIndex(source_cols, field_name)
+            #match_idx = getIndex(source_cols, field_name)
+
+            match_idx = -1
+            if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='soc' and field_name.lower()[:3]=='soc':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='cla' and field_name.lower()[:3]=='cla':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
+                match_idx = 1
+
             if match_idx != -1:
                 field_value = feature.GetField(f)
 

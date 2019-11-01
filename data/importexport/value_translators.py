@@ -460,9 +460,16 @@ class LookupValueTranslator(RelatedTableTranslator):
         if not source_column in field_values:
             return IgnoreType
 
+        flv = []
+        for f in field_values.values():
+            if f <>'':
+                flv.append(f)
+
+        field_values[source_column] = flv
+
         # Assume the source column is the first (and only) one in field_values
         source_column = field_values.keys()[0]
-        lookup_value = field_values.get(source_column)
+        lookup_value = field_values.get(source_column)[0]
 
         # Create lookup table object
         lookup_table = self._table(self._referenced_table)
@@ -746,7 +753,9 @@ class SourceDocumentTranslator(SourceValueTranslator):
                     )
                 )
 
-                raise IOError(msg)
+                continue
+
+                #raise IOError(msg)
 
             # Upload supporting document
             self.source_document_manager.insertDocumentFromFile(

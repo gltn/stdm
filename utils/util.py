@@ -60,7 +60,7 @@ PLUGIN_DIR = os.path.abspath(os.path.join(
 CURRENCY_CODE = "" #TODO: Put in the registry
 DOUBLE_FILE_EXTENSIONS = ['tar.gz','tar.bz2']
 
-def getIndex(listObj,item):
+def getIndex(listObj, item):
     '''
     Get the index of the list item without raising an 
     error if the item is not found

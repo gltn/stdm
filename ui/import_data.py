@@ -20,11 +20,14 @@ email                : gkahiu@gmail.com
 
 import sys
 import copy
+import ConfigParser
+from collections import OrderedDict
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import (
     Qt,
     QFile,
+    QFileInfo,
     SIGNAL,
     QSignalMapper
 )
@@ -42,11 +45,14 @@ from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
+
 from stdm.data.importexport.value_translators import ValueTranslatorManager
+
 from stdm.data.importexport.reader import OGRReader
 from .importexport import (
     ValueTranslatorConfig,
-    TranslatorWidgetManager
+    TranslatorWidgetManager,
+    LookupTranslatorConfig
 )
 from stdm.settings import current_profile
 from stdm.utils.util import (
@@ -54,6 +60,8 @@ from stdm.utils.util import (
     profile_spatial_tables
 )
 from .ui_import_data import Ui_frmImport
+
+from stdm.settings import get_import_mapfile
 
 class ImportData(QWizard, Ui_frmImport):
     def __init__(self,parent=None):
@@ -137,13 +145,25 @@ class ImportData(QWizard, Ui_frmImport):
                 if trans_config is None: return
 
                 try:
-                    trans_dlg = trans_config.create(
-                        self,
-                        self._source_columns(),
-                        self.targetTab,
-                        dest_column,
-                        src_column
-                    )
+                    if trans_config.__name__ =='LookupTranslatorConfig':
+                        dlookups = self._mapsection('lookups')
+                        print dlookups
+                        trans_dlg = trans_config.create(
+                            self,
+                            self._source_columns(),
+                            self.targetTab,
+                            dest_column,
+                            src_column,
+                            dflt_lookups=dlookups.values()
+                        )
+                    else:
+                        trans_dlg = trans_config.create(
+                            self,
+                            self._source_columns(),
+                            self.targetTab,
+                            dest_column,
+                            src_column
+                        )
 
                 except RuntimeError as re:
                     QMessageBox.critical(
@@ -275,17 +295,57 @@ class ImportData(QWizard, Ui_frmImport):
             self.lstTargetFields.clear()
             self.assignCols()
             self._enable_disable_trans_tools()
+            
+            self.chk_virtual.setChecked(True)
+            #self._on_load_virtual_columns(True)
 
     def _source_columns(self):
         return self.dataReader.getFields()
 
+    #def _writecols(self, cols):
+        #with open('c:\cols.csv', 'w') as f:
+            #for item in cols:
+                #print >> f, item.encode('ascii', 'ignore')
+
+    def _mapsection(self, section):
+        mapfile = get_import_mapfile()
+        map_section = OrderedDict()
+        if mapfile:
+            config = ConfigParser.ConfigParser()
+            config.readfp(open(mapfile))
+            map_section = OrderedDict(config.items(section))
+        return map_section
+
     def assignCols(self):
         #Load source and target columns respectively
         srcCols = self._source_columns()
+
+        target_table = self.target_table_shortname(self.destCheckedItem.text())
+
+        cols = self._mapsection(target_table).keys()
+        ucols = {}
+        for i,c in enumerate(cols):
+            ucols[i] = unicode(c, 'utf-8').encode('ascii', 'ignore')
+
+        temp = {}
+        for i,f in enumerate(srcCols):
+            col = f.encode('ascii', 'ignore').lstrip().lower()
+            for k,v in ucols.iteritems():
+                if v==col:
+                    temp[k] = srcCols[srcCols.index(f)]
+
+        order_temp = OrderedDict(sorted(temp.items()))
+        for col in order_temp.values():
+            srcCols.pop(srcCols.index(col))
+
+        for k,v in order_temp.iteritems():
+            srcCols.insert(k, v)
         
-        for c in srcCols:
+        for i,c in enumerate(srcCols):
             srcItem = QListWidgetItem(c,self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
+            if i<=len(cols)-1:
+                srcItem.setCheckState(Qt.Checked)
             srcItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
             self.lstSrcFields.addItem(srcItem)
             
@@ -305,6 +365,8 @@ class ImportData(QWizard, Ui_frmImport):
         if id_idx != -1:
             targetCols.remove('id')
 
+        remove_list = self._mapsection(target_table+'-remove')
+        targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
         self._add_target_table_columns(targetCols)
 
     def _add_target_table_columns(self, items, style=False):
@@ -369,14 +431,19 @@ class ImportData(QWizard, Ui_frmImport):
         #Load textual or spatial tables
         self.lstDestTables.clear()
         tables = None
+
         if type == "textual":
             tables = profile_user_tables(self.curr_profile, False, True)
             
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
+
+        dest_tables = self._mapsection('imports')
         if tables is not None:
             for t in tables:
-                tabItem = QListWidgetItem(t,self.lstDestTables)
+                if len(dest_tables) > 0:
+                    if t not in dest_tables.values(): continue
+                tabItem = QListWidgetItem(t, self.lstDestTables)
                 tabItem.setCheckState(Qt.Unchecked)
                 tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
                 self.lstDestTables.addItem(tabItem)
@@ -428,6 +495,22 @@ class ImportData(QWizard, Ui_frmImport):
                     srcDest[srcItem.text()] = destItem.text()
                     
         return srcDest
+
+    def target_table_shortname(self, targetTab):
+        return targetTab[targetTab.find('_')+1:]
+
+    def validate_translator(self, vtmanager, targetTab):
+        success = True
+        translator_section = self.target_table_shortname(targetTab)+'-translators'
+        translators = self._mapsection(translator_section)
+        vtmtrans = [trans.lower().replace(' ','_') for trans in vtmanager._translators]
+        for translator in translators.keys():
+            if translator not in vtmtrans:
+                self.ErrorInfoMessage("Please do translation for field `{}`".format(translator))
+                success = False
+                break
+        return success
+
         
     def execImport(self):
         #Initiate the import process
@@ -447,6 +530,10 @@ class ImportData(QWizard, Ui_frmImport):
             return success
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
+
+        success = self.validate_translator(value_translator_manager, self.targetTab)
+        if not success:
+            return success
                
         # try:
         if self.field("optOverwrite"):

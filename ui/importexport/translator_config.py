@@ -112,13 +112,14 @@ class LookupTranslatorConfig(ValueTranslatorConfig):
                                  "Lookup values")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, dest_table, dest_col, src_col, dflt_lookups=[]):
         return LookupDialog(
             parent,
             source_cols,
             dest_table,
             dest_col,
-            src_col
+            src_col,
+            dflt_lookups=dflt_lookups
         )
 
 LookupTranslatorConfig.register()
