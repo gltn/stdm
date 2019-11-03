@@ -77,9 +77,9 @@ class RelatedTableTranslatorConfig(ValueTranslatorConfig):
                                  "Related table")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, dest_table, dest_col, src_col, dflt_lookups=None):
         return RelatedTableDialog(parent, source_cols, dest_table, dest_col,
-                                  src_col)
+                                  src_col, dflt_lookups=dflt_lookups)
 
 RelatedTableTranslatorConfig.register()
 

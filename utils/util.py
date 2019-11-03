@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
 """
 
 import os, os.path
+import ConfigParser
 import tempfile
 from decimal import Decimal
 import binascii,string,random
@@ -54,6 +55,7 @@ from stdm.data.configuration import (
 )
 
 from qgis.gui import QgsEncodingFileDialog
+
 
 PLUGIN_DIR = os.path.abspath(os.path.join(
     os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
@@ -1246,7 +1248,18 @@ def string_to_boolean(string_bool, default):
     else:
         return string_bool
 
-
 def is_ascii(s):
     """Checks if a string contains non ASCII characters."""
     return bool(re.match(r'[\x00-\x7F]+$', s))
+
+def mapfile_section(section):
+    from stdm.settings import get_import_mapfile
+    mapfile = get_import_mapfile()
+    map_section = OrderedDict()
+    if mapfile:
+        config = ConfigParser.ConfigParser()
+        config.readfp(open(mapfile))
+        if section in config.sections():
+            map_section = OrderedDict(config.items(section))
+    return map_section
+

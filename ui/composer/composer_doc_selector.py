@@ -154,7 +154,8 @@ class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
         #Append current profile templates to the model.
         for dt in self._profile_templates:
 
-            if self._template_contains_filter_table(dt) and dt.name in self.access_templates:
+            if self._template_contains_filter_table(dt):
+                #and dt.name in self.access_templates:
                 doc_name_item = self._createDocNameItem(dt.name)
                 file_path_item = QStandardItem(dt.path)
                 self._docItemModel.appendRow([doc_name_item,file_path_item])
@@ -166,7 +167,7 @@ class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
         # profile.
         if self._current_profile is None:
             return
-
+        
         #Get saved document templates then add to the model
         templates = documentTemplates()
 

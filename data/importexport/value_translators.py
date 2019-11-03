@@ -409,7 +409,10 @@ class RelatedTableTranslator(SourceValueTranslator):
                 #If column is found, add it to the query fields collection
                 if col_idx != -1:
                     # TODO use the column object to cast based on column data type
-                    query_attrs[ref_table_col] = cast(val, String)
+                    if type(val) == int:
+                        query_attrs[ref_table_col] = val
+                    else:
+                        query_attrs[ref_table_col] = cast(val, String)
 
         #Create link table object
         link_table = self._table(self._referenced_table)

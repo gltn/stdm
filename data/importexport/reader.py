@@ -465,6 +465,7 @@ class OGRReader(object):
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
+
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -480,6 +481,7 @@ class OGRReader(object):
                         # Set source document manager if required
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
+
 
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
@@ -588,6 +590,8 @@ class OGRReader(object):
 
             #match_idx = getIndex(source_cols, field_name)
 
+            cast = ''
+
             match_idx = -1
             if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
                 match_idx = 1
@@ -601,9 +605,16 @@ class OGRReader(object):
             if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
                 match_idx = 1
 
+            if source_cols[0].lower()=='_parent_index' and field_name.lower()=='_parent_index':
+                match_idx = 1
+                cast = 'int'
+
             if match_idx != -1:
                 field_value = feature.GetField(f)
 
                 col_values[field_name] = field_value
+
+                if cast == 'int':
+                    col_values[field_name] = int(field_value)
 
         return col_values

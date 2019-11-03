@@ -840,10 +840,7 @@ class EntityBrowserWithEditor(EntityBrowser):
     directly.
     """
     def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
-        print plugin.current_user
         EntityBrowser.__init__(self, entity, parent, state, load_records, plugin)
-
-        print plugin.current_user
 
         self.record_id = 0
 

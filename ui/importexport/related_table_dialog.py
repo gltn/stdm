@@ -41,7 +41,7 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.
     """
-    def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
+    def __init__(self, parent, source_cols, dest_table, dest_col, src_col, dflt_lookups=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
         TranslatorDialogBase.__init__(self, source_cols, dest_table, dest_col, src_col)
@@ -59,6 +59,10 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
 
         #Connect signals
         self.cbo_source_tables.currentIndexChanged.connect(self._on_source_table_changed)
+
+        self.cbo_source_tables.setCurrentIndex(self.cbo_source_tables.findText(dflt_lookups['reftable']))
+        self.cbo_output_column.setCurrentIndex(self.cbo_output_column.findText(dflt_lookups['ref_output_col']))
+
 
     def _load_tables(self):
         """

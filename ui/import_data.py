@@ -20,7 +20,6 @@ email                : gkahiu@gmail.com
 
 import sys
 import copy
-import ConfigParser
 from collections import OrderedDict
 
 from PyQt4.QtGui import *
@@ -34,7 +33,7 @@ from PyQt4.QtCore import (
 
 
 from stdm.utils import *
-from stdm.utils.util import getIndex, enable_drag_sort_widgets
+from stdm.utils.util import getIndex, enable_drag_sort_widgets, mapfile_section
 from stdm.data.database import alchemy_table_relationships
 from stdm.data.pg_utils import (
     table_column_names,
@@ -52,7 +51,8 @@ from stdm.data.importexport.reader import OGRReader
 from .importexport import (
     ValueTranslatorConfig,
     TranslatorWidgetManager,
-    LookupTranslatorConfig
+    LookupTranslatorConfig,
+    RelatedTableTranslatorConfig
 )
 from stdm.settings import current_profile
 from stdm.utils.util import (
@@ -141,13 +141,11 @@ class ImportData(QWizard, Ui_frmImport):
             if trans_dlg is None:
                 trans_config = ValueTranslatorConfig.translators.get(config_key, None)
 
-                #Safety precaution
                 if trans_config is None: return
 
                 try:
                     if trans_config.__name__ =='LookupTranslatorConfig':
-                        dlookups = self._mapsection('lookups')
-                        print dlookups
+                        dlookups = mapfile_section('lookups')
                         trans_dlg = trans_config.create(
                             self,
                             self._source_columns(),
@@ -155,6 +153,16 @@ class ImportData(QWizard, Ui_frmImport):
                             dest_column,
                             src_column,
                             dflt_lookups=dlookups.values()
+                        )
+                    elif trans_config.__name__=='RelatedTableTranslatorConfig':
+                        dlookups = mapfile_section('household_members-relatedentity')
+                        trans_dlg = trans_config.create(
+                            self,
+                            self._source_columns(),
+                            self.targetTab,
+                            dest_column,
+                            src_column,
+                            dflt_lookups=dlookups
                         )
                     else:
                         trans_dlg = trans_config.create(
@@ -296,8 +304,6 @@ class ImportData(QWizard, Ui_frmImport):
             self.assignCols()
             self._enable_disable_trans_tools()
             
-            self.chk_virtual.setChecked(True)
-            #self._on_load_virtual_columns(True)
 
     def _source_columns(self):
         return self.dataReader.getFields()
@@ -307,14 +313,15 @@ class ImportData(QWizard, Ui_frmImport):
             #for item in cols:
                 #print >> f, item.encode('ascii', 'ignore')
 
-    def _mapsection(self, section):
-        mapfile = get_import_mapfile()
-        map_section = OrderedDict()
-        if mapfile:
-            config = ConfigParser.ConfigParser()
-            config.readfp(open(mapfile))
-            map_section = OrderedDict(config.items(section))
-        return map_section
+    #def _mapsection(self, section):
+        #mapfile = get_import_mapfile()
+        #map_section = OrderedDict()
+        #if mapfile:
+            #config = ConfigParser.ConfigParser()
+            #config.readfp(open(mapfile))
+            #if section in config.sections():
+                #map_section = OrderedDict(config.items(section))
+        #return map_section
 
     def assignCols(self):
         #Load source and target columns respectively
@@ -322,7 +329,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         target_table = self.target_table_shortname(self.destCheckedItem.text())
 
-        cols = self._mapsection(target_table).keys()
+        cols = mapfile_section(target_table).keys()
         ucols = {}
         for i,c in enumerate(cols):
             ucols[i] = unicode(c, 'utf-8').encode('ascii', 'ignore')
@@ -365,9 +372,13 @@ class ImportData(QWizard, Ui_frmImport):
         if id_idx != -1:
             targetCols.remove('id')
 
-        remove_list = self._mapsection(target_table+'-remove')
+        remove_list = mapfile_section(target_table+'-remove')
         targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
         self._add_target_table_columns(targetCols)
+
+        virtual_cols = mapfile_section(target_table+'-virtual')
+        if len(virtual_cols) > 0:
+            self.chk_virtual.setChecked(True)
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:
@@ -438,7 +449,7 @@ class ImportData(QWizard, Ui_frmImport):
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
 
-        dest_tables = self._mapsection('imports')
+        dest_tables = mapfile_section('imports')
         if tables is not None:
             for t in tables:
                 if len(dest_tables) > 0:
@@ -502,7 +513,7 @@ class ImportData(QWizard, Ui_frmImport):
     def validate_translator(self, vtmanager, targetTab):
         success = True
         translator_section = self.target_table_shortname(targetTab)+'-translators'
-        translators = self._mapsection(translator_section)
+        translators = mapfile_section(translator_section)
         vtmtrans = [trans.lower().replace(' ','_') for trans in vtmanager._translators]
         for translator in translators.keys():
             if translator not in vtmtrans:
