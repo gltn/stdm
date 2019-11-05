@@ -80,6 +80,7 @@ class PairComboBoxDelegate(QStyledItemDelegate):
 
         editor.addItems(items)
 
+
         return editor
 
     def setEditorData(self, combo_box, index):
@@ -94,6 +95,9 @@ class PairComboBoxDelegate(QStyledItemDelegate):
         else:
             if combo_box.count() > 0:
                 combo_box.setCurrentIndex(0)
+
+        combo_box.setCurrentIndex(1)
+        combo_box.activated.emit(1)
 
     def setModelData(self, combo_box, model, index):
         item_text = combo_box.currentText()
@@ -269,6 +273,7 @@ class ListPairTableView(QTableView):
         self._combo_delegate.set_items_pair(selection, empty_item)
 
         self.clear_view()
+
 
     def _on_pair_data_changed(self, old_index, new_index):
         """

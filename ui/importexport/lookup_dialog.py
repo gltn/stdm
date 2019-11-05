@@ -63,8 +63,9 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
         sel_lookups = mapfile_section('lookup-defaults')
         curr_lookup = ''
         if len(sel_lookups)>0:
-            curr_lookup = sel_lookups[dest_col]
-            self.cbo_lookup.setCurrentIndex(self.cbo_lookup.findText(curr_lookup))
+            if dest_col in sel_lookups:
+                curr_lookup = sel_lookups[dest_col]
+                self.cbo_lookup.setCurrentIndex(self.cbo_lookup.findText(curr_lookup))
 
 
         # Connect signals

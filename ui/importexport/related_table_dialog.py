@@ -95,8 +95,13 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         if source_table:
             ref_table_cols = table_column_names(source_table)
 
-            self.tb_source_trans_cols.set_combo_selection([self._source_cols,
-            ref_table_cols])
+            col1 = ['_parent_index']
+            col2 = ['kobo_index']
+            self.tb_source_trans_cols.set_combo_selection([col1,col2])
+
+
+            #self.tb_source_trans_cols.set_combo_selection([self._source_cols,
+            #ref_table_cols])
 
             #self.cbo_output_column.addItem("")
             self.cbo_output_column.addItems(ref_table_cols)
