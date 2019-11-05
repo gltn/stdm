@@ -181,6 +181,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         # Shortcut dialog
         self._check_shortcuts_settings()
 
+        self.chk_shortcut_dlg.toggled.connect(
+            self._on_check_shortcut_checkbox
+        )
+
     def _load_cmis_config(self):
         """
         Load configuration names and IDs in the combobox then select
@@ -253,6 +257,24 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.chk_shortcut_dlg.setChecked(True)
         elif show_dlg == 0 or show_dlg == unicode(0):
             self.chk_shortcut_dlg.setChecked(False)
+
+    def _on_check_shortcut_checkbox(self, toggled):
+        """
+        Slot raised when the checkbox for showing shortcut window
+        is checked/unchecked.
+        :param toggled: Toggle status
+        :type toggled: bool
+        """
+        if toggled:
+            self._reg_config.write({SHOW_SHORTCUT_DIALOG: 1})
+            self.notif_bar.clear()
+            msg = self.tr(u"Shortcuts window will show after login")
+            self.notif_bar.insertWarningNotification(msg)
+        else:
+            self._reg_config.write({SHOW_SHORTCUT_DIALOG: 0})
+            self.notif_bar.clear()
+            msg = self.tr(u"Shortcuts window will not show after login")
+            self.notif_bar.insertWarningNotification(msg)
 
     def load_profiles(self):
         """
