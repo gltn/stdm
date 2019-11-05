@@ -52,7 +52,9 @@ CREATE TABLE "public"."cb_holder_log" (
   "disability_status" int4,
   "income_level" int4,
   "occupation" int4,
-  "other_dependants" int4
+  "other_dependants" int4,
+  "spouse_occupation" int4,
+  "spouse_income_level" int4
 )
 ;
 

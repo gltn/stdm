@@ -26,7 +26,7 @@ from PyQt4.QtGui import (
     QFileDialog,
     QIntValidator
 )
-from PyQt4.QtCore import(
+from PyQt4.QtCore import (
     Qt,
     QDir,
     QTimer,
@@ -79,8 +79,9 @@ from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
-MAX_LIMIT = 500 # Maximum records in a entity browser
-DEF_HOLDERS_CONFIG_PATH = QDir.home().path()+ '/.stdm/holders_config.ini'
+MAX_LIMIT = 500  # Maximum records in a entity browser
+DEF_HOLDERS_CONFIG_PATH = QDir.home().path() + '/.stdm/holders_config.ini'
+
 
 def pg_profile_names():
     """/
@@ -98,10 +99,12 @@ def pg_profile_names():
 
     return profiles
 
+
 class OptionsDialog(QDialog, Ui_DlgOptions):
     """
     Dialog for editing STDM settings.
     """
+
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
@@ -140,25 +143,25 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.init_gui()
 
     def init_gui(self):
-        #Set integer validator for the port number
+        # Set integer validator for the port number
         int_validator = QIntValidator(1024, 49151)
         self.txtPort.setValidator(int_validator)
 
-        #Load profiles
+        # Load profiles
         self.load_profiles()
 
-        #Set current profile in the combobox
+        # Set current profile in the combobox
         curr_profile = current_profile()
         if not curr_profile is None:
             setComboCurrentIndexWithText(self.cbo_profiles, curr_profile.name)
 
-        #Load current database connection properties
+        # Load current database connection properties
         self._load_db_conn_properties()
 
-        #Load existing PostgreSQL connections
+        # Load existing PostgreSQL connections
         self._load_qgis_pg_connections()
 
-        #Load directory paths
+        # Load directory paths
         self._load_directory_paths()
 
         # Load document repository-related settings
@@ -239,7 +242,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.cbo_profiles.addItems(profile_names)
 
     def _load_db_conn_properties(self):
-        #Load database connection properties from the registry.
+        # Load database connection properties from the registry.
         db_conn = self._db_config.read()
 
         if not db_conn is None:
@@ -258,7 +261,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.cbo_pg_connections.addItem(profile[0], profile[1])
 
     def _load_directory_paths(self):
-        #Load paths to various directory settings.
+        # Load paths to various directory settings.
         comp_out_path = composer_output_path()
         comp_temp_path = composer_template_path()
 
@@ -269,12 +272,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.txt_template_dir.setText(comp_temp_path)
 
     def _on_use_pg_connections(self, state):
-        #Slot raised when to (not) use existing pg connections
+        # Slot raised when to (not) use existing pg connections
         if not state:
             self.cbo_pg_connections.setCurrentIndex(0)
             self.cbo_pg_connections.setEnabled(False)
 
-            #Restore current connection in registry
+            # Restore current connection in registry
             self._load_db_conn_properties()
 
         else:
@@ -310,19 +313,19 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.txtPort.clear()
 
     def _on_choose_doc_designer_template_path(self):
-        #Slot raised to select directory for document designer templates.
+        # Slot raised to select directory for document designer templates.
         self._set_selected_directory(self.txt_template_dir, self.tr(
             'Document Designer Templates Directory')
-        )
+                                     )
 
     def _on_choose_doc_generator_output_path(self):
-        #Slot raised to select directory for doc generator outputs.
+        # Slot raised to select directory for doc generator outputs.
         self._set_selected_directory(self.txt_output_dir, self.tr(
             'Document Generator Output Directory')
-        )
+                                     )
 
     def _set_selected_directory(self, txt_box, title):
-        def_path= txt_box.text()
+        def_path = txt_box.text()
         sel_doc_path = QFileDialog.getExistingDirectory(self, title, def_path)
 
         if sel_doc_path:
@@ -331,7 +334,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             txt_box.setText(normalized_path)
 
     def _validate_db_props(self):
-        #Test if all properties have been specified
+        # Test if all properties have been specified
         status = True
 
         self.notif_bar.clear()
@@ -357,7 +360,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         return status
 
     def _database_connection(self):
-        #Creates a databaase connection object from the specified args
+        # Creates a databaase connection object from the specified args
         host = self.txtHost.text()
         port = self.txtPort.text()
         database = self.txtDatabase.text()
@@ -497,7 +500,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self._validate_db_props():
             return False
 
-        #Create a database object and write it to the registry
+        # Create a database object and write it to the registry
         db_conn = self._database_connection()
         self._db_config.write(db_conn)
 
@@ -544,40 +547,40 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
             return False
 
-        #Validate path
+        # Validate path
         if not self._check_path_exists(path, self.txt_output_dir):
             return False
 
-        #Commit to registry
+        # Commit to registry
         self._reg_config.write({COMPOSER_OUTPUT: path})
 
         return True
 
     def _check_path_exists(self, path, text_box):
-        #Validates if the specified folder exists
+        # Validates if the specified folder exists
         dir = QDir()
 
         if not dir.exists(path):
             msg = self.tr(u"'{0}' directory does not exist.".format(path))
             self.notif_bar.insertErrorNotification(msg)
 
-            #Highlight textbox control
+            # Highlight textbox control
             text_box.setStyleSheet(INVALIDATESTYLESHEET)
 
             timer = QTimer(self)
-            #Sync interval with that of the notification bar
+            # Sync interval with that of the notification bar
             timer.setInterval(self.notif_bar.interval)
             timer.setSingleShot(True)
 
-            #Remove previous connected slots (if any)
+            # Remove previous connected slots (if any)
             receivers = timer.receivers(SIGNAL('timeout()'))
             if receivers > 0:
                 self._timer.timeout.disconnect()
 
             timer.start()
-            timer.timeout.connect(lambda:self._restore_stylesheet(
+            timer.timeout.connect(lambda: self._restore_stylesheet(
                 text_box)
-            )
+                                  )
 
             return False
 
@@ -610,11 +613,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         False.
         :rtype: bool
         """
-        #Set current profile
+        # Set current profile
         if not self.set_current_profile():
             return False
 
-        #Set db connection properties
+        # Set db connection properties
         if not self.save_database_properties():
             return False
 
@@ -626,11 +629,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_holders_config_file():
             return False
 
-        #Set document designer templates path
+        # Set document designer templates path
         if not self.set_document_templates_path():
             return False
 
-        #Set document generator output path
+        # Set document generator output path
         if not self.set_document_output_path():
             return False
 

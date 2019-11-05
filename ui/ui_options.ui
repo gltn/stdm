@@ -44,13 +44,6 @@
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="8" column="0">
-        <widget class="QCheckBox" name="chk_logging">
-         <property name="text">
-          <string>Debug logging</string>
-         </property>
-        </widget>
-       </item>
        <item row="6" column="0" colspan="3">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="maximumSize">
@@ -152,6 +145,13 @@
          </layout>
         </widget>
        </item>
+       <item row="8" column="0">
+        <widget class="QCheckBox" name="chk_logging">
+         <property name="text">
+          <string>Debug logging</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0" colspan="2">
         <layout class="QGridLayout" name="gridLayout_7" rowstretch="0">
          <item row="0" column="0">
@@ -178,6 +178,40 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Holders configuration file</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QToolButton" name="btn_holders_conf_file">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../resources.qrc">
+           <normaloff>:/plugins/stdm/images/icons/flts_open_file.png</normaloff>:/plugins/stdm/images/icons/flts_open_file.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="txt_holders_config">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0" colspan="3">
         <widget class="QGroupBox" name="groupBox">
@@ -439,37 +473,10 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_10">
+       <item row="9" column="0">
+        <widget class="QCheckBox" name="chk_shortcut_dlg">
          <property name="text">
-          <string>Holders configuration file</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLineEdit" name="txt_holders_config">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>30</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QToolButton" name="btn_holders_conf_file">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../resources.qrc">
-           <normaloff>:/plugins/stdm/images/icons/flts_open_file.png</normaloff>:/plugins/stdm/images/icons/flts_open_file.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
+          <string>Show Shortcut Dialog on Login</string>
          </property>
         </widget>
        </item>

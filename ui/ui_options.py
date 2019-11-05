@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Sat Aug 24 20:02:35 2019
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Tue Nov  5 13:09:33 2019
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,16 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
@@ -38,9 +47,6 @@ class Ui_DlgOptions(object):
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
-        self.chk_logging = QtGui.QCheckBox(self.scrollAreaWidgetContents)
-        self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
-        self.gridLayout_5.addWidget(self.chk_logging, 8, 0, 1, 1)
         self.groupBox_3 = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox_3.setMaximumSize(QtCore.QSize(16777215, 100))
         self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
@@ -77,6 +83,9 @@ class Ui_DlgOptions(object):
         self.btn_composer_out_folder.setObjectName(_fromUtf8("btn_composer_out_folder"))
         self.gridLayout_4.addWidget(self.btn_composer_out_folder, 1, 2, 1, 1)
         self.gridLayout_5.addWidget(self.groupBox_3, 6, 0, 1, 3)
+        self.chk_logging = QtGui.QCheckBox(self.scrollAreaWidgetContents)
+        self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
+        self.gridLayout_5.addWidget(self.chk_logging, 8, 0, 1, 1)
         self.gridLayout_7 = QtGui.QGridLayout()
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
         self.label = QtGui.QLabel(self.scrollAreaWidgetContents)
@@ -92,6 +101,19 @@ class Ui_DlgOptions(object):
         self.cbo_profiles.setObjectName(_fromUtf8("cbo_profiles"))
         self.gridLayout_7.addWidget(self.cbo_profiles, 0, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_7, 0, 0, 1, 2)
+        self.label_10 = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.gridLayout_5.addWidget(self.label_10, 5, 0, 1, 1)
+        self.btn_holders_conf_file = QtGui.QToolButton(self.scrollAreaWidgetContents)
+        self.btn_holders_conf_file.setText(_fromUtf8(""))
+        self.btn_holders_conf_file.setIcon(icon)
+        self.btn_holders_conf_file.setIconSize(QtCore.QSize(24, 24))
+        self.btn_holders_conf_file.setObjectName(_fromUtf8("btn_holders_conf_file"))
+        self.gridLayout_5.addWidget(self.btn_holders_conf_file, 5, 2, 1, 1)
+        self.txt_holders_config = QtGui.QLineEdit(self.scrollAreaWidgetContents)
+        self.txt_holders_config.setMinimumSize(QtCore.QSize(0, 30))
+        self.txt_holders_config.setObjectName(_fromUtf8("txt_holders_config"))
+        self.gridLayout_5.addWidget(self.txt_holders_config, 5, 1, 1, 1)
         self.groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_3 = QtGui.QGridLayout(self.groupBox)
@@ -185,19 +207,9 @@ class Ui_DlgOptions(object):
         self.btn_test_docs_repo_conn.setObjectName(_fromUtf8("btn_test_docs_repo_conn"))
         self.gridLayout_6.addWidget(self.btn_test_docs_repo_conn, 2, 2, 1, 1)
         self.gridLayout_5.addWidget(self.groupBox_2, 4, 0, 1, 3)
-        self.label_10 = QtGui.QLabel(self.scrollAreaWidgetContents)
-        self.label_10.setObjectName(_fromUtf8("label_10"))
-        self.gridLayout_5.addWidget(self.label_10, 5, 0, 1, 1)
-        self.txt_holders_config = QtGui.QLineEdit(self.scrollAreaWidgetContents)
-        self.txt_holders_config.setMinimumSize(QtCore.QSize(0, 30))
-        self.txt_holders_config.setObjectName(_fromUtf8("txt_holders_config"))
-        self.gridLayout_5.addWidget(self.txt_holders_config, 5, 1, 1, 1)
-        self.btn_holders_conf_file = QtGui.QToolButton(self.scrollAreaWidgetContents)
-        self.btn_holders_conf_file.setText(_fromUtf8(""))
-        self.btn_holders_conf_file.setIcon(icon)
-        self.btn_holders_conf_file.setIconSize(QtCore.QSize(24, 24))
-        self.btn_holders_conf_file.setObjectName(_fromUtf8("btn_holders_conf_file"))
-        self.gridLayout_5.addWidget(self.btn_holders_conf_file, 5, 2, 1, 1)
+        self.chk_shortcut_dlg = QtGui.QCheckBox(self.scrollAreaWidgetContents)
+        self.chk_shortcut_dlg.setObjectName(_fromUtf8("chk_shortcut_dlg"))
+        self.gridLayout_5.addWidget(self.chk_shortcut_dlg, 9, 0, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
         self.buttonBox = QtGui.QDialogButtonBox(DlgOptions)
@@ -211,30 +223,31 @@ class Ui_DlgOptions(object):
         QtCore.QMetaObject.connectSlotsByName(DlgOptions)
 
     def retranslateUi(self, DlgOptions):
-        DlgOptions.setWindowTitle(QtGui.QApplication.translate("DlgOptions", "Options", None, QtGui.QApplication.UnicodeUTF8))
-        self.chk_logging.setText(QtGui.QApplication.translate("DlgOptions", "Debug logging", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_3.setTitle(QtGui.QApplication.translate("DlgOptions", "Document Composer", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_template_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose templates directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_template_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_8.setText(QtGui.QApplication.translate("DlgOptions", "Output folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_7.setText(QtGui.QApplication.translate("DlgOptions", "Template folder", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_composer_out_folder.setToolTip(QtGui.QApplication.translate("DlgOptions", "Choose output directory", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_composer_out_folder.setText(QtGui.QApplication.translate("DlgOptions", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("DlgOptions", "Set current profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("DlgOptions", "Database Properties", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("DlgOptions", "Port", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("DlgOptions", "Host", None, QtGui.QApplication.UnicodeUTF8))
-        self.chk_pg_connections.setText(QtGui.QApplication.translate("DlgOptions", "Extract from existing connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setText(QtGui.QApplication.translate("DlgOptions", "Database", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_conn_clear.setToolTip(QtGui.QApplication.translate("DlgOptions", "Clear database connection properties", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_db_conn_clear.setText(QtGui.QApplication.translate("DlgOptions", "Clear", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_db_connection.setToolTip(QtGui.QApplication.translate("DlgOptions", "Test database connection", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_db_connection.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("DlgOptions", "Document Repository", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setText(QtGui.QApplication.translate("DlgOptions", "Atom pub CMIS URL", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_9.setText(QtGui.QApplication.translate("DlgOptions", "Authentication configuration name", None, QtGui.QApplication.UnicodeUTF8))
-        self.btn_test_docs_repo_conn.setText(QtGui.QApplication.translate("DlgOptions", "Test connection...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_10.setText(QtGui.QApplication.translate("DlgOptions", "Holders configuration file", None, QtGui.QApplication.UnicodeUTF8))
+        DlgOptions.setWindowTitle(_translate("DlgOptions", "Options", None))
+        self.groupBox_3.setTitle(_translate("DlgOptions", "Document Composer", None))
+        self.btn_template_folder.setToolTip(_translate("DlgOptions", "Choose templates directory", None))
+        self.btn_template_folder.setText(_translate("DlgOptions", "...", None))
+        self.label_8.setText(_translate("DlgOptions", "Output folder", None))
+        self.label_7.setText(_translate("DlgOptions", "Template folder", None))
+        self.btn_composer_out_folder.setToolTip(_translate("DlgOptions", "Choose output directory", None))
+        self.btn_composer_out_folder.setText(_translate("DlgOptions", "...", None))
+        self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
+        self.label.setText(_translate("DlgOptions", "Set current profile", None))
+        self.label_10.setText(_translate("DlgOptions", "Holders configuration file", None))
+        self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
+        self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
+        self.label_3.setText(_translate("DlgOptions", "Port", None))
+        self.label_2.setText(_translate("DlgOptions", "Host", None))
+        self.chk_pg_connections.setText(_translate("DlgOptions", "Extract from existing connection", None))
+        self.label_4.setText(_translate("DlgOptions", "Database", None))
+        self.btn_db_conn_clear.setToolTip(_translate("DlgOptions", "Clear database connection properties", None))
+        self.btn_db_conn_clear.setText(_translate("DlgOptions", "Clear", None))
+        self.btn_test_db_connection.setToolTip(_translate("DlgOptions", "Test database connection", None))
+        self.btn_test_db_connection.setText(_translate("DlgOptions", "Test connection...", None))
+        self.groupBox_2.setTitle(_translate("DlgOptions", "Document Repository", None))
+        self.label_6.setText(_translate("DlgOptions", "Atom pub CMIS URL", None))
+        self.label_9.setText(_translate("DlgOptions", "Authentication configuration name", None))
+        self.btn_test_docs_repo_conn.setText(_translate("DlgOptions", "Test connection...", None))
+        self.chk_shortcut_dlg.setText(_translate("DlgOptions", "Show Shortcut Dialog on Login", None))
 
 from stdm import resources_rc
