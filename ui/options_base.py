@@ -63,7 +63,8 @@ from stdm.settings.registryconfig import (
     COMPOSER_TEMPLATE,
     NETWORK_DOC_RESOURCE,
     CONFIG_UPDATED,
-    WIZARD_RUN
+    WIZARD_RUN,
+    SHOW_SHORTCUT_DIALOG
 )
 
 from stdm.security.auth_config import (
@@ -177,6 +178,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         else:
             self.chk_logging.setCheckState(Qt.Unchecked)
 
+        # Shortcut dialog
+        self._check_shortcuts_settings()
+
     def _load_cmis_config(self):
         """
         Load configuration names and IDs in the combobox then select
@@ -230,6 +234,25 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         # Slot raised when text for CMIS URL changes. Basically updates
         # the tooltip so as to display long URLs
         self.txt_atom_pub_url.setToolTip(new_text)
+
+    def _check_shortcuts_settings(self):
+        """
+        Checks the state of the show dialog checkbox
+        :return: Bool
+        """
+        # Check registry values for shortcut dialog
+        show_dlg = 1
+        dlg_key = self._reg_config.read(
+            [SHOW_SHORTCUT_DIALOG]
+        )
+
+        if len(dlg_key) > 0:
+            show_dlg = dlg_key[SHOW_SHORTCUT_DIALOG]
+
+        if show_dlg == 1 or show_dlg == unicode(1):
+            self.chk_shortcut_dlg.setChecked(True)
+        elif show_dlg == 0 or show_dlg == unicode(0):
+            self.chk_shortcut_dlg.setChecked(False)
 
     def load_profiles(self):
         """

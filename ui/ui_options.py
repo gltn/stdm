@@ -248,6 +248,6 @@ class Ui_DlgOptions(object):
         self.label_6.setText(_translate("DlgOptions", "Atom pub CMIS URL", None))
         self.label_9.setText(_translate("DlgOptions", "Authentication configuration name", None))
         self.btn_test_docs_repo_conn.setText(_translate("DlgOptions", "Test connection...", None))
-        self.chk_shortcut_dlg.setText(_translate("DlgOptions", "Show Shortcut Dialog on Login", None))
+        self.chk_shortcut_dlg.setText(_translate("DlgOptions", "Show Shortcut Window on Login", None))
 
 from stdm import resources_rc
