@@ -77,9 +77,9 @@ class DisapproveMessageBoxWidget(MessageBox):
         MessageBox.__init__(self, title, text, parent)
 
 
-class WithdrawMessageBoxWidget(MessageBox):
+class HoldMessageBoxWidget(MessageBox):
     """
-    Withdraw message box widget
+    Hold message box widget
     """
     def __init__(self, title, text, parent):
         MessageBox.__init__(self, title, text, parent)
@@ -97,6 +97,6 @@ def get_message_box(name):
     message_box = {
         "approveButton": ApproveMessageBoxWidget,
         "disapproveButton": DisapproveMessageBoxWidget,
-        "withdrawButton": WithdrawMessageBoxWidget
+        "holdButton": HoldMessageBoxWidget
     }
     return message_box[name]

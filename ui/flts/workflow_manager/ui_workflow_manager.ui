@@ -27,7 +27,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Approve</string>
+          <string>Pass</string>
          </property>
         </widget>
        </item>
