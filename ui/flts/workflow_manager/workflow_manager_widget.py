@@ -99,7 +99,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
         self.approveButton.clicked.connect(
-            lambda: self._on_approve(self._lookup.APPROVED(), "approve")
+            lambda: self._on_approve(self._lookup.APPROVED(), "pass")
         )
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
@@ -128,7 +128,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.disapproveButton = button
         button.setObjectName("disapproveButton")
         self.disapproveButton.clicked.connect(
-            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "disapprove")
+            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
         )
 
     def _set_button_icons(self):
