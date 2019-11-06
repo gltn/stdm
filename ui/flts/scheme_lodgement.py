@@ -189,7 +189,18 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.on_validate_holders
         )
 
-        # Populate lookup comboboxes
+        # Block area
+        self.radio_sq_meters.setChecked(True)
+
+        self.radio_sq_meters.clicked.connect(
+            self._on_default_area
+        )
+
+        self.radio_hectares.clicked.connect(
+            self._on_default_area_change
+        )
+
+        # Populate lookup combo boxes
         self._populate_lookups()
 
         # Set date limits
@@ -980,6 +991,30 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         notif_entity_obj.content = 'Lodgement'
         notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
         notif_entity_obj.save()
+
+    def _on_default_area(self):
+        """
+        Slot raised when the block area square meter units radio button
+        is selected
+        """
+        area_in_hectares = self.dbl_spinbx_block_area.value()
+        self.dbl_spinbx_block_area.setDecimals(0)
+        area_in_sq_meters = area_in_hectares * 10000
+
+        if area_in_sq_meters:
+            self.dbl_spinbx_block_area.setValue(area_in_sq_meters)
+
+    def _on_default_area_change(self):
+        """
+        Slot raised when the block area hectares units radio button
+        is selected
+        """
+        default_area = self.dbl_spinbx_block_area.value()
+        self.dbl_spinbx_block_area.setDecimals(4)
+        area_in_hectares = default_area / 10000
+
+        if area_in_hectares:
+            self.dbl_spinbx_block_area.setValue(area_in_hectares)
 
     def validate_block_area(self):
         """
