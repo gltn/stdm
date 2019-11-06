@@ -61,8 +61,6 @@ from stdm.utils.util import (
 )
 from .ui_import_data import Ui_frmImport
 
-from stdm.settings import get_import_mapfile
-
 class ImportData(QWizard, Ui_frmImport):
     def __init__(self,parent=None):
         QWizard.__init__(self,parent)
@@ -185,6 +183,7 @@ class ImportData(QWizard, Ui_frmImport):
 
                     return
 
+            #self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
             self._handle_translator_dlg(dest_column, trans_dlg)
 
     def _handle_translator_dlg(self, key, dlg):
@@ -307,21 +306,6 @@ class ImportData(QWizard, Ui_frmImport):
 
     def _source_columns(self):
         return self.dataReader.getFields()
-
-    #def _writecols(self, cols):
-        #with open('c:\cols.csv', 'w') as f:
-            #for item in cols:
-                #print >> f, item.encode('ascii', 'ignore')
-
-    #def _mapsection(self, section):
-        #mapfile = get_import_mapfile()
-        #map_section = OrderedDict()
-        #if mapfile:
-            #config = ConfigParser.ConfigParser()
-            #config.readfp(open(mapfile))
-            #if section in config.sections():
-                #map_section = OrderedDict(config.items(section))
-        #return map_section
 
     def assignCols(self):
         #Load source and target columns respectively

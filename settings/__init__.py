@@ -4,7 +4,8 @@ from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
     RegistryConfig,
     ENTITY_BROWSER_RECORD_LIMIT,
-    IMPORT_MAPFILE
+    IMPORT_MAPFILE,
+    TRANS_PATH
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -75,4 +76,14 @@ def get_import_mapfile():
 def save_import_mapfile(mapfile):
     reg_config = RegistryConfig()
     reg_config.write({IMPORT_MAPFILE:mapfile})
+
+def get_trans_path():
+    reg_config = RegistryConfig()
+    trans_path_key = reg_config.read([TRANS_PATH])
+    trans_path = trans_path_key.get(TRANS_PATH, '')
+    return trans_path
+
+def save_trans_path(trans_path):
+    reg_config = RegistryConfig()
+    reg_config.write({TRANS_PATH: trans_path})
 

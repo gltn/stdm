@@ -1262,4 +1262,3 @@ def mapfile_section(section):
         if section in config.sections():
             map_section = OrderedDict(config.items(section))
     return map_section
-

@@ -605,6 +605,30 @@ class OGRReader(object):
             if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
                 match_idx = 1
 
+            if source_cols[0].lower()[:3]=='eth' and field_name.lower()[:3]=='eth':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='dis' and field_name.lower()[:3]=='dis':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='sin' and field_name.lower()[:3]=='sin':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='muj' and field_name.lower()[:3]=='muj':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='co-' and field_name.lower()[:3]=='co-':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='pro' and field_name.lower()[:3]=='pro':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='typ' and field_name.lower()[:3]=='typ':
+                match_idx = 1
+
+            if source_cols[0].lower()[:3]=='sta' and field_name.lower()[:3]=='sta':
+                match_idx = 1
+
             if source_cols[0].lower()=='_parent_index' and field_name.lower()=='_parent_index':
                 match_idx = 1
                 cast = 'int'

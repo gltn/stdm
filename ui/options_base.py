@@ -43,7 +43,9 @@ from stdm.settings import (
     get_entity_browser_record_limit,
     save_entity_browser_record_limit,
     get_import_mapfile,
-    save_import_mapfile
+    save_import_mapfile,
+    get_trans_path,
+    save_trans_path
 )
 
 from stdm.settings.registryconfig import (
@@ -125,6 +127,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         )
 
         self.btnMapfile.clicked.connect(self.on_set_mapfile)
+        self.btnTransPath.clicked.connect(self.on_set_trans_path)
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
@@ -159,6 +162,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
         self.edtMapfile.setText(get_import_mapfile())
+        self.edtTransPath.setText(get_trans_path())
 
         # Debug logging
         lvl = debug_logging()
@@ -276,6 +280,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         mapfile = QFileDialog.getOpenFileName(self, title, def_path)
         if mapfile:
             self.edtMapfile.setText(mapfile)
+
+    def on_set_trans_path(self):
+        dflt_path = self.edtTransPath.text()
+        title = self.tr("Support docs folder for translations")
+        trans_path = QFileDialog.getExistingDirectory(self, title, dflt_path)
+        if trans_path:
+            self.edtTransPath.setText(trans_path)
 
     def _set_selected_directory(self, txt_box, title):
         def_path= txt_box.text()
@@ -533,6 +544,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
         save_import_mapfile(self.edtMapfile.text())
+
+        save_trans_path(self.edtTransPath.text())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)

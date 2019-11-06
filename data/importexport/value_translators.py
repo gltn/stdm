@@ -470,30 +470,34 @@ class LookupValueTranslator(RelatedTableTranslator):
 
         field_values[source_column] = flv
 
-        # Assume the source column is the first (and only) one in field_values
-        source_column = field_values.keys()[0]
-        lookup_value = field_values.get(source_column)[0]
+        try:
+            # Assume the source column is the first (and only) one in field_values
+            source_column = field_values.keys()[0]
+            lookup_value = field_values.get(source_column)[0]
 
-        # Create lookup table object
-        lookup_table = self._table(self._referenced_table)
+            # Create lookup table object
+            lookup_table = self._table(self._referenced_table)
 
-        lk_value_column_obj = getattr(lookup_table.c, self._lk_value_column)
+            lk_value_column_obj = getattr(lookup_table.c, self._lk_value_column)
 
-        # Get corresponding lookup value record
-        lookup_rec = self._db_session.query(lookup_table).filter(
-            func.lower(lk_value_column_obj) == func.lower(cast(lookup_value, String))
-        ).first()
-
-        # Use default value if record is empty
-        if lookup_rec is None and self.default_value:
+            # Get corresponding lookup value record
             lookup_rec = self._db_session.query(lookup_table).filter(
-                lk_value_column_obj == self.default_value
+                func.lower(lk_value_column_obj) == func.lower(cast(lookup_value, String))
             ).first()
 
-        if lookup_rec is None:
+            # Use default value if record is empty
+            if lookup_rec is None and self.default_value:
+                lookup_rec = self._db_session.query(lookup_table).filter(
+                    lk_value_column_obj == self.default_value
+                ).first()
+
+            if lookup_rec is None:
+                return IgnoreType()
+
+            return getattr(lookup_rec, 'id', IgnoreType())
+        except:
             return IgnoreType()
 
-        return getattr(lookup_rec, 'id', IgnoreType())
 
 
 class MultipleEnumerationTranslator(SourceValueTranslator):
@@ -772,19 +776,6 @@ class SourceDocumentTranslator(SourceValueTranslator):
         # Documents are handles by the source document manager so we just
         # instruct the system to ignore the return value
         return IgnoreType
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

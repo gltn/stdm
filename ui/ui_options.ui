@@ -97,7 +97,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>30</height>
+              <height>25</height>
              </size>
             </property>
             <property name="maxLength">
@@ -120,7 +120,7 @@
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>30</height>
+              <height>25</height>
              </size>
             </property>
             <property name="maxLength">
@@ -166,21 +166,50 @@
          <property name="verticalSpacing">
           <number>4</number>
          </property>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="txtRepoLocation">
+         <item row="2" column="2">
+          <widget class="QToolButton" name="btnMapfile">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../resources.qrc">
+             <normaloff>:/plugins/stdm/images/icons/open_file.png</normaloff>:/plugins/stdm/images/icons/open_file.png</iconset>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QSpinBox" name="edtEntityRecords">
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>30</height>
+             <height>20</height>
             </size>
            </property>
-           <property name="maxLength">
-            <number>500</number>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lblMapFile">
+           <property name="text">
+            <string>Import Map File</string>
            </property>
           </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Supporting documents folder</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Entity browser records limit</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="edtMapfile"/>
          </item>
          <item row="0" column="2">
           <widget class="QToolButton" name="btn_supporting_docs">
@@ -202,42 +231,34 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>Entity browser records limit</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QSpinBox" name="edtEntityRecords">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="txtRepoLocation">
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>30</height>
+             <height>25</height>
             </size>
            </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_6">
-           <property name="text">
-            <string>Supporting documents folder</string>
+           <property name="maxLength">
+            <number>500</number>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="lblMapFile">
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_11">
            <property name="text">
-            <string>Import Map File</string>
+            <string>Support Docs Translation Path</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QLineEdit" name="edtMapfile"/>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="edtTransPath"/>
          </item>
-         <item row="2" column="2">
-          <widget class="QToolButton" name="btnMapfile">
+         <item row="3" column="2">
+          <widget class="QToolButton" name="btnTransPath">
            <property name="text">
             <string>...</string>
            </property>

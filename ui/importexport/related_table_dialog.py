@@ -60,8 +60,14 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         #Connect signals
         self.cbo_source_tables.currentIndexChanged.connect(self._on_source_table_changed)
 
-        self.cbo_source_tables.setCurrentIndex(self.cbo_source_tables.findText(dflt_lookups['reftable']))
-        self.cbo_output_column.setCurrentIndex(self.cbo_output_column.findText(dflt_lookups['ref_output_col']))
+        self.dflt_ref_table = dflt_lookups.get('reftable', '')
+        self.dflt_ref_output_col = dflt_lookups.get('ref_output_col','')
+        self.dflt_src_table_field = dflt_lookups.get('src_table_field','')
+        self.dlft_ref_table_field = dflt_lookups.get('ref_table_field','')
+
+        self.cbo_source_tables.setCurrentIndex(self.cbo_source_tables.findText(self.dflt_ref_table))
+        self.cbo_output_column.setCurrentIndex(self.cbo_output_column.findText(self.dflt_ref_output_col))
+
 
 
     def _load_tables(self):
@@ -95,13 +101,16 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         if source_table:
             ref_table_cols = table_column_names(source_table)
 
-            col1 = ['_parent_index']
-            col2 = ['kobo_index']
-            self.tb_source_trans_cols.set_combo_selection([col1,col2])
+            col1 = []
+            col1.append(self.dflt_src_table_field)
+            col2 = []
+            col2.append(self.dlft_ref_table_field)
 
-
-            #self.tb_source_trans_cols.set_combo_selection([self._source_cols,
-            #ref_table_cols])
+            if col1[0] <> '':
+                self.tb_source_trans_cols.set_combo_selection([col1,col2])
+            else:
+                self.tb_source_trans_cols.set_combo_selection([self._source_cols,
+                    ref_table_cols])
 
             #self.cbo_output_column.addItem("")
             self.cbo_output_column.addItems(ref_table_cols)
