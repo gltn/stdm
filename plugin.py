@@ -1214,6 +1214,7 @@ class STDMQGISLoader(object):
         geoodkSettingsCntGroup.append(self.mobileXformgenCntGroup)
         geoodkSettingsCntGroup.append(self.mobileXFormImportCntGroup)
 
+
         # Register document templates
         # Get templates for the current profile
         templates = documentTemplates()
@@ -1238,11 +1239,6 @@ class STDMQGISLoader(object):
                     self.current_user.UserName,
                     'templates'
                     )
-            #template_content.code = template_content_group.hash_code(unicode(template.name))
-            #template_content_group.addContentItem(template_content)
-            #template_content.name = template.name
-        #template_content_group.register()
-
 
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)

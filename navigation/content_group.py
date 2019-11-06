@@ -186,7 +186,8 @@ class ContentGroup(QObject,HashableMixin):
                     cnt = Content()
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.name == c.name).first()
-                    c.code = cn.code
+                    if cn:
+                        c.code = cn.code
 
 
             
