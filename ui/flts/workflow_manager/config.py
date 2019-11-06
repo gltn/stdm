@@ -22,8 +22,7 @@ from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
     QApplication,
     QIcon,
-    QMessageBox,
-    QPushButton,
+    QMessageBox
 )
 from sqlalchemy import exc
 from stdm.settings import current_profile
@@ -531,7 +530,7 @@ LookUp = namedtuple(
         'schemeLodgement', 'schemeEstablishment', 'firstExamination',
         'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
-        'PENDING', 'DISAPPROVED', 'WITHDRAW', 'CHECK', 'STATUS',
+        'PENDING', 'DISAPPROVED', 'HELD', 'CHECK', 'STATUS',
         'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN', 'VIEW_PDF'
     ]
 )
@@ -668,8 +667,8 @@ configurations = {
         DISAPPROVED=EntityRecordId(
             'check_lht_approval_status', {'value': 'Disapproved'}
         ),
-        WITHDRAW=EntityRecordId(
-            'check_lht_approval_status', {'value': 'Withdraw'}
+        HELD=EntityRecordId(
+            'check_lht_approval_status', {'value': 'Held'}
         ),
         WORKFLOW_COLUMN='workflow_id', APPROVAL_COLUMN='approval_id',
         SCHEME_COLUMN='scheme_id', SCHEME_NUMBER=1, CHECK=0, STATUS=2,
@@ -721,19 +720,19 @@ configurations = {
             Column(name='Registration Division', flag=False):
                 'registration_division'
         },
-        {Column(name='Block Area', flag=False): 'area'}
-        # {
-        #     Column(name='Date/Time', flag=False): {
-        #         'timestamp': 'timestamp'
-        #     }
-        # },
+        {Column(name='Block Area', flag=False): 'area'},
+        {
+            Column(name='Date/Time', flag=False): {
+                'timestamp': 'timestamp'
+            }
+        }
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
         'Comments': QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
-        'Withdraw': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
+        'Hold': QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
         'Scheme': QIcon(":/plugins/stdm/images/icons/flts_scheme.png")
     },
     'table_model_icons': {
@@ -753,7 +752,7 @@ configurations = {
                 QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
             ),
             (
-                "withdrawButton", QSize(24, 24),
+                "holdButton", QSize(24, 24),
                 QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
             ),
             (
@@ -777,7 +776,7 @@ configurations = {
         'approveButton': [
             MessageBox(
                 name='approveMsgButton',
-                label="Approve",
+                label="Pass",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
             ),
@@ -791,13 +790,13 @@ configurations = {
         'disapproveButton': [
             MessageBox(
                 name='disapproveMsgButton',
-                label="Disapprove",
+                label="Reject",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
             ),
             MessageBox(
                 name='commentDisapproveMsgButton',
-                label="Comment && Disapprove",
+                label="Comment && Reject",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
             ),
@@ -808,16 +807,16 @@ configurations = {
                 icon=None,
             )
         ],
-        'withdrawButton': [
+        'holdButton': [
             MessageBox(
-                name='withdrawMsgButton',
-                label="Withdraw",
+                name='holdMsgButton',
+                label="Hold",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
             ),
             MessageBox(
-                name='commentWithdrawMsgButton',
-                label="Comment && Withdraw",
+                name='commentHoldMsgButton',
+                label="Comment && Hold",
                 role=QMessageBox.YesRole,
                 icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
             ),
@@ -853,10 +852,10 @@ configurations = {
             ),
             SaveColumn(
                 column='user_id', value=1, entity='Comment'
-            ),
-            SaveColumn(
-                column='timestamp', value=datetime.now(), entity='Comment'
             )
+            # SaveColumn(
+            #     column='timestamp', value=datetime.now(), entity='Comment'
+            # )
         ]
     }
 }

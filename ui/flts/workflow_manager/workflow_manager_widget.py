@@ -117,14 +117,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         layout.setMargin(0)
         self.disapproveFrame.setLayout(layout)
         if self._object_name == "schemeLodgement":
-            button.setText("Withdraw")
-            button.setObjectName("withdrawButton")
-            self.withdrawButton = button
-            self.withdrawButton.clicked.connect(
-                lambda: self._on_disapprove(self._lookup.WITHDRAW(), "withdraw")
+            button.setText("Hold")
+            button.setObjectName("holdButton")
+            self.holdButton = button
+            self.holdButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.HELD(), "hold")
             )
             return
-        button.setText("Disapprove")
+        button.setText("Reject")
         self.disapproveButton = button
         button.setObjectName("disapproveButton")
         self.disapproveButton.clicked.connect(
@@ -279,15 +279,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         # TODO: Start refactor. Combine with _on_uncheck_disable_widgets
         if self._lookup.PENDING() in status or \
                 self._lookup.DISAPPROVED() in status or \
-                self._lookup.WITHDRAW() in status:
+                self._lookup.HELD() in status:
             self._enable_widget(self.approveButton)
         if self._lookup.PENDING() in status or \
                 self._lookup.APPROVED() in status:
             if hasattr(self, "disapproveButton"):
                 self._enable_widget(getattr(self, "disapproveButton"))
         if self._lookup.DISAPPROVED() in status and \
-                hasattr(self, "withdrawButton"):
-            self._enable_widget(getattr(self, "withdrawButton"))
+                hasattr(self, "holdButton"):
+            self._enable_widget(getattr(self, "holdButton"))
         self._on_uncheck_disable_widgets()
         # TODO: End refactor
 
@@ -638,6 +638,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             msg, scheme_items
         )
         if result == 0:
+            self._msg_box_button = None
             self._update_scheme(items, title)
         elif result == 1:
             self._load_scheme_detail(scheme_items)
@@ -874,8 +875,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._close_tab(1)
             if hasattr(self, "disapproveButton"):
                 self._disable_widget(getattr(self, "disapproveButton"))
-            elif hasattr(self, "withdrawButton"):
-                self._disable_widget(getattr(self, "withdrawButton"))
+            elif hasattr(self, "holdButton"):
+                self._disable_widget(getattr(self, "holdButton"))
             self._disable_widget([
                 self.approveButton, self.holdersButton,
                 self.documentsButton, self.commentsButton
@@ -887,11 +888,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self._disable_widget(getattr(self, "disapproveButton"))
         elif self._lookup.PENDING() not in status and \
                 self._lookup.DISAPPROVED() not in status and \
-                self._lookup.WITHDRAW() not in status:
+                self._lookup.HELD() not in status:
             self._disable_widget(self.approveButton)
         elif self._lookup.DISAPPROVED() not in status and \
-                hasattr(self, "withdrawButton"):
-            self._disable_widget(getattr(self, "withdrawButton"))
+                hasattr(self, "holdButton"):
+            self._disable_widget(getattr(self, "holdButton"))
         # TODO: End refactor
 
     @staticmethod

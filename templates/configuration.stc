@@ -82,7 +82,6 @@
     <CodeValue value="Employed" code=""/>
     <CodeValue value="Unemployed" code=""/>
     <CodeValue value="Self-Employed" code=""/>
-    <CodeValue value="Pensioner" code=""/>
    </ValueList>
    <ValueList name="check_lht_marital_status">
     <CodeValue value="Single" code=""/>
@@ -96,11 +95,9 @@
     <CodeValue value="General" code=""/>
    </ValueList>
    <ValueList name="check_lht_income_level">
+    <CodeValue value="1001-5000" code=""/>
+    <CodeValue value="Above 5000" code=""/>
     <CodeValue value="Below 1000" code=""/>
-    <CodeValue value="1000-3000" code=""/>
-    <CodeValue value="3000-5000" code=""/>
-    <CodeValue value="5000-8000" code=""/>
-    <CodeValue value="Above 8000" code=""/>
    </ValueList>
    <ValueList name="check_scheme_document_type">
     <CodeValue value="Notice of Scheme Establishment" code=""/>
@@ -123,8 +120,8 @@
    <ValueList name="check_lht_approval_status">
     <CodeValue value="Approved" code="AP"/>
     <CodeValue value="Pending" code="PD"/>
-    <CodeValue value="Disapproved" code="DAP"/>
-    <CodeValue value="Withdraw" code="WD"/>
+    <CodeValue value="Disapproved" code="DA"/>
+    <CodeValue value="Held" code="HD"/>
    </ValueList>
   </ValueLists>
   <Entity editable="True" global="False" rowindex="-1" associative="False" description="Refers to log entity of LIS_Plot" proxy="False" createId="True" supportsDocuments="False" shortName="LIS_Plot_log" name="cb_lis_plot_log" label="">
@@ -346,7 +343,7 @@
     <Column unique="False" tip="" rowindex="15" minimum="0" maximum="2147483647" description="Occupation of the holder" index="False" name="occupation" searchable="True" TYPE_INFO="LOOKUP" label="occupation" mandatory="False">
      <Relation name="fk_cb_check_lht_occupation_id_cb_holder_occupation"/>
     </Column>
-    <Column unique="False" tip="" rowindex="-1" minimum="-2147483648" maximum="2147483647" description="Number of dependants of the holder" index="False" name="other_dependants" searchable="True" TYPE_INFO="INT" label="dependants" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="16" minimum="-2147483648" maximum="2147483647" description="Number of dependants of the holder" index="False" name="other_dependants" searchable="True" TYPE_INFO="INT" label="dependants" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="14" associative="False" description="Refers to the search details" proxy="False" createId="True" supportsDocuments="False" shortName="Search" name="cb_search" label="lht_search">
@@ -413,10 +410,9 @@
      <Numeric scale="4" precision="15"/>
     </Column>
     <Column unique="False" tip="" rowindex="10" minimum="0" maximum="30" description="Registration number of document imposing conditions" index="False" name="doc_imposing_conditions_number" searchable="True" TYPE_INFO="VARCHAR" label="doc imposing conditions" mandatory="False"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="const ref no" mandatory="True"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="2147483647" description="Number of polts in the scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="number of plots" mandatory="True"/>
+    <Column unique="False" tip="" rowindex="11" minimum="0" maximum="30" description="Reference number of the constitution" index="False" name="constitution_ref_no" searchable="True" TYPE_INFO="VARCHAR" label="const ref no" mandatory="False"/>
+    <Column unique="False" tip="" rowindex="12" minimum="0" maximum="2147483647" description="Number of polts in the scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="number of plots" mandatory="False"/>
     <Column unique="False" tip="" rowindex="13" minimum="0" maximum="32" description="The number representing the scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme_number" mandatory="True"/>
-    <Column unique="False" tip="" rowindex="-1" minimum="0" maximum="30" description="Surveyor General or General Plan Number" index="False" name="sg_number" searchable="True" TYPE_INFO="VARCHAR" label="sg_number" mandatory="False"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="4" associative="False" description="Refers to the relation between holder and plot" proxy="False" createId="True" supportsDocuments="False" shortName="Holder_plot" name="cb_holder_plot" label="lht_holder_plot">
