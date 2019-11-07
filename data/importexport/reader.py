@@ -382,7 +382,6 @@ class OGRReader(object):
 
         # Container for mapping column names to their corresponding values
 
-
         lyr = self.getLayer()
         lyr.ResetReading()
         feat_defn = lyr.GetLayerDefn()

@@ -5,7 +5,13 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     ENTITY_BROWSER_RECORD_LIMIT,
     IMPORT_MAPFILE,
-    TRANS_PATH
+    TRANS_PATH,
+    MEDIA_URL,
+    KOBO_USER,
+    KOBO_PASS,
+    FAMILY_PHOTO,
+    SIGN_PHOTO,
+    HOUSE_PHOTO
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -86,4 +92,52 @@ def get_trans_path():
 def save_trans_path(trans_path):
     reg_config = RegistryConfig()
     reg_config.write({TRANS_PATH: trans_path})
+
+
+
+def get_key_value(regkey):
+    reg_config = RegistryConfig()
+    key = reg_config.read([regkey])
+    key_value = key.get(regkey, '')
+    return key_value
+
+def save_key_value(key, key_value):
+    reg_config = RegistryConfig()
+    reg_config.write({key: key_value})
+
+def get_media_url():
+    return get_key_value(MEDIA_URL)
+
+def get_kobo_user():
+    return get_key_value(KOBO_USER)
+
+def get_kobo_pass():
+    return get_key_value(KOBO_PASS)
+
+def get_family_photo():
+    return get_key_value(FAMILY_PHOTO)
+
+def get_sign_photo():
+    return get_key_value(SIGN_PHOTO)
+
+def get_house_photo():
+    return get_key_value(HOUSE_PHOTO)
+
+def save_media_url(value):
+    save_key_value(MEDIA_URL, value)
+
+def save_kobo_user(value):
+    save_key_value(KOBO_USER, value)
+
+def save_kobo_pass(value):
+    save_key_value(KOBO_PASS, value)
+
+def save_family_photo(value):
+    save_key_value(FAMILY_PHOTO, value)
+
+def save_sign_photo(value):
+    save_key_value(SIGN_PHOTO, value)
+
+def save_house_photo(value):
+    save_key_value(HOUSE_PHOTO, value)
 

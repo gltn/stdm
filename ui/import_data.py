@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
+import os
 import sys
 import copy
 from collections import OrderedDict
@@ -30,7 +31,6 @@ from PyQt4.QtCore import (
     SIGNAL,
     QSignalMapper
 )
-
 
 from stdm.utils import *
 from stdm.utils.util import getIndex, enable_drag_sort_widgets, mapfile_section
@@ -54,7 +54,23 @@ from .importexport import (
     LookupTranslatorConfig,
     RelatedTableTranslatorConfig
 )
-from stdm.settings import current_profile
+
+from stdm.settings import (
+        current_profile,
+        get_media_url,
+        get_kobo_user,
+        get_kobo_pass,
+        get_family_photo,
+        get_sign_photo,
+        get_house_photo,
+        save_media_url,
+        save_kobo_user,
+        save_kobo_pass,
+        save_family_photo,
+        save_sign_photo,
+        save_house_photo
+        )
+
 from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
@@ -81,6 +97,20 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
 
+        self.rbTextType.clicked.connect(self.text_type_clicked)
+        self.rbSpType.clicked.connect(self.sptype_clicked)
+        self.rbKoboMedia.clicked.connect(self.kobo_media_clicked)
+
+        self.tbFamilyFolder.clicked.connect(self.family_folder)
+        self.tbSignFolder.clicked.connect(self.sign_folder)
+        self.tbHouseFolder.clicked.connect(self.house_folder)
+
+        self.btnDownload.clicked.connect(self.download_media)
+
+        self.btnFamilyBrowse.clicked.connect(self.show_family_folder)
+        self.btnSignFolder.clicked.connect(self.show_sign_folder)
+        self.btnHouseFolder.clicked.connect(self.show_house_folder)
+
         #Data Reader
         self.dataReader = None
          
@@ -93,7 +123,175 @@ class ImportData(QWizard, Ui_frmImport):
         #Initialize value translators from definitions
         self._init_translators()
 
+        self.read_kobo_defaults()
+
+        self.toggleKoboOptions(False)
+
         #self._set_target_fields_stylesheet()
+
+    def text_type_clicked(self):
+        if self.rbTextType.isChecked():
+            self.toggleKoboOptions(False)
+            if self.txtDataSource.text() <> '':
+                self.button(QWizard.NextButton).setEnabled(True)
+
+    def sptype_clicked(self):
+        if self.rbSpType.isChecked():
+            self.toggleKoboOptions(False)
+            if self.txtDataSource.text() <> '':
+                self.button(QWizard.NextButton).setEnabled(True)
+
+
+    def kobo_media_clicked(self):
+        if self.rbKoboMedia.isChecked():
+            self.toggleKoboOptions(True)
+            self.button(QWizard.NextButton).setEnabled(False)
+
+    def family_folder(self):
+        dflt_folder = self.edtFamilyFolder.text()
+        folder = self.select_media_folder(dflt_folder)
+        self.edtFamilyFolder.setText(folder)
+        save_family_photo(folder)
+
+    def sign_folder(self):
+        dflt_folder = self.edtSignFolder.text()
+        folder = self.select_media_folder(dflt_folder)
+        self.edtSignFolder.setText(folder)
+        save_sign_photo(folder)
+
+    def house_folder(self):
+        dflt_folder = self.edtHouseFolder.text()
+        folder = self.select_media_folder(dflt_folder)
+        self.edtHouseFolder.setText(folder)
+        save_house_photo(folder)
+
+    def select_media_folder(self, dflt_folder):
+        title = self.tr("Folder to store media files")
+        trans_path = QFileDialog.getExistingDirectory(self, title, dflt_folder)
+        return trans_path
+
+    def read_kobo_defaults(self):
+        self.edtMediaUrl.setText(get_media_url())
+        self.edtKoboUsername.setText(get_kobo_user())
+        self.edtFamilyFolder.setText(get_family_photo())
+        self.edtSignFolder.setText(get_sign_photo())
+        self.edtHouseFolder.setText(get_house_photo())
+
+    def download_media(self):
+        #1. check if url is blank
+        #2. check if username is blank
+        #3. check if password is blank
+        #4. check that the source document is selected
+        if not QFile.exists(unicode(self.txtDataSource.text())):
+            self.ErrorInfoMessage("The specified source file does not exist.")
+            return
+
+        data_reader = OGRReader(unicode(self.txtDataSource.text()))
+        src_cols = data_reader.getFields()
+
+        #5. Read the mapfile::media_column section
+        media_columns = mapfile_section('media-column')
+        ucols = {}
+        for k,v in media_columns.iteritems():
+            a_col = unicode(k, 'utf-8').encode('ascii', 'ignore')
+            ucols[a_col] = v
+
+        lyr = data_reader.getLayer()
+        lyr.ResetReading()
+        feat_defn = lyr.GetLayerDefn()
+        numFeat = lyr.GetFeatureCount()
+
+        if self.edtMediaUrl.text() == '':
+            self.ErrorInfoMessage("Source of media files")
+            return
+
+        if self.edtKoboUsername.text() == '':
+            self.ErrorInfoMessage("Please enter username")
+            return
+
+        if self.edtKoboPassword.text() == '':
+            self.ErrorInfoMessage("Please enter password")
+            return
+
+        username = self.edtKoboUsername.text()
+        password = self.edtKoboPassword.text()
+
+        save_media_url(self.edtMediaUrl.text())
+        save_kobo_user(username)
+
+        feat_len = len(lyr)
+        try:
+            self.btnDownload.setEnabled(False)
+            for index, feat in enumerate(lyr):
+                self.lblCurrRecord.setText(str(index+1)+' of '+ str(feat_len))
+                for f in range(feat_defn.GetFieldCount()):
+                    field_defn = feat_defn.GetFieldDefn(f)
+                    field_name = field_defn.GetNameRef()
+                    a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore').lower()
+
+                    dest_folder = ''
+                    if a_field_name in ucols:
+                        dest_folder = self.findChild(QLineEdit, ucols[a_field_name]).text()
+                        field_value = feat.GetField(f)
+
+                        self.lblCurrFile.setText(field_value)
+
+                        dest_url = dest_folder + '\\'+field_value
+                        src_url = self.edtMediaUrl.text()+field_value
+
+                        QApplication.processEvents()
+
+                        self.download(src_url, dest_url, username, password)
+            self.btnDownload.setEnabled(True)
+        except:
+            self.btnDownload.setEnabled(True)
+
+
+    def download(self, src_url, dest_url, username, password):
+        import requests
+
+        self.lblMsg.setText('Downloading ...')
+        QApplication.processEvents()
+        req = requests.get(src_url, auth=(username,password))
+
+        with open(dest_url, 'wb') as f:
+            f.write(req.content)
+
+        self.lblMsg.setText('Done.')
+        return req.status_code
+
+    def show_family_folder(self):
+        folder = self.edtFamilyFolder.text() 
+        if folder == '':
+            return
+        self.browse_folder(folder)
+
+    def show_sign_folder(self):
+        folder = self.edtSignFolder.text() 
+        if folder == '':
+            return
+        self.browse_folder(folder)
+
+    def show_house_folder(self):
+        folder = self.edtHouseFolder.text() 
+        if folder == '':
+            return
+        self.browse_folder(folder)
+
+    def browse_folder(self, folder):
+        # windows
+        if sys.platform.startswith('win32'):
+            os.startfile(folder)
+
+        # *nix systems
+        if sys.platform.startswith('linux'):
+            subprocess.Popen(['xdg-open', folder])
+        
+        # macOS
+        if sys.platform.startswith('darwin'):
+            subprocess.Popen(['open', folder])
+        
+
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -274,6 +472,7 @@ class ImportData(QWizard, Ui_frmImport):
         pgSource.registerField("srcFile*",self.txtDataSource)
         pgSource.registerField("typeText",self.rbTextType)
         pgSource.registerField("typeSpatial",self.rbSpType)
+        pgSource.registerField("koboMedia",self.rbKoboMedia)
         
         #Destination table configuration
         destConf = self.page(1)
@@ -292,17 +491,35 @@ class ImportData(QWizard, Ui_frmImport):
             if self.field("typeText"):
                 self.loadTables("textual")
                 self.geomClm.setEnabled(False)
+                self.toggleKoboOptions(False)
                 
             elif self.field("typeSpatial"):
                 self.loadTables("spatial")
                 self.geomClm.setEnabled(True)
+                self.toggleKoboOptions(False)
+
+            elif self.field("koboMedia"):
+                self.toggleKoboOptions(True)
                 
         if pageid == 2:
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
             self.assignCols()
             self._enable_disable_trans_tools()
-            
+    
+    def toggleKoboOptions(self, mode):
+        self.edtMediaUrl.setEnabled(mode)
+        self.edtKoboUsername.setEnabled(mode)
+        self.edtKoboPassword.setEnabled(mode)
+        self.edtFamilyFolder.setEnabled(mode)
+        self.edtSignFolder.setEnabled(mode)
+        self.edtHouseFolder.setEnabled(mode)
+        self.tbFamilyFolder.setEnabled(mode)
+        self.tbSignFolder.setEnabled(mode)
+        self.tbHouseFolder.setEnabled(mode)
+        self.btnFamilyBrowse.setEnabled(mode)
+        self.btnSignFolder.setEnabled(mode)
+        self.btnHouseFolder.setEnabled(mode)
 
     def _source_columns(self):
         return self.dataReader.getFields()
@@ -356,13 +573,13 @@ class ImportData(QWizard, Ui_frmImport):
         if id_idx != -1:
             targetCols.remove('id')
 
-        remove_list = mapfile_section(target_table+'-remove')
-        targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
-        self._add_target_table_columns(targetCols)
-
         virtual_cols = mapfile_section(target_table+'-virtual')
         if len(virtual_cols) > 0:
             self.chk_virtual.setChecked(True)
+
+        remove_list = mapfile_section(target_table+'-remove')
+        targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
+        self._add_target_table_columns(targetCols)
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:

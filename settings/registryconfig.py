@@ -44,6 +44,13 @@ ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 IMPORT_MAPFILE='ImportMapFile'
 TRANS_PATH='TransPath'
 
+MEDIA_URL='MediaUrl'
+KOBO_USER='KoboUser'
+KOBO_PASS='KoboPass'
+FAMILY_PHOTO='FamilyPhoto'
+SIGN_PHOTO='SignPhoto'
+HOUSE_PHOTO='HousePhoto'
+
 def registry_value(key_name):
     """
     Util method for reading the value for the given key.
