@@ -212,6 +212,7 @@ class ComposerWrapper(QObject):
         #Current template document file
         self._currDocFile = None
 
+        self.copy_file = None
         #Copy of template document file
         self._copy_template_file = None
 
@@ -502,6 +503,8 @@ class ComposerWrapper(QObject):
             copy_template = QFile(copy_file)
             copy_template.remove()
 
+        self.copy_file = copy_file
+
         orig_template_file = QFile(filePath)
 
         self.setDocumentFile(orig_template_file)
@@ -608,6 +611,12 @@ class ComposerWrapper(QObject):
 
         # If it is a new unsaved document template then prompt for the document name.
         docFile = self.documentFile()
+
+        # remove existing copy file
+        if QFile.exists(self.copy_file):
+            copy_template = QFile(self.copy_file)
+            copy_template.remove()
+
 
         if docFile is None:
             docName,ok = QInputDialog.getText(self.composerView(),
