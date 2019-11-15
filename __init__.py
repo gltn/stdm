@@ -31,6 +31,8 @@ from PyQt4.QtGui import (
 )
 from PyQt4.QtCore import (
     QDir,
+    QTextStream,
+    QIODevice,
     QFile
 )
 
@@ -92,29 +94,36 @@ def copy_core_configuration():
     """
     Copies the basic STDM configuration to the user directory if there is none.
     """
-    core_config_path = u'{0}/templates/configuration.stc'.format(
-        os.path.dirname(__file__)
-    )
-
-    #Exit if the core configuration does not exist
+    # check network config exist
+    core_config_path = read_network_path()
     if not QFile.exists(core_config_path):
         return
+    else:
 
-    #File name of previous configuration
-    v1_1_config_path = u'{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
+        # if not core_config_path:
+        #     core_config_path = u'{0}/templates/configuration.stc'.format(
+        #         os.path.dirname(__file__)
+        #     )
+        #
+        #     #Exit if the core configuration does not exist
+        #     if not QFile.exists(core_config_path):
+        #         return
 
-    #Only copy the new one if there is no copy of the previous version
-    # since the version updater will automatically handle the upgrade.
-    if QFile.exists(v1_1_config_path):
-        #Version update will handle the migration
-        return
+        # File name of previous configuration
+        v1_1_config_path = u'{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
 
-    #Copy config assuming that the plugin user folder has no previous
-    # configuration.
-    conf_file = QFile(core_config_path)
-    conf_dest = u'{0}/configuration.stc'.format(USER_PLUGIN_DIR)
+        # Only copy the new one if there is no copy of the previous version
+        # since the version updater will automatically handle the upgrade.
+        if QFile.exists(v1_1_config_path):
+            # Version update will handle the migration
+            return
 
-    copy_status = conf_file.copy(conf_dest)
+        # Copy config assuming that the plugin user folder has no previous
+        # configuration.
+        conf_file = QFile(core_config_path)
+        conf_dest = u'{0}/configuration.stc'.format(USER_PLUGIN_DIR)
+
+        copy_status = conf_file.copy(conf_dest)
 
 
 def read_network_path():
