@@ -117,6 +117,18 @@ def copy_core_configuration():
     copy_status = conf_file.copy(conf_dest)
 
 
+def read_network_path():
+    """get the netowrk config file location"""
+    network_config = QFile(os.path.join(USER_PLUGIN_DIR,
+                                        'network_path.txt'))
+
+    if network_config.open(QIODevice.ReadOnly):
+        stream = QTextStream(network_config)
+        f_path = stream.readLine()
+        if f_path:
+            return f_path
+
+
 def classFactory(iface):
     """
     Load STDMQGISLoader class.
