@@ -111,6 +111,10 @@ class ImportData(QWizard, Ui_frmImport):
         self.btnSignFolder.clicked.connect(self.show_sign_folder)
         self.btnHouseFolder.clicked.connect(self.show_house_folder)
 
+        self.cbFamilyPhoto.toggled.connect(self.enable_family_photo)
+        self.cbSign.toggled.connect(self.enable_signature)
+        self.cbHousePhoto.toggled.connect(self.enable_house_photo)
+
         #Data Reader
         self.dataReader = None
          
@@ -124,6 +128,8 @@ class ImportData(QWizard, Ui_frmImport):
         self._init_translators()
 
         self.read_kobo_defaults()
+
+        self.check_download_all()
 
         self.toggleKoboOptions(False)
 
@@ -231,17 +237,19 @@ class ImportData(QWizard, Ui_frmImport):
 
                     dest_folder = ''
                     if a_field_name in ucols:
-                        dest_folder = self.findChild(QLineEdit, ucols[a_field_name]).text()
-                        field_value = feat.GetField(f)
+                        line_edit = self.findChild(QLineEdit, ucols[a_field_name])
+                        if line_edit.isEnabled():
+                            dest_folder = line_edit.text()
+                            field_value = feat.GetField(f)
 
-                        self.lblCurrFile.setText(field_value)
+                            self.lblCurrFile.setText(field_value)
 
-                        dest_url = dest_folder + '\\'+field_value
-                        src_url = self.edtMediaUrl.text()+field_value
+                            dest_url = dest_folder + '\\'+field_value
+                            src_url = self.edtMediaUrl.text()+field_value
 
-                        QApplication.processEvents()
+                            QApplication.processEvents()
 
-                        self.download(src_url, dest_url, username, password)
+                            self.download(src_url, dest_url, username, password)
             self.btnDownload.setEnabled(True)
         except:
             self.btnDownload.setEnabled(True)
@@ -290,8 +298,15 @@ class ImportData(QWizard, Ui_frmImport):
         # macOS
         if sys.platform.startswith('darwin'):
             subprocess.Popen(['open', folder])
-        
 
+    def enable_family_photo(self, checked):
+        self.edtFamilyFolder.setEnabled(checked)
+
+    def enable_signature(self, checked):
+        self.edtSignFolder.setEnabled(checked)
+
+    def enable_house_photo(self, checked):
+        self.edtHouseFolder.setEnabled(checked)
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -520,6 +535,15 @@ class ImportData(QWizard, Ui_frmImport):
         self.btnFamilyBrowse.setEnabled(mode)
         self.btnSignFolder.setEnabled(mode)
         self.btnHouseFolder.setEnabled(mode)
+
+        self.cbFamilyPhoto.setEnabled(mode)
+        self.cbSign.setEnabled(mode)
+        self.cbHousePhoto.setEnabled(mode)
+
+    def check_download_all(self):
+        self.cbFamilyPhoto.setCheckState(Qt.Checked)
+        self.cbSign.setCheckState(Qt.Checked)
+        self.cbHousePhoto.setCheckState(Qt.Checked)
 
     def _source_columns(self):
         return self.dataReader.getFields()
