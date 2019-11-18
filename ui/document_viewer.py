@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
 """
 from __future__ import division
 
+import os
+
 import logging
 
 from PyQt4.QtGui import (
@@ -51,6 +53,7 @@ from PyQt4.QtCore import (
     pyqtSignal,
     QSignalMapper,
     QFile,
+    QFileInfo,
     QSize
 )
 
@@ -551,8 +554,6 @@ class DocumentViewManager(QMainWindow):
             doc_sw.showNormal()
 
         else:
-            doc_viewer = self._create_viewer(document_widget)
-
             abs_doc_path = self.absolute_document_path(document_widget)
 
             if not QFile.exists(abs_doc_path):
@@ -571,6 +572,14 @@ class DocumentViewManager(QMainWindow):
                 )
 
                 return False
+
+            file_info = QFileInfo(abs_doc_path)
+            ext = file_info.suffix().lower()
+            if ext == 'pdf':
+                os.startfile(abs_doc_path)
+                return True
+
+            doc_viewer = self._create_viewer(document_widget)
 
             doc_viewer.load_document(abs_doc_path)
 
