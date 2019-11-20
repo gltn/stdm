@@ -597,13 +597,13 @@ class ImportData(QWizard, Ui_frmImport):
         if id_idx != -1:
             targetCols.remove('id')
 
-        virtual_cols = mapfile_section(target_table+'-virtual')
-        if len(virtual_cols) > 0:
-            self.chk_virtual.setChecked(True)
-
         remove_list = mapfile_section(target_table+'-remove')
         targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
         self._add_target_table_columns(targetCols)
+
+        virtual_cols = mapfile_section(target_table+'-virtual')
+        if len(virtual_cols) > 0:
+            self.chk_virtual.setChecked(True)
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:
