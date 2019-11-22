@@ -628,7 +628,7 @@ class OGRReader(object):
             if source_cols[0].lower()[:3]=='sta' and field_name.lower()[:3]=='sta':
                 match_idx = 1
 
-            if source_cols[0].lower()=='_parent_index' and field_name.lower()=='_parent_index':
+            if source_cols[0].lower()=='_submission__id' and field_name.lower()=='_submission__id':
                 match_idx = 1
                 cast = 'int'
 
