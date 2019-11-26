@@ -73,7 +73,7 @@ class Ui_frmLogin(object):
         frmLogin.setTabOrder(self.txtPassword, self.btnBox)
 
     def retranslateUi(self, frmLogin):
-        frmLogin.setWindowTitle(_translate("frmLogin", "STDM Login", None))
+        frmLogin.setWindowTitle(_translate("frmLogin", "SIF Login", None))
         self.btn_db_settings.setToolTip(_translate("frmLogin", "Edit database server settings", None))
         self.btn_db_settings.setStatusTip(_translate("frmLogin", "Edit database server settings", None))
         self.btn_db_settings.setWhatsThis(_translate("frmLogin", "Edit database server settings", None))

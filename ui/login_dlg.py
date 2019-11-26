@@ -29,7 +29,7 @@ from stdm.data.connection import DatabaseConnection
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.security.user import User
 
-SUPERUSER = 'postgres'
+SUPERUSER = ''
 
 class loginDlg(QDialog, Ui_frmLogin):
     '''
@@ -59,7 +59,7 @@ class loginDlg(QDialog, Ui_frmLogin):
         if self._test_connect_mode:
             btnLogin.setText(QApplication.translate("LoginDialog", "Test"))
             self.setWindowTitle(QApplication.translate("LoginDialog",
-                                                       "STDM Database "
+                                                       "SIF Database "
                                                        "Connection"))
             self.btn_db_settings.setVisible(False)
 
@@ -78,7 +78,7 @@ class loginDlg(QDialog, Ui_frmLogin):
             self.txtUserName.setFocus()
 
         else:
-            self.txtUserName.setText('postgres')
+            self.txtUserName.setText('')
             self.txtPassword.setFocus()
 
     def test_connect_mode(self):
@@ -162,7 +162,7 @@ class loginDlg(QDialog, Ui_frmLogin):
                 dbconfig = DatabaseConfig()
                 dbconn = dbconfig.read()
                 if  dbconn is None:
-                    msg = QApplication.translate("loginDlg","The STDM database "
+                    msg = QApplication.translate("loginDlg","The SIF database "
                                                             "connection has not "
                                                             "been configured in "
                                                             "your system.\nWould "

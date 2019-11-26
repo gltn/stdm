@@ -203,7 +203,7 @@ class Ui_frmExportWizard(object):
         QtCore.QMetaObject.connectSlotsByName(frmExportWizard)
 
     def retranslateUi(self, frmExportWizard):
-        frmExportWizard.setWindowTitle(_translate("frmExportWizard", "Export STDM Data...", None))
+        frmExportWizard.setWindowTitle(_translate("frmExportWizard", "Export SIF Data...", None))
         self.pgDestination.setTitle(_translate("frmExportWizard", "Destination Options", None))
         self.pgDestination.setSubTitle(_translate("frmExportWizard", "Select destination file name and format.", None))
         self.groupBox_3.setTitle(_translate("frmExportWizard", "Destination Format:", None))

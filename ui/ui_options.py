@@ -220,7 +220,7 @@ class Ui_DlgOptions(object):
         self.btn_composer_out_folder.setToolTip(_translate("DlgOptions", "Choose output directory", None))
         self.btn_composer_out_folder.setText(_translate("DlgOptions", "...", None))
         self.upgradeButton.setText(_translate("DlgOptions", "Upgrade", None))
-        self.label_9.setText(_translate("DlgOptions", "Upgrade STDM Configuration to 1.4 ", None))
+        self.label_9.setText(_translate("DlgOptions", "Upgrade SIF Configuration to 1.4 ", None))
         self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
         self.label_6.setText(_translate("DlgOptions", "Supporting documents folder", None))
         self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))

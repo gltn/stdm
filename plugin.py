@@ -221,7 +221,7 @@ class STDMQGISLoader(object):
 
         # Profile status label showing the current profile
         self.profile_status_label = None
-        LOGGER.debug('STDM plugin has been initialized.')
+        LOGGER.debug('SIF plugin has been initialized.')
         self.entity_browser = None
         # Load configuration file
         self.config_path = QDesktopServices.storageLocation(
@@ -271,7 +271,7 @@ class STDMQGISLoader(object):
         self.stdmMenu=QMenu()
         self.stdmMenu.setTitle(
             QApplication.translate(
-                "STDMQGISLoader","STDM"
+                "STDMQGISLoader","DRC SIF"
             )
         )
         #Initialize the menu bar item
@@ -287,7 +287,7 @@ class STDMQGISLoader(object):
         self.stdmMenu.setToolTip(
             QApplication.translate(
                 "STDMQGISLoader",
-                "STDM plugin menu"
+                "SIF plugin menu"
             )
         )
 
@@ -308,8 +308,8 @@ class STDMQGISLoader(object):
 
     def initToolbar(self):
         #Load initial STDM toolbar
-        self.stdmInitToolbar = self.iface.addToolBar("STDM")
-        self.stdmInitToolbar.setObjectName("STDM")
+        self.stdmInitToolbar = self.iface.addToolBar("SIF")
+        self.stdmInitToolbar.setObjectName("SIF")
         #Add actions to the toolbar
         self.stdmInitToolbar.addAction(self.loginAct)
 
@@ -364,8 +364,8 @@ class STDMQGISLoader(object):
                     create_postgis()
                 else:
                     err_msg = QApplication.translate(
-                        "STDM",
-                        "STDM cannot be loaded because the system has "
+                        "SIF",
+                        "SIF cannot be loaded because the system has "
                         "detected that the PostGIS extension is missing "
                         "in '{0}' database.\nCheck that PostGIS has been "
                         "installed. Please contact the system "
@@ -375,7 +375,7 @@ class STDMQGISLoader(object):
                     QMessageBox.critical(
                         self.iface.mainWindow(),
                         QApplication.translate(
-                            "STDM","Spatial Extension Error"
+                            "SIF","Spatial Extension Error"
                         ),
                         err_msg
                     )
@@ -683,7 +683,7 @@ class STDMQGISLoader(object):
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
                     QApplication.translate(
-                        'STDM', 'Load Configuration Error'
+                        'SIF', 'Load Configuration Error'
                     ),
                     unicode(io_err))
 
@@ -759,7 +759,7 @@ class STDMQGISLoader(object):
             message = QApplication.translate(
                 'ConfigurationFileUpdater',
                 'Would you like to view the '
-                'new features and changes of STDM {}?'.format(major_version)
+                'new features and changes of SIF {}?'.format(major_version)
             )
 
             result, checkbox_result = simple_dialog(
@@ -799,7 +799,7 @@ class STDMQGISLoader(object):
         :rtype: bool
         """
         self.progress = STDMProgressDialog(parent)
-        self.progress.overall_progress('Upgrading STDM Configuration...')
+        self.progress.overall_progress('Upgrading SIF Configuration...')
 
         home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
 
@@ -851,7 +851,7 @@ class STDMQGISLoader(object):
                     self.iface.mainWindow(),
                     QApplication.translate(
                         'STDMQGISLoader',
-                        'Upgrade STDM Configuration'
+                        'Upgrade SIF Configuration'
                     ),
                     QApplication.translate(
                         'STDMQGISLoader',
@@ -875,7 +875,7 @@ class STDMQGISLoader(object):
                     {WIZARD_RUN: 1}
                 )
                 self.configuration_file_updater.append_log(
-                    'Successfully migrated STDM '
+                    'Successfully migrated SIF '
                     'Configuration to version 1.2!'
                 )
                 return True
@@ -1559,7 +1559,7 @@ class STDMQGISLoader(object):
         )
         message = QApplication.translate(
             'STDMPlugin',
-            'Current STDM Profile: {}'.format(
+            'Current SIF Profile: {}'.format(
                 profile_name
             )
         )

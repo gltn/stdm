@@ -242,7 +242,7 @@ class Ui_frmImport(object):
         QtCore.QMetaObject.connectSlotsByName(frmImport)
 
     def retranslateUi(self, frmImport):
-        frmImport.setWindowTitle(_translate("frmImport", "Import to STDM", None))
+        frmImport.setWindowTitle(_translate("frmImport", "Import to SIF", None))
         self.pgSource.setTitle(_translate("frmImport", "Source Data", None))
         self.pgSource.setSubTitle(_translate("frmImport", "Specify the location of the source file and representative data type.", None))
         self.groupBox.setTitle(_translate("frmImport", "Source:", None))
