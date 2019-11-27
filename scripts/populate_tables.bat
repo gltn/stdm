@@ -3,7 +3,7 @@ echo off
 REM parameters
 SET DB_NAME=flts
 SET PG_VERSION=11
-SET PG_PORT=5335
+SET PG_PORT=5801
 SET PG_USER=postgres
 SET PG_HOST=localhost
 SET SCR="%USERPROFILE%\.qgis2\python\plugins\stdm\scripts\populate_tables.sql"

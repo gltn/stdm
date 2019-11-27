@@ -131,9 +131,9 @@ CREATE TRIGGER insert_plots
 AFTER INSERT ON cb_lis_plot
     FOR EACH ROW EXECUTE PROCEDURE insert_plots();
 
----- INSERT TIMESTAMP AFTER INSERT COMMENTS
+---- INSERT TIMESTAMP AFTER INSERT
 
-CREATE OR REPLACE FUNCTION insert_comment_timestamp() RETURNS TRIGGER AS $insert_comment_timestamp$
+CREATE OR REPLACE FUNCTION insert_timestamp() RETURNS TRIGGER AS $insert_timestamp$
     BEGIN
         --- Update plot from lis_plot
         NEW.timestamp = NOW();
@@ -141,25 +141,15 @@ CREATE OR REPLACE FUNCTION insert_comment_timestamp() RETURNS TRIGGER AS $insert
         RETURN NULL;
     END;
 
-$insert_comment_timestamp$ LANGUAGE plpgsql;
+$insert_timestamp$ LANGUAGE plpgsql;
 
 CREATE TRIGGER insert_comment_timestamp
 BEFORE INSERT ON cb_comment
-    FOR EACH ROW EXECUTE PROCEDURE insert_comment_timestamp();
+    FOR EACH ROW EXECUTE PROCEDURE insert_timestamp();
 
----- INSERT TIMESTAMP AFTER INSERT WORKFLOW VALUES
-
-CREATE OR REPLACE FUNCTION insert_workflow_timestamp() RETURNS TRIGGER AS $insert_workflow_timestamp$
-    BEGIN
-        --- Update plot from lis_plot
-        NEW.timestamp = NOW();
-				RETURN NEW;
-        RETURN NULL;
-    END;
-
-$insert_workflow_timestamp$ LANGUAGE plpgsql;
+---- TRIGGER EXECUTED ON SCHEME WORKFLOW INSERT OR UPDATE
 
 CREATE TRIGGER insert_workflow_timestamp
 BEFORE INSERT ON cb_scheme_workflow
-    FOR EACH ROW EXECUTE PROCEDURE insert_workflow_timestamp();
+    FOR EACH ROW EXECUTE PROCEDURE insert_timestamp();
 

@@ -3,7 +3,7 @@ echo off
 
 SET DB_NAME=flts
 SET PG_VERSION=11
-SET PG_PORT=5335
+SET PG_PORT=5801
 SET PG_USER=postgres
 SET STDM_HOME="%USERPROFILE%\.qgis2\python\plugins\stdm"
 
