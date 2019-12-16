@@ -44,10 +44,10 @@ from stdm.data.database import (
     table_mapper
 )
 from stdm.data.pg_utils import table_column_names
-
 from stdm.utils.util import (
     getIndex
 )
+from stdm.data.configuration import entity_model
 
 from .exceptions import TranslatorException
 
@@ -76,14 +76,14 @@ class SourceValueTranslator(object):
         self._db_session = STDMDb.instance().session
         self.clear()
 
-        #Primary entity
+        # Primary entity
         self.entity = None
 
     def clear(self):
         self._referencing_table = ""
         self._referenced_table = ""
 
-        #Some translators like the MultipleEnumeration require ordered items
+        # Some translators like the MultipleEnumeration require ordered items
         self._input_referenced_columns = OrderedDict()
         self._output_referenced_column = ""
         self._referencing_column = ""
@@ -205,17 +205,6 @@ class SourceValueTranslator(object):
         """
         return self._input_referenced_columns.keys()
 
-    def _mapped_class(self, table_name):
-        """
-        :param table_name: Name of the database table.
-        :type table_name: str
-        :return: The mapped class that corresponds to the given table name.
-        :rtype: object
-        """
-        from stdm.ui import DeclareMapping
-
-        return DeclareMapping.instance().tableMapping(table_name)
-
     def set_parent(self, parent):
         """
         Set the parent of this translator.
@@ -257,14 +246,14 @@ class SourceValueTranslator(object):
         """
         res = False
 
-        #Check destination table
+        # Check destination table
         if self._table(self._referencing_table) is None:
             msg = QApplication.translate("SourceValueTranslator",
                                          "Target table '%s' does not exist."
                                          % (self._referencing_table))
             raise TranslatorException(msg)
 
-        #Check destination column
+        # Check destination column
         dest_columns = self._table_columns(self._referencing_table)
         referencing_col_idx = getIndex(dest_columns, self._referencing_column)
 
@@ -274,7 +263,7 @@ class SourceValueTranslator(object):
                                          % (self._referencing_column))
             raise TranslatorException(msg)
 
-        #Check link table
+        # Check link table
         if self._table(self._referenced_table) is None:
             msg = QApplication.translate("SourceValueTranslator",
                                          "Linked table '%s' does not exist."
@@ -302,6 +291,7 @@ class SourceValueTranslator(object):
         meta = MetaData(bind=STDMDb.instance().engine)
 
         return Table(name, meta, autoload=True)
+
 
 class ValueTranslatorManager(object):
     """
@@ -491,10 +481,12 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
     This class translates enumeration values from a source column separated by
     a delimiter specified by the user..
     """
-
     def __init__(self):
         SourceValueTranslator.__init__(self)
         self._separator = ""
+
+        # Container for lookup id and corresponding values
+        self._lk_up_id_vals = {}
 
     def separator(self):
         """
@@ -512,124 +504,66 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
         """
         if sep:
             self._separator = sep
-
         else:
             self._separator = " "
 
     def referencing_column_value(self, field_values):
         """
-        Creates enumeration tables based on the delimiter-separated enumeration
-        values.
+        Gets a list of lookup objects corresponding to the values extracted
+        from the source using the separator.
         :param field_values: Pair of field names and corresponding values i.e.
         {field1:value1, field2:value2, field3:value3...}
         :type field_values: dict
-        :return: One or more object instances of referenced enumeration tables.
+        :return: One or more object instances of lookup value objects.
         :rtype: list
         """
         if len(self._input_referenced_columns) == 0:
             return None
 
         num_cols = len(self._input_referenced_columns)
+        cols_iter = itertools.islice(
+            self._input_referenced_columns.iteritems(),
+            num_cols
+        )
 
-        has_other_col = False
-
-        if num_cols == 1:
-            cols_iter = itertools.islice(self._input_referenced_columns.iteritems(),
-                                         num_cols)
-
-        elif num_cols == 2:
-            cols_iter = itertools.islice(self._input_referenced_columns.iteritems(),
-                                         num_cols)
-            has_other_col = True
-
-        #Tuple of one or two items.The format is - (source primary enum column, enum table primary column)
+        # Tuple of one or two items.The format is -
+        # (source primary enum column, enum table primary column)
         enum_cols_pairs = list(cols_iter)
-
         source_primary_col, enum_primary_col = enum_cols_pairs[0]
 
-        delimiter_sep_enums = field_values.get(source_primary_col, None)
-
-        if not isinstance(delimiter_sep_enums, str):
+        delimited_source_value = field_values.get(source_primary_col, None)
+        if not delimited_source_value:
             return IgnoreType()
 
-        if has_other_col:
-            source_other_col, enum_other_col = enum_cols_pairs[1]
-            other_col_value = field_values.get(source_other_col, None)
-
-        enum_vals = delimiter_sep_enums.split(self._separator)
-
-        #Get mapped enumeration class associated with the target table.
-        enum_class = self._mapped_class(self._referenced_table)
-
-        if enum_class is None:
-            msg = QApplication.translate("MultipleEnumerationTranslator",
-                    u"The referenced enumeration table could not be mapped "
-                    "for the '{0}' column. Values from the source table will "
-                    "not be imported to the STDM database".format(self._referencing_column))
-            parent_widget = self._parent if isinstance(self._parent, QWidget) else None
-            QMessageBox.warning(parent_widget,
-                                QApplication.translate("MultipleEnumerationTranslator",
-                                                       "Multiple Enumeration Import"),
-                                msg)
+        if not isinstance(delimited_source_value, basestring):
             return IgnoreType()
 
-        #Get column type of the enumeration
-        enum_col_type = enum_class.__mapper__.columns[enum_primary_col].type
+        # Get the lookup values used in the multiple select
+        dest_col_obj = self.entity.column(enum_primary_col)
+        if not dest_col_obj:
+            return IgnoreType()
 
-        if not hasattr(enum_col_type, "enum"):
-            msg = QApplication.translate("MultipleEnumerationTranslator",
-                                         u"'{0}' column in '{1}' table is not a valid "
-                                         "enumeration column.\nSource values in the "
-                                         "primary column will not be imported."
-                                         .format(enum_primary_col,
-                                                 self._referenced_table))
-            parent_widget = self._parent if isinstance(self._parent, QWidget) else None
-            QMessageBox.warning(parent_widget,
-                                    QApplication.translate("MultipleEnumerationTranslator",
-                                                           "Multiple Enumeration Import"),
-                                    msg)
+        # Get lookup entity and corresponding SQLAlchemy class
+        lk_entity = dest_col_obj.value_list
+        lookup_mapped_cls = entity_model(lk_entity)
 
-        enum_obj = enum_col_type.enum
+        # Lookup objects corresponding to the values in the source string
+        lk_objs = []
+        lk_vals = delimited_source_value.split(self._separator)
 
-        enum_class_instances = []
+        # Get the lookup objects corresponding to the separated source values
+        for kv in lk_vals:
+            kv = kv.strip()
+            if kv:
+                # Get corresponding lookup value object based on a
+                # case-insensitive search
+                lookup_obj = self._db_session.query(lookup_mapped_cls).filter(
+                    func.lower(lookup_mapped_cls.value) == func.lower(kv)
+                ).first()
+                if lookup_obj:
+                    lk_objs.append(lookup_obj)
 
-        #Create enum class instances and append enum symbols
-        for e_val in enum_vals:
-            if not isinstance(e_val, str) or not isinstance(e_val, unicode):
-                e_val = unicode(e_val)
-
-            str_e_val = e_val.strip()
-
-            if str_e_val:
-                enum_symbol = enum_obj.from_string(str_e_val)
-
-                enum_class_instance = enum_class()
-                setattr(enum_class_instance, enum_primary_col, enum_symbol)
-
-                #If other is defined
-                enum_other_value = enum_obj.other_value()
-                if e_val == enum_other_value and enum_other_value != -1:
-                    if has_other_col:
-                        if not other_col_value is None:
-                            setattr(enum_class_instance, enum_other_col,
-                                    other_col_value)
-
-                    else:
-                        msg = QApplication.translate("MultipleEnumerationTranslator",
-                                u"A value that represents 'Other' in the '{0}' "
-                                "table has been detected but there is no "
-                                "configuration for 'Other' in the translator. "
-                                "This value will not be imported."
-                                .format(self._referenced_table))
-                        parent_widget = self._parent if isinstance(self._parent, QWidget) else None
-                        QMessageBox.warning(parent_widget,
-                                                QApplication.translate("MultipleEnumerationTranslator",
-                                                                       "Multiple Enumeration Import"),
-                                                msg)
-
-                enum_class_instances.append(enum_class_instance)
-
-        return enum_class_instances
+        return lk_objs
 
 
 class SourceDocumentTranslator(SourceValueTranslator):

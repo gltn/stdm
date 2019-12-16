@@ -123,19 +123,20 @@ class LookupTranslatorConfig(ValueTranslatorConfig):
 
 LookupTranslatorConfig.register()
 
-'''
+
 class MultipleEnumerationTranslatorConfig(ValueTranslatorConfig):
     """
     Configuration for the MultipleEnumerationTranslator dialog.
     """
-    key = QApplication.translate("MultipleEnumerationTranslator",
-                                 "Enumeration")
+    key = QApplication.translate("MultipleSelectConfig",
+                                 "Multiple select")
 
     @staticmethod
     def create(parent, source_cols, dest_table, dest_col, src_col):
         return MultipleEnumerationDialog(parent, source_cols, dest_table,
                                          dest_col, src_col)
 
+
 MultipleEnumerationTranslatorConfig.register()
-'''
+
 

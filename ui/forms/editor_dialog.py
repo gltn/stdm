@@ -167,9 +167,9 @@ class EntityEditorDialog(QDialog, MapperMixin):
             if isinstance(parent._parent, EntityEditorDialog):
                 # hide collections form child editor
                 self._disable_collections = True
-
         except AttributeError:
             self._parent._parent = None
+
         # Set title
         editor_trans = self.tr('Editor')
         if self._entity.label is not None:
