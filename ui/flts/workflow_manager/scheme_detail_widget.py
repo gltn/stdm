@@ -21,6 +21,7 @@ copyright            : (C) 2019
 
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from stdm.ui.flts.workflow_manager.data import Load
 from stdm.ui.flts.workflow_manager.pdf_viewer_widget import PDFViewerWidget
 from stdm.ui.flts.workflow_manager.config import StyleSheet
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
@@ -38,7 +39,8 @@ class SchemeDetailTableView(QTableView):
         self._load_collections = widget_properties["load_collections"]
         self._data_service = widget_properties["data_service"]
         self._data_service = self._data_service(profile, scheme_id)
-        self.model = WorkflowManagerModel(self._data_service)
+        data_loader = Load(self._data_service)
+        self.model = WorkflowManagerModel(data_loader, self._data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
@@ -58,7 +60,7 @@ class SchemeDetailTableView(QTableView):
                 self.model.load_collection()
             else:
                 self.model.load()
-        except (exc.SQLAlchemyError, Exception) as e:
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
                 self.tr('{} Entity Model'.format(self.model.entity_name)),

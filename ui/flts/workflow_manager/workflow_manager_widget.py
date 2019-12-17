@@ -34,6 +34,11 @@ from stdm.ui.flts.workflow_manager.data_service import (
     HolderDataService,
     SchemeDataService
 )
+from stdm.ui.flts.workflow_manager.data import (
+    Load,
+    Update,
+    Save
+)
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.scheme_approval import (
     Approve,
@@ -69,6 +74,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._approve = Approve(self.data_service, self._object_name)
         self._disapprove = Disapprove(self.data_service)
         self._lookup = self.data_service.lookups
+        data_loader = Load(self.data_service, self._workflow_load_filter)
         _header_style = StyleSheet().header_style
         self._comments_title = "Comments"
         self.setWindowTitle(title)
@@ -80,7 +86,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._set_button_icons()
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
-            self.data_service, self._workflow_load_filter
+            data_loader, self.data_service
         )
         self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
@@ -692,7 +698,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     items, next_items, save_items
                 )
             else:
-                updated_rows = self._model.update(items)
+                updated_rows = self._update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to update: {}".format(e)
             self._show_critical_message(msg)
@@ -722,18 +728,54 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         updated_rows = 0
         try:
             if next_items and save_items:
-                self._model.update(next_items)  # Update succeeding workflow
-                self._model.save(save_items)  # Save succeeding workflow
+                self._update(next_items)  # Update succeeding workflow
+                self._save(save_items)  # Save succeeding workflow
             elif next_items:
-                self._model.update(next_items)
+                self._update(next_items)
             elif save_items:
-                self._model.save(save_items)
+                self._save(save_items)
             if items:
-                updated_rows = self._model.update(items)
+                updated_rows = self._update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         finally:
             return updated_rows
+
+    def _update(self, updates):
+        """
+        Update database record(s) on edit
+        :param updates: Update items - values and column indexes
+        :type updates: Dictionary
+        :return: Number of updated items
+        :rtype: Integer
+        """
+        updated = 0
+        try:
+            updated = Update(
+                updates, self._model.results, self.data_service
+            ).update()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return updated
+
+    def _save(self, save_items):
+        """
+        Saves values to database
+        :param save_items: Save items; columns, values and entity
+        :type save_items: Dictionary
+        :return: Number of saved items
+        :rtype: Integer
+        """
+        saved = 0
+        try:
+            saved = Save(
+                save_items, self._model.results, self.data_service
+            ).save()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return saved
 
     @staticmethod
     def _approval_message(prefix, num_records, scheme_numbers=None):
