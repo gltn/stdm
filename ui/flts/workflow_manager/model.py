@@ -36,18 +36,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         self.results = []
         self._headers = []
 
-    def flags(self, index):
-        """
-        Implementation of QAbstractTableModel
-        flags method
-        """
-        column = index.column()
-        if not index.isValid():
-            return Qt.ItemIsEnabled
-        elif self._headers[column].flag == Qt.ItemIsUserCheckable:
-            return Qt.ItemFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
-        return Qt.ItemFlags(QAbstractTableModel.flags(self, index))
-
     def data(self, index, role=Qt.DisplayRole):
         """
         Implementation of QAbstractTableModel
@@ -60,16 +48,15 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         value = result.get(column, None)
         flag = self._headers[column].flag
-        if role == Qt.DecorationRole and flag == Qt.DecorationRole:
+        if role == Qt.DisplayRole and flag not in(
+                Qt.ItemIsUserCheckable, Qt.DecorationRole
+        ):
+            return value
+        elif role == Qt.DecorationRole and flag == Qt.DecorationRole:
             if self._icons:
                 if isinstance(value, float):
                     value = float(value)
                 return self._icons[value]
-            return None
-        elif role == Qt.DisplayRole and flag not in(
-                Qt.ItemIsUserCheckable, Qt.DecorationRole
-        ):
-            return value
         elif role == Qt.CheckStateRole and flag == Qt.ItemIsUserCheckable:
             if isinstance(value, float):
                 return Qt.Checked if int(value) == 1 else Qt.Unchecked
@@ -93,9 +80,6 @@ class WorkflowManagerModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if self._headers:
                 return self._headers[section].name
-        elif orientation == Qt.Vertical:
-            return
-        return int(section + 1)
 
     def rowCount(self, index=QModelIndex()):
         """
@@ -109,31 +93,32 @@ class WorkflowManagerModel(QAbstractTableModel):
         Implementation of QAbstractTableModel
         columnCount method
         """
-        try:
-            return len(self._headers)
-        except IndexError as e:
-            return 0
+        return len(self._headers)
+
+    def flags(self, index):
+        """
+        Implementation of QAbstractTableModel
+        flags method
+        """
+        column = index.column()
+        flag = QAbstractTableModel.flags(self, index)
+        if self._headers[column].flag == Qt.ItemIsUserCheckable:
+            flag |= Qt.ItemIsUserCheckable
+        return flag
 
     def setData(self, index, value, role=Qt.EditRole):
         """
         Implementation of QAbstractTableModel
         setData method
         """
-        if not index.isValid() and \
-                not (0 <= index.row() < len(self.results)):
-            return False
-        result = self.results[index.row()]
-        column = index.column()
-        flag = self._headers[column].flag
-        if isinstance(result.get(column, None), float):
-            if flag == Qt.ItemIsUserCheckable:
+        if index.isValid() and (0 <= index.row() < len(self.results)):
+            result = self.results[index.row()]
+            column = index.column()
+            if role == Qt.CheckStateRole:
                 result[column] = 1.0 if value == Qt.Checked else 0.0
-            else:
-                result[column] = float(value)
-        else:
-            result[column] = value
-        self.dataChanged.emit(index, index)
-        return True
+            self.dataChanged.emit(index, index)
+            return True
+        return False
 
     def get_record_id(self, row=0):
         """
