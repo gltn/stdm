@@ -517,7 +517,7 @@ LookUp = namedtuple(
     'LookUp',
     [
         'schemeLodgement', 'schemeEstablishment', 'firstExamination',
-        'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
+        'secondExamination', 'thirdExamination', 'importPlot', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'HELD', 'CHECK', 'STATUS',
         'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN', 'VIEW_PDF'
@@ -649,6 +649,9 @@ configurations = {
         ),
         thirdExamination=EntityRecordId(
             'check_lht_workflow', {'value': 'Third Assessment'}
+        ),
+        importPlot=EntityRecordId(
+            'check_lht_workflow', {'value': 'Import Plot'}
         ),
         APPROVED=EntityRecordId(
             'check_lht_approval_status', {'value': 'Approved'}
@@ -799,9 +802,9 @@ configurations = {
                 size=QSize(24, 24)
             )
         ],
-        'schemePlot': [
+        'importPlot': [
             ToolbarButton(
-                name="importButton",
+                name="plotsImportButton",
                 label="Import",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
                 size=QSize(24, 24)

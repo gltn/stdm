@@ -114,9 +114,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._close_tab)
-        self.approveButton.clicked.connect(
-            lambda: self._on_approve(self._lookup.APPROVED(), "pass")
-        )
+        if self.approveButton:
+            self.approveButton.clicked.connect(
+                lambda: self._on_approve(self._lookup.APPROVED(), "pass")
+            )
         if self.disapproveButton:
             self.disapproveButton.clicked.connect(
                 lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
@@ -500,9 +501,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if isinstance(widgets, list):
             for widget in widgets:
-                widget.setEnabled(True)
+                if widget:
+                    widget.setEnabled(True)
         else:
-            widgets.setEnabled(True)
+            if widgets:
+                widgets.setEnabled(True)
 
     @staticmethod
     def _is_alive(widget):
@@ -927,9 +930,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if isinstance(widgets, list):
             for widget in widgets:
-                widget.setEnabled(False)
+                if widget:
+                    widget.setEnabled(False)
         else:
-            widgets.setEnabled(False)
+            if widgets:
+                widgets.setEnabled(False)
 
     def _on_tab_change(self, index):
         """

@@ -182,9 +182,9 @@ class ThirdExaminationToolbarWidget(ToolbarWidget):
         self.widgets.update(self.create_search_widget())
 
 
-class SchemePlotToolbarWidget(ToolbarWidget):
+class ImportPlotToolbarWidget(ToolbarWidget):
     """
-    Scheme Plot toolbar widget
+    Import Plot toolbar widget
     """
     def __init__(self):
         ToolbarWidget.__init__(self)
@@ -195,7 +195,7 @@ class SchemePlotToolbarWidget(ToolbarWidget):
         """
         Creates Scheme Plot toolbar widgets
         """
-        options = self.config['schemePlot'] + self.config["sharedButtons"]
+        options = self.config['importPlot'] + self.config["sharedButtons"]
         self.widgets.update(self.create_buttons(options))
         self.widgets.update(self.create_search_widget())
 
@@ -215,7 +215,7 @@ def get_toolbar(name):
         "firstExamination": FirstExaminationtToolbarWidget(),
         "secondExamination": SecondExaminationToolbarWidget(),
         "thirdExamination": ThirdExaminationToolbarWidget(),
-        "schemePlot": SchemePlotToolbarWidget()
+        "importPlot": ImportPlotToolbarWidget()
 
     }
     return toolbar[name]

@@ -2483,9 +2483,20 @@ class STDMQGISLoader(object):
         scan_cert.exec_()
 
     def print_certificate(self):
-        """Load the dialog for printing of certificate."""
-        print_cert = PrintCertificateDialog(self.iface.mainWindow())
-        print_cert.exec_()
+        """
+        Docks Import Plot workflow manager widget
+        """
+        workflow_manager = WorkflowManagerWidget(
+            "Plot Import Workflow Manager",
+            "importPlot"
+        )
+        dock_widget = DockWidgetFactory(workflow_manager, self.iface)
+        dock_widget.show_dock_widget()
+
+    # def print_certificate(self):
+    #     """Load the dialog for printing of certificate."""
+    #     print_cert = PrintCertificateDialog(self.iface.mainWindow())
+    #     print_cert.exec_()
 
     def flts_search(self):
         """
