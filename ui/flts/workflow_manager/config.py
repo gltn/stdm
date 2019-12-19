@@ -16,7 +16,6 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 
-from datetime import datetime
 from collections import namedtuple
 from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
@@ -283,31 +282,21 @@ class StyleSheet(Config):
         return self.get_data('header_view_style')
 
 
-class SchemeButtonIcons(ButtonIcons):
+class ToolbarButtonsConfig(Config):
     """
-    Scheme QPushButton icons configuration interface
+    Scheme QPushButton configuration interface
     """
-    def __init__(self, parent=None):
-        super(SchemeButtonIcons, self).__init__()
-        self._parent = parent
+    def __init__(self):
+        super(ToolbarButtonsConfig, self).__init__()
 
     @property
     def buttons(self):
         """
-        Scheme QPushButton icons options
-        :return: Scheme QPushButton icon options
+        Returns QPushButton configurations
+        :return: QPushButton configuration options
         :rtype: Dictionary
         """
-        config = self._create_config()
-        return super(SchemeButtonIcons, self).button_icons(config)
-
-    def _create_config(self):
-        configs = self.get_data('scheme_button_icons')
-        return [
-            (getattr(self._parent, button), size, icon)
-            for button, size, icon in configs
-            if hasattr(self._parent, button)
-        ]
+        return self.get_data('toolbar_buttons')
 
 
 class SchemeConfig(Config):
@@ -374,7 +363,7 @@ class SchemeMessageBox(Config):
     @property
     def message_box(self):
         """
-        Returns QMessageBox icon configurations
+        Returns QMessageBox configurations
         :return: QMessageBox configuration options
         :rtype: Dictionary
         """
@@ -536,6 +525,9 @@ LookUp = namedtuple(
 )
 MessageBox = namedtuple(
     'MessageBox', ['name', 'label', 'role', 'icon']
+)
+ToolbarButton = namedtuple(
+    'ToolbarButton', ['name', 'label', 'icon', 'size']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
@@ -742,36 +734,86 @@ configurations = {
         4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
         'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
     },
-    'scheme_button_icons': [
-            (
-                "approveButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
+    'toolbar_buttons': {
+        'sharedButtons': [
+            ToolbarButton(
+                name="Holders",
+                label="Holders",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "disapproveButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
+            ToolbarButton(
+                name="Documents",
+                label="Documents",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "holdButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+            ToolbarButton(
+                name="Comments",
+                label="Comments",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'searchButton': [
+            ToolbarButton(
+                name="searchButton",
+                label="Search",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_search.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'schemeLodgement': [
+            ToolbarButton(
+                name="approveButton",
+                label="Pass",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "holdersButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
+            ToolbarButton(
+                name="holdButton",
+                label="Hold",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'schemeExamination': [
+            ToolbarButton(
+                name="approveButton",
+                label="Pass",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "documentsButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
+            ToolbarButton(
+                name="disapproveButton",
+                label="Reject",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'thirdExamination': [
+            ToolbarButton(
+                name="plotsButton",
+                label="Plots",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'schemePlot': [
+            ToolbarButton(
+                name="importButton",
+                label="Import",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "commentsButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
+            ToolbarButton(
+                name="plotsButton",
+                label="Plots",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
+                size=QSize(24, 24)
             ),
-            (
-                "searchButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_search.png")
-            ),
-    ],
+        ]
+    },
     'message_box': {
         'approveButton': [
             MessageBox(

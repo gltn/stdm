@@ -23,7 +23,6 @@ from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
     SchemeMessageBox,
-    SchemeButtonIcons,
     StyleSheet,
     TabIcons,
 )
@@ -49,6 +48,7 @@ from stdm.ui.flts.workflow_manager.message_box_widget import(
     MessageBoxButtons,
     get_message_box,
 )
+from stdm.ui.flts.workflow_manager.toolbar_widget import get_toolbar
 from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
@@ -79,11 +79,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
-        self.holdersButton.setObjectName("Holders")
-        self.documentsButton.setObjectName("Documents")
-        self.commentsButton.setObjectName(self._comments_title)
-        self._add_button()
-        self._set_button_icons()
+
+        toolbar = get_toolbar(self._object_name)
+        toolbar_widgets = toolbar.widgets
+        layout = toolbar.layout
+        self.toolbarFrame.setLayout(layout)
+        self.approveButton = toolbar_widgets.get("approveButton")
+        self.disapproveButton = toolbar_widgets.get("disapproveButton")
+        self.holdButton = toolbar_widgets.get("holdButton")
+        self.holdersButton = toolbar_widgets.get("Holders")
+        self.documentsButton = toolbar_widgets.get("Documents")
+        self.commentsButton = toolbar_widgets.get("Comments")
+        self.searchEdit = toolbar_widgets.get("searchEdit")
+        self.filterComboBox = toolbar_widgets.get("filterComboBox")
+        self.searchButton = toolbar_widgets.get("searchButton")
+
         self.table_view = QTableView()
         self._model = WorkflowManagerModel(
             data_loader, self.data_service
@@ -107,45 +117,18 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.approveButton.clicked.connect(
             lambda: self._on_approve(self._lookup.APPROVED(), "pass")
         )
+        if self.disapproveButton:
+            self.disapproveButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
+            )
+        if self.holdButton:
+            self.holdButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.HELD(), "hold")
+            )
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self.commentsButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
-
-    def _add_button(self):
-        """
-        Adds Workflow Manager button
-        """
-        button = QPushButton()
-        button.setDisabled(True)
-        layout = QHBoxLayout()
-        layout.addWidget(button)
-        layout.setMargin(0)
-        self.disapproveFrame.setLayout(layout)
-        if self._object_name == "schemeLodgement":
-            button.setText("Hold")
-            button.setObjectName("holdButton")
-            self.holdButton = button
-            self.holdButton.clicked.connect(
-                lambda: self._on_disapprove(self._lookup.HELD(), "hold")
-            )
-            return
-        button.setText("Reject")
-        self.disapproveButton = button
-        button.setObjectName("disapproveButton")
-        self.disapproveButton.clicked.connect(
-            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
-        )
-
-    def _set_button_icons(self):
-        """
-        Sets QPushButton icons
-        """
-        icons = SchemeButtonIcons(self)
-        buttons = icons.buttons
-        for button, options in buttons.iteritems():
-            button.setIcon(options.icon)
-            button.setIconSize(options.size)
 
     @property
     def _workflow_load_filter(self):
@@ -283,17 +266,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.commentsButton
         ])
         # TODO: Start refactor. Combine with _on_uncheck_disable_widgets
-        if self._lookup.PENDING() in status or \
+        if self.approveButton and self._lookup.PENDING() in status or \
                 self._lookup.DISAPPROVED() in status or \
                 self._lookup.HELD() in status:
             self._enable_widget(self.approveButton)
-        if self._lookup.PENDING() in status or \
-                self._lookup.APPROVED() in status:
-            if hasattr(self, "disapproveButton"):
-                self._enable_widget(getattr(self, "disapproveButton"))
-        if self._lookup.DISAPPROVED() in status and \
-                hasattr(self, "holdButton"):
-            self._enable_widget(getattr(self, "holdButton"))
+        if self._lookup.PENDING() in status or self._lookup.APPROVED() in status:
+            if self.disapproveButton:
+                self._enable_widget(self.disapproveButton)
+        if self.holdButton and self._lookup.DISAPPROVED() in status:
+            self._enable_widget(self.holdButton)
         self._on_uncheck_disable_widgets()
         # TODO: End refactor
 
@@ -915,10 +896,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         # TODO: Start refactor. Combine with _on_check_enable_widgets
         if not self._checked_ids:
             self._close_tab(1)
-            if hasattr(self, "disapproveButton"):
-                self._disable_widget(getattr(self, "disapproveButton"))
-            elif hasattr(self, "holdButton"):
-                self._disable_widget(getattr(self, "holdButton"))
+            if self.disapproveButton:
+                self._disable_widget(self.disapproveButton)
+            elif self.holdButton:
+                self._disable_widget(self.holdButton)
             self._disable_widget([
                 self.approveButton, self.holdersButton,
                 self.documentsButton, self.commentsButton
@@ -926,15 +907,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
         elif self._lookup.PENDING() not in status and \
                 self._lookup.APPROVED() not in status and \
-                hasattr(self, "disapproveButton"):
-            self._disable_widget(getattr(self, "disapproveButton"))
+                self.disapproveButton:
+            self._disable_widget(self.disapproveButton)
         elif self._lookup.PENDING() not in status and \
                 self._lookup.DISAPPROVED() not in status and \
                 self._lookup.HELD() not in status:
             self._disable_widget(self.approveButton)
         elif self._lookup.DISAPPROVED() not in status and \
-                hasattr(self, "holdButton"):
-            self._disable_widget(getattr(self, "holdButton"))
+                self.holdButton:
+            self._disable_widget(self.holdButton)
         # TODO: End refactor
 
     @staticmethod
