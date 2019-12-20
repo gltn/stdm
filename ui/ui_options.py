@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Tue Nov  5 13:09:33 2019
+# Created: Fri Dec 20 11:39:19 2019
 #      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
@@ -248,6 +248,6 @@ class Ui_DlgOptions(object):
         self.label_6.setText(_translate("DlgOptions", "Atom pub CMIS URL", None))
         self.label_9.setText(_translate("DlgOptions", "Authentication configuration name", None))
         self.btn_test_docs_repo_conn.setText(_translate("DlgOptions", "Test connection...", None))
-        self.chk_shortcut_dlg.setText(_translate("DlgOptions", "Show Shortcut Window on Login", None))
+        self.chk_shortcut_dlg.setText(_translate("DlgOptions", "Show shortcut dialog on login", None))
 
 from stdm import resources_rc

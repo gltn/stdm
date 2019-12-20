@@ -476,7 +476,7 @@
        <item row="9" column="0">
         <widget class="QCheckBox" name="chk_shortcut_dlg">
          <property name="text">
-          <string>Show Shortcut Dialog on Login</string>
+          <string>Show shortcut dialog on login</string>
          </property>
         </widget>
        </item>
