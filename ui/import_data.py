@@ -242,6 +242,8 @@ class ImportData(QWizard, Ui_frmImport):
                             dest_folder = line_edit.text()
                             field_value = feat.GetField(f)
 
+                            if field_value == '': continue
+
                             self.lblCurrFile.setText(field_value)
 
                             dest_url = dest_folder + '\\'+field_value
