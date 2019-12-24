@@ -7,7 +7,7 @@ from stdm.ui.flts.workflow_manager.data import (
     Save
 )
 from stdm.ui.flts.workflow_manager.config import CommentButtonIcons
-from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
+from stdm.ui.flts.workflow_manager.components.pagination_component import PaginationComponent
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_comment_manager import Ui_CommentManagerWidget
 
@@ -45,7 +45,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._set_button_icons()
         self._parent = parent
         self._parent.paginationFrame.hide()
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.paginationFrame.setLayout(PaginationComponent().layout)
         self.submitButton.clicked.connect(self._on_submit)
         self._initial_load()
         self._get_comments()

@@ -27,7 +27,12 @@ class DockWidget(QDockWidget):
         super(QDockWidget, self).__init__(parent)
         self.setWindowTitle(custom_widget.windowTitle())
         self.setObjectName(custom_widget.objectName())
-        self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+        self.setAllowedAreas(
+            Qt.TopDockWidgetArea |
+            Qt.RightDockWidgetArea |
+            Qt.BottomDockWidgetArea |
+            Qt.LeftDockWidgetArea
+        )
         self.topLevelChanged.connect(self._on_top_level_change)
         self.setWidget(custom_widget)
 

@@ -44,12 +44,13 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Disapprove,
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
-from stdm.ui.flts.workflow_manager.message_box_widget import(
+from stdm.ui.flts.workflow_manager.components.message_box_widget import(
     MessageBoxButtons,
     get_message_box,
 )
-from stdm.ui.flts.workflow_manager.toolbar_widget import get_toolbar
-from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
+from stdm.ui.flts.workflow_manager.components.toolbar_component import get_toolbar
+from stdm.ui.flts.workflow_manager.components.pagination_component import PaginationComponent
+from stdm.ui.flts.workflow_manager.plot_import_widget import PlotImportWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
@@ -81,9 +82,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.setObjectName(self._object_name)
 
         toolbar = get_toolbar(self._object_name)
-        toolbar_widgets = toolbar.widgets
+        toolbar_widgets = toolbar.components
         layout = toolbar.layout
         self.toolbarFrame.setLayout(layout)
+        self.plotsImportButton = toolbar_widgets.get("plotsImportButton")
         self.approveButton = toolbar_widgets.get("approveButton")
         self.disapproveButton = toolbar_widgets.get("disapproveButton")
         self.holdButton = toolbar_widgets.get("holdButton")
@@ -108,7 +110,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.insertTab(0, self.table_view, "Scheme")
         self._tab_icons = TabIcons().icons
         self.tabWidget.setTabIcon(0, self._tab_icons["Scheme"])
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.paginationFrame.setLayout(PaginationComponent().layout)
         self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
@@ -126,6 +128,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.holdButton.clicked.connect(
                 lambda: self._on_disapprove(self._lookup.HELD(), "hold")
             )
+        if self.plotsImportButton:
+            self.plotsImportButton.clicked.connect(self._load_scheme_detail)
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self.commentsButton.clicked.connect(self._load_scheme_detail)
@@ -276,6 +280,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._enable_widget(self.disapproveButton)
         if self.holdButton and self._lookup.DISAPPROVED() in status:
             self._enable_widget(self.holdButton)
+        if self.plotsImportButton and self._lookup.PENDING() in status:
+            self._enable_widget(self.plotsImportButton)
         self._on_uncheck_disable_widgets()
         # TODO: End refactor
 
@@ -382,6 +388,9 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         # TODO: Start Refactor by moving them to the configuration file
         widget_prop = {
+            self.plotsImportButton.objectName(): {
+                'widget': PlotImportWidget,
+            },
             self.documentsButton.objectName(): {
                 'data_service': DocumentDataService,
                 'widget': SchemeDetailTableView,
@@ -427,8 +436,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 widget_prop, self._profile, scheme_id, self
             )
             self._replace_tab(1, self._detail_table, label)
-            self._enable_search() if self._detail_table.model.results \
-                else self._disable_search()
+            if self._detail_table.model and self._detail_table.model.results:
+                self._enable_search()
+            else:
+                self._disable_search()
 
     def _enable_search(self):
         """

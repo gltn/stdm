@@ -223,51 +223,6 @@ class HolderConfig(Config):
         return self.get_data('holder_load_collections')
 
 
-class PaginationButtonIcons(ButtonIcons):
-    """
-    Pagination QPushButton icons configuration interface
-    """
-
-    def __init__(self, parent=None):
-        super(PaginationButtonIcons, self).__init__()
-        self._parent = parent
-
-    @property
-    def buttons(self):
-        """
-        Pagination QPushButton icons options
-        :return: Pagination QPushButton icon options
-        :rtype: Dictionary
-        """
-        config = self._buttons_config()
-        return super(PaginationButtonIcons, self).button_icons(config)
-
-    def _buttons_config(self):
-        """
-        Returns Pagination QPushButton icon configurations
-        :return: QPushButton icon configurations
-        :rtype: Tuple
-        """
-        return (
-            (
-                self._parent.first_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
-            ),
-            (
-                self._parent.previous_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
-            ),
-            (
-                self._parent.next_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
-            ),
-            (
-                self._parent.last_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
-            ),
-        )
-
-
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -284,7 +239,7 @@ class StyleSheet(Config):
 
 class ToolbarButtonsConfig(Config):
     """
-    Scheme QPushButton configuration interface
+    Scheme toolbar QPushButton configuration interface
     """
     def __init__(self):
         super(ToolbarButtonsConfig, self).__init__()
@@ -292,11 +247,28 @@ class ToolbarButtonsConfig(Config):
     @property
     def buttons(self):
         """
-        Returns QPushButton configurations
+        Returns toolbar QPushButton configurations
         :return: QPushButton configuration options
         :rtype: Dictionary
         """
         return self.get_data('toolbar_buttons')
+
+
+class PaginationButtonsConfig(Config):
+    """
+    Scheme pagination QPushButton configuration interface
+    """
+    def __init__(self):
+        super(PaginationButtonsConfig, self).__init__()
+
+    @property
+    def buttons(self):
+        """
+        Returns pagination QPushButton configurations
+        :return: QPushButton configuration options
+        :rtype: Dictionary
+        """
+        return self.get_data('pagination_buttons')
 
 
 class SchemeConfig(Config):
@@ -526,8 +498,8 @@ LookUp = namedtuple(
 MessageBox = namedtuple(
     'MessageBox', ['name', 'label', 'role', 'icon']
 )
-ToolbarButton = namedtuple(
-    'ToolbarButton', ['name', 'label', 'icon', 'size']
+buttonConfig = namedtuple(
+    'buttonConfig', ['name', 'label', 'icon', 'size']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
@@ -739,19 +711,19 @@ configurations = {
     },
     'toolbar_buttons': {
         'sharedButtons': [
-            ToolbarButton(
+            buttonConfig(
                 name="Holders",
                 label="Holders",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
                 size=QSize(24, 24)
             ),
-            ToolbarButton(
+            buttonConfig(
                 name="Documents",
                 label="Documents",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
                 size=QSize(24, 24)
             ),
-            ToolbarButton(
+            buttonConfig(
                 name="Comments",
                 label="Comments",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
@@ -759,7 +731,7 @@ configurations = {
             )
         ],
         'searchButton': [
-            ToolbarButton(
+            buttonConfig(
                 name="searchButton",
                 label="Search",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_search.png"),
@@ -767,13 +739,13 @@ configurations = {
             )
         ],
         'schemeLodgement': [
-            ToolbarButton(
+            buttonConfig(
                 name="approveButton",
                 label="Pass",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
                 size=QSize(24, 24)
             ),
-            ToolbarButton(
+            buttonConfig(
                 name="holdButton",
                 label="Hold",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
@@ -781,13 +753,13 @@ configurations = {
             )
         ],
         'schemeExamination': [
-            ToolbarButton(
+            buttonConfig(
                 name="approveButton",
                 label="Pass",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
                 size=QSize(24, 24)
             ),
-            ToolbarButton(
+            buttonConfig(
                 name="disapproveButton",
                 label="Reject",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
@@ -795,7 +767,7 @@ configurations = {
             )
         ],
         'thirdExamination': [
-            ToolbarButton(
+            buttonConfig(
                 name="plotsButton",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
@@ -803,18 +775,48 @@ configurations = {
             )
         ],
         'importPlot': [
-            ToolbarButton(
+            buttonConfig(
                 name="plotsImportButton",
                 label="Import",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
                 size=QSize(24, 24)
             ),
-            ToolbarButton(
+            buttonConfig(
                 name="plotsButton",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
                 size=QSize(24, 24)
             ),
+        ]
+    },
+    'pagination_buttons': {
+        'previousButtons': [
+            buttonConfig(
+                name="First",
+                label="First",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"),
+                size=QSize(24, 24)
+            ),
+            buttonConfig(
+                name="Previous",
+                label="Previous",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"),
+                size=QSize(24, 24)
+            )
+        ],
+        'nextButtons': [
+            buttonConfig(
+                name="Next",
+                label="Next",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"),
+                size=QSize(24, 24)
+            ),
+            buttonConfig(
+                name="Last",
+                label="Last",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"),
+                size=QSize(24, 24)
+            )
         ]
     },
     'message_box': {
