@@ -25,6 +25,7 @@ from stdm.ui.flts.workflow_manager.config import (
     DocumentConfig,
     FilterQueryBy,
     HolderConfig,
+    PlotImportFileConfig,
     SchemeConfig,
     TableModelIcons,
 )
@@ -114,7 +115,8 @@ class SchemeDataService(DataService):
     def vertical_header(self):
         """
         Scheme table view vertical orientation
-        :return: True for vertical headers or False otherwise
+        :return: True for vertical headers
+                 or False otherwise
         :rtype: Boolean
         """
         return False
@@ -301,7 +303,8 @@ class DocumentDataService(DataService):
     def vertical_header(self):
         """
         Scheme table view vertical orientation
-        :return: True for vertical headers or False otherwise
+        :return: True for vertical headers
+                 or False otherwise
         :rtype: Boolean
         """
         return False
@@ -409,7 +412,8 @@ class HolderDataService(DataService):
     def vertical_header(self):
         """
         Scheme table view vertical orientation
-        :return: True for vertical headers or False otherwise
+        :return: True for vertical headers
+                 or False otherwise
         :rtype: Boolean
         """
         return True
@@ -498,7 +502,8 @@ class CommentDataService(DataService):
     def vertical_header(self):
         """
         Scheme table view vertical orientation
-        :return: True for vertical headers or False otherwise
+        :return: True for vertical headers
+                 or False otherwise
         :rtype: Boolean
         """
         return False
@@ -580,3 +585,33 @@ class CommentDataService(DataService):
         """
         entity = self._profile.entity(name)
         return super(CommentDataService, self).entity_model_(entity)
+
+
+class PlotImportFileDataService:
+    """
+    Scheme plot import file data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self.entity_name = None
+        self._plot_config = PlotImportFileConfig()
+
+    @property
+    def columns(self):
+        """
+        Scheme plot import file
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self._plot_config.columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False

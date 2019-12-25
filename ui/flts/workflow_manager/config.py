@@ -223,6 +223,22 @@ class HolderConfig(Config):
         return self.get_data('holder_load_collections')
 
 
+class PlotImportFileConfig(Config):
+    """
+    Scheme plot import file table view
+    configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Scheme plot import file
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self.get_data('plot_file_columns')
+
+
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -712,6 +728,13 @@ configurations = {
         }
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
+    'plot_file_columns': [
+        Column(name='Name', flag=False),
+        Column(name='Import As', flag=False),
+        Column(name='Delimiter', flag=False),
+        Column(name='Header Row', flag=False),
+        Column(name='Geometry Field', flag=False)
+    ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
