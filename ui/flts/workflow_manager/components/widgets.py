@@ -38,11 +38,12 @@ class Widgets:
         buttons = OrderedDict()
         for option in options:
             button = QPushButton(option.label)
-            button.setEnabled(False)
+            button.setEnabled(option.enable)
             if option.name:
                 button.setObjectName(option.name)
             if option.icon:
                 button.setIcon(option.icon)
+            if option.size:
                 button.setIconSize(option.size)
             buttons[option.name] = button
         return buttons

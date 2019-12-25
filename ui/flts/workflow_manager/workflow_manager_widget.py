@@ -44,7 +44,7 @@ from stdm.ui.flts.workflow_manager.scheme_approval import (
     Disapprove,
 )
 from stdm.ui.flts.workflow_manager.comment_manager_widget import CommentManagerWidget
-from stdm.ui.flts.workflow_manager.components.message_box_widget import(
+from stdm.ui.flts.workflow_manager.message_box_widget import(
     MessageBoxButtons,
     get_message_box,
 )

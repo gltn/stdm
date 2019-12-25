@@ -52,11 +52,7 @@ class PaginationComponent:
         :return: Dictionary of buttons - QPushButtons
         :rtype: OrderedDict
         """
-        buttons = OrderedDict()
-        for name, button in self._widgets.create_buttons(options).items():
-            button.setEnabled(True)
-            buttons[name] = button
-        return buttons
+        return self._widgets.create_buttons(options)
 
     @staticmethod
     def _create_line_editor():

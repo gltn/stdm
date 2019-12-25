@@ -499,7 +499,7 @@ MessageBox = namedtuple(
     'MessageBox', ['name', 'label', 'role', 'icon']
 )
 buttonConfig = namedtuple(
-    'buttonConfig', ['name', 'label', 'icon', 'size']
+    'buttonConfig', ['name', 'label', 'icon', 'size', 'enable']
 )
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
@@ -715,19 +715,23 @@ configurations = {
                 name="Holders",
                 label="Holders",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
+
             ),
             buttonConfig(
                 name="Documents",
                 label="Documents",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             ),
             buttonConfig(
                 name="Comments",
                 label="Comments",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             )
         ],
         'searchButton': [
@@ -735,7 +739,8 @@ configurations = {
                 name="searchButton",
                 label="Search",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_search.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             )
         ],
         'schemeLodgement': [
@@ -743,13 +748,15 @@ configurations = {
                 name="approveButton",
                 label="Pass",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             ),
             buttonConfig(
                 name="holdButton",
                 label="Hold",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             )
         ],
         'schemeExamination': [
@@ -757,13 +764,15 @@ configurations = {
                 name="approveButton",
                 label="Pass",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             ),
             buttonConfig(
                 name="disapproveButton",
                 label="Reject",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             )
         ],
         'thirdExamination': [
@@ -771,7 +780,8 @@ configurations = {
                 name="plotsButton",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             )
         ],
         'importPlot': [
@@ -779,13 +789,15 @@ configurations = {
                 name="plotsImportButton",
                 label="Import",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             ),
             buttonConfig(
                 name="plotsButton",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=False
             ),
         ]
     },
@@ -795,13 +807,15 @@ configurations = {
                 name="First",
                 label="First",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=True
             ),
             buttonConfig(
                 name="Previous",
                 label="Previous",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=True
             )
         ],
         'nextButtons': [
@@ -809,13 +823,15 @@ configurations = {
                 name="Next",
                 label="Next",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=True
             ),
             buttonConfig(
                 name="Last",
                 label="Last",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"),
-                size=QSize(24, 24)
+                size=QSize(24, 24),
+                enable=True
             )
         ]
     },
@@ -825,13 +841,13 @@ configurations = {
                 name='approveMsgButton',
                 label="Pass",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ],
         'disapproveButton': [
@@ -839,19 +855,19 @@ configurations = {
                 name='disapproveMsgButton',
                 label="Reject",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png")
             ),
             MessageBox(
                 name='commentDisapproveMsgButton',
                 label="Comment && Reject",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ],
         'holdButton': [
@@ -859,19 +875,19 @@ configurations = {
                 name='holdMsgButton',
                 label="Hold",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png")
             ),
             MessageBox(
                 name='commentHoldMsgButton',
                 label="Comment && Hold",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ]
     },
