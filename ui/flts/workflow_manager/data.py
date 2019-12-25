@@ -189,8 +189,7 @@ class Load(DataRoutine):
         """
         try:
             self._headers = []
-            results = self._query_data()
-            return results, self._headers
+            return self._query_data()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -200,10 +199,15 @@ class Load(DataRoutine):
         """
         try:
             self._headers = []
-            results = self._query_collection()
-            return results, self._headers
+            return self._query_collection()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def get_headers(self):
+        """
+        Returns column label configurations
+        """
+        return self._headers
 
     def _query_collection(self):
         """

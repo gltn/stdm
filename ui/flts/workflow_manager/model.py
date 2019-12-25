@@ -172,7 +172,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         Load results from data source to be used in the table view
         """
         try:
-            self.results, self._headers = self._data_source.load()
+            self.results = self._data_source.load()
+            self._headers = self._data_source.get_headers()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -181,7 +182,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         Load collection query results to be used in the table view
         """
         try:
-            self.results, self._headers = self._data_source.load_collection()
+            self.results = self._data_source.load_collection()
+            self._headers = self._data_source.get_headers()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
