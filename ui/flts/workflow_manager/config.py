@@ -794,7 +794,7 @@ configurations = {
         ],
         'thirdExamination': [
             buttonConfig(
-                name="plotsButton",
+                name="Plots",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
                 size=QSize(24, 24),
@@ -810,7 +810,7 @@ configurations = {
                 enable=False
             ),
             buttonConfig(
-                name="plotsButton",
+                name="Plots",
                 label="Plots",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
                 size=QSize(24, 24),
@@ -866,21 +866,21 @@ configurations = {
                 label="Remove file(s)",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
                 size=None,
-                enable=True
+                enable=False
             ),
             buttonConfig(
-                name="fileDetails",
-                label="File details",
+                name="viewContent",
+                label="View content",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
                 size=None,
-                enable=True
+                enable=False
             ),
             buttonConfig(
                 name="Import",
                 label="Import",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
                 size=None,
-                enable=True
+                enable=False
             )
         ]
     },
