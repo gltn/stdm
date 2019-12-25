@@ -1,7 +1,8 @@
 """
 /***************************************************************************
-Name                 : Widgets
-Description          : Creates widgets to be used to form a component.
+Name                 : Plot Import Component
+Description          : Plot import widget component for managing import of
+                       a scheme plot.
 Date                 : 24/December/2019
 copyright            : (C) 2019
  ***************************************************************************/
@@ -17,51 +18,42 @@ copyright            : (C) 2019
 """
 
 from collections import OrderedDict
-from PyQt4.QtGui import QPushButton
+from PyQt4.QtGui import QHBoxLayout
+from stdm.ui.flts.workflow_manager.config import PlotImportButtonsConfig
+from stdm.ui.flts.workflow_manager.components.widgets import Widgets
 
 
-class Widgets:
+class PlotImportComponent:
     """
-    Widgets creator
+    Scheme workflow manager plot import component
     """
-    @staticmethod
-    def create_buttons(options):
+    def __init__(self):
+        config = PlotImportButtonsConfig().buttons
+        self._widgets = Widgets()
+        self.components = OrderedDict()
+        toolbar_buttons = self._create_buttons(config['toolbar'])
+        self.components.update(toolbar_buttons)
+        self.components.update({"stretcher": None})
+        self.layout = self._add_to_layout(self.components, QHBoxLayout)
+
+    def _create_buttons(self, options):
         """
         Dynamically creates QPushButton from options
         :param options: QPushButton configurations
         :type options: List
-        :return buttons: Dictionary of buttons - QPushButtons
-        :rtype buttons: OrderedDict
+        :return: Dictionary of buttons - QPushButtons
+        :rtype: OrderedDict
         """
-        buttons = OrderedDict()
-        for option in options:
-            button = QPushButton(option.label)
-            button.setEnabled(option.enable)
-            if option.name:
-                button.setObjectName(option.name)
-            if option.icon:
-                button.setIcon(option.icon)
-            if option.size:
-                button.setIconSize(option.size)
-            buttons[option.name] = button
-        return buttons
+        return self._widgets.create_buttons(options)
 
-    @staticmethod
-    def add_to_layout(widgets, layout):
+    def _add_to_layout(self, widgets, layout):
         """
         Adds QWidgets to QBoxLayout
         :param widgets: Widgets to be added to the layout
         :param widgets: QWidget
         :param layout: Widget layout
         :type layout: QBoxLayout
-        :return layout: Layout of QPushButton(s)
-        :rtype layout: QBoxLayout
+        :return: Layout of QPushButton(s)
+        :rtype: QBoxLayout
         """
-        layout = layout()
-        for name, widget in widgets.items():
-            if name != "stretcher":
-                layout.addWidget(widget)
-            else:
-                layout.addStretch()
-        layout.setMargin(0)
-        return layout
+        return self._widgets.add_to_layout(widgets, layout)

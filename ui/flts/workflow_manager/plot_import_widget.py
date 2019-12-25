@@ -1,9 +1,7 @@
 """
 /***************************************************************************
-Name                 : Workflow Manager Widget
-Description          : Widget for managing workflow and notification in
-                       Scheme Establishment and First, Second and
-                       Third Examination FLTS modules.
+Name                 : Plot Import Widget
+Description          : Widget for managing importing of a scheme plot.
 Date                 : 24/December/2019
 copyright            : (C) 2019
  ***************************************************************************/
@@ -19,6 +17,7 @@ copyright            : (C) 2019
 """
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
 
 
 class PlotImportWidget(QWidget):
@@ -31,31 +30,24 @@ class PlotImportWidget(QWidget):
 
         self.model = None
 
-        self.add_button = QPushButton("Add file(s)...")
-        self.remove_button = QPushButton("Remove file(s)")
-        self.preview_button = QPushButton("Preview")
-        self.import_button = QPushButton("Import")
-        self.close_button = QPushButton("Close")
+        import_component = PlotImportComponent()
+        toolbar = import_component.components
+        self.add_button = toolbar["addFiles"]
+        self.remove_button = toolbar["removeFiles"]
+        self.details_button = toolbar["fileDetails"]
+        self.import_button = toolbar["Import"]
 
-        test_editor = QTextEdit()
-
-        toolbar_layout = QHBoxLayout()
-        toolbar_layout.addWidget(self.add_button)
-        toolbar_layout.addWidget(self.remove_button)
-        toolbar_layout.addWidget(self.preview_button)
-        toolbar_layout.addWidget(self.import_button)
-        toolbar_layout.addStretch()
+        # toolbar_layout = QHBoxLayout()
+        # toolbar_layout.addWidget(self.add_button)
+        # toolbar_layout.addWidget(self.remove_button)
+        # toolbar_layout.addWidget(self.preview_button)
+        # toolbar_layout.addWidget(self.import_button)
+        # toolbar_layout.addStretch()
 
         parent.paginationFrame.hide()
-        # pagination_layout = QHBoxLayout()
-        # pagination_layout.addStretch()
-        # pagination_layout.addWidget(self.import_button)
-        # pagination_layout.addWidget(self.close_button)
 
         file_layout = QVBoxLayout()
-        # file_layout.addWidget(test_editor)
         preview_layout = QVBoxLayout()
-        # preview_layout.addWidget(test_editor)
 
         file_groupbox = QGroupBox("Added files")
         preview_groupbox = QGroupBox("Preview")
@@ -69,7 +61,7 @@ class PlotImportWidget(QWidget):
         splitter.setStretchFactor(1, 3)
 
         layout = QVBoxLayout()
-        layout.addLayout(toolbar_layout)
+        layout.addLayout(import_component.layout)
         layout.addWidget(splitter)
         # layout.addLayout(pagination_layout)
         self.setLayout(layout)

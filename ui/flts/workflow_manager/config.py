@@ -271,6 +271,23 @@ class PaginationButtonsConfig(Config):
         return self.get_data('pagination_buttons')
 
 
+class PlotImportButtonsConfig(Config):
+    """
+    Scheme plot import QPushButton configuration interface
+    """
+    def __init__(self):
+        super(PlotImportButtonsConfig, self).__init__()
+
+    @property
+    def buttons(self):
+        """
+        Returns plot import QPushButton configurations
+        :return: QPushButton configuration options
+        :rtype: Dictionary
+        """
+        return self.get_data('plot_import_buttons')
+
+
 class SchemeConfig(Config):
     """
     Scheme table view configuration interface
@@ -788,14 +805,14 @@ configurations = {
             buttonConfig(
                 name="plotsImportButton",
                 label="Import",
-                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
                 size=QSize(24, 24),
                 enable=False
             ),
             buttonConfig(
                 name="plotsButton",
                 label="Plots",
-                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
                 size=QSize(24, 24),
                 enable=False
             ),
@@ -831,6 +848,38 @@ configurations = {
                 label="Last",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"),
                 size=QSize(24, 24),
+                enable=True
+            )
+        ]
+    },
+    'plot_import_buttons': {
+        'toolbar': [
+            buttonConfig(
+                name="addFiles",
+                label="Add file(s)...",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png"),
+                size=None,
+                enable=True
+            ),
+            buttonConfig(
+                name="removeFiles",
+                label="Remove file(s)",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                size=None,
+                enable=True
+            ),
+            buttonConfig(
+                name="fileDetails",
+                label="File details",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
+                size=None,
+                enable=True
+            ),
+            buttonConfig(
+                name="Import",
+                label="Import",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
+                size=None,
                 enable=True
             )
         ]

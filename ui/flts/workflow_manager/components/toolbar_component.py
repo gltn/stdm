@@ -1,9 +1,9 @@
 """
 /***************************************************************************
-Name                 : Workflow Manager Widget
-Description          : Widget for managing workflow and notification in
-                       Scheme Establishment and First, Second and
-                       Third Examination FLTS modules.
+Name                 : Toolbar Component
+Description          : Toolbar widget component for navigating page records in
+                       Scheme Establishment First, Second and Third Examination
+                       and Scheme Revision FLTS modules.
 Date                 : 24/December/2019
 copyright            : (C) 2019
  ***************************************************************************/
@@ -242,7 +242,7 @@ class ImportPlotToolbarComponent(ToolbarComponent):
         :return: Toolbar widget component
         :rtype: OrderedDict
         """
-        options = options = self.config['importPlot'] + self.config["sharedButtons"]
+        options = self.config['importPlot'] + self.config["sharedButtons"]
         return self.create_component(options)
 
 
