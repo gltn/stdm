@@ -33,6 +33,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         self._data_service = data_service
         self._icons = self._data_service.icons \
             if hasattr(self._data_service, "icons") else None
+        self._vertical_header = self._data_service.vertical_header
         self.results = []
         self._headers = []
 
@@ -80,6 +81,8 @@ class WorkflowManagerModel(QAbstractTableModel):
         if orientation == Qt.Horizontal:
             if self._headers:
                 return self._headers[section].name
+        if self._vertical_header:
+            return section + 1
 
     def rowCount(self, index=QModelIndex()):
         """

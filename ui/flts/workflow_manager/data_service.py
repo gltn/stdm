@@ -111,6 +111,15 @@ class SchemeDataService(DataService):
         return self._scheme_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False
+
+    @property
     def icons(self):
         """
         QAbstractTableModel icon options
@@ -289,6 +298,15 @@ class DocumentDataService(DataService):
         return self._document_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False
+
+    @property
     def icons(self):
         """
         QAbstractTableModel icon options
@@ -388,6 +406,15 @@ class HolderDataService(DataService):
         return self._holder_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return True
+
+    @property
     def load_collections(self):
         """
         Related entity collection names to be used as
@@ -466,6 +493,15 @@ class CommentDataService(DataService):
         :rtype: List
         """
         return self._comment_config.columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False
 
     @property
     def lookups(self):
