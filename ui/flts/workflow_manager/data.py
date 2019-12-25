@@ -186,6 +186,8 @@ class Load(DataRoutine):
     def load(self):
         """
         Load data based on query results
+        :return: Data
+        :rtype: List
         """
         try:
             self._headers = []
@@ -196,6 +198,8 @@ class Load(DataRoutine):
     def load_collection(self):
         """
         Loads data based on collection items in the query results
+        :return: Data
+        :rtype: List
         """
         try:
             self._headers = []
@@ -206,6 +210,8 @@ class Load(DataRoutine):
     def get_headers(self):
         """
         Returns column label configurations
+        :return: Column/headers configurations - name and flags
+        :rtype: List
         """
         return self._headers
 
