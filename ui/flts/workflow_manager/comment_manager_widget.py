@@ -38,8 +38,8 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._data_service = widget_properties.get("data_service")
         self._data_service = self._data_service(profile, scheme_id)
         self._scheme_items = widget_properties.get("scheme_items")
-        data_loader = Load(self._data_service)
-        self.model = WorkflowManagerModel(data_loader, self._data_service)
+        self._data_loader = Load(self._data_service)
+        self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
         self.oldCommentTextEdit.setReadOnly(True)
         self._set_button_icons()
@@ -67,9 +67,9 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         try:
             if self._load_collections:
-                self.model.load_collection()
+                self.model.load_collection(self._data_loader)
             else:
-                self.model.load()
+                self.model.load(self._data_loader)
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,

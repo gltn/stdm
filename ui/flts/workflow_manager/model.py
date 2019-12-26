@@ -27,9 +27,9 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
-    def __init__(self, data_source, data_service):
+    def __init__(self, data_service):
         super(WorkflowManagerModel, self).__init__()
-        self._data_source = data_source
+        self._data_source = None
         self._data_service = data_service
         self._icons = self._data_service.icons \
             if hasattr(self._data_service, "icons") else None
@@ -170,23 +170,29 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         return self._data_service.entity_name
 
-    def load(self):
+    def load(self, data_source):
         """
         Load results from data source to be used in the table view
+        :param data_source: Data source object
+        :rtype data_source: Object
         """
         try:
-            self.results = self._data_source.load()
-            self._headers = self._data_source.get_headers()
+            self.results = data_source.load()
+            self._headers = data_source.get_headers()
+            self._data_source = data_source
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
-    def load_collection(self):
+    def load_collection(self, data_source):
         """
         Load collection query results to be used in the table view
+        :param data_source: Data source object
+        :rtype data_source: Object
         """
         try:
-            self.results = self._data_source.load_collection()
-            self._headers = self._data_source.get_headers()
+            self.results = data_source.load_collection()
+            self._headers = data_source.get_headers()
+            self._data_source = data_source
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
 
@@ -197,5 +203,5 @@ class WorkflowManagerModel(QAbstractTableModel):
         self.layoutAboutToBeChanged.emit()
         self.results = []
         self._headers = []
-        self.load()
+        self.load(self._data_source)
         self.layoutChanged.emit()

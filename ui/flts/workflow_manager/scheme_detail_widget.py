@@ -39,8 +39,8 @@ class SchemeDetailTableView(QTableView):
         self._load_collections = widget_properties["load_collections"]
         self._data_service = widget_properties["data_service"]
         self._data_service = self._data_service(profile, scheme_id)
-        data_loader = Load(self._data_service)
-        self.model = WorkflowManagerModel(data_loader, self._data_service)
+        self._data_loader = Load(self._data_service)
+        self.model = WorkflowManagerModel(self._data_service)
         self.setModel(self.model)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
@@ -57,9 +57,9 @@ class SchemeDetailTableView(QTableView):
         """
         try:
             if self._load_collections:
-                self.model.load_collection()
+                self.model.load_collection(self._data_loader)
             else:
-                self.model.load()
+                self.model.load(self._data_loader)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,

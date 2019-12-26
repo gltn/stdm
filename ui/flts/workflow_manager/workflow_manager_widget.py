@@ -76,7 +76,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._approve = Approve(self.data_service, self._object_name)
         self._disapprove = Disapprove(self.data_service)
         self._lookup = self.data_service.lookups
-        data_loader = Load(self.data_service, self._workflow_load_filter)
+        self._data_loader = Load(self.data_service, self._workflow_load_filter)
         _header_style = StyleSheet().header_style
         self._comments_title = "Comments"
         self.setWindowTitle(title)
@@ -98,9 +98,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.searchButton = toolbar_widgets.get("searchButton")
 
         self.table_view = QTableView()
-        self._model = WorkflowManagerModel(
-            data_loader, self.data_service
-        )
+        self._model = WorkflowManagerModel(self.data_service)
         self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
@@ -154,7 +152,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Initial table view data load
         """
         try:
-            self._model.load()
+            self._model.load(self._data_loader)
             self._enable_search() if self._model.results \
                 else self._disable_search()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
