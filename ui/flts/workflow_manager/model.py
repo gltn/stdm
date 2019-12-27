@@ -19,7 +19,6 @@ copyright            : (C) 2019
 """
 
 from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 from sqlalchemy import exc
 
 
