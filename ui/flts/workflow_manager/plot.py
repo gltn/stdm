@@ -59,7 +59,7 @@ class PlotFile:
         :return: Plot import file format types
         :rtype: String
         """
-        return "*.csv *.txt"
+        return "*.csv *.txt *.pdf"
 
     def load(self):
         """
