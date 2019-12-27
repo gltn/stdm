@@ -19,6 +19,7 @@ copyright            : (C) 2019
 """
 
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 from sqlalchemy import exc
 
 
@@ -49,7 +50,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         value = result.get(column, None)
         flag = self._headers[column].flag
-        if role == Qt.DisplayRole and flag not in(
+        if role == Qt.DisplayRole and flag not in (
                 Qt.ItemIsUserCheckable, Qt.DecorationRole
         ):
             return value
@@ -123,6 +124,21 @@ class WorkflowManagerModel(QAbstractTableModel):
             return True
         return False
 
+    def insertRows(self, position, rows=1, index=QModelIndex()):
+        """
+        Implementation of QAbstractTableModel
+        insertRows method
+        """
+        row_data = self._data_source.get_row_data()
+        rows = len(row_data)
+        self.beginInsertRows(
+            QModelIndex(), position, position + rows - 1
+        )
+        for row, data in enumerate(row_data):
+            self.results.insert(position + row, data)
+        self.endInsertRows()
+        return True
+
     def get_record_id(self, row=0):
         """
         Gets record/entity id (primary key)
@@ -180,7 +196,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             self.results = data_source.load()
             self._headers = data_source.get_headers()
             self._data_source = data_source
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+        except (AttributeError, exc.SQLAlchemyError, IOError, OSError, Exception) as e:
             raise e
 
     def load_collection(self, data_source):
@@ -193,7 +209,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             self.results = data_source.load_collection()
             self._headers = data_source.get_headers()
             self._data_source = data_source
-        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+        except (AttributeError, exc.SQLAlchemyError, IOError, OSError, Exception) as e:
             raise e
 
     def refresh(self):

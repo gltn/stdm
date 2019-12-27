@@ -729,11 +729,11 @@ configurations = {
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'plot_file_columns': [
-        Column(name='Name', flag=False),
-        Column(name='Import As', flag=False),
-        Column(name='Delimiter', flag=False),
-        Column(name='Header Row', flag=False),
-        Column(name='Geometry Field', flag=False)
+        Column(name='Name', flag=Qt.TextColorRole),
+        Column(name='Import as', flag=Qt.TextColorRole),
+        Column(name='Delimiter', flag=Qt.TextColorRole),
+        Column(name='Header row', flag=Qt.TextColorRole),
+        Column(name='Geometry field', flag=Qt.TextColorRole)
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),

@@ -591,10 +591,7 @@ class PlotImportFileDataService:
     """
     Scheme plot import file data model service
     """
-    def __init__(self, current_profile, scheme_id):
-        self._profile = current_profile
-        self._scheme_id = scheme_id
-        self.entity_name = None
+    def __init__(self):
         self._plot_config = PlotImportFileConfig()
 
     @property
