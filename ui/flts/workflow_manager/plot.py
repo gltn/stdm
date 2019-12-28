@@ -16,6 +16,7 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 
+import csv
 from PyQt4.QtCore import (
     QFile,
     QFileInfo,
@@ -71,7 +72,7 @@ class PlotFile:
             qfile = QFile(self._fpath)
             if not qfile.open(QIODevice.ReadOnly):
                 raise IOError(unicode(qfile.errorString()))
-            return self._file_properties(qfile)
+            return self._file_properties(self._fpath)
         except(IOError, OSError) as e:
             raise e
 
@@ -83,11 +84,11 @@ class PlotFile:
         """
         return self._file_properties(self._fpath)
 
-    def _file_properties(self, qfile):
+    def _file_properties(self, fpath):
         """
         Returns plot import file data properties
-        :param qfile: Plot import file absolute path
-        :type qfile: QFile
+        :param fpath: Plot import file absolute path
+        :rtype fpath: String
         :return results: Plot import file data properties
         :return results: List
         """
@@ -95,13 +96,20 @@ class PlotFile:
         properties = {}
         for n, prop in enumerate(self._data_service.columns):
             if prop.name == "Name":
-                properties[n] = unicode(QFileInfo(qfile).fileName())
+                properties[n] = unicode(QFileInfo(fpath).fileName())
             elif prop.name == "Header row":
                 properties[n] = float(1)
             else:
                 properties[n] = unicode("Test")
         results.append(properties)
         return results
+
+    def _get_delimiter(self):
+        """
+        Returns plain text delimiter
+        :return:
+        """
+        pass
 
     def get_headers(self):
         """

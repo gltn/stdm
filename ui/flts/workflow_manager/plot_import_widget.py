@@ -43,7 +43,7 @@ class PlotImportWidget(QWidget):
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
         self._remove_button = toolbar["removeFiles"]
-        self._details_button = toolbar["viewContent"]
+        self._preview_button = toolbar["Preview"]
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style
         self._file_table_view = QTableView(self)
@@ -54,22 +54,22 @@ class PlotImportWidget(QWidget):
         self._file_table_view.horizontalHeader().setStyleSheet(style)
         self._file_table_view.setSelectionBehavior(QTableView.SelectRows)
         self._file_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self._detail_table_view = QTableView(self)
-        self._detail_table_view.setShowGrid(False)
-        self._detail_table_view.horizontalHeader().setStyleSheet(header_style)
-        self._detail_table_view.setSelectionBehavior(QTableView.SelectRows)
-        self._detail_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._preview_table_view = QTableView(self)
+        self._preview_table_view.setShowGrid(False)
+        self._preview_table_view.horizontalHeader().setStyleSheet(header_style)
+        self._preview_table_view.setSelectionBehavior(QTableView.SelectRows)
+        self._preview_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
         file_layout = QVBoxLayout()
         file_layout.addWidget(self._file_table_view)
-        detail_layout = QVBoxLayout()
-        detail_layout.addWidget(self._detail_table_view)
+        preview_layout = QVBoxLayout()
+        preview_layout.addWidget(self._preview_table_view)
         file_groupbox = QGroupBox("Added files")
-        detail_groupbox = QGroupBox("File content")
+        preview_groupbox = QGroupBox("File content")
         file_groupbox.setLayout(file_layout)
-        detail_groupbox.setLayout(detail_layout)
+        preview_groupbox.setLayout(preview_layout)
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(file_groupbox)
-        splitter.addWidget(detail_groupbox)
+        splitter.addWidget(preview_groupbox)
         splitter.setStretchFactor(0, 2)
         splitter.setStretchFactor(1, 3)
         layout = QVBoxLayout()

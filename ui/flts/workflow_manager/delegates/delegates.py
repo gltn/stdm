@@ -224,7 +224,8 @@ class PlainTextColumnDelegate(QItemDelegate):
 
 def column_delegate(column_type):
     """
-    Returns generic delegate based on a column type
+    Returns generic delegate based on
+    a column data type
     :param column_type: Column type
     :type column_type: String
     :return: Generic column delegate

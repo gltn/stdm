@@ -733,7 +733,8 @@ configurations = {
         Column(name='Import as', flag=Qt.TextColorRole),
         Column(name='Delimiter', flag=Qt.TextColorRole),
         Column(name='Header row', flag=Qt.TextColorRole),
-        Column(name='Geometry field', flag=Qt.TextColorRole)
+        Column(name='Geometry field', flag=Qt.TextColorRole),
+        Column(name='Type', flag=Qt.TextColorRole)
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
@@ -892,8 +893,8 @@ configurations = {
                 enable=False
             ),
             buttonConfig(
-                name="viewContent",
-                label="View content",
+                name="Preview",
+                label="Preview",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
                 size=None,
                 enable=False
