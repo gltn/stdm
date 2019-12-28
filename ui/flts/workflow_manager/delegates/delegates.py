@@ -3,7 +3,7 @@
 Name                 : Workflow Manager Delegate
 Description          : A generic delegate for handling presentation
                        and editing of table view data.
-Date                 : 11/August/2019
+Date                 : 24/December/2019
 copyright            : (C) 2019
  ***************************************************************************/
 
@@ -220,3 +220,22 @@ class PlainTextColumnDelegate(QItemDelegate):
         QItemDelegate setModelData method
         """
         model.setData(index, QVariant(editor.text()))
+
+
+def column_delegate(column_type):
+    """
+    Returns generic delegate based on a column type
+    :param column_type: Column type
+    :type column_type: String
+    :return: Generic column delegate
+    :rtype: QItemDelegate
+    """
+
+    delegate = {
+        "integer": IntegerColumnDelegate,
+        "date": DateColumnDelegate,
+        "list_text": ListTextColumnDelegate,
+        "plain_text": PlainTextColumnDelegate
+
+    }
+    return delegate[column_type]
