@@ -307,7 +307,7 @@ class DocumentDataService(DataService):
                  or False otherwise
         :rtype: Boolean
         """
-        return False
+        return True
 
     @property
     def icons(self):
