@@ -83,8 +83,9 @@ class PlotImportWidget(QWidget):
         """
         Adds plot import file data properties into the file table view
         """
+        test_folder = "D:/Projects/STDM/Namibia/FLTS/Sample_Inputs/WKT"
         path = QFileInfo(self._plot_file.file_path).path() \
-            if self._plot_file.file_path else "."
+            if self._plot_file.file_path else test_folder
         fpath = QFileDialog.getOpenFileName(
             self,
             "Workflow Manager - Plot Import Data Files",
