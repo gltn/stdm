@@ -15,7 +15,7 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-
+from collections import OrderedDict
 import csv
 from PyQt4.QtCore import (
     QFile,
@@ -35,6 +35,7 @@ class PlotFile:
         """
         self._data_service = data_service
         self._fpath = None
+        self._fpaths = []
 
     def set_file_path(self, fpath):
         """
@@ -53,6 +54,14 @@ class PlotFile:
         """
         return self._fpath
 
+    def file_paths(self):
+        """
+        Returns plot import file absolute paths
+        :return _fpaths: Plot import file absolute paths
+        :rtype _fpaths: List
+        """
+        return self._fpaths
+
     @staticmethod
     def formats():
         """
@@ -70,15 +79,15 @@ class PlotFile:
     #     :rtype: List
     #     """
     #     return ["Plots", "Beacons", "Servitudes", "Field Book"]
-    #
-    # @staticmethod
-    # def delimiters():
-    #     """
-    #     Returns delimiters
-    #     :return: Delimiters
-    #     :rtype: List
-    #     """
-    #     return OrderedDict({"Tab": "\t", "Comma": ",", "Semicolon": ";"})
+
+    @staticmethod
+    def delimiters():
+        """
+        Returns delimiters
+        :return: Delimiters
+        :rtype: List
+        """
+        return OrderedDict({",": "Comma", ";": "Semicolon", "\t": "Tab"})
 
     def load(self):
         """
@@ -131,11 +140,11 @@ class PlotFile:
                     properties[n] = unicode("")
         except (csv.Error, Exception) as e:
             raise e
+        self._fpaths.append(fpath)
         results.append(properties)
         return results
 
-    @staticmethod
-    def _get_delimiter(fpath):
+    def _get_delimiter(self, fpath):
         """
         Returns default plain text common delimiter
         :param fpath: Plot import file absolute path
@@ -150,7 +159,7 @@ class PlotFile:
             with open(fpath, 'r') as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(4096))
                 delimiter = dialect.delimiter
-                options = {"\t": "Tab", ",": "Comma", ";": "Semicolon"}
+                options = self.delimiters()
                 if delimiter in options.keys():
                     return options[delimiter]
                 return delimiter

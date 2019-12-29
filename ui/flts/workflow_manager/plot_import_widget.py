@@ -92,7 +92,7 @@ class PlotImportWidget(QWidget):
             path,
             "Plot Import files {}".format(self._plot_file.formats())
         )
-        if fpath:
+        if fpath and fpath not in self._plot_file.file_paths():
             self._plot_file.set_file_path(fpath)
             if not self.model.results:
                 try:
