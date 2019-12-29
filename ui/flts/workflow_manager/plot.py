@@ -35,6 +35,7 @@ class PlotFile:
         """
         self._data_service = data_service
         self._fpath = None
+        self._delimiters = []
 
     def set_file_path(self, fpath):
         """
@@ -96,7 +97,11 @@ class PlotFile:
         properties = {}
         for n, prop in enumerate(self._data_service.columns):
             if prop.name == "Name":
-                properties[n] = unicode(QFileInfo(fpath).fileName())
+                properties[n] = QFileInfo(fpath).fileName()
+            elif prop.name == "Delimiter":
+                self._delimiters.append(
+                    dict(n=self._get_delimiter(fpath))
+                )
             elif prop.name == "Header row":
                 properties[n] = float(1)
             else:
@@ -104,12 +109,30 @@ class PlotFile:
         results.append(properties)
         return results
 
-    def _get_delimiter(self):
+    @staticmethod
+    def _get_delimiter(fpath):
         """
-        Returns plain text delimiter
-        :return:
+        Returns plain text common delimiter
+        :param fpath: Plot import file absolute path
+        :rtype fpath: String
+        :return: Common delimiter
+        :rtype: Unicode
         """
-        pass
+        file_extension = QFileInfo(fpath).completeSuffix()
+        if file_extension not in ("*.csv", "*.txt"):
+            return None
+        with open('example.csv', 'r') as csv_file:
+            dialect = csv.Sniffer().sniff(csv_file.read(4096))
+            return dialect.delimiter
+
+    @property
+    def delimiters(self):
+        """
+        Returns delimiters for all added files
+        :return _delimiters: File delimiters
+        :rtype _delimiters: List
+        """
+        return self._delimiters
 
     def get_headers(self):
         """
