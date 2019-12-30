@@ -36,7 +36,6 @@ class PlotFile:
         self._data_service = data_service
         self._fpath = None
         self._fpaths = []
-        self._delimiters = {",": "Comma", ";": "Semicolon", "\t": "Tab"}
 
     def set_file_path(self, fpath):
         """
@@ -81,13 +80,14 @@ class PlotFile:
     #     """
     #     return ["Plots", "Beacons", "Servitudes", "Field Book"]
 
+    @property
     def delimiters(self):
         """
         Returns delimiters
         :return: Delimiters
         :rtype: Dictionary
         """
-        return self._delimiters
+        return OrderedDict({",": "Comma", ";": "Semicolon", "\t": "Tab"})
 
     def get_row_data(self):
         """
@@ -125,15 +125,13 @@ class PlotFile:
             header_row = 1
             file_extension = QFileInfo(fpath).completeSuffix()
             delimiter = self._get_csv_delimiter(fpath)
-            self.set_delimiter(delimiter)
             for n, prop in enumerate(self._data_service.columns):
                 if prop.name == "Name":
                     properties[n] = QFileInfo(fpath).fileName()
                 elif prop.name == "Import as":
                     properties[n] = unicode(self._get_import_type(fpath))
                 elif prop.name == "Delimiter":
-                    name = "{0} ( {1} )".format(self._delimiters[delimiter], delimiter) if delimiter else ""
-                    properties[n] = unicode(name)
+                    properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
                     header_row = 1
                     properties[n] = float(header_row) if file_extension != "pdf" else unicode("")
@@ -169,15 +167,6 @@ class PlotFile:
         except (csv.Error, Exception) as e:
             raise e
 
-    def set_delimiter(self, delimiter):
-        """
-        Sets custom/new delimiter
-        :param delimiter: delimiter
-        :type delimiter: String
-        """
-        if delimiter and delimiter not in self._delimiters.keys():
-            self._delimiters[delimiter] = "Custom"
-
     @staticmethod
     def _get_import_type(fpath):
         """
@@ -191,6 +180,20 @@ class PlotFile:
         if file_extension == "pdf":
             return "Field Book"
         return "Plots"
+
+    def _delimiter_name(self, delimiter):
+        """
+        Returns delimiter full name
+        :param delimiter: Delimiter
+        :type delimiter: String
+        :return: Delimiter full name
+        :return: String
+        """
+        if not delimiter:
+            return ""
+        if delimiter not in self.delimiters.keys():
+            return "{0} {1}".format("Custom", delimiter)
+        return "{0} {1}".format(self.delimiters[delimiter], delimiter)
 
     @staticmethod
     def get_csv_fields(fpath, row, delimiter=None):
