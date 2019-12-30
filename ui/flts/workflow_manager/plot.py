@@ -136,10 +136,9 @@ class PlotFile:
                     header_row = 1
                     properties[n] = float(header_row) if file_extension != "pdf" else unicode("")
                 elif prop.name == "Geometry field":
-                    field_names = self.get_csv_fields(
-                        fpath, header_row - 1, delimiter
-                    )
-                    properties[n] = unicode(field_names[0]) if field_names else unicode("")
+                    fields = self.get_csv_fields(fpath, header_row - 1, delimiter)
+                    fields = fields[0] if fields else ""
+                    properties[n] = unicode(fields)
                 else:
                     properties[n] = unicode("")
         except (csv.Error, Exception) as e:
@@ -196,17 +195,17 @@ class PlotFile:
         return "{0} {1}".format(self.delimiters[delimiter], delimiter)
 
     @staticmethod
-    def get_csv_fields(fpath, row, delimiter=None):
+    def get_csv_fields(fpath, header_row, delimiter=None):
         """
         Returns plain text field names
         :param fpath: Plot import file absolute path
         :type fpath: String
-        :param row: Header row number
-        :type row: Integer
+        :param header_row: Header row number
+        :type header_row: Integer
         :param delimiter: Delimiter
         :type delimiter: String
-        :return: CSV field names
-        :rtype: List
+        :return fields: CSV field names
+        :rtype fields: List
         """
         file_extension = QFileInfo(fpath).completeSuffix()
         if file_extension not in ("csv", "txt"):
@@ -214,8 +213,10 @@ class PlotFile:
         try:
             with open(fpath, 'r') as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=delimiter)
-                csv_reader = list(csv_reader)
-                return csv_reader[row]
+                fields = next(
+                    (data for row, data in enumerate(csv_reader) if row == header_row), []
+                )
+                return fields
         except (csv.Error, Exception) as e:
             raise e
 
