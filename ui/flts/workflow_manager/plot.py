@@ -137,7 +137,8 @@ class PlotFile:
                     properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
                     header_row = 1
-                    properties[n] = float(header_row) if file_extension != "pdf" else unicode("")
+                    properties[n] = float(header_row) \
+                        if file_extension != FORMATS[-1] else unicode("")
                 elif prop.name == "Geometry field":
                     fields = self.get_csv_fields(fpath, header_row - 1, delimiter)
                     fields = fields[0] if fields else ""
@@ -160,7 +161,7 @@ class PlotFile:
         :rtype: Unicode
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in ("csv", "txt"):
+        if file_extension not in FORMATS[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -179,7 +180,7 @@ class PlotFile:
         :rtype: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension == "pdf":
+        if file_extension == FORMATS[-1]:
             return "Field Book"
         return "Plots"
 
@@ -211,7 +212,7 @@ class PlotFile:
         :rtype fields: List
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in ("csv", "txt"):
+        if file_extension not in FORMATS[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
