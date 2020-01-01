@@ -86,11 +86,12 @@ class PlotImportWidget(QWidget):
         test_folder = "D:/Projects/STDM/Namibia/FLTS/Sample_Inputs/WKT"
         path = QFileInfo(self._plot_file.file_path).path() \
             if self._plot_file.file_path else test_folder
+        extensions = " ".join(self._plot_file.file_extensions())
         fpath = QFileDialog.getOpenFileName(
             self,
             "Workflow Manager - Plot Import Data Files",
             path,
-            "Plot Import files {}".format(self._plot_file.formats())
+            "Plot Import files {}".format(extensions)
         )
         if fpath and fpath not in self._plot_file.file_paths():
             self._plot_file.set_file_path(fpath)

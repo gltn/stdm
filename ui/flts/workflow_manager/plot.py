@@ -23,6 +23,8 @@ from PyQt4.QtCore import (
     QIODevice
 )
 
+FORMATS = ["csv", "txt", "pdf"]
+
 
 class PlotFile:
     """
@@ -63,13 +65,14 @@ class PlotFile:
         return self._fpaths
 
     @staticmethod
-    def formats():
+    def file_extensions():
         """
-        Returns plot import file format types
-        :return: Plot import file format types
-        :rtype: String
+        Returns plot import file extensions
+        :return extension: Plot import file extensions
+        :rtype extension: List
         """
-        return "*.csv *.txt *.pdf"
+        extension = ["*" + fmt for fmt in FORMATS]
+        return extension
 
     # @staticmethod
     # def import_as():
