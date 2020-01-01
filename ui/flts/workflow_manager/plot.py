@@ -15,6 +15,8 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
+import re
+import itertools
 from collections import OrderedDict
 import csv
 from PyQt4.QtCore import (
@@ -23,13 +25,16 @@ from PyQt4.QtCore import (
     QIODevice
 )
 
-FORMATS = ["csv", "txt", "pdf"]
-
 
 class PlotFile:
     """
     Manages plot import data file properties
     """
+    formats = ["csv", "txt", "pdf"]
+    reg_exes = {
+        "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
+    }
+
     def __init__(self, data_service):
         """
         :param data_service: Plot import file data model service
@@ -64,14 +69,13 @@ class PlotFile:
         """
         return self._fpaths
 
-    @staticmethod
-    def file_extensions():
+    def file_extensions(self):
         """
         Returns plot import file extensions
         :return extension: Plot import file extensions
         :rtype extension: List
         """
-        extension = ["*" + fmt for fmt in FORMATS]
+        extension = ["*" + fmt for fmt in self.formats]
         return extension
 
     # @staticmethod
@@ -136,12 +140,15 @@ class PlotFile:
                 elif prop.name == "Delimiter":
                     properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
-                    header_row = 1
                     properties[n] = float(header_row) \
-                        if file_extension != FORMATS[-1] else unicode("")
+                        if file_extension != self.formats[-1] else unicode("")
                 elif prop.name == "Geometry field":
-                    fields = self.get_csv_fields(fpath, header_row - 1, delimiter)
-                    fields = fields[0] if fields else ""
+                    row = header_row - 1
+                    fields = self.get_csv_fields(fpath, row, delimiter)
+                    if fields:
+                        fields = self.geometry_field(fpath, fields, row, delimiter)
+                    else:
+                        fields = ""
                     properties[n] = unicode(fields)
                 else:
                     properties[n] = unicode("")
@@ -151,8 +158,7 @@ class PlotFile:
         results.append(properties)
         return results
 
-    @staticmethod
-    def _get_csv_delimiter(fpath):
+    def _get_csv_delimiter(self, fpath):
         """
         Returns default plain text common delimiter
         :param fpath: Plot import file absolute path
@@ -161,7 +167,7 @@ class PlotFile:
         :rtype: Unicode
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in FORMATS[:-1]:
+        if file_extension not in self.formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -170,8 +176,7 @@ class PlotFile:
         except (csv.Error, Exception) as e:
             raise e
 
-    @staticmethod
-    def _get_import_type(fpath):
+    def _get_import_type(self, fpath):
         """
         Returns default import type based on file extension
         :param fpath: Plot import file absolute path
@@ -180,7 +185,7 @@ class PlotFile:
         :rtype: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension == FORMATS[-1]:
+        if file_extension == self.formats[-1]:
             return "Field Book"
         return "Plots"
 
@@ -198,29 +203,71 @@ class PlotFile:
             return "{0} {1}".format("Custom", delimiter)
         return "{0} {1}".format(self.delimiters[delimiter], delimiter)
 
-    @staticmethod
-    def get_csv_fields(fpath, header_row, delimiter=None):
+    def get_csv_fields(self, fpath, hrow=0, delimiter=None):
         """
         Returns plain text field names
         :param fpath: Plot import file absolute path
         :type fpath: String
-        :param header_row: Header row number
-        :type header_row: Integer
+        :param hrow: Header row number
+        :type hrow: Integer
         :param delimiter: Delimiter
         :type delimiter: String
         :return fields: CSV field names
         :rtype fields: List
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in FORMATS[:-1]:
+        if file_extension not in self.formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=delimiter)
                 fields = next(
-                    (data for row, data in enumerate(csv_reader) if row == header_row), []
+                    (line for row, line in enumerate(csv_reader) if row == hrow), []
                 )
                 return fields
+        except (csv.Error, Exception) as e:
+            raise e
+
+    def geometry_field(self, fpath, fields, hrow=0, delimiter=None):
+        """
+        Returns possible geometry field from
+        list of fields given a plain text file
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :param fields: CSV field names
+        :type fields: List
+        :param hrow: Header row number
+        :type hrow: Integer
+        :param delimiter: Delimiter
+        :type delimiter: String
+        :return goemetry_field: CSV field names
+        :rtype goemetry_field: List
+        """
+        file_extension = QFileInfo(fpath).completeSuffix()
+        if file_extension not in self.formats[:-1]:
+            return
+        try:
+            with open(fpath, 'r') as csv_file:
+                csv_reader = csv.DictReader(
+                    csv_file, fieldnames=fields, delimiter=delimiter
+                )
+                match_count = {field: 0 for field in fields}
+                sample = itertools.islice(csv_reader, 5000)
+                for row, data in enumerate(sample):
+                    if row == hrow:
+                        continue
+                    for field, value in data.items():
+                        if value is None or isinstance(value, list):
+                            continue
+                        matches = self.reg_exes["type_str"].match(value)
+                        if matches:
+                            match_count[field] += 1
+                        else:
+                            continue
+                return max(
+                    match_count.iterkeys(),
+                    key=lambda k: match_count[k]
+                )
         except (csv.Error, Exception) as e:
             raise e
 
