@@ -49,20 +49,21 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         value = result.get(column, None)
         flag = self._headers[column].flag
-        if role == Qt.DisplayRole and flag not in (
-                Qt.ItemIsUserCheckable, Qt.DecorationRole
+        if role == Qt.DisplayRole and (
+                Qt.ItemIsUserCheckable not in flag and
+                Qt.DecorationRole not in flag
         ):
             return value
-        elif role == Qt.DecorationRole and flag == Qt.DecorationRole:
+        elif role == Qt.DecorationRole and Qt.DecorationRole in flag:
             if self._icons:
                 if isinstance(value, float):
                     value = float(value)
                 return self._icons[value]
-        elif role == Qt.CheckStateRole and flag == Qt.ItemIsUserCheckable:
+        elif role == Qt.CheckStateRole and Qt.ItemIsUserCheckable in flag:
             if isinstance(value, float):
                 return Qt.Checked if int(value) == 1 else Qt.Unchecked
         elif role == Qt.TextAlignmentRole:
-            if flag == Qt.ItemIsUserCheckable or flag == Qt.DecorationRole:
+            if Qt.ItemIsUserCheckable in flag or Qt.DecorationRole in flag:
                 return int(Qt.AlignCenter | Qt.AlignVCenter)
             return int(Qt.AlignLeft | Qt.AlignVCenter)
         return
@@ -105,8 +106,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         """
         column = index.column()
         flag = QAbstractTableModel.flags(self, index)
-        if self._headers[column].flag == Qt.ItemIsUserCheckable:
+        if Qt.ItemIsUserCheckable in self._headers[column].flag:
             flag |= Qt.ItemIsUserCheckable
+        elif Qt.ItemIsEditable in self._headers[column].flag:
+            flag |= Qt.ItemIsEditable
         return flag
 
     def setData(self, index, value, role=Qt.EditRole):
@@ -119,6 +122,9 @@ class WorkflowManagerModel(QAbstractTableModel):
             column = index.column()
             if role == Qt.CheckStateRole:
                 result[column] = 1.0 if value == Qt.Checked else 0.0
+            elif role == Qt.EditRole:
+                # TODO: Convert back to the data type value
+                result[column] = value
             self.dataChanged.emit(index, index)
             return True
         return False
