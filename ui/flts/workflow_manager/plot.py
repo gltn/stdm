@@ -130,6 +130,7 @@ class PlotFile:
         properties = {}
         try:
             header_row = 1
+            row = header_row - 1
             file_extension = QFileInfo(fpath).completeSuffix()
             delimiter = self._get_csv_delimiter(fpath)
             for n, prop in enumerate(self._data_service.columns):
@@ -143,13 +144,15 @@ class PlotFile:
                     properties[n] = float(header_row) \
                         if file_extension != self.formats[-1] else unicode("")
                 elif prop.name == "Geometry field":
-                    row = header_row - 1
                     fields = self.get_csv_fields(fpath, row, delimiter)
                     if fields:
                         fields = self.geometry_field(fpath, fields, row, delimiter)
                     else:
                         fields = ""
                     properties[n] = unicode(fields)
+                elif prop.name == "Type":
+                    geo_type = self.geometry_type(fpath, row, delimiter)
+                    properties[n] = unicode(geo_type) if geo_type else ""
                 else:
                     properties[n] = unicode("")
         except (csv.Error, Exception) as e:
@@ -222,7 +225,7 @@ class PlotFile:
             with open(fpath, 'r') as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=delimiter)
                 fields = next(
-                    (line for row, line in enumerate(csv_reader) if row == hrow), []
+                    (data for row, data in enumerate(csv_reader) if row == hrow), []
                 )
                 return fields
         except (csv.Error, Exception) as e:
@@ -240,8 +243,8 @@ class PlotFile:
         :type hrow: Integer
         :param delimiter: Delimiter
         :type delimiter: String
-        :return goemetry_field: CSV field names
-        :rtype goemetry_field: List
+        :return: Geometry field
+        :rtype: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
         if file_extension not in self.formats[:-1]:
@@ -262,12 +265,56 @@ class PlotFile:
                         matches = self.reg_exes["type_str"].match(value)
                         if matches:
                             match_count[field] += 1
-                        else:
-                            continue
                 return max(
                     match_count.iterkeys(),
                     key=lambda k: match_count[k]
                 )
+        except (csv.Error, Exception) as e:
+            raise e
+
+    def geometry_type(self, fpath, hrow=0, delimiter=None):
+        """
+        Returns possible geometry type from a plain text file
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :param hrow: Header row number
+        :type hrow: Integer
+        :param delimiter: Delimiter
+        :type delimiter: String
+        :return geo_type: Geometry type
+        :rtype geo_type: String
+        """
+        file_extension = QFileInfo(fpath).completeSuffix()
+        if file_extension not in self.formats[:-1]:
+            return
+        try:
+            with open(fpath, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=delimiter)
+                sample = itertools.islice(csv_reader, 5000)
+                match_count = {}
+                for row, data in enumerate(sample):
+                    if row == hrow:
+                        continue
+                    for value in data:
+                        if value is None or isinstance(value, list):
+                            continue
+                        matches = self.reg_exes["type_str"].match(value)
+                        if matches:
+                            geo_type, coordinates = matches.groups()
+                            if geo_type:
+                                geo_type = geo_type.strip()
+                                geo_type = geo_type.lower().capitalize()
+                                if geo_type not in match_count:
+                                    match_count[geo_type] = 0
+                                else:
+                                    match_count[geo_type] += 1
+                geo_type = "Detect"
+                if match_count:
+                    geo_type = max(
+                        match_count.iterkeys(),
+                        key=lambda k: match_count[k]
+                    )
+                return geo_type
         except (csv.Error, Exception) as e:
             raise e
 
