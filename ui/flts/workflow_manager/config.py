@@ -516,7 +516,7 @@ class EntityRecordId(Config):
         return self._results
 
 
-Column = namedtuple('Column', ['name', 'flag'])
+Column = namedtuple('Column', ['name', 'type', 'flag'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 LookUp = namedtuple(
     'LookUp',
@@ -539,35 +539,39 @@ UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
 
 configurations = {
     'comment_columns': [
-        {Column(name='Comment', flag=(False,)): 'comment'},
+        {Column(name='Comment', type="text", flag=(False,)): 'comment'},
         {
-            Column(name='User', flag=(False,)): {
+            Column(name='User', type="text", flag=(False,)): {
                 'cb_user': 'user_name'
             }
         },
         {
-            Column(name='First Name', flag=(False,)): {
+            Column(name='First Name', type="text", flag=(False,)): {
                 'cb_user': 'first_name'
             }
         },
         {
-            Column(name='Last Name', flag=(False,)): {
+            Column(name='Last Name', type="text", flag=(False,)): {
                 'cb_user': 'last_name'
             }
         },
-        {Column(name='Post Date', flag=(False,)): 'timestamp'}
+        {Column(name='Post Date', type="datetime", flag=(False,)): 'timestamp'}
     ],
     'comment_collections': ['cb_scheme_collection'],
     'comment_load_collections': ['cb_comment_collection'],
     'document_columns': [
-        {Column(name='Scheme Number', flag=(False,)): 'name'},
-        {Column(name='Document Type', flag=(False,)): {
+        {Column(name='Scheme Number', type="text", flag=(False,)): 'name'},
+        {Column(name='Document Type', type="text", flag=(False,)): {
             'cb_check_scheme_document_type': 'value'
         }},
-        {Column(name='Document Size', flag=(False,)): 'document_size'},
-        {Column(name='Last Modified', flag=(False,)): 'last_modified'},
-        {Column(name='Created By', flag=(False,)): 'created_by'},
-        {Column(name='View Document', flag=(Qt.DecorationRole,)): 'View'}
+        {Column(name='Document Size', type="integer", flag=(False,)): 'document_size'},
+        {Column(name='Last Modified', type="datetime", flag=(False,)): 'last_modified'},
+        {Column(name='Created By', type="text", flag=(False,)): 'created_by'},
+        {
+            Column(
+                name='View Document', type="decoration", flag=(Qt.DecorationRole,)
+            ): 'View'
+        }
     ],
     'document_collections': ['cb_scheme_supporting_document_collection'],
     'header_view_style': 'QHeaderView::section{'
@@ -589,51 +593,79 @@ configurations = {
                          '}',
     'holder_columns': [
         {
-            Column(name='Scheme Number', flag=(False,)): {
+            Column(name='Scheme Number', type="text", flag=(False,)): {
                 'scheme_number': 'scheme_number'
             }
         },
-        {Column(name='First Name', flag=(False,)): 'first_name'},
-        {Column(name='Surname', flag=(False,)): 'surname'},
+        {Column(name='First Name', type="text", flag=(False,)): 'first_name'},
+        {Column(name='Surname', type="text", flag=(False,)): 'surname'},
         {
-            Column(name='Gender', flag=(False,)): {
+            Column(name='Gender', type="text", flag=(False,)): {
                 'cb_check_lht_gender': 'value'
             }
         },
-        {Column(name='Holder Identifier', flag=(False,)): 'holder_identifier'},
-        {Column(name='Date of Birth', flag=(False,)): 'date_of_birth'},
-        {Column(name='Name of Juristic Person', flag=(False,)): 'name_of_juristic_person'},
-        {Column(name='Reg. No. of Juristic Person', flag=(False,)): 'reg_no_of_juristic_person'},
         {
-            Column(name='Marital Status', flag=(False,)): {
+            Column(
+                name='Holder Identifier', type="text", flag=(False,)
+            ): 'holder_identifier'
+        },
+        {Column(name='Date of Birth', type="date", flag=(False,)): 'date_of_birth'},
+        {
+            Column(
+                name='Name of Juristic Person', type="text", flag=(False,)
+            ): 'name_of_juristic_person'
+        },
+        {
+            Column(
+                name='Reg. No. of Juristic Person', type="text", flag=(False,)
+            ): 'reg_no_of_juristic_person'
+        },
+        {
+            Column(name='Marital Status', type="text", flag=(False,)): {
                 'cb_check_lht_marital_status': 'value'
             }
         },
-        {Column(name='Spouse Surname', flag=(False,)): 'spouse_surname'},
-        {Column(name='Spouse First Name', flag=(False,)): 'spouse_first_name'},
+        {Column(name='Spouse Surname', type="text", flag=(False,)): 'spouse_surname'},
         {
-            Column(name='Spouse Gender', flag=(False,)): {
+            Column(
+                name='Spouse First Name', type="text", flag=(False,)
+            ): 'spouse_first_name'
+        },
+        {
+            Column(name='Spouse Gender', type="text", flag=(False,)): {
                 'cb_check_lht_gender': 'value'
             }
         },
-        {Column(name='Spouse Identifier', flag=(False,)): 'spouse_identifier'},
-        {Column(name='Spouse Date of Birth', flag=(False,)): 'spouse_date_of_birth'},
         {
-            Column(name='Disability Status', flag=(False,)): {
+            Column(
+                name='Spouse Identifier', type="text", flag=(False,)
+            ): 'spouse_identifier'
+        },
+        {
+            Column(
+                name='Spouse Date of Birth', type="date", flag=(False,)
+            ): 'spouse_date_of_birth'
+        },
+        {
+            Column(name='Disability Status', type="text", flag=(False,)): {
                 'cb_check_lht_disability': 'value'
             }
         },
         {
-            Column(name='Income Level', flag=(False,)): {
+            Column(name='Income Level', type="text", flag=(False,)): {
                 'cb_check_lht_income_level': 'value'
             }
         },
         {
-            Column(name='Occupation', flag=(False,)): {
+            Column(name='Occupation', type="text", flag=(False,)): {
                 'cb_check_lht_occupation': 'value'
             }
         },
-        {Column(name='Other Dependants', flag=(False,)): 'other_dependants'},
+        {
+            Column(
+                name='Other Dependants', type="integer", flag=(False,)
+            ): 'other_dependants'
+        },
     ],
     'holder_collections': ['cb_scheme_collection'],
     'holder_load_collections': ['cb_holder_collection'],
@@ -675,67 +707,55 @@ configurations = {
         COMMENT_COLUMN='comment', VIEW_PDF=5
     ),
     'scheme_columns': [
-        {Column(name='', flag=(Qt.ItemIsUserCheckable,)): '0'},
-        {Column(name='Scheme Number', flag=(False,)): 'scheme_number'},
+        {Column(name='', type="integer", flag=(Qt.ItemIsUserCheckable,)): '0'},
+        {Column(name='Scheme Number', type="text", flag=(False,)): 'scheme_number'},
         {
-            Column(name='Status', flag=(Qt.DecorationRole,)): {
+            Column(name='Status', type="integer", flag=(Qt.DecorationRole,)): {
                 'approval_id': 'approval_id'
             }
         },
-
-        # {
-        #     Column(name='Scheme ID', flag=(False,)): {
-        #         'scheme_id': 'scheme_id'
-        #     }
-        # },
-        # {
-        #     Column(name='Workflow', flag=(False,)): {
-        #         'workflow_id': 'workflow_id'
-        #     }
-        # },
-        # {
-        #     Column(name='Workflow Type', flag=(False,)): {
-        #         'cb_check_lht_workflow': 'value'
-        #     }
-        # },
-        {Column(name='Approval Date', flag=(False,)): 'date_of_approval'},
-        {Column(name='Establishment Date', flag=(False,)): 'date_of_establishment'},
+        {Column(name='Approval Date', type="date", flag=(False,)): 'date_of_approval'},
         {
-            Column(name='Type of Relevant Authority', flag=(False,)): {
+            Column(
+                name='Establishment Date', type="date", flag=(False,)
+            ): 'date_of_establishment'
+        },
+        {
+            Column(name='Type of Relevant Authority', type="text", flag=(False,)): {
                 'cb_check_lht_relevant_authority': 'value'
             }
         },
         {
-            Column(name='Land Rights Office', flag=(False,)): {
+            Column(name='Land Rights Office', type="text", flag=(False,)): {
                 'cb_check_lht_land_rights_office': 'value'
             }
         },
         {
-            Column(name='Region', flag=(False,)): {
+            Column(name='Region', type="text", flag=(False,)): {
                 'cb_check_lht_region': 'value'
             }
         },
-        {Column(name='Township', flag=(False,)): 'township_name'},
+        {Column(name='Township', type="text", flag=(False,)): 'township_name'},
         {
-            Column(name='Registration Division', flag=(False,)):
+            Column(name='Registration Division', type="integer", flag=(False,)):
                 'registration_division'
         },
-        {Column(name='Block Area', flag=(False,)): 'area'},
+        {Column(name='Block Area', type="float", flag=(False,)): 'area'},
         {
-            Column(name='Date/Time', flag=(False,)): {
+            Column(name='Date/Time', type="datetime", flag=(False,)): {
                 'timestamp': 'timestamp'
             }
         }
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'plot_file_columns': [
-        Column(name='Name', flag=(Qt.TextColorRole,)),
-        Column(name='Import as', flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='Delimiter', flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='Header row', flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='Geometry field', flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='Type', flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='CRS ID', flag=(Qt.TextColorRole,))
+        Column(name='Name', type="text", flag=(Qt.TextColorRole,)),
+        Column(name='Import as', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
+        Column(name='Delimiter', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
+        Column(name='Header row', type="integer", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
+        Column(name='Geometry field', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
+        Column(name='Type', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
+        Column(name='CRS ID', type="text", flag=(Qt.TextColorRole,))
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),

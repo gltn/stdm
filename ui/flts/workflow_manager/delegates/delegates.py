@@ -234,9 +234,10 @@ def column_delegate(column_type):
 
     delegate = {
         "integer": IntegerColumnDelegate,
+        "float": IntegerColumnDelegate,
         "date": DateColumnDelegate,
-        "list_text": ListTextColumnDelegate,
-        "plain_text": PlainTextColumnDelegate
+        "list": ListTextColumnDelegate,
+        "text": PlainTextColumnDelegate
 
     }
     return delegate[column_type]
