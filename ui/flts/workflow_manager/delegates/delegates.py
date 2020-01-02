@@ -114,7 +114,7 @@ class IntegerColumnDelegate(QItemDelegate):
         QItemDelegate setModelData method
         """
         editor.interpretText()
-        model.setData(index, QVariant(editor.value()))
+        model.setData(index, editor.value())
 
 
 class DateColumnDelegate(QItemDelegate):
@@ -153,14 +153,14 @@ class DateColumnDelegate(QItemDelegate):
         Implementation of generic date column
         QItemDelegate setModelData method
         """
-        model.setData(index, QVariant(editor.date()))
+        model.setData(index, editor.date())
 
 
 class ListTextColumnDelegate(QItemDelegate):
     """
     Generic list text column delegate
     """
-    def __init__(self, items, parent=None):
+    def __init__(self, items=None, parent=None):
         super(ListTextColumnDelegate, self).__init__(parent)
         self.items = items
 
@@ -179,16 +179,18 @@ class ListTextColumnDelegate(QItemDelegate):
         Implementation of generic list column
         QItemDelegate setEditorData method
         """
-        value = index.model().data(index, Qt.DisplayRole).toInt()[0]
-        editor.setValue(value)
+        value = index.model().data(index, Qt.DisplayRole)
+        i = editor.findText(value)
+        if i == -1:
+            i = 0
+        editor.setCurrentIndex(i)
 
     def setModelData(self, editor, model, index):
         """
         Implementation of generic list column
         QItemDelegate setModelData method
         """
-        editor.interpretText()
-        model.setData(index, QVariant(editor.value()))
+        model.setData(index, editor.currentText())
 
 
 class PlainTextColumnDelegate(QItemDelegate):
@@ -211,7 +213,7 @@ class PlainTextColumnDelegate(QItemDelegate):
         Implementation of generic plain text column
         QItemDelegate setEditorData method
         """
-        value = index.model().data(index, Qt.DisplayRole).toString()
+        value = index.model().data(index, Qt.DisplayRole)
         editor.setText(value)
 
     def setModelData(self, editor, model, index):
@@ -219,7 +221,7 @@ class PlainTextColumnDelegate(QItemDelegate):
         Implementation of generic plain text column
         QItemDelegate setModelData method
         """
-        model.setData(index, QVariant(editor.text()))
+        model.setData(index, editor.text())
 
 
 def column_delegate(column_type):

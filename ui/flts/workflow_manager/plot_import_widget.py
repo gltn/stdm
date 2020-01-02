@@ -27,6 +27,7 @@ from stdm.ui.flts.workflow_manager.plot import(
     PlotFile,
 )
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
+from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
 from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
 
 
@@ -50,6 +51,9 @@ class PlotImportWidget(QWidget):
         self._file_table_view = QTableView(self)
         self.model = WorkflowManagerModel(file_service)
         self._file_table_view.setModel(self.model)
+        file_delegate = PlotFileDelegate(file_service, self)
+        file_delegate = file_delegate.delegate()
+        self._file_table_view.setItemDelegate(file_delegate)
         self._file_table_view.setShowGrid(False)
         style = 'QHeaderView::section{color: #2F4F4F;}'
         self._file_table_view.horizontalHeader().setStyleSheet(style)

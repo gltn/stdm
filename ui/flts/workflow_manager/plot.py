@@ -74,17 +74,17 @@ class PlotFile:
         :return extension: Plot import file extensions
         :rtype extension: List
         """
-        extension = ["*" + fmt for fmt in self._formats]
+        extension = ["*." + fmt for fmt in self._formats]
         return extension
 
-    # @staticmethod
-    # def import_as():
-    #     """
-    #     Returns import types
-    #     :return: Import types
-    #     :rtype: List
-    #     """
-    #     return ["Plots", "Beacons", "Servitudes", "Field Book"]
+    @staticmethod
+    def import_as():
+        """
+        Returns import types
+        :return: Import types
+        :rtype: List
+        """
+        return ["Beacons", "Plots", "Servitudes"]
 
     @property
     def delimiters(self):

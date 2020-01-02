@@ -217,6 +217,14 @@ class WorkflowManagerModel(QAbstractTableModel):
         except (AttributeError, exc.SQLAlchemyError, IOError, OSError, Exception) as e:
             raise e
 
+    def data_source(self):
+        """
+        Returns data source
+        :return _data_source: Data source
+        :rtype _data_source: Object
+        """
+        return self._data_source
+
     def refresh(self):
         """
         Refresh model
