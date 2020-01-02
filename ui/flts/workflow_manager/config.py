@@ -734,7 +734,8 @@ configurations = {
         Column(name='Delimiter', flag=Qt.TextColorRole),
         Column(name='Header row', flag=Qt.TextColorRole),
         Column(name='Geometry field', flag=Qt.TextColorRole),
-        Column(name='Type', flag=Qt.TextColorRole)
+        Column(name='Type', flag=Qt.TextColorRole),
+        Column(name='CRS ID', flag=Qt.TextColorRole)
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),

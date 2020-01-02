@@ -123,7 +123,7 @@ class PlotImportWidget(QWidget):
 
     def _add_crs(self):
         """
-        Add docstring
+        Add docstring and call in a signal
         :return:
         """
         proj_selector = QgsGenericProjectionSelector()
