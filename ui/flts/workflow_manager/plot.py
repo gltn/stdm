@@ -29,12 +29,7 @@ from PyQt4.QtCore import (
 class PlotFile:
     """
     Manages plot import data file properties
-    """
-    formats = ["csv", "txt", "pdf"]
-    reg_exes = {
-        "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
-    }
-
+    """ 
     def __init__(self, data_service):
         """
         :param data_service: Plot import file data model service
@@ -43,6 +38,10 @@ class PlotFile:
         self._data_service = data_service
         self._fpath = None
         self._fpaths = []
+        self._formats = ["csv", "txt", "pdf"]
+        self._reg_exes = {
+            "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
+        }
 
     def set_file_path(self, fpath):
         """
@@ -75,7 +74,7 @@ class PlotFile:
         :return extension: Plot import file extensions
         :rtype extension: List
         """
-        extension = ["*" + fmt for fmt in self.formats]
+        extension = ["*" + fmt for fmt in self._formats]
         return extension
 
     # @staticmethod
@@ -142,7 +141,7 @@ class PlotFile:
                     properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
                     properties[n] = float(header_row) \
-                        if file_extension != self.formats[-1] else unicode("")
+                        if file_extension != self._formats[-1] else unicode("")
                 elif prop.name == "Geometry field":
                     fields = self.get_csv_fields(fpath, row, delimiter)
                     if fields:
@@ -170,7 +169,7 @@ class PlotFile:
         :rtype: Unicode
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self.formats[:-1]:
+        if file_extension not in self._formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -188,7 +187,7 @@ class PlotFile:
         :rtype: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension == self.formats[-1]:
+        if file_extension == self._formats[-1]:
             return "Field Book"
         return "Plots"
 
@@ -219,7 +218,7 @@ class PlotFile:
         :rtype fields: List
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self.formats[:-1]:
+        if file_extension not in self._formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -247,7 +246,7 @@ class PlotFile:
         :rtype: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self.formats[:-1]:
+        if file_extension not in self._formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -262,7 +261,7 @@ class PlotFile:
                     for field, value in data.items():
                         if value is None or isinstance(value, list):
                             continue
-                        matches = self.reg_exes["type_str"].match(value)
+                        matches = self._reg_exes["type_str"].match(value)
                         if matches:
                             match_count[field] += 1
                 return max(
@@ -285,7 +284,7 @@ class PlotFile:
         :rtype geo_type: String
         """
         file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self.formats[:-1]:
+        if file_extension not in self._formats[:-1]:
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -298,7 +297,7 @@ class PlotFile:
                     for value in data:
                         if value is None or isinstance(value, list):
                             continue
-                        matches = self.reg_exes["type_str"].match(value)
+                        matches = self._reg_exes["type_str"].match(value)
                         if matches:
                             geo_type, coordinates = matches.groups()
                             if geo_type:

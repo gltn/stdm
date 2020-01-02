@@ -17,6 +17,7 @@ copyright            : (C) 2019
 """
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from qgis.gui import QgsGenericProjectionSelector
 from stdm.ui.flts.workflow_manager.config import (
     SchemeMessageBox,
     StyleSheet,
@@ -119,3 +120,13 @@ class PlotImportWidget(QWidget):
         """
         position = self.model.rowCount()
         self.model.insertRows(position)
+
+    def _add_crs(self):
+        """
+        Add docstring
+        :return:
+        """
+        proj_selector = QgsGenericProjectionSelector()
+        proj_selector.exec_()
+        auth_id = proj_selector.selectedAuthId()
+        # Call model to edit and show in CRS field of selected file
