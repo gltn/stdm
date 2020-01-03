@@ -233,7 +233,6 @@ def column_delegate(column_type):
     :return: Generic column delegate
     :rtype: QItemDelegate
     """
-
     delegate = {
         "integer": IntegerColumnDelegate,
         "float": IntegerColumnDelegate,
