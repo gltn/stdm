@@ -149,32 +149,6 @@ class PlotFileDelegate:
         }
         return delegate.get(name)
 
-    # def _import_type_delegate(self, name, idx):
-    #     """
-    #     Sets import type column delegate
-    #     :param name: Column name
-    #     :type name: String
-    #     :param idx: Column index
-    #     :type idx: Integer
-    #     """
-    #     if name == "Import as":
-    #         self._delegate.insert_column_delegate(
-    #             idx, ImportTypeColumnDelegate()
-    #         )
-    #
-    # def _delimiter_delegate(self, name, idx):
-    #     """
-    #     Sets delimiter column delegate
-    #     :param name: Column name
-    #     :type name: String
-    #     :param idx: Column index
-    #     :type idx: Integer
-    #     """
-    #     if name == "Delimiter":
-    #         self._delegate.insert_column_delegate(
-    #             idx, DelimiterColumnDelegate()
-    #         )
-
     def delegate(self):
         """
         Returns Plot import file delegate for
