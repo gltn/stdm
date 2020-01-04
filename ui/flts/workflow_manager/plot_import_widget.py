@@ -112,10 +112,8 @@ class PlotImportWidget(QWidget):
                     )
             else:
                 self._insert_file()
-            self._file_table_view.horizontalHeader(). \
-                setResizeMode(QHeaderView.ResizeToContents)
-            self._file_table_view.resizeRowsToContents()
-            self._file_table_view.horizontalHeader(). \
+            self._file_table_view.verticalHeader().setDefaultSectionSize(21)
+            self._file_table_view.horizontalHeader().\
                 setStretchLastSection(True)
 
     def _insert_file(self):
