@@ -145,23 +145,48 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
         data_source = index.model().data_source()
         if DelegateRoutine().is_pdf(data_source, index):
             return
-        self.minimum, self.maximum = self._editor_range(data_source)
+        self.minimum, self.maximum = self._editor_range(index)
         return IntegerColumnDelegate.createEditor(self, parent, option, index)
 
-    def _editor_range(self, data_source):
+    def _editor_range(self, index):
         """
         Returns editor value range
-        :param data_source: Data source object
-        :type data_source: PlotFile
+        :param index: Item index identifier
+        :type index: QModelIndex
         :return: Value range
         :rtype: Integer
         """
-        file_path = data_source.file_path
+        row = index.row()
+        results = index.model().results
+        results = results[row]
+        file_path = results["fpath"]
+        data_source = index.model().data_source()
         row_count = data_source.row_count(file_path)
         if row_count:
             return 1, row_count
         return 0, 0
 
+
+class GeometryFieldColumnDelegate(ListTextColumnDelegate):
+    """
+    Generic plot import file geometry field column delegate
+    """
+    def createEditor(self, parent, option, index):
+        """
+        Reimplementation of generic list column
+        QItemDelegate createEditor method
+        """
+        data_source = index.model().data_source()
+        if DelegateRoutine().is_pdf(data_source, index):
+            return
+        self.items = data_source.delimiter_names()
+        regex = QRegExp(r"^[\w\W]{1}$")
+        validator = QRegExpValidator(regex, parent)
+        combobox = QComboBox(parent)
+        combobox.addItems(sorted(self.items.values()))
+        combobox.setEditable(True)
+        combobox.setValidator(validator)
+        return combobox
 
 class PlotFileDelegate:
     """
@@ -202,7 +227,8 @@ class PlotFileDelegate:
         """
         delegate = {
             "Import as": ImportTypeColumnDelegate,
-            "Delimiter": DelimiterColumnDelegate
+            "Delimiter": DelimiterColumnDelegate,
+            "Geometry field": GeometryFieldColumnDelegate
         }
         return delegate.get(name)
 
