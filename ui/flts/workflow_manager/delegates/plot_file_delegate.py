@@ -31,6 +31,8 @@ from stdm.ui.flts.workflow_manager.delegates.delegates import (
     PlainTextColumnDelegate
 )
 
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
+GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
 
 class DelegateRoutine:
     """
@@ -46,22 +48,35 @@ class DelegateRoutine:
         :return True: Returns true if the file extension is PDF
         :rtype True: Boolean
         """
-        file_name = self._file_name(index)
+        file_name = self.file_path(index)
         if data_source.is_pdf(file_name):
             return True
 
+    # @staticmethod
+    # def _file_name(index):
+    #     """
+    #     Returns file name
+    #     :param index: Model item index
+    #     :type index: QModelIndex
+    #     :return file_name: File name
+    #     :rtype file_name: String
+    #     """
+    #     i = index.sibling(index.row(), NAME)
+    #     file_name = i.model().data(i, Qt.DisplayRole)
+    #     return file_name
+
     @staticmethod
-    def _file_name(index):
+    def file_path(index):
         """
-        Returns file name
-        :param index: Model item index
+        Returns plot import file absolute path
+        :param index: Item index identifier
         :type index: QModelIndex
-        :return file_name: File name
-        :rtype file_name: String
+        :return: Plot import file absolute path
+        :rtype: Unicode
         """
-        i = index.sibling(index.row(), 0)
-        file_name = i.model().data(i, Qt.DisplayRole)
-        return file_name
+        results = index.model().results
+        results = results[index.row()]
+        return results["fpath"]
 
 
 class ImportTypeColumnDelegate(ListTextColumnDelegate):
@@ -156,28 +171,16 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
         :return: Value range
         :rtype: Integer
         """
-        file_path = self._file_path(index)
+        file_path = DelegateRoutine().file_path(index)
         data_source = index.model().data_source()
         row_count = data_source.row_count(file_path)
         if row_count:
             return 1, row_count
         return 0, 0
 
-    @staticmethod
-    def _file_path(index):
-        """
-        Returns plot import file absolute path
-        :param index: Item index identifier
-        :type index: QModelIndex
-        :return: Plot import file absolute path
-        :rtype: Unicode
-        """
-        results = index.model().results
-        results = results[index.row()]
-        return results["fpath"]
 
-
-# class GeometryFieldColumnDelegate(ListTextColumnDelegate):
+class GeometryFieldColumnDelegate(ListTextColumnDelegate):
+    pass
 #     """
 #     Generic plot import file geometry field column delegate
 #     """
@@ -189,34 +192,23 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
 #         data_source = index.model().data_source()
 #         if DelegateRoutine().is_pdf(data_source, index):
 #             return
-#         self.items = data_source.delimiter_names()
-#         regex = QRegExp(r"^[\w\W]{1}$")
-#         validator = QRegExpValidator(regex, parent)
-#         combobox = QComboBox(parent)
-#         combobox.addItems(sorted(self.items.values()))
-#         combobox.setEditable(True)
-#         combobox.setValidator(validator)
-#         return combobox
 #
 #     def _editor_geometry_fields(self, index):
 #         """
 #         Returns editor geometry fields
 #         :param index: Item index identifier
 #         :type index: QModelIndex
-#         :return: Value range
-#         :rtype: Integer
+#         :return: Editor geometry fields
+#         :rtype: List
 #         """
+#         file_path = DelegateRoutine().file_path(index)
 #         row = index.row()
-#         results = index.model().results
-#         results = results[row]
-#         file_path = results["fpath"]
 #         i = index.sibling(row, 3)
+#         hrow = i.model().data(i, Qt.DisplayRole)
+#         i = index.sibling(row, 2)
 #
 #
-#         data_source = index.model().data_source()
-#         row_count = data_source.row_count(file_path)
-
-
+#         # data_source = index.model().data_source()
 
 
 class PlotFileDelegate:
@@ -232,36 +224,36 @@ class PlotFileDelegate:
         """
         Sets column delegate based on type
         """
-        for i, column in enumerate(self._data_service.columns):
+        for pos, column in enumerate(self._data_service.columns):
             if column.type == "list":
-                delegate = self._list_text_delegate(column.name)
+                delegate = self._list_text_delegate(pos)
                 if delegate:
-                    self._delegate.insert_column_delegate(i, delegate())
-            elif column.name == "Header row" and column.type == "integer":
+                    self._delegate.insert_column_delegate(pos, delegate())
+            elif pos == HEADER_ROW and column.type == "integer":
                 self._delegate.insert_column_delegate(
-                    i, HeaderRowColumnDelegate()
+                    pos, HeaderRowColumnDelegate()
                 )
-            elif column.name == "Name" and column.type == "text":
+            elif pos == NAME and column.type == "text":
                 self._delegate.insert_column_delegate(
-                    i, PlainTextColumnDelegate()
+                    pos, PlainTextColumnDelegate()
                 )
 
     @staticmethod
-    def _list_text_delegate(name):
+    def _list_text_delegate(pos):
         """
         Returns list text column
         delegate based on a column name
-        :param name: Column name
-        :type name: String
+        :param pos: Column position in the table view
+        :type pos: String
         :return: List text column delegate
         :rtype: QItemDelegate
         """
         delegate = {
-            "Import as": ImportTypeColumnDelegate,
-            "Delimiter": DelimiterColumnDelegate
-            # "Geometry field": GeometryFieldColumnDelegate
+            IMPORT_AS: ImportTypeColumnDelegate,
+            DELIMITER: DelimiterColumnDelegate,
+            GEOM_FIELD: GeometryFieldColumnDelegate
         }
-        return delegate.get(name)
+        return delegate.get(pos)
 
     def delegate(self):
         """

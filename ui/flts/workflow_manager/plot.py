@@ -25,11 +25,14 @@ from PyQt4.QtCore import (
     QIODevice
 )
 
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
+GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
+
 
 class PlotFile:
     """
     Manages plot import data file properties
-    """ 
+    """
     def __init__(self, data_service):
         """
         :param data_service: Plot import file data model service
@@ -147,28 +150,28 @@ class PlotFile:
             header_row = 1
             row = header_row - 1
             delimiter = self._get_csv_delimiter(fpath)
-            for n, prop in enumerate(self._data_service.columns):
-                if prop.name == "Name":
-                    properties[n] = QFileInfo(fpath).fileName()
-                elif prop.name == "Import as":
-                    properties[n] = unicode(self._get_import_type(fpath))
-                elif prop.name == "Delimiter":
-                    properties[n] = unicode(self._delimiter_name(delimiter))
-                elif prop.name == "Header row":
-                    properties[n] = header_row \
+            for pos, column in enumerate(self._data_service.columns):
+                if pos == NAME:
+                    properties[pos] = QFileInfo(fpath).fileName()
+                elif pos == IMPORT_AS:
+                    properties[pos] = unicode(self._get_import_type(fpath))
+                elif pos == DELIMITER:
+                    properties[pos] = unicode(self._delimiter_name(delimiter))
+                elif pos == HEADER_ROW:
+                    properties[pos] = header_row \
                         if not self.is_pdf(fpath) else unicode("")
-                elif prop.name == "Geometry field":
+                elif pos == GEOM_FIELD:
                     fields = self.get_csv_fields(fpath, row, delimiter)
                     if fields:
                         fields = self.geometry_field(fpath, fields, row, delimiter)
                     else:
                         fields = ""
-                    properties[n] = unicode(fields)
-                elif prop.name == "Type":
+                    properties[pos] = unicode(fields)
+                elif pos == GEOM_TYPE:
                     geo_type = self.geometry_type(fpath, row, delimiter)
-                    properties[n] = unicode(geo_type) if geo_type else ""
+                    properties[pos] = unicode(geo_type) if geo_type else ""
                 else:
-                    properties[n] = unicode("")
+                    properties[pos] = unicode("")
                 properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e
@@ -356,7 +359,7 @@ class PlotFile:
         if self.is_pdf(fpath):
             return
         try:
-            with open(fpath, 'r') as csv_file:
+            with open(fpath, "r") as csv_file:
                 return sum(1 for line in csv_file)
         except (csv.Error, Exception) as e:
             raise e
