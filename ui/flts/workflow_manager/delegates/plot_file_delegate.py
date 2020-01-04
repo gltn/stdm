@@ -145,12 +145,22 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
         data_source = index.model().data_source()
         if DelegateRoutine().is_pdf(data_source, index):
             return
+        self.minimum, self.maximum = self._editor_range(data_source)
+        return IntegerColumnDelegate.createEditor(self, parent, option, index)
+
+    def _editor_range(self, data_source):
+        """
+        Returns editor value range
+        :param data_source: Data source object
+        :type data_source: PlotFile
+        :return: Value range
+        :rtype: Integer
+        """
         file_path = data_source.file_path
         row_count = data_source.row_count(file_path)
         if row_count:
-            self.minimum = 1
-            self.maximum = row_count
-        return IntegerColumnDelegate.createEditor(self, parent, option, index)
+            return 1, row_count
+        return 0, 0
 
 
 class PlotFileDelegate:
