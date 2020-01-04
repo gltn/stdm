@@ -68,8 +68,7 @@ class ImportTypeColumnDelegate(ListTextColumnDelegate):
         QItemDelegate createEditor method
         """
         data_source = index.model().data_source()
-        routine = DelegateRoutine()
-        if routine.is_pdf(data_source, index):
+        if DelegateRoutine().is_pdf(data_source, index):
             return
         self.items = data_source.import_as()
         combobox = QComboBox(parent)
@@ -88,8 +87,7 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         QItemDelegate createEditor method
         """
         data_source = index.model().data_source()
-        routine = DelegateRoutine()
-        if routine.is_pdf(data_source, index):
+        if DelegateRoutine().is_pdf(data_source, index):
             return
         self.items = []
         delimiters = data_source.delimiters
@@ -112,6 +110,26 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         model.setData(index, value)
 
 
+class HeaderRowColumnDelegate(IntegerColumnDelegate):
+    """
+    Generic plot import file header row column delegate
+    """
+    def createEditor(self, parent, option, index):
+        """
+        Reimplementation of generic list column
+        QItemDelegate createEditor method
+        """
+        data_source = index.model().data_source()
+        if DelegateRoutine().is_pdf(data_source, index):
+            return
+        file_path = data_source.file_path
+        row_count = data_source.row_count(file_path)
+        if row_count:
+            self.minimum = 1
+            self.maximum = row_count
+        return IntegerColumnDelegate.createEditor(self, parent, option, index)
+
+
 class PlotFileDelegate:
     """
     Plot import file delegate for table view presentation and editing
@@ -131,6 +149,10 @@ class PlotFileDelegate:
                 delegate = self._list_text_delegate(column.name)
                 if delegate:
                     self._delegate.insert_column_delegate(i, delegate())
+            elif column.type == "integer":
+                self._delegate.insert_column_delegate(
+                    i, HeaderRowColumnDelegate()
+                )
             elif column.type == "text":
                 self._delegate.insert_column_delegate(
                     i, PlainTextColumnDelegate()

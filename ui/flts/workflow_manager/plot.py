@@ -139,7 +139,7 @@ class PlotFile:
                 elif prop.name == "Delimiter":
                     properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
-                    properties[n] = float(header_row) \
+                    properties[n] = header_row \
                         if not self.is_pdf(fpath) else unicode("")
                 elif prop.name == "Geometry field":
                     fields = self.get_csv_fields(fpath, row, delimiter)
@@ -324,6 +324,22 @@ class PlotFile:
         file_extension = QFileInfo(fpath).suffix()
         if file_extension == "pdf":
             return True
+
+    def row_count(self, fpath):
+        """
+        Returns total number of rows/lines in a CSV/txt file
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return: Total number of rows/lines
+        :rtype: Integer
+        """
+        if self.is_pdf(fpath):
+            return
+        try:
+            with open(fpath, 'r') as csv_file:
+                return sum(1 for line in csv_file)
+        except (csv.Error, Exception) as e:
+            raise e
 
     def get_headers(self):
         """

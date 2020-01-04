@@ -85,7 +85,7 @@ class IntegerColumnDelegate(QItemDelegate):
     """
     Generic integer column delegate
     """
-    def __init__(self, minimum=0, maximum=100, parent=None):
+    def __init__(self, minimum=0, maximum=0, parent=None):
         super(IntegerColumnDelegate, self).__init__(parent)
         self.minimum = minimum
         self.maximum = maximum
@@ -97,7 +97,7 @@ class IntegerColumnDelegate(QItemDelegate):
         """
         spinbox = QSpinBox(parent)
         spinbox.setRange(self.minimum, self.maximum)
-        spinbox.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
+        spinbox.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         return spinbox
 
     def setEditorData(self, editor, index):
@@ -105,7 +105,7 @@ class IntegerColumnDelegate(QItemDelegate):
         Implementation of generic integer column
         QItemDelegate setEditorData method
         """
-        value = index.model().data(index, Qt.DisplayRole).toInt()[0]
+        value = index.model().data(index, Qt.DisplayRole)
         editor.setValue(value)
 
     def setModelData(self, editor, model, index):
