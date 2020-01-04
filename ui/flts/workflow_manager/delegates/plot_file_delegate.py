@@ -16,8 +16,14 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QComboBox
+from PyQt4.QtCore import (
+    Qt,
+    QRegExp
+)
+from PyQt4.QtGui import (
+    QComboBox,
+    QRegExpValidator
+)
 from stdm.ui.flts.workflow_manager.delegates.delegates import (
     GenericDelegate,
     IntegerColumnDelegate,
@@ -70,9 +76,9 @@ class ImportTypeColumnDelegate(ListTextColumnDelegate):
         data_source = index.model().data_source()
         if DelegateRoutine().is_pdf(data_source, index):
             return
-        self.items = data_source.import_as()
+        import_types = data_source.import_as()
         combobox = QComboBox(parent)
-        combobox.addItems(sorted(self.items))
+        combobox.addItems(sorted(import_types))
         combobox.setEditable(False)
         return combobox
 
@@ -89,15 +95,32 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         data_source = index.model().data_source()
         if DelegateRoutine().is_pdf(data_source, index):
             return
-        self.items = []
+        self.items = self._delimiter_name(data_source)
+        regex = QRegExp(r"^[\w\W]{1}$")
+        validator = QRegExpValidator(regex, parent)
+        combobox = QComboBox(parent)
+        combobox.addItems(sorted(self.items))
+        combobox.setEditable(True)
+        combobox.setValidator(validator)
+        return combobox
+
+    def _delimiter_name(self, data_source):
+        """
+        Returns delimiters full name
+        :param data_source: Plot file object
+        :type data_source: PlotFile
+        :return names: Delimiters full name
+        :return names: String
+        """
+        names = []
         delimiters = data_source.delimiters
         for k, d in sorted(delimiters.items()):
             delimiter = "{0} {1}".format(d, k)
             if k != "\t":
-                self.items.append(delimiter)
+                names.append(delimiter)
             else:
-                self.items.append(d)
-        return ListTextColumnDelegate.createEditor(self, parent, option, index)
+                names.append(d)
+        return names
 
     def setModelData(self, editor, model, index):
         """
