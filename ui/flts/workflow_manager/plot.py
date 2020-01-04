@@ -169,7 +169,7 @@ class PlotFile:
                     properties[n] = unicode(geo_type) if geo_type else ""
                 else:
                     properties[n] = unicode("")
-                properties["fpath"] = fpath
+                properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e
         self._fpaths.append(fpath)

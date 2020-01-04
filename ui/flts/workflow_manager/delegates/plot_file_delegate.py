@@ -109,12 +109,12 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         Reimplementation of generic list column
         QItemDelegate setModelData method
         """
-        delimiter = self._editor_delimiter(editor)
+        delimiter = self._editor_delimiters(editor)
         model.setData(index, delimiter)
 
-    def _editor_delimiter(self, editor):
+    def _editor_delimiters(self, editor):
         """
-        Returns delimiter entered in the editor
+        Returns editor delimiters
         :param editor: UI editor
         :type editor: QCombobox
         :return delimiter: Delimiter
@@ -156,37 +156,68 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
         :return: Value range
         :rtype: Integer
         """
-        row = index.row()
-        results = index.model().results
-        results = results[row]
-        file_path = results["fpath"]
+        file_path = self._file_path(index)
         data_source = index.model().data_source()
         row_count = data_source.row_count(file_path)
         if row_count:
             return 1, row_count
         return 0, 0
 
+    @staticmethod
+    def _file_path(index):
+        """
+        Returns plot import file absolute path
+        :param index: Item index identifier
+        :type index: QModelIndex
+        :return: Plot import file absolute path
+        :rtype: Unicode
+        """
+        results = index.model().results
+        results = results[index.row()]
+        return results["fpath"]
 
-class GeometryFieldColumnDelegate(ListTextColumnDelegate):
-    """
-    Generic plot import file geometry field column delegate
-    """
-    def createEditor(self, parent, option, index):
-        """
-        Reimplementation of generic list column
-        QItemDelegate createEditor method
-        """
-        data_source = index.model().data_source()
-        if DelegateRoutine().is_pdf(data_source, index):
-            return
-        self.items = data_source.delimiter_names()
-        regex = QRegExp(r"^[\w\W]{1}$")
-        validator = QRegExpValidator(regex, parent)
-        combobox = QComboBox(parent)
-        combobox.addItems(sorted(self.items.values()))
-        combobox.setEditable(True)
-        combobox.setValidator(validator)
-        return combobox
+
+# class GeometryFieldColumnDelegate(ListTextColumnDelegate):
+#     """
+#     Generic plot import file geometry field column delegate
+#     """
+#     def createEditor(self, parent, option, index):
+#         """
+#         Reimplementation of generic list column
+#         QItemDelegate createEditor method
+#         """
+#         data_source = index.model().data_source()
+#         if DelegateRoutine().is_pdf(data_source, index):
+#             return
+#         self.items = data_source.delimiter_names()
+#         regex = QRegExp(r"^[\w\W]{1}$")
+#         validator = QRegExpValidator(regex, parent)
+#         combobox = QComboBox(parent)
+#         combobox.addItems(sorted(self.items.values()))
+#         combobox.setEditable(True)
+#         combobox.setValidator(validator)
+#         return combobox
+#
+#     def _editor_geometry_fields(self, index):
+#         """
+#         Returns editor geometry fields
+#         :param index: Item index identifier
+#         :type index: QModelIndex
+#         :return: Value range
+#         :rtype: Integer
+#         """
+#         row = index.row()
+#         results = index.model().results
+#         results = results[row]
+#         file_path = results["fpath"]
+#         i = index.sibling(row, 3)
+#
+#
+#         data_source = index.model().data_source()
+#         row_count = data_source.row_count(file_path)
+
+
+
 
 class PlotFileDelegate:
     """
@@ -227,8 +258,8 @@ class PlotFileDelegate:
         """
         delegate = {
             "Import as": ImportTypeColumnDelegate,
-            "Delimiter": DelimiterColumnDelegate,
-            "Geometry field": GeometryFieldColumnDelegate
+            "Delimiter": DelimiterColumnDelegate
+            # "Geometry field": GeometryFieldColumnDelegate
         }
         return delegate.get(name)
 
