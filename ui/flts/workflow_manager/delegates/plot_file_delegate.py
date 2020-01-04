@@ -145,15 +145,14 @@ class PlotFileDelegate:
         """
         for i, column in enumerate(self._data_service.columns):
             if column.type == "list":
-                # self._import_type_delegate(column.name, i)
                 delegate = self._list_text_delegate(column.name)
                 if delegate:
                     self._delegate.insert_column_delegate(i, delegate())
-            elif column.type == "integer":
+            elif column.name == "Header row" and column.type == "integer":
                 self._delegate.insert_column_delegate(
                     i, HeaderRowColumnDelegate()
                 )
-            elif column.type == "text":
+            elif column.name == "Name" and column.type == "text":
                 self._delegate.insert_column_delegate(
                     i, PlainTextColumnDelegate()
                 )
