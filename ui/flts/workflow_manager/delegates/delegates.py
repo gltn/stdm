@@ -171,7 +171,6 @@ class ListTextColumnDelegate(QItemDelegate):
         """
         combobox = QComboBox(parent)
         combobox.addItems(sorted(self.items))
-        combobox.setEditable(True)
         return combobox
 
     def setEditorData(self, editor, index):

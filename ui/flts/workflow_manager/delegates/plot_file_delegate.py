@@ -34,7 +34,8 @@ from stdm.ui.flts.workflow_manager.delegates.delegates import (
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
 GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
 
-class DelegateRoutine:
+
+class DelegateRoutine(object):
     """
     Common delegate manipulation methods
     """
@@ -51,19 +52,6 @@ class DelegateRoutine:
         file_name = self.file_path(index)
         if data_source.is_pdf(file_name):
             return True
-
-    # @staticmethod
-    # def _file_name(index):
-    #     """
-    #     Returns file name
-    #     :param index: Model item index
-    #     :type index: QModelIndex
-    #     :return file_name: File name
-    #     :rtype file_name: String
-    #     """
-    #     i = index.sibling(index.row(), NAME)
-    #     file_name = i.model().data(i, Qt.DisplayRole)
-    #     return file_name
 
     @staticmethod
     def file_path(index):
@@ -94,7 +82,6 @@ class ImportTypeColumnDelegate(ListTextColumnDelegate):
         import_types = data_source.import_as()
         combobox = QComboBox(parent)
         combobox.addItems(sorted(import_types))
-        combobox.setEditable(False)
         return combobox
 
 
@@ -180,35 +167,62 @@ class HeaderRowColumnDelegate(IntegerColumnDelegate):
 
 
 class GeometryFieldColumnDelegate(ListTextColumnDelegate):
-    pass
-#     """
-#     Generic plot import file geometry field column delegate
-#     """
-#     def createEditor(self, parent, option, index):
-#         """
-#         Reimplementation of generic list column
-#         QItemDelegate createEditor method
-#         """
-#         data_source = index.model().data_source()
-#         if DelegateRoutine().is_pdf(data_source, index):
-#             return
-#
-#     def _editor_geometry_fields(self, index):
-#         """
-#         Returns editor geometry fields
-#         :param index: Item index identifier
-#         :type index: QModelIndex
-#         :return: Editor geometry fields
-#         :rtype: List
-#         """
-#         file_path = DelegateRoutine().file_path(index)
-#         row = index.row()
-#         i = index.sibling(row, 3)
-#         hrow = i.model().data(i, Qt.DisplayRole)
-#         i = index.sibling(row, 2)
-#
-#
-#         # data_source = index.model().data_source()
+    """
+    Generic plot import file geometry field column delegate
+    """
+    def createEditor(self, parent, option, index):
+        """
+        Reimplementation of generic list column
+        QItemDelegate createEditor method
+        """
+        data_source = index.model().data_source()
+        if DelegateRoutine().is_pdf(data_source, index):
+            return
+        self.items = self._editor_geometry_fields(index)
+        return ListTextColumnDelegate.createEditor(self, parent, option, index)
+
+    def _editor_geometry_fields(self, index):
+        """
+        Returns editor geometry fields
+        :param index: Item index identifier
+        :type index: QModelIndex
+        :return: Editor geometry fields
+        :rtype: List
+        """
+        fpath = DelegateRoutine().file_path(index)
+        hrow = self._header_row(index)
+        delimiter = self._delimiter(index)
+        data_source = index.model().data_source()
+        return data_source.get_csv_fields(fpath, hrow, delimiter)
+
+    @staticmethod
+    def _header_row(index):
+        """
+        Returns user set header row number
+        :param index: Item index identifier
+        :type index: QModelIndex
+        :return hrow: Header row number
+        :rtype hrow: Integer
+        """
+        i = index.sibling(index.row(), HEADER_ROW)
+        hrow = i.model().data(i, Qt.DisplayRole)
+        hrow = int(hrow) - 1
+        return hrow
+
+    @staticmethod
+    def _delimiter(index):
+        """
+        Returns user set delimiter
+        :param index: Item index identifier
+        :type index: QModelIndex
+        :return delimiter: Header row number
+        :rtype delimiter: Integer
+        """
+        i = index.sibling(index.row(), DELIMITER)
+        delimiter = i.model().data(i, Qt.DisplayRole)
+        delimiter = delimiter.split(" ")[0]
+        delimiter = delimiter.strip()
+        return str(delimiter)
 
 
 class PlotFileDelegate:
