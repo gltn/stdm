@@ -86,6 +86,22 @@ class PlotFile:
         """
         return ["Beacons", "Plots", "Servitudes"]
 
+    def delimiter_names(self):
+        """
+        Returns delimiters full name
+        :return names: Delimiters full name
+        :rtype names: OrderedDict
+        """
+        names = OrderedDict()
+        for k, d in sorted(self.delimiters.items()):
+            name = "{0} {1}".format(k, d)
+            if k == "\t":
+                k = "t"
+                names[k] = "{0} {1}".format(k, d)
+            else:
+                names[k] = name
+        return names
+
     @property
     def delimiters(self):
         """
@@ -198,9 +214,12 @@ class PlotFile:
         """
         if not delimiter:
             return ""
-        if delimiter not in self.delimiters.keys():
+        elif delimiter not in self.delimiters.keys():
             return "{0} {1}".format(delimiter, "Custom")
-        return "{0} {1}".format(delimiter, self.delimiters[delimiter])
+        elif delimiter == "\t":
+            return "{0} {1}".format("t", self.delimiters[delimiter])
+        else:
+            return "{0} {1}".format(delimiter, self.delimiters[delimiter])
 
     def get_csv_fields(self, fpath, hrow=0, delimiter=None):
         """

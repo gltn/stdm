@@ -95,7 +95,7 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         data_source = index.model().data_source()
         if DelegateRoutine().is_pdf(data_source, index):
             return
-        self.items = self._delimiter_name(data_source)
+        self.items = data_source.delimiter_names()
         regex = QRegExp(r"^[\w\W]{1}$")
         validator = QRegExpValidator(regex, parent)
         combobox = QComboBox(parent)
@@ -103,24 +103,6 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         combobox.setEditable(True)
         combobox.setValidator(validator)
         return combobox
-
-    def _delimiter_name(self, data_source):
-        """
-        Returns delimiters full name
-        :param data_source: Plot file object
-        :type data_source: PlotFile
-        :return names: Delimiters full name
-        :return names: Dictionary
-        """
-        names = {}
-        delimiters = data_source.delimiters
-        for k, d in sorted(delimiters.items()):
-            if k != "\t":
-                names[k] = "{0} {1}".format(k, d)
-            else:
-                k = "t"
-                names[k] = "{0} {1}".format("t", d)
-        return names
 
     def setModelData(self, editor, model, index):
         """
