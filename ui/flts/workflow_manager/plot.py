@@ -130,7 +130,6 @@ class PlotFile:
         try:
             header_row = 1
             row = header_row - 1
-            file_extension = QFileInfo(fpath).completeSuffix()
             delimiter = self._get_csv_delimiter(fpath)
             for n, prop in enumerate(self._data_service.columns):
                 if prop.name == "Name":
@@ -141,7 +140,7 @@ class PlotFile:
                     properties[n] = unicode(self._delimiter_name(delimiter))
                 elif prop.name == "Header row":
                     properties[n] = float(header_row) \
-                        if file_extension != self._formats[-1] else unicode("")
+                        if not self.is_pdf(fpath) else unicode("")
                 elif prop.name == "Geometry field":
                     fields = self.get_csv_fields(fpath, row, delimiter)
                     if fields:
@@ -168,8 +167,7 @@ class PlotFile:
         :return: Default common delimiter
         :rtype: Unicode
         """
-        file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self._formats[:-1]:
+        if self.is_pdf(fpath):
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -186,8 +184,7 @@ class PlotFile:
         :return: Default import type
         :rtype: String
         """
-        file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension == self._formats[-1]:
+        if self.is_pdf(fpath):
             return "Field Book"
         return "Plots"
 
@@ -217,8 +214,7 @@ class PlotFile:
         :return fields: CSV field names
         :rtype fields: List
         """
-        file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self._formats[:-1]:
+        if self.is_pdf(fpath):
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -245,8 +241,7 @@ class PlotFile:
         :return: Geometry field
         :rtype: String
         """
-        file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self._formats[:-1]:
+        if self.is_pdf(fpath):
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -283,8 +278,7 @@ class PlotFile:
         :return geo_type: Geometry type
         :rtype geo_type: String
         """
-        file_extension = QFileInfo(fpath).completeSuffix()
-        if file_extension not in self._formats[:-1]:
+        if self.is_pdf(fpath):
             return
         try:
             with open(fpath, 'r') as csv_file:
@@ -316,6 +310,20 @@ class PlotFile:
                 return geo_type
         except (csv.Error, Exception) as e:
             raise e
+
+    @staticmethod
+    def is_pdf(fpath):
+        """
+        Checks if the file extension is PDF
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return True: Returns true if the file extension is PDF
+        :rtype True: Boolean
+        """
+
+        file_extension = QFileInfo(fpath).suffix()
+        if file_extension == "pdf":
+            return True
 
     def get_headers(self):
         """

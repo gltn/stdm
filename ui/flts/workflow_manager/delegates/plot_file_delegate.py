@@ -16,10 +16,7 @@ copyright            : (C) 2019
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (
-    Qt,
-    QFileInfo
-)
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QComboBox
 from stdm.ui.flts.workflow_manager.delegates.delegates import (
     GenericDelegate,
@@ -39,27 +36,28 @@ class ImportTypeColumnDelegate(ListTextColumnDelegate):
         QItemDelegate createEditor method
         """
         data_source = index.model().data_source()
+        file_name = self._file_name(index)
+        if data_source.is_pdf(file_name):
+            return
+
         self.items = data_source.import_as()
-        file_extension = self._file_extension(index)
         combobox = QComboBox(parent)
         combobox.addItems(sorted(self.items))
         combobox.setEditable(False)
-        if file_extension != "pdf":
-            return combobox
+        return combobox
 
     @staticmethod
-    def _file_extension(index):  # TODO: Move this to a class to be called/inherited
+    def _file_name(index):
         """
-        Returns file extension
+        Returns file name
         :param index: Model item index
         :type index: QModelIndex
-        :return file_extension: QModelIndex
-        :rtype file_extension: String
+        :return file_name: File name
+        :rtype file_name: String
         """
         i = index.sibling(index.row(), 0)
         file_name = i.model().data(i, Qt.DisplayRole)
-        file_extension = QFileInfo(file_name).completeSuffix()
-        return file_extension
+        return file_name
 
 
 class DelimiterColumnDelegate(ListTextColumnDelegate):
@@ -71,9 +69,12 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         Reimplementation of generic list column
         QItemDelegate createEditor method
         """
-        self.items = []
-        file_extension = self._file_extension(index)
         data_source = index.model().data_source()
+        file_name = self._file_name(index)
+        if data_source.is_pdf(file_name):
+            return
+
+        self.items = []
         delimiters = data_source.delimiters
         for k, d in sorted(delimiters.items()):
             delimiter = "{0} {1}".format(d, k)
@@ -81,8 +82,7 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
                 self.items.append(delimiter)
             else:
                 self.items.append(d)
-        if file_extension != "pdf":
-            return ListTextColumnDelegate.createEditor(self, parent, option, index)
+        return ListTextColumnDelegate.createEditor(self, parent, option, index)
 
     def setModelData(self, editor, model, index):
         """
@@ -95,18 +95,17 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         model.setData(index, value)
 
     @staticmethod
-    def _file_extension(index):
+    def _file_name(index):
         """
-        Returns file extension
+        Returns file name
         :param index: Model item index
         :type index: QModelIndex
-        :return file_extension: QModelIndex
-        :rtype file_extension: String
+        :return file_name: File name
+        :rtype file_name: String
         """
         i = index.sibling(index.row(), 0)
         file_name = i.model().data(i, Qt.DisplayRole)
-        file_extension = QFileInfo(file_name).completeSuffix()
-        return file_extension
+        return file_name
 
 
 class PlotFileDelegate:
