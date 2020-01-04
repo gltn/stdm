@@ -199,8 +199,8 @@ class PlotFile:
         if not delimiter:
             return ""
         if delimiter not in self.delimiters.keys():
-            return "{0} {1}".format("Custom", delimiter)
-        return "{0} {1}".format(self.delimiters[delimiter], delimiter)
+            return "{0} {1}".format(delimiter, "Custom")
+        return "{0} {1}".format(delimiter, self.delimiters[delimiter])
 
     def get_csv_fields(self, fpath, hrow=0, delimiter=None):
         """

@@ -99,7 +99,7 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         regex = QRegExp(r"^[\w\W]{1}$")
         validator = QRegExpValidator(regex, parent)
         combobox = QComboBox(parent)
-        combobox.addItems(sorted(self.items))
+        combobox.addItems(sorted(self.items.values()))
         combobox.setEditable(True)
         combobox.setValidator(validator)
         return combobox
@@ -110,16 +110,16 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         :param data_source: Plot file object
         :type data_source: PlotFile
         :return names: Delimiters full name
-        :return names: String
+        :return names: Dictionary
         """
-        names = []
+        names = {}
         delimiters = data_source.delimiters
         for k, d in sorted(delimiters.items()):
-            delimiter = "{0} {1}".format(d, k)
             if k != "\t":
-                names.append(delimiter)
+                names[k] = "{0} {1}".format(k, d)
             else:
-                names.append(d)
+                k = "t"
+                names[k] = "{0} {1}".format("t", d)
         return names
 
     def setModelData(self, editor, model, index):
@@ -127,10 +127,28 @@ class DelimiterColumnDelegate(ListTextColumnDelegate):
         Reimplementation of generic list column
         QItemDelegate setModelData method
         """
-        value = editor.currentText()
-        if value not in self.items:
-            value = "Custom {}".format(value)
-        model.setData(index, value)
+        delimiter = self._editor_delimiter(editor)
+        model.setData(index, delimiter)
+
+    def _editor_delimiter(self, editor):
+        """
+        Returns delimiter entered in the editor
+        :param editor: UI editor
+        :type editor: QCombobox
+        :return delimiter: Delimiter
+        :rtype delimiter: String
+        """
+        delimiter = editor.currentText()
+        char = delimiter.split(" ")[0]
+        char = char.strip()
+        if char and len(char) == 1 and \
+                char not in self.items:
+            delimiter = "{0} {1}".format(char, "Custom")
+        else:
+            delimiter = self.items.get(char)
+            if not delimiter:
+                delimiter = self.items[","]
+        return delimiter
 
 
 class HeaderRowColumnDelegate(IntegerColumnDelegate):
