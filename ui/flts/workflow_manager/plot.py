@@ -411,7 +411,8 @@ class PlotFile:
                 geo_type = geo_type.lower().capitalize()
         return geo_type, geom
 
-    def _calc_ratio(self, rows, sample, count):
+    @staticmethod
+    def _calc_ratio(rows, sample, count):
         """
         Returns ratio of valid WKT lines to total or sample rows
         :param rows: Total rows/lines in a WKT file
