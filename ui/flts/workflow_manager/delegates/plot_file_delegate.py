@@ -238,7 +238,7 @@ class GeometryTypeColumnDelegate(ListTextColumnDelegate):
         if DelegateRoutine().is_pdf(data_source, index):
             return
         data_source = index.model().data_source()
-        self.items = data_source.geometry_types.values()
+        self.items = data_source.geometry_options.values()
         return ListTextColumnDelegate.createEditor(self, parent, option, index)
 
 

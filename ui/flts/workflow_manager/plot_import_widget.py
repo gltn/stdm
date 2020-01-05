@@ -99,22 +99,23 @@ class PlotImportWidget(QWidget):
             "Plot Import files {}".format(extensions)
         )
         if fpath and fpath not in self._plot_file.file_paths():
-            self._plot_file.set_file_path(fpath)
-            if not self.model.results:
-                try:
+            try:
+                self._plot_file.set_file_path(fpath)
+                if not self.model.results:
                     self.model.load(self._plot_file)
                     self.model.refresh()
-                except(IOError, OSError) as e:
-                    QMessageBox.critical(
-                        self,
-                        self.tr("Plot Import Data Files"),
-                        self.tr("Failed to load: {}".format(e))
-                    )
+                else:
+                    self._insert_file()
+            except(IOError, OSError, Exception) as e:
+                QMessageBox.critical(
+                    self,
+                    self.tr("Plot Import Data Files"),
+                    self.tr("Failed to load: {}".format(e))
+                )
             else:
-                self._insert_file()
-            self._file_table_view.verticalHeader().setDefaultSectionSize(21)
-            self._file_table_view.horizontalHeader().\
-                setStretchLastSection(True)
+                self._file_table_view.verticalHeader().setDefaultSectionSize(21)
+                self._file_table_view.horizontalHeader().\
+                    setStretchLastSection(True)
 
     def _insert_file(self):
         """

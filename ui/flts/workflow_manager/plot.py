@@ -116,15 +116,26 @@ class PlotFile:
         return OrderedDict({",": "Comma", ";": "Semicolon", "\t": "Tab"})
 
     @property
-    def geometry_types(self):
+    def geometry_options(self):
         """
-        Returns list of expected geometry types
+        Returns a map of expected geometry
+        type options for the 'Type' column
+        :return geom_options: Geometry type options
+        :rtype geom_options: OrderedDict
+        """
+        geom_options = OrderedDict({"Detect": "Detect"})
+        geom_options.update(self._geometry_types)
+        return geom_options
+
+    @property
+    def _geometry_types(self):
+        """
+        Returns a map of expected geometry types
         :return: Geometry types
-        :rtype: List
+        :rtype: OrderedDict
         """
         return OrderedDict({
-            "Detect": "Detect", "Point": "Point",
-            "Linestring": "Line", "Polygon": "Polygon"
+            "Point": "Point", "Linestring": "Line", "Polygon": "Polygon"
         })
 
     def load(self):
@@ -168,7 +179,7 @@ class PlotFile:
                         if value is None or isinstance(value, list):
                             continue
                         geo_type, geom = self._geometry(value)
-                        if geom and geo_type in self.geometry_types:
+                        if geom and geo_type in self._geometry_types:
                             count += 1
                 total_rows = self.row_count(fpath)
                 if self._calc_ratio(total_rows, sample_size, count) < 0.5:
@@ -371,7 +382,7 @@ class PlotFile:
                         match_count.iterkeys(),
                         key=lambda k: match_count[k]
                     )
-                    geo_type = self.geometry_types.get(geo_type)
+                    geo_type = self._geometry_types.get(geo_type)
                 geo_type = geo_type if geo_type else "Detect"
                 return geo_type
         except (csv.Error, Exception) as e:
