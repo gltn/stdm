@@ -167,15 +167,9 @@ class PlotFile:
                     for value in data:
                         if value is None or isinstance(value, list):
                             continue
-                        matches = self._reg_exes["type_str"].match(value)
-                        if matches:
-                            geo_type, coordinates = matches.groups()
-                            geom = QgsGeometry.fromWkt(value.strip())
-                            if geo_type and geom:
-                                geo_type = geo_type.strip()
-                                geo_type = geo_type.lower().capitalize()
-                                if geo_type in self.geometry_types:
-                                    count += 1
+                        geo_type, geom = self._geometry(value)
+                        if geom and geo_type in self.geometry_types:
+                            count += 1
                 total_rows = self.row_count(fpath)
                 if sample_size <= total_rows:
                     ratio = float(count) / float(sample_size)
@@ -345,7 +339,7 @@ class PlotFile:
 
     def geometry_type(self, fpath, hrow=0, delimiter=None):
         """
-        Returns the most likely geometry type of
+        Returns dominant geometry type of
         loaded plot import file - CSV/txt
         :param fpath: Plot import file absolute path
         :type fpath: String
@@ -369,16 +363,12 @@ class PlotFile:
                     for value in data:
                         if value is None or isinstance(value, list):
                             continue
-                        matches = self._reg_exes["type_str"].match(value)
-                        if matches:
-                            geo_type, coordinates = matches.groups()
-                            if geo_type:
-                                geo_type = geo_type.strip()
-                                geo_type = geo_type.lower().capitalize()
-                                if geo_type not in match_count:
-                                    match_count[geo_type] = 0
-                                else:
-                                    match_count[geo_type] += 1
+                        geo_type, geom = self._geometry(value)
+                        if geo_type:
+                            if geo_type not in match_count:
+                                match_count[geo_type] = 0
+                                continue
+                            match_count[geo_type] += 1
                 geo_type = None
                 if match_count:
                     geo_type = max(
@@ -404,6 +394,26 @@ class PlotFile:
         file_extension = QFileInfo(fpath).suffix()
         if file_extension == "pdf":
             return True
+
+    def _geometry(self, wkt):
+        """
+        Returns geometry and geometry type given WKT data
+        :param wkt: WKT data
+        :type wkt: String
+        :return geo_type: Geometry type
+        :rtype geo_type: String
+        :return geom: Geometry
+        :rtype geom: QgsGeometry
+        """
+        geo_type = geom = None
+        matches = self._reg_exes["type_str"].match(wkt)
+        if matches:
+            geo_type, coordinates = matches.groups()
+            geom = QgsGeometry.fromWkt(wkt.strip())
+            if geo_type:
+                geo_type = geo_type.strip()
+                geo_type = geo_type.lower().capitalize()
+        return geo_type, geom
 
     def row_count(self, fpath):
         """
