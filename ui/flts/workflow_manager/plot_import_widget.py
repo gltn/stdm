@@ -82,6 +82,7 @@ class PlotImportWidget(QWidget):
         layout.addWidget(splitter)
         self.setLayout(layout)
         parent.paginationFrame.hide()
+        self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
 
     def _add_file(self):
@@ -123,6 +124,29 @@ class PlotImportWidget(QWidget):
         """
         position = self.model.rowCount()
         self.model.insertRows(position)
+
+    def _on_file_select(self, index):
+        """
+        Enables toolbar buttons on selecting a file record
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        """
+        buttons = [
+            self._remove_button,
+            self._preview_button, self._import_button
+        ]
+        self._enable_widgets(buttons)
+
+    @staticmethod
+    def _enable_widgets(widgets):
+        """
+        Enables list of widgets
+        :param widgets: List of QWidget
+        :rtype widgets: List
+        """
+        for widget in widgets:
+            if widget:
+                widget.setEnabled(True)
 
     def _add_crs(self):
         """
