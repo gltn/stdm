@@ -134,7 +134,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         Implementation of QAbstractTableModel
         insertRows method
         """
-        row_data = self._data_source.get_row_data()
+        row_data = self._data_source.load()
         rows = len(row_data)
         self.beginInsertRows(
             QModelIndex(), position, position + rows - 1

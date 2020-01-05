@@ -24,6 +24,7 @@ from PyQt4.QtCore import (
     QFileInfo,
     QIODevice
 )
+from qgis.core import QgsGeometry
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
 GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
@@ -126,14 +127,6 @@ class PlotFile:
             "Linestring": "Line", "Polygon": "Polygon"
         })
 
-    def get_row_data(self):
-        """
-        File properties method wrapper
-        :return: Plot import file data properties
-        :rtype: List
-        """
-        return self._file_properties(self._fpath)
-
     def load(self):
         """
         Loads plot import file data properties
@@ -144,9 +137,58 @@ class PlotFile:
             qfile = QFile(self._fpath)
             if not qfile.open(QIODevice.ReadOnly):
                 raise IOError(unicode(qfile.errorString()))
+            if not self.is_pdf(self._fpath) and self._is_wkt(self._fpath):
+                return self._file_properties(self._fpath)
             return self._file_properties(self._fpath)
-        except(IOError, OSError, Exception) as e:
+        except(IOError, OSError, csv.Error, NotImplementedError, Exception) as e:
             raise e
+
+    def _is_wkt(self, fpath):
+        """
+        Checks if the plot import file is a valid WKT
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return: Returns true if valid
+        :rtype: Boolean
+        """
+        try:
+            fname = QFileInfo(fpath).fileName()
+            if QFileInfo(fpath).size() == 0:
+                raise NotImplementedError(
+                    'The file "{}" is empty.'.format(fname)
+                )
+            delimiter = self._get_csv_delimiter(fpath)
+            with open(fpath, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=delimiter)
+                sample_size = 5000
+                sample = itertools.islice(csv_reader, sample_size)
+                count = 0
+                for row, data in enumerate(sample):
+                    for value in data:
+                        if value is None or isinstance(value, list):
+                            continue
+                        matches = self._reg_exes["type_str"].match(value)
+                        if matches:
+                            geo_type, coordinates = matches.groups()
+                            geom = QgsGeometry.fromWkt(value.strip())
+                            if geo_type and geom:
+                                geo_type = geo_type.strip()
+                                geo_type = geo_type.lower().capitalize()
+                                if geo_type in self.geometry_types:
+                                    count += 1
+                total_rows = self.row_count(fpath)
+                if sample_size <= total_rows:
+                    ratio = float(count) / float(sample_size)
+                else:
+                    ratio = float(count) / float(total_rows)
+                if ratio < 0.5:
+                    raise NotImplementedError(
+                        'Most of the lines in "{}" file are invalid'.format(fname)
+                    )
+        except (IOError, csv.Error, NotImplementedError, Exception) as e:
+            raise e
+        else:
+            return True
 
     def _file_properties(self, fpath):
         """
@@ -154,7 +196,7 @@ class PlotFile:
         :param fpath: Plot import file absolute path
         :type fpath: String
         :return results: Plot import file data properties
-        :return results: List
+        :rtype results: List
         """
         results = []
         properties = {}
