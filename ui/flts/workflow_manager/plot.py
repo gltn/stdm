@@ -114,6 +114,18 @@ class PlotFile:
         """
         return OrderedDict({",": "Comma", ";": "Semicolon", "\t": "Tab"})
 
+    @property
+    def geometry_types(self):
+        """
+        Returns list of expected geometry types
+        :return: Geometry types
+        :rtype: List
+        """
+        return OrderedDict({
+            "Detect": "Detect", "Point": "Point",
+            "Linestring": "Line", "Polygon": "Polygon"
+        })
+
     def get_row_data(self):
         """
         File properties method wrapper
@@ -291,7 +303,8 @@ class PlotFile:
 
     def geometry_type(self, fpath, hrow=0, delimiter=None):
         """
-        Returns possible geometry type from a plain text file
+        Returns the most likely geometry type of
+        loaded plot import file - CSV/txt
         :param fpath: Plot import file absolute path
         :type fpath: String
         :param hrow: Header row number
@@ -324,12 +337,14 @@ class PlotFile:
                                     match_count[geo_type] = 0
                                 else:
                                     match_count[geo_type] += 1
-                geo_type = "Detect"
+                geo_type = None
                 if match_count:
                     geo_type = max(
                         match_count.iterkeys(),
                         key=lambda k: match_count[k]
                     )
+                    geo_type = self.geometry_types.get(geo_type)
+                geo_type = geo_type if geo_type else "Detect"
                 return geo_type
         except (csv.Error, Exception) as e:
             raise e

@@ -225,6 +225,23 @@ class GeometryFieldColumnDelegate(ListTextColumnDelegate):
         return str(delimiter)
 
 
+class GeometryTypeColumnDelegate(ListTextColumnDelegate):
+    """
+    Generic plot import file geometry type column delegate
+    """
+    def createEditor(self, parent, option, index):
+        """
+        Reimplementation of generic list column
+        QItemDelegate createEditor method
+        """
+        data_source = index.model().data_source()
+        if DelegateRoutine().is_pdf(data_source, index):
+            return
+        data_source = index.model().data_source()
+        self.items = data_source.geometry_types.values()
+        return ListTextColumnDelegate.createEditor(self, parent, option, index)
+
+
 class PlotFileDelegate:
     """
     Plot import file delegate for table view presentation and editing
@@ -265,7 +282,8 @@ class PlotFileDelegate:
         delegate = {
             IMPORT_AS: ImportTypeColumnDelegate,
             DELIMITER: DelimiterColumnDelegate,
-            GEOM_FIELD: GeometryFieldColumnDelegate
+            GEOM_FIELD: GeometryFieldColumnDelegate,
+            GEOM_TYPE: GeometryTypeColumnDelegate
         }
         return delegate.get(pos)
 
