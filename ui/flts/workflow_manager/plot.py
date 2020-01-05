@@ -171,11 +171,7 @@ class PlotFile:
                         if geom and geo_type in self.geometry_types:
                             count += 1
                 total_rows = self.row_count(fpath)
-                if sample_size <= total_rows:
-                    ratio = float(count) / float(sample_size)
-                else:
-                    ratio = float(count) / float(total_rows)
-                if ratio < 0.5:
+                if self._calc_ratio(total_rows, sample_size, count) < 0.5:
                     raise NotImplementedError(
                         'Most of the lines in "{}" file are invalid'.format(fname)
                     )
@@ -414,6 +410,24 @@ class PlotFile:
                 geo_type = geo_type.strip()
                 geo_type = geo_type.lower().capitalize()
         return geo_type, geom
+
+    def _calc_ratio(self, rows, sample, count):
+        """
+        Returns ratio of valid WKT lines to total or sample rows
+        :param rows: Total rows/lines in a WKT file
+        :type rows: Integer
+        :param sample: Sampled rows/lines
+        :type sample: Integer
+        :param count: Number of valid rows
+        :type count: Integer
+        :return ratio: Ratio of valid WKT lines/rows
+        :rtype ratio: Float
+        """
+        if sample <= rows:
+            ratio = float(count) / float(sample)
+        else:
+            ratio = float(count) / float(rows)
+        return ratio
 
     def row_count(self, fpath):
         """
