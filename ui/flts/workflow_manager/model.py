@@ -131,8 +131,7 @@ class WorkflowManagerModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """
-        Implementation of QAbstractTableModel
-        insertRows method
+        Implementation of QAbstractTableModel insertRows method
         """
         row_data = self._data_source.load()
         rows = len(row_data)
@@ -142,6 +141,18 @@ class WorkflowManagerModel(QAbstractTableModel):
         for row, data in enumerate(row_data):
             self.results.insert(position + row, data)
         self.endInsertRows()
+        return True
+
+    def removeRows(self, position, rows=1, index=QModelIndex()):
+        """
+        Implementation of QAbstractTableModel removeRows method
+        """
+        self.beginRemoveRows(
+            QModelIndex(), position, position + rows - 1
+        )
+        self.results = self.results[:position] + \
+                       self.results[position + rows:]
+        self.endRemoveRows()
         return True
 
     def get_record_id(self, row=0):
