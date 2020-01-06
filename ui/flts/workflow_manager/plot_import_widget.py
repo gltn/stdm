@@ -134,11 +134,7 @@ class PlotImportWidget(QWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        buttons = [
-            self._remove_button,
-            self._preview_button, self._import_button
-        ]
-        self._enable_widgets(buttons)
+        self._enable_widgets(self._toolbar_buttons)
 
     def _remove_file(self):
         """
@@ -156,6 +152,8 @@ class PlotImportWidget(QWidget):
         fpath = self.model.results[row]["fpath"]
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
+        if not self.model.results:
+            self._disable_widgets(self._toolbar_buttons)
 
     def _show_critical_message(self, title, msg):
         """
@@ -186,6 +184,19 @@ class PlotImportWidget(QWidget):
             return False
         return True
 
+    @property
+    def _toolbar_buttons(self):
+        """
+        Returns toolbar buttons
+        :return buttons: Toolbar buttons
+        :return buttons: List
+        """
+        buttons = [
+            self._remove_button,
+            self._preview_button, self._import_button
+        ]
+        return buttons
+
     @staticmethod
     def _enable_widgets(widgets):
         """
@@ -196,6 +207,17 @@ class PlotImportWidget(QWidget):
         for widget in widgets:
             if widget:
                 widget.setEnabled(True)
+
+    @staticmethod
+    def _disable_widgets(widgets):
+        """
+        Disables list of widgets
+        :param widgets: List of QWidget
+        :rtype widgets: List
+        """
+        for widget in widgets:
+            if widget:
+                widget.setEnabled(False)
 
     def _add_crs(self):
         """
