@@ -30,6 +30,9 @@ from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
 from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
 
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
+GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
+
 
 class PlotImportWidget(QWidget):
     """
@@ -38,9 +41,9 @@ class PlotImportWidget(QWidget):
     """
     def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QWidget, self).__init__(parent)
-        file_service = widget_properties["data_service"][0]
-        file_service = file_service()
-        self._plot_file = PlotFile(file_service)
+        self._file_service = widget_properties["data_service"][0]
+        self._file_service = self._file_service()
+        self._plot_file = PlotFile(self._file_service)
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -49,9 +52,9 @@ class PlotImportWidget(QWidget):
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style
         self._file_table_view = QTableView(self)
-        self.model = WorkflowManagerModel(file_service)
+        self.model = WorkflowManagerModel(self._file_service)
         self._file_table_view.setModel(self.model)
-        file_delegate = PlotFileDelegate(file_service, self)
+        file_delegate = PlotFileDelegate(self._file_service, self)
         file_delegate = file_delegate.delegate()
         self._file_table_view.setItemDelegate(file_delegate)
         self._file_table_view.setShowGrid(False)
@@ -84,6 +87,7 @@ class PlotImportWidget(QWidget):
         parent.paginationFrame.hide()
         self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
+        self._remove_button.clicked.connect(self._remove_file)
 
     def _add_file(self):
         """
@@ -95,11 +99,11 @@ class PlotImportWidget(QWidget):
         extensions = " ".join(self._plot_file.file_extensions())
         fpath = QFileDialog.getOpenFileName(
             self,
-            "Workflow Manager - Plot Import Data Files",
+            "Workflow Manager - Plot Add Files",
             path,
             "Plot Import files {}".format(extensions)
         )
-        if fpath and fpath not in self._plot_file.file_paths():
+        if fpath and fpath not in self._plot_file.file_paths:
             try:
                 self._plot_file.set_file_path(fpath)
                 if not self.model.results:
@@ -108,10 +112,9 @@ class PlotImportWidget(QWidget):
                 else:
                     self._insert_file()
             except(IOError, OSError, Exception) as e:
-                QMessageBox.critical(
-                    self,
-                    self.tr("Plot Import Data Files"),
-                    self.tr("Failed to load: {}".format(e))
+                self._show_critical_message(
+                    "Workflow Manager - Plot Add Files",
+                    "Failed to load: {}".format(e)
                 )
             else:
                 self._file_table_view.verticalHeader().setDefaultSectionSize(21)
@@ -136,6 +139,52 @@ class PlotImportWidget(QWidget):
             self._preview_button, self._import_button
         ]
         self._enable_widgets(buttons)
+
+    def _remove_file(self):
+        """
+        Removes plot import file and its properties
+        """
+        index = self._file_table_view.currentIndex()
+        if not index.isValid():
+            return
+        row = index.row()
+        fname = self.model.data(self.model.index(row, NAME))
+        title = "Workflow Manager - Plot Add Files"
+        msg = 'Remove "{}" and its properties?'.format(fname)
+        if not self._show_question_message(title, msg):
+            return
+        fpath = self.model.results[row]["fpath"]
+        self.model.removeRows(row)
+        self._plot_file.remove_filepath(fpath)
+
+    def _show_critical_message(self, title, msg):
+        """
+        Message box to communicate critical message
+        :param title: Title of the message box
+        :type title: String
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        QMessageBox.critical(
+            self,
+            self.tr(title),
+            self.tr(msg)
+        )
+
+    def _show_question_message(self, title, msg):
+        """
+        Message box to communicate a question
+        :param title: Title of the message box
+        :type title: String
+        :param msg: Message to be communicated
+        :type msg: String
+        """
+        if QMessageBox.question(
+            self, self.tr(title), self.tr(msg),
+            QMessageBox.Yes | QMessageBox.No
+        ) == QMessageBox.No:
+            return False
+        return True
 
     @staticmethod
     def _enable_widgets(widgets):

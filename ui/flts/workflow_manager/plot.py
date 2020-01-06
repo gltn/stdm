@@ -64,6 +64,7 @@ class PlotFile:
         """
         return self._fpath
 
+    @property
     def file_paths(self):
         """
         Returns plot import file absolute paths
@@ -71,6 +72,16 @@ class PlotFile:
         :rtype _fpaths: List
         """
         return self._fpaths
+
+    def remove_filepath(self, item):
+        """
+        Removes stored file path
+        :param item: Item to be removed
+        :type item: Object
+        """
+        if item in self._fpaths:
+            self._fpaths.remove(item)
+            pass
 
     def file_extensions(self):
         """
