@@ -237,9 +237,10 @@ class PlotFile:
                 elif pos == GEOM_TYPE:
                     geo_type = self.geometry_type(fpath, row, delimiter)
                     properties[pos] = unicode(geo_type) if geo_type else ""
-                else:
-                    properties[pos] = unicode("Warning")
-                    tooltip[pos] = unicode("Missing Coordinate Reference System (CRS)")
+                elif pos == CRS_ID:
+                    if not self.is_pdf(fpath):
+                        properties[pos] = unicode("Warning")
+                        tooltip[pos] = unicode("Missing Coordinate Reference System (CRS)")
                 properties["tooltip"] = tooltip
                 properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
