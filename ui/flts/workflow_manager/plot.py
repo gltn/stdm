@@ -81,7 +81,6 @@ class PlotFile:
         """
         if item in self._fpaths:
             self._fpaths.remove(item)
-            pass
 
     def file_extensions(self):
         """
@@ -159,6 +158,7 @@ class PlotFile:
             qfile = QFile(self._fpath)
             if not qfile.open(QIODevice.ReadOnly):
                 raise IOError(unicode(qfile.errorString()))
+            self.remove_filepath(self._fpath)
             if not self.is_pdf(self._fpath) and self._is_wkt(self._fpath):
                 return self._file_properties(self._fpath)
             return self._file_properties(self._fpath)
