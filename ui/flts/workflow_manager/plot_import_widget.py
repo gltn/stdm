@@ -48,6 +48,7 @@ class PlotImportWidget(QWidget):
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
         self._remove_button = toolbar["removeFiles"]
+        self._setcrs_button = toolbar["setCRS"]
         self._preview_button = toolbar["Preview"]
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style

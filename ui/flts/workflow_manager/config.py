@@ -915,6 +915,13 @@ configurations = {
                 enable=False
             ),
             buttonConfig(
+                name="setCRS",
+                label="Set CRS",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_crs"),
+                size=None,
+                enable=False
+            ),
+            buttonConfig(
                 name="Preview",
                 label="Preview",
                 icon=QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
