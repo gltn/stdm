@@ -212,6 +212,7 @@ class PlotFile:
         """
         results = []
         properties = {}
+        tooltip = {}
         try:
             header_row = 1
             row = header_row - 1
@@ -238,6 +239,8 @@ class PlotFile:
                     properties[pos] = unicode(geo_type) if geo_type else ""
                 else:
                     properties[pos] = unicode("Warning")
+                    tooltip[pos] = unicode("Missing Coordinate Reference System (CRS)")
+                properties["tooltip"] = tooltip
                 properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e

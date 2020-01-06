@@ -47,7 +47,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             return
         result = self.results[index.row()]
         column = index.column()
-        value = result.get(column, None)
+        value = result.get(column)
         flag = self._headers[column].flag
         if role == Qt.DisplayRole and (
                 Qt.ItemIsUserCheckable not in flag and
@@ -59,6 +59,9 @@ class WorkflowManagerModel(QAbstractTableModel):
                 if isinstance(value, float):
                     value = float(value)
                 return self._icons[value]
+        elif role == Qt.ToolTipRole and Qt.ToolTipRole in flag:
+            tooltip = result.get("tooltip")
+            return tooltip.get(column)
         elif role == Qt.CheckStateRole and Qt.ItemIsUserCheckable in flag:
             if isinstance(value, float):
                 return Qt.Checked if int(value) == 1 else Qt.Unchecked
@@ -192,6 +195,19 @@ class WorkflowManagerModel(QAbstractTableModel):
                 not (0 <= index.column() < len(self._headers)):
             return False
         return index
+
+    def remove_tooltip(self, row, column):
+        """
+        Removes a tooltip from a column
+        :param row: Table view row index
+        :param row: Integer
+        :param column: Table view column index
+        :type column: Integer
+        """
+        result = self.results[row]
+        tooltip = result.get("tooltip")
+        if column in tooltip:
+            del tooltip[column]
 
     @property
     def entity_name(self):
