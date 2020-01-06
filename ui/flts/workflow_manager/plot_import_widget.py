@@ -149,7 +149,7 @@ class PlotImportWidget(QWidget):
         msg = 'Remove "{}" and its properties?'.format(fname)
         if not self._show_question_message(title, msg):
             return
-        fpath = self.model.results[row]["fpath"]
+        fpath = self.model.results[row].get("fpath")
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
         if not self.model.results:
