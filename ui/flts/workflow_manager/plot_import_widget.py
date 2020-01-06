@@ -136,16 +136,15 @@ class PlotImportWidget(QWidget):
         :type index: QModelIndex
         """
         self._enable_widgets(self._toolbar_buttons)
-        self._enable_crs_button(index.row())
+        self._enable_crs_button()
 
     def _remove_file(self):
         """
         Removes plot import file and its properties
         """
-        index = self._file_table_view.currentIndex()
-        if not index.isValid():
+        row = self._current_row()
+        if row is None:
             return
-        row = index.row()
         fname = self.model.data(self.model.index(row, NAME))
         title = "Workflow Manager - Plot Add Files"
         msg = 'Remove "{}" and its properties?'.format(fname)
@@ -154,9 +153,8 @@ class PlotImportWidget(QWidget):
         fpath = self.model.results[row].get("fpath")
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
-        if self.model.results:
-            self._enable_crs_button(row)
-        else:
+        self._enable_crs_button()
+        if not self.model.results:
             self._disable_widgets(self._toolbar_buttons)
             self._setcrs_button.setEnabled(False)
 
@@ -224,12 +222,15 @@ class PlotImportWidget(QWidget):
             if widget:
                 widget.setEnabled(False)
 
-    def _enable_crs_button(self, row):
+    def _enable_crs_button(self):
         """
         Enables/disables Set CRS button
         :param row: Row index/number
         :rtype row: Integer
         """
+        row = self._current_row()
+        if row is None:
+            return
         crs = self.model.data(self.model.index(row, CRS_ID))
         fpath = self.model.results[row].get("fpath")
         is_pdf = self._plot_file.is_pdf(fpath)
@@ -237,6 +238,17 @@ class PlotImportWidget(QWidget):
             self._setcrs_button.setEnabled(False)
         else:
             self._setcrs_button.setEnabled(True)
+
+    def _current_row(self):
+        """
+        Returns index of the current selected rowe
+        :return: Current row index
+        :rtype: Integer
+        """
+        index = self._file_table_view.currentIndex()
+        if not index.isValid():
+            return
+        return index.row()
 
     def _add_crs(self):
         """
