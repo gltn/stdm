@@ -26,7 +26,7 @@ from PyQt4.QtCore import (
 )
 from qgis.core import QgsGeometry
 
-NAME, CRS_ID, IMPORT_AS, DELIMITER, HEADER_ROW, \
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
 

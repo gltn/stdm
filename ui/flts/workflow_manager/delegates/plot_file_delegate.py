@@ -31,7 +31,7 @@ from stdm.ui.flts.workflow_manager.delegates.delegates import (
     PlainTextColumnDelegate
 )
 
-NAME, CRS_ID, IMPORT_AS, DELIMITER, HEADER_ROW, \
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
 

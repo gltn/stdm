@@ -30,8 +30,8 @@ from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
 from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
 
-NAME, IMPORT_AS, DELIMITER, HEADER_ROW, \
-GEOM_FIELD, GEOM_TYPE, CRS_ID = range(7)
+NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
+GEOM_FIELD, GEOM_TYPE= range(7)
 
 
 class PlotImportWidget(QWidget):
@@ -136,6 +136,9 @@ class PlotImportWidget(QWidget):
         :type index: QModelIndex
         """
         self._enable_widgets(self._toolbar_buttons)
+        crs = self.model.data(self.model.index(index.row(), CRS_ID))
+        if not crs:
+            self._setcrs_button.setEnabled(True)
 
     def _remove_file(self):
         """
@@ -155,6 +158,7 @@ class PlotImportWidget(QWidget):
         self._plot_file.remove_filepath(fpath)
         if not self.model.results:
             self._disable_widgets(self._toolbar_buttons)
+            self._setcrs_button.setEnabled(False)
 
     def _show_critical_message(self, title, msg):
         """
