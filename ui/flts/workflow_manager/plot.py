@@ -237,7 +237,7 @@ class PlotFile:
                     geo_type = self.geometry_type(fpath, row, delimiter)
                     properties[pos] = unicode(geo_type) if geo_type else ""
                 else:
-                    properties[pos] = unicode("WARNING")
+                    properties[pos] = unicode("Warning")
                 properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e

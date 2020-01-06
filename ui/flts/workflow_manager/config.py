@@ -570,7 +570,7 @@ configurations = {
         {
             Column(
                 name='View Document', type="decoration", flag=(Qt.DecorationRole,)
-            ): 'VIEW'
+            ): 'View'
         }
     ],
     'document_collections': ['cb_scheme_supporting_document_collection'],
@@ -769,7 +769,7 @@ configurations = {
         2: QIcon(":/plugins/stdm/images/icons/flts_pending.png"),
         3: QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
         4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
-        'VIEW': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
+        'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
     },
     'toolbar_buttons': {
         'sharedButtons': [
