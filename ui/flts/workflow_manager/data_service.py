@@ -593,6 +593,7 @@ class PlotImportFileDataService:
     """
     def __init__(self):
         self._plot_config = PlotImportFileConfig()
+        self._table_model_icons = TableModelIcons()
 
     @property
     def columns(self):
@@ -612,3 +613,12 @@ class PlotImportFileDataService:
         :rtype: Boolean
         """
         return False
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self._table_model_icons.icons
