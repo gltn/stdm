@@ -135,15 +135,8 @@ class PlotImportWidget(QWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
-        row = index.row()
         self._enable_widgets(self._toolbar_buttons)
-        crs = self.model.data(self.model.index(row, CRS_ID))
-        fpath = self.model.results[row].get("fpath")
-        is_pdf = self._plot_file.is_pdf(fpath)
-        if crs or is_pdf:
-            self._setcrs_button.setEnabled(False)
-        else:
-            self._setcrs_button.setEnabled(True)
+        self._enable_crs_button(index.row())
 
     def _remove_file(self):
         """
@@ -161,7 +154,9 @@ class PlotImportWidget(QWidget):
         fpath = self.model.results[row].get("fpath")
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
-        if not self.model.results:
+        if self.model.results:
+            self._enable_crs_button(row)
+        else:
             self._disable_widgets(self._toolbar_buttons)
             self._setcrs_button.setEnabled(False)
 
@@ -228,6 +223,20 @@ class PlotImportWidget(QWidget):
         for widget in widgets:
             if widget:
                 widget.setEnabled(False)
+
+    def _enable_crs_button(self, row):
+        """
+        Enables/disables Set CRS button
+        :param row: Row index/number
+        :rtype row: Integer
+        """
+        crs = self.model.data(self.model.index(row, CRS_ID))
+        fpath = self.model.results[row].get("fpath")
+        is_pdf = self._plot_file.is_pdf(fpath)
+        if crs or is_pdf:
+            self._setcrs_button.setEnabled(False)
+        else:
+            self._setcrs_button.setEnabled(True)
 
     def _add_crs(self):
         """
