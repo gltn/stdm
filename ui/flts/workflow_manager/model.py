@@ -58,7 +58,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             if self._icons:
                 if isinstance(value, float):
                     value = float(value)
-                return self._icons[value]
+                return self._icons.get(value)
         elif role == Qt.ToolTipRole and Qt.ToolTipRole in flag:
             tooltip = result.get("tooltip")
             return tooltip.get(column)
