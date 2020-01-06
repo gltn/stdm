@@ -135,9 +135,14 @@ class PlotImportWidget(QWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
+        row = index.row()
         self._enable_widgets(self._toolbar_buttons)
-        crs = self.model.data(self.model.index(index.row(), CRS_ID))
-        if not crs:
+        crs = self.model.data(self.model.index(row, CRS_ID))
+        fpath = self.model.results[row].get("fpath")
+        is_pdf = self._plot_file.is_pdf(fpath)
+        if crs or is_pdf:
+            self._setcrs_button.setEnabled(False)
+        else:
             self._setcrs_button.setEnabled(True)
 
     def _remove_file(self):
