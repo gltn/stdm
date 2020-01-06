@@ -750,12 +750,12 @@ configurations = {
     'scheme_collections': ['cb_scheme_workflow_collection'],
     'plot_file_columns': [
         Column(name='Name', type="text", flag=(Qt.TextColorRole,)),
+        Column(name='CRS ID', type="text", flag=(Qt.TextColorRole,)),
         Column(name='Import as', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
         Column(name='Delimiter', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
         Column(name='Header row', type="integer", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
         Column(name='Geometry field', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='Type', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
-        Column(name='CRS ID', type="text", flag=(Qt.TextColorRole,))
+        Column(name='Type', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable))
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
