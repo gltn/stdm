@@ -224,24 +224,6 @@ class PlotImportWidget(QWidget):
             if widget:
                 widget.setEnabled(False)
 
-    def _enable_crs_button(self):
-        """
-        Enables/disables Set CRS button
-        :param row: Row index/number
-        :rtype row: Integer
-        """
-        index = self._current_index(self._file_table_view)
-        if index is None:
-            return
-        row = index.row()
-        crs = self.model.data(self.model.index(row, CRS_ID))
-        fpath = self.model.results[row].get("fpath")
-        is_pdf = self._plot_file.is_pdf(fpath)
-        if crs or is_pdf:
-            self._set_crs_button.setEnabled(False)
-        else:
-            self._set_crs_button.setEnabled(True)
-
     def _set_crs(self):
         """
         Sets coordinate reference system (CRS) to
@@ -253,9 +235,22 @@ class PlotImportWidget(QWidget):
         row = index.row()
         index = self.model.create_index(row, CRS_ID)
         value = self._crs_authority_id()
-        # column = self._file_service.columns[CRS_ID]
-        # column.flag.remove(Qt.DecorationRole)
+        items = self.model.results[row].get("items")
+        del items[CRS_ID]
         self.model.setData(index, value)
+
+    def _enable_crs_button(self):
+        """
+        Enables/disables Set CRS button
+        """
+        index = self._current_index(self._file_table_view)
+        if index is None:
+            return
+        fpath = self.model.results[index.row()].get("fpath")
+        if self._plot_file.is_pdf(fpath):
+            self._set_crs_button.setEnabled(False)
+        else:
+            self._set_crs_button.setEnabled(True)
 
     @staticmethod
     def _crs_authority_id():

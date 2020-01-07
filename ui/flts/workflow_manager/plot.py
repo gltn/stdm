@@ -220,7 +220,6 @@ class PlotFile:
         :return results: Plot import file data properties
         :rtype results: List
         """
-        results = []
         properties = {}
         items = {}
         try:
@@ -258,7 +257,7 @@ class PlotFile:
         except (csv.Error, Exception) as e:
             raise e
         self._fpaths.append(fpath)
-        results.append(properties)
+        results = [properties]
         return results
 
     def _get_csv_delimiter(self, fpath):
