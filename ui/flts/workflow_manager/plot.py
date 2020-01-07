@@ -20,6 +20,7 @@ import itertools
 from collections import OrderedDict
 import csv
 from PyQt4.QtCore import (
+    Qt,
     QFile,
     QFileInfo,
     QIODevice
@@ -28,6 +29,15 @@ from qgis.core import QgsGeometry
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
+
+
+class Item:
+    """
+    Items associated properties
+    """
+    def __init__(self, flags=None, tootltip=None):
+        self.flags = flags if flags else []
+        self.tooltip = tootltip
 
 
 class PlotFile:
@@ -212,7 +222,7 @@ class PlotFile:
         """
         results = []
         properties = {}
-        tooltip = {}
+        items = {}
         try:
             header_row = 1
             row = header_row - 1
@@ -240,8 +250,10 @@ class PlotFile:
                 elif pos == CRS_ID:
                     if not self.is_pdf(fpath):
                         properties[pos] = unicode("Warning")
-                        tooltip[pos] = unicode("Missing Coordinate Reference System (CRS)")
-                properties["tooltip"] = tooltip
+                        tooltip = unicode("Missing Coordinate Reference System (CRS)")
+                        item = Item([Qt.DecorationRole, Qt.ToolTipRole], tooltip)
+                        items[pos] = item
+                properties["items"] = items
                 properties["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e

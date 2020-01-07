@@ -253,8 +253,8 @@ class PlotImportWidget(QWidget):
         row = index.row()
         index = self.model.create_index(row, CRS_ID)
         value = self._crs_authority_id()
-        column = self._file_service.columns[CRS_ID]
-        column.flag.remove(Qt.DecorationRole)
+        # column = self._file_service.columns[CRS_ID]
+        # column.flag.remove(Qt.DecorationRole)
         self.model.setData(index, value)
 
     @staticmethod

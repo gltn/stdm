@@ -48,7 +48,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         result = self.results[index.row()]
         column = index.column()
         value = result.get(column)
-        flag = self._headers[column].flag
+        flag = self._item_flag(index)
         if role == Qt.DisplayRole and (
                 Qt.ItemIsUserCheckable not in flag and
                 Qt.DecorationRole not in flag
@@ -60,8 +60,7 @@ class WorkflowManagerModel(QAbstractTableModel):
                     value = float(value)
                 return self._icons.get(value)
         elif role == Qt.ToolTipRole and Qt.ToolTipRole in flag:
-            tooltip = result.get("tooltip")
-            return tooltip.get(column)
+            return self._item_tooltip(index)
         elif role == Qt.CheckStateRole and Qt.ItemIsUserCheckable in flag:
             if isinstance(value, float):
                 return Qt.Checked if int(value) == 1 else Qt.Unchecked
@@ -157,6 +156,40 @@ class WorkflowManagerModel(QAbstractTableModel):
                        self.results[position + rows:]
         self.endRemoveRows()
         return True
+
+    def _item_flag(self, index):
+        """
+        Returns item configuration flag
+        :param index: Table view item identifier
+        :type index: QModelIndex or Boolean
+        :return flag: Item configuration flag
+        :rtype flag: List
+        """
+        column = index.column()
+        flag = self._headers[column].flag
+        result = self.results[index.row()]
+        item = result.get("items")
+        if item:
+            item = item.get(column)
+            if item:
+                flag = list(flag)
+                flag.extend(item.flags)
+        return flag
+
+    def _item_tooltip(self, index):
+        """
+        Returns item tooltip
+        :param index: Table view item identifier
+        :type index: QModelIndex or Boolean
+        :return: Item tooltip
+        :rtype: String
+        """
+        column = index.column()
+        result = self.results[index.row()]
+        item = result.get("items")
+        if item:
+            item = item.get(column)
+            return item.tooltip if item else None
 
     def get_record_id(self, row=0):
         """
