@@ -142,7 +142,7 @@ class PlotImportWidget(QWidget):
         """
         Removes plot import file and its properties
         """
-        row = self._current_row()
+        row = self._current_row(self._file_table_view)
         if row is None:
             return
         fname = self.model.data(self.model.index(row, NAME))
@@ -228,7 +228,7 @@ class PlotImportWidget(QWidget):
         :param row: Row index/number
         :rtype row: Integer
         """
-        row = self._current_row()
+        row = self._current_row(self._file_table_view)
         if row is None:
             return
         crs = self.model.data(self.model.index(row, CRS_ID))
@@ -239,18 +239,7 @@ class PlotImportWidget(QWidget):
         else:
             self._setcrs_button.setEnabled(True)
 
-    def _current_row(self):
-        """
-        Returns index of the current selected rowe
-        :return: Current row index
-        :rtype: Integer
-        """
-        index = self._file_table_view.currentIndex()
-        if not index.isValid():
-            return
-        return index.row()
-
-    def _add_crs(self):
+    def _set_crs(self):
         """
         Add docstring and call in a signal
         :return:
@@ -259,3 +248,16 @@ class PlotImportWidget(QWidget):
         proj_selector.exec_()
         auth_id = proj_selector.selectedAuthId()
         # Call model to edit and show in CRS field of selected file
+
+    def _current_row(self, table_view):
+        """
+        Returns index of the current selected rowe
+        :return tableview: Table view object
+        :type tableview: QTableView
+        :return: Current row index
+        :rtype: Integer
+        """
+        index = table_view.currentIndex()
+        if not index.isValid():
+            return
+        return index.row()
