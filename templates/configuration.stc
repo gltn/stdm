@@ -416,7 +416,7 @@
     <Column unique="False" tip="" rowindex="11" minimum="0" maximum="32" description="Reference number of the constitution" index="False" name="constitution_ref_number" searchable="True" TYPE_INFO="VARCHAR" label="constitution reference number" mandatory="False"/>
     <Column unique="False" tip="" rowindex="12" minimum="0" maximum="2147483647" description="Number of polts in the scheme" index="False" name="no_of_plots" searchable="True" TYPE_INFO="INT" label="number of plots" mandatory="True"/>
     <Column unique="False" tip="" rowindex="13" minimum="0" maximum="32" description="The number representing the scheme" index="False" name="scheme_number" searchable="True" TYPE_INFO="VARCHAR" label="scheme_number" mandatory="True"/>
-    <Column unique="False" tip="G.P Number" rowindex="-1" minimum="0" maximum="32" description="The number representing general plan" index="False" name="general_plan_number" searchable="True" TYPE_INFO="VARCHAR" label="general plan number" mandatory="False"/>
+    <Column unique="False" tip="General Plan Number" rowindex="-1" minimum="0" maximum="32" description="The number representing general plan" index="False" name="general_plan_number" searchable="True" TYPE_INFO="VARCHAR" label="general plan number" mandatory="True"/>
    </Columns>
   </Entity>
   <Entity editable="True" global="False" rowindex="4" associative="False" description="Refers to the relation between holder and plot" proxy="False" createId="True" supportsDocuments="False" shortName="Holder_plot" name="cb_holder_plot" label="lht_holder_plot">
