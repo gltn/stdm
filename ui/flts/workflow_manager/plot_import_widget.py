@@ -252,8 +252,8 @@ class PlotImportWidget(QWidget):
     def _current_row(self, table_view):
         """
         Returns index of the current selected rowe
-        :return tableview: Table view object
-        :type tableview: QTableView
+        :return table_view: Table view object
+        :type table_view: QTableView
         :return: Current row index
         :rtype: Integer
         """
