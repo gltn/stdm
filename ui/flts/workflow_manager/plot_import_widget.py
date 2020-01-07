@@ -48,7 +48,7 @@ class PlotImportWidget(QWidget):
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
         self._remove_button = toolbar["removeFiles"]
-        self._setcrs_button = toolbar["setCRS"]
+        self._set_crs_button = toolbar["setCRS"]
         self._preview_button = toolbar["Preview"]
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style
@@ -89,6 +89,7 @@ class PlotImportWidget(QWidget):
         self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
         self._remove_button.clicked.connect(self._remove_file)
+        self._set_crs_button.clicked.connect(self._set_crs)
 
     def _add_file(self):
         """
@@ -142,9 +143,10 @@ class PlotImportWidget(QWidget):
         """
         Removes plot import file and its properties
         """
-        row = self._current_row(self._file_table_view)
-        if row is None:
+        index = self._current_index(self._file_table_view)
+        if index is None:
             return
+        row = index.row()
         fname = self.model.data(self.model.index(row, NAME))
         title = "Workflow Manager - Plot Add Files"
         msg = 'Remove "{}" and its properties?'.format(fname)
@@ -156,7 +158,7 @@ class PlotImportWidget(QWidget):
         self._enable_crs_button()
         if not self.model.results:
             self._disable_widgets(self._toolbar_buttons)
-            self._setcrs_button.setEnabled(False)
+            self._set_crs_button.setEnabled(False)
 
     def _show_critical_message(self, title, msg):
         """
@@ -228,28 +230,48 @@ class PlotImportWidget(QWidget):
         :param row: Row index/number
         :rtype row: Integer
         """
-        row = self._current_row(self._file_table_view)
-        if row is None:
+        index = self._current_index(self._file_table_view)
+        if index is None:
             return
+        row = index.row()
         crs = self.model.data(self.model.index(row, CRS_ID))
         fpath = self.model.results[row].get("fpath")
         is_pdf = self._plot_file.is_pdf(fpath)
         if crs or is_pdf:
-            self._setcrs_button.setEnabled(False)
+            self._set_crs_button.setEnabled(False)
         else:
-            self._setcrs_button.setEnabled(True)
+            self._set_crs_button.setEnabled(True)
 
     def _set_crs(self):
         """
-        Add docstring and call in a signal
-        :return:
+        Sets coordinate reference system (CRS) to
+        property to a plot import file
+        """
+        index = self._current_index(self._file_table_view)
+        if index is None:
+            return
+        row = index.row()
+        index = self.model.create_index(row, CRS_ID)
+        value = self._crs_authority_id()
+        column = self._file_service.columns[CRS_ID]
+        column.flag.remove(Qt.DecorationRole)
+        self.model.setData(index, value)
+
+    @staticmethod
+    def _crs_authority_id():
+        """
+        Returns selected coordinate
+        reference system (CRS) authority ID
+        :return auth_id: CRS authority ID
+        :return auth_id: String
         """
         proj_selector = QgsGenericProjectionSelector()
         proj_selector.exec_()
         auth_id = proj_selector.selectedAuthId()
-        # Call model to edit and show in CRS field of selected file
+        return auth_id
 
-    def _current_row(self, table_view):
+    @staticmethod
+    def _current_index(table_view):
         """
         Returns index of the current selected rowe
         :return table_view: Table view object
@@ -260,4 +282,4 @@ class PlotImportWidget(QWidget):
         index = table_view.currentIndex()
         if not index.isValid():
             return
-        return index.row()
+        return index
