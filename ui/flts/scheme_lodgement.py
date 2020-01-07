@@ -53,7 +53,7 @@ from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
 )
-from stdm.data.flts.validators import(
+from stdm.data.flts.validators import (
     EntityVectorLayerValidator,
     ValidatorException
 )
@@ -65,6 +65,8 @@ from stdm.data.configuration import entity_model
 from stdm.data.mapping import MapperMixin
 from ui_scheme_lodgement import Ui_ldg_wzd
 from ..notification import NotificationBar, ERROR
+
+from sqlalchemy.orm import load_only
 
 
 class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
@@ -163,6 +165,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Last int value used for generating the scheme number
         self._abs_last_scheme_value = None
 
+        # Last int value used for generating the sg and constitution numbers
+        self._abs_last_sg_value = None
+
         # Validator for holders data
         self._holders_validator = None
 
@@ -203,11 +208,17 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Populate lookup combo boxes
         self._populate_lookups()
 
+        # Current date
+        self._current_date = QDate.currentDate().getDate()
+        self._current_year = self._current_date[0]
+
         # Set date limits
         self._configure_date_controls()
 
         # Specify MapperMixin widgets
         self.register_col_widgets()
+
+        self._gen_sg_number()
 
     def _populate_combo(self, cbo, lookup_name):
         """
@@ -366,7 +377,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     (i.id, i.value)
                 )
             # Add items to combobox
-            # Data will contain tuple(IDm code and registration division)
+            # Data will contain tuple(ID, code and registration division)
             self.cbx_relv_auth_name.addItem(
                 authority_name, (
                     authority_id, code, last_val, reg_divs
@@ -396,22 +407,38 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.cbx_reg_div.addItem(regdiv[1], regdiv[0])
 
         # Select the first item automatically if there is only one division
-        if self.cbx_reg_div.count() ==  2:
+        if self.cbx_reg_div.count() == 2:
             self.cbx_reg_div.setCurrentIndex(1)
 
         scheme_code = self._gen_scheme_number(code, last_value)
+
         self.lnedit_schm_num.setText(scheme_code)
 
     def _gen_scheme_number(self, code, last_value):
-        current_year = strftime('%Y')
         # Generates a new scheme number
         if not last_value:
             last_value = 0
         last_value += 1
         self._abs_last_scheme_value = last_value
-        scheme_code = u'{0}.{1}.{2}'.format(code, str(last_value).zfill(4), current_year)
+        scheme_code = u'{0}.{1}.{2}'.format(code, str(last_value).zfill(4),
+                                            self._current_year)
 
         return scheme_code
+
+    def _gen_sg_number(self):
+        sg_prefix = 'A'
+        sg_default_value = 1
+        scheme_object = self.schm_model()
+
+        # Check if a scheme record exists in database
+        scheme_res = scheme_object.queryObject().all()
+
+        if len(scheme_res) == 0:
+            sg_code = u'{0}.{1}.{2}'.format(sg_prefix,
+                                            str(sg_default_value).zfill(4),
+                                            self._current_year)
+            self.lnedit_sg_num.setText(sg_code)
+        # If record exists, increment the last value
 
     def page_title(self):
         """
@@ -704,7 +731,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Highlight warning or error cells
         for r in results:
             if len(r.warnings) > 0 or len(r.errors) > 0:
-                self.tw_hld_prv.current_sheet_view().\
+                self.tw_hld_prv.current_sheet_view(). \
                     highlight_validation_cell(r)
 
         # Update progress bar
@@ -909,9 +936,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             pseudoname='Scheme Number'
         )
         self.addMapping(
-            'sg_number',
+            'general_plan_number',
             self.lnedit_sg_num,
-            pseudoname='Surveyor General Number'
+            pseudoname='General Plan Number'
         )
         self.addMapping(
             'scheme_name',
@@ -947,11 +974,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             'no_of_plots',
             self.dbl_spinbx_num_plots,
             pseudoname='Number of Plots'
-        )
-        self.addMapping(
-            'constitution_ref_no',
-            self.lnedit_const_ref_num,
-            pseudoname='Constitution Reference Number'
         )
 
     def create_notification(self):
@@ -1003,6 +1025,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         if area_in_sq_meters:
             self.dbl_spinbx_block_area.setValue(area_in_sq_meters)
+            self.dbl_spinbx_block_area.setSuffix('Sqm')
 
     def _on_default_area_change(self):
         """
@@ -1099,7 +1122,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                     action_msg = self.tr(
                         'Do you want to (re)run the validation process?'
                     )
-                    res= QMessageBox.warning(
+                    res = QMessageBox.warning(
                         self,
                         self.tr('Validation Status'),
                         u'{0}\n{1}'.format(
@@ -1419,4 +1442,3 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         scheme_workflow_obj.workflow_id = workflow_res.id
         scheme_workflow_obj.approval_id = approval_res.id
         scheme_workflow_obj.save()
-

@@ -19,10 +19,10 @@ CREATE TABLE "public"."cb_scheme_log" (
   "registration_division" int4,
   "area" numeric(15,4),
   "doc_imposing_conditions" varchar(30),
-  "constitution_ref_no" varchar(30),
+  "constitution_ref_number" varchar(32),
   "no_of_plots" int4,
-  "sg_number" varchar (30),
   "scheme_number" varchar(32),
+  "general_plan_number" varchar (32),
   "scheme_id" int4
 )
 ;
