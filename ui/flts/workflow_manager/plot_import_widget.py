@@ -236,7 +236,7 @@ class PlotImportWidget(QWidget):
         index = self.model.create_index(row, CRS_ID)
         value = self._crs_authority_id()
         items = self.model.results[row].get("items")
-        del items[CRS_ID]
+        items[CRS_ID] = []
         self.model.setData(index, value)
 
     def _enable_crs_button(self):

@@ -171,7 +171,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         item = result.get("items")
         if item:
             item = item.get(column)
-            if item:
+            if item and item.flags:
                 flag = list(flag)
                 flag.extend(item.flags)
         return flag
