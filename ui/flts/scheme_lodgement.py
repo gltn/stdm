@@ -194,15 +194,17 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.on_validate_holders
         )
 
-        # Block area
+        # Block area defaults
         self.radio_sq_meters.setChecked(True)
+        self.dbl_spinbx_block_area.setSuffix(" Sqm.")
 
+        # Block area signals and slots
         self.radio_sq_meters.clicked.connect(
             self._on_default_area
         )
 
         self.radio_hectares.clicked.connect(
-            self._on_default_area_change
+            self._area_in_hectares
         )
 
         # Populate lookup combo boxes
@@ -1029,19 +1031,20 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot raised when the block area square meter units radio button
         is selected
         """
+        self.dbl_spinbx_block_area.setSuffix(" Sqm.")
         area_in_hectares = self.dbl_spinbx_block_area.value()
         self.dbl_spinbx_block_area.setDecimals(0)
         area_in_sq_meters = area_in_hectares * 10000
 
         if area_in_sq_meters:
             self.dbl_spinbx_block_area.setValue(area_in_sq_meters)
-            self.dbl_spinbx_block_area.setSuffix('Sqm')
 
-    def _on_default_area_change(self):
+    def _area_in_hectares(self):
         """
         Slot raised when the block area hectares units radio button
         is selected
         """
+        self.dbl_spinbx_block_area.setSuffix(" Ha.")
         default_area = self.dbl_spinbx_block_area.value()
         self.dbl_spinbx_block_area.setDecimals(4)
         area_in_hectares = default_area / 10000
