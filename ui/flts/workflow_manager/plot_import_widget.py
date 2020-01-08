@@ -171,15 +171,17 @@ class PlotImportWidget(QWidget):
         if index is None:
             return
         row = index.row()
-        if not self._is_crs(row):
-            self._show_critical_message(
-                "Workflow Manager - Plot Preview",
-                "Coordinate reference system (CRS) is missing. "
-                "Kindly set it to preview."
-            )
-            return
         properties = self._file_properties(row)
-        # self._plot_preview(properties)
+        fpath = properties.get("fpath")
+        if not self._plot_file.is_pdf(fpath):
+            if not self._is_crs(row):
+                self._show_critical_message(
+                    "Workflow Manager - Plot Preview",
+                    "Coordinate reference system (CRS) is missing. "
+                    "Kindly set it to preview."
+                )
+                return
+            # self._plot_preview(properties)
 
     def _is_crs(self, row):
         """
