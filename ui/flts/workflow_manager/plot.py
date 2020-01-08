@@ -35,6 +35,11 @@ class Plot(object):
     """
     Plot associated methods
     """
+    def __init__(self):
+        self._reg_exes = {
+            "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
+        }
+
     def get_csv_fields(self, fpath, hrow=0, delimiter=None):
         """
         Returns plain text field names
@@ -59,6 +64,42 @@ class Plot(object):
         except (csv.Error, Exception) as e:
             raise e
 
+    def geometry_type(self, fpath, hrow=0, delimiter=None):
+        """
+        Returns dominant geometry type of
+        loaded plot import file - CSV/txt
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :param hrow: Header row number
+        :type hrow: Integer
+        :param delimiter: Delimiter
+        :type delimiter: String
+        :return: Geometry type
+        :rtype: String
+        """
+        if self.is_pdf(fpath):
+            return
+        try:
+            with open(fpath, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=delimiter)
+                sample = itertools.islice(csv_reader, 5000)
+                match_count = {}
+                for row, data in enumerate(sample):
+                    if row == hrow:
+                        continue
+                    for value in data:
+                        if value is None or isinstance(value, list):
+                            continue
+                        geo_type, geom = self._geometry(value)
+                        if geo_type:
+                            if geo_type not in match_count:
+                                match_count[geo_type] = 0
+                                continue
+                            match_count[geo_type] += 1
+                return self._default_geometry_type(match_count)
+        except (csv.Error, Exception) as e:
+            raise e
+
     @staticmethod
     def is_pdf(fpath):
         """
@@ -72,6 +113,115 @@ class Plot(object):
         file_extension = QFileInfo(fpath).suffix()
         if file_extension == "pdf":
             return True
+
+    def _geometry(self, wkt):
+        """
+        Returns geometry and geometry type given WKT data
+        :param wkt: WKT data
+        :type wkt: String
+        :return geo_type: Geometry type
+        :rtype geo_type: String
+        :return geom: Geometry
+        :rtype geom: QgsGeometry
+        """
+        geo_type = geom = None
+        matches = self._reg_exes["type_str"].match(wkt)
+        if matches:
+            geo_type, coordinates = matches.groups()
+            geom = QgsGeometry.fromWkt(wkt.strip())
+            if geo_type:
+                geo_type = geo_type.strip()
+                geo_type = geo_type.lower().capitalize()
+        return geo_type, geom
+
+    def _default_geometry_type(self, type_count):
+        """
+        Returns default plot import file geometry type
+        :param type_count: Geometry type count
+        :type type_count: Dictionary
+        :return geo_type: Default geometry type
+        :rtype geo_type: String
+        """
+        geo_type = None
+        if type_count:
+            geo_type = max(
+                type_count.iterkeys(),
+                key=lambda k: type_count[k]
+            )
+            geo_type = self._geometry_types.get(geo_type)
+        geo_type = geo_type if geo_type else "Detect"
+        return geo_type
+
+    @property
+    def _geometry_types(self):
+        """
+        Returns a map of expected geometry types
+        :return: Geometry types
+        :rtype: OrderedDict
+        """
+        return OrderedDict({
+            "Point": "Point", "Linestring": "Line", "Polygon": "Polygon"
+        })
+
+
+
+
+class PlotPreview(Plot):
+    """
+    Manages preview of plot import data file contents
+    """
+    def __init__(self, data_service, file_settings):
+        """
+        :param data_service: Plot preview data model service
+        :type data_service: PlotImportFileDataService
+        :param file_settings: Plot import file data settings
+        :type file_settings: Dictionary
+        """
+        super(PlotPreview, self).__init__()
+        self._data_service = data_service
+        self._file_settings = file_settings
+        self._fpath = file_settings.get("fpath")
+        self._set_columns()
+
+    def _set_columns(self):
+        """
+        Sets columns for the plot preview table view
+        """
+        fields = self.get_csv_fields(
+            self._fpath,
+            self._file_settings[HEADER_ROW],
+            self._file_settings[DELIMITER]
+        )
+        self._data_service.set_columns("Parcel Number", "text", (False,), "TBA")
+        self._data_service.set_columns("UPI Number", "text", (False,), "TBA")
+        self._set_wkt_columns(fields)
+        if not self._is_field_area(fields):
+            self._data_service.set_columns("Area", "text", (False,), "TBA")
+
+    def _set_wkt_columns(self, fields):
+        """
+        Sets columns from the plain text file
+        :return fields: CSV/txt field names
+        :rtype fields: List
+        """
+        for name in fields:
+            name = name.lower().capitalize()
+            self._data_service.set_columns(name, "text", (False, ), "TBA")
+
+    @staticmethod
+    def _is_field_area(fields):
+        """
+        Checks if area field is in the CSV plot import file
+        :param fields: CSV/txt fields
+        :type fields: List
+        :return: True
+        :type: Boolean
+        """
+        for name in fields:
+            if str(name.lower()).find("area") != -1:
+                return True
+
+
 
 
 class Item:
@@ -96,9 +246,7 @@ class PlotFile(Plot):
         self._fpath = None
         self._fpaths = []
         self._formats = ["csv", "txt", "pdf"]
-        self._reg_exes = {
-            "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
-        }
+        super(PlotFile, self).__init__()
 
     def set_file_path(self, fpath):
         """
@@ -189,17 +337,6 @@ class PlotFile(Plot):
         geom_options = OrderedDict({"Detect": "Detect"})
         geom_options.update(self._geometry_types)
         return geom_options
-
-    @property
-    def _geometry_types(self):
-        """
-        Returns a map of expected geometry types
-        :return: Geometry types
-        :rtype: OrderedDict
-        """
-        return OrderedDict({
-            "Point": "Point", "Linestring": "Line", "Polygon": "Polygon"
-        })
 
     def load(self):
         """
@@ -412,80 +549,6 @@ class PlotFile(Plot):
                 )
         except (csv.Error, Exception) as e:
             raise e
-
-    def geometry_type(self, fpath, hrow=0, delimiter=None):
-        """
-        Returns dominant geometry type of
-        loaded plot import file - CSV/txt
-        :param fpath: Plot import file absolute path
-        :type fpath: String
-        :param hrow: Header row number
-        :type hrow: Integer
-        :param delimiter: Delimiter
-        :type delimiter: String
-        :return: Geometry type
-        :rtype: String
-        """
-        if self.is_pdf(fpath):
-            return
-        try:
-            with open(fpath, 'r') as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=delimiter)
-                sample = itertools.islice(csv_reader, 5000)
-                match_count = {}
-                for row, data in enumerate(sample):
-                    if row == hrow:
-                        continue
-                    for value in data:
-                        if value is None or isinstance(value, list):
-                            continue
-                        geo_type, geom = self._geometry(value)
-                        if geo_type:
-                            if geo_type not in match_count:
-                                match_count[geo_type] = 0
-                                continue
-                            match_count[geo_type] += 1
-                return self._default_geometry_type(match_count)
-        except (csv.Error, Exception) as e:
-            raise e
-
-    def _geometry(self, wkt):
-        """
-        Returns geometry and geometry type given WKT data
-        :param wkt: WKT data
-        :type wkt: String
-        :return geo_type: Geometry type
-        :rtype geo_type: String
-        :return geom: Geometry
-        :rtype geom: QgsGeometry
-        """
-        geo_type = geom = None
-        matches = self._reg_exes["type_str"].match(wkt)
-        if matches:
-            geo_type, coordinates = matches.groups()
-            geom = QgsGeometry.fromWkt(wkt.strip())
-            if geo_type:
-                geo_type = geo_type.strip()
-                geo_type = geo_type.lower().capitalize()
-        return geo_type, geom
-
-    def _default_geometry_type(self, type_count):
-        """
-        Returns default plot import file geometry type
-        :param type_count: Geometry type count
-        :type type_count: Dictionary
-        :return geo_type: Default geometry type
-        :rtype geo_type: String
-        """
-        geo_type = None
-        if type_count:
-            geo_type = max(
-                type_count.iterkeys(),
-                key=lambda k: type_count[k]
-            )
-            geo_type = self._geometry_types.get(geo_type)
-        geo_type = geo_type if geo_type else "Detect"
-        return geo_type
 
     @staticmethod
     def _calc_ratio(rows, sample, count):
