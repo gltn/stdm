@@ -90,6 +90,7 @@ class PlotImportWidget(QWidget):
         self._add_button.clicked.connect(self._add_file)
         self._remove_button.clicked.connect(self._remove_file)
         self._set_crs_button.clicked.connect(self._set_crs)
+        self._preview_button.clicked.connect(self._preview)
 
     def _add_file(self):
         """
@@ -159,6 +160,20 @@ class PlotImportWidget(QWidget):
         if not self.model.results:
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
+
+    def _is_crs(self, index):
+        """
+        Returns true if coordinate reference
+        system (CRS) has been set. Otherwise none
+        :param index: Table view item identifier
+        :type index: QModelIndex
+        :return: True
+        :return: Boolean
+        """
+        row = index.row()
+        crs_id = self.model.data(self.model.index(row, CRS_ID))
+        if crs_id:
+            return True
 
     def _show_critical_message(self, title, msg):
         """
