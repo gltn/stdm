@@ -96,7 +96,7 @@ class PlotImportWidget(QWidget):
 
     def _add_file(self):
         """
-        Adds plot import file data properties into the file table view
+        Adds plot import file data settings into the file table view
         """
         test_folder = "D:/Projects/STDM/Namibia/FLTS/Sample_Inputs/WKT"
         path = QFileInfo(self._plot_file.file_path).path() \
@@ -128,7 +128,7 @@ class PlotImportWidget(QWidget):
 
     def _insert_file(self):
         """
-        Inserts plot import file data properties into the table view
+        Inserts plot import file data settings into the table view
         """
         position = self.model.rowCount()
         self.model.insertRows(position)
@@ -144,7 +144,7 @@ class PlotImportWidget(QWidget):
 
     def _remove_file(self):
         """
-        Removes plot import file and its properties
+        Removes plot import file and its settings from table view
         """
         index = self._current_index(self._file_table_view)
         if index is None:
@@ -152,7 +152,7 @@ class PlotImportWidget(QWidget):
         row = index.row()
         fname = self.model.data(self.model.index(row, NAME))
         title = "Workflow Manager - Plot Add Files"
-        msg = 'Remove "{}" and its properties?'.format(fname)
+        msg = 'Remove "{}" and its settings?'.format(fname)
         if not self._show_question_message(title, msg):
             return
         fpath = self.model.results[row].get("fpath")
@@ -171,8 +171,8 @@ class PlotImportWidget(QWidget):
         if index is None:
             return
         row = index.row()
-        properties = self._file_properties(row)
-        fpath = properties.get("fpath")
+        settings = self._file_settings(row)
+        fpath = settings.get("fpath")
         if not self._plot_file.is_pdf(fpath):
             if not self._is_crs(row):
                 self._show_critical_message(
@@ -181,7 +181,7 @@ class PlotImportWidget(QWidget):
                     "Kindly set it to preview."
                 )
                 return
-            # self._plot_preview(properties)
+            # self._plot_preview(settings)
 
     def _is_crs(self, row):
         """
@@ -210,12 +210,12 @@ class PlotImportWidget(QWidget):
             self.tr(msg)
         )
 
-    def _file_properties(self, row):
+    def _file_settings(self, row):
         """
-        Returns plot import file data properties
+        Returns plot import file data settings
         :param row: Table view item identifier
         :type row: QModelIndex
-        :return: Plot import file data properties
+        :return: Plot import file data settings
         :rtype: Dictionary
         """
         return self.model.results[row]

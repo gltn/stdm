@@ -42,7 +42,7 @@ class Item:
 
 class PlotFile:
     """
-    Manages plot import data file properties
+    Manages plot import data file settings
     """
     def __init__(self, data_service):
         """
@@ -160,8 +160,8 @@ class PlotFile:
 
     def load(self):
         """
-        Loads plot import file data properties
-        :return: Plot import file data properties
+        Loads plot import file data settings
+        :return: Plot import file data settings
         :rtype: List
         """
         try:
@@ -170,8 +170,8 @@ class PlotFile:
                 raise IOError(unicode(qfile.errorString()))
             self.remove_filepath(self._fpath)
             if not self.is_pdf(self._fpath) and self._is_wkt(self._fpath):
-                return self._file_properties(self._fpath)
-            return self._file_properties(self._fpath)
+                return self._file_settings(self._fpath)
+            return self._file_settings(self._fpath)
         except(IOError, OSError, csv.Error, NotImplementedError, Exception) as e:
             raise e
 
@@ -212,15 +212,15 @@ class PlotFile:
         else:
             return True
 
-    def _file_properties(self, fpath):
+    def _file_settings(self, fpath):
         """
-        Returns plot import file data properties
+        Returns plot import file data settings
         :param fpath: Plot import file absolute path
         :type fpath: String
-        :return results: Plot import file data properties
+        :return results: Plot import file data settings
         :rtype results: List
         """
-        properties = {}
+        settings = {}
         items = {}
         try:
             header_row = 1
@@ -228,13 +228,13 @@ class PlotFile:
             delimiter = self._get_csv_delimiter(fpath)
             for pos, column in enumerate(self._data_service.columns):
                 if pos == NAME:
-                    properties[pos] = QFileInfo(fpath).fileName()
+                    settings[pos] = QFileInfo(fpath).fileName()
                 elif pos == IMPORT_AS:
-                    properties[pos] = unicode(self._get_import_type(fpath))
+                    settings[pos] = unicode(self._get_import_type(fpath))
                 elif pos == DELIMITER:
-                    properties[pos] = unicode(self._delimiter_name(delimiter))
+                    settings[pos] = unicode(self._delimiter_name(delimiter))
                 elif pos == HEADER_ROW:
-                    properties[pos] = header_row \
+                    settings[pos] = header_row \
                         if not self.is_pdf(fpath) else unicode("")
                 elif pos == GEOM_FIELD:
                     fields = self.get_csv_fields(fpath, row, delimiter)
@@ -242,22 +242,22 @@ class PlotFile:
                         fields = self.geometry_field(fpath, fields, row, delimiter)
                     else:
                         fields = ""
-                    properties[pos] = unicode(fields)
+                    settings[pos] = unicode(fields)
                 elif pos == GEOM_TYPE:
                     geo_type = self.geometry_type(fpath, row, delimiter)
-                    properties[pos] = unicode(geo_type) if geo_type else ""
+                    settings[pos] = unicode(geo_type) if geo_type else ""
                 elif pos == CRS_ID:
                     if not self.is_pdf(fpath):
-                        properties[pos] = unicode("Warning")
+                        settings[pos] = unicode("Warning")
                         tooltip = unicode("Missing Coordinate Reference System (CRS)")
                         item = Item([Qt.DecorationRole, Qt.ToolTipRole], tooltip)
                         items[pos] = item
-                properties["items"] = items
-                properties["fpath"] = unicode(fpath)
+                settings["items"] = items
+                settings["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:
             raise e
         self._fpaths.append(fpath)
-        results = [properties]
+        results = [settings]
         return results
 
     def _get_csv_delimiter(self, fpath):
