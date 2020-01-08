@@ -31,6 +31,49 @@ NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
 
+class Plot(object):
+    """
+    Plot associated methods
+    """
+    def get_csv_fields(self, fpath, hrow=0, delimiter=None):
+        """
+        Returns plain text field names
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :param hrow: Header row number
+        :type hrow: Integer
+        :param delimiter: Delimiter
+        :type delimiter: String
+        :return fields: CSV field names
+        :rtype fields: List
+        """
+        if self.is_pdf(fpath):
+            return
+        try:
+            with open(fpath, 'r') as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=delimiter)
+                fields = next(
+                    (data for row, data in enumerate(csv_reader) if row == hrow), []
+                )
+                return fields
+        except (csv.Error, Exception) as e:
+            raise e
+
+    @staticmethod
+    def is_pdf(fpath):
+        """
+        Checks if the file extension is PDF
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return True: Returns true if the file extension is PDF
+        :rtype True: Boolean
+        """
+
+        file_extension = QFileInfo(fpath).suffix()
+        if file_extension == "pdf":
+            return True
+
+
 class Item:
     """
     Items associated properties
@@ -40,7 +83,7 @@ class Item:
         self.tooltip = tootltip
 
 
-class PlotFile:
+class PlotFile(Plot):
     """
     Manages plot import data file settings
     """
@@ -405,20 +448,6 @@ class PlotFile:
                 return self._default_geometry_type(match_count)
         except (csv.Error, Exception) as e:
             raise e
-
-    @staticmethod
-    def is_pdf(fpath):
-        """
-        Checks if the file extension is PDF
-        :param fpath: Plot import file absolute path
-        :type fpath: String
-        :return True: Returns true if the file extension is PDF
-        :rtype True: Boolean
-        """
-
-        file_extension = QFileInfo(fpath).suffix()
-        if file_extension == "pdf":
-            return True
 
     def _geometry(self, wkt):
         """
