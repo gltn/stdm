@@ -42,8 +42,11 @@ class PlotImportWidget(QWidget):
     """
     def __init__(self, widget_properties, profile, scheme_id, parent=None):
         super(QWidget, self).__init__(parent)
-        self._file_service = widget_properties["data_service"][0]
+        data_service = widget_properties["data_service"]
+        self._file_service = data_service["plot_file"]
         self._file_service = self._file_service()
+        self._preview_service = data_service["plot_preview"]
+        self._preview_service = self._preview_service()
         self._plot_file = PlotFile(self._file_service)
         # _plot_preview = PlotPreview
         import_component = PlotImportComponent()
@@ -181,7 +184,7 @@ class PlotImportWidget(QWidget):
                     "Kindly set it to preview."
                 )
                 return
-            # self._plot_preview(settings)
+            # self._plot_preview(self._preview_service, settings)
 
     def _is_crs(self, row):
         """

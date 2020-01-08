@@ -516,6 +516,25 @@ class EntityRecordId(Config):
         return self._results
 
 
+class ColumnSettings:
+    """
+    Column associated properties
+    """
+    def __init__(self, name, type_, flag=None):
+        self.name = name
+        self.type = type_
+        self.flag = flag if flag else (False,)
+
+    def settings(self):
+        """
+        Returns column settings
+        :return: Column settings
+        :return: Column (namedtuple)
+        """
+        column = Column(name=self.name, type=self.type, flag=self.flag)
+        return column
+
+
 Column = namedtuple('Column', ['name', 'type', 'flag'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 LookUp = namedtuple(

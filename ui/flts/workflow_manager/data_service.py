@@ -21,6 +21,7 @@ from abc import ABCMeta, abstractmethod
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
+    ColumnSettings,
     CommentConfig,
     DocumentConfig,
     FilterQueryBy,
@@ -622,3 +623,58 @@ class PlotImportFileDataService:
         :rtype: Dictionary
         """
         return self._table_model_icons.icons
+
+
+class PlotImportPreviewDataService:
+    """
+    Scheme plot import preview data model service
+    """
+    def __init__(self):
+        self._table_model_icons = TableModelIcons()
+        self._columns = []
+
+    def set_columns(self, name, type_, flag, attr):
+        """
+        Sets up plot import preview columns
+        :param name: Column name
+        :type name: String
+        :param type_: Column data type
+        :type type_: String
+        :param flag: Column flag/role
+        :type flag: ItemDataRole/ItemFlag
+        :param attr: Column value or entity attributes
+        :type attr: String/Dictionary
+        """
+        self._columns = []
+        column = ColumnSettings(name, type_, flag)
+        column = column.settings()
+        self._columns.append({column: attr})
+
+    @property
+    def columns(self):
+        """
+        Scheme plot import file
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self._columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self._table_model_icons.icons
+

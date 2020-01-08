@@ -32,6 +32,7 @@ from stdm.ui.flts.workflow_manager.data_service import (
     DocumentDataService,
     HolderDataService,
     PlotImportFileDataService,
+    PlotImportPreviewDataService,
     SchemeDataService
 )
 from stdm.ui.flts.workflow_manager.data import (
@@ -388,7 +389,10 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         # TODO: Start Refactor by moving them to the configuration file
         widget_prop = {
             self.plotsImportButton.objectName(): {
-                'data_service': [PlotImportFileDataService],
+                'data_service': {
+                    "plot_file": PlotImportFileDataService,
+                    "plot_preview": PlotImportPreviewDataService
+                },
                 'widget': PlotImportWidget,
                 'object_name': 'plotImport',
             },
