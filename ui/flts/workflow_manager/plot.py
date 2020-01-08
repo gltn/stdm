@@ -164,66 +164,6 @@ class Plot(object):
         })
 
 
-
-
-class PlotPreview(Plot):
-    """
-    Manages preview of plot import data file contents
-    """
-    def __init__(self, data_service, file_settings):
-        """
-        :param data_service: Plot preview data model service
-        :type data_service: PlotImportFileDataService
-        :param file_settings: Plot import file data settings
-        :type file_settings: Dictionary
-        """
-        super(PlotPreview, self).__init__()
-        self._data_service = data_service
-        self._file_settings = file_settings
-        self._fpath = file_settings.get("fpath")
-        self._set_columns()
-
-    def _set_columns(self):
-        """
-        Sets columns for the plot preview table view
-        """
-        fields = self.get_csv_fields(
-            self._fpath,
-            self._file_settings[HEADER_ROW],
-            self._file_settings[DELIMITER]
-        )
-        self._data_service.set_columns("Parcel Number", "text", (False,), "TBA")
-        self._data_service.set_columns("UPI Number", "text", (False,), "TBA")
-        self._set_wkt_columns(fields)
-        if not self._is_field_area(fields):
-            self._data_service.set_columns("Area", "text", (False,), "TBA")
-
-    def _set_wkt_columns(self, fields):
-        """
-        Sets columns from the plain text file
-        :return fields: CSV/txt field names
-        :rtype fields: List
-        """
-        for name in fields:
-            name = name.lower().capitalize()
-            self._data_service.set_columns(name, "text", (False, ), "TBA")
-
-    @staticmethod
-    def _is_field_area(fields):
-        """
-        Checks if area field is in the CSV plot import file
-        :param fields: CSV/txt fields
-        :type fields: List
-        :return: True
-        :type: Boolean
-        """
-        for name in fields:
-            if str(name.lower()).find("area") != -1:
-                return True
-
-
-
-
 class Item:
     """
     Items associated properties

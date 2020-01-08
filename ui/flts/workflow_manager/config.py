@@ -239,6 +239,22 @@ class PlotImportFileConfig(Config):
         return self.get_data('plot_file_columns')
 
 
+class PlotImportPreviewConfig(Config):
+    """
+    Scheme plot import preview table view
+    configuration interface
+    """
+    @property
+    def columns(self):
+        """
+        Scheme plot import preview
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self.get_data('plot_preview_columns')
+
+
 class StyleSheet(Config):
     """
     Widget style sheet interface
@@ -776,6 +792,12 @@ configurations = {
         Column(name='CRS ID', type="text", flag=(Qt.TextColorRole,)),
         Column(name='Geometry field', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable)),
         Column(name='Type', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable))
+    ],
+    'plot_preview_columns': [
+        {Column(name='Parcel Number', type="text", flag=(False,)): 'PN'},
+        {Column(name='UPI  Number', type="text", flag=(False,)): 'UN'},
+        {Column(name='Geometry', type="text", flag=(False,)): 'GEOM'},
+        {Column(name='Area', type="float", flag=(False,)): 'AREA'}
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
