@@ -380,8 +380,8 @@ class PlotFile:
         :type hrow: Integer
         :param delimiter: Delimiter
         :type delimiter: String
-        :return geo_type: Geometry type
-        :rtype geo_type: String
+        :return: Geometry type
+        :rtype: String
         """
         if self.is_pdf(fpath):
             return
@@ -402,15 +402,7 @@ class PlotFile:
                                 match_count[geo_type] = 0
                                 continue
                             match_count[geo_type] += 1
-                geo_type = None
-                if match_count:
-                    geo_type = max(
-                        match_count.iterkeys(),
-                        key=lambda k: match_count[k]
-                    )
-                    geo_type = self._geometry_types.get(geo_type)
-                geo_type = geo_type if geo_type else "Detect"
-                return geo_type
+                return self._default_geometry_type(match_count)
         except (csv.Error, Exception) as e:
             raise e
 
@@ -447,6 +439,24 @@ class PlotFile:
                 geo_type = geo_type.strip()
                 geo_type = geo_type.lower().capitalize()
         return geo_type, geom
+
+    def _default_geometry_type(self, type_count):
+        """
+        Returns default plot import file geometry type
+        :param type_count: Geometry type count
+        :type type_count: Dictionary
+        :return geo_type: Default geometry type
+        :rtype geo_type: String
+        """
+        geo_type = None
+        if type_count:
+            geo_type = max(
+                type_count.iterkeys(),
+                key=lambda k: type_count[k]
+            )
+            geo_type = self._geometry_types.get(geo_type)
+        geo_type = geo_type if geo_type else "Detect"
+        return geo_type
 
     @staticmethod
     def _calc_ratio(rows, sample, count):
