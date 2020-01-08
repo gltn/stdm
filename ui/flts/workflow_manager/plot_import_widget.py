@@ -25,13 +25,14 @@ from stdm.ui.flts.workflow_manager.config import (
 )
 from stdm.ui.flts.workflow_manager.plot import(
     PlotFile,
+    # PlotPreview,
 )
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
 from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
-GEOM_FIELD, GEOM_TYPE= range(7)
+GEOM_FIELD, GEOM_TYPE = range(7)
 
 
 class PlotImportWidget(QWidget):
@@ -44,6 +45,7 @@ class PlotImportWidget(QWidget):
         self._file_service = widget_properties["data_service"][0]
         self._file_service = self._file_service()
         self._plot_file = PlotFile(self._file_service)
+        # _plot_preview = PlotPreview
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -161,16 +163,33 @@ class PlotImportWidget(QWidget):
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
 
-    def _is_crs(self, index):
+    def _preview(self):
+        """
+        Previews plot import file content
+        """
+        index = self._current_index(self._file_table_view)
+        if index is None:
+            return
+        row = index.row()
+        if not self._is_crs(row):
+            self._show_critical_message(
+                "Workflow Manager - Plot Preview",
+                "Coordinate reference system (CRS) is missing. "
+                "Kindly set it to preview."
+            )
+            return
+        properties = self._file_properties(row)
+        # self._plot_preview(properties)
+
+    def _is_crs(self, row):
         """
         Returns true if coordinate reference
         system (CRS) has been set. Otherwise none
-        :param index: Table view item identifier
-        :type index: QModelIndex
+        :param row: Table view item identifier
+        :type row: QModelIndex
         :return: True
         :return: Boolean
         """
-        row = index.row()
         crs_id = self.model.data(self.model.index(row, CRS_ID))
         if crs_id:
             return True
@@ -188,6 +207,16 @@ class PlotImportWidget(QWidget):
             self.tr(title),
             self.tr(msg)
         )
+
+    def _file_properties(self, row):
+        """
+        Returns plot import file data properties
+        :param row: Table view item identifier
+        :type row: QModelIndex
+        :return: Plot import file data properties
+        :rtype: Dictionary
+        """
+        return self.model.results[row]
 
     def _show_question_message(self, title, msg):
         """
