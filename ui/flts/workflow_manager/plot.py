@@ -179,10 +179,24 @@ class PlotPreview(Plot):
         self._items = None
         self._num_errors = 0
         self._header_row = file_settings.get(HEADER_ROW) - 1
-        self._delimiter = str(file_settings.get(DELIMITER).split(" ")[0])
+        self._delimiter = self._get_delimiter(file_settings.get(DELIMITER))
         self._geom_type = file_settings.get(GEOM_TYPE)
         self._fpath = file_settings.get("fpath")
         self._file_fields = file_settings.get("fields")
+
+    @staticmethod
+    def _get_delimiter(name):
+        """
+        Returns a delimiter
+        :param name: Delimiter name
+        :param name: Unicode
+        :return: Delimiter
+        :rtype: String
+        """
+        delimiter = str(name.split(" ")[0]).strip()
+        if delimiter == "t":
+            delimiter = "\t"
+        return delimiter
 
     def num_errors(self):
         """
