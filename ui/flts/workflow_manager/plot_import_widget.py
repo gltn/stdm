@@ -73,6 +73,7 @@ class PlotImportWidget(QWidget):
         self._preview_table_view = QTableView(self)
         self._preview_model = WorkflowManagerModel(self._preview_service)
         self._preview_table_view.setModel(self._preview_model)
+        self._preview_table_view.setAlternatingRowColors(True)
         self._preview_table_view.setShowGrid(False)
         self._preview_table_view.horizontalHeader().setStyleSheet(header_style)
         self._preview_table_view.setSelectionBehavior(QTableView.SelectRows)
