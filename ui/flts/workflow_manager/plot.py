@@ -30,6 +30,18 @@ from qgis.core import QgsGeometry
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
+# PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
+PARCEL_NUM, AREA = range(2)
+
+
+class Item:
+    """
+    Items associated properties
+    """
+    def __init__(self, flags=None, tootltip=None):
+        self.flags = flags if flags else []
+        self.tooltip = tootltip
+
 
 class Plot(object):
     """
@@ -39,30 +51,6 @@ class Plot(object):
         self._reg_exes = {
             "type_str": re.compile(r'^\s*([\w\s]+)\s*\(\s*(.*)\s*\)\s*$'),
         }
-
-    def get_csv_fields(self, fpath, hrow=0, delimiter=None):
-        """
-        Returns plain text field names
-        :param fpath: Plot import file absolute path
-        :type fpath: String
-        :param hrow: Header row number
-        :type hrow: Integer
-        :param delimiter: Delimiter
-        :type delimiter: String
-        :return fields: CSV field names
-        :rtype fields: List
-        """
-        if self.is_pdf(fpath):
-            return
-        try:
-            with open(fpath, 'r') as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=delimiter)
-                fields = next(
-                    (data for row, data in enumerate(csv_reader) if row == hrow), []
-                )
-                return fields
-        except (csv.Error, Exception) as e:
-            raise e
 
     def geometry_type(self, fpath, hrow=0, delimiter=None):
         """
@@ -90,12 +78,12 @@ class Plot(object):
                     for value in data:
                         if value is None or isinstance(value, list):
                             continue
-                        geo_type, geom = self._geometry(value)
-                        if geo_type:
-                            if geo_type not in match_count:
-                                match_count[geo_type] = 0
+                        geom_type, geom = self._geometry(value)
+                        if geom_type:
+                            if geom_type not in match_count:
+                                match_count[geom_type] = 0
                                 continue
-                            match_count[geo_type] += 1
+                            match_count[geom_type] += 1
                 return self._default_geometry_type(match_count)
         except (csv.Error, Exception) as e:
             raise e
@@ -119,38 +107,37 @@ class Plot(object):
         Returns geometry and geometry type given WKT data
         :param wkt: WKT data
         :type wkt: String
-        :return geo_type: Geometry type
-        :rtype geo_type: String
+        :return geom_type: Geometry type
+        :rtype geom_type: String
         :return geom: Geometry
         :rtype geom: QgsGeometry
         """
-        geo_type = geom = None
+        geom_type = geom = None
         matches = self._reg_exes["type_str"].match(wkt)
         if matches:
-            geo_type, coordinates = matches.groups()
+            geom_type, coordinates = matches.groups()
             geom = QgsGeometry.fromWkt(wkt.strip())
-            if geo_type:
-                geo_type = geo_type.strip()
-                geo_type = geo_type.lower().capitalize()
-        return geo_type, geom
+            if geom_type:
+                geom_type = geom_type.strip()
+                geom_type = geom_type.lower().capitalize()
+        return geom_type, geom
 
-    def _default_geometry_type(self, type_count):
+    @staticmethod
+    def _default_geometry_type(type_count):
         """
         Returns default plot import file geometry type
         :param type_count: Geometry type count
         :type type_count: Dictionary
-        :return geo_type: Default geometry type
-        :rtype geo_type: String
+        :return geom_type: Default geometry type
+        :rtype geom_type: String
         """
-        geo_type = None
+        geom_type = None
         if type_count:
-            geo_type = max(
+            geom_type = max(
                 type_count.iterkeys(),
                 key=lambda k: type_count[k]
             )
-            geo_type = self._geometry_types.get(geo_type)
-        geo_type = geo_type if geo_type else "Detect"
-        return geo_type
+        return geom_type
 
     @property
     def _geometry_types(self):
@@ -162,6 +149,17 @@ class Plot(object):
         return OrderedDict({
             "Point": "Point", "Linestring": "Line", "Polygon": "Polygon"
         })
+
+    @staticmethod
+    def _decoration_tooltip(tip):
+        """
+        Returns decoration role tooltip item
+        :param tip: Tooltip message
+        :type tip: String
+        :return: Decoration tooltip item
+        :return: Item
+        """
+        return Item([Qt.DecorationRole, Qt.ToolTipRole], unicode(tip))
 
 
 class PlotPreview(Plot):
@@ -177,88 +175,180 @@ class PlotPreview(Plot):
         """
         super(PlotPreview, self).__init__()
         self._data_service = data_service
-        self._file_settings = file_settings
+        self._items = None
+        self._header_row = file_settings.get(HEADER_ROW) - 1
+        self._delimiter = str(file_settings.get(DELIMITER).split(" ")[0])
+        self._geom_type = file_settings.get(GEOM_TYPE)
         self._fpath = file_settings.get("fpath")
+        self._file_fields = file_settings.get("fields")
 
+    def load(self):
+        """
+        Loads plot import file contents
+        :return: Plot import file data settings
+        :rtype: List
+        """
+        try:
+            qfile = QFile(self._fpath)
+            if not qfile.open(QIODevice.ReadOnly):
+                raise IOError(unicode(qfile.errorString()))
+            return self._file_contents(self._fpath)
+        except(IOError, OSError, csv.Error, NotImplementedError, Exception) as e:
+            raise e
 
+    def _file_contents(self, fpath):
+        """
+        Returns plot import file contents
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return results: Plot import file contents
+        :rtype results: List
+        """
+        results = []
+        try:
+            with open(fpath, 'r') as csv_file:
+                clean_line = self._filter_whitespace(csv_file, self._header_row)
+                csv_reader = csv.DictReader(
+                    clean_line,
+                    fieldnames=self._file_fields,
+                    delimiter=self._delimiter
+                )
+                self._geom_type = self._geometry_type()
+                for row, data in enumerate(csv_reader):
+                    contents = {}
+                    self._items = {}
+                    contents[PARCEL_NUM] = unicode(
+                        self._get_value(data, ("parcel", "id"), PARCEL_NUM)
+                    )
+                    # Generate UPI Number
+                    # Geometry
+                    value = self._get_value(data, ("area",), AREA)
+                    contents[AREA] = self._to_float(value, AREA)
+                    contents["items"] = self._items
+                    results.append(contents)
+        except (csv.Error, Exception) as e:
+            raise e
+        return results
 
+    @staticmethod
+    def _filter_whitespace(in_file, hrow):
+        """
+        Returns non-whitespace line of data
+        :param in_file: Input file
+        :param in_file: TextIOWrapper
+        :param hrow: Header row number
+        :type hrow: Integer
+        :return line: Non-whitespace line
+        :return line: generator
+        """
+        for row, line in enumerate(in_file):
+            if row == hrow:
+                continue
+            if not line.isspace():
+                yield line
 
-    # def _set_columns(self):
-    #     """
-    #     Sets columns for the plot preview table view
-    #     """
-    #     fields = self.get_csv_fields(
-    #         self._fpath,
-    #         self._file_settings[HEADER_ROW],
-    #         self._file_settings[DELIMITER]
-    #     )
-    #     self._data_service.set_columns("Parcel Number", "text", (False,), "TBA")
-    #     self._data_service.set_columns("UPI Number", "text", (False,), "TBA")
-    #     self._set_wkt_columns(fields)
-    #     if not self._is_field_area(fields):
-    #         self._data_service.set_columns("Area", "text", (False,), "TBA")
-    #
-    # def _set_wkt_columns(self, fields):
-    #     """
-    #     Sets columns from the plain text file
-    #     :return fields: CSV/txt field names
-    #     :rtype fields: List
-    #     """
-    #     for name in fields:
-    #         name = name.lower().capitalize()
-    #         self._data_service.set_columns(name, "text", (False, ), "TBA")
-    #
-    # @staticmethod
-    # def _is_field_area(fields):
-    #     """
-    #     Checks if area field is in the plot import file
-    #     :param fields: Plot import file fields
-    #     :type fields: List
-    #     :return: True
-    #     :type: Boolean
-    #     """
-    #     for name in fields:
-    #         if str(name.lower()).find("area") != -1:
-    #             return True
-    #
-    # @staticmethod
-    # def _is_field_parcel(fields):
-    #     """
-    #     Checks if parcel field is in the CSV plot import file
-    #     :param fields: Plot import file fields
-    #     :type fields: List
-    #     :return: True
-    #     :type: Boolean
-    #     """
-    #     for name in fields:
-    #         if str(name.lower()).find("area") != -1:
-    #             return True
-    #
-    # @staticmethod
-    # def _find_text(str_, text):
-    #     """
-    #     Returns positive index if text is found. Otherwise -1.
-    #     :param str_: Base string to be searched on
-    #     :type str_: String
-    #     :param text: Text to be searched
-    #     :type text: String
-    #     :return: Index of found text. Otherwise -1
-    #     :return: Integer
-    #     """
-    #     str_ = str(str_).lower()
-    #     text = str(text).lower()
-    #     return str_.find(text)
+    def _geometry_type(self):
+        """
+        Returns dominant geometry type of
+        loaded plot import file
+        :return _geom_type: Dominant geometry type
+        :rtype _geom_type: String
+        """
+        if self._geom_type not in self._geometry_types.values():
+            self._geom_type = self.geometry_type(
+                self._fpath, self._header_row, self._delimiter
+            )
+        return self._geom_type
 
+    def _get_value(self, data, field_names, column):
+        """
+        Returns plot import file value given field names
+        :param data: Plot import file contents
+        :type data: generator
+        :param field_names: Plot import file field names
+        :type field_names: Tuple/List
+        :param column: Table view column position
+        :type column: Integer
+        :return value: Plot import
+        :return value: Object
+        """
+        value = self._field_value(data, field_names)
+        if not value:
+            value = "Warning"
+            self._items[column] = self._decoration_tooltip("Missing value")
+        return value
 
+    @staticmethod
+    def _field_value(data, field_names):
+        """
+        Returns plot import file field value given field names
+        :param data: Plot import file contents
+        :type data: generator
+        :param field_names: Plot import file field names
+        :type field_names: Tuple/List
+        :return value: Plot import file field value
+        :rtype value: Object
+        """
+        fields = {name.lower(): name for name in data.keys()}
+        for name in field_names:
+            name = name.lower()
+            if name in fields:
+                return data.get(fields[name])
 
+    def _to_float(self, value, column):
+        """
+        Casts value to float
+        :param value: Value object
+        :type value: Object
+        :param column: Table view column position
+        :type column: Integer
+        :return value: Float or other object types
+        :return value: Object
+        """
+        if self._is_number(value):
+            value = float(value)
+        else:
+            if value != "Warning":
+                self._items[column] = \
+                    self._display_tooltip("Value is not a number")
+        return value
 
-class Item:
-    """
-    Items associated properties
-    """
-    def __init__(self, flags=None, tootltip=None):
-        self.flags = flags if flags else []
-        self.tooltip = tootltip
+    @staticmethod
+    def _is_number(value):
+        """
+        Checks if value is a number
+        :param value: Input value
+        :type value: Object
+        :return: True if number otherwise return False
+        :rtype: Boolean
+        """
+        try:
+            float(value)
+            return True
+        except (ValueError, TypeError, Exception):
+            return False
+
+    @staticmethod
+    def _display_tooltip(tip):
+        """
+        Returns display and decoration role tooltip item
+        :param tip: Tooltip message
+        :type tip: String
+        :return: Decoration tooltip item
+        :return: Item
+        """
+        return Item(
+            [Qt.DisplayRole, Qt.DecorationRole, Qt.ToolTipRole],
+            unicode(tip)
+        )
+
+    def get_headers(self):
+        """
+        Returns column label configurations
+        :return: Column/headers configurations - name and flags
+        :rtype: List
+        """
+        return self._data_service.columns
 
 
 class PlotFile(Plot):
@@ -407,8 +497,8 @@ class PlotFile(Plot):
                     for value in data:
                         if value is None or isinstance(value, list):
                             continue
-                        geo_type, geom = self._geometry(value)
-                        if geom and geo_type in self._geometry_types:
+                        geom_type, geom = self._geometry(value)
+                        if geom:
                             count += 1
                 total_rows = self.row_count(fpath)
                 if self._calc_ratio(total_rows, sample_size, count) < 0.5:
@@ -446,20 +536,24 @@ class PlotFile(Plot):
                         if not self.is_pdf(fpath) else unicode("")
                 elif pos == GEOM_FIELD:
                     fields = self.get_csv_fields(fpath, row, delimiter)
+                    settings["fields"] = fields
                     if fields:
                         fields = self.geometry_field(fpath, fields, row, delimiter)
                     else:
                         fields = ""
                     settings[pos] = unicode(fields)
                 elif pos == GEOM_TYPE:
-                    geo_type = self.geometry_type(fpath, row, delimiter)
-                    settings[pos] = unicode(geo_type) if geo_type else ""
+                    geom_type = self.geometry_type(fpath, row, delimiter)
+                    if geom_type and not self._geometry_types.get(geom_type):
+                        geom_type = "Detect"
+                    elif not geom_type:
+                        geom_type = ""
+                    settings[pos] = unicode(geom_type)
                 elif pos == CRS_ID:
                     if not self.is_pdf(fpath):
                         settings[pos] = unicode("Warning")
-                        tooltip = unicode("Missing Coordinate Reference System (CRS)")
-                        item = Item([Qt.DecorationRole, Qt.ToolTipRole], tooltip)
-                        items[pos] = item
+                        tip = "Missing Coordinate Reference System (CRS)"
+                        items[pos] = self._decoration_tooltip(tip)
                 settings["items"] = items
                 settings["fpath"] = unicode(fpath)
         except (csv.Error, Exception) as e:

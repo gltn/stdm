@@ -651,7 +651,7 @@ class PlotImportPreviewDataService:
         :return: True for vertical headers or False otherwise
         :rtype: Boolean
         """
-        return False
+        return True
 
     @property
     def icons(self):

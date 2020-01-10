@@ -794,10 +794,10 @@ configurations = {
         Column(name='Type', type="list", flag=(Qt.TextColorRole, Qt.ItemIsEditable))
     ],
     'plot_preview_columns': [
-        {Column(name='Parcel Number', type="text", flag=(False,)): 'PN'},
-        {Column(name='UPI  Number', type="text", flag=(False,)): 'UN'},
-        {Column(name='Geometry', type="text", flag=(False,)): 'GEOM'},
-        {Column(name='Area', type="float", flag=(False,)): 'AREA'}
+        Column(name='Parcel Number', type="text", flag=(False,)),
+        # Column(name='UPI Number', type="text", flag=(False,)),
+        # Column(name='Geometry', type="text", flag=(False,)),
+        Column(name='Area', type="float", flag=(False,))
     ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),

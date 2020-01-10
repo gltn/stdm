@@ -25,7 +25,7 @@ from stdm.ui.flts.workflow_manager.config import (
 )
 from stdm.ui.flts.workflow_manager.plot import(
     PlotFile,
-    # PlotPreview,
+    PlotPreview,
 )
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
@@ -48,7 +48,7 @@ class PlotImportWidget(QWidget):
         self._preview_service = data_service["plot_preview"]
         self._preview_service = self._preview_service()
         self._plot_file = PlotFile(self._file_service)
-        # _plot_preview = PlotPreview
+        self._plot_preview = None
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -57,6 +57,7 @@ class PlotImportWidget(QWidget):
         self._preview_button = toolbar["Preview"]
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style
+
         self._file_table_view = QTableView(self)
         self.model = WorkflowManagerModel(self._file_service)
         self._file_table_view.setModel(self.model)
@@ -68,7 +69,10 @@ class PlotImportWidget(QWidget):
         self._file_table_view.horizontalHeader().setStyleSheet(style)
         self._file_table_view.setSelectionBehavior(QTableView.SelectRows)
         self._file_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
+
         self._preview_table_view = QTableView(self)
+        self._preview_model = WorkflowManagerModel(self._preview_service)
+        self._preview_table_view.setModel(self._preview_model)
         self._preview_table_view.setShowGrid(False)
         self._preview_table_view.horizontalHeader().setStyleSheet(header_style)
         self._preview_table_view.setSelectionBehavior(QTableView.SelectRows)
@@ -168,7 +172,7 @@ class PlotImportWidget(QWidget):
 
     def _preview(self):
         """
-        Previews plot import file content
+        Previews selected plot import file content
         """
         index = self._current_index(self._file_table_view)
         if index is None:
@@ -184,7 +188,24 @@ class PlotImportWidget(QWidget):
                     "Kindly set it to preview."
                 )
                 return
-            # self._plot_preview(self._preview_service, settings)
+            self._plot_preview = PlotPreview(self._preview_service, settings)
+            self._preview_load()
+
+    def _preview_load(self):
+        """
+        Loads selected plot import file content
+        """
+        try:
+            self._preview_model.load(self._plot_preview)
+            self._preview_model.refresh()
+        except(IOError, OSError, Exception) as e:
+            self._show_critical_message(
+                "Workflow Manager - Plot Preview",
+                "Failed to load: {}".format(e)
+            )
+        else:
+            self._preview_table_view.horizontalHeader().\
+                setStretchLastSection(True)
 
     def _is_crs(self, row):
         """

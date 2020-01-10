@@ -65,7 +65,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             if isinstance(value, float):
                 return Qt.Checked if int(value) == 1 else Qt.Unchecked
         elif role == Qt.TextAlignmentRole:
-            if Qt.ItemIsUserCheckable in flag or Qt.DecorationRole in flag:
+            if Qt.ItemIsUserCheckable in flag:
                 return int(Qt.AlignCenter | Qt.AlignVCenter)
             return int(Qt.AlignLeft | Qt.AlignVCenter)
         return
