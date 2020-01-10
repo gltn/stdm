@@ -177,11 +177,20 @@ class PlotPreview(Plot):
         super(PlotPreview, self).__init__()
         self._data_service = data_service
         self._items = None
+        self._num_errors = 0
         self._header_row = file_settings.get(HEADER_ROW) - 1
         self._delimiter = str(file_settings.get(DELIMITER).split(" ")[0])
         self._geom_type = file_settings.get(GEOM_TYPE)
         self._fpath = file_settings.get("fpath")
         self._file_fields = file_settings.get("fields")
+
+    def num_errors(self):
+        """
+        Returns number of errors encountered on preview
+        :return: Number of errors on preview
+        :return: Integer
+        """
+        return self._num_errors
 
     def load(self):
         """
@@ -206,6 +215,7 @@ class PlotPreview(Plot):
         :rtype results: List
         """
         results = []
+        self._num_errors = 0
         try:
             with open(fpath, 'r') as csv_file:
                 clean_line = self._filter_whitespace(csv_file, self._header_row)
@@ -278,6 +288,7 @@ class PlotPreview(Plot):
         if not str(value) or not str(value).strip():
             value = "Warning"
             self._items[column] = self._decoration_tooltip("Missing value")
+            self._num_errors += 1
         return value
 
     @staticmethod
@@ -313,6 +324,7 @@ class PlotPreview(Plot):
             if value != "Warning":
                 self._items[column] = \
                     self._display_tooltip("Value is not a number", "Warning")
+                self._num_errors += 1
         return value
 
     @staticmethod
