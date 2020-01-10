@@ -49,16 +49,10 @@ class WorkflowManagerModel(QAbstractTableModel):
         column = index.column()
         value = result.get(column)
         flag = self._item_flag(index)
-        if role == Qt.DisplayRole and (
-                Qt.ItemIsUserCheckable not in flag and
-                Qt.DecorationRole not in flag
-        ):
+        if role == Qt.DisplayRole and Qt.DisplayRole in flag:
             return value
         elif role == Qt.DecorationRole and Qt.DecorationRole in flag:
-            if self._icons:
-                if isinstance(value, float):
-                    value = float(value)
-                return self._icons.get(value)
+            return self._item_icon(index)
         elif role == Qt.ToolTipRole and Qt.ToolTipRole in flag:
             return self._item_tooltip(index)
         elif role == Qt.CheckStateRole and Qt.ItemIsUserCheckable in flag:
@@ -172,7 +166,7 @@ class WorkflowManagerModel(QAbstractTableModel):
         if item:
             item = item.get(column)
             if item and item.flags:
-                flag = list(flag)
+                flag = [f for f in flag if f != Qt.DisplayRole]
                 flag.extend(item.flags)
         return flag
 
@@ -190,6 +184,39 @@ class WorkflowManagerModel(QAbstractTableModel):
         if item:
             item = item.get(column)
             return item.tooltip if item else None
+
+    def _item_icon(self, index):
+        """
+        Returns item icon on decoration role
+        :param index: Table view item identifier
+        :type index: QModelIndex or Boolean
+        :return: Item icon
+        :rtype: QIcon
+        """
+        result = self.results[index.row()]
+        value = result.get(index.column())
+        if self._icons:
+            icon_id = self._item_icon_id(index)
+            if icon_id:
+                value = icon_id
+            elif isinstance(value, float):
+                value = int(value)
+            return self._icons.get(value)
+
+    def _item_icon_id(self, index):
+        """
+        Returns item icon identifier
+        :param index: Table view item identifier
+        :type index: QModelIndex or Boolean
+        :return: Icon identifier
+        :rtype: String
+        """
+        column = index.column()
+        result = self.results[index.row()]
+        item = result.get("items")
+        if item:
+            item = item.get(column)
+            return item.icon_id if item else None
 
     def get_record_id(self, row=0):
         """

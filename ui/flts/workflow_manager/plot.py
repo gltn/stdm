@@ -38,9 +38,10 @@ class Item:
     """
     Items associated properties
     """
-    def __init__(self, flags=None, tootltip=None):
+    def __init__(self, flags=None, tootltip=None, icon_id=None):
         self.flags = flags if flags else []
         self.tooltip = tootltip
+        self.icon_id = icon_id
 
 
 class Plot(object):
@@ -310,7 +311,7 @@ class PlotPreview(Plot):
         else:
             if value != "Warning":
                 self._items[column] = \
-                    self._display_tooltip("Value is not a number")
+                    self._display_tooltip("Value is not a number", "Warning")
         return value
 
     @staticmethod
@@ -329,17 +330,20 @@ class PlotPreview(Plot):
             return False
 
     @staticmethod
-    def _display_tooltip(tip):
+    def _display_tooltip(tip, icon_id):
         """
         Returns display and decoration role tooltip item
         :param tip: Tooltip message
         :type tip: String
+        :param icon_id: Icon identifier
+        :type icon_id: String
         :return: Decoration tooltip item
         :return: Item
         """
         return Item(
             [Qt.DisplayRole, Qt.DecorationRole, Qt.ToolTipRole],
-            unicode(tip)
+            unicode(tip),
+            icon_id
         )
 
     def get_headers(self):
