@@ -218,9 +218,10 @@ class PlotPreview(Plot):
                 for row, data in enumerate(csv_reader):
                     contents = {}
                     self._items = {}
-                    contents[PARCEL_NUM] = unicode(
-                        self._get_value(data, ("parcel", "id"), PARCEL_NUM)
+                    value = self._get_value(
+                        data, ("parcel", "parcel number", "id"), PARCEL_NUM
                     )
+                    contents[PARCEL_NUM] = unicode(value)
                     # Generate UPI Number
                     # Geometry
                     value = self._get_value(data, ("area",), AREA)
