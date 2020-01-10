@@ -275,7 +275,7 @@ class PlotPreview(Plot):
         :return value: Object
         """
         value = self._field_value(data, field_names)
-        if not value:
+        if not str(value) or not str(value).strip():
             value = "Warning"
             self._items[column] = self._decoration_tooltip("Missing value")
         return value
