@@ -31,7 +31,7 @@ NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
 # PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
-PARCEL_NUM, AREA = range(2)
+PARCEL_NUM, GEOMETRY, AREA = range(3)
 
 
 class Item:
@@ -180,6 +180,7 @@ class PlotPreview(Plot):
         self._num_errors = 0
         self._header_row = file_settings.get(HEADER_ROW) - 1
         self._delimiter = self._get_delimiter(file_settings.get(DELIMITER))
+        self._geom_field = file_settings.get(GEOM_FIELD)
         self._geom_type = file_settings.get(GEOM_TYPE)
         self._fpath = file_settings.get("fpath")
         self._file_fields = file_settings.get("fields")
@@ -242,16 +243,18 @@ class PlotPreview(Plot):
                 for row, data in enumerate(csv_reader):
                     contents = {}
                     self._items = {}
-                    value = self._get_value(
-                        data, ("parcel", "parcel number", "id"), PARCEL_NUM
-                    )
-                    contents[PARCEL_NUM] = unicode(value)
-                    # Generate UPI Number
-                    # Geometry
-                    value = self._get_value(data, ("area",), AREA)
-                    contents[AREA] = self._to_float(value, AREA)
-                    contents["items"] = self._items
-                    results.append(contents)
+                    value = self._get_wkt(data, GEOMETRY)
+                    if value:
+                        contents[GEOMETRY] = unicode(value)
+                        value = self._get_value(
+                            data, ("parcel", "parcel number", "id"), PARCEL_NUM
+                        )
+                        contents[PARCEL_NUM] = unicode(value)
+                        # Generate UPI Number
+                        value = self._get_value(data, ("area",), AREA)
+                        contents[AREA] = self._to_float(value, AREA)
+                        contents["items"] = self._items
+                        results.append(contents)
         except (csv.Error, Exception) as e:
             raise e
         return results
@@ -284,7 +287,42 @@ class PlotPreview(Plot):
             self._geom_type = self.geometry_type(
                 self._fpath, self._header_row, self._delimiter
             )
+            type = self._geometry_types.get(self._geom_type)
+            self._geom_type = type if type else self._geom_type
         return self._geom_type
+
+    def _get_wkt(self, data, column):
+        """
+        Returns plot import file wkt value
+        :param data: Plot import file contents
+        :type data: generator
+        :param column: Table view column position
+        :type column: Integer
+        :return value: Plot import file value
+        :return value: Object
+        """
+        invalid_tip = self._display_tooltip("Invalid WKT", "Warning")
+        value = data.get(self._geom_field)
+        if value is None:
+            return
+        elif isinstance(value, list):
+            self._items[column] = invalid_tip
+            return value
+        geom_type, geom = self._geometry(value)
+        if not geom:
+            self._items[column] = invalid_tip
+            return value
+        else:
+            geom_type = self._geometry_types.get(geom_type)
+            if not geom_type:
+                self._items[column] = self._display_tooltip(
+                    "Geometry type not allowed", "Warning"
+                )
+            elif geom_type != self._geom_type:
+                self._items[column] = self._display_tooltip(
+                    "Does not match set geometry type", "Warning"
+                )
+            return value
 
     def _get_value(self, data, field_names, column):
         """
@@ -295,13 +333,15 @@ class PlotPreview(Plot):
         :type field_names: Tuple/List
         :param column: Table view column position
         :type column: Integer
-        :return value: Plot import
+        :return value: Plot import file value
         :return value: Object
         """
         value = self._field_value(data, field_names)
-        if not str(value) or not str(value).strip():
+
+        if value is None or not str(value).strip():
             value = "Warning"
-            self._items[column] = self._decoration_tooltip("Missing value")
+            self._items[column] = \
+                self._decoration_tooltip("Missing value")
             self._num_errors += 1
         return value
 
@@ -575,10 +615,9 @@ class PlotFile(Plot):
                     settings[pos] = unicode(fields)
                 elif pos == GEOM_TYPE:
                     geom_type = self.geometry_type(fpath, row, delimiter)
-                    if geom_type and not self._geometry_types.get(geom_type):
+                    geom_type = self._geometry_types.get(geom_type)
+                    if not geom_type:
                         geom_type = "Detect"
-                    elif not geom_type:
-                        geom_type = ""
                     settings[pos] = unicode(geom_type)
                 elif pos == CRS_ID:
                     if not self.is_pdf(fpath):
