@@ -33,6 +33,8 @@ GEOM_FIELD, GEOM_TYPE = range(7)
 # PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
 PARCEL_NUM, GEOMETRY, AREA = range(3)
 
+WARNING = "Warning"
+
 
 class Item:
     """
@@ -301,7 +303,7 @@ class PlotPreview(Plot):
         :return value: Plot import file value
         :return value: Object
         """
-        invalid_tip = self._display_tooltip("Invalid WKT", "Warning")
+        invalid_tip = self._display_tooltip("Invalid WKT", WARNING)
         value = data.get(self._geom_field)
         if value is None:
             return
@@ -316,11 +318,11 @@ class PlotPreview(Plot):
             geom_type = self._geometry_types.get(geom_type)
             if not geom_type:
                 self._items[column] = self._display_tooltip(
-                    "Geometry type not allowed", "Warning"
+                    "Geometry type not allowed", WARNING
                 )
             elif geom_type != self._geom_type:
                 self._items[column] = self._display_tooltip(
-                    "Does not match set geometry type", "Warning"
+                    "Does not match set geometry type", WARNING
                 )
             return value
 
@@ -339,7 +341,7 @@ class PlotPreview(Plot):
         value = self._field_value(data, field_names)
 
         if value is None or not str(value).strip():
-            value = "Warning"
+            value = WARNING
             self._items[column] = \
                 self._decoration_tooltip("Missing value")
             self._num_errors += 1
@@ -375,9 +377,9 @@ class PlotPreview(Plot):
         if self._is_number(value):
             value = float(value)
         else:
-            if value != "Warning":
+            if value != WARNING:
                 self._items[column] = \
-                    self._display_tooltip("Value is not a number", "Warning")
+                    self._display_tooltip("Value is not a number", WARNING)
                 self._num_errors += 1
         return value
 
@@ -621,7 +623,7 @@ class PlotFile(Plot):
                     settings[pos] = unicode(geom_type)
                 elif pos == CRS_ID:
                     if not self.is_pdf(fpath):
-                        settings[pos] = unicode("Warning")
+                        settings[pos] = unicode(WARNING)
                         tip = "Missing Coordinate Reference System (CRS)"
                         items[pos] = self._decoration_tooltip(tip)
                 settings["items"] = items
