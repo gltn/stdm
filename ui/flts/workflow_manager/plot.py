@@ -322,7 +322,7 @@ class PlotPreview(Plot):
         """
         super(PlotPreview, self).__init__()
         self._data_service = data_service
-        self._items = None
+        self._items = self._plot_layer = None
         self._num_errors = 0
         self._header_row = file_settings.get(HEADER_ROW) - 1
         self._delimiter = self._get_delimiter(file_settings.get(DELIMITER))
@@ -400,6 +400,12 @@ class PlotPreview(Plot):
                         value = self._get_value(data, ("area",), AREA)
                         contents[AREA] = self._to_float(value, AREA)
                         contents["items"] = self._items
+                        attributes = self._layer_attributes(contents)
+                        #
+                        # # TODO: Start edit
+                        # self._create_layer(contents[GEOMETRY], attributes)
+                        # # TODO: End edit
+
                         results.append(contents)
         except (csv.Error, Exception) as e:
             raise e
@@ -558,6 +564,34 @@ class PlotPreview(Plot):
             unicode(tip),
             icon_id
         )
+
+    def _layer_attributes(self, contents):
+        """
+        Returns layer attributes
+        :param contents: Plot import file contents
+        :type contents: Dictionary
+        :return attributes: Layer attributes
+        :rtype attributes: Dictionary
+        """
+        attributes = {}
+        headers = self.get_headers()
+        for key, value in contents.items():
+            if key == GEOMETRY or key == 'items':
+                continue
+            name = headers[key].name
+            name = "_".join(name.split())[:10]
+            attributes[name] = value
+        return attributes
+
+    def _create_layer(self, wkt, attributes):
+        """
+        Creates a  vector layer
+        :param wkt: WKT data
+        :type wkt: String
+        :param attributes:
+        :return:
+        """
+        pass
 
     def get_headers(self):
         """
