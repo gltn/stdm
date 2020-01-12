@@ -23,9 +23,17 @@ from PyQt4.QtCore import (
     Qt,
     QFile,
     QFileInfo,
-    QIODevice
+    QIODevice,
+    QVariant
 )
-from qgis.core import QgsGeometry
+from qgis.core import (
+    QgsFeature,
+    QgsField,
+    QgsGeometry,
+    QgsMapLayerRegistry,
+    QgsProject,
+    QgsVectorLayer
+)
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
@@ -34,6 +42,142 @@ GEOM_FIELD, GEOM_TYPE = range(7)
 PARCEL_NUM, GEOMETRY, AREA = range(3)
 
 WARNING = "Warning"
+
+
+class PlotLayer:
+    """
+    Manages preview of plot geometric shape in a layer
+    """
+    def __init__(self, uri, name, provider_lib="memory", fields=None):
+        self._uri = uri
+        self._name = name
+        self._provider_lib = provider_lib
+        self._fields = fields
+        self._data_provider = None
+        self._layer = None
+
+    def layer(self):
+        """
+        Returns created layer
+        :return _layer: Layer
+        :rtype _layer: QgsVectorLayer
+        """
+        return self._layer
+
+    def _create_layer(self):
+        """
+        Creates a vector layer
+        """
+        self._layer = QgsVectorLayer(self._uri, self._name, self._provider_lib)
+        self._set_data_provider()
+        self._layer.updateFields()
+        self._project_instance().addMapLayer(self._layer)
+
+    def _set_data_provider(self):
+        """
+        Sets the data provider
+        """
+        self._data_provider = self._layer.dataProvider()
+        fields = self._attribute_fields
+        if fields:
+            self._data_provider.addAttributes(fields)
+
+    @property
+    def _attribute_fields(self):
+        """
+        Returns QGIS attribute fields
+        :return fields: QGIS attribute fields
+        :rtype fields: QgsField
+        """
+        if not self._fields:
+            return
+        fields = [QgsField(name, type_)for name, type_ in self._fields]
+        return fields
+
+    def _wkt_geometry(self, wkt, attributes):
+        """
+        Creates geometry from WKT and
+        displays it in the map canvas
+        :param wkt: Well-Known Text(WKT)
+        :type wkt: String
+        :param attributes: Attribute values
+        :type attributes: Dictionary
+        """
+        geom = QgsGeometry.fromWkt(wkt)
+        if not geom:
+            return
+        feature = QgsFeature()
+        feature.setGeometry(geom)
+        feature.setAttributes(self._attribute_values(attributes))
+        self._data_provider.addFeature(feature)
+
+    def _attribute_values(self, attributes):
+        """
+        Returns attribute values given the attribute names
+        :param attributes: Attribute values
+        :type attributes: Dictionary
+        :return values: Attribute values
+        :return values: Object
+        """
+        if not self._fields:
+            fields = self.get_fields(self._layer)
+            self._fields = self._field_types(fields)
+        values = [attributes.get(name) for name, type_ in self._fields]
+        return values
+
+    @staticmethod
+    def get_fields(layer):
+        """
+        Returns a list of layer fields
+        :param layer: Geometry layer
+        :type layer: QgsVectorLayer
+        """
+        return layer.dataProvider().fields()
+
+    @staticmethod
+    def _field_types(fields):
+        """
+        Returns a list of layer fields and types
+        :param fields: Layer fields
+        :type fields: QgsField
+        """
+        if len(fields) > 0:
+            fields = [(field.name(), field.type()) for field in fields]
+            return fields
+
+    def update_extents(self, layer=None):
+        """
+        Updates layer extent
+        :param layer: QgsVectorLayer
+        :type layer: QgsVectorLayer
+        """
+        if not layer:
+            layer = self._layer
+        layer.updateExtents()
+
+    def remove_layer(self, name):
+        """
+        Removes a layer from the project
+        :param name: Layer name
+        :type name: String
+        """
+        project = self._project_instance()
+        layer = project.mapLayersByName(name)
+        if len(layer) > 0:
+            project.removeMapLayer(layer[0].id())
+
+    @staticmethod
+    def _project_instance():
+        """
+        Returns the instance pointer
+        :return:
+        """
+        try:
+            instance = QgsProject.instance()
+        except:
+            instance = QgsMapLayerRegistry.instance()
+        else:
+            return instance
 
 
 class Item:
