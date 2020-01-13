@@ -34,6 +34,7 @@ from qgis.core import (
     QgsProject,
     QgsVectorLayer
 )
+from qgis.utils import iface
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
@@ -55,6 +56,7 @@ class PlotLayer:
         self._fields = fields
         self._data_provider = None
         self._layer = None
+        self._project_instance().legendLayersAdded.connect(self._move_layer_top)
 
     def layer(self):
         """
@@ -144,6 +146,18 @@ class PlotLayer:
         if len(fields) > 0:
             fields = [(field.name(), field.type()) for field in fields]
             return fields
+
+    @staticmethod
+    def _move_layer_top(layers):
+        """
+        On new layer, move it to the top of the Layer Order Panel
+        :param layers: List of layers
+        :type layers: List
+        """
+        order = iface.layerTreeCanvasBridge().customLayerOrder()
+        for _ in layers:
+            order.insert(0, order.pop())
+        iface.layerTreeCanvasBridge().setCustomLayerOrder(order)
 
     def add_map_layer(self):
         """
