@@ -632,14 +632,10 @@ class PlotPreview(Plot):
         :param attributes:
         :return:
         """
-        geom_type, geom = self._geometry(wkt)
-        type_name = self._geometry_types.get(geom_type)
-        import_type = self._import_type.get(self._geom_type)
-        if not type_name or \
-                type_name != self._geom_type or \
-                import_type != self._import_as:
+        if not self._valid_setup(wkt):
             return
         # TODO: Find remove layer of similar name
+        geom_type, geom = self._geometry(wkt)
         uri = "{0}?crs={1}".format(geom_type, self._crs_id)
         fields = [(field, type_) for field, type_, value in attributes]
         if not self._plot_layer:
@@ -649,6 +645,24 @@ class PlotPreview(Plot):
             self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
         self._plot_layer.wkt_geometry(wkt, value)
+
+    def _valid_setup(self, wkt):
+        """
+        Checks if the setup items are
+        valid for layer creation
+        :param wkt: WKT data
+        :type wkt: String
+        :return: True if valid. Otherwise False
+        :rtype: Boolean
+        """
+        geom_type, geom = self._geometry(wkt)
+        type_name = self._geometry_types.get(geom_type)
+        import_type = self._import_type.get(self._geom_type)
+        if not type_name or \
+                type_name != self._geom_type or \
+                import_type != self._import_as:
+            return False
+        return True
 
     def _generate_layer_name(self):
         """
