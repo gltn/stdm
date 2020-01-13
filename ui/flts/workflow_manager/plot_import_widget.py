@@ -169,6 +169,7 @@ class PlotImportWidget(QWidget):
         self._plot_file.remove_filepath(fpath)
         self._enable_crs_button()
         if not self.model.results:
+            self.model.reset()
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
 

@@ -321,3 +321,12 @@ class WorkflowManagerModel(QAbstractTableModel):
         self._headers = []
         self.load(self._data_source)
         self.layoutChanged.emit()
+
+    def reset(self):
+        """
+        Resets model
+        """
+        self.beginResetModel()
+        self.results = []
+        self._headers = []
+        self.endResetModel()
