@@ -47,6 +47,7 @@ class PlotImportWidget(QWidget):
         self._file_service = self._file_service()
         self._preview_service = data_service["plot_preview"]
         self._preview_service = self._preview_service()
+        self._scheme_number = scheme_number
         self._plot_file = PlotFile(self._file_service)
         self._plot_preview = None
         import_component = PlotImportComponent()
@@ -83,12 +84,12 @@ class PlotImportWidget(QWidget):
         preview_layout = QVBoxLayout()
         preview_layout.addWidget(self._preview_table_view)
         file_groupbox = QGroupBox("Added files")
-        preview_groupbox = QGroupBox("File content")
+        self._preview_groupbox = QGroupBox("File content")
         file_groupbox.setLayout(file_layout)
-        preview_groupbox.setLayout(preview_layout)
+        self._preview_groupbox.setLayout(preview_layout)
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(file_groupbox)
-        splitter.addWidget(preview_groupbox)
+        splitter.addWidget(self._preview_groupbox)
         splitter.setStretchFactor(0, 2)
         splitter.setStretchFactor(1, 3)
         layout = QVBoxLayout()
@@ -189,8 +190,34 @@ class PlotImportWidget(QWidget):
                     "Kindly set it to preview."
                 )
                 return
-            self._plot_preview = PlotPreview(self._preview_service, settings)
+            self._plot_preview = PlotPreview(
+                self._preview_service, settings, self._scheme_number
+            )
             self._preview_load()
+            self._set_preview_groupbox_title(settings[NAME])
+
+    def _file_settings(self, row):
+        """
+        Returns plot import file data settings
+        :param row: Table view item identifier
+        :type row: QModelIndex
+        :return: Plot import file data settings
+        :rtype: Dictionary
+        """
+        return self.model.results[row]
+
+    def _is_crs(self, row):
+        """
+        Returns true if coordinate reference
+        system (CRS) has been set. Otherwise none
+        :param row: Table view item identifier
+        :type row: QModelIndex
+        :return: True
+        :return: Boolean
+        """
+        crs_id = self.model.data(self.model.index(row, CRS_ID))
+        if crs_id:
+            return True
 
     def _preview_load(self):
         """
@@ -208,19 +235,6 @@ class PlotImportWidget(QWidget):
             self._preview_table_view.horizontalHeader().\
                 setStretchLastSection(True)
 
-    def _is_crs(self, row):
-        """
-        Returns true if coordinate reference
-        system (CRS) has been set. Otherwise none
-        :param row: Table view item identifier
-        :type row: QModelIndex
-        :return: True
-        :return: Boolean
-        """
-        crs_id = self.model.data(self.model.index(row, CRS_ID))
-        if crs_id:
-            return True
-
     def _show_critical_message(self, title, msg):
         """
         Message box to communicate critical message
@@ -235,15 +249,16 @@ class PlotImportWidget(QWidget):
             self.tr(msg)
         )
 
-    def _file_settings(self, row):
+    def _set_preview_groupbox_title(self, title):
         """
-        Returns plot import file data settings
-        :param row: Table view item identifier
-        :type row: QModelIndex
-        :return: Plot import file data settings
-        :rtype: Dictionary
+        Sets the preview groupbox title
+        :param title: Groupbox title
+        :type title: String
         """
-        return self.model.results[row]
+        if len(title) > 20:
+            title = "{0}{1}".format(title[:20], "...")
+        title = "{0} {1}".format("File content:", title)
+        self._preview_groupbox.setTitle(title)
 
     def _show_question_message(self, title, msg):
         """

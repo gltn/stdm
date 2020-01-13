@@ -335,7 +335,7 @@ class PlotPreview(Plot):
     """
     type_count = {"Point": 1, "Line": 1, "Polygon": 1}
 
-    def __init__(self, data_service, file_settings):
+    def __init__(self, data_service, file_settings, scheme_number):
         """
         :param data_service: Plot preview data model service
         :type data_service: PlotImportFileDataService
@@ -344,6 +344,7 @@ class PlotPreview(Plot):
         """
         super(PlotPreview, self).__init__()
         self._data_service = data_service
+        self._scheme_number = scheme_number
         self._items = self._plot_layer = None
         self._num_errors = 0
         self._import_type = {"Point": "Beacons", "Line": "Servitudes", "Polygon": "Plots"}
@@ -656,7 +657,7 @@ class PlotPreview(Plot):
         :rtype layer_name: String
         """
         layer_name = "{0}_{1}_{2}".format(
-            "xxxxx",
+            self._scheme_number,
             self._import_type.get(self._geom_type),
             self.type_count[self._geom_type]
         )
