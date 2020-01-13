@@ -615,7 +615,7 @@ class PlotPreview(Plot):
         uri = "{0}?crs={1}".format(geom_type, self._crs_id)
         fields = [(field, type_) for field, type_, value in attributes]
         if not self._plot_layer:
-            name = "Test_Layer"  # TODO: Generate layer name (SchemeNumber-Type)
+            name = "Test_Layer"  # TODO: Automatically Generate layer name (SchemeNumber-Type)
             self._plot_layer = PlotLayer(uri, name, fields=fields)
             self._plot_layer.create_layer()
         value = {field: value for field, type_, value in attributes}
