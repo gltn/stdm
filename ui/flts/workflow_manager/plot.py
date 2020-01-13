@@ -333,6 +333,8 @@ class PlotPreview(Plot):
     """
     Manages preview of plot import data file contents
     """
+    type_count = {"Point": 1, "Line": 1, "Polygon": 1}
+
     def __init__(self, data_service, file_settings):
         """
         :param data_service: Plot preview data model service
@@ -344,11 +346,13 @@ class PlotPreview(Plot):
         self._data_service = data_service
         self._items = self._plot_layer = None
         self._num_errors = 0
+        self._import_type = {"Point": "Beacons", "Line": "Servitudes", "Polygon": "Plots"}
         self._header_row = file_settings.get(HEADER_ROW) - 1
         self._delimiter = self._get_delimiter(file_settings.get(DELIMITER))
         self._geom_field = file_settings.get(GEOM_FIELD)
         self._geom_type = file_settings.get(GEOM_TYPE)
         self._crs_id = file_settings.get(CRS_ID)
+        self._import_as = file_settings.get(IMPORT_AS)
         self._fpath = file_settings.get("fpath")
         self._file_fields = file_settings.get("fields")
 
@@ -492,7 +496,13 @@ class PlotPreview(Plot):
                 )
             elif geom_type != self._geom_type:
                 self._items[column] = self._display_tooltip(
-                    "Does not match set geometry type", WARNING
+                    "Does not match set geometry type ({})".format(self._geom_type),
+                    WARNING
+                )
+            elif self._import_type.get(self._geom_type) != self._import_as:
+                self._items[column] = self._display_tooltip(
+                    "Does not match set import type ({})".format(self._import_as),
+                    WARNING
                 )
             return value
 
@@ -623,17 +633,34 @@ class PlotPreview(Plot):
         """
         geom_type, geom = self._geometry(wkt)
         type_name = self._geometry_types.get(geom_type)
-        if not type_name or type_name != self._geom_type:
+        import_type = self._import_type.get(self._geom_type)
+        if not type_name or \
+                type_name != self._geom_type or \
+                import_type != self._import_as:
             return
         # TODO: Find remove layer of similar name
         uri = "{0}?crs={1}".format(geom_type, self._crs_id)
         fields = [(field, type_) for field, type_, value in attributes]
         if not self._plot_layer:
-            name = "Test_Layer"  # TODO: Automatically Generate layer name (SchemeNumber-Type)
+            name = self._generate_layer_name()
             self._plot_layer = PlotLayer(uri, name, fields=fields)
             self._plot_layer.create_layer()
+            self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
         self._plot_layer.wkt_geometry(wkt, value)
+
+    def _generate_layer_name(self):
+        """
+        Generates layer name
+        :return layer_name: Layer name
+        :rtype layer_name: String
+        """
+        layer_name = "{0}_{1}_{2}".format(
+            "xxxxx",
+            self._import_type.get(self._geom_type),
+            self.type_count[self._geom_type]
+        )
+        return layer_name
 
     def get_headers(self):
         """
