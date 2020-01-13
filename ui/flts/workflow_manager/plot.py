@@ -614,15 +614,39 @@ class PlotPreview(Plot):
             name = "_".join(name.split())[:10]
             attr.append(name)
             if headers[column].type == "float":
-                attr.append(QVariant.Double)
-                value = value if not isinstance(value, str) else float(0)
-                attr.append(value)
+                value = self._attribute_to_float(value)
+                attr.extend([QVariant.Double, value])
             else:
-                attr.append(QVariant.String)
-                value = value if not value == WARNING else None
-                attr.append(value)
+                value = self._replace_warning(value)
+                attr.extend([QVariant.String, value])
             attributes.append(attr)
         return attributes
+
+    @staticmethod
+    def _attribute_to_float(value):
+        """
+        Returns float layer attribute
+        :param value: Object value
+        :type value: Object
+        :return value: Float value
+        :rtype value: Float
+        """
+        if isinstance(value, str):
+            value = float(0)
+        return value
+
+    @staticmethod
+    def _replace_warning(value):
+        """
+        Replaces WARNING with None type
+        :param value: Object value
+        :type value: Object
+        :return value: String value
+        :rtype value: String
+        """
+        if value == WARNING:
+            value = None
+        return value
 
     def _create_layer(self, wkt, attributes):
         """
