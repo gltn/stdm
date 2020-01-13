@@ -64,14 +64,13 @@ class PlotLayer:
         """
         return self._layer
 
-    def _create_layer(self):
+    def create_layer(self):
         """
         Creates a vector layer
         """
         self._layer = QgsVectorLayer(self._uri, self._name, self._provider_lib)
         self._set_data_provider()
         self._layer.updateFields()
-        self._project_instance().addMapLayer(self._layer)
 
     def _set_data_provider(self):
         """
@@ -94,7 +93,7 @@ class PlotLayer:
         fields = [QgsField(name, type_)for name, type_ in self._fields]
         return fields
 
-    def _wkt_geometry(self, wkt, attributes):
+    def wkt_geometry(self, wkt, attributes):
         """
         Creates geometry from WKT and
         displays it in the map canvas
@@ -109,7 +108,7 @@ class PlotLayer:
         feature = QgsFeature()
         feature.setGeometry(geom)
         feature.setAttributes(self._attribute_values(attributes))
-        self._data_provider.addFeature(feature)
+        self._data_provider.addFeatures([feature])
 
     def _attribute_values(self, attributes):
         """
@@ -125,13 +124,14 @@ class PlotLayer:
         values = [attributes.get(name) for name, type_ in self._fields]
         return values
 
-    @staticmethod
-    def get_fields(layer):
+    def get_fields(self, layer=None):
         """
         Returns a list of layer fields
         :param layer: Geometry layer
         :type layer: QgsVectorLayer
         """
+        if not layer:
+            layer = self._layer
         return layer.dataProvider().fields()
 
     @staticmethod
@@ -144,6 +144,12 @@ class PlotLayer:
         if len(fields) > 0:
             fields = [(field.name(), field.type()) for field in fields]
             return fields
+
+    def add_map_layer(self):
+        """
+        Adds layer to the project
+        """
+        self._project_instance().addMapLayer(self._layer)
 
     def update_extents(self, layer=None):
         """
@@ -173,9 +179,9 @@ class PlotLayer:
         :return:
         """
         try:
-            instance = QgsProject.instance()
-        except:
             instance = QgsMapLayerRegistry.instance()
+        except:
+            instance = QgsProject.instance()
         else:
             return instance
 
@@ -328,6 +334,7 @@ class PlotPreview(Plot):
         self._delimiter = self._get_delimiter(file_settings.get(DELIMITER))
         self._geom_field = file_settings.get(GEOM_FIELD)
         self._geom_type = file_settings.get(GEOM_TYPE)
+        self._crs_id = file_settings.get(CRS_ID)
         self._fpath = file_settings.get("fpath")
         self._file_fields = file_settings.get("fields")
 
@@ -401,12 +408,11 @@ class PlotPreview(Plot):
                         contents[AREA] = self._to_float(value, AREA)
                         contents["items"] = self._items
                         attributes = self._layer_attributes(contents)
-                        #
-                        # # TODO: Start edit
-                        # self._create_layer(contents[GEOMETRY], attributes)
-                        # # TODO: End edit
-
+                        self._create_layer(contents[GEOMETRY], attributes)
                         results.append(contents)
+                if self._plot_layer:
+                    self._plot_layer.update_extents()
+                    self._plot_layer.add_map_layer()
         except (csv.Error, Exception) as e:
             raise e
         return results
@@ -439,8 +445,8 @@ class PlotPreview(Plot):
             self._geom_type = self.geometry_type(
                 self._fpath, self._header_row, self._delimiter
             )
-            type = self._geometry_types.get(self._geom_type)
-            self._geom_type = type if type else self._geom_type
+            type_ = self._geometry_types.get(self._geom_type)
+            self._geom_type = type_ if type_ else self._geom_type
         return self._geom_type
 
     def _get_wkt(self, data, column):
@@ -567,20 +573,30 @@ class PlotPreview(Plot):
 
     def _layer_attributes(self, contents):
         """
-        Returns layer attributes
+        Returns layer attributes (field name, type, value)
         :param contents: Plot import file contents
         :type contents: Dictionary
         :return attributes: Layer attributes
-        :rtype attributes: Dictionary
+        :rtype attributes: List
         """
-        attributes = {}
+        attributes = []
         headers = self.get_headers()
-        for key, value in contents.items():
-            if key == GEOMETRY or key == 'items':
+        for column, value in contents.items():
+            attr = []
+            if column == GEOMETRY or column == 'items':
                 continue
-            name = headers[key].name
+            name = headers[column].name
             name = "_".join(name.split())[:10]
-            attributes[name] = value
+            attr.append(name)
+            if headers[column].type == "float":
+                attr.append(QVariant.Double)
+                value = value if not isinstance(value, str) else float(0)
+                attr.append(value)
+            else:
+                attr.append(QVariant.String)
+                value = value if not value == WARNING else None
+                attr.append(value)
+            attributes.append(attr)
         return attributes
 
     def _create_layer(self, wkt, attributes):
@@ -591,7 +607,19 @@ class PlotPreview(Plot):
         :param attributes:
         :return:
         """
-        pass
+        geom_type, geom = self._geometry(wkt)
+        type_name = self._geometry_types.get(geom_type)
+        if not type_name or type_name != self._geom_type:
+            return
+        # TODO: Find remove layer of similar name
+        uri = "{0}?crs={1}".format(geom_type, self._crs_id)
+        fields = [(field, type_) for field, type_, value in attributes]
+        if not self._plot_layer:
+            name = "Test_Layer"  # TODO: Generate layer name (SchemeNumber-Type)
+            self._plot_layer = PlotLayer(uri, name, fields=fields)
+            self._plot_layer.create_layer()
+        value = {field: value for field, type_, value in attributes}
+        self._plot_layer.wkt_geometry(wkt, value)
 
     def get_headers(self):
         """
