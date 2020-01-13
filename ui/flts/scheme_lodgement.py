@@ -1030,12 +1030,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         Slot raised when the block area square meter units radio button
         is selected
         """
+        area_in_sq_meters = None
         self.dbl_spinbx_block_area.setSuffix(" Sqm.")
         area_in_hectares = self.dbl_spinbx_block_area.value()
         self.dbl_spinbx_block_area.setDecimals(0)
-        area_in_sq_meters = area_in_hectares * 10000
 
         if area_in_sq_meters:
+            area_in_sq_meters = area_in_hectares * 10000
             self.dbl_spinbx_block_area.setValue(area_in_sq_meters)
 
     def _area_in_hectares(self):
@@ -1425,6 +1426,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         scheme_workflow_obj.save()
 
         self.populate_establishment_workflow()
+        self.populate_plot_workflow()
 
     def populate_establishment_workflow(self):
         """
@@ -1445,6 +1447,37 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Filter the lookup IDs based on values
         workflow_res = chk_workflow_obj.queryObject().filter(
             self._workflow_lookup_model.value == 'Establishment'
+        ).one()
+
+        approval_res = chk_approval_obj.queryObject().filter(
+            self._approval_lookup_model.value == 'Pending'
+        ).one()
+
+        # Save details
+        scheme_workflow_obj.scheme_id = scheme_res.id
+        scheme_workflow_obj.workflow_id = workflow_res.id
+        scheme_workflow_obj.approval_id = approval_res.id
+        scheme_workflow_obj.save()
+
+    def populate_plot_workflow(self):
+        """
+        Update the workflow link table with import plot as unapproved.
+        :return:
+        """
+        # Entity objects
+        scheme_obj = self.schm_model()
+        chk_workflow_obj = self._workflow_lookup_model()
+        chk_approval_obj = self._approval_lookup_model()
+        scheme_workflow_obj = self._sch_workflow_model()
+        # Get last lodged scheme ID
+
+        scheme_res = scheme_obj.queryObject().order_by(
+            self.schm_model.id.desc()
+        ).first()
+
+        # Filter the lookup IDs based on values
+        workflow_res = chk_workflow_obj.queryObject().filter(
+            self._workflow_lookup_model.value == 'Import Plot'
         ).one()
 
         approval_res = chk_approval_obj.queryObject().filter(

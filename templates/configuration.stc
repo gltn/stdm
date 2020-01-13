@@ -116,6 +116,7 @@
     <CodeValue value="Third Assessment" code="TA"/>
     <CodeValue value="Lodgement" code="LDG"/>
     <CodeValue value="First Assessment" code="FA"/>
+    <CodeValue value="Import Plot" code="IP"/>
    </ValueList>
    <ValueList name="check_lht_approval_status">
     <CodeValue value="Approved" code="AP"/>
