@@ -57,13 +57,6 @@ from ui.flts.user_shortcut_dlg import UserShortcutDialog
 from ui.flts.scheme_lodgement import LodgementWizard
 from ui.flts.workflow_manager.dock_widget_factory import DockWidgetFactory
 from ui.flts.workflow_manager.workflow_manager_widget import WorkflowManagerWidget
-from ui.flts.import_plots import ImportPlotWizard
-from ui.flts.scheme_revision import SchemeRevisionWizard
-from ui.flts.scan_certificate import ScanCertificateDialog
-from ui.flts.print_certificate import PrintCertificateDialog
-from ui.flts.search import SearchDialog
-from ui.flts.report import ReportDialog
-from ui.flts.notification import NotificationDialog
 
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector

@@ -66,8 +66,6 @@ from stdm.data.mapping import MapperMixin
 from ui_scheme_lodgement import Ui_ldg_wzd
 from ..notification import NotificationBar, ERROR
 
-from sqlalchemy.orm import load_only
-
 
 class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
     """
@@ -432,9 +430,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         sg_default_value = 1
         scheme_object = self.schm_model()
 
-        # Check if a scheme record exists in database
+        # Get scheme object as list
         scheme_res = scheme_object.queryObject().all()
 
+        # Check if length of list is empty i.e. if a scheme exist
         if len(scheme_res) == 0:
             sg_code = u'{0}.{1}.{2}'.format(sg_prefix,
                                             str(sg_default_value).zfill(4),
@@ -1051,6 +1050,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         if area_in_hectares:
             self.dbl_spinbx_block_area.setValue(area_in_hectares)
+            return area_in_hectares
 
     def validate_block_area(self):
         """
@@ -1094,6 +1094,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
             if self.validate_block_area() and len(errors) == 0:
+                self._on_default_area()
                 if self.validate_num_plots():
                     ret_status = True
 

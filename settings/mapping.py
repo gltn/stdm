@@ -32,10 +32,12 @@ from stdm.ui.notification import (
 
 from .registryconfig import RegistryConfig
 
+
 class SettingMapper(object):
     """
     Represents a single mapping of an STDM setting and corresponding UI widget.
     """
+
     def __init__(self, setting_key, widget, mandatory=False,
                  create_default=True, custom_value_handler=None,
                  get_func=None, set_func=None):
@@ -166,10 +168,12 @@ class SettingMapper(object):
 
         self.set_configuration_value()
 
+
 class RegistrySettingMapper(SettingMapper):
     """
     Mapper that uses the registry as the settings repository.
     """
+
     def __init__(self, *args, **kwargs):
         SettingMapper.__init__(self, *args, **kwargs)
         self._reg_config = RegistryConfig()
@@ -192,18 +196,20 @@ class RegistrySettingMapper(SettingMapper):
         return key_mappings[self._key]
 
     def create_key(self):
-        #A new key will automatically be created when you set the value.
+        # A new key will automatically be created when you set the value.
         return True
 
     def set_configuration_value(self):
         conf_value = self._value_handler.value(self._get_func)
         self._reg_config.write({self._key: conf_value})
 
+
 class SettingsWidgetMapper(object):
     """
     Mixin class that enables settings' widgets/dialogs to conveniently read/write
     application settings using a standard approach.
     """
+
     def __init__(self, context, parent=None):
         """
         :param context: One or two words that summarize the collection of
@@ -227,7 +233,7 @@ class SettingsWidgetMapper(object):
         """
         mapper = kwargs.pop("mapper", None)
 
-        #Use registry mapper if not specified
+        # Use registry mapper if not specified
         if mapper is None:
             mapper = RegistrySettingMapper
 
@@ -263,7 +269,7 @@ class SettingsWidgetMapper(object):
         for s in self._settings_mappers:
             if s.is_mandatory() and s.valueHandler().supportsMandatory():
                 if s.valueHandler().value() == s.valueHandler().default():
-                    #Notify user
+                    # Notify user
                     msg = WARNING, u"{0} is a required setting.".format(s.setting_key())
                     self.notified.emit([msg])
 
@@ -272,5 +278,6 @@ class SettingsWidgetMapper(object):
             s.bind_configuration_value()
 
         msg = SUCCESS, QApplication.translate("SettingsWidgetMapper",
-                    "%s settings successfully updated." % (self._capitalize_first_char(self._context),))
+                                              "%s settings successfully updated." % (
+                                              self._capitalize_first_char(self._context),))
         self.notified.emit([msg])
