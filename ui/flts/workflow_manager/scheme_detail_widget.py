@@ -33,7 +33,7 @@ class SchemeDetailTableView(QTableView):
     manager modules; Scheme Establishment and First, Second and
     Third Examination FLTS modules.
     """
-    def __init__(self, widget_properties, profile, scheme_id, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, scheme_number, parent=None):
         super(QTableView, self).__init__(parent)
         self._widget_properties = widget_properties
         self._load_collections = widget_properties["load_collections"]

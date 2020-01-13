@@ -30,7 +30,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
     TIME_FORMAT = "hh:mm ap"
     submitted = pyqtSignal()
 
-    def __init__(self, widget_properties, profile, scheme_id, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, scheme_number, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []

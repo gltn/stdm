@@ -190,7 +190,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         widget_prop["scheme_items"] = {row: (
             self._model.results[row].get("data"), scheme_number
         )}
-        self._load_details(widget_prop, widget_id, scheme_id)
+        self._load_details(widget_prop, widget_id, scheme_id, scheme_number)
 
     def _on_check(self, index):
         """
@@ -316,7 +316,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             widget_prop = self._get_widget_properties()
         widget_prop["scheme_items"] = self._checked_scheme_items() \
             if not scheme_items else scheme_items
-        self._load_details(widget_prop, widget_id, last_id)
+        self._load_details(widget_prop, widget_id, last_id, scheme_number)
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
         """
@@ -423,7 +423,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
         # TODO: End Refactor
 
-    def _load_details(self, widget_prop, widget_id, scheme_id):
+    def _load_details(self, widget_prop, widget_id, scheme_id, scheme_number):
         """
         Add Scheme details tab
         :param widget_prop: Scheme details service items
@@ -432,13 +432,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type widget_id: Widget key and label
         :param scheme_id: Scheme record ID/primary key
         :type scheme_id: Integer
+        :param scheme_number: Scheme number
+        :type scheme_number: String
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
         """
         self.notif_bar.clear()
         key, label = widget_id
         if None not in (key, label):
             details_widget = widget_prop['widget']
             self._detail_table = details_widget(
-                widget_prop, self._profile, scheme_id, self
+                widget_prop, self._profile, scheme_id, scheme_number, self
             )
             self._replace_tab(1, self._detail_table, label)
             if self._detail_table.model and self._detail_table.model.results:

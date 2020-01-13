@@ -40,7 +40,7 @@ class PlotImportWidget(QWidget):
     A widget to import and preview plots of a scheme.
     Called from the Import Plot module.
     """
-    def __init__(self, widget_properties, profile, scheme_id, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, scheme_number, parent=None):
         super(QWidget, self).__init__(parent)
         data_service = widget_properties["data_service"]
         self._file_service = data_service["plot_file"]
