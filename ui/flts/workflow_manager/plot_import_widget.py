@@ -191,7 +191,10 @@ class PlotImportWidget(QWidget):
                 )
                 return
             self._plot_preview = PlotPreview(
-                self._preview_service, settings, self._scheme_number
+                self._preview_service,
+                settings,
+                self._scheme_number,
+                row
             )
             self._preview_load()
             self._set_preview_groupbox_title(settings[NAME])

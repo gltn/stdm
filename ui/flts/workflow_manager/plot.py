@@ -333,18 +333,14 @@ class PlotPreview(Plot):
     """
     Manages preview of plot import data file contents
     """
+    layers = {}
     type_count = {"Point": 1, "Line": 1, "Polygon": 1}
 
-    def __init__(self, data_service, file_settings, scheme_number):
-        """
-        :param data_service: Plot preview data model service
-        :type data_service: PlotImportFileDataService
-        :param file_settings: Plot import file data settings
-        :type file_settings: Dictionary
-        """
+    def __init__(self, data_service, file_settings, scheme_number, parent_id):
         super(PlotPreview, self).__init__()
         self._data_service = data_service
         self._scheme_number = scheme_number
+        self._parent_id = parent_id
         self._items = self._plot_layer = None
         self._num_errors = 0
         self._import_type = {"Point": "Beacons", "Line": "Servitudes", "Polygon": "Plots"}
@@ -666,6 +662,7 @@ class PlotPreview(Plot):
             name = self._generate_layer_name()
             self._plot_layer = PlotLayer(uri, name, fields=fields)
             self._plot_layer.create_layer()
+            self.layers[self._parent_id] = self._plot_layer
             self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
         self._plot_layer.wkt_geometry(wkt, value)
