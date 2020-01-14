@@ -56,7 +56,7 @@ class PlotLayer:
         self._fields = fields
         self._data_provider = None
         self._layer = None
-        self._project_instance().legendLayersAdded.connect(self._move_layer_top)
+        self.project_instance().legendLayersAdded.connect(self._move_layer_top)
 
     def layer(self):
         """
@@ -163,7 +163,7 @@ class PlotLayer:
         """
         Adds layer to the project
         """
-        self._project_instance().addMapLayer(self._layer)
+        self.project_instance().addMapLayer(self._layer)
 
     def update_extents(self, layer=None):
         """
@@ -181,13 +181,13 @@ class PlotLayer:
         :param name: Layer name
         :type name: String
         """
-        project = self._project_instance()
+        project = self.project_instance()
         layer = project.mapLayersByName(name)
         if len(layer) > 0:
             project.removeMapLayer(layer[0].id())
 
     @staticmethod
-    def _project_instance():
+    def project_instance():
         """
         Returns the instance pointer
         :return:
