@@ -165,7 +165,7 @@ class PlotImportWidget(QWidget):
         fpath = self.model.results[row].get("fpath")
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
-        self._reset_preview(row)
+        self._reset_preview(fpath)
         self._set_preview_groupbox_title()
         self._enable_crs_button()
         if not self.model.results:
@@ -173,15 +173,15 @@ class PlotImportWidget(QWidget):
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
 
-    def _reset_preview(self, row):
+    def _reset_preview(self, fpath):
         """
         Resets preview QTableView
-        :param row: Table view item identifier
-        :type row: QModelIndex
+        :param fpath: Plot import file absolute path
+        :type fpath: String
         """
-        if row == self._previewed:
+        if fpath == self._previewed:
             self._preview_model.reset()
-            self._previewed = None
+            self._previewed = fpath
 
     def _preview(self):
         """
@@ -207,7 +207,7 @@ class PlotImportWidget(QWidget):
             )
             self._preview_load()
             self._set_preview_groupbox_title(settings[NAME])
-            self._previewed = row
+            self._previewed = fpath
 
     def _file_settings(self, row):
         """
