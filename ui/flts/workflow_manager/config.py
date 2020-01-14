@@ -849,10 +849,10 @@ configurations = {
         'comment_save': [
             SaveColumn(
                 column='comment', value=None, entity='Comment'
-            ),
-            SaveColumn(
-                column='user_id', value=1, entity='Comment'
             )
+            # SaveColumn(
+            #     column='user_id', value=1, entity='Comment'
+            # )
             # SaveColumn(
             #     column='timestamp', value=datetime.now(), entity='Comment'
             # )

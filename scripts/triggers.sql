@@ -151,4 +151,3 @@ BEFORE INSERT OR UPDATE ON cb_comment
 CREATE TRIGGER insert_workflow_timestamp
 BEFORE INSERT OR UPDATE ON cb_scheme_workflow
     FOR EACH ROW EXECUTE PROCEDURE insert_timestamp();
-
