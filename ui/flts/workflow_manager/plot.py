@@ -664,7 +664,6 @@ class PlotPreview(Plot):
         """
         if not self._valid_setup(wkt):
             return
-        # TODO: Find remove layer of similar name
         geom_type, geom = self._geometry(wkt)
         uri = "{0}?crs={1}".format(geom_type, self._crs_id)
         fields = [(field, type_) for field, type_, value in attributes]
