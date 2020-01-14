@@ -49,7 +49,7 @@ class PlotImportWidget(QWidget):
         self._preview_service = self._preview_service()
         self._scheme_number = scheme_number
         self._plot_file = PlotFile(self._file_service)
-        self._plot_preview, self._previewed = None
+        self._plot_preview = self._previewed = None
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -165,21 +165,23 @@ class PlotImportWidget(QWidget):
         fpath = self.model.results[row].get("fpath")
         self.model.removeRows(row)
         self._plot_file.remove_filepath(fpath)
+        self._reset_preview(row)
+        self._set_preview_groupbox_title()
         self._enable_crs_button()
         if not self.model.results:
             self.model.reset()
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
 
-    def _reset_preview(self):
+    def _reset_preview(self, row):
         """
         Resets preview QTableView
+        :param row: Table view item identifier
+        :type row: QModelIndex
         """
-        index = self._current_index(self._file_table_view)
-        if index is not None:
-            if index.row() == self._previewed:
-                self._preview_model.reset()
-                self._previewed = None
+        if row == self._previewed:
+            self._preview_model.reset()
+            self._previewed = None
 
     def _preview(self):
         """
@@ -260,15 +262,19 @@ class PlotImportWidget(QWidget):
             self.tr(msg)
         )
 
-    def _set_preview_groupbox_title(self, title):
+    def _set_preview_groupbox_title(self, title=None):
         """
         Sets the preview groupbox title
         :param title: Groupbox title
         :type title: String
         """
-        if len(title) > 20:
-            title = "{0}{1}".format(title[:20], "...")
-        title = "{0} {1}".format("File content:", title)
+        default = "File content"
+        if title:
+            if len(title) > 20:
+                title = "{0}{1}".format(title[:20], "...")
+            title = "{0}: {1}".format(default, title)
+        else:
+            title = default
         self._preview_groupbox.setTitle(title)
 
     def _show_question_message(self, title, msg):
