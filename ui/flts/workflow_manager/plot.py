@@ -175,9 +175,9 @@ class PlotLayer:
             layer = self._layer
         layer.updateExtents()
 
-    def remove_layer(self, name):
+    def remove_layer_by_name(self, name):
         """
-        Removes a layer from the project
+        Removes a layer from the project given the name
         :param name: Layer name
         :type name: String
         """
@@ -185,6 +185,15 @@ class PlotLayer:
         layer = project.mapLayersByName(name)
         if len(layer) > 0:
             project.removeMapLayer(layer[0].id())
+
+    def remove_layer_by_id(self, id_):
+        """
+        Removes a layer from the project given the id
+        :param id_: Layer ID
+        :type id_: String
+        """
+        project = self.project_instance()
+        project.removeMapLayer(id_)
 
     @staticmethod
     def project_instance():
