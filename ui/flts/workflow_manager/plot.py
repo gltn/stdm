@@ -437,6 +437,7 @@ class PlotPreview(Plot):
                 if self._plot_layer:
                     self._plot_layer.update_extents()
                     self._plot_layer.add_map_layer()
+                    self._signal_layers_removed()
         except (csv.Error, Exception) as e:
             raise e
         return results
@@ -670,8 +671,9 @@ class PlotPreview(Plot):
         if not self._plot_layer:
             name = self._generate_layer_name()
             self._plot_layer = PlotLayer(uri, name, fields=fields)
+            self.remove_layer_by_id(self._parent_id)
             self._plot_layer.create_layer()
-            self.layers[self._parent_id] = self._plot_layer
+            PlotPreview.layers[self._parent_id] = self._plot_layer.layer()
             self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
         self._plot_layer.wkt_geometry(wkt, value)
@@ -706,6 +708,44 @@ class PlotPreview(Plot):
             self.type_count[self._geom_type]
         )
         return layer_name
+
+    def _signal_layers_removed(self):
+        """
+        Emits layersWillBeRemoved signal
+        """
+        project = self._plot_layer.project_instance()
+        project.layersWillBeRemoved.connect(self._remove_stored_layer)
+
+    def remove_layer_by_id(self, parent_id):
+        """
+        Removes layer from the registry/map canvas
+        :param parent_id: Parent record/item identifier
+        :type parent_id: String
+        """
+        if not PlotPreview.layers:
+            return
+        try:
+            layer = PlotPreview.layers.get(parent_id)
+            if layer:
+                self._plot_layer.remove_layer_by_id(layer.id())
+        except (RuntimeError, OSError, Exception) as e:
+            raise e
+
+    @staticmethod
+    def _remove_stored_layer(layer_ids):
+        """
+        Removes stored layer
+        :param layer_ids: Layer IDs
+        :param layer_ids: List
+        """
+        try:
+            PlotPreview.layers = {
+                key: layer
+                for key, layer in PlotPreview.layers.items()
+                if layer.id() not in layer_ids
+            }
+        except (RuntimeError, OSError, Exception) as e:
+            raise e
 
     def get_headers(self):
         """
