@@ -49,7 +49,7 @@ class PlotImportWidget(QWidget):
         self._preview_service = self._preview_service()
         self._scheme_number = scheme_number
         self._plot_file = PlotFile(self._file_service)
-        self._plot_preview = None
+        self._plot_preview, self._previewed = None
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -58,7 +58,6 @@ class PlotImportWidget(QWidget):
         self._preview_button = toolbar["Preview"]
         self._import_button = toolbar["Import"]
         header_style = StyleSheet().header_style
-
         self._file_table_view = QTableView(self)
         self.model = WorkflowManagerModel(self._file_service)
         self._file_table_view.setModel(self.model)
@@ -70,7 +69,6 @@ class PlotImportWidget(QWidget):
         self._file_table_view.horizontalHeader().setStyleSheet(style)
         self._file_table_view.setSelectionBehavior(QTableView.SelectRows)
         self._file_table_view.setSelectionMode(QAbstractItemView.SingleSelection)
-
         self._preview_table_view = QTableView(self)
         self._preview_model = WorkflowManagerModel(self._preview_service)
         self._preview_table_view.setModel(self._preview_model)
@@ -173,6 +171,17 @@ class PlotImportWidget(QWidget):
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
 
+    def _reset_preview(self):
+        """
+        Resets preview QTableView
+        """
+        index = self._current_index(self._file_table_view)
+        if index is not None:
+            row = index.row()
+            if row == self._previewed:
+                self._preview_model.reset()
+                self._previewed = None
+
     def _preview(self):
         """
         Previews selected plot import file content
@@ -192,13 +201,12 @@ class PlotImportWidget(QWidget):
                 )
                 return
             self._plot_preview = PlotPreview(
-                self._preview_service,
-                settings,
-                self._scheme_number,
-                row
+                self._preview_service, settings,
+                self._scheme_number, row
             )
             self._preview_load()
             self._set_preview_groupbox_title(settings[NAME])
+            self._previewed = row
 
     def _file_settings(self, row):
         """
