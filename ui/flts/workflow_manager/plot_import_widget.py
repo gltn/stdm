@@ -177,8 +177,7 @@ class PlotImportWidget(QWidget):
         """
         index = self._current_index(self._file_table_view)
         if index is not None:
-            row = index.row()
-            if row == self._previewed:
+            if index.row() == self._previewed:
                 self._preview_model.reset()
                 self._previewed = None
 
