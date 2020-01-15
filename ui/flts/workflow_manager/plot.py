@@ -708,13 +708,6 @@ class PlotPreview(Plot):
         )
         return layer_name
 
-    def _signal_layers_removed(self):
-        """
-        Emits layersWillBeRemoved signal
-        """
-        project = self._plot_layer.project_instance()
-        project.layersWillBeRemoved.connect(self._remove_stored_layer)
-
     def remove_layer_by_id(self, parent_id):
         """
         Removes layer from the registry/map canvas
@@ -729,6 +722,13 @@ class PlotPreview(Plot):
                 self._plot_layer.remove_layer_by_id(layer.id())
         except (RuntimeError, OSError, Exception) as e:
             raise e
+
+    def _signal_layers_removed(self):
+        """
+        Emits layersWillBeRemoved signal
+        """
+        project = self._plot_layer.project_instance()
+        project.layersWillBeRemoved.connect(self._remove_stored_layer)
 
     @staticmethod
     def _remove_stored_layer(layer_ids):
