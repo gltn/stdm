@@ -195,17 +195,19 @@ class PlotLayer:
         project = self.project_instance()
         project.removeMapLayer(id_)
 
-    def select_feature(self, layer, id_):
+    def select_feature(self, layer, feature_ids):
         """
         Selects a feature given the identifier
         :param layer: Input layer
-        :param layer: QgsVectorLayer
-        :param id_: Feature identifier
-        :type id_: Object
+        :type layer: QgsVectorLayer
+        :param feature_ids: Feature identifier
+        :type feature_ids: Object
         """
         self._move_node_to_first(layer)
         if not self._is_active(layer):
             iface.setActiveLayer(layer)
+        # Layer is_visible. If not then make it visible
+        layer.selectFeatures(feature_ids)
 
     def _move_node_to_first(self, layer):
         """
@@ -809,6 +811,15 @@ class PlotPreview(Plot):
             }
         except (RuntimeError, OSError, Exception) as e:
             raise e
+
+    def select_feature(self, row):
+        """
+        Selects a feature given the row index
+        :param row: Preview table view row index
+        :type row: Integer
+        """
+        layer = PlotPreview.layers.get(self._parent_id)
+        self._plot_layer.select_feature(layer, [row])
 
     def get_headers(self):
         """
