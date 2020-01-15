@@ -262,6 +262,10 @@ class PlotLayer:
             return True
 
     @staticmethod
+    def clear_feature(layer):
+        layer.removeSelection()
+
+    @staticmethod
     def project_instance():
         """
         Returns the instance pointer
@@ -820,6 +824,10 @@ class PlotPreview(Plot):
         """
         layer = PlotPreview.layers.get(self._parent_id)
         self._plot_layer.select_feature(layer, [row])
+
+    def clear_feature(self):
+        layer = PlotPreview.layers.get(self._parent_id)
+        self._plot_layer.clear_feature(layer)
 
     def get_headers(self):
         """
