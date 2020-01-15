@@ -220,7 +220,8 @@ class PlotLayer:
         if first_node.layerId() != layer.id():
             self._move_node(layer, index)
 
-    def _layer_child_node(self, index):
+    @staticmethod
+    def _layer_child_node(index):
         """
         Returns layer child node
         :param index: Child node index
@@ -233,7 +234,8 @@ class PlotLayer:
         child_node = root.children()[index]
         return child_node
 
-    def _move_node(self, layer, index):
+    @staticmethod
+    def _move_node(layer, index):
         """
         Moves child node
         :param layer: Input layer

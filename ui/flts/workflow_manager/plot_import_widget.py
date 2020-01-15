@@ -404,4 +404,4 @@ class PlotImportWidget(QWidget):
         :type index: QModelIndex
         """
         self._plot_preview.clear_feature()
-        self._plot_preview.select_feature(index.row())
+        self._plot_preview.select_feature(index.row() + 1)
