@@ -203,20 +203,20 @@ class PlotLayer:
         :param id_: Feature identifier
         :type id_: Object
         """
-        pass
-        project = self.project_instance()
-        root = project.layerTreeRoot()
-        first_node = self._layer_child_node(0)
-        if first_node.layerId() != layer.id():
-            # Move node
-            layer_node = root.findLayer(layer.id())
-            clone = layer_node.clone()
-            parent = layer_node.parent()
-            parent.insertChildNode(0, clone)
-            parent.removeChildNode(layer_node)
+        self._move_node_to_first(layer)
+        if not self._is_active(layer):
+            iface.setActiveLayer(layer)
 
-        # if not self._is_active(layer):
-        #     iface.setActiveLayer(layer)
+    def _move_node_to_first(self, layer):
+        """
+        Moves child node to first node position
+        :param layer: Input layer
+        :type layer: QgsVectorLayer
+        """
+        index = 0
+        first_node = self._layer_child_node(index)
+        if first_node.layerId() != layer.id():
+            self._move_node(layer, index)
 
     def _layer_child_node(self, index):
         """
@@ -230,6 +230,22 @@ class PlotLayer:
         root = project.layerTreeRoot()
         child_node = root.children()[index]
         return child_node
+
+    def _move_node(self, layer, index):
+        """
+        Moves child node
+        :param layer: Input layer
+        :type layer: QgsVectorLayer
+        :param index: Index to move the node to
+        :type index: Integer
+        """
+        project = self.project_instance()
+        root = project.layerTreeRoot()
+        layer_node = root.findLayer(layer.id())
+        clone = layer_node.clone()
+        parent = layer_node.parent()
+        parent.insertChildNode(index, clone)
+        parent.removeChildNode(layer_node)
 
     @staticmethod
     def _is_active(layer):
