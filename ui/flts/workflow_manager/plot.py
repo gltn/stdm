@@ -195,6 +195,54 @@ class PlotLayer:
         project = self.project_instance()
         project.removeMapLayer(id_)
 
+    def select_feature(self, layer, id_):
+        """
+        Selects a feature given the identifier
+        :param layer: Input layer
+        :param layer: QgsVectorLayer
+        :param id_: Feature identifier
+        :type id_: Object
+        """
+        pass
+        project = self.project_instance()
+        root = project.layerTreeRoot()
+        first_node = self._layer_child_node(0)
+        if first_node.layerId() != layer.id():
+            # Move node
+            layer_node = root.findLayer(layer.id())
+            clone = layer_node.clone()
+            parent = layer_node.parent()
+            parent.insertChildNode(0, clone)
+            parent.removeChildNode(layer_node)
+
+        # if not self._is_active(layer):
+        #     iface.setActiveLayer(layer)
+
+    def _layer_child_node(self, index):
+        """
+        Returns layer child node
+        :param index: Child node index
+        :param index: Integer
+        :return child_node: Layer child node
+        :rtype child_node: QgsLayerTreeLayer
+        """
+        project = self.project_instance()
+        root = project.layerTreeRoot()
+        child_node = root.children()[index]
+        return child_node
+
+    @staticmethod
+    def _is_active(layer):
+        """
+        Checks if layer is active
+        :param layer: Input layer
+        :type layer: QgsVectorLayer
+        :return: True if active
+        :return: Boolean
+        """
+        if layer == iface.activeLayer():
+            return True
+
     @staticmethod
     def project_instance():
         """
