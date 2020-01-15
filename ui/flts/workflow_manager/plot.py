@@ -207,7 +207,7 @@ class PlotLayer:
         if not self._is_active(layer):
             iface.setActiveLayer(layer)
         # Layer is_visible. If not then make it visible
-        layer.selectFeatures(feature_ids)
+        layer.select(feature_ids)
 
     def _move_node_to_first(self, layer):
         """
@@ -228,7 +228,7 @@ class PlotLayer:
         :return child_node: Layer child node
         :rtype child_node: QgsLayerTreeLayer
         """
-        project = self.project_instance()
+        project = QgsProject.instance()
         root = project.layerTreeRoot()
         child_node = root.children()[index]
         return child_node
@@ -241,7 +241,7 @@ class PlotLayer:
         :param index: Index to move the node to
         :type index: Integer
         """
-        project = self.project_instance()
+        project = QgsProject.instance()
         root = project.layerTreeRoot()
         layer_node = root.findLayer(layer.id())
         clone = layer_node.clone()
