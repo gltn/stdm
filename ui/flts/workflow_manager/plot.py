@@ -206,7 +206,7 @@ class PlotLayer:
         self._move_node_to_first(layer)
         if not self._is_active(layer):
             iface.setActiveLayer(layer)
-        # Layer is_visible. If not then make it visible
+        # TODO: Layer is_visible. If not then make it visible
         layer.select(feature_ids)
 
     def _move_node_to_first(self, layer):

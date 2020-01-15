@@ -403,4 +403,5 @@ class PlotImportWidget(QWidget):
         :param index: Table view item identifier
         :type index: QModelIndex
         """
+        # TODO: Clear selected features
         self._plot_preview.select_feature(index.row())
