@@ -119,8 +119,7 @@ class PlotImportWidget(QWidget):
             try:
                 self._plot_file.set_file_path(fpath)
                 if not self.model.results:
-                    self.model.load(self._plot_file)
-                    self.model.refresh()
+                    self._load(self.model, self._plot_file)
                 else:
                     self._insert_file()
             except(IOError, OSError, Exception) as e:
@@ -239,8 +238,7 @@ class PlotImportWidget(QWidget):
         Loads selected plot import file content
         """
         try:
-            self._preview_model.load(self._plot_preview)
-            self._preview_model.refresh()
+            self._load(self._preview_model, self._plot_preview)
         except(IOError, OSError, Exception) as e:
             self._show_critical_message(
                 "Workflow Manager - Plot Preview",
@@ -249,6 +247,19 @@ class PlotImportWidget(QWidget):
         else:
             self._preview_table_view.horizontalHeader().\
                 setStretchLastSection(True)
+
+    @staticmethod
+    def _load(model, data_source):
+        """
+        Loads model data
+        :param model: Table view model
+        :type model: QAbstractTableModel
+        :param data_source: Data source object
+        :rtype data_source: Object
+        """
+        model.layoutAboutToBeChanged.emit()
+        model.load(data_source)
+        model.layoutChanged.emit()
 
     def _show_critical_message(self, title, msg):
         """
