@@ -58,6 +58,7 @@ class PlotLayer:
         self._layer = None
         self.project_instance().legendLayersAdded.connect(self._move_layer_top)
 
+    @property
     def layer(self):
         """
         Returns created layer
@@ -265,6 +266,11 @@ class PlotLayer:
 
     @staticmethod
     def clear_feature(layer):
+        """
+        Clears selected features in a layer
+        :param layer: Input layer
+        :type layer: QgsVectorLayer
+        """
         layer.removeSelection()
 
     @staticmethod
@@ -744,7 +750,7 @@ class PlotPreview(Plot):
             self._plot_layer = PlotLayer(uri, name, fields=fields)
             self.remove_layer_by_id(self._parent_id)
             self._plot_layer.create_layer()
-            PlotPreview.layers[self._parent_id] = self._plot_layer.layer()
+            PlotPreview.layers[self._parent_id] = self.layer
             self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
         self._plot_layer.wkt_geometry(wkt, value)
@@ -795,6 +801,15 @@ class PlotPreview(Plot):
         except (RuntimeError, OSError, Exception) as e:
             raise e
 
+    @property
+    def layer(self):
+        """
+        Returns created layer
+        :return _layer: Layer
+        :rtype _layer: QgsVectorLayer
+        """
+        return self._plot_layer.layer
+
     def _signal_layers_removed(self):
         """
         Emits layersWillBeRemoved signal
@@ -827,8 +842,14 @@ class PlotPreview(Plot):
         layer = PlotPreview.layers.get(self._parent_id)
         self._plot_layer.select_feature(layer, [row])
 
-    def clear_feature(self):
-        layer = PlotPreview.layers.get(self._parent_id)
+    def clear_feature(self, layer=None):
+        """
+        Clears selected features in a layer
+        :param layer: Input layer
+        :type layer: QgsVectorLayer
+        """
+        if not layer:
+            layer = PlotPreview.layers.get(self._parent_id)
         self._plot_layer.clear_feature(layer)
 
     def get_headers(self):
