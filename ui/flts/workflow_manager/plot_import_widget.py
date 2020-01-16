@@ -100,7 +100,8 @@ class PlotImportWidget(QWidget):
         self._remove_button.clicked.connect(self._remove_file)
         self._set_crs_button.clicked.connect(self._set_crs)
         self._preview_button.clicked.connect(self._preview)
-        self._preview_table_view.clicked.connect(self._on_preview_select)
+        _selection_model = self._preview_table_view.selectionModel()
+        _selection_model.selectionChanged.connect(self._on_preview_select)
 
     def _add_file(self):
         """
@@ -410,12 +411,12 @@ class PlotImportWidget(QWidget):
             return
         return index
 
-    def _on_preview_select(self, index):
+    def _on_preview_select(self, selected):
         """
-        Selects a feature on clicking
-        preview table view row
-        :param index: Table view item identifier
-        :type index: QModelIndex
+        Selects a layer feature on table view row
+        :param selected: Currently selected items
+        :type selected: QItemSelection
         """
+        index = selected.indexes()[0]
         self._plot_preview.clear_feature()
         self._plot_preview.select_feature(index.row() + 1)
