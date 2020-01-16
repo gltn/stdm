@@ -196,12 +196,7 @@ class PlotImportWidget(QWidget):
         settings = self._file_settings(row)
         fpath = settings.get("fpath")
         if not self._plot_file.is_pdf(fpath):
-            if not self._is_crs(row):
-                self._show_critical_message(
-                    "Workflow Manager - Plot Preview",
-                    "Coordinate reference system (CRS) is missing. "
-                    "Kindly set it to preview."
-                )
+            if self._crs_not_set(row):
                 return
             if self._plot_preview and self._layer:
                 self._plot_preview.clear_feature(self._layer)
@@ -218,18 +213,34 @@ class PlotImportWidget(QWidget):
         """
         Returns plot import file data settings
         :param row: Table view item identifier
-        :type row: QModelIndex
+        :type row: Integer
         :return: Plot import file data settings
         :rtype: Dictionary
         """
         return self.model.results[row]
+
+    def _crs_not_set(self, row):
+        """
+        Returns Tru if CRS is not set
+        :param row: Table view item identifier
+        :type row: Integer
+        :return True: True if CRS is not set
+        :return True: Boolean
+        """
+        if not self._is_crs(row):
+            title = "Workflow Manager - Plot Preview"
+            msg = "Coordinate reference system (CRS) is missing.\n" \
+                  "Do you want to set it to preview?"
+            if not self._show_question_message(title, msg):
+                return True
+            self._set_crs()
 
     def _is_crs(self, row):
         """
         Returns true if coordinate reference
         system (CRS) has been set. Otherwise none
         :param row: Table view item identifier
-        :type row: QModelIndex
+        :type row: Integer
         :return: True
         :return: Boolean
         """
