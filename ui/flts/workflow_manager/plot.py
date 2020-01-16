@@ -271,7 +271,8 @@ class PlotLayer:
         :param layer: Input layer
         :type layer: QgsVectorLayer
         """
-        layer.removeSelection()
+        if layer and layer.isValid():
+            layer.removeSelection()
 
     @staticmethod
     def project_instance():
@@ -808,7 +809,8 @@ class PlotPreview(Plot):
         :return _layer: Layer
         :rtype _layer: QgsVectorLayer
         """
-        return self._plot_layer.layer
+        if self._plot_layer:
+            return self._plot_layer.layer
 
     def _signal_layers_removed(self):
         """

@@ -49,7 +49,7 @@ class PlotImportWidget(QWidget):
         self._preview_service = self._preview_service()
         self._scheme_number = scheme_number
         self._plot_file = PlotFile(self._file_service)
-        self._plot_preview = self._previewed = None
+        self._plot_preview = self._layer = self._previewed = None
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -203,12 +203,15 @@ class PlotImportWidget(QWidget):
                     "Kindly set it to preview."
                 )
                 return
+            if self._plot_preview and self._layer:
+                self._plot_preview.clear_feature(self._layer)
             self._plot_preview = PlotPreview(
                 self._preview_service, settings,
                 self._scheme_number, fpath
             )
             self._preview_load()
             self._set_preview_groupbox_title(settings[NAME])
+            self._layer = self._plot_preview.layer
             self._previewed = fpath
 
     def _file_settings(self, row):
