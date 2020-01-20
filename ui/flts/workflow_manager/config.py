@@ -802,7 +802,7 @@ configurations = {
         {
             Column(
                 name='Registration Division', type="integer", flag=(Qt.DisplayRole,)
-            ): 'registration_division'
+            ): {'cb_check_lht_reg_division': 'value'}
         },
         {Column(name='Block Area', type="float", flag=(Qt.DisplayRole,)): 'area'},
         {
