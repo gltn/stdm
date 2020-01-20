@@ -150,9 +150,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         MapperMixin.__init__(self, self.schm_model, self.sch_entity)
 
         # Configure notification bars
-        self.notif_bar = NotificationBar(self.vlNotification)
-        self.docs_notif_bar = NotificationBar(self.vlNotification_docs)
-        self.holders_notif_bar = NotificationBar(self.vlNotification_holders)
+        self.notif_bar = NotificationBar(
+            self.vlNotification
+        )
+        self.docs_notif_bar = NotificationBar(
+            self.vlNotification_docs
+        )
+        self.holders_notif_bar = NotificationBar(
+            self.vlNotification_holders
+        )
 
         # CMIS stuff for document management
         self._cmis_mgr = CmisManager()
@@ -176,15 +182,24 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._holder_importer = None
 
         # Connect signals
-        self.btn_brws_hld.clicked.connect(self.browse_holders_file)
-        self.btn_upload_dir.clicked.connect(self.on_upload_multiple_files)
-        self.currentIdChanged.connect(self.on_page_changed)
+        self.btn_brws_hld.clicked.connect(
+            self.browse_holders_file
+        )
+        self.btn_upload_dir.clicked.connect(
+            self.on_upload_multiple_files
+        )
+        self.currentIdChanged.connect(
+            self.on_page_changed
+        )
         self.cbx_region.currentIndexChanged.connect(
-            self.update_relevant_authority)
+            self.update_relevant_authority
+        )
         self.cbx_relv_auth.currentIndexChanged.connect(
-            self.update_relevant_authority)
+            self.update_relevant_authority
+        )
         self.cbx_relv_auth_name.currentIndexChanged.connect(
-            self.on_ra_name_changed)
+            self.on_ra_name_changed
+        )
         self.btn_reload_holders.clicked.connect(
             self.load_holders_file
         )
@@ -192,13 +207,13 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             self.on_validate_holders
         )
 
-        # Block area defaults
+        # Block area
         self.radio_sq_meters.setChecked(True)
-        self.dbl_spinbx_block_area.setSuffix(" Sqm.")
 
-        # Block area signals and slots
+        self._default_block_area()
+
         self.radio_sq_meters.clicked.connect(
-            self._on_default_area
+            self._default_block_area
         )
 
         self.radio_hectares.clicked.connect(
@@ -212,13 +227,15 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self._current_date = QDate.currentDate().getDate()
         self._current_year = self._current_date[0]
 
+        self.cbx_reg_div.currentIndexChanged.connect(
+            self._gen_sg_number
+        )
+
         # Set date limits
         self._configure_date_controls()
 
         # Specify MapperMixin widgets
         self.register_col_widgets()
-
-        self._gen_sg_number()
 
     def _populate_combo(self, cbo, lookup_name):
         """
@@ -350,8 +367,8 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             return
 
         # Initial clear elements
-        self.cbx_relv_auth_name.clear()
         self.cbx_reg_div.clear()
+        self.lnedit_sg_num.clear()
 
         # Add an empty itemData
         self.cbx_relv_auth_name.addItem('')
@@ -426,8 +443,14 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         return scheme_code
 
     def _gen_sg_number(self):
+        """
+        Generate the sg/general plan number
+        :return:
+        """
+        # Set sg_number prefix which is constant
         sg_prefix = 'A'
         sg_default_value = 1
+        # Get the scheme object
         scheme_object = self.schm_model()
 
         # Get scheme object as list
@@ -450,6 +473,40 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                             str(sg_count).zfill(4),
                                             self._current_year)
             self.lnedit_sg_num.setText(sg_code)
+
+    def _default_block_area(self):
+        self.dbl_spinbx_block_area.setSuffix(" (Sq.m)")
+        # self.dbl_spinbx_block_area.setDecimals(0)
+        metres = self.dbl_spinbx_block_area.value() * 10000
+        self.dbl_spinbx_block_area.setValue(metres)
+
+        if self.radio_hectares.isChecked():
+            self._area_in_hectares()
+
+    def _area_in_hectares(self):
+        self.dbl_spinbx_block_area.setSuffix(" (Ha)")
+        self.dbl_spinbx_block_area.setDecimals(4)
+        hectares = self.dbl_spinbx_block_area.value() / 10000
+        self.dbl_spinbx_block_area.setValue(hectares)
+
+        if self.radio_sq_meters.isChecked():
+            self._default_block_area()
+
+    def validate_block_area(self):
+        """
+        Check whether the block area value is zero
+        """
+        # Preset minimum value equals to zero
+        min_value = self.dbl_spinbx_block_area.minimum()
+
+        if self.dbl_spinbx_block_area.value() == min_value:
+            self.notif_bar.insertWarningNotification(
+                self.tr(
+                    "Block Area value cannot be zero."
+                )
+            )
+        else:
+            return True
 
     def page_title(self):
         """
@@ -1025,50 +1082,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         notif_entity_obj.timestamp = strftime("%m-%d-%Y %H:%M:%S")
         notif_entity_obj.save()
 
-    def _on_default_area(self):
-        """
-        Slot raised when the block area square meter units radio button
-        is selected
-        """
-        area_in_sq_meters = None
-        self.dbl_spinbx_block_area.setSuffix(" Sqm.")
-        area_in_hectares = self.dbl_spinbx_block_area.value()
-        self.dbl_spinbx_block_area.setDecimals(0)
-
-        if area_in_sq_meters:
-            area_in_sq_meters = area_in_hectares * 10000
-            self.dbl_spinbx_block_area.setValue(area_in_sq_meters)
-
-    def _area_in_hectares(self):
-        """
-        Slot raised when the block area hectares units radio button
-        is selected
-        """
-        self.dbl_spinbx_block_area.setSuffix(" Ha.")
-        default_area = self.dbl_spinbx_block_area.value()
-        self.dbl_spinbx_block_area.setDecimals(4)
-        area_in_hectares = default_area / 10000
-
-        if area_in_hectares:
-            self.dbl_spinbx_block_area.setValue(area_in_hectares)
-            return area_in_hectares
-
-    def validate_block_area(self):
-        """
-        Check whether the block area value is zero
-        """
-        # Preset minimum value equals to zero
-        min_value = self.dbl_spinbx_block_area.minimum()
-
-        if self.dbl_spinbx_block_area.value() == min_value:
-            self.notif_bar.insertWarningNotification(
-                self.tr(
-                    "Block Area value cannot be zero."
-                )
-            )
-        else:
-            return True
-
     def validate_num_plots(self):
         """
         Check whether the number of plots is zero
@@ -1095,7 +1108,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             # Check if values have been specified for the attribute widgets
             errors = self.validate_all()
             if self.validate_block_area() and len(errors) == 0:
-                self._on_default_area()
                 if self.validate_num_plots():
                     ret_status = True
 
@@ -1206,36 +1218,53 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         """
         Populating the scheme summary widget with values from the user input
         """
-        # Scheme
-        self.tr_summary.scm_num.setText(1, self.lnedit_schm_num.text()
-                                        )
-        self.tr_summary.scm_name.setText(1,
-                                         self.lnedit_schm_nam.text()
-                                         )
-        self.tr_summary.scm_date_apprv.setText(1,
-                                               self.date_apprv.text()
-                                               )
-        self.tr_summary.scm_date_est.setText(1,
-                                             self.date_establish.text()
-                                             )
-        self.tr_summary.scm_region.setText(1, self.cbx_region.currentText()
-                                           )
-        self.tr_summary.scm_ra_type.setText(1,
-                                            self.cbx_relv_auth.currentText()
-                                            )
+        self.tr_summary.scm_num.setText(
+            1,
+            self.lnedit_schm_num.text()
+        )
+        self.tr_summary.scm_name.setText(
+            1,
+            self.lnedit_schm_nam.text()
+        )
+        self.tr_summary.scm_sg_num.setText(
+            1,
+            self.lnedit_sg_num.text()
+        )
+        self.tr_summary.scm_date_apprv.setText(
+            1,
+            self.date_apprv.text()
+        )
+        self.tr_summary.scm_date_est.setText(
+            1,
+            self.date_establish.text()
+        )
+        self.tr_summary.scm_region.setText(
+            1,
+            self.cbx_region.currentText()
+        )
+        self.tr_summary.scm_ra_type.setText(
+            1,
+            self.cbx_relv_auth.currentText()
+        )
         self.tr_summary.scm_ra_name.setText(
             1,
             self.cbx_relv_auth_name.currentText()
         )
-        self.tr_summary.scm_lro.setText(1, self.cbx_lro.currentText()
-                                        )
-        self.tr_summary.scm_township.setText(1, self.lnedit_twnshp.text()
-                                             )
-        self.tr_summary.scm_reg_div.setText(1, self.cbx_reg_div.currentText()
-                                            )
-        self.tr_summary.scm_blk_area.setText(1,
-                                             self.dbl_spinbx_block_area.text()
-                                             )
+        self.tr_summary.scm_lro.setText(
+            1,
+            self.cbx_lro.currentText()
+        )
+        self.tr_summary.scm_township.setText(
+            1,
+            self.lnedit_twnshp.text()
+        )
+        self.tr_summary.scm_reg_div.setText(
+            1,
+            self.cbx_reg_div.currentText()
+        )
+        self.tr_summary.scm_blk_area.setText(
+            1, self.dbl_spinbx_block_area.text()
+        )
 
     def _save_ra_last_value(self, scheme_number):
         # Save the last value for the given relevant authority

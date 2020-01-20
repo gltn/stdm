@@ -55,6 +55,7 @@ class SchemeSummaryWidget(QTreeWidget):
         self.scm_date_est = QTreeWidgetItem()
         self.scm_ra_type = QTreeWidgetItem()
         self.scm_ra_name = QTreeWidgetItem()
+        self.scm_sg_num = QTreeWidgetItem()
         self.scm_lro = QTreeWidgetItem()
         self.scm_region = QTreeWidgetItem()
         self.scm_township = QTreeWidgetItem()
@@ -87,28 +88,33 @@ class SchemeSummaryWidget(QTreeWidget):
                                self.holders_info])
 
         # Add child elements items to categories
-        self.scheme_info.addChildren([self.scm_num,
-                                      self.scm_name,
-                                      self.scm_date_apprv,
-                                      self.scm_date_est,
-                                      self.scm_ra_type,
-                                      self.scm_ra_name,
-                                      self.scm_lro,
-                                      self.scm_region,
-                                      self.scm_township,
-                                      self.scm_reg_div,
-                                      self.scm_blk_area])
+        self.scheme_info.addChildren(
+            [self.scm_num,
+             self.scm_name,
+             self.scm_date_apprv,
+             self.scm_date_est,
+             self.scm_ra_type,
+             self.scm_ra_name,
+             self.scm_sg_num,
+             self.scm_lro,
+             self.scm_region,
+             self.scm_township,
+             self.scm_reg_div,
+             self.scm_blk_area]
+        )
 
-        self.supporting_document.addChildren([self.doc_explanatory,
-                                              self.doc_council_res,
-                                              self.doc_cover_cert,
-                                              self.doc_blockerf_title,
-                                              self.doc_field_book,
-                                              self.doc_imposing_condition,
-                                              self.doc_layout_plan,
-                                              self.doc_notice_establish,
-                                              self.doc_potential_hld,
-                                              self.doc_trans_contract])
+        self.supporting_document.addChildren(
+            [self.doc_explanatory,
+             self.doc_council_res,
+             self.doc_cover_cert,
+             self.doc_blockerf_title,
+             self.doc_field_book,
+             self.doc_imposing_condition,
+             self.doc_layout_plan,
+             self.doc_notice_establish,
+             self.doc_potential_hld,
+             self.doc_trans_contract]
+        )
 
         # Expand top-level items
         self.scheme_info.setExpanded(True)
@@ -116,18 +122,42 @@ class SchemeSummaryWidget(QTreeWidget):
 
         # Static children items
         # Scheme
-        self.scm_region.setText(0, self.tr('Region '))
-        self.scm_ra_type.setText(0, self.tr('Type of Relevant Authority '))
-        self.scm_ra_name.setText(0, self.tr('Name of Relevant Authority '))
-        self.scm_num.setText(0, self.tr('Number of Scheme '))
-        self.scm_name.setText(0, self.tr('Name of Scheme '))
-        self.scm_date_apprv.setText(0, self.tr('Date of Approval'))
-        self.scm_date_est.setText(0, self.tr('Date of Establishment '
-                                             ''))
-        self.scm_lro.setText(0, self.tr('Land Rights Office '))
-        self.scm_township.setText(0, self.tr('Township '))
-        self.scm_reg_div.setText(0, self.tr('Registration Division '))
-        self.scm_blk_area.setText(0, self.tr('Block Area '))
+        self.scm_region.setText(0,
+                                self.tr('Region ')
+                                )
+        self.scm_ra_type.setText(0,
+                                 self.tr('Type of Relevant Authority ')
+                                 )
+        self.scm_ra_name.setText(0,
+                                 self.tr('Name of Relevant Authority ')
+                                 )
+        self.scm_sg_num.setText(0,
+                                self.tr('SG/General Plan Number ')
+                                )
+        self.scm_num.setText(0,
+                             self.tr('Number of Scheme ')
+                             )
+        self.scm_name.setText(0,
+                              self.tr('Name of Scheme ')
+                              )
+        self.scm_date_apprv.setText(0,
+                                    self.tr('Date of Approval')
+                                    )
+        self.scm_date_est.setText(0,
+                                  self.tr('Date of Establishment ')
+                                  )
+        self.scm_lro.setText(0,
+                             self.tr('Land Rights Office ')
+                             )
+        self.scm_township.setText(0,
+                                  self.tr('Township ')
+                                  )
+        self.scm_reg_div.setText(0,
+                                 self.tr('Registration Division ')
+                                 )
+        self.scm_blk_area.setText(0,
+                                  self.tr('Block Area ')
+                                  )
 
         view_str = self.tr('View')
         lbl_view_holders = self.create_hyperlink_widget(view_str)
