@@ -69,7 +69,7 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
             'AboutSTDMDialog',
             'FLTS version'
         )
-        version_text = u'{0} {1}'.format(version_msg, installed_version)
+        version_text = u'{0} {1}'.format(version_msg, '1.0')
         char_format = cursor.blockCharFormat()
         text_format = QTextCharFormat(char_format)
         text_format.setFontWeight(75)
