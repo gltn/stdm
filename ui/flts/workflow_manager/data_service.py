@@ -662,3 +662,31 @@ class PlotImportPreviewDataService:
         """
         return self._table_model_icons.icons
 
+    @staticmethod
+    def filter_query_by(entity_name, filters):
+        """
+        Filters query result by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            filter_by = FilterQueryBy()
+            return filter_by(entity_name, filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def entity_model_(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return: Entity model
+        :rtype: DeclarativeMeta
+        """
+        entity = self._profile.entity(name)
+        return super(SchemeDataService, self).entity_model_(entity)
+
