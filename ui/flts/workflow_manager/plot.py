@@ -417,6 +417,27 @@ class Plot(object):
         return Item([Qt.DecorationRole, Qt.ToolTipRole], unicode(tip))
 
 
+class UniqueParcelIdentifier:
+    """
+    Unique Parcel Identifier (UPI) object
+    """
+
+    def __init__(self, data_service, scheme, prefix):
+        self._data_service = data_service
+        self._scheme = scheme
+        self._prefix = prefix
+
+    def _aucode(self):
+        """
+        Returns the Scheme AUCODE
+        :return scheme: Filter entity query object
+        :rtype scheme: Entity object
+        """
+        relevant_authority = \
+            self._data_service.scheme_relevant_authority(self._scheme)
+        return relevant_authority.au_code
+
+
 class PlotPreview(Plot):
     """
     Manages preview of plot import data file contents
@@ -424,9 +445,10 @@ class PlotPreview(Plot):
     layers = {}
     type_count = {"Point": 1, "Line": 1, "Polygon": 1}
 
-    def __init__(self, data_service, file_settings, scheme_number, parent_id):
+    def __init__(self, data_service, file_settings, scheme_id, scheme_number, parent_id):
         super(PlotPreview, self).__init__()
         self._data_service = data_service
+        self._scheme_id = scheme_id
         self._scheme_number = scheme_number
         self._parent_id = parent_id
         self._items = self._plot_layer = None
@@ -488,6 +510,11 @@ class PlotPreview(Plot):
         results = []
         self._num_errors = 0
         try:
+            # UniqueParcelIdentifier(
+            #     self._data_service,
+            #     self._data_service.scheme(self._scheme_id),
+            #     "W"
+            # )
             with open(fpath, 'r') as csv_file:
                 clean_line = self._filter_whitespace(csv_file, self._header_row)
                 csv_reader = csv.DictReader(

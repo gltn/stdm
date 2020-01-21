@@ -662,6 +662,33 @@ class PlotImportPreviewDataService:
         """
         return self._table_model_icons.icons
 
+    def scheme(self, id_):
+        """
+        Returns Scheme record/row
+        :param id_: Scheme record ID
+        :type id_: Integer
+        :return: Filter entity query object
+        :rtype: Entity
+        """
+        return self.filter_query_by("Scheme", {"id": id_}).first()
+
+    def scheme_relevant_authority(self, scheme):
+        """
+        Returns Scheme Relevant Authority record/row
+        :param scheme: Scheme record/row
+        :type scheme: Entity
+        :return relevant_authority: Filter entity query object
+        :rtype relevant_authority: Entity
+        """
+        filters = {
+            "type_of_relevant_authority": scheme.relevant_authority,
+            "region": scheme.region
+        }
+        relevant_authority = self.filter_query_by(
+            "Relevant_authority", filters
+        ).first()
+        return relevant_authority
+
     @staticmethod
     def filter_query_by(entity_name, filters):
         """
@@ -678,15 +705,3 @@ class PlotImportPreviewDataService:
             return filter_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
-
-    def entity_model_(self, name=None):
-        """
-        Gets entity model
-        :param name: Name of the entity
-        :type name: String
-        :return: Entity model
-        :rtype: DeclarativeMeta
-        """
-        entity = self._profile.entity(name)
-        return super(SchemeDataService, self).entity_model_(entity)
-
