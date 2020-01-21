@@ -51,9 +51,8 @@ class PlotImportWidget(QWidget):
         self._file_service = data_service["plot_file"]
         self._file_service = self._file_service()
         self._preview_service = data_service["plot_preview"]
-        self._preview_service = self._preview_service()
+        self._preview_service = self._preview_service(profile, scheme_id)
         self._scheme_number = scheme_number
-        self._scheme_id = scheme_id
         self._plot_file = PlotFile(self._file_service)
         self._plot_preview = self._layer = self._previewed = None
         import_component = PlotImportComponent()
@@ -219,7 +218,6 @@ class PlotImportWidget(QWidget):
             self._plot_preview = PlotPreview(
                 self._preview_service,
                 settings,
-                self._scheme_id,
                 self._scheme_number,
                 fpath
             )

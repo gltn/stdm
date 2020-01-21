@@ -630,9 +630,12 @@ class PlotImportPreviewDataService:
     """
     Scheme plot import preview data model service
     """
-    def __init__(self):
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
         self._plot_config = PlotImportPreviewConfig()
         self._table_model_icons = TableModelIcons()
+        self._scheme = self._get_scheme()
 
     @property
     def columns(self):
@@ -662,32 +665,36 @@ class PlotImportPreviewDataService:
         """
         return self._table_model_icons.icons
 
-    def scheme(self, id_):
+    def _get_scheme(self):
         """
         Returns Scheme record/row
-        :param id_: Scheme record ID
-        :type id_: Integer
-        :return: Filter entity query object
+        :return: Scheme record/row
         :rtype: Entity
         """
-        return self.filter_query_by("Scheme", {"id": id_}).first()
+        return self.filter_query_by("Scheme", {"id": self._scheme_id}).first()
 
-    def scheme_relevant_authority(self, scheme):
+    def scheme_relevant_authority(self):
         """
         Returns Scheme Relevant Authority record/row
-        :param scheme: Scheme record/row
-        :type scheme: Entity
-        :return relevant_authority: Filter entity query object
+        :return relevant_authority: Scheme Relevant Authority record/row
         :rtype relevant_authority: Entity
         """
         filters = {
-            "type_of_relevant_authority": scheme.relevant_authority,
-            "region": scheme.region
+            "type_of_relevant_authority": self._scheme.relevant_authority,
+            "region": self._scheme.region
         }
         relevant_authority = self.filter_query_by(
             "Relevant_authority", filters
         ).first()
         return relevant_authority
+
+    def scheme_plot(self):
+        """
+        Returns Scheme Plot record/row
+        :return plot: Scheme Plot record/row
+        :rtype plot: Entity
+        """
+        return self.filter_query_by("Plot", {"scheme_id": self._scheme_id}).all()
 
     @staticmethod
     def filter_query_by(entity_name, filters):
@@ -704,4 +711,19 @@ class PlotImportPreviewDataService:
             filter_by = FilterQueryBy()
             return filter_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def entity_model_(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return: Entity model
+        :rtype: DeclarativeMeta
+        """
+        entity = self._profile.entity(name)
+        try:
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
             raise e

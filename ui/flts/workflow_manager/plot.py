@@ -422,10 +422,11 @@ class UniqueParcelIdentifier:
     Unique Parcel Identifier (UPI) object
     """
 
-    def __init__(self, data_service, scheme, prefix):
+    def __init__(self, data_service, prefix):
         self._data_service = data_service
-        self._scheme = scheme
         self._prefix = prefix
+        self._aucode()
+        self._max_plot_number()
 
     def _aucode(self):
         """
@@ -434,8 +435,21 @@ class UniqueParcelIdentifier:
         :rtype scheme: Entity object
         """
         relevant_authority = \
-            self._data_service.scheme_relevant_authority(self._scheme)
+            self._data_service.scheme_relevant_authority()
         return relevant_authority.au_code
+
+    def _max_plot_number(self):
+        test = self._data_service.scheme_plot()
+        print(test)
+    #
+    # def _is_plot(self):
+    #     """
+    #     Checks if the scheme has a plot
+    #     :return: True
+    #     :return: Boolean
+    #     """
+    #     if len(self._scheme.cb_plot_collection):
+    #         return True
 
 
 class PlotPreview(Plot):
@@ -445,10 +459,9 @@ class PlotPreview(Plot):
     layers = {}
     type_count = {"Point": 1, "Line": 1, "Polygon": 1}
 
-    def __init__(self, data_service, file_settings, scheme_id, scheme_number, parent_id):
+    def __init__(self, data_service, file_settings, scheme_number, parent_id):
         super(PlotPreview, self).__init__()
         self._data_service = data_service
-        self._scheme_id = scheme_id
         self._scheme_number = scheme_number
         self._parent_id = parent_id
         self._items = self._plot_layer = None
@@ -510,11 +523,9 @@ class PlotPreview(Plot):
         results = []
         self._num_errors = 0
         try:
-            # UniqueParcelIdentifier(
-            #     self._data_service,
-            #     self._data_service.scheme(self._scheme_id),
-            #     "W"
-            # )
+            # TODO: Remove the test line below
+            UniqueParcelIdentifier(self._data_service, "W")
+
             with open(fpath, 'r') as csv_file:
                 clean_line = self._filter_whitespace(csv_file, self._header_row)
                 csv_reader = csv.DictReader(
