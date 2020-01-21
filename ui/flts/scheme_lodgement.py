@@ -1188,6 +1188,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         elif current_id == 3:
             # This is the last page
             try:
+                self._view_docs_page()
                 self.save_scheme()
                 self.populate_workflow()
                 ret_status = True
@@ -1265,6 +1266,12 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.tr_summary.scm_blk_area.setText(
             1, self.dbl_spinbx_block_area.text()
         )
+
+    def _view_docs_page(self):
+        if self.tr_summary.doc_cover_cert.text(2) == 'View':
+            self.tr_summary.doc_cover_cert.clicked.connect(
+                self.tbw_documents
+            )
 
     def _save_ra_last_value(self, scheme_number):
         # Save the last value for the given relevant authority

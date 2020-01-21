@@ -82,8 +82,7 @@ class SchemeSummaryWidget(QTreeWidget):
         # Define top-level items
         self.scheme_info.setText(0, self.tr('Scheme Information'))
         self.supporting_document.setText(0, self.tr('Supporting Documents'))
-        self.holders_info.setText(0, '{0}'.format(
-            self.tr('List of Holders: ')))
+        self.holders_info.setText(0, self.tr('List of Holders: '))
         self.addTopLevelItems([self.scheme_info, self.supporting_document,
                                self.holders_info])
 

@@ -2258,7 +2258,7 @@ class STDMQGISLoader(object):
         """
         Load and open documentation manual
         """
-        help_manual = u'{0}/stdm.chm'.format(self.plugin_dir)
+        help_manual = u'{0}/flts.chm'.format(self.plugin_dir)
         try:
             os.startfile(
                 help_manual, 'open'
