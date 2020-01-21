@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Mon Jan 20 20:23:29 2020
-#      by: PyQt4 UI code generator 4.10
+# Created: Tue Jan 21 23:38:47 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -299,8 +299,8 @@ class Ui_ldg_wzd(object):
         self.label_schm_num.setText(_translate("ldg_wzd", "Scheme Number", None))
         self.gbx_block_area.setTitle(_translate("ldg_wzd", "Block Area", None))
         self.label_blck_area_units.setText(_translate("ldg_wzd", "Units", None))
-        self.radio_hectares.setText(_translate("ldg_wzd", "Hectares", None))
-        self.radio_sq_meters.setText(_translate("ldg_wzd", "Square Meters", None))
+        self.radio_hectares.setText(_translate("ldg_wzd", "Hectares (Ha)", None))
+        self.radio_sq_meters.setText(_translate("ldg_wzd", "Square Meters (Sq.m)", None))
         self.wizardPage.setSubTitle(_translate("ldg_wzd", "Upload the supporting documents for the scheme", None))
         self.label_desc_3.setText(_translate("ldg_wzd", "<html><head/><body><p>Click the \'Browse\' link to add the individual supporting documents </p></body></html>", None))
         self.label_upld_multi.setText(_translate("ldg_wzd", "Add multiple files from a source directory", None))
