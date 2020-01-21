@@ -67,7 +67,7 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         #Insert installed version text
         version_msg = QApplication.translate(
             'AboutSTDMDialog',
-            'Based on STDM version'
+            'FLTS version'
         )
         version_text = u'{0} {1}'.format(version_msg, installed_version)
         char_format = cursor.blockCharFormat()
@@ -79,13 +79,13 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         """
         Load STDM home page using the system's default browser.
         """
-        stdmURL = "http://www.stdm.gltn.net"
-        QDesktopServices.openUrl(QUrl(stdmURL))
+        fltsURL = "http://www.mlr.gov.na/"
+        QDesktopServices.openUrl(QUrl(fltsURL))
 
     def onContactUs(self):
         """
         Load STDM contact page.
         """
-        contactURL = "http://www.stdm.gltn.net/?page_id=291"
+        contactURL = "http://www.gov.na"
         QDesktopServices.openUrl(QUrl(contactURL))
     

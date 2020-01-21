@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_about_flts.ui'
 #
-# Created: Fri Oct 11 10:38:23 2019
-#      by: PyQt4 UI code generator 4.10
+# Created: Tue Jan 21 22:14:30 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_frmAbout(object):
     def setupUi(self, frmAbout):
         frmAbout.setObjectName(_fromUtf8("frmAbout"))
-        frmAbout.resize(718, 541)
+        frmAbout.resize(718, 542)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -35,10 +35,6 @@ class Ui_frmAbout(object):
         frmAbout.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.gridLayout = QtGui.QGridLayout(frmAbout)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
-        self.txtAbout = QtGui.QTextEdit(frmAbout)
-        self.txtAbout.setReadOnly(True)
-        self.txtAbout.setObjectName(_fromUtf8("txtAbout"))
-        self.gridLayout.addWidget(self.txtAbout, 0, 0, 1, 2)
         self.btnSTDMHome = QtGui.QPushButton(frmAbout)
         self.btnSTDMHome.setMinimumSize(QtCore.QSize(0, 30))
         self.btnSTDMHome.setObjectName(_fromUtf8("btnSTDMHome"))
@@ -51,6 +47,10 @@ class Ui_frmAbout(object):
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 2)
+        self.txtAbout = QtGui.QTextEdit(frmAbout)
+        self.txtAbout.setReadOnly(True)
+        self.txtAbout.setObjectName(_fromUtf8("txtAbout"))
+        self.gridLayout.addWidget(self.txtAbout, 0, 0, 1, 2)
 
         self.retranslateUi(frmAbout)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), frmAbout.reject)
@@ -58,20 +58,26 @@ class Ui_frmAbout(object):
 
     def retranslateUi(self, frmAbout):
         frmAbout.setWindowTitle(_translate("frmAbout", "About FLTS", None))
+        self.btnSTDMHome.setText(_translate("frmAbout", "MLR Website", None))
+        self.btnContactUs.setText(_translate("frmAbout", "Contact", None))
         self.txtAbout.setDocumentTitle(_translate("frmAbout", "About FLTS", None))
         self.txtAbout.setHtml(_translate("frmAbout", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><title>About FLTS</title><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:5pt; font-weight:200;\">    </span></p>\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:14pt; font-weight:600;\">    </span><img src=\":/plugins/stdm/images/icons/flts2.png\" /></p>\n"
-"<p style=\" margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\">The Flexible Land Tenure System (FLTS) is a land rights recordation system that is developed by the Global Land Tool Network (GLTN) and </span><span style=\" font-size:9pt;\">Gesellschaft für Internationale Zusammenarbeit (GIZ)</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"> in support of the Ministry of Land Reform (MLR) of Namibia. It promotes land administration by incorporating MLR to digitizing land records incorporating current paper-based system pursuant to the FLTS Act of 2012 and cognisant of the continuum of land rights. </span></p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /></p>\n"
-"<p style=\" margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:600;\">Objects of FLTS</span></p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Wingdings\'; font-size:8pt;\">Ø</span><span style=\" font-family:\'Times New Roman\'; font-size:7pt;\">  </span><span style=\" font-size:9pt;\">to create alternative forms of land title that are simpler and cheaper to administer than existing forms of land title;</span><span style=\" font-size:8pt;\"> </span></p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Wingdings\'; font-size:8pt;\">Ø</span><span style=\" font-family:\'Times New Roman\'; font-size:7pt;\">  </span><span style=\" font-size:9pt;\">to provide security of title for persons who live in informal settlements or who are provided with low income housing;</span><span style=\" font-size:8pt;\"> </span></p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Wingdings\'; font-size:8pt;\">Ø</span><span style=\" font-family:\'Times New Roman\'; font-size:7pt;\">  </span><span style=\" font-size:9pt;\">to empower the persons concerned economically by means of these rights</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /><br />Copyright © 2019 UN Habitat and its implementing partners. All rights reserved.</span></p></body></html>", None))
-        self.btnSTDMHome.setText(_translate("frmAbout", "FLTS", None))
-        self.btnContactUs.setText(_translate("frmAbout", "Contact Us", None))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:5pt; font-weight:200;\">    </span></p>\n"
+"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:36px; margin-right:36px; -qt-block-indent:0; text-indent:0px;\"><img src=\":/plugins/stdm/images/icons/flts_2.png\" /></p>\n"
+"<p style=\" margin-top:5px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">The goal of the Fexible Land Tenure System (FLTS) is to establish an interchangeable tenure registration system that is parallel and complementary to the initially existing systems. The<br />FLTS is designed to provide tenure security to informal settlement dwellers in Namibia in accordance to FLTA (Flexible Land Tenure Act). </span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\"> </span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /><br />This system</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\"> has the following tasks:</span></p>\n"
+"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Uploading of land tenure information     </li>\n"
+"<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Quality checking / assessment</li>\n"
+"<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Revision of Scheme information</li>\n"
+"<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Uploading of spatial/plot data</li>\n"
+"<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Certificate generation</li></ul>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt; font-weight:600;\">Objectives of FLTA</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /></span><span style=\" font-size:10pt;\">(a) to create alternative forms of landtitle that are simpler and cheaperto administer than existing forms of land title;</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">(b) to provide security of title for persons who live in informal settlements or who are provided<br />with low income housing;</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\"><br />(c) to empower the persons concerned economically by means of these rights </span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /><br />Copyright © 2020 UN Habitat and its implementing partners. All rights reserved.</span></p></body></html>", None))
 
 from stdm import resources_rc
