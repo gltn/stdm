@@ -18,6 +18,10 @@ copyright            : (C) 2019
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.gui import QgsGenericProjectionSelector
+from stdm.settings.registryconfig import (
+    last_document_path,
+    set_last_document_path
+)
 from stdm.ui.flts.workflow_manager.config import (
     SchemeMessageBox,
     StyleSheet,
@@ -30,6 +34,7 @@ from stdm.ui.flts.workflow_manager.plot import(
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.delegates.plot_file_delegate import PlotFileDelegate
 from stdm.ui.flts.workflow_manager.components.plot_import_component import PlotImportComponent
+
 
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
@@ -102,24 +107,33 @@ class PlotImportWidget(QWidget):
         self._preview_button.clicked.connect(self._preview)
         _selection_model = self._preview_table_view.selectionModel()
         _selection_model.selectionChanged.connect(self._on_preview_select)
+        QTimer.singleShot(0, self._set_file_path)
+
+    def _set_file_path(self):
+        """
+        Sets plot import file absolute path
+        """
+        fpath = last_document_path()
+        if not fpath or not QFile.exists(fpath):
+            fpath = "."
+        self._plot_file.set_file_path(fpath)
 
     def _add_file(self):
         """
         Adds plot import file data settings into the file table view
         """
-        test_folder = "D:/Projects/STDM/Namibia/FLTS/Sample_Inputs/WKT"
-        path = QFileInfo(self._plot_file.file_path).path() \
-            if self._plot_file.file_path else test_folder
+        fpath = QFileInfo(self._plot_file.file_path).path()
         extensions = " ".join(self._plot_file.file_extensions())
         fpath = QFileDialog.getOpenFileName(
             self,
             "Workflow Manager - Plot Add Files",
-            path,
+            fpath,
             "Plot Import files {}".format(extensions)
         )
         if fpath and fpath not in self._plot_file.file_paths:
             try:
                 self._plot_file.set_file_path(fpath)
+                set_last_document_path(fpath)
                 if not self.model.results:
                     self._load(self.model, self._plot_file)
                 else:
