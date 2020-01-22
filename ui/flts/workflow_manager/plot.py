@@ -443,7 +443,8 @@ class UniqueParcelIdentifier:
         """
         if self._plot_counter == 0 and self._data_service.is_plot():
             plot_number = self._data_service.max_plot_number()
-            return self._generate_plot_number(int(plot_number) + 1)
+            if plot_number:
+                return self._generate_plot_number(int(plot_number) + 1)
         return self._generate_plot_number(1)
 
     def _generate_plot_number(self, num):
@@ -545,10 +546,8 @@ class PlotPreview(Plot):
         results = []
         self._num_errors = 0
         try:
-            # TODO: Remove the test line below
             upi = UniqueParcelIdentifier(self._data_service, "W")
             aucode = upi.aucode()
-
             with open(fpath, 'r') as csv_file:
                 clean_line = self._filter_whitespace(csv_file, self._header_row)
                 csv_reader = csv.DictReader(
