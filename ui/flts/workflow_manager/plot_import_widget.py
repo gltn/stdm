@@ -170,6 +170,20 @@ class PlotImportWidget(QWidget):
             self._parent.objectName()
         )
 
+    # def _test_dock_close(self, event):
+    #     reply = QMessageBox.question(
+    #         self,
+    #         "Workflow Manager - Plot Preview",
+    #         'The data has not been imported. '
+    #         'Do you want to import?',
+    #         QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+    #     )
+    #     if reply == QMessageBox.Cancel:
+    #         event.ignore()
+    #     else:
+    #         event.accept()
+
+
     def _on_file_select(self, index):
         """
         Enables toolbar buttons on selecting a file record
