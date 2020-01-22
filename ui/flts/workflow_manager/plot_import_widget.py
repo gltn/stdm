@@ -18,6 +18,7 @@ copyright            : (C) 2019
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.gui import QgsGenericProjectionSelector
+from qgis.utils import iface
 from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
@@ -47,12 +48,13 @@ class PlotImportWidget(QWidget):
     """
     def __init__(self, widget_properties, profile, scheme_id, scheme_number, parent=None):
         super(QWidget, self).__init__(parent)
+        self._scheme_number = scheme_number
+        self._parent = parent
         data_service = widget_properties["data_service"]
         self._file_service = data_service["plot_file"]
         self._file_service = self._file_service()
         self._preview_service = data_service["plot_preview"]
         self._preview_service = self._preview_service(profile, scheme_id)
-        self._scheme_number = scheme_number
         self._plot_file = PlotFile(self._file_service)
         self._plot_preview = self._layer = self._previewed = None
         import_component = PlotImportComponent()
@@ -99,7 +101,8 @@ class PlotImportWidget(QWidget):
         layout.addLayout(import_component.layout)
         layout.addWidget(splitter)
         self.setLayout(layout)
-        parent.paginationFrame.hide()
+        self._parent.paginationFrame.hide()
+        # self._dock_widget.closing.connect(self._test_dock_close)
         self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
         self._remove_button.clicked.connect(self._remove_file)
@@ -154,6 +157,18 @@ class PlotImportWidget(QWidget):
         """
         position = self.model.rowCount()
         self.model.insertRows(position)
+
+    @property
+    def _dock_widget(self):
+        """
+        Returns parent dock widget
+        :return: Parent dock widget
+        :rtype: QDockWidget
+        """
+        return iface.mainWindow().findChild(
+            QDockWidget,
+            self._parent.objectName()
+        )
 
     def _on_file_select(self, index):
         """
