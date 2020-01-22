@@ -178,6 +178,20 @@ class PlotImportWidget(QWidget):
         if not self._show_question_message(title, msg):
             return
         fpath = self.model.results[row].get("fpath")
+
+        # fname = self.model.data(self.model.index(row, NAME))
+        # title = "Workflow Manager - Plot Add Files"
+        # msg = 'Remove "{}" and its settings?'.format(fname)
+        # if not self._plot_preview:
+        #     if not self._show_question_message(title, msg):
+        #         return
+        # elif not self._plot_preview.is_dirty(fpath):
+        #     if not self._show_question_message(title, msg):
+        #         return
+        # else:
+        #     if not self._ok_to_continue(fpath):
+        #         return
+
         if self._plot_preview:
             self._plot_preview.remove_layer_by_id(fpath)
             self._layer = None
@@ -190,6 +204,29 @@ class PlotImportWidget(QWidget):
             self.model.reset()
             self._disable_widgets(self._toolbar_buttons)
             self._set_crs_button.setEnabled(False)
+
+    # def _ok_to_continue(self, fpath):
+    #     """
+    #     Authorize action on a dirty file
+    #     :param fpath: Plot import file absolute path
+    #     :type fpath: String
+    #     :return: True or False
+    #     :rtype: Boolean
+    #     """
+    #     if self._plot_preview.is_dirty(fpath):
+    #         fname = QFileInfo(fpath).fileName()
+    #         reply = QMessageBox.question(
+    #             self,
+    #             "Workflow Manager - Plot Preview",
+    #             'The "{}" data has not been imported. '
+    #             'Do you want to import?'.format(fname),
+    #             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+    #         )
+    #         if reply == QMessageBox.Cancel:
+    #             return False
+    #         # elif reply == QMessageBox.Yes:
+    #         #     self.fileSave()
+    #     return True
 
     def _reset_preview(self, fpath):
         """

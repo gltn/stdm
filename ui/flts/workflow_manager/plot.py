@@ -40,7 +40,6 @@ NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
 PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
-# PARCEL_NUM, GEOMETRY, AREA = range(3)
 
 WARNING = "Warning"
 
@@ -49,6 +48,8 @@ class PlotLayer:
     """
     Manages preview of plot geometric shape in a layer
     """
+    qgs_project = None
+
     def __init__(self, uri, name, provider_lib="memory", fields=None):
         self._uri = uri
         self._name = name
@@ -187,14 +188,14 @@ class PlotLayer:
         if len(layer) > 0:
             project.removeMapLayer(layer[0].id())
 
-    def remove_layer_by_id(self, id_):
+    @classmethod
+    def remove_layer_by_id(cls, id_):
         """
         Removes a layer from the project given the id
         :param id_: Layer ID
         :type id_: String
         """
-        project = self.project_instance()
-        project.removeMapLayer(id_)
+        cls.qgs_project.removeMapLayer(id_)
 
     def select_feature(self, layer, feature_ids):
         """
@@ -207,7 +208,6 @@ class PlotLayer:
         self._move_node_to_first(layer)
         if not self._is_active(layer):
             iface.setActiveLayer(layer)
-        # TODO: Layer is_visible. If not then make it visible
         layer.select(feature_ids)
 
     def _move_node_to_first(self, layer):
@@ -274,18 +274,17 @@ class PlotLayer:
         if layer and layer.isValid():
             layer.removeSelection()
 
-    @staticmethod
-    def project_instance():
+    @classmethod
+    def project_instance(cls):
         """
         Returns the instance pointer
-        :return:
         """
         try:
-            instance = QgsMapLayerRegistry.instance()
+            cls.qgs_project = QgsMapLayerRegistry.instance()
         except:
-            instance = QgsProject.instance()
+            cls.qgs_project = QgsProject.instance()
         else:
-            return instance
+            return cls.qgs_project
 
 
 class Item:
@@ -864,7 +863,7 @@ class PlotPreview(Plot):
         try:
             layer = PlotPreview.layers.get(parent_id)
             if layer:
-                self._plot_layer.remove_layer_by_id(layer.id())
+                PlotLayer.remove_layer_by_id(layer.id())
         except (RuntimeError, OSError, Exception) as e:
             raise e
 
@@ -919,6 +918,17 @@ class PlotPreview(Plot):
         if not layer:
             layer = PlotPreview.layers.get(self._parent_id)
         self._plot_layer.clear_feature(layer)
+
+    @staticmethod
+    def is_dirty(fpath):
+        """
+        Checks if the file has changes to be imported
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return: True
+        :rtype: Boolean
+        """
+        return PlotPreview.dirty.get(fpath)
 
     def get_headers(self):
         """
@@ -1283,17 +1293,6 @@ class PlotFile(Plot):
                 return sum(1 for line in csv_file)
         except (csv.Error, Exception) as e:
             raise e
-
-    @staticmethod
-    def is_dirty(fpath):
-        """
-        Checks if the file has changes to be imported
-        :param fpath: Plot import file absolute path
-        :type fpath: String
-        :return: True
-        :rtype: Boolean
-        """
-        return PlotPreview.dirty.get(fpath)
 
     def get_headers(self):
         """
