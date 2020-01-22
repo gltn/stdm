@@ -421,35 +421,57 @@ class UniqueParcelIdentifier:
     """
     Unique Parcel Identifier (UPI) object
     """
-
     def __init__(self, data_service, prefix):
         self._data_service = data_service
         self._prefix = prefix
-        self._aucode()
-        self._max_plot_number()
+        self._plot_counter = 0
 
     def _aucode(self):
         """
         Returns the Scheme AUCODE
-        :return scheme: Filter entity query object
-        :rtype scheme: Entity object
+        :return: Scheme AUCODE
+        :rtype: Unicode
         """
-        relevant_authority = \
-            self._data_service.scheme_relevant_authority()
+        relevant_authority = self._data_service.scheme_relevant_authority()
         return relevant_authority.au_code
 
-    def _max_plot_number(self):
-        test = self._data_service.scheme_plot()
-        print(test)
-    #
-    # def _is_plot(self):
-    #     """
-    #     Checks if the scheme has a plot
-    #     :return: True
-    #     :return: Boolean
-    #     """
-    #     if len(self._scheme.cb_plot_collection):
-    #         return True
+    def plot_number(self):
+        """
+        Returns Scheme Plot Number
+        :return: Plot number
+        :rtype: String
+        """
+        if self._plot_counter == 0 and self._data_service.is_plot():
+            plot_number = self._data_service.max_plot_number()
+            return self._generate_plot_number(int(plot_number))
+        return self._generate_plot_number(1)
+
+    def _generate_plot_number(self, num):
+        """
+        Returns a new plot number
+        :param num: New number
+        :type num: Integer
+        :return: Plot number
+        :rtype: String
+        """
+        prefix = "000000"
+        self._plot_counter += num
+        suffix = str(self._plot_counter)
+        prefix = prefix[:-len(suffix)]
+        return prefix + suffix
+
+    def upi(self, plot_number, aucode):
+        """
+        Returns Unique Parcel Identifier (UPI)
+        :param plot_number: Plot number
+        :type plot_number: String
+        :param aucode: AUCODE
+        :type aucode: Unicode
+        :return upi: Unique Parcel Identifier
+        :return upi: String
+        """
+        upi = "{0}/{1}/{2}".format(self._prefix, aucode, plot_number)
+        return upi
 
 
 class PlotPreview(Plot):

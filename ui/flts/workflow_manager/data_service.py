@@ -18,7 +18,10 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from abc import ABCMeta, abstractmethod
-from sqlalchemy import exc
+from sqlalchemy import (
+    exc,
+    func
+)
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
     ColumnSettings,
@@ -673,6 +676,15 @@ class PlotImportPreviewDataService:
         """
         return self.filter_query_by("Scheme", {"id": self._scheme_id}).first()
 
+    def is_plot(self):
+        """
+        Checks if the scheme has a plot
+        :return: True
+        :return: Boolean
+        """
+        if len(self._scheme.cb_plot_collection):
+            return True
+
     def scheme_relevant_authority(self):
         """
         Returns Scheme Relevant Authority record/row
@@ -687,14 +699,6 @@ class PlotImportPreviewDataService:
             "Relevant_authority", filters
         ).first()
         return relevant_authority
-
-    def scheme_plot(self):
-        """
-        Returns Scheme Plot record/row
-        :return plot: Scheme Plot record/row
-        :rtype plot: Entity
-        """
-        return self.filter_query_by("Plot", {"scheme_id": self._scheme_id}).all()
 
     @staticmethod
     def filter_query_by(entity_name, filters):
@@ -712,6 +716,18 @@ class PlotImportPreviewDataService:
             return filter_by(entity_name, filters)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
+
+    def max_plot_number(self):
+        """
+        Returns maximum Scheme Plot Number
+        :return plot_number: Max Plot Number
+        :rtype plot_number: Unicode
+        """
+        model = self.entity_model_("Plot")
+        entity_object = model()
+        plot_number = entity_object.queryObject([func.max(model.plot_number)]).\
+            filter(model.scheme_id == self._scheme_id).scalar()
+        return plot_number
 
     def entity_model_(self, name=None):
         """
