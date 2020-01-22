@@ -480,6 +480,7 @@ class PlotPreview(Plot):
     Manages preview of plot import data file contents
     """
     layers = {}
+    dirty = {}
     type_count = {"Point": 1, "Line": 1, "Polygon": 1}
 
     def __init__(self, data_service, file_settings, scheme_number, parent_id):
@@ -813,6 +814,7 @@ class PlotPreview(Plot):
             self._plot_layer = PlotLayer(uri, name, fields=fields)
             self.remove_layer_by_id(self._parent_id)
             self._plot_layer.create_layer()
+            self.layer.setReadOnly()
             PlotPreview.layers[self._parent_id] = self.layer
             self.type_count[self._geom_type] += 1
         value = {field: value for field, type_, value in attributes}
