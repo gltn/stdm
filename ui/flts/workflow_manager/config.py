@@ -847,7 +847,7 @@ configurations = {
     ],
     'plot_preview_columns': [
         Column(name='Parcel Number', type="text", flag=(Qt.DisplayRole,)),
-        # Column(name='UPI Number', type="text", flag=(Qt.DisplayRole,)),
+        Column(name='UPI Number', type="text", flag=(Qt.DisplayRole,)),
         Column(name='Geometry', type="text", flag=(Qt.DisplayRole,)),
         Column(name='Area', type="float", flag=(Qt.DisplayRole,))
     ],

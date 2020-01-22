@@ -39,8 +39,8 @@ from qgis.utils import iface
 NAME, IMPORT_AS, DELIMITER, HEADER_ROW, CRS_ID, \
 GEOM_FIELD, GEOM_TYPE = range(7)
 
-# PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
-PARCEL_NUM, GEOMETRY, AREA = range(3)
+PARCEL_NUM, UPI_NUM, GEOMETRY, AREA = range(4)
+# PARCEL_NUM, GEOMETRY, AREA = range(3)
 
 WARNING = "Warning"
 
@@ -426,7 +426,7 @@ class UniqueParcelIdentifier:
         self._prefix = prefix
         self._plot_counter = 0
 
-    def _aucode(self):
+    def aucode(self):
         """
         Returns the Scheme AUCODE
         :return: Scheme AUCODE
@@ -443,7 +443,7 @@ class UniqueParcelIdentifier:
         """
         if self._plot_counter == 0 and self._data_service.is_plot():
             plot_number = self._data_service.max_plot_number()
-            return self._generate_plot_number(int(plot_number))
+            return self._generate_plot_number(int(plot_number) + 1)
         return self._generate_plot_number(1)
 
     def _generate_plot_number(self, num):
@@ -546,7 +546,8 @@ class PlotPreview(Plot):
         self._num_errors = 0
         try:
             # TODO: Remove the test line below
-            UniqueParcelIdentifier(self._data_service, "W")
+            upi = UniqueParcelIdentifier(self._data_service, "W")
+            aucode = upi.aucode()
 
             with open(fpath, 'r') as csv_file:
                 clean_line = self._filter_whitespace(csv_file, self._header_row)
@@ -562,11 +563,13 @@ class PlotPreview(Plot):
                     value = self._get_wkt(data, GEOMETRY)
                     if value:
                         contents[GEOMETRY] = unicode(value)
-                        value = self._get_value(
-                            data, ("parcel", "parcel number", "id"), PARCEL_NUM
-                        )
+                        # value = self._get_value(
+                        #     data, ("parcel", "parcel number", "id"), PARCEL_NUM
+                        # )
+                        # contents[PARCEL_NUM] = unicode(value)
+                        value = upi.plot_number()
                         contents[PARCEL_NUM] = unicode(value)
-                        # Generate UPI Number
+                        contents[UPI_NUM] = unicode(upi.upi(aucode, value))
                         value = self._get_value(data, ("area",), AREA)
                         contents[AREA] = self._to_float(value, AREA)
                         contents["items"] = self._items
