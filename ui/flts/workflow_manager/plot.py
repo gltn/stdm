@@ -582,6 +582,8 @@ class PlotPreview(Plot):
                     self._signal_layers_removed()
         except (csv.Error, Exception) as e:
             raise e
+        if results:
+            PlotPreview.dirty[self._parent_id] = True
         return results
 
     @staticmethod
@@ -1281,6 +1283,17 @@ class PlotFile(Plot):
                 return sum(1 for line in csv_file)
         except (csv.Error, Exception) as e:
             raise e
+
+    @staticmethod
+    def is_dirty(fpath):
+        """
+        Checks if the file has changes to be imported
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        :return: True
+        :rtype: Boolean
+        """
+        return PlotPreview.dirty.get(fpath)
 
     def get_headers(self):
         """

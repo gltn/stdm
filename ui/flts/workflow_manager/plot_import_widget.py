@@ -178,13 +178,13 @@ class PlotImportWidget(QWidget):
         if not self._show_question_message(title, msg):
             return
         fpath = self.model.results[row].get("fpath")
-        self.model.removeRows(row)
-        self._plot_file.remove_filepath(fpath)
         if self._plot_preview:
             self._plot_preview.remove_layer_by_id(fpath)
             self._layer = None
         self._reset_preview(fpath)
         self._set_preview_groupbox_title()
+        self.model.removeRows(row)
+        self._plot_file.remove_filepath(fpath)
         self._enable_crs_button()
         if not self.model.results:
             self.model.reset()
