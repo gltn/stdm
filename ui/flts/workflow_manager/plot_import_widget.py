@@ -256,6 +256,7 @@ class PlotImportWidget(QWidget):
                 return False
             # elif reply == QMessageBox.Yes:
             #     call import function
+            #     on finish import remove dirty files
         return True
 
     def _reset_preview(self, fpath):
