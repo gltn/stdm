@@ -102,7 +102,7 @@ class PlotImportWidget(QWidget):
         layout.addWidget(splitter)
         self.setLayout(layout)
         self._parent.paginationFrame.hide()
-        # self._dock_widget.closing.connect(self._test_dock_close)
+        self._dock_widget.closing.connect(self._on_dock_close)
         self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
         self._remove_button.clicked.connect(self._remove_file)
@@ -170,19 +170,21 @@ class PlotImportWidget(QWidget):
             self._parent.objectName()
         )
 
-    # def _test_dock_close(self, event):
-    #     reply = QMessageBox.question(
-    #         self,
-    #         "Workflow Manager - Plot Preview",
-    #         'The data has not been imported. '
-    #         'Do you want to import?',
-    #         QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
-    #     )
-    #     if reply == QMessageBox.Cancel:
-    #         event.ignore()
-    #     else:
-    #         event.accept()
-
+    def _on_dock_close(self, event):
+        """
+        Handles on parent QDockWidget close event
+        """
+        if not PlotPreview.dirty:
+            event.accept()
+            return
+        fnames = PlotPreview.dirty_file_names()
+        title = "Workflow Manager - Plot Import"
+        msg = "Closing will discard data. " \
+              "Do you want to proceed? \n\n {}".format(", ".join(fnames))
+        if not self._show_question_message(title, msg):
+            event.ignore()
+        else:
+            event.accept()
 
     def _on_file_select(self, index):
         """
@@ -246,9 +248,8 @@ class PlotImportWidget(QWidget):
             fname = QFileInfo(fpath).fileName()
             reply = QMessageBox.question(
                 self,
-                "Workflow Manager - Plot Preview",
-                'The "{}" data has not been imported. '
-                'Do you want to import?'.format(fname),
+                "Workflow Manager - Plot Import",
+                'Do you want to import "{}" data?'.format(fname),
                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
             )
             if reply == QMessageBox.Cancel:

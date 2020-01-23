@@ -922,13 +922,25 @@ class PlotPreview(Plot):
     @staticmethod
     def is_dirty(fpath):
         """
-        Checks if the file has changes to be imported
+        Checks if the file is valid for import
         :param fpath: Plot import file absolute path
         :type fpath: String
         :return: True
         :rtype: Boolean
         """
         return PlotPreview.dirty.get(fpath)
+
+    @classmethod
+    def dirty_file_names(cls):
+        """
+        Returns names of files which are valid for import
+        :return file_names: Valid import file names
+        :rtype file_names: List
+        """
+        file_names = [
+            QFileInfo(fpath).fileName() for fpath in cls.dirty.keys()
+        ]
+        return file_names
 
     def get_headers(self):
         """
