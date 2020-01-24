@@ -275,6 +275,15 @@ class PlotLayer:
             layer.removeSelection()
 
     @classmethod
+    def remove_layers(cls, ids):
+        """
+        Removes list of layers from the project given the IDs
+        :param ids: Layer IDs
+        :type ids: List
+        """
+        cls.qgs_project.removeMapLayers(ids)
+
+    @classmethod
     def project_instance(cls):
         """
         Returns the instance pointer
@@ -852,7 +861,8 @@ class PlotPreview(Plot):
         )
         return layer_name
 
-    def remove_layer_by_id(self, parent_id):
+    @staticmethod
+    def remove_layer_by_id(parent_id):
         """
         Removes layer from the registry/map canvas
         :param parent_id: Parent record/item identifier
@@ -864,6 +874,21 @@ class PlotPreview(Plot):
             layer = PlotPreview.layers.get(parent_id)
             if layer:
                 PlotLayer.remove_layer_by_id(layer.id())
+        except (RuntimeError, OSError, Exception) as e:
+            raise e
+
+    @staticmethod
+    def remove_layers():
+        """
+        Removes all layers from the registry/map canvas
+        given layer IDs
+        """
+        if not PlotPreview.layers:
+            return
+        try:
+            layer_ids = [layer.id() for layer in PlotPreview.layers.values()]
+            if layer_ids:
+                PlotLayer.remove_layers(layer_ids)
         except (RuntimeError, OSError, Exception) as e:
             raise e
 

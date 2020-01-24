@@ -183,6 +183,7 @@ class PlotImportWidget(QWidget):
             event.ignore()
             return
         event.accept()
+        self._remove_layers()
 
     def _on_remove_tab(self):
         """
@@ -194,6 +195,7 @@ class PlotImportWidget(QWidget):
             self.is_dirty = True
             return
         self.is_dirty = False
+        self._remove_layers()
 
     def _ok_to_discard(self):
         """
@@ -205,6 +207,14 @@ class PlotImportWidget(QWidget):
         msg = "Action will discard data. " \
               "Do you want to proceed? \n\n {}".format(", ".join(fnames))
         return self._show_question_message(title, msg)
+
+    def _remove_layers(self):
+        """
+        Removes all layers from the
+        registry/map canvas given layer IDs
+        """
+        if self._plot_preview:
+            self._plot_preview.remove_layers()
 
     def _on_file_select(self, index):
         """
@@ -274,9 +284,11 @@ class PlotImportWidget(QWidget):
             )
             if reply == QMessageBox.Cancel:
                 return False
-            # elif reply == QMessageBox.Yes:
-            #     call import function
-            #     on finish import remove dirty files
+            elif reply == QMessageBox.Yes:
+                pass
+                # call import function
+                # on finish import remove dirty file
+
         return True
 
     def _reset_preview(self, fpath):
