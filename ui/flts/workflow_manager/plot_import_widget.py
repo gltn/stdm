@@ -56,7 +56,8 @@ class PlotImportWidget(QWidget):
         self._preview_service = data_service["plot_preview"]
         self._preview_service = self._preview_service(profile, scheme_id)
         self._plot_file = PlotFile(self._file_service)
-        self._plot_preview = self._layer = self._previewed = None
+        self._plot_preview = self._layer = None
+        self._previewed = self.is_dirty = None
         import_component = PlotImportComponent()
         toolbar = import_component.components
         self._add_button = toolbar["addFiles"]
@@ -103,6 +104,7 @@ class PlotImportWidget(QWidget):
         self.setLayout(layout)
         self._parent.paginationFrame.hide()
         self._dock_widget.closing.connect(self._on_dock_close)
+        self._parent.removeTab.connect(self._on_remove_tab)
         self._file_table_view.clicked.connect(self._on_file_select)
         self._add_button.clicked.connect(self._add_file)
         self._remove_button.clicked.connect(self._remove_file)
@@ -179,12 +181,27 @@ class PlotImportWidget(QWidget):
             return
         fnames = PlotPreview.dirty_file_names()
         title = "Workflow Manager - Plot Import"
-        msg = "Closing will discard data. " \
+        msg = "Action will discard data. " \
               "Do you want to proceed? \n\n {}".format(", ".join(fnames))
         if not self._show_question_message(title, msg):
             event.ignore()
         else:
             event.accept()
+
+    def _on_remove_tab(self):
+        """
+        Handles on tab remove action
+        """
+        if not PlotPreview.dirty:
+            return
+        fnames = PlotPreview.dirty_file_names()
+        title = "Workflow Manager - Plot Import"
+        msg = "Action will discard data. " \
+              "Do you want to proceed? \n\n {}".format(", ".join(fnames))
+        if not self._show_question_message(title, msg):
+            self.is_dirty = True
+        else:
+            self.is_dirty = False
 
     def _on_file_select(self, index):
         """

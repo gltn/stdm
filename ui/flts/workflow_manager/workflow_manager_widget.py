@@ -19,6 +19,10 @@ copyright            : (C) 2019
 """
 from collections import OrderedDict
 from PyQt4.QtGui import *
+from PyQt4.QtCore import (
+    Qt,
+    pyqtSignal
+)
 from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
@@ -62,6 +66,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
+    removeTab = pyqtSignal()
+
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
@@ -115,7 +121,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
-        self.tabWidget.tabCloseRequested.connect(self._close_tab)
+        self.tabWidget.tabCloseRequested.connect(self._tab_close_requested)
         if self.approveButton:
             self.approveButton.clicked.connect(
                 lambda: self._on_approve(self._lookup.APPROVED(), "pass")
@@ -219,6 +225,22 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._load_scheme_detail()
                 self._on_uncheck_disable_widgets()
 
+    # def _on_uncheck(self, index):
+    #     """
+    #     Handle checkbox uncheck event
+    #     :param index: Table view item identifier
+    #     :type index: QModelIndex
+    #     """
+    #     if index.column() == self._lookup.CHECK:
+    #         row, check_state, record_id = self._get_model_item(index)
+    #         if int(check_state) == 0:
+    #             load_detail = self._load_scheme_detail()
+    #             if not load_detail:
+    #                 self._model.setData(index, Qt.Checked, Qt.CheckStateRole)
+    #                 return
+    #             self._remove_checked_id(record_id)
+    #             self._on_uncheck_disable_widgets()
+
     def _get_model_item(self, index):
         """
         Returns model items
@@ -301,8 +323,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param scheme_items: Scheme items
         :type scheme_items: Dictionary
         """
-        if not self._checked_ids:
+        self.removeTab.emit()
+        if self._is_detail_dirty():
             return
+        if not self._checked_ids:
+            return True
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
         if self._msg_box_button:
@@ -317,6 +342,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         widget_prop["scheme_items"] = self._checked_scheme_items() \
             if not scheme_items else scheme_items
         self._load_details(widget_prop, widget_id, last_id, scheme_number)
+        return True
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
         """
@@ -476,7 +502,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param label: Tab label
         :type label: String
         """
-        self.tabWidget.removeTab(index)
+        self._close_tab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
         for key, icon in self._tab_icons.iteritems():
@@ -500,6 +526,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         return button
 
+    def _tab_close_requested(self, index):
+        """
+        Resets detail table attribute before closing
+        :param index: Index of the tab to be closed
+        :type index: Integer
+        :param index:
+        """
+        self.removeTab.emit()
+        if self._is_detail_dirty():
+            return
+        self._detail_table = None
+        self._close_tab(index)
+
     def _close_tab(self, index):
         """
         Cleanly closes the tab
@@ -511,6 +550,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         if tab is not None:
             tab.deleteLater()
         self._tab_name = None
+
+    def _is_detail_dirty(self):
+        """
+        Checks if the detail table view is dirty
+        :return: True
+        :rtype: Boolean
+        """
+        if hasattr(self._detail_table, "is_dirty") and self._detail_table.is_dirty:
+            return True
 
     @staticmethod
     def _enable_widget(widgets):
@@ -918,7 +966,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status = self._get_stored_status()
         # TODO: Start refactor. Combine with _on_check_enable_widgets
         if not self._checked_ids:
-            self._close_tab(1)
+            self._tab_close_requested(1)
             if self.disapproveButton:
                 self._disable_widget(self.disapproveButton)
             elif self.holdButton:
