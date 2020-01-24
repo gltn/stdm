@@ -179,29 +179,32 @@ class PlotImportWidget(QWidget):
         if not PlotPreview.dirty:
             event.accept()
             return
-        fnames = PlotPreview.dirty_file_names()
-        title = "Workflow Manager - Plot Import"
-        msg = "Action will discard data. " \
-              "Do you want to proceed? \n\n {}".format(", ".join(fnames))
-        if not self._show_question_message(title, msg):
+        if not self._ok_to_discard():
             event.ignore()
-        else:
-            event.accept()
+            return
+        event.accept()
 
     def _on_remove_tab(self):
         """
-        Handles on tab remove action
+        Handles on tab remove event
         """
         if not PlotPreview.dirty:
             return
+        if not self._ok_to_discard():
+            self.is_dirty = True
+            return
+        self.is_dirty = False
+
+    def _ok_to_discard(self):
+        """
+        Returns discard data message box reply
+        :return: True or False
+        """
         fnames = PlotPreview.dirty_file_names()
         title = "Workflow Manager - Plot Import"
         msg = "Action will discard data. " \
               "Do you want to proceed? \n\n {}".format(", ".join(fnames))
-        if not self._show_question_message(title, msg):
-            self.is_dirty = True
-        else:
-            self.is_dirty = False
+        return self._show_question_message(title, msg)
 
     def _on_file_select(self, index):
         """
@@ -415,6 +418,8 @@ class PlotImportWidget(QWidget):
         :type title: String
         :param msg: Message to be communicated
         :type msg: String
+        :return: True or False
+        :rtype: Boolean
         """
         if QMessageBox.question(
             self, self.tr(title), self.tr(msg),
