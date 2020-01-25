@@ -184,6 +184,7 @@ class PlotImportWidget(QWidget):
             return
         event.accept()
         self._remove_layers()
+        PlotPreview.reset_dirty()
 
     def _on_remove_tab(self):
         """
@@ -194,8 +195,9 @@ class PlotImportWidget(QWidget):
         if not self._ok_to_discard():
             self.is_dirty = True
             return
-        self.is_dirty = False
         self._remove_layers()
+        PlotPreview.reset_dirty()
+        self.is_dirty = False
 
     def _ok_to_discard(self):
         """
@@ -288,8 +290,9 @@ class PlotImportWidget(QWidget):
                 pass
                 # call import function
                 # on finish import remove dirty file
-
-
+            else:
+                pass
+                # Remove from dirty dictionary
         return True
 
     def _reset_preview(self, fpath):

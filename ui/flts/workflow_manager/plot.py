@@ -967,6 +967,13 @@ class PlotPreview(Plot):
         ]
         return file_names
 
+    @classmethod
+    def reset_dirty(cls):
+        """
+        Resets the dirty class variable
+        """
+        cls.dirty = {}
+
     def get_headers(self):
         """
         Returns column label configurations
