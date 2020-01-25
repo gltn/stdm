@@ -968,6 +968,18 @@ class PlotPreview(Plot):
         return file_names
 
     @classmethod
+    def remove_dirty(cls, fpath):
+        """
+        Removes file name from dirty class variable
+        :param fpath: Plot import file absolute path
+        :type fpath: String
+        """
+        try:
+            del cls.dirty[fpath]
+        except KeyError:
+            pass
+
+    @classmethod
     def reset_dirty(cls):
         """
         Resets the dirty class variable

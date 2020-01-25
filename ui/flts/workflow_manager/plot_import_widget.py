@@ -291,8 +291,7 @@ class PlotImportWidget(QWidget):
                 # call import function
                 # on finish import remove dirty file
             else:
-                pass
-                # Remove from dirty dictionary
+                PlotPreview.remove_dirty(fpath)
         return True
 
     def _reset_preview(self, fpath):
