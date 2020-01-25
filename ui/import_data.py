@@ -124,6 +124,10 @@ class ImportData(QWizard, Ui_frmImport):
         #Geometry columns
         self.geomcols = []
 
+        self._trans_widget_mgr = TranslatorWidgetManager(self)
+
+        self.auto_load_translators()
+
         #Initialize value translators from definitions
         self._init_translators()
 
@@ -313,7 +317,7 @@ class ImportData(QWizard, Ui_frmImport):
     def _init_translators(self):
         translator_menu = QMenu(self)
 
-        self._trans_widget_mgr = TranslatorWidgetManager(self)
+        #self._trans_widget_mgr = TranslatorWidgetManager(self)
         self._trans_signal_mapper = QSignalMapper(self)
 
         for trans_name, config in ValueTranslatorConfig.translators.iteritems():
@@ -339,6 +343,96 @@ class ImportData(QWizard, Ui_frmImport):
 
         self.btn_edit_translator.clicked.connect(self._on_edit_translator)
         self.btn_delete_translator.clicked.connect(self._on_delete_translator)
+
+    def auto_load_translators(self):
+        srclookups = mapfile_section('lookups')
+        dstlookups = mapfile_section('lookup-defaults')
+        config_key ="Lookup values"
+
+        import pydevd; pydevd.settrace()
+
+        for dest_column, lookup_table in dstlookups.iteritems():
+            trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+
+            src_column = self._get_src_column(lookup_table, srclookups)
+            if src_column is None:
+                continue
+
+            trans_dlg = trans_config.create(
+                self,
+                [],
+                self.targetTab,
+                dest_column,
+                src_column,
+                dflt_lookups=dlookups.values()
+            )
+
+            trans_dlg.auto_lookup_translator = LookupValueTranslator()
+            trans_dlg.auto_lookup_translator.set_referenced_table(lookup_table)
+            trans_dlg.auto_lookup_translator.set_referencing_table(dest_table)
+            trans_dlg.auto_lookup_translator.set_referencing_column(dest_column)
+            trans_dlg.auto_lookup_transltor.set_referenced_table(lookup_table)
+            trans_dlg.auto_lookup_transltor.add_source_reference_column(src_column, dest_column)
+            lookup_translator.default_value = ''
+
+            self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+
+        rel_values = mapfile_section('household_members-relatedentity')
+        config_key ="Related table"
+        dest_table = rel_values['dest_table']
+        dest_column = rel_values['dest_column']
+
+        ref_table = rel_values['reftable']
+        ref_output_column = rel_values['ref_output_col']
+
+        col_pairs = {}
+        col_pairs[0] = rel_values['src_table_field']
+        col_pairs[1] = rel_values['ref_table_field']
+
+        trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+        trans_dlg = trans_config.create(
+            self,
+            [],
+            self.targetTab,
+            dest_column,
+            src_column,
+            dflt_lookups=dlookups.values()
+        )
+
+        rel_tab_translator = RelatedTableTranslator()
+        trans_dlg.auto_rel_translator.set_referencing_table(self.targetTab)
+        trans_dlg.auto_rel_translator.set_referencing_column(dest_column)
+        trans_dlg.auto_rel_translator.set_referenced_table(ref_table)
+        trans_dlg.auto_rel_translator.set_output_reference_column(ref_output_column)
+        trans_dlg.auto_rel_translator.set_input_referenced_columns(col_pairs)
+
+        self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+        #"Supporting documents")
+
+    def _get_src_column(self, value, srclookups):
+        column = None
+        for col, table in srclookups.iteritems():
+            if table == value:
+                column = col
+                break
+        return column
+
+    def _register_lookups(self, config_key, lookups):
+        src_column = self._selected_source_column()
+        for dest_column, val in lookups.iteritems():
+            trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+            trans_dlg = trans_config.create(
+                self,
+                [],
+                self.targetTab,
+                dest_column,
+                src_column,
+                dflt_lookups=dlookups.values()
+            )
+            self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
 
     def _load_translator_dialog(self, config_key):
         """
@@ -399,6 +493,7 @@ class ImportData(QWizard, Ui_frmImport):
                     return
 
             #self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
             self._handle_translator_dlg(dest_column, trans_dlg)
 
     def _handle_translator_dlg(self, key, dlg):

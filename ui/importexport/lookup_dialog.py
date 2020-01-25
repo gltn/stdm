@@ -54,6 +54,7 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
         )
 
         self.dflt_lookups = dflt_lookups
+        self.auto_lookup_translator = None
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
@@ -131,7 +132,6 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
 
         lk_values = lk_ent.lookups()
 
-
         self.cbo_default.addItem('')
 
         for lk_value in lk_values:
@@ -147,6 +147,9 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
         :return: Returns the lookup value translator object.
         :rtype: LookupValueTranslator
         """
+        if self.auto_lookup_translator is not None:
+            return self.auto_lookup_translator
+
         lookup_translator = LookupValueTranslator()
         lookup_translator.set_referencing_table(self._dest_table)
         lookup_translator.set_referencing_column(self._dest_col)

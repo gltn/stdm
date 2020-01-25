@@ -78,6 +78,9 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         self.cbo_source_tables.addItems(self.db_tables())
 
     def value_translator(self):
+        if self.auto_rel_translator is not None:
+            return self.auto_rel_translator
+
         rel_tab_translator = RelatedTableTranslator()
         rel_tab_translator.set_referencing_table(self.txt_table_name.text())
         rel_tab_translator.set_referencing_column(self.txt_column_name.text())
