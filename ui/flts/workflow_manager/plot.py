@@ -861,32 +861,32 @@ class PlotPreview(Plot):
         )
         return layer_name
 
-    @staticmethod
-    def remove_layer_by_id(parent_id):
+    @classmethod
+    def remove_layer_by_id(cls, parent_id):
         """
         Removes layer from the registry/map canvas
         :param parent_id: Parent record/item identifier
         :type parent_id: String
         """
-        if not PlotPreview.layers:
+        if not cls.layers:
             return
         try:
-            layer = PlotPreview.layers.get(parent_id)
+            layer = cls.layers.get(parent_id)
             if layer:
                 PlotLayer.remove_layer_by_id(layer.id())
         except (RuntimeError, OSError, Exception) as e:
             raise e
 
-    @staticmethod
-    def remove_layers():
+    @classmethod
+    def remove_layers(cls):
         """
         Removes all layers from the registry/map canvas
         given layer IDs
         """
-        if not PlotPreview.layers:
+        if not cls.layers:
             return
         try:
-            layer_ids = [layer.id() for layer in PlotPreview.layers.values()]
+            layer_ids = [layer.id() for layer in cls.layers.values()]
             if layer_ids:
                 PlotLayer.remove_layers(layer_ids)
         except (RuntimeError, OSError, Exception) as e:
@@ -907,19 +907,19 @@ class PlotPreview(Plot):
         Emits layersWillBeRemoved signal
         """
         project = self._plot_layer.project_instance()
-        project.layersWillBeRemoved.connect(self._remove_stored_layer)
+        project.layersWillBeRemoved.connect(PlotPreview._remove_stored_layer)
 
-    @staticmethod
-    def _remove_stored_layer(layer_ids):
+    @classmethod
+    def _remove_stored_layer(cls, layer_ids):
         """
         Removes stored layer
         :param layer_ids: Layer IDs
         :param layer_ids: List
         """
         try:
-            PlotPreview.layers = {
+            cls.layers = {
                 key: layer
-                for key, layer in PlotPreview.layers.items()
+                for key, layer in cls.layers.items()
                 if layer.id() not in layer_ids
             }
         except (RuntimeError, OSError, Exception) as e:
@@ -944,8 +944,8 @@ class PlotPreview(Plot):
             layer = PlotPreview.layers.get(self._parent_id)
         self._plot_layer.clear_feature(layer)
 
-    @staticmethod
-    def is_dirty(fpath):
+    @classmethod
+    def is_dirty(cls, fpath):
         """
         Checks if the file is valid for import
         :param fpath: Plot import file absolute path
@@ -953,7 +953,7 @@ class PlotPreview(Plot):
         :return: True
         :rtype: Boolean
         """
-        return PlotPreview.dirty.get(fpath)
+        return cls.dirty.get(fpath)
 
     @classmethod
     def dirty_file_names(cls):

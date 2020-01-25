@@ -214,7 +214,7 @@ class PlotImportWidget(QWidget):
         registry/map canvas given layer IDs
         """
         if self._plot_preview:
-            self._plot_preview.remove_layers()
+            PlotPreview.remove_layers()
 
     def _on_file_select(self, index):
         """
@@ -237,7 +237,7 @@ class PlotImportWidget(QWidget):
         if not self._ok_to_remove(fpath):
             return
         if self._plot_preview:
-            self._plot_preview.remove_layer_by_id(fpath)
+            PlotPreview.remove_layer_by_id(fpath)
             self._layer = None
         self._reset_preview(fpath)
         self._set_preview_groupbox_title()
@@ -262,7 +262,7 @@ class PlotImportWidget(QWidget):
         msg = 'Remove "{}" and its settings?'.format(fname)
         if not self._plot_preview:
             return self._show_question_message(title, msg)
-        elif not self._plot_preview.is_dirty(fpath):
+        elif not PlotPreview.is_dirty(fpath):
             return self._show_question_message(title, msg)
         return self._ok_to_continue(fpath)
 
@@ -274,7 +274,7 @@ class PlotImportWidget(QWidget):
         :return: True or False
         :rtype: Boolean
         """
-        if self._plot_preview.is_dirty(fpath):
+        if PlotPreview.is_dirty(fpath):
             fname = QFileInfo(fpath).fileName()
             reply = QMessageBox.question(
                 self,
@@ -288,6 +288,7 @@ class PlotImportWidget(QWidget):
                 pass
                 # call import function
                 # on finish import remove dirty file
+
 
         return True
 
