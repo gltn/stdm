@@ -191,6 +191,7 @@ class PlotImportWidget(QWidget):
         Handles on tab remove event
         """
         if not PlotPreview.dirty:
+            self.is_dirty = False
             return
         if not self._ok_to_discard():
             self.is_dirty = True
