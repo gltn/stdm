@@ -46,7 +46,7 @@ WARNING = "Warning"
 
 class PlotLayer:
     """
-    Manages preview of plot geometric shape in a layer
+    Manages preview of plot geometric shape in a layer.
     """
     qgs_project = None
 
