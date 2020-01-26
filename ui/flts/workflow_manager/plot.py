@@ -1,7 +1,7 @@
 """
 /***************************************************************************
 Name                 : Plot
-Description          : Module for managing importing of a scheme plot.
+Description          : Module for managing importing of a scheme plot
 Date                 : 24/December/2019
 copyright            : (C) 2019
  ***************************************************************************/
