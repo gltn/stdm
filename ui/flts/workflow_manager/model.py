@@ -27,6 +27,8 @@ class WorkflowManagerModel(QAbstractTableModel):
     Handles data for Scheme Establishment and First, Second
     and Third Examination FLTS modules
     """
+    # itemAboutToChange = pyqtSignal(QModelIndex, object)
+
     def __init__(self, data_service):
         super(WorkflowManagerModel, self).__init__()
         self._data_source = None
@@ -117,6 +119,7 @@ class WorkflowManagerModel(QAbstractTableModel):
             result = self.results[index.row()]
             column = index.column()
             if role == Qt.CheckStateRole:
+                # self.itemAboutToChange.emit(index, value)
                 result[column] = 1.0 if value == Qt.Checked else 0.0
             elif role == Qt.EditRole:
                 # TODO: Convert back to the data type value

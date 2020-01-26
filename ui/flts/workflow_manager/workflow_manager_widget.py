@@ -121,6 +121,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
+        # self._model.itemAboutToChange.connect(self._before_uncheck)
         self.tabWidget.tabCloseRequested.connect(self._tab_close_requested)
         if self.approveButton:
             self.approveButton.clicked.connect(
@@ -225,7 +226,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._load_scheme_detail()
                 self._on_uncheck_disable_widgets()
 
-    # def _on_uncheck(self, index):
+    # def _before_uncheck(self, index, new_value):
     #     """
     #     Handle checkbox uncheck event
     #     :param index: Table view item identifier
@@ -233,13 +234,12 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     #     """
     #     if index.column() == self._lookup.CHECK:
     #         row, check_state, record_id = self._get_model_item(index)
-    #         if int(check_state) == 0:
-    #             load_detail = self._load_scheme_detail()
-    #             if not load_detail:
-    #                 self._model.setData(index, Qt.Checked, Qt.CheckStateRole)
+    #         if int(check_state) == 1:
+    #             self.removeTab.emit()
+    #             if self._is_detail_dirty():
+    #                 self._model.setData(index, None, Qt.CheckStateRole)
     #                 return
-    #             self._remove_checked_id(record_id)
-    #             self._on_uncheck_disable_widgets()
+    #             self._on_uncheck(index)
 
     def _get_model_item(self, index):
         """
