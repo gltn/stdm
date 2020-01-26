@@ -61,16 +61,6 @@ class SchemeSummaryWidget(QTreeWidget):
         self.scm_township = QTreeWidgetItem()
         self.scm_reg_div = QTreeWidgetItem()
         self.scm_blk_area = QTreeWidgetItem()
-        self.doc_notice_establish = QTreeWidgetItem()
-        self.doc_explanatory = QTreeWidgetItem()
-        self.doc_council_res = QTreeWidgetItem()
-        self.doc_blockerf_title = QTreeWidgetItem()
-        self.doc_cover_cert = QTreeWidgetItem()
-        self.doc_potential_hld = QTreeWidgetItem()
-        self.doc_trans_contract = QTreeWidgetItem()
-        self.doc_imposing_condition = QTreeWidgetItem()
-        self.doc_layout_plan = QTreeWidgetItem()
-        self.doc_field_book = QTreeWidgetItem()
 
         self._initialize_view()
 
@@ -102,22 +92,9 @@ class SchemeSummaryWidget(QTreeWidget):
              self.scm_blk_area]
         )
 
-        self.supporting_document.addChildren(
-            [self.doc_explanatory,
-             self.doc_council_res,
-             self.doc_cover_cert,
-             self.doc_blockerf_title,
-             self.doc_field_book,
-             self.doc_imposing_condition,
-             self.doc_layout_plan,
-             self.doc_notice_establish,
-             self.doc_potential_hld,
-             self.doc_trans_contract]
-        )
-
         # Expand top-level items
         self.scheme_info.setExpanded(True)
-        self.supporting_document.setExpanded(True)
+        # self.supporting_document.setExpanded(True)
 
         # Static children items
         # Scheme
@@ -158,58 +135,15 @@ class SchemeSummaryWidget(QTreeWidget):
                                   self.tr('Block Area ')
                                   )
 
-        view_str = self.tr('View')
+        view_str = self.tr('Go to...')
+
+        # Labels for holders and documents
         lbl_view_holders = self.create_hyperlink_widget(view_str)
+        lbl_view_support_docs = self.create_hyperlink_widget(view_str)
+
+        # Set links for holders and documents
         self.setItemWidget(self.holders_info, 1, lbl_view_holders)
-
-        # Supporting Documents
-
-        self.doc_cover_cert.setText(0, self.tr('Cover Certificate: '))
-        lbl_view_cover_cert = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_cover_cert, 1, lbl_view_cover_cert)
-
-        self.doc_council_res.setText(0, self.tr('Council Resolution: '))
-        lbl_view_doc_council = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_council_res, 1, lbl_view_doc_council)
-
-        self.doc_layout_plan.setText(0, self.tr('Digital Layout Plan: '))
-        lbl_view_doc_layout_plan = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_layout_plan, 1, lbl_view_doc_layout_plan)
-
-        self.doc_imposing_condition.setText(0, self.tr('Document Imposing '
-                                                       'Conditions: '))
-        lbl_view_doc_imposing = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_imposing_condition, 1,
-                           lbl_view_doc_imposing)
-
-        self.doc_explanatory.setText(0, self.tr('Explanatory Report: '))
-        lbl_view_doc_explanatory = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_explanatory, 1, lbl_view_doc_explanatory)
-
-        self.doc_field_book.setText(0, self.tr('Field Book: '))
-        lbl_view_doc_fieldbk = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_field_book, 1, lbl_view_doc_fieldbk)
-
-        self.doc_potential_hld.setText(0, self.tr('List of Potential '
-                                                  'Holders: '))
-        lbl_view_doc_potential_hld = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_potential_hld, 1,
-                           lbl_view_doc_potential_hld)
-
-        self.doc_notice_establish.setText(0, self.tr('Notice of Establishment '
-                                                     'of Scheme: '))
-        lbl_view_doc_notice = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_notice_establish, 1, lbl_view_doc_notice)
-
-        self.doc_blockerf_title.setText(0, self.tr('Title Deed of Blockerf: ')
-                                        )
-        lbl_view_blockerf_title = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_blockerf_title, 1,
-                           lbl_view_blockerf_title)
-
-        self.doc_trans_contract.setText(0, self.tr('Transfer Contract: '))
-        lbl_view_doc_trans = self.create_hyperlink_widget(view_str)
-        self.setItemWidget(self.doc_trans_contract, 1, lbl_view_doc_trans)
+        self.setItemWidget(self.supporting_document, 1, lbl_view_support_docs)
 
     def create_hyperlink_widget(self, name):
         """
@@ -228,3 +162,10 @@ class SchemeSummaryWidget(QTreeWidget):
         lbl_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
 
         return lbl_link
+
+    def on_hyperlink_click(self):
+        """
+        Slot raised when hyperlink to view documents has been clicked.
+        Navigate back to the documents page.
+        :return:
+        """

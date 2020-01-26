@@ -77,7 +77,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         QWizard.__init__(self, parent)
 
         self.setupUi(self)
-        self.page_title()
+        # self.page_title()
         # Equate number of pages in wizard to page IDs
         self._num_pages = len(self.pageIds())
         self._base_win_title = self.windowTitle()
@@ -209,6 +209,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Block area
         self.radio_sq_meters.setChecked(True)
+        self.dbl_spinbx_block_area.setSuffix(" (Sq.m)")
+
+        self._on_area_check()
 
         # Populate lookup combo boxes
         self._populate_lookups()
@@ -438,7 +441,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         :return:
         """
         # Set sg_number prefix which is constant
-        sg_prefix = 'A'
+        sg_prefix = self.tr('A')
         sg_default_value = 1
         # Get the scheme object
         scheme_object = self.schm_model()
@@ -464,17 +467,53 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
                                             self._current_year)
             self.lnedit_sg_num.setText(sg_code)
 
-    def _default_block_area(self):
+    def _on_area_check(self):
         """
+        Signals for block area calculation
         :return:
         """
-        # TODO: add logic
+        self.radio_sq_meters.clicked.connect(
+            self._on_meters_clicked
+        )
+        self.radio_hectares.clicked.connect(
+            self._on_hectares_clicked
+        )
 
-    def _area_in_hectares(self):
+    def _on_meters_clicked(self):
         """
+        Slot raised when the hectares radio button is checked
         :return:
         """
-        # TODO: add logic
+        meters_suffix = self.tr(" (Sq.m)")
+        self.dbl_spinbx_block_area.setSuffix(meters_suffix)
+        self._to_meters()
+
+    def _on_hectares_clicked(self):
+        """
+        Slot raised when the hectares radio button is checked
+        :return:
+        """
+        hectares_suffix = self.tr(" (Ha)")
+        self.dbl_spinbx_block_area.setSuffix(hectares_suffix)
+        self._to_hectares()
+
+    def _to_meters(self):
+        """
+        Conversion of block area value to meters
+        :return:
+        """
+        initial_area = self.dbl_spinbx_block_area.value()
+        final_area = initial_area * 10000
+        self.dbl_spinbx_block_area.setValue(final_area)
+
+    def _to_hectares(self):
+        """
+        Conversion of block area value to hectares
+        :return:
+        """
+        initial_area = self.dbl_spinbx_block_area.value()
+        final_area = initial_area / 10000
+        self.dbl_spinbx_block_area.setValue(final_area)
 
     def validate_block_area(self):
         """
@@ -491,23 +530,6 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
             )
         else:
             return True
-
-    def page_title(self):
-        """
-        Insert page subtitles which contain instructions to the user.
-        """
-        # Set page subtitles
-        self.wizardPage1.setSubTitle(self.tr('Please enter scheme information'
-                                             ' below. '
-                                             'Note that the scheme number'
-                                             'will be automatically generated'
-                                             )
-                                     )
-        self.wizardPage2.setSubTitle(self.tr('Please browse for list of holde'
-                                             'rs file'))
-        self.wizardPage_4.setSubTitle(self.tr(
-            'Review the summary of the previous steps. Click Back to edit '
-            'information or Finish to save'))
 
     def on_page_changed(self, idx):
         """

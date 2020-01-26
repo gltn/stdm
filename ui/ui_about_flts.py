@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_flts.ui'
 #
-# Created: Tue Jan 21 22:14:30 2020
+# Created: Wed Jan 22 10:43:55 2020
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -74,7 +74,7 @@ class Ui_frmAbout(object):
 "<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Uploading of spatial/plot data</li>\n"
 "<li style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\" style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Certificate generation</li></ul>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Arial,Helvetica,sans-serif\'; font-size:10pt;\"><br /></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt; font-weight:600;\">Objectives of FLTA</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /></span><span style=\" font-size:10pt;\">(a) to create alternative forms of landtitle that are simpler and cheaperto administer than existing forms of land title;</span></p>\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt; font-weight:600;\">Objectives of FLTA</span><span style=\" font-family:\'Arial,Helvetica,sans-serif\'; font-size:9pt;\"><br /></span><span style=\" font-size:10pt;\">(a) to create alternative forms of landtitle that are simpler and cheaper to administer than existing forms of land title;</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">(b) to provide security of title for persons who live in informal settlements or who are provided<br />with low income housing;</span></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\"><br />(c) to empower the persons concerned economically by means of these rights </span></p>\n"
