@@ -2,6 +2,8 @@
   <qresource prefix="/plugins/stdm">
     <file>images/icons/flts_about.png</file>
     <file>images/icons/flts2.png</file>
+    <file>images/icons/flts_2.png</file>
+    <file>images/icons/flts2.png</file>
     <file>images/icons/flts_back_action.png</file>
     <file>images/icons/flts_certificate.png</file>
     <file>images/icons/flts_comment_reply.png</file>
