@@ -16,7 +16,6 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 
-from datetime import datetime
 from collections import namedtuple
 from PyQt4.QtCore import (QSize, Qt,)
 from PyQt4.QtGui import (
@@ -224,49 +223,36 @@ class HolderConfig(Config):
         return self.get_data('holder_load_collections')
 
 
-class PaginationButtonIcons(ButtonIcons):
+class PlotImportFileConfig(Config):
     """
-    Pagination QPushButton icons configuration interface
+    Scheme plot import file table view
+    configuration interface
     """
-
-    def __init__(self, parent=None):
-        super(PaginationButtonIcons, self).__init__()
-        self._parent = parent
-
     @property
-    def buttons(self):
+    def columns(self):
         """
-        Pagination QPushButton icons options
-        :return: Pagination QPushButton icon options
-        :rtype: Dictionary
+        Scheme plot import file
+        table view columns options
+        :return: Table view columns
+        :rtype: List
         """
-        config = self._buttons_config()
-        return super(PaginationButtonIcons, self).button_icons(config)
+        return self.get_data('plot_file_columns')
 
-    def _buttons_config(self):
+
+class PlotImportPreviewConfig(Config):
+    """
+    Scheme plot import preview table view
+    configuration interface
+    """
+    @property
+    def columns(self):
         """
-        Returns Pagination QPushButton icon configurations
-        :return: QPushButton icon configurations
-        :rtype: Tuple
+        Scheme plot import preview
+        table view columns options
+        :return: Table view columns
+        :rtype: List
         """
-        return (
-            (
-                self._parent.first_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png")
-            ),
-            (
-                self._parent.previous_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png")
-            ),
-            (
-                self._parent.next_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png")
-            ),
-            (
-                self._parent.last_button, QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png")
-            ),
-        )
+        return self.get_data('plot_preview_columns')
 
 
 class StyleSheet(Config):
@@ -283,31 +269,55 @@ class StyleSheet(Config):
         return self.get_data('header_view_style')
 
 
-class SchemeButtonIcons(ButtonIcons):
+class ToolbarButtonsConfig(Config):
     """
-    Scheme QPushButton icons configuration interface
+    Scheme toolbar QPushButton configuration interface
     """
-    def __init__(self, parent=None):
-        super(SchemeButtonIcons, self).__init__()
-        self._parent = parent
+    def __init__(self):
+        super(ToolbarButtonsConfig, self).__init__()
 
     @property
     def buttons(self):
         """
-        Scheme QPushButton icons options
-        :return: Scheme QPushButton icon options
+        Returns toolbar QPushButton configurations
+        :return: QPushButton configuration options
         :rtype: Dictionary
         """
-        config = self._create_config()
-        return super(SchemeButtonIcons, self).button_icons(config)
+        return self.get_data('toolbar_buttons')
 
-    def _create_config(self):
-        configs = self.get_data('scheme_button_icons')
-        return [
-            (getattr(self._parent, button), size, icon)
-            for button, size, icon in configs
-            if hasattr(self._parent, button)
-        ]
+
+class PaginationButtonsConfig(Config):
+    """
+    Scheme pagination QPushButton configuration interface
+    """
+    def __init__(self):
+        super(PaginationButtonsConfig, self).__init__()
+
+    @property
+    def buttons(self):
+        """
+        Returns pagination QPushButton configurations
+        :return: QPushButton configuration options
+        :rtype: Dictionary
+        """
+        return self.get_data('pagination_buttons')
+
+
+class PlotImportButtonsConfig(Config):
+    """
+    Scheme plot import QPushButton configuration interface
+    """
+    def __init__(self):
+        super(PlotImportButtonsConfig, self).__init__()
+
+    @property
+    def buttons(self):
+        """
+        Returns plot import QPushButton configurations
+        :return: QPushButton configuration options
+        :rtype: Dictionary
+        """
+        return self.get_data('plot_import_buttons')
 
 
 class SchemeConfig(Config):
@@ -374,7 +384,7 @@ class SchemeMessageBox(Config):
     @property
     def message_box(self):
         """
-        Returns QMessageBox icon configurations
+        Returns QMessageBox configurations
         :return: QMessageBox configuration options
         :rtype: Dictionary
         """
@@ -522,13 +532,32 @@ class EntityRecordId(Config):
         return self._results
 
 
-Column = namedtuple('Column', ['name', 'flag'])
+class ColumnSettings:
+    """
+    Column associated properties
+    """
+    def __init__(self, name, type_, flag=None):
+        self.name = name
+        self.type = type_
+        self.flag = flag if flag else (False,)
+
+    def settings(self):
+        """
+        Returns column settings
+        :return: Column settings
+        :return: Column (namedtuple)
+        """
+        column = Column(name=self.name, type=self.type, flag=self.flag)
+        return column
+
+
+Column = namedtuple('Column', ['name', 'type', 'flag'])
 Icon = namedtuple('Icon', ['icon', 'size'])
 LookUp = namedtuple(
     'LookUp',
     [
         'schemeLodgement', 'schemeEstablishment', 'firstExamination',
-        'secondExamination', 'thirdExamination', 'APPROVAL_STATUS',
+        'secondExamination', 'thirdExamination', 'importPlot', 'APPROVAL_STATUS',
         'WORKFLOW', 'WORKFLOW_COLUMN', 'APPROVAL_COLUMN', 'APPROVED',
         'PENDING', 'DISAPPROVED', 'HELD', 'CHECK', 'STATUS',
         'SCHEME_COLUMN', 'SCHEME_NUMBER', 'COMMENT_COLUMN', 'VIEW_PDF'
@@ -537,40 +566,59 @@ LookUp = namedtuple(
 MessageBox = namedtuple(
     'MessageBox', ['name', 'label', 'role', 'icon']
 )
+buttonConfig = namedtuple(
+    'buttonConfig', ['name', 'label', 'icon', 'size', 'enable']
+)
 SaveColumn = namedtuple('SaveColumn', ['column', 'value', 'entity'])
 UpdateColumn = namedtuple('UpdateColumn', ['column', 'value'])
 
 configurations = {
     'comment_columns': [
-        {Column(name='Comment', flag=False): 'comment'},
+        {Column(name='Comment', type="text", flag=(Qt.DisplayRole,)): 'comment'},
         {
-            Column(name='User', flag=False): {
-                'cb_user': 'user_name'
-            }
+            Column(
+                name='User', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_user': 'user_name'}
         },
         {
-            Column(name='First Name', flag=False): {
-                'cb_user': 'first_name'
-            }
+            Column(
+                name='First Name', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_user': 'first_name'}
         },
         {
-            Column(name='Last Name', flag=False): {
-                'cb_user': 'last_name'
-            }
+            Column(
+                name='Last Name', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_user': 'last_name'}
         },
-        {Column(name='Post Date', flag=False): 'timestamp'}
+        {Column(
+            name='Post Date', type="datetime", flag=(Qt.DisplayRole,)
+        ): 'timestamp'}
     ],
     'comment_collections': ['cb_scheme_collection'],
     'comment_load_collections': ['cb_comment_collection'],
     'document_columns': [
-        {Column(name='Scheme Number', flag=False): 'name'},
-        {Column(name='Document Type', flag=False): {
-            'cb_check_scheme_document_type': 'value'
-        }},
-        {Column(name='Document Size', flag=False): 'document_size'},
-        {Column(name='Last Modified', flag=False): 'last_modified'},
-        {Column(name='Created By', flag=False): 'created_by'},
-        {Column(name='View Document', flag=Qt.DecorationRole): 'View'}
+        {Column(name='Scheme Number', type="text", flag=(Qt.DisplayRole,)): 'name'},
+        {
+            Column(
+                name='Document Type', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_scheme_document_type': 'value'}
+        },
+        {
+            Column(
+                name='Document Size', type="integer", flag=(Qt.DisplayRole,)
+            ): 'document_size'
+        },
+        {
+            Column(
+                name='Last Modified', type="datetime", flag=(Qt.DisplayRole,)
+            ): 'last_modified'
+        },
+        {Column(name='Created By', type="text", flag=(Qt.DisplayRole,)): 'created_by'},
+        {
+            Column(
+                name='View Document', type="decoration", flag=(Qt.DecorationRole,)
+            ): 'View'
+        }
     ],
     'document_collections': ['cb_scheme_supporting_document_collection'],
     'header_view_style': 'QHeaderView::section{'
@@ -592,51 +640,87 @@ configurations = {
                          '}',
     'holder_columns': [
         {
-            Column(name='Scheme Number', flag=False): {
-                'scheme_number': 'scheme_number'
-            }
+            Column(
+                name='Scheme Number', type="text", flag=(Qt.DisplayRole,)
+            ): {'scheme_number': 'scheme_number'}
         },
-        {Column(name='First Name', flag=False): 'first_name'},
-        {Column(name='Surname', flag=False): 'surname'},
+        {Column(name='First Name', type="text", flag=(Qt.DisplayRole,)): 'first_name'},
+        {Column(name='Surname', type="text", flag=(Qt.DisplayRole,)): 'surname'},
         {
-            Column(name='Gender', flag=False): {
-                'cb_check_lht_gender': 'value'
-            }
-        },
-        {Column(name='Holder Identifier', flag=False): 'holder_identifier'},
-        {Column(name='Date of Birth', flag=False): 'date_of_birth'},
-        {Column(name='Name of Juristic Person', flag=False): 'name_of_juristic_person'},
-        {Column(name='Reg. No. of Juristic Person', flag=False): 'reg_no_of_juristic_person'},
-        {
-            Column(name='Marital Status', flag=False): {
-                'cb_check_lht_marital_status': 'value'
-            }
-        },
-        {Column(name='Spouse Surname', flag=False): 'spouse_surname'},
-        {Column(name='Spouse First Name', flag=False): 'spouse_first_name'},
-        {
-            Column(name='Spouse Gender', flag=False): {
-                'cb_check_lht_gender': 'value'
-            }
-        },
-        {Column(name='Spouse Identifier', flag=False): 'spouse_identifier'},
-        {Column(name='Spouse Date of Birth', flag=False): 'spouse_date_of_birth'},
-        {
-            Column(name='Disability Status', flag=False): {
-                'cb_check_lht_disability': 'value'
-            }
+            Column(
+                name='Gender', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_gender': 'value'}
         },
         {
-            Column(name='Income Level', flag=False): {
-                'cb_check_lht_income_level': 'value'
-            }
+            Column(
+                name='Holder Identifier', type="text", flag=(Qt.DisplayRole,)
+            ): 'holder_identifier'
         },
         {
-            Column(name='Occupation', flag=False): {
-                'cb_check_lht_occupation': 'value'
-            }
+            Column(
+                name='Date of Birth', type="date", flag=(Qt.DisplayRole,)
+            ): 'date_of_birth'
         },
-        {Column(name='Other Dependants', flag=False): 'other_dependants'},
+        {
+            Column(
+                name='Name of Juristic Person', type="text", flag=(Qt.DisplayRole,)
+            ): 'name_of_juristic_person'
+        },
+        {
+            Column(
+                name='Reg. No. of Juristic Person', type="text", flag=(Qt.DisplayRole,)
+            ): 'reg_no_of_juristic_person'
+        },
+        {
+            Column(
+                name='Marital Status', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_marital_status': 'value'}
+        },
+        {
+            Column(
+                name='Spouse Surname', type="text", flag=(Qt.DisplayRole,)
+            ): 'spouse_surname'
+        },
+        {
+            Column(
+                name='Spouse First Name', type="text", flag=(Qt.DisplayRole,)
+            ): 'spouse_first_name'
+        },
+        {
+            Column(
+                name='Spouse Gender', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_gender': 'value'}
+        },
+        {
+            Column(
+                name='Spouse Identifier', type="text", flag=(Qt.DisplayRole,)
+            ): 'spouse_identifier'
+        },
+        {
+            Column(
+                name='Spouse Date of Birth', type="date", flag=(Qt.DisplayRole,)
+            ): 'spouse_date_of_birth'
+        },
+        {
+            Column(
+                name='Disability Status', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_disability': 'value'}
+        },
+        {
+            Column(
+                name='Income Level', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_income_level': 'value'}
+        },
+        {
+            Column(
+                name='Occupation', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_occupation': 'value'}
+        },
+        {
+            Column(
+                name='Other Dependants', type="integer", flag=(Qt.DisplayRole,)
+            ): 'other_dependants'
+        },
     ],
     'holder_collections': ['cb_scheme_collection'],
     'holder_load_collections': ['cb_holder_collection'],
@@ -658,6 +742,9 @@ configurations = {
         thirdExamination=EntityRecordId(
             'check_lht_workflow', {'value': 'Third Assessment'}
         ),
+        importPlot=EntityRecordId(
+            'check_lht_workflow', {'value': 'Import Plot'}
+        ),
         APPROVED=EntityRecordId(
             'check_lht_approval_status', {'value': 'Approved'}
         ),
@@ -675,59 +762,95 @@ configurations = {
         COMMENT_COLUMN='comment', VIEW_PDF=5
     ),
     'scheme_columns': [
-        {Column(name='', flag=Qt.ItemIsUserCheckable): '0'},
-        {Column(name='Scheme Number', flag=False): 'scheme_number'},
+        {Column(name='', type="integer", flag=(Qt.ItemIsUserCheckable,)): '0'},
         {
-            Column(name='Status', flag=Qt.DecorationRole): {
-                'approval_id': 'approval_id'
-            }
-        },
-
-        # {
-        #     Column(name='Scheme ID', flag=False): {
-        #         'scheme_id': 'scheme_id'
-        #     }
-        # },
-        # {
-        #     Column(name='Workflow', flag=False): {
-        #         'workflow_id': 'workflow_id'
-        #     }
-        # },
-        # {
-        #     Column(name='Workflow Type', flag=False): {
-        #         'cb_check_lht_workflow': 'value'
-        #     }
-        # },
-        {Column(name='Approval Date', flag=False): 'date_of_approval'},
-        {Column(name='Establishment Date', flag=False): 'date_of_establishment'},
-        {
-            Column(name='Type of Relevant Authority', flag=False): {
-                'cb_check_lht_relevant_authority': 'value'
-            }
+            Column(
+                name='Scheme Number', type="text", flag=(Qt.DisplayRole,)
+            ): 'scheme_number'
         },
         {
-            Column(name='Land Rights Office', flag=False): {
-                'cb_check_lht_land_rights_office': 'value'
-            }
+            Column(
+                name='Status', type="integer", flag=(Qt.DecorationRole,)
+            ): {'approval_id': 'approval_id'}
         },
         {
-            Column(name='Region', flag=False): {
-                'cb_check_lht_region': 'value'
-            }
+            Column(
+                name='Approval Date', type="date", flag=(Qt.DisplayRole,)
+            ): 'date_of_approval'
         },
-        {Column(name='Township', flag=False): 'township_name'}, 
         {
-            Column(name='Registration Division', flag=False):
-                'registration_division'
+            Column(
+                name='Establishment Date', type="date", flag=(Qt.DisplayRole,)
+            ): 'date_of_establishment'
         },
-        {Column(name='Block Area', flag=False): 'area'},
         {
-            Column(name='Date/Time', flag=False): {
-                'timestamp': 'timestamp'
-            }
+            Column(
+                name='Type of Relevant Authority', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_relevant_authority': 'value'}
+        },
+        {
+            Column(
+                name='Land Rights Office', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_land_rights_office': 'value'}
+        },
+        {
+            Column(
+                name='Region', type="text", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_region': 'value'}
+        },
+        {Column(name='Township', type="text", flag=(Qt.DisplayRole,)): 'township_name'},
+        {
+            Column(
+                name='Registration Division', type="integer", flag=(Qt.DisplayRole,)
+            ): {'cb_check_lht_reg_division': 'value'}
+        },
+        {Column(name='Block Area', type="float", flag=(Qt.DisplayRole,)): 'area'},
+        {
+            Column(
+                name='Date/Time', type="datetime", flag=(Qt.DisplayRole,)
+            ): {'timestamp': 'timestamp'}
         }
     ],
     'scheme_collections': ['cb_scheme_workflow_collection'],
+    'plot_file_columns': [
+        Column(
+            name='Name', type="text", flag=(Qt.DisplayRole, Qt.TextColorRole,)
+        ),
+        Column(
+            name='Import as', type="list", flag=(
+                Qt.DisplayRole, Qt.TextColorRole, Qt.ItemIsEditable
+            )
+        ),
+        Column(
+            name='Delimiter', type="list", flag=(
+                Qt.DisplayRole, Qt.TextColorRole, Qt.ItemIsEditable
+            )
+        ),
+        Column(
+            name='Header row', type="integer", flag=(
+                Qt.DisplayRole, Qt.TextColorRole, Qt.ItemIsEditable
+            )
+        ),
+        Column(
+            name='CRS ID', type="text", flag=(Qt.DisplayRole, Qt.TextColorRole,)
+        ),
+        Column(
+            name='Geometry field', type="list", flag=(
+                Qt.DisplayRole, Qt.TextColorRole, Qt.ItemIsEditable
+            )
+        ),
+        Column(
+            name='Geometry Type', type="list", flag=(
+                Qt.DisplayRole, Qt.TextColorRole, Qt.ItemIsEditable
+            )
+        )
+    ],
+    'plot_preview_columns': [
+        Column(name='Parcel Number', type="text", flag=(Qt.DisplayRole,)),
+        Column(name='UPI Number', type="text", flag=(Qt.DisplayRole,)),
+        Column(name='Geometry', type="text", flag=(Qt.DisplayRole,)),
+        Column(name='Area', type="float", flag=(Qt.DisplayRole,))
+    ],
     'tab_icons': {
         'Holders': QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
         'Documents': QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
@@ -740,51 +863,187 @@ configurations = {
         2: QIcon(":/plugins/stdm/images/icons/flts_pending.png"),
         3: QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
         4: QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
-        'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png")
+        'View': QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
+        'Warning': QIcon(":/plugins/stdm/images/icons/warning.png")
     },
-    'scheme_button_icons': [
-            (
-                "approveButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png")
+    'toolbar_buttons': {
+        'sharedButtons': [
+            buttonConfig(
+                name="Holders",
+                label="Holders",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png"),
+                size=QSize(24, 24),
+                enable=False
+
             ),
-            (
-                "disapproveButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png")
+            buttonConfig(
+                name="Documents",
+                label="Documents",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png"),
+                size=QSize(24, 24),
+                enable=False
             ),
-            (
-                "holdButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png")
+            buttonConfig(
+                name="Comments",
+                label="Comments",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png"),
+                size=QSize(24, 24),
+                enable=False
+            )
+        ],
+        'searchButton': [
+            buttonConfig(
+                name="searchButton",
+                label="Search",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_search.png"),
+                size=QSize(24, 24),
+                enable=False
+            )
+        ],
+        'schemeLodgement': [
+            buttonConfig(
+                name="approveButton",
+                label="Pass",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
+                size=QSize(24, 24),
+                enable=False
             ),
-            (
-                "holdersButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_holders.png")
+            buttonConfig(
+                name="holdButton",
+                label="Hold",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_withdraw.png"),
+                size=QSize(24, 24),
+                enable=False
+            )
+        ],
+        'schemeExamination': [
+            buttonConfig(
+                name="approveButton",
+                label="Pass",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_approve.png"),
+                size=QSize(24, 24),
+                enable=False
             ),
-            (
-                "documentsButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_documents.png")
+            buttonConfig(
+                name="disapproveButton",
+                label="Reject",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_disapprove.png"),
+                size=QSize(24, 24),
+                enable=False
+            )
+        ],
+        'thirdExamination': [
+            buttonConfig(
+                name="Plots",
+                label="Plots",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
+                size=QSize(24, 24),
+                enable=False
+            )
+        ],
+        'importPlot': [
+            buttonConfig(
+                name="plotsImportButton",
+                label="Import",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
+                size=QSize(24, 24),
+                enable=False
             ),
-            (
-                "commentsButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_scheme_comment.png")
+            buttonConfig(
+                name="Plots",
+                label="Plots",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_plot_module_cropped.png"),
+                size=QSize(24, 24),
+                enable=False
             ),
-            (
-                "searchButton", QSize(24, 24),
-                QIcon(":/plugins/stdm/images/icons/flts_search.png")
+        ]
+    },
+    'pagination_buttons': {
+        'previousButtons': [
+            buttonConfig(
+                name="First",
+                label="First",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_first_record.png"),
+                size=QSize(24, 24),
+                enable=True
             ),
-    ],
+            buttonConfig(
+                name="Previous",
+                label="Previous",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_previous_record.png"),
+                size=QSize(24, 24),
+                enable=True
+            )
+        ],
+        'nextButtons': [
+            buttonConfig(
+                name="Next",
+                label="Next",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_next_record.png"),
+                size=QSize(24, 24),
+                enable=True
+            ),
+            buttonConfig(
+                name="Last",
+                label="Last",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_last_record.png"),
+                size=QSize(24, 24),
+                enable=True
+            )
+        ]
+    },
+    'plot_import_buttons': {
+        'toolbar': [
+            buttonConfig(
+                name="addFiles",
+                label="Add file(s)...",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png"),
+                size=None,
+                enable=True
+            ),
+            buttonConfig(
+                name="removeFiles",
+                label="Remove file(s)",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                size=None,
+                enable=False
+            ),
+            buttonConfig(
+                name="setCRS",
+                label="Set CRS",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_scheme_crs"),
+                size=None,
+                enable=False
+            ),
+            buttonConfig(
+                name="Preview",
+                label="Preview",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_document_view.png"),
+                size=None,
+                enable=False
+            ),
+            buttonConfig(
+                name="Import",
+                label="Import",
+                icon=QIcon(":/plugins/stdm/images/icons/flts_import_plot_cropped.png"),
+                size=None,
+                enable=False
+            )
+        ]
+    },
     'message_box': {
         'approveButton': [
             MessageBox(
                 name='approveMsgButton',
                 label="Pass",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_approve.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ],
         'disapproveButton': [
@@ -792,19 +1051,19 @@ configurations = {
                 name='disapproveMsgButton',
                 label="Reject",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_disapprove.png")
             ),
             MessageBox(
                 name='commentDisapproveMsgButton',
                 label="Comment && Reject",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ],
         'holdButton': [
@@ -812,19 +1071,19 @@ configurations = {
                 name='holdMsgButton',
                 label="Hold",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_withdraw.png")
             ),
             MessageBox(
                 name='commentHoldMsgButton',
                 label="Comment && Hold",
                 role=QMessageBox.YesRole,
-                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png"),
+                icon=QIcon(":/plugins/stdm/images/icons/flts_comment_reply_2.png")
             ),
             MessageBox(
                 name=None,
                 label="Cancel",
                 role=QMessageBox.RejectRole,
-                icon=None,
+                icon=None
             )
         ]
     },

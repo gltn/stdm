@@ -23,13 +23,29 @@ class DockWidget(QDockWidget):
     """
     Sets a dockable widget from a widget
     """
+    closing = pyqtSignal(QEvent)
+
     def __init__(self, custom_widget, parent=None):
         super(QDockWidget, self).__init__(parent)
         self.setWindowTitle(custom_widget.windowTitle())
         self.setObjectName(custom_widget.objectName())
-        self.setAllowedAreas(Qt.BottomDockWidgetArea | Qt.TopDockWidgetArea)
+        self.setAllowedAreas(
+            Qt.TopDockWidgetArea |
+            Qt.RightDockWidgetArea |
+            Qt.BottomDockWidgetArea |
+            Qt.LeftDockWidgetArea
+        )
         self.topLevelChanged.connect(self._on_top_level_change)
         self.setWidget(custom_widget)
+
+    def closeEvent(self, event):
+        """
+        QDockWidget close event
+        :param event: Close event
+        :type event: QEvent
+        """
+        self.closing.emit(event)
+        # super(DockWidget, self).closeEvent(event)
 
     def _on_top_level_change(self, top_level):
         """

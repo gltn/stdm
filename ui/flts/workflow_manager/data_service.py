@@ -18,13 +18,19 @@ copyright            : (C) 2019
  ***************************************************************************/
 """
 from abc import ABCMeta, abstractmethod
-from sqlalchemy import exc
+from sqlalchemy import (
+    exc,
+    func
+)
 from sqlalchemy.orm import joinedload
 from stdm.ui.flts.workflow_manager.config import (
+    ColumnSettings,
     CommentConfig,
     DocumentConfig,
     FilterQueryBy,
     HolderConfig,
+    PlotImportFileConfig,
+    PlotImportPreviewConfig,
     SchemeConfig,
     TableModelIcons,
 )
@@ -109,6 +115,16 @@ class SchemeDataService(DataService):
         :rtype: List
         """
         return self._scheme_config.columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers
+                 or False otherwise
+        :rtype: Boolean
+        """
+        return False
 
     @property
     def icons(self):
@@ -289,6 +305,16 @@ class DocumentDataService(DataService):
         return self._document_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers
+                 or False otherwise
+        :rtype: Boolean
+        """
+        return True
+
+    @property
     def icons(self):
         """
         QAbstractTableModel icon options
@@ -388,6 +414,16 @@ class HolderDataService(DataService):
         return self._holder_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers
+                 or False otherwise
+        :rtype: Boolean
+        """
+        return True
+
+    @property
     def load_collections(self):
         """
         Related entity collection names to be used as
@@ -468,6 +504,16 @@ class CommentDataService(DataService):
         return self._comment_config.columns
 
     @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers
+                 or False otherwise
+        :rtype: Boolean
+        """
+        return False
+
+    @property
     def lookups(self):
         """
         Comment text edit lookup options
@@ -544,3 +590,156 @@ class CommentDataService(DataService):
         """
         entity = self._profile.entity(name)
         return super(CommentDataService, self).entity_model_(entity)
+
+
+class PlotImportFileDataService:
+    """
+    Scheme plot import file data model service
+    """
+    def __init__(self):
+        self._plot_config = PlotImportFileConfig()
+        self._table_model_icons = TableModelIcons()
+
+    @property
+    def columns(self):
+        """
+        Scheme plot import file
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self._plot_config.columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return False
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self._table_model_icons.icons
+
+
+class PlotImportPreviewDataService:
+    """
+    Scheme plot import preview data model service
+    """
+    def __init__(self, current_profile, scheme_id):
+        self._profile = current_profile
+        self._scheme_id = scheme_id
+        self._plot_config = PlotImportPreviewConfig()
+        self._table_model_icons = TableModelIcons()
+        self._scheme = self._get_scheme()
+
+    @property
+    def columns(self):
+        """
+        Scheme plot import preview
+        table view columns options
+        :return: Table view columns
+        :rtype: List
+        """
+        return self._plot_config.columns
+
+    @property
+    def vertical_header(self):
+        """
+        Scheme table view vertical orientation
+        :return: True for vertical headers or False otherwise
+        :rtype: Boolean
+        """
+        return True
+
+    @property
+    def icons(self):
+        """
+        QAbstractTableModel icon options
+        :return: QAbstractTableModel icon options
+        :rtype: Dictionary
+        """
+        return self._table_model_icons.icons
+
+    def _get_scheme(self):
+        """
+        Returns Scheme record/row
+        :return: Scheme record/row
+        :rtype: Entity
+        """
+        return self.filter_query_by("Scheme", {"id": self._scheme_id}).first()
+
+    def is_plot(self):
+        """
+        Checks if the scheme has a plot
+        :return: True
+        :return: Boolean
+        """
+        if len(self._scheme.cb_plot_collection):
+            return True
+
+    def scheme_relevant_authority(self):
+        """
+        Returns Scheme Relevant Authority record/row
+        :return relevant_authority: Scheme Relevant Authority record/row
+        :rtype relevant_authority: Entity
+        """
+        filters = {
+            "type_of_relevant_authority": self._scheme.relevant_authority,
+            "region": self._scheme.region
+        }
+        relevant_authority = self.filter_query_by(
+            "Relevant_authority", filters
+        ).first()
+        return relevant_authority
+
+    @staticmethod
+    def filter_query_by(entity_name, filters):
+        """
+        Filters query result by a column value
+        :param entity_name: Entity name
+        :type entity_name: String
+        :param filters: Column filters - column name and value
+        :type filters: Dictionary
+        :return: Filter entity query object
+        :rtype: Entity object
+        """
+        try:
+            filter_by = FilterQueryBy()
+            return filter_by(entity_name, filters)
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+
+    def max_plot_number(self):
+        """
+        Returns maximum Scheme Plot Number
+        :return plot_number: Max Plot Number
+        :rtype plot_number: Unicode
+        """
+        model = self.entity_model_("Plot")
+        entity_object = model()
+        plot_number = entity_object.queryObject([func.max(model.plot_number)]).\
+            filter(model.scheme_id == self._scheme_id).scalar()
+        return plot_number
+
+    def entity_model_(self, name=None):
+        """
+        Gets entity model
+        :param name: Name of the entity
+        :type name: String
+        :return: Entity model
+        :rtype: DeclarativeMeta
+        """
+        entity = self._profile.entity(name)
+        try:
+            model = entity_model(entity)
+            return model
+        except AttributeError as e:
+            raise e

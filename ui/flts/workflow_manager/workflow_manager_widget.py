@@ -19,11 +19,14 @@ copyright            : (C) 2019
 """
 from collections import OrderedDict
 from PyQt4.QtGui import *
+from PyQt4.QtCore import (
+    Qt,
+    pyqtSignal
+)
 from sqlalchemy import exc
 from ...notification import NotificationBar
 from stdm.ui.flts.workflow_manager.config import (
     SchemeMessageBox,
-    SchemeButtonIcons,
     StyleSheet,
     TabIcons,
 )
@@ -32,7 +35,14 @@ from stdm.ui.flts.workflow_manager.data_service import (
     CommentDataService,
     DocumentDataService,
     HolderDataService,
+    PlotImportFileDataService,
+    PlotImportPreviewDataService,
     SchemeDataService
+)
+from stdm.ui.flts.workflow_manager.data import (
+    Load,
+    Update,
+    Save
 )
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.scheme_approval import (
@@ -44,7 +54,9 @@ from stdm.ui.flts.workflow_manager.message_box_widget import(
     MessageBoxButtons,
     get_message_box,
 )
-from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
+from stdm.ui.flts.workflow_manager.components.toolbar_component import get_toolbar
+from stdm.ui.flts.workflow_manager.components.pagination_component import PaginationComponent
+from stdm.ui.flts.workflow_manager.plot_import_widget import PlotImportWidget
 from stdm.ui.flts.workflow_manager.scheme_detail_widget import SchemeDetailTableView
 from stdm.ui.flts.workflow_manager.ui_workflow_manager import Ui_WorkflowManagerWidget
 
@@ -54,6 +66,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
     Manages workflow and notification in Scheme Establishment and
     First, Second and Third Examination FLTS modules
     """
+    removeTab = pyqtSignal()
+
     def __init__(self, title, object_name, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
@@ -69,19 +83,29 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self._approve = Approve(self.data_service, self._object_name)
         self._disapprove = Disapprove(self.data_service)
         self._lookup = self.data_service.lookups
+        self._data_loader = Load(self.data_service, self._workflow_load_filter)
         _header_style = StyleSheet().header_style
         self._comments_title = "Comments"
         self.setWindowTitle(title)
         self.setObjectName(self._object_name)
-        self.holdersButton.setObjectName("Holders")
-        self.documentsButton.setObjectName("Documents")
-        self.commentsButton.setObjectName(self._comments_title)
-        self._add_button()
-        self._set_button_icons()
+
+        toolbar = get_toolbar(self._object_name)
+        toolbar_widgets = toolbar.components
+        layout = toolbar.layout
+        self.toolbarFrame.setLayout(layout)
+        self.plotsImportButton = toolbar_widgets.get("plotsImportButton")
+        self.approveButton = toolbar_widgets.get("approveButton")
+        self.disapproveButton = toolbar_widgets.get("disapproveButton")
+        self.holdButton = toolbar_widgets.get("holdButton")
+        self.holdersButton = toolbar_widgets.get("Holders")
+        self.documentsButton = toolbar_widgets.get("Documents")
+        self.commentsButton = toolbar_widgets.get("Comments")
+        self.searchEdit = toolbar_widgets.get("searchEdit")
+        self.filterComboBox = toolbar_widgets.get("filterComboBox")
+        self.searchButton = toolbar_widgets.get("searchButton")
+
         self.table_view = QTableView()
-        self._model = WorkflowManagerModel(
-            self.data_service, self._workflow_load_filter
-        )
+        self._model = WorkflowManagerModel(self.data_service)
         self.table_view.setModel(self._model)
         self.table_view.setAlternatingRowColors(True)
         self.table_view.setShowGrid(False)
@@ -92,54 +116,31 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         self.tabWidget.insertTab(0, self.table_view, "Scheme")
         self._tab_icons = TabIcons().icons
         self.tabWidget.setTabIcon(0, self._tab_icons["Scheme"])
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.paginationFrame.setLayout(PaginationComponent().layout)
         self.tabWidget.currentChanged.connect(self._on_tab_change)
         self.table_view.clicked.connect(self._on_comment)
         self.table_view.clicked.connect(self._on_check)
         self.table_view.clicked.connect(self._on_uncheck)
-        self.tabWidget.tabCloseRequested.connect(self._close_tab)
-        self.approveButton.clicked.connect(
-            lambda: self._on_approve(self._lookup.APPROVED(), "pass")
-        )
+        # self._model.itemAboutToChange.connect(self._before_uncheck)
+        self.tabWidget.tabCloseRequested.connect(self._tab_close_requested)
+        if self.approveButton:
+            self.approveButton.clicked.connect(
+                lambda: self._on_approve(self._lookup.APPROVED(), "pass")
+            )
+        if self.disapproveButton:
+            self.disapproveButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
+            )
+        if self.holdButton:
+            self.holdButton.clicked.connect(
+                lambda: self._on_disapprove(self._lookup.HELD(), "hold")
+            )
+        if self.plotsImportButton:
+            self.plotsImportButton.clicked.connect(self._load_scheme_detail)
         self.documentsButton.clicked.connect(self._load_scheme_detail)
         self.holdersButton.clicked.connect(self._load_scheme_detail)
         self.commentsButton.clicked.connect(self._load_scheme_detail)
         self._initial_load()
-
-    def _add_button(self):
-        """
-        Adds Workflow Manager button
-        """
-        button = QPushButton()
-        button.setDisabled(True)
-        layout = QHBoxLayout()
-        layout.addWidget(button)
-        layout.setMargin(0)
-        self.disapproveFrame.setLayout(layout)
-        if self._object_name == "schemeLodgement":
-            button.setText("Hold")
-            button.setObjectName("holdButton")
-            self.holdButton = button
-            self.holdButton.clicked.connect(
-                lambda: self._on_disapprove(self._lookup.HELD(), "hold")
-            )
-            return
-        button.setText("Reject")
-        self.disapproveButton = button
-        button.setObjectName("disapproveButton")
-        self.disapproveButton.clicked.connect(
-            lambda: self._on_disapprove(self._lookup.DISAPPROVED(), "reject")
-        )
-
-    def _set_button_icons(self):
-        """
-        Sets QPushButton icons
-        """
-        icons = SchemeButtonIcons(self)
-        buttons = icons.buttons
-        for button, options in buttons.iteritems():
-            button.setIcon(options.icon)
-            button.setIconSize(options.size)
 
     @property
     def _workflow_load_filter(self):
@@ -159,7 +160,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         Initial table view data load
         """
         try:
-            self._model.load()
+            self._model.load(self._data_loader)
             self._enable_search() if self._model.results \
                 else self._disable_search()
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -196,7 +197,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         widget_prop["scheme_items"] = {row: (
             self._model.results[row].get("data"), scheme_number
         )}
-        self._load_details(widget_prop, widget_id, scheme_id)
+        self._load_details(widget_prop, widget_id, scheme_id, scheme_number)
 
     def _on_check(self, index):
         """
@@ -224,6 +225,21 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                 self._remove_checked_id(record_id)
                 self._load_scheme_detail()
                 self._on_uncheck_disable_widgets()
+
+    # def _before_uncheck(self, index, new_value):
+    #     """
+    #     Handle checkbox uncheck event
+    #     :param index: Table view item identifier
+    #     :type index: QModelIndex
+    #     """
+    #     if index.column() == self._lookup.CHECK:
+    #         row, check_state, record_id = self._get_model_item(index)
+    #         if int(check_state) == 1:
+    #             self.removeTab.emit()
+    #             if self._is_detail_dirty():
+    #                 self._model.setData(index, None, Qt.CheckStateRole)
+    #                 return
+    #             self._on_uncheck(index)
 
     def _get_model_item(self, index):
         """
@@ -277,17 +293,17 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             self.commentsButton
         ])
         # TODO: Start refactor. Combine with _on_uncheck_disable_widgets
-        if self._lookup.PENDING() in status or \
+        if self.approveButton and self._lookup.PENDING() in status or \
                 self._lookup.DISAPPROVED() in status or \
                 self._lookup.HELD() in status:
             self._enable_widget(self.approveButton)
-        if self._lookup.PENDING() in status or \
-                self._lookup.APPROVED() in status:
-            if hasattr(self, "disapproveButton"):
-                self._enable_widget(getattr(self, "disapproveButton"))
-        if self._lookup.DISAPPROVED() in status and \
-                hasattr(self, "holdButton"):
-            self._enable_widget(getattr(self, "holdButton"))
+        if self._lookup.PENDING() in status or self._lookup.APPROVED() in status:
+            if self.disapproveButton:
+                self._enable_widget(self.disapproveButton)
+        if self.holdButton and self._lookup.DISAPPROVED() in status:
+            self._enable_widget(self.holdButton)
+        if self.plotsImportButton and self._lookup.PENDING() in status:
+            self._enable_widget(self.plotsImportButton)
         self._on_uncheck_disable_widgets()
         # TODO: End refactor
 
@@ -307,8 +323,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param scheme_items: Scheme items
         :type scheme_items: Dictionary
         """
-        if not self._checked_ids:
+        self.removeTab.emit()
+        if self._is_detail_dirty():
             return
+        if not self._checked_ids:
+            return True
         last_id = self._checked_ids.keys()[-1]
         row, status, scheme_number = self._checked_ids[last_id]
         if self._msg_box_button:
@@ -322,7 +341,8 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             widget_prop = self._get_widget_properties()
         widget_prop["scheme_items"] = self._checked_scheme_items() \
             if not scheme_items else scheme_items
-        self._load_details(widget_prop, widget_id, last_id)
+        self._load_details(widget_prop, widget_id, last_id, scheme_number)
+        return True
 
     def _create_key(self, scheme_id, scheme_number, comment=None):
         """
@@ -394,6 +414,14 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         # TODO: Start Refactor by moving them to the configuration file
         widget_prop = {
+            self.plotsImportButton.objectName(): {
+                'data_service': {
+                    "plot_file": PlotImportFileDataService,
+                    "plot_preview": PlotImportPreviewDataService
+                },
+                'widget': PlotImportWidget,
+                'object_name': 'plotImport',
+            },
             self.documentsButton.objectName(): {
                 'data_service': DocumentDataService,
                 'widget': SchemeDetailTableView,
@@ -421,7 +449,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
         # TODO: End Refactor
 
-    def _load_details(self, widget_prop, widget_id, scheme_id):
+    def _load_details(self, widget_prop, widget_id, scheme_id, scheme_number):
         """
         Add Scheme details tab
         :param widget_prop: Scheme details service items
@@ -430,17 +458,23 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :type widget_id: Widget key and label
         :param scheme_id: Scheme record ID/primary key
         :type scheme_id: Integer
+        :param scheme_number: Scheme number
+        :type scheme_number: String
+        :param scheme_id: Scheme record ID/primary key
+        :type scheme_id: Integer
         """
         self.notif_bar.clear()
         key, label = widget_id
         if None not in (key, label):
             details_widget = widget_prop['widget']
             self._detail_table = details_widget(
-                widget_prop, self._profile, scheme_id, self
+                widget_prop, self._profile, scheme_id, scheme_number, self
             )
             self._replace_tab(1, self._detail_table, label)
-            self._enable_search() if self._detail_table.model.results \
-                else self._disable_search()
+            if self._detail_table.model and self._detail_table.model.results:
+                self._enable_search()
+            else:
+                self._disable_search()
 
     def _enable_search(self):
         """
@@ -468,7 +502,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         :param label: Tab label
         :type label: String
         """
-        self.tabWidget.removeTab(index)
+        self._close_tab(index)
         self.tabWidget.insertTab(index, widget, label)
         self.tabWidget.setTabsClosable(True)
         for key, icon in self._tab_icons.iteritems():
@@ -492,6 +526,19 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             return
         return button
 
+    def _tab_close_requested(self, index):
+        """
+        Resets detail table attribute before closing
+        :param index: Index of the tab to be closed
+        :type index: Integer
+        :param index:
+        """
+        self.removeTab.emit()
+        if self._is_detail_dirty():
+            return
+        self._detail_table = None
+        self._close_tab(index)
+
     def _close_tab(self, index):
         """
         Cleanly closes the tab
@@ -504,6 +551,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
             tab.deleteLater()
         self._tab_name = None
 
+    def _is_detail_dirty(self):
+        """
+        Checks if the detail table view is dirty
+        :return: True
+        :rtype: Boolean
+        """
+        if hasattr(self._detail_table, "is_dirty") and self._detail_table.is_dirty:
+            return True
+
     @staticmethod
     def _enable_widget(widgets):
         """
@@ -513,9 +569,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if isinstance(widgets, list):
             for widget in widgets:
-                widget.setEnabled(True)
+                if widget:
+                    widget.setEnabled(True)
         else:
-            widgets.setEnabled(True)
+            if widgets:
+                widgets.setEnabled(True)
 
     @staticmethod
     def _is_alive(widget):
@@ -692,7 +750,7 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
                     items, next_items, save_items
                 )
             else:
-                updated_rows = self._model.update(items)
+                updated_rows = self._update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             msg = "Failed to update: {}".format(e)
             self._show_critical_message(msg)
@@ -722,18 +780,54 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         updated_rows = 0
         try:
             if next_items and save_items:
-                self._model.update(next_items)  # Update succeeding workflow
-                self._model.save(save_items)  # Save succeeding workflow
+                self._update(next_items)  # Update succeeding workflow
+                self._save(save_items)  # Save succeeding workflow
             elif next_items:
-                self._model.update(next_items)
+                self._update(next_items)
             elif save_items:
-                self._model.save(save_items)
+                self._save(save_items)
             if items:
-                updated_rows = self._model.update(items)
+                updated_rows = self._update(items)
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
             raise e
         finally:
             return updated_rows
+
+    def _update(self, updates):
+        """
+        Update database record(s) on edit
+        :param updates: Update items - values and column indexes
+        :type updates: Dictionary
+        :return: Number of updated items
+        :rtype: Integer
+        """
+        updated = 0
+        try:
+            updated = Update(
+                updates, self._model.results, self.data_service
+            ).update()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return updated
+
+    def _save(self, save_items):
+        """
+        Saves values to database
+        :param save_items: Save items; columns, values and entity
+        :type save_items: Dictionary
+        :return: Number of saved items
+        :rtype: Integer
+        """
+        saved = 0
+        try:
+            saved = Save(
+                save_items, self._model.results, self.data_service
+            ).save()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return saved
 
     @staticmethod
     def _approval_message(prefix, num_records, scheme_numbers=None):
@@ -872,11 +966,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         status = self._get_stored_status()
         # TODO: Start refactor. Combine with _on_check_enable_widgets
         if not self._checked_ids:
-            self._close_tab(1)
-            if hasattr(self, "disapproveButton"):
-                self._disable_widget(getattr(self, "disapproveButton"))
-            elif hasattr(self, "holdButton"):
-                self._disable_widget(getattr(self, "holdButton"))
+            self._tab_close_requested(1)
+            if self.disapproveButton:
+                self._disable_widget(self.disapproveButton)
+            elif self.holdButton:
+                self._disable_widget(self.holdButton)
             self._disable_widget([
                 self.approveButton, self.holdersButton,
                 self.documentsButton, self.commentsButton
@@ -884,15 +978,15 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
 
         elif self._lookup.PENDING() not in status and \
                 self._lookup.APPROVED() not in status and \
-                hasattr(self, "disapproveButton"):
-            self._disable_widget(getattr(self, "disapproveButton"))
+                self.disapproveButton:
+            self._disable_widget(self.disapproveButton)
         elif self._lookup.PENDING() not in status and \
                 self._lookup.DISAPPROVED() not in status and \
                 self._lookup.HELD() not in status:
             self._disable_widget(self.approveButton)
         elif self._lookup.DISAPPROVED() not in status and \
-                hasattr(self, "holdButton"):
-            self._disable_widget(getattr(self, "holdButton"))
+                self.holdButton:
+            self._disable_widget(self.holdButton)
         # TODO: End refactor
 
     @staticmethod
@@ -904,9 +998,11 @@ class WorkflowManagerWidget(QWidget, Ui_WorkflowManagerWidget):
         """
         if isinstance(widgets, list):
             for widget in widgets:
-                widget.setEnabled(False)
+                if widget:
+                    widget.setEnabled(False)
         else:
-            widgets.setEnabled(False)
+            if widgets:
+                widgets.setEnabled(False)
 
     def _on_tab_change(self, index):
         """

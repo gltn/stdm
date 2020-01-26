@@ -2,6 +2,7 @@
   <qresource prefix="/plugins/stdm">
     <file>images/icons/flts_about.png</file>
     <file>images/icons/flts2.png</file>
+    <file>images/icons/flts2.png</file>
     <file>images/icons/flts_back_action.png</file>
     <file>images/icons/flts_certificate.png</file>
     <file>images/icons/flts_comment_reply.png</file>
@@ -28,6 +29,7 @@
     <file>images/icons/flts_help.png</file>
     <file>images/icons/flts_scheme_docs_dir.png</file>
     <file>images/icons/flts_import_plot.png</file>
+    <file>images/icons/flts_import_plot_cropped.png</file>
     <file>images/icons/flts_login.png</file>
     <file>images/icons/flts_logout.png</file>
     <file>images/icons/flts_lodgement.png</file>
@@ -42,10 +44,12 @@
     <file>images/icons/flts_open_file.png</file>
     <file>images/icons/flts_password.png</file>
     <file>images/icons/flts_plot_module.png</file>
+    <file>images/icons/flts_plot_module_cropped.png</file>
     <file>images/icons/flts_print.png</file>
     <file>images/icons/flts_report.png</file>
     <file>images/icons/flts_save.png</file>
     <file>images/icons/flts_scan.png</file>
+    <file>images/icons/flts_scheme_crs.png</file>
     <file>images/icons/flts_scheme_import_plot.png</file>
     <file>images/icons/flts_scheme_management.png</file>
     <file>images/icons/flts_scheme_management_assessment1.png</file>

@@ -2,8 +2,12 @@ from datetime import datetime
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import *
 from sqlalchemy import exc
+from stdm.ui.flts.workflow_manager.data import (
+    Load,
+    Save
+)
 from stdm.ui.flts.workflow_manager.config import CommentButtonIcons
-from stdm.ui.flts.workflow_manager.pagination_widget import PaginationWidget
+from stdm.ui.flts.workflow_manager.components.pagination_component import PaginationComponent
 from stdm.ui.flts.workflow_manager.model import WorkflowManagerModel
 from stdm.ui.flts.workflow_manager.ui_comment_manager import Ui_CommentManagerWidget
 
@@ -26,7 +30,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
     TIME_FORMAT = "hh:mm ap"
     submitted = pyqtSignal()
 
-    def __init__(self, widget_properties, profile, scheme_id, parent=None):
+    def __init__(self, widget_properties, profile, scheme_id, scheme_number, parent=None):
         super(QWidget, self).__init__(parent)
         self.setupUi(self)
         self._comments = []
@@ -34,13 +38,14 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         self._data_service = widget_properties.get("data_service")
         self._data_service = self._data_service(profile, scheme_id)
         self._scheme_items = widget_properties.get("scheme_items")
+        self._data_loader = Load(self._data_service)
         self.model = WorkflowManagerModel(self._data_service)
         self.setObjectName("Comments")
         self.oldCommentTextEdit.setReadOnly(True)
         self._set_button_icons()
         self._parent = parent
         self._parent.paginationFrame.hide()
-        self.paginationFrame.setLayout(PaginationWidget().pagination_layout)
+        self.paginationFrame.setLayout(PaginationComponent().layout)
         self.submitButton.clicked.connect(self._on_submit)
         self._initial_load()
         self._get_comments()
@@ -62,9 +67,9 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         try:
             if self._load_collections:
-                self.model.load_collection()
+                self.model.load_collection(self._data_loader)
             else:
-                self.model.load()
+                self.model.load(self._data_loader)
         except (exc.SQLAlchemyError, Exception) as e:
             QMessageBox.critical(
                 self,
@@ -131,7 +136,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
                     "Submit comments for Scheme: ", scheme_numbers
                 )
                 if self._show_question_message(msg):
-                    saved_comments = self.model.save_collection(
+                    saved_comments = self._save_collection(
                         save_items, self._parent_query_objs
                     )
         except (AttributeError, exc.SQLAlchemyError, Exception) as e:
@@ -208,6 +213,26 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
         """
         return "{0} \n{1}".format(prefix, ', '.join(scheme_numbers))
 
+    def _save_collection(self, save_items, parents):
+        """
+        Saves related collection values to database
+        :param save_items: Save items; columns, values and entity
+        :type save_items: Dictionary
+        :param parents: Parent entity query objects
+        :type parents: Dictionary
+        :return: Number of saved items
+        :rtype: Integer
+        """
+        saved = 0
+        try:
+            saved = Save(
+                save_items, self.model.results, self._data_service, parents
+            ).save_collection()
+        except (AttributeError, exc.SQLAlchemyError, Exception) as e:
+            raise e
+        finally:
+            return saved
+
     @property
     def _parent_query_objs(self):
         """
@@ -220,6 +245,7 @@ class CommentManagerWidget(QWidget, Ui_CommentManagerWidget):
             for row, (scheme_query_obj, scheme_number) in
             self._scheme_items.iteritems()
         }
+
 
     def _show_question_message(self, msg):
         """
