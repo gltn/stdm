@@ -700,7 +700,7 @@ class STDMQGISLoader(object):
             message = QApplication.translate(
                 'ConfigurationFileUpdater',
                 'Would you like to view the '
-                'new features and changes of STDM {}?'.format(major_version)
+                'new features and changes of FLTS {}?'.format(major_version)
             )
 
             result, checkbox_result = simple_dialog(

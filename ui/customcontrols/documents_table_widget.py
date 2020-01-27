@@ -88,7 +88,7 @@ class DocumentTableWidget(QTableWidget):
     """
     # Signals raised when specific user actions are carried out
     browsed = pyqtSignal(object)
-    view_requested= pyqtSignal(object)
+    view_requested = pyqtSignal(object)
     remove_requested = pyqtSignal(object)
 
     # Upload state

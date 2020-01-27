@@ -23,9 +23,11 @@ from PyQt4.QtGui import (
     QTreeWidget,
     QTreeWidgetItem,
     QLabel,
-    QWidget
+    QWidget,
+    QMessageBox
 )
 from PyQt4.QtCore import (
+    pyqtSignal,
     Qt
 )
 
@@ -34,9 +36,11 @@ class SchemeSummaryWidget(QTreeWidget):
     """
     A widget for displaying scheme summary information after lodgement
     """
+    go_to_page = pyqtSignal(object)
 
     def __init__(self, parent=None):
-        QTreeWidget.__init__(self, parent)
+        super(QTreeWidget, self).__init__(parent)
+
         self.setHeaderHidden(True)
         self.setColumnCount(2)
         self.setColumnWidth(0, 300)
@@ -61,6 +65,16 @@ class SchemeSummaryWidget(QTreeWidget):
         self.scm_township = QTreeWidgetItem()
         self.scm_reg_div = QTreeWidgetItem()
         self.scm_blk_area = QTreeWidgetItem()
+
+        self._page_name = 'page_name'
+
+        view_str = self.tr('Go to page')
+
+        # Labels for holders and documents
+        self.lbl_view_holders = self.create_hyperlink_widget(view_str, )
+        self.lbl_view_holders.linkActivated.connect(self.on_hyperlink_click)
+        self.lbl_view_support_docs = self.create_hyperlink_widget(view_str)
+        self.lbl_view_support_docs.linkActivated.connect(self.on_hyperlink_click)
 
         self._initialize_view()
 
@@ -135,24 +149,17 @@ class SchemeSummaryWidget(QTreeWidget):
                                   self.tr('Block Area ')
                                   )
 
-        view_str = self.tr('Go to...')
-
-        # Labels for holders and documents
-        lbl_view_holders = self.create_hyperlink_widget(view_str)
-        lbl_view_support_docs = self.create_hyperlink_widget(view_str)
-
         # Set links for holders and documents
-        self.setItemWidget(self.holders_info, 1, lbl_view_holders)
-        self.setItemWidget(self.supporting_document, 1, lbl_view_support_docs)
+        self.setItemWidget(self.holders_info, 1,
+                           self.lbl_view_holders)
+        self.setItemWidget(self.supporting_document, 1,
+                           self.lbl_view_support_docs)
 
     def create_hyperlink_widget(self, name):
         """
         Creates a clickable QLabel widget that appears like a hyperlink.
         :param name: Display name of the hyperlink.
         :type name: str
-        :param document_info: Container for document information that is
-        embedded as a property in the label.
-        :type document_info: DocumentRowInfo
         :return: Returns the QLabel widget with appearance of a hyperlink.
         :rtype: QLabel
         """
@@ -161,11 +168,36 @@ class SchemeSummaryWidget(QTreeWidget):
         lbl_link.setText(u'<a href=\'placeholder\'>{0}</a>'.format(name))
         lbl_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
 
+        lbl_link.setProperty(self._page_name, name)
+
         return lbl_link
 
     def on_hyperlink_click(self):
         """
         Slot raised when hyperlink to view documents has been clicked.
-        Navigate back to the documents page.
-        :return:
+        Navigate back to the documents page or holders page based on the
+        clicked link.
+        :return:str
         """
+        sender = self.sender()
+        if not self._is_page_name_valid(sender):
+            return
+
+        page = sender.property(self._page_name)
+
+        self.go_to_page.emit(page)
+
+    def _is_page_name_valid(self, sender):
+        # Assert if the page called by signal can be found
+        if not sender:
+            QMessageBox.critical(
+                self,
+                self.tr('Error'),
+                self.tr(
+                    'Error in finding the page'
+                )
+            )
+            return False
+
+        return True
+
