@@ -467,7 +467,7 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
 
         # Check if length of list is empty i.e. if a scheme exist
         if len(scheme_res) == 0:
-            sg_code = u'{0}.{1}.{2}'.format(sg_prefix,
+            sg_code = u'{0}/{1}/{2}'.format(sg_prefix,
                                             str(sg_default_value).zfill(4),
                                             self._current_year)
             self.lnedit_sg_num.setText(sg_code)
@@ -475,10 +475,10 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         elif len(scheme_res) > 0:
             sch_res = scheme_object.queryObject().order_by(
                 self.schm_model.id.desc()).first()
-            sg_number = sch_res.general_plan_number.strip('][').split('.')
+            sg_number = sch_res.general_plan_number.strip('][').split('/')
             sg_count = int(sg_number[1])
             sg_count += 1
-            sg_code = u'{0}.{1}.{2}'.format(sg_prefix,
+            sg_code = u'{0}/{1}/{2}'.format(sg_prefix,
                                             str(sg_count).zfill(4),
                                             self._current_year)
             self.lnedit_sg_num.setText(sg_code)
