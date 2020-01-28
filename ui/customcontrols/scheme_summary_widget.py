@@ -36,7 +36,7 @@ class SchemeSummaryWidget(QTreeWidget):
     """
     A widget for displaying scheme summary information after lodgement
     """
-    go_to_page = pyqtSignal(object)
+    link_clicked = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super(QTreeWidget, self).__init__(parent)
@@ -71,9 +71,9 @@ class SchemeSummaryWidget(QTreeWidget):
         view_str = self.tr('Go to page')
 
         # Labels for holders and documents
-        self.lbl_view_holders = self.create_hyperlink_widget(view_str, )
+        self.lbl_view_holders = self.create_hyperlink_widget(view_str, 'HLD')
         self.lbl_view_holders.linkActivated.connect(self.on_hyperlink_click)
-        self.lbl_view_support_docs = self.create_hyperlink_widget(view_str)
+        self.lbl_view_support_docs = self.create_hyperlink_widget(view_str, 'DOC')
         self.lbl_view_support_docs.linkActivated.connect(self.on_hyperlink_click)
 
         self._initialize_view()
@@ -155,7 +155,7 @@ class SchemeSummaryWidget(QTreeWidget):
         self.setItemWidget(self.supporting_document, 1,
                            self.lbl_view_support_docs)
 
-    def create_hyperlink_widget(self, name):
+    def create_hyperlink_widget(self, name, code):
         """
         Creates a clickable QLabel widget that appears like a hyperlink.
         :param name: Display name of the hyperlink.
@@ -168,7 +168,7 @@ class SchemeSummaryWidget(QTreeWidget):
         lbl_link.setText(u'<a href=\'placeholder\'>{0}</a>'.format(name))
         lbl_link.setTextInteractionFlags(Qt.TextBrowserInteraction)
 
-        lbl_link.setProperty(self._page_name, name)
+        lbl_link.setProperty(self._page_name, code)
 
         return lbl_link
 
@@ -183,9 +183,9 @@ class SchemeSummaryWidget(QTreeWidget):
         if not self._is_page_name_valid(sender):
             return
 
-        page = sender.property(self._page_name)
+        code = sender.property(self._page_name)
 
-        self.go_to_page.emit(page)
+        self.link_clicked.emit(code)
 
     def _is_page_name_valid(self, sender):
         # Assert if the page called by signal can be found

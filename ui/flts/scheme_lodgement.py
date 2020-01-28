@@ -209,6 +209,9 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.chk_holders_validate.toggled.connect(
             self.on_validate_holders
         )
+        self.tr_summary.link_clicked.connect(
+            self._on_summary_link_clicked
+        )
 
         # Block area
         self.radio_sq_meters.setChecked(True)
@@ -1274,6 +1277,24 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         self.tr_summary.scm_blk_area.setText(
             1, self.dbl_spinbx_block_area.text()
         )
+
+    def _on_summary_link_clicked(self, code):
+        """
+        Slot raised when the hyperlink in summary widget is clicked
+        :param code:
+        :return:
+        """
+        ref_id = -1
+        if code == 'DOC':
+            ref_id = 1
+        elif code == 'HLD':
+            ref_id = 2
+
+        if ref_id == -1:
+            return
+
+        while self.currentId() != ref_id:
+            self.back()
 
     def _save_ra_last_value(self, scheme_number):
         # Save the last value for the given relevant authority
