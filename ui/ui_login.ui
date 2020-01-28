@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Login</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_login.png</normaloff>:/plugins/stdm/images/icons/flts_login.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="3" column="1">
     <widget class="QDialogButtonBox" name="btnBox">

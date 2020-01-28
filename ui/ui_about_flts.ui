@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>About FLTS</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_about.png</normaloff>:/plugins/stdm/images/icons/flts_about.png</iconset>
+  </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
   </property>

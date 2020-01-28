@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_content_auth.ui'
 #
-# Created: Mon Jul 01 10:52:55 2013
-#      by: PyQt4 UI code generator 4.9.4
+# Created: Tue Jan 28 11:57:18 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,12 +12,24 @@ from PyQt4 import QtCore, QtGui
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
-    _fromUtf8 = lambda s: s
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_frmContentAuth(object):
     def setupUi(self, frmContentAuth):
         frmContentAuth.setObjectName(_fromUtf8("frmContentAuth"))
         frmContentAuth.resize(501, 382)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_content_auth.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        frmContentAuth.setWindowIcon(icon)
         self.gridLayout = QtGui.QGridLayout(frmContentAuth)
         self.gridLayout.setContentsMargins(10, 12, 10, 10)
         self.gridLayout.setHorizontalSpacing(12)
@@ -48,6 +60,7 @@ class Ui_frmContentAuth(object):
         QtCore.QMetaObject.connectSlotsByName(frmContentAuth)
 
     def retranslateUi(self, frmContentAuth):
-        frmContentAuth.setWindowTitle(QtGui.QApplication.translate("frmContentAuth", "Content Authorization", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("frmContentAuth", "<html><head/><body><p>Click on a content item in the table on the left-hand side and check/uncheck to approve/disapprove the authorised roles on the table in the right-hand side below.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        frmContentAuth.setWindowTitle(_translate("frmContentAuth", "Content Authorization", None))
+        self.label.setText(_translate("frmContentAuth", "<html><head/><body><p>Click on a content item in the table on the left-hand side and check/uncheck to approve/disapprove the authorised roles on the table in the right-hand side below.</p></body></html>", None))
 
+from stdm import resources_rc

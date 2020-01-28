@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Manage System Users and Roles</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_users_manage.png</normaloff>:/plugins/stdm/images/icons/flts_users_manage.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">

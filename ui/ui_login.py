@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_login.ui'
 #
-# Created: Tue Jul  2 06:21:56 2019
-#      by: PyQt4 UI code generator 4.10.4
+# Created: Tue Jan 28 12:19:35 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -28,6 +28,9 @@ class Ui_frmLogin(object):
         frmLogin.setObjectName(_fromUtf8("frmLogin"))
         frmLogin.resize(320, 152)
         frmLogin.setMaximumSize(QtCore.QSize(320, 152))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_login.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        frmLogin.setWindowIcon(icon)
         self.gridLayout_2 = QtGui.QGridLayout(frmLogin)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.btnBox = QtGui.QDialogButtonBox(frmLogin)
@@ -36,9 +39,9 @@ class Ui_frmLogin(object):
         self.gridLayout_2.addWidget(self.btnBox, 3, 1, 1, 1)
         self.btn_db_settings = QtGui.QToolButton(frmLogin)
         self.btn_db_settings.setText(_fromUtf8(""))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/db_server_settings.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_db_settings.setIcon(icon)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/db_server_settings.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_db_settings.setIcon(icon1)
         self.btn_db_settings.setIconSize(QtCore.QSize(16, 16))
         self.btn_db_settings.setCheckable(False)
         self.btn_db_settings.setAutoRaise(False)
@@ -81,3 +84,4 @@ class Ui_frmLogin(object):
         self.label.setText(_translate("frmLogin", "Username", None))
         self.label_2.setText(_translate("frmLogin", "Password", None))
 
+from stdm import resources_rc

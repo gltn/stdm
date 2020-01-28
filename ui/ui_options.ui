@@ -19,6 +19,10 @@
   <property name="windowTitle">
    <string>Options</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_options.png</normaloff>:/plugins/stdm/images/icons/flts_options.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QVBoxLayout" name="vlNotification"/>

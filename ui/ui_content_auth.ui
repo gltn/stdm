@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Content Authorization</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_content_auth.png</normaloff>:/plugins/stdm/images/icons/flts_content_auth.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
     <number>10</number>
@@ -74,7 +78,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

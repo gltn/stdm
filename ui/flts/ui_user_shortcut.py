@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_user_shortcut.ui'
 #
-# Created: Fri Oct  4 11:10:03 2019
-#      by: PyQt4 UI code generator 4.10
+# Created: Tue Jan 28 11:45:40 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -27,6 +27,9 @@ class Ui_UserShortcutDialog(object):
     def setupUi(self, UserShortcutDialog):
         UserShortcutDialog.setObjectName(_fromUtf8("UserShortcutDialog"))
         UserShortcutDialog.resize(665, 479)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_shortcut.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        UserShortcutDialog.setWindowIcon(icon)
         self.gridLayout = QtGui.QGridLayout(UserShortcutDialog)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.chb_donotshow = QtGui.QCheckBox(UserShortcutDialog)
@@ -94,3 +97,4 @@ class Ui_UserShortcutDialog(object):
         self.label.setText(_translate("UserShortcutDialog", "<html><head/><body><p>Please select an action to perform</p></body></html>", None))
         self.lsw_category_action.setSortingEnabled(False)
 
+from stdm import resources_rc

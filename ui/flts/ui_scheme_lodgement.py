@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_scheme_lodgement.ui'
 #
-# Created: Tue Jan 21 23:38:47 2020
+# Created: Tue Jan 28 12:12:07 2020
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -37,6 +37,9 @@ class Ui_ldg_wzd(object):
         ldg_wzd.setMaximumSize(QtCore.QSize(1500, 900))
         ldg_wzd.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         ldg_wzd.setAcceptDrops(False)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_lodgement.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        ldg_wzd.setWindowIcon(icon)
         ldg_wzd.setWizardStyle(QtGui.QWizard.ModernStyle)
         ldg_wzd.setOptions(QtGui.QWizard.NoBackButtonOnStartPage)
         self.wizardPage1 = QtGui.QWizardPage()
@@ -156,7 +159,7 @@ class Ui_ldg_wzd(object):
         self.radio_sq_meters.setObjectName(_fromUtf8("radio_sq_meters"))
         self.gridLayout_2.addWidget(self.radio_sq_meters, 0, 1, 1, 1)
         self.dbl_spinbx_block_area = QtGui.QDoubleSpinBox(self.gbx_block_area)
-        self.dbl_spinbx_block_area.setDecimals(4)
+        self.dbl_spinbx_block_area.setDecimals(0)
         self.dbl_spinbx_block_area.setMaximum(10000000.0)
         self.dbl_spinbx_block_area.setObjectName(_fromUtf8("dbl_spinbx_block_area"))
         self.gridLayout_2.addWidget(self.dbl_spinbx_block_area, 1, 1, 1, 2)
@@ -201,9 +204,9 @@ class Ui_ldg_wzd(object):
         self.btn_upload_dir.setSizePolicy(sizePolicy)
         self.btn_upload_dir.setMinimumSize(QtCore.QSize(0, 0))
         self.btn_upload_dir.setMaximumSize(QtCore.QSize(5000, 16777215))
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_upload_dir.setIcon(icon)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_scheme_docs_dir.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_upload_dir.setIcon(icon1)
         self.btn_upload_dir.setIconSize(QtCore.QSize(16, 16))
         self.btn_upload_dir.setObjectName(_fromUtf8("btn_upload_dir"))
         self.gridLayout.addWidget(self.btn_upload_dir, 3, 1, 1, 1)
@@ -223,9 +226,9 @@ class Ui_ldg_wzd(object):
         self.gridLayout_3.addWidget(self.lnEdit_hld_path, 2, 0, 1, 1)
         self.btn_brws_hld = QtGui.QPushButton(self.wizardPage2)
         self.btn_brws_hld.setText(_fromUtf8(""))
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_brws_hld.setIcon(icon1)
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_brws_hld.setIcon(icon2)
         self.btn_brws_hld.setDefault(True)
         self.btn_brws_hld.setObjectName(_fromUtf8("btn_brws_hld"))
         self.gridLayout_3.addWidget(self.btn_brws_hld, 2, 1, 1, 1)
@@ -242,9 +245,9 @@ class Ui_ldg_wzd(object):
         self.gridLayout_3.addWidget(self.chk_holders_validate, 3, 0, 1, 1)
         self.btn_reload_holders = QtGui.QPushButton(self.wizardPage2)
         self.btn_reload_holders.setText(_fromUtf8(""))
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/update.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_reload_holders.setIcon(icon2)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/update.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_reload_holders.setIcon(icon3)
         self.btn_reload_holders.setObjectName(_fromUtf8("btn_reload_holders"))
         self.gridLayout_3.addWidget(self.btn_reload_holders, 2, 2, 1, 1)
         self.lbl_validation_description = QtGui.QLabel(self.wizardPage2)

@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_user_role_manage.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Tue Jan 28 12:00:15 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -26,6 +27,9 @@ class Ui_frmSysManageAccounts(object):
     def setupUi(self, frmSysManageAccounts):
         frmSysManageAccounts.setObjectName(_fromUtf8("frmSysManageAccounts"))
         frmSysManageAccounts.resize(434, 380)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_users_manage.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        frmSysManageAccounts.setWindowIcon(icon)
         self.gridLayout = QtGui.QGridLayout(frmSysManageAccounts)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.buttonBox = QtGui.QDialogButtonBox(frmSysManageAccounts)
@@ -51,9 +55,9 @@ class Ui_frmSysManageAccounts(object):
         self.btnManageUsers.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Save)
         self.btnManageUsers.setObjectName(_fromUtf8("btnManageUsers"))
         self.gridLayout_2.addWidget(self.btnManageUsers, 0, 1, 1, 1)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/user.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbUserRole.addTab(self.tab, icon, _fromUtf8(""))
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/user.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.tbUserRole.addTab(self.tab, icon1, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
         self.gridLayout_3 = QtGui.QGridLayout(self.tab_2)
@@ -84,9 +88,9 @@ class Ui_frmSysManageAccounts(object):
         self.lblRoleDescription.setObjectName(_fromUtf8("lblRoleDescription"))
         self.gridLayout_4.addWidget(self.lblRoleDescription, 0, 0, 1, 1)
         self.gridLayout_3.addWidget(self.groupBox, 1, 0, 1, 1)
-        icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/roles.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbUserRole.addTab(self.tab_2, icon1, _fromUtf8(""))
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/roles.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.tbUserRole.addTab(self.tab_2, icon2, _fromUtf8(""))
         self.tab_3 = QtGui.QWidget()
         self.tab_3.setObjectName(_fromUtf8("tab_3"))
         self.gridLayout_5 = QtGui.QGridLayout(self.tab_3)
@@ -107,9 +111,9 @@ class Ui_frmSysManageAccounts(object):
         self.lstMappingUsers.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.lstMappingUsers.setObjectName(_fromUtf8("lstMappingUsers"))
         self.gridLayout_5.addWidget(self.lstMappingUsers, 1, 1, 1, 1)
-        icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/user_mapping.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.tbUserRole.addTab(self.tab_3, icon2, _fromUtf8(""))
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/user_mapping.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.tbUserRole.addTab(self.tab_3, icon3, _fromUtf8(""))
         self.gridLayout.addWidget(self.tbUserRole, 1, 0, 1, 1)
 
         self.retranslateUi(frmSysManageAccounts)

@@ -34,6 +34,10 @@
   <property name="windowTitle">
    <string>Configuration Wizard</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_database_designer.png</normaloff>:/plugins/stdm/images/icons/flts_database_designer.png</iconset>
+  </property>
   <property name="modal">
    <bool>true</bool>
   </property>

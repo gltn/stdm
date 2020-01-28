@@ -40,6 +40,10 @@
   <property name="windowTitle">
    <string>Lodgement of Scheme</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../../resources.qrc">
+    <normaloff>:/plugins/stdm/images/icons/flts_lodgement.png</normaloff>:/plugins/stdm/images/icons/flts_lodgement.png</iconset>
+  </property>
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
   </property>

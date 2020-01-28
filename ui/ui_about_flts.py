@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_about_flts.ui'
 #
-# Created: Wed Jan 22 10:43:55 2020
+# Created: Tue Jan 28 11:48:08 2020
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -32,6 +32,9 @@ class Ui_frmAbout(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(frmAbout.sizePolicy().hasHeightForWidth())
         frmAbout.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_about.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        frmAbout.setWindowIcon(icon)
         frmAbout.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.gridLayout = QtGui.QGridLayout(frmAbout)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))

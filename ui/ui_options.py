@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Fri Dec 20 11:39:19 2019
-#      by: PyQt4 UI code generator 4.10
+# Created: Tue Jan 28 12:15:37 2020
+#      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -32,6 +32,9 @@ class Ui_DlgOptions(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(DlgOptions.sizePolicy().hasHeightForWidth())
         DlgOptions.setSizePolicy(sizePolicy)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_options.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        DlgOptions.setWindowIcon(icon)
         self.verticalLayout = QtGui.QVBoxLayout(DlgOptions)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.vlNotification = QtGui.QVBoxLayout()
@@ -53,9 +56,9 @@ class Ui_DlgOptions(object):
         self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_3)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.btn_template_folder = QtGui.QToolButton(self.groupBox_3)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.btn_template_folder.setIcon(icon)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(_fromUtf8(":/plugins/stdm/images/icons/flts_open_file.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btn_template_folder.setIcon(icon1)
         self.btn_template_folder.setIconSize(QtCore.QSize(24, 24))
         self.btn_template_folder.setObjectName(_fromUtf8("btn_template_folder"))
         self.gridLayout_4.addWidget(self.btn_template_folder, 0, 2, 1, 1)
@@ -78,7 +81,7 @@ class Ui_DlgOptions(object):
         self.txt_output_dir.setObjectName(_fromUtf8("txt_output_dir"))
         self.gridLayout_4.addWidget(self.txt_output_dir, 1, 1, 1, 1)
         self.btn_composer_out_folder = QtGui.QToolButton(self.groupBox_3)
-        self.btn_composer_out_folder.setIcon(icon)
+        self.btn_composer_out_folder.setIcon(icon1)
         self.btn_composer_out_folder.setIconSize(QtCore.QSize(24, 24))
         self.btn_composer_out_folder.setObjectName(_fromUtf8("btn_composer_out_folder"))
         self.gridLayout_4.addWidget(self.btn_composer_out_folder, 1, 2, 1, 1)
@@ -106,7 +109,7 @@ class Ui_DlgOptions(object):
         self.gridLayout_5.addWidget(self.label_10, 5, 0, 1, 1)
         self.btn_holders_conf_file = QtGui.QToolButton(self.scrollAreaWidgetContents)
         self.btn_holders_conf_file.setText(_fromUtf8(""))
-        self.btn_holders_conf_file.setIcon(icon)
+        self.btn_holders_conf_file.setIcon(icon1)
         self.btn_holders_conf_file.setIconSize(QtCore.QSize(24, 24))
         self.btn_holders_conf_file.setObjectName(_fromUtf8("btn_holders_conf_file"))
         self.gridLayout_5.addWidget(self.btn_holders_conf_file, 5, 2, 1, 1)
