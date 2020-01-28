@@ -236,6 +236,16 @@ class LodgementWizard(QWizard, Ui_ldg_wzd, MapperMixin):
         # Specify MapperMixin widgets
         self.register_col_widgets()
 
+    def _tooltips(self, widget, tip):
+        """
+        Show tooltips on widgets
+        :param tip:
+        :return: str
+        """
+        widget.setToolTip(
+            self.tr(tip)
+        )
+
     def _populate_combo(self, cbo, lookup_name):
         """
         Populates comboboxes with items from the database
