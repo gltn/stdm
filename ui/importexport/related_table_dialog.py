@@ -48,6 +48,8 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
+        self.auto_rel_translator = None
+
         self._set_source_table_headers()
 
         #Set UI values

@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 import itertools
+import os
 
 from PyQt4.QtGui import (
     QApplication,

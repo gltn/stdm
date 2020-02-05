@@ -40,14 +40,21 @@ from stdm.data.pg_utils import (
     pg_tables,
     spatial_tables
 )
+
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
 
-from stdm.data.importexport.value_translators import ValueTranslatorManager
+from stdm.data.importexport.value_translators import (
+        ValueTranslatorManager,
+        LookupValueTranslator,
+        RelatedTableTranslator,
+        SourceDocumentTranslator
+        )
 
 from stdm.data.importexport.reader import OGRReader
+
 from .importexport import (
     ValueTranslatorConfig,
     TranslatorWidgetManager,
@@ -126,7 +133,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
-        self.auto_load_translators()
+        #self.auto_load_translators()
 
         #Initialize value translators from definitions
         self._init_translators()
@@ -347,69 +354,113 @@ class ImportData(QWizard, Ui_frmImport):
     def auto_load_translators(self):
         srclookups = mapfile_section('lookups')
         dstlookups = mapfile_section('lookup-defaults')
-        config_key ="Lookup values"
-
-        import pydevd; pydevd.settrace()
+        trans_sec = self.target_table_shortname(self.targetTab)+'-translators'
+        translators = mapfile_section(trans_sec)
 
         for dest_column, lookup_table in dstlookups.iteritems():
-            trans_config = ValueTranslatorConfig.translators.get(config_key, None)
 
-            src_column = self._get_src_column(lookup_table, srclookups)
-            if src_column is None:
-                continue
+            lookup_type = translators.get(dest_column)
+            if lookup_type is None: continue
+            # Single Select Lookups
+            if lookup_type == 'lookup':
 
-            trans_dlg = trans_config.create(
-                self,
-                [],
-                self.targetTab,
-                dest_column,
-                src_column,
-                dflt_lookups=dlookups.values()
-            )
+                config_key ="Lookup values"
+                trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+                src_column = self._get_src_column(lookup_table, srclookups)
+                if src_column is None:
+                    continue
 
-            trans_dlg.auto_lookup_translator = LookupValueTranslator()
-            trans_dlg.auto_lookup_translator.set_referenced_table(lookup_table)
-            trans_dlg.auto_lookup_translator.set_referencing_table(dest_table)
-            trans_dlg.auto_lookup_translator.set_referencing_column(dest_column)
-            trans_dlg.auto_lookup_transltor.set_referenced_table(lookup_table)
-            trans_dlg.auto_lookup_transltor.add_source_reference_column(src_column, dest_column)
-            lookup_translator.default_value = ''
+                trans_dlg = trans_config.create(
+                    self,
+                    [],
+                    self.targetTab,
+                    dest_column,
+                    src_column,
+                    dflt_lookups=dstlookups.values()
+                )
 
-            self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+                trans_dlg.auto_lookup_translator = LookupValueTranslator()
+                trans_dlg.auto_lookup_translator.set_referenced_table(lookup_table)
+                trans_dlg.auto_lookup_translator.set_referencing_table(self.targetTab)
+                trans_dlg.auto_lookup_translator.set_referencing_column(dest_column)
+                trans_dlg.auto_lookup_translator.set_referenced_table(lookup_table)
+                trans_dlg.auto_lookup_translator.add_source_reference_column(src_column, dest_column)
+                trans_dlg.auto_lookup_translator.default_value = ''
+
+                self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+            # Related Entities
+            if lookup_type == 'relatedentity':
+
+                config_key ="Related table"
+                trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+
+                map_sec = self.targetTab[3:]+'-'+dest_column+'-relatedentity'
+                rel_values = mapfile_section(map_sec)
+                config_key ="Related table"
+                dest_table = rel_values['dest_table']
+                dest_column = rel_values['dest_column']
+
+                ref_table = rel_values['reftable']
+                ref_output_column = rel_values['ref_output_col']
+
+                col_pairs = {}
+                col_pairs[rel_values['src_table_field']] = rel_values['ref_table_field']
+
+                #trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+                trans_dlg = trans_config.create(
+                    self,
+                    [],
+                    self.targetTab,
+                    dest_column,
+                    src_column,
+                    dflt_lookups=rel_values
+                )
+
+                trans_dlg.auto_rel_translator = RelatedTableTranslator()
+                trans_dlg.auto_rel_translator.set_referencing_table(self.targetTab)
+                trans_dlg.auto_rel_translator.set_referencing_column(dest_column)
+                trans_dlg.auto_rel_translator.set_referenced_table(ref_table)
+                trans_dlg.auto_rel_translator.set_output_reference_column(ref_output_column)
+                trans_dlg.auto_rel_translator.set_input_referenced_columns(col_pairs)
+
+                self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+            if lookup_type == 'supporting_document':
+
+                config_key ="Supporting documents"
+                trans_config = ValueTranslatorConfig.translators.get(config_key, None)
+
+                src_column = self._get_sd_src_column(self.targetTab, dest_column)
+
+                trans_dlg = trans_config.create(
+                    self,
+                    [],
+                    self.targetTab,
+                    dest_column.replace('_',' ').title(),
+                    src_column
+                )
 
 
-        rel_values = mapfile_section('household_members-relatedentity')
-        config_key ="Related table"
-        dest_table = rel_values['dest_table']
-        dest_column = rel_values['dest_column']
+                trans_dlg.auto_src_translator = SourceDocumentTranslator()
+                trans_dlg.auto_src_translator.set_referencing_table(self.targetTab)
+                trans_dlg.auto_src_translator.set_referencing_column(dest_column)
 
-        ref_table = rel_values['reftable']
-        ref_output_column = rel_values['ref_output_col']
+                #Just use the source column for getting the relative image path
+                # and name
+                trans_dlg.auto_src_translator.add_source_reference_column(
+                    src_column,
+                    dest_column
+                )
+                trans_dlg.auto_src_translator.entity = trans_dlg.entity()
+                trans_dlg.auto_src_translator.document_type_id = trans_dlg._document_type_id
+                trans_dlg.auto_src_translator.document_type = dest_column
 
-        col_pairs = {}
-        col_pairs[0] = rel_values['src_table_field']
-        col_pairs[1] = rel_values['ref_table_field']
+                support_docs = mapfile_section('support_docs-defaults')
+                trans_dlg.auto_src_translator.source_directory = support_docs[dest_column]
 
-        trans_config = ValueTranslatorConfig.translators.get(config_key, None)
-        trans_dlg = trans_config.create(
-            self,
-            [],
-            self.targetTab,
-            dest_column,
-            src_column,
-            dflt_lookups=dlookups.values()
-        )
+                self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
 
-        rel_tab_translator = RelatedTableTranslator()
-        trans_dlg.auto_rel_translator.set_referencing_table(self.targetTab)
-        trans_dlg.auto_rel_translator.set_referencing_column(dest_column)
-        trans_dlg.auto_rel_translator.set_referenced_table(ref_table)
-        trans_dlg.auto_rel_translator.set_output_reference_column(ref_output_column)
-        trans_dlg.auto_rel_translator.set_input_referenced_columns(col_pairs)
-
-        self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
-
-        #"Supporting documents")
 
     def _get_src_column(self, value, srclookups):
         column = None
@@ -418,6 +469,16 @@ class ImportData(QWizard, Ui_frmImport):
                 column = col
                 break
         return column
+
+    def _get_sd_src_column(self, target_table, dest_col):
+        column = None
+        columns = mapfile_section(target_table[3:])
+        for s_col, d_col in columns.iteritems():
+            if d_col == dest_col:
+                column = s_col
+                break
+        return column
+
 
     def _register_lookups(self, config_key, lookups):
         src_column = self._selected_source_column()
@@ -617,6 +678,7 @@ class ImportData(QWizard, Ui_frmImport):
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
             self.assignCols()
+            self.auto_load_translators()
             self._enable_disable_trans_tools()
     
     def toggleKoboOptions(self, mode):
@@ -717,6 +779,13 @@ class ImportData(QWizard, Ui_frmImport):
         Load/unload relationships in the list of destination table columns.
         """
         virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
+
+        virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
+        remove_list = mapfile_section(self.targetTab[3:]+'-remove').values()
+        virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
+
+        if len(virtual_columns) == 0:
+            return
 
         if state:
             if len(virtual_columns) == 0:

@@ -582,7 +582,6 @@ class OGRReader(object):
         if len(source_cols) == 0:
             return col_values
 
-
         for f in range(feature_defn.GetFieldCount()):
             field_defn = feature_defn.GetFieldDefn(f)
             field_name = field_defn.GetNameRef()

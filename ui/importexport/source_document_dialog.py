@@ -60,6 +60,8 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
 
         self._notif_bar = NotificationBar(self.vlNotification)
 
+        self.auto_src_translator = None
+
         #Assert if the entity supports documents
         self._assert_entity_supports_documents()
 
@@ -67,7 +69,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
         self.source_document_directory = None
 
         #Document type name
-        self._document_type_name = self._dest_col
+        self._document_type_name = self._dest_col   # replace self._dest_col  with dest_col
 
         #Document type ID
         self._document_type_id = None
@@ -168,6 +170,9 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
             self.txtRootFolder.setText(normalized_path)
 
     def value_translator(self):
+        if self.auto_src_translator is not None:
+            return self.auto_src_translator
+
         source_doc_translator = SourceDocumentTranslator()
         source_doc_translator.set_referencing_table(self._dest_table)
         source_doc_translator.set_referencing_column(self._dest_col)
