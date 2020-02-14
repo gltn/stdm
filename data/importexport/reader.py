@@ -274,20 +274,10 @@ class OGRReader(object):
         names to the corresponding column values.
         """
         model_instance = self._mapped_cls()
-
         for col, value in columnValueMapping.iteritems():
-
             if hasattr(model_instance, col):
-                '''
-                #Check if column type is enumeration and transform accordingly
-                col_is_enum, enum_symbol = self._enumeration_column_type(col, value)
-
-                if col_is_enum:
-                    value = enum_symbol
-                '''
-                # documents is not a column so exclude it.
-                if col != 'documents':
-
+                # 'documents' is not a column so exclude it.
+                if col != 'documents' and not 'collection' in col:
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
                     value = self.auto_fix_percent(target_table, col, value)
@@ -466,10 +456,11 @@ class OGRReader(object):
                         value_translator.entity = destination_entity
 
                         source_col_names = value_translator.source_column_names()
-
-                        field_value_mappings = self._map_column_values(feat,
-                                                                       feat_defn,
-                                                                       source_col_names)
+                        field_value_mappings = self._map_column_values(
+                            feat,
+                            feat_defn,
+                            source_col_names
+                        )
                         # Set source document manager if required
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
@@ -479,6 +470,13 @@ class OGRReader(object):
                         )
 
                     if not isinstance(field_value, IgnoreType):
+                        # Check column type and rename if multiple select for
+                        # SQLAlchemy compatibility
+                        col_obj = destination_entity.column(dest_column)
+                        if col_obj.TYPE_INFO == 'MULTIPLE_SELECT':
+                            lk_name = col_obj.value_list.name
+                            dest_column = u'{0}_collection'.format(lk_name)
+
                         column_value_mapping[dest_column] = field_value
 
                     # Set supporting documents
@@ -491,10 +489,10 @@ class OGRReader(object):
             # Only insert geometry if it has been defined by the user
             if geomColumn is not None:
                 geom = feat.GetGeometryRef()
-
                 if geom is not None:
                     # Check if the geometry types match
                     layerGeomType = geom.GetGeometryName()
+
                     # Convert polygon to multipolygon if the destination table is multi-polygon.
                     geom_wkb, geom_type = self.auto_fix_geom_type(
                         geom, layerGeomType, self._geomType)

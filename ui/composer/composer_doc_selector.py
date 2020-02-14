@@ -114,7 +114,7 @@ class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
         self._load_current_profile_templates()
 
         self.access_templates=access_templates
-        
+
         if selectMode:
             self.buttonBox.setVisible(True)
             self.manageButtonBox.setVisible(False)
@@ -154,7 +154,7 @@ class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
         #Append current profile templates to the model.
         for dt in self._profile_templates:
 
-            if self._template_contains_filter_table(dt) and dt.name in self.access_templates:
+            if self._template_contains_filter_table(dt): #and dt.name in self.access_templates:
                 doc_name_item = self._createDocNameItem(dt.name)
                 file_path_item = QStandardItem(dt.path)
                 self._docItemModel.appendRow([doc_name_item,file_path_item])

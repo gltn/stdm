@@ -1308,6 +1308,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 layers = QgsMapLayerRegistry.instance().mapLayersByName(
                     sel_lyr_name
                 )
+
                 if len(layers) > 0:
                     layers[0].removeSelection()
 
@@ -1323,10 +1324,11 @@ class EntityBrowserWithEditor(EntityBrowser):
                     canvas.setCrsTransformEnabled(True)
 
                     canvas.zoomToSelected(layers[0])
-                    iface.mapCanvas().setExtent(bounding_box)
-                    layers[0].select(record_ids)
-                    canvas.refresh()
-                    self.selection_layer = layers[0]
+
+                    #iface.mapCanvas().setExtent(bounding_box)
+                    #layers[0].select(record_ids)
+                    #canvas.refresh()
+                    #self.selection_layer = layers[0]
 
     def add_spatial_unit_layer(self, layer_name=None):
         """
