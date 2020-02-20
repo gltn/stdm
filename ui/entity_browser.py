@@ -638,15 +638,15 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 else:
                     entity_cls = self._dbmodel()
 
-                    if type(self.parent_record_id) == int:
+                    if type(self.parent_record_id) == int and self.parent_record_id > 0:
                         col = self.filter_col(self._entity)
-                        if col is not None:
+                        if col is None:
+                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
+                        else:
                             child_model = entity_model(self._entity)
                             col_name = getattr(child_model, col.name)
                             child_model_obj = child_model()
                             entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
-                        else:
-                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
                     else:
                         entity_records = entity_cls.queryObject().filter().limit(
                                 self.record_limit
