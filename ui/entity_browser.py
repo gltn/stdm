@@ -619,6 +619,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.show()
             progressDialog.setValue(0)
 
+            entity_records = []
             # Add records to nested list for enumeration in table model
             load_data = True
             if self.plugin is not None:
@@ -639,16 +640,19 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     if type(self.parent_record_id) == int:
                         col = self.filter_col(self._entity)
-                        child_model = entity_model(self._entity)
-                        col_name = getattr(child_model, col.name)
-                        child_model_obj = child_model()
-                        entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
-                        numRecords = len(entity_records)
+                        if col is not None:
+                            child_model = entity_model(self._entity)
+                            col_name = getattr(child_model, col.name)
+                            child_model_obj = child_model()
+                            entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
+                        else:
+                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
                     else:
                         entity_records = entity_cls.queryObject().filter().limit(
                                 self.record_limit
                                 ).all()
-                        numRecords = len(entity_records)
+
+                    numRecords = len(entity_records)
 
             # if self._tableModel is None:
                 entity_records_collection = []
