@@ -591,6 +591,9 @@ class OGRReader(object):
             cast = ''
 
             match_idx = -1
+            if source_cols[0] is None:
+                continue
+
             if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
                 match_idx = 1
 
@@ -636,7 +639,7 @@ class OGRReader(object):
 
                 col_values[field_name] = field_value
 
-                if cast == 'int':
+                if cast == 'int' and field_value is not None:
                     col_values[field_name] = int(field_value)
 
         return col_values

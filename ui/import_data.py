@@ -705,6 +705,9 @@ class ImportData(QWizard, Ui_frmImport):
         self.cbHousePhoto.setCheckState(Qt.Checked)
 
     def _source_columns(self):
+        """
+        :rtype: list
+        """
         return self.dataReader.getFields()
 
     def assignCols(self):
@@ -712,7 +715,6 @@ class ImportData(QWizard, Ui_frmImport):
         srcCols = self._source_columns()
 
         target_table = self.target_table_shortname(self.destCheckedItem.text())
-
         cols = mapfile_section(target_table).keys()
         ucols = {}
         for i,c in enumerate(cols):
@@ -732,7 +734,7 @@ class ImportData(QWizard, Ui_frmImport):
         for k,v in order_temp.iteritems():
             srcCols.insert(k, v)
         
-        for i,c in enumerate(srcCols):
+        for i, c in enumerate(srcCols):
             srcItem = QListWidgetItem(c,self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
             if i<=len(cols)-1:
@@ -758,11 +760,33 @@ class ImportData(QWizard, Ui_frmImport):
 
         remove_list = mapfile_section(target_table+'-remove')
         targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
-        self._add_target_table_columns(targetCols)
+
+        # sort list according to the mapfile
+        dest_cols = targetCols
+        if self.sortable(target_table):
+            dest_cols = self.sort_dest_cols_by_mapfile(targetCols)
+
+        self._add_target_table_columns(dest_cols)
 
         virtual_cols = mapfile_section(target_table+'-virtual')
         if len(virtual_cols) > 0:
             self.chk_virtual.setChecked(True)
+
+    def sortable(self, target_table):
+        """
+        :rtype: bool
+        """
+        sortables = mapfile_section('sortables').values()
+        return True if target_table in sortables else False
+
+    def sort_dest_cols_by_mapfile(self, dest_cols):
+        target_table = self.target_table_shortname(self.destCheckedItem.text())
+        map_cols = mapfile_section(target_table).values()
+        sorted_cols = []
+        for col in map_cols:
+            if col in dest_cols:
+                sorted_cols.append(col)
+        return sorted_cols
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:
