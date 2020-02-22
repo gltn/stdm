@@ -175,7 +175,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     recordSelected = pyqtSignal(int)
     
-    def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
+    def __init__(self, entity, ent_rec_id=0, parent=None, state=MANAGE, load_records=True, plugin=None):
         QDialog.__init__(self,parent)
         self.setupUi(self)
 
@@ -229,6 +229,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._select_item = None
         self.current_records = 0
 
+        self.parent_record_id = ent_rec_id
         self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
 
         #Enable viewing of supporting documents
@@ -384,11 +385,15 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             return
         try:
             if not self._dbmodel is None:
-                # cProfile.runctx('self._initializeData()', globals(), locals())
                 self._initializeData()
-
         except Exception as ex:
-            pass
+            QMessageBox.critical(
+                self,
+                QApplication.translate(
+                    'EntityBrowser', 'showEvent method'
+                ),
+                unicode(ex.message))
+            return
 
         self._data_initialized = True
 
@@ -614,6 +619,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             progressDialog.show()
             progressDialog.setValue(0)
 
+            entity_records = []
             # Add records to nested list for enumeration in table model
             load_data = True
             if self.plugin is not None:
@@ -631,9 +637,22 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     entity_records = self.filtered_records
                 else:
                     entity_cls = self._dbmodel()
-                    entity_records = entity_cls.queryObject().filter().limit(
-                        self.record_limit
-                    ).all()
+
+                    if type(self.parent_record_id) == int and self.parent_record_id > 0:
+                        col = self.filter_col(self._entity)
+                        if col is None:
+                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
+                        else:
+                            child_model = entity_model(self._entity)
+                            col_name = getattr(child_model, col.name)
+                            child_model_obj = child_model()
+                            entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
+                    else:
+                        entity_records = entity_cls.queryObject().filter().limit(
+                                self.record_limit
+                                ).all()
+
+                    numRecords = len(entity_records)
 
             # if self._tableModel is None:
                 entity_records_collection = []
@@ -714,7 +733,15 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 # Set maximum value of the progress dialog
                 progressDialog.setValue(numRecords)
             else:
-                progressDialog.hide()
+                progressDialog.close()
+
+    def filter_col(self, child_entity):
+        for col in child_entity.columns.values():
+            if col.TYPE_INFO == 'FOREIGN_KEY':
+                return col
+                #parent_entity = col.parent
+                #if parent_entity == self._entity:
+                    #return col
 
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
@@ -839,8 +866,8 @@ class EntityBrowserWithEditor(EntityBrowser):
     Entity browser with added functionality for carrying out CRUD operations
     directly.
     """
-    def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
-        EntityBrowser.__init__(self, entity, parent, state, load_records, plugin)
+    def __init__(self, entity, r_id=0, parent=None, state=MANAGE, load_records=True, plugin=None):
+        EntityBrowser.__init__(self, entity, ent_rec_id=r_id, parent=parent, state=MANAGE, load_records=load_records, plugin=plugin)
 
         self.record_id = 0
 
@@ -1004,7 +1031,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         Slot raised to load the editor for the selected row.
         '''
         self._notifBar.clear()
-
 
         if not self._can_add_edit():
             msg = QApplication.translate(
@@ -1392,9 +1418,8 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         VIEW=2301, MANAGE=2302,
         SELECT=2303 #When widget is used to select one or more records from the table list
     """
-    def __init__(self, dataModel, tableContentGroup, parent=None, plugin=None, state=VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, dataModel, parent, state, plugin=plugin)
-
+    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, state=VIEW|MANAGE):
+        EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW|MANAGE, plugin=plugin)
         
         self.resize(700,500)
         

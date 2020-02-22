@@ -1906,7 +1906,7 @@ class STDMQGISLoader(object):
 
                     table_content = TableContentGroup(self.current_user.UserName, dispName)
                     self.entity_browser = ContentGroupEntityBrowser(
-                            sel_entity, table_content, self.iface.mainWindow(),  plugin=self)
+                            sel_entity, table_content, rec_id=0, parent=self.iface.mainWindow(),  plugin=self)
                            
                     #self.entity_browser = EntityBrowserWithEditor(
                         #sel_entity,
