@@ -11,7 +11,8 @@ from stdm.settings.registryconfig import (
     KOBO_PASS,
     FAMILY_PHOTO,
     SIGN_PHOTO,
-    HOUSE_PHOTO
+    HOUSE_PHOTO,
+    SUPPORT_DOC
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -123,6 +124,9 @@ def get_sign_photo():
 def get_house_photo():
     return get_key_value(HOUSE_PHOTO)
 
+def get_support_doc():
+    return get_key_value(SUPPORT_DOC)
+
 def save_media_url(value):
     save_key_value(MEDIA_URL, value)
 
@@ -140,4 +144,7 @@ def save_sign_photo(value):
 
 def save_house_photo(value):
     save_key_value(HOUSE_PHOTO, value)
+
+def save_support_doc(value):
+    save_key_value(SUPPORT_DOC, value)
 

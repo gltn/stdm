@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_import_data.ui'
 #
-# Created: Sun Nov 17 09:59:55 2019
+# Created: Thu Apr 02 11:01:23 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,6 +62,9 @@ class Ui_frmImport(object):
         self.rbKoboMedia = QtGui.QRadioButton(self.groupBox_2)
         self.rbKoboMedia.setObjectName(_fromUtf8("rbKoboMedia"))
         self.horizontalLayout.addWidget(self.rbKoboMedia)
+        self.rbSupportDoc = QtGui.QRadioButton(self.groupBox_2)
+        self.rbSupportDoc.setObjectName(_fromUtf8("rbSupportDoc"))
+        self.horizontalLayout.addWidget(self.rbSupportDoc)
         self.verticalLayout.addWidget(self.groupBox_2)
         self.groupBox_7 = QtGui.QGroupBox(self.pgSource)
         self.groupBox_7.setObjectName(_fromUtf8("groupBox_7"))
@@ -139,6 +142,21 @@ class Ui_frmImport(object):
         self.cbHousePhoto = QtGui.QCheckBox(self.groupBox_8)
         self.cbHousePhoto.setObjectName(_fromUtf8("cbHousePhoto"))
         self.gridLayout_6.addWidget(self.cbHousePhoto, 2, 2, 1, 1)
+        self.label_11 = QtGui.QLabel(self.groupBox_8)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.gridLayout_6.addWidget(self.label_11, 3, 0, 1, 1)
+        self.edtSupportDocFolder = QtGui.QLineEdit(self.groupBox_8)
+        self.edtSupportDocFolder.setObjectName(_fromUtf8("edtSupportDocFolder"))
+        self.gridLayout_6.addWidget(self.edtSupportDocFolder, 3, 1, 1, 1)
+        self.cbSupportDoc = QtGui.QCheckBox(self.groupBox_8)
+        self.cbSupportDoc.setObjectName(_fromUtf8("cbSupportDoc"))
+        self.gridLayout_6.addWidget(self.cbSupportDoc, 3, 2, 1, 1)
+        self.tbSupportDoc = QtGui.QToolButton(self.groupBox_8)
+        self.tbSupportDoc.setObjectName(_fromUtf8("tbSupportDoc"))
+        self.gridLayout_6.addWidget(self.tbSupportDoc, 3, 3, 1, 1)
+        self.btnSupportDoc = QtGui.QPushButton(self.groupBox_8)
+        self.btnSupportDoc.setObjectName(_fromUtf8("btnSupportDoc"))
+        self.gridLayout_6.addWidget(self.btnSupportDoc, 3, 4, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_8)
         self.groupBox_9 = QtGui.QGroupBox(self.pgSource)
         self.groupBox_9.setObjectName(_fromUtf8("groupBox_9"))
@@ -355,6 +373,7 @@ class Ui_frmImport(object):
         self.rbTextType.setText(_translate("frmImport", "Textual Data", None))
         self.rbSpType.setText(_translate("frmImport", "Spatial Data", None))
         self.rbKoboMedia.setText(_translate("frmImport", "Kobo Images", None))
+        self.rbSupportDoc.setText(_translate("frmImport", "Supporting Documents", None))
         self.groupBox_7.setTitle(_translate("frmImport", "Kobo Settings", None))
         self.label_4.setText(_translate("frmImport", "Media URL:", None))
         self.label_5.setText(_translate("frmImport", "Kobo Username:", None))
@@ -362,7 +381,7 @@ class Ui_frmImport(object):
         self.groupBox_8.setTitle(_translate("frmImport", "Local Media Folders:", None))
         self.label_8.setText(_translate("frmImport", "Signatures:", None))
         self.label_7.setText(_translate("frmImport", "Family Photos:", None))
-        self.label_9.setText(_translate("frmImport", "House Photo", None))
+        self.label_9.setText(_translate("frmImport", "House Map:", None))
         self.tbSignFolder.setText(_translate("frmImport", "...", None))
         self.tbHouseFolder.setText(_translate("frmImport", "...", None))
         self.tbFamilyFolder.setText(_translate("frmImport", "...", None))
@@ -372,6 +391,10 @@ class Ui_frmImport(object):
         self.cbFamilyPhoto.setText(_translate("frmImport", "Download", None))
         self.cbSign.setText(_translate("frmImport", "Download", None))
         self.cbHousePhoto.setText(_translate("frmImport", "Download", None))
+        self.label_11.setText(_translate("frmImport", "Support Docs:", None))
+        self.cbSupportDoc.setText(_translate("frmImport", "Download", None))
+        self.tbSupportDoc.setText(_translate("frmImport", "...", None))
+        self.btnSupportDoc.setText(_translate("frmImport", "Browse", None))
         self.groupBox_9.setTitle(_translate("frmImport", "Download:", None))
         self.lblCurrRecord.setText(_translate("frmImport", "0", None))
         self.btnDownload.setText(_translate("frmImport", "Download", None))

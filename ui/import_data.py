@@ -70,12 +70,14 @@ from stdm.settings import (
         get_family_photo,
         get_sign_photo,
         get_house_photo,
+        get_support_doc,
         save_media_url,
         save_kobo_user,
         save_kobo_pass,
         save_family_photo,
         save_sign_photo,
-        save_house_photo
+        save_house_photo,
+        save_support_doc
         )
 
 from stdm.utils.util import (
@@ -107,16 +109,19 @@ class ImportData(QWizard, Ui_frmImport):
         self.rbTextType.clicked.connect(self.text_type_clicked)
         self.rbSpType.clicked.connect(self.sptype_clicked)
         self.rbKoboMedia.clicked.connect(self.kobo_media_clicked)
+        self.rbSupportDoc.clicked.connect(self.support_doc_clicked)
 
         self.tbFamilyFolder.clicked.connect(self.family_folder)
         self.tbSignFolder.clicked.connect(self.sign_folder)
         self.tbHouseFolder.clicked.connect(self.house_folder)
+        self.tbSupportDoc.clicked.connect(self.support_doc_folder)
 
         self.btnDownload.clicked.connect(self.download_media)
 
         self.btnFamilyBrowse.clicked.connect(self.show_family_folder)
         self.btnSignFolder.clicked.connect(self.show_sign_folder)
         self.btnHouseFolder.clicked.connect(self.show_house_folder)
+        self.btnSupportDoc.clicked.connect(self.show_support_doc_folder)
 
         self.cbFamilyPhoto.toggled.connect(self.enable_family_photo)
         self.cbSign.toggled.connect(self.enable_signature)
@@ -143,18 +148,21 @@ class ImportData(QWizard, Ui_frmImport):
         self.check_download_all()
 
         self.toggleKoboOptions(False)
+        self.toggleSupportDoc(False)
 
         #self._set_target_fields_stylesheet()
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
             self.toggleKoboOptions(False)
+            self.toggleSupportDoc(False)
             if self.txtDataSource.text() <> '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def sptype_clicked(self):
         if self.rbSpType.isChecked():
             self.toggleKoboOptions(False)
+            self.toggleSupportDoc(False)
             if self.txtDataSource.text() <> '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
@@ -162,25 +170,44 @@ class ImportData(QWizard, Ui_frmImport):
     def kobo_media_clicked(self):
         if self.rbKoboMedia.isChecked():
             self.toggleKoboOptions(True)
+            self.toggleSupportDoc(False)
+            self.button(QWizard.NextButton).setEnabled(False)
+
+    def support_doc_clicked(self):
+        if self.rbSupportDoc.isChecked():
+            self.toggleSupportDoc(True)
+            self.toggleKoboSettings(True)
+            self.toggleMediaFolders(False)
             self.button(QWizard.NextButton).setEnabled(False)
 
     def family_folder(self):
         dflt_folder = self.edtFamilyFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        self.edtFamilyFolder.setText(folder)
-        save_family_photo(folder)
+        if folder <> '':
+            self.edtFamilyFolder.setText(folder)
+            save_family_photo(folder)
 
     def sign_folder(self):
         dflt_folder = self.edtSignFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        self.edtSignFolder.setText(folder)
-        save_sign_photo(folder)
+        if folder <> '':
+            self.edtSignFolder.setText(folder)
+            save_sign_photo(folder)
 
     def house_folder(self):
         dflt_folder = self.edtHouseFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        self.edtHouseFolder.setText(folder)
-        save_house_photo(folder)
+        if folder <> '':
+            self.edtHouseFolder.setText(folder)
+            save_house_photo(folder)
+
+    def support_doc_folder(self):
+        dflt_folder = self.edtSupportDocFolder.text()
+        folder = self.select_media_folder(dflt_folder)
+        if folder <> '':
+            self.edtSupportDocFolder.setText(folder)
+            save_support_doc(folder)
+
 
     def select_media_folder(self, dflt_folder):
         title = self.tr("Folder to store media files")
@@ -193,6 +220,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.edtFamilyFolder.setText(get_family_photo())
         self.edtSignFolder.setText(get_sign_photo())
         self.edtHouseFolder.setText(get_house_photo())
+        self.edtSupportDocFolder.setText(get_support_doc())
 
     def download_media(self):
         #1. check if url is blank
@@ -282,24 +310,20 @@ class ImportData(QWizard, Ui_frmImport):
         return req.status_code
 
     def show_family_folder(self):
-        folder = self.edtFamilyFolder.text() 
-        if folder == '':
-            return
-        self.browse_folder(folder)
+        self.browse_folder(self.edtFamilyFolder.text())
 
     def show_sign_folder(self):
-        folder = self.edtSignFolder.text() 
-        if folder == '':
-            return
-        self.browse_folder(folder)
+        self.browse_folder(self.edtSignFolder.text()) 
 
     def show_house_folder(self):
-        folder = self.edtHouseFolder.text() 
-        if folder == '':
-            return
-        self.browse_folder(folder)
+        self.browse_folder(self.edtHouseFolder.text())
+
+    def show_support_doc_folder(self):
+        self.browse_folder(self.edtSupportDocFolder.text()) 
 
     def browse_folder(self, folder):
+        if folder == '':
+            return
         # windows
         if sys.platform.startswith('win32'):
             os.startfile(folder)
@@ -646,6 +670,7 @@ class ImportData(QWizard, Ui_frmImport):
         pgSource.registerField("typeText",self.rbTextType)
         pgSource.registerField("typeSpatial",self.rbSpType)
         pgSource.registerField("koboMedia",self.rbKoboMedia)
+        pgSource.registerField("supportdoc",self.rbSupportDoc)
         
         #Destination table configuration
         destConf = self.page(1)
@@ -665,15 +690,23 @@ class ImportData(QWizard, Ui_frmImport):
                 self.loadTables("textual")
                 self.geomClm.setEnabled(False)
                 self.toggleKoboOptions(False)
+                self.toggleSupportDoc(False)
                 
             elif self.field("typeSpatial"):
                 self.loadTables("spatial")
                 self.geomClm.setEnabled(True)
                 self.toggleKoboOptions(False)
+                self.toggleSupportDoc(False)
 
             elif self.field("koboMedia"):
                 self.toggleKoboOptions(True)
+                self.toggleSupportDoc(False)
                 
+            elif self.field("supportdoc"):
+                self.toggleKoboSettings(True)
+                self.toggleSupportDoc(True)
+                self.toggleMediaFolders(False)
+
         if pageid == 2:
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
@@ -682,9 +715,21 @@ class ImportData(QWizard, Ui_frmImport):
             self._enable_disable_trans_tools()
     
     def toggleKoboOptions(self, mode):
+        self.toggleKoboSettings(mode)
+        self.toggleMediaFolders(mode)
+
+    def check_download_all(self):
+        self.cbFamilyPhoto.setCheckState(Qt.Checked)
+        self.cbSign.setCheckState(Qt.Checked)
+        self.cbHousePhoto.setCheckState(Qt.Checked)
+        self.cbSupportDoc.setCheckState(Qt.Checked)
+
+    def toggleKoboSettings(self, mode):
         self.edtMediaUrl.setEnabled(mode)
         self.edtKoboUsername.setEnabled(mode)
         self.edtKoboPassword.setEnabled(mode)
+
+    def toggleMediaFolders(self, mode):
         self.edtFamilyFolder.setEnabled(mode)
         self.edtSignFolder.setEnabled(mode)
         self.edtHouseFolder.setEnabled(mode)
@@ -699,10 +744,12 @@ class ImportData(QWizard, Ui_frmImport):
         self.cbSign.setEnabled(mode)
         self.cbHousePhoto.setEnabled(mode)
 
-    def check_download_all(self):
-        self.cbFamilyPhoto.setCheckState(Qt.Checked)
-        self.cbSign.setCheckState(Qt.Checked)
-        self.cbHousePhoto.setCheckState(Qt.Checked)
+
+    def toggleSupportDoc(self, mode):
+        self.edtSupportDocFolder.setEnabled(mode);
+        self.cbSupportDoc.setEnabled(mode);
+        self.tbSupportDoc.setEnabled(mode);
+        self.btnSupportDoc.setEnabled(mode);
 
     def _source_columns(self):
         """
