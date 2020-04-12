@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Sun Apr 12 14:16:59 2020
+# Created: Sun Apr 12 14:38:33 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -213,6 +213,9 @@ class Ui_DlgOptions(object):
         self.gridLayout_4.addWidget(self.txtRepoLocation, 2, 1, 1, 1)
         self.verticalLayout_2.addLayout(self.gridLayout_4)
         self.gridLayout_5.addWidget(self.groupBox_3, 5, 0, 1, 5)
+        self.btnTest = QtGui.QPushButton(self.scrollAreaWidgetContents)
+        self.btnTest.setObjectName(_fromUtf8("btnTest"))
+        self.gridLayout_5.addWidget(self.btnTest, 9, 2, 1, 1)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
         self.buttonBox = QtGui.QDialogButtonBox(DlgOptions)
@@ -252,4 +255,5 @@ class Ui_DlgOptions(object):
         self.label_7.setText(_translate("DlgOptions", "Template folder", None))
         self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))
         self.btn_supporting_docs.setText(_translate("DlgOptions", "...", None))
+        self.btnTest.setText(_translate("DlgOptions", "Test Multi ", None))
 
