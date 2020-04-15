@@ -77,6 +77,63 @@ def spatial_tables(exclude_views=False):
 
     return spTables
 
+def get_last_id(table_name):
+    sql = text("SELECT max(id) AS id from {}".format(table_name))
+    result = _execute(sql)
+    for r in result:
+        if r['id'] is None:
+            last_id = 0 
+        else:
+            last_id = r['id']
+    return last_id
+
+def get_value_by_column(table_name, target_col, where_column, value):
+    sql = text("SELECT {} FROM {} WHERE {} = {}".format(
+        target_col, table_name, where_column, value))
+    result = _execute(sql)
+    found = None
+    for r in result:
+        found = r[target_col]
+    return found
+
+def pg_create_supporting_document(document):
+    sql = "INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
+            " VALUES ('{}','{}','{}',{},'{}') ".format(
+                    document['support_doc_table'],
+                    document['creation_date'],
+                    document['doc_identifier'],
+                    document['source_entity'],
+                    document['document_size'],
+                    document['doc_filename'])
+    sql_text = text(sql)
+    _execute(sql_text)
+
+
+def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id):
+    sql = "INSERT INTO {} (supporting_doc_id, household_id, document_type) "\
+             "VALUES ({},{},{}) ".format(table_name, doc_id, household_id, doc_type_id)
+    print sql
+    sql_text = text(sql)
+    _execute(sql_text)
+
+def execute_query(query):
+    conn = STDMDb.instance().engine.connect()
+    trans = conn.begin()
+    try:
+        result = conn.execute(query)
+        trans.commit()
+
+        conn.close()
+        return result
+
+    except IntegrityError:
+        trans.rollback()
+        return False
+    except SQLAlchemyError:
+        trans.rollback()
+        return False
+
+
 def pg_tables(schema="public", exclude_lookups=False):
     """
     Returns a list of all the tables in the given schema minus the default PostGIS tables.
@@ -317,7 +374,6 @@ def import_data(table_name, columns_names, data, **kwargs):
     t = text(sql)
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
-
     try:
         result = conn.execute(t, **kwargs)
         trans.commit()

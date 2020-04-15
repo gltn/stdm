@@ -50,7 +50,8 @@ KOBO_PASS='KoboPass'
 FAMILY_PHOTO='FamilyPhoto'
 SIGN_PHOTO='SignPhoto'
 HOUSE_PHOTO='HousePhoto'
-SUPPORT_DOC='SupportDoc'
+HOUSE_PICTURE='HousePicture'
+ID_PICTURE='IdPicture'
 
 def registry_value(key_name):
     """
