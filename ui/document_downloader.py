@@ -6,20 +6,26 @@ from collections import OrderedDict
 from datetime import datetime
 import hashlib
 
+import time
+
 from PyQt4.QtGui import (
         QApplication,
         QDialog,
         QFileDialog,
         QMessageBox,
-        QLineEdit
+        QLineEdit,
+        QColor
   )
 
 from PyQt4.QtCore import (
     Qt,
+    QObject,
+    pyqtSignal,
     QFile,
     QFileInfo,
     SIGNAL,
-    QSignalMapper
+    QSignalMapper,
+    QThread
 )
 
 from stdm.data.importexport import (
@@ -80,7 +86,7 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
         self.tbHousePic.clicked.connect(self.house_pic_folder)
         self.tbIdPic.clicked.connect(self.id_pic_folder)
 
-        self.btnDownload.clicked.connect(self.download_media)
+        self.btnDownload.clicked.connect(self.download_media2)
 
         self.btnFamilyBrowse.clicked.connect(self.show_family_folder)
         self.btnSignFolder.clicked.connect(self.show_sign_folder)
@@ -216,22 +222,18 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
         trans_path = QFileDialog.getExistingDirectory(self, title, dflt_folder)
         return trans_path
 
-    def download_media(self):
-        if self.txtDataSource.text() == "":
-            self.ErrorInfoMessage("Please select a source file.")
-            return
+    def valid_credentials(self):
+        if self.edtMediaUrl.text() == '':
+            self.ErrorInfoMessage("Source of media files")
+            return false
 
-        if not QFile.exists(unicode(self.txtDataSource.text())):
-            self.ErrorInfoMessage("The specified source file does not exist.")
-            return
+        if self.edtKoboUsername.text() == '':
+            self.ErrorInfoMessage("Please enter username")
+            return false
 
-        if self.rbKoboMedia.isChecked():
-            downloaded_files = self.download_kobo_media('media-column')
-
-        if self.rbSupportDoc.isChecked():
-            downloaded_files = self.download_kobo_media('support-doc-column')
-            print downloaded_files
-            self.upload_downloaded_files(downloaded_files)
+        if self.edtKoboPassword.text() == '':
+            self.ErrorInfoMessage("Please enter password")
+            return false
 
     def show_family_folder(self):
         self.browse_folder(self.edtFamilyFolder.text())
@@ -278,130 +280,210 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
     def enable_id_pic(self, checked):
         self.edtIdPic.setEnabled(checked)
 
-    def download_kobo_media(self, save_location):
-        #1. check if url is blank
-        #2. check if username is blank
-        #3. check if password is blank
-        #4. check that the source document is selected
+    def ErrorInfoMessage(self, message):
+        #Error Message Box
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(message)
+        msg.exec_()
 
-        downloaded_files = {}
-        file_names = []
-        key_field_value = 0
+    def selected_cols(self, doc_cols):
+        sel_cols = {}
+        for k, v in doc_cols.iteritems():
+            line_edit = self.findChild(QLineEdit, v)
+            if line_edit is None: continue
+            if line_edit.isEnabled():
+                sel_cols[k]=line_edit.text()
+        return sel_cols
 
-        #Read the mapfile to get the edit controls with the 
-        # path where to save the different media files
-        media_columns = mapfile_section(save_location)
-        ucols = {}
+    def get_key_field(self, doc_cols):
+        for k, v in doc_cols.iteritems():
+            if v == 'KEY':
+                return k
+
+    def fetch_doc_cols(self, media_columns):
+        cols = {}
         for k,v in media_columns.iteritems():
             a_col = unicode(k, 'utf-8').encode('ascii', 'ignore')
-            ucols[a_col] = v
+            cols[a_col] = v
+        return cols
 
-        # Get document type ids
+    def kobo_download_started(self):
+        self.btnDownload.setEnabled(False)
+        self.edtProgress.append("Download started...")
+        QApplication.processEvents()
+
+    def kobo_download_completed(self):
+        self.btnDownload.setEnabled(True)
+        self.edtProgress.append("Download completed.")
+        self.downloader_thread.quit()
+
+    def kobo_download_progress(self, info_id, msg):
+        if info_id == 0: # information
+            self.edtProgress.setTextColor(QColor('black'))
+
+        if info_id == 1: # Warning
+            self.edtProgress.setTextColor(QColor(255, 170, 0))
+
+        if info_id == 2: # Error
+            self.edtProgress.setTextColor(QColor('red'))
+
+        self.edtProgress.append(msg)
+        QApplication.processEvents()
+
+        
+    def _downloader_thread_started(self):
+        self.kobo_downloader.start_download()
+
+    def download_media2(self):
+        if self.txtDataSource.text() == "":
+            self.ErrorInfoMessage("Please select a source file.")
+            return
+
+        if not QFile.exists(unicode(self.txtDataSource.text())):
+            self.ErrorInfoMessage("The specified source file does not exist.")
+            return
+
+        if self.rbKoboMedia.isChecked():
+            save_location = 'media-column'
+            upload_after = False
+        if self.rbSupportDoc.isChecked():
+            save_location = 'support-doc-column'
+            upload_after = True
+
+        src_cols = mapfile_section(save_location)
         doc_types = mapfile_section('doc-types')
-
-        data_reader = OGRReader(unicode(self.txtDataSource.text()))
-        src_cols = data_reader.getFields()
-
-        lyr = data_reader.getLayer()
-        lyr.ResetReading()
-        feat_defn = lyr.GetLayerDefn()
-        numFeat = lyr.GetFeatureCount()
+        media_columns = mapfile_section(save_location)
+        doc_cols =self.fetch_doc_cols(media_columns)
+        sel_cols = self.selected_cols(doc_cols)
+        key_field = self.get_key_field(doc_cols);
 
         if not self.valid_credentials:
             return
 
-        username = self.edtKoboUsername.text()
-        password = self.edtKoboPassword.text()
+        credentials = (self.edtKoboUsername.text(),
+                 self.edtKoboPassword.text())
+        
+        kobo_url = self.edtMediaUrl.text()
+        save_media_url(kobo_url)
+        save_kobo_user(credentials[0])
 
-        save_media_url(self.edtMediaUrl.text())
-        save_kobo_user(username)
+        support_doc_map = mapfile_section('support-doc-map')
+
+        self.kobo_downloader = KoboDownloader(
+                OGRReader(unicode(self.txtDataSource.text())),
+                sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map, self.curr_profile, upload_after)
+
+        self.downloader_thread = QThread(self)
+        self.kobo_downloader.moveToThread(self.downloader_thread)
+
+        self.kobo_downloader.download_started.connect(self.kobo_download_started)
+        self.kobo_downloader.download_progress.connect(self.kobo_download_progress)
+        self.kobo_downloader.download_completed.connect(self.kobo_download_completed)
+
+        self.downloader_thread.started.connect(self._downloader_thread_started)
+        self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
+
+        self.downloader_thread.start()
+
+
+class KoboDownloader(QObject):
+    download_started = pyqtSignal()
+    #Signal contains message type and message
+    download_progress = pyqtSignal(int, unicode)
+    #Signal indicates True if the update succeeded, else False.
+    download_completed = pyqtSignal(bool)
+
+    INFORMATION, WARNING, ERROR = range(0, 3)
+    def __init__(self, data_reader, sel_cols, key_field, 
+            doc_types, credentials, kobo_url, support_doc_map, 
+            curr_profile, upload_after, parent=None):
+
+        QObject.__init__(self, parent)
+
+        self.downloaded_files = {}
+        self.data_reader = data_reader
+        self.selected_cols = sel_cols
+        self.key_field = key_field
+        self.doc_types = doc_types
+        self.credentials = credentials
+        self.kobo_url = kobo_url
+        self.support_doc_map = support_doc_map
+        self.curr_profile = curr_profile
+        self.upload_after = upload_after
+
+    def start_download(self):
+        self.download_started.emit()
+
+        downloaded_files = self.run()
+        #if self.upload_after:
+            #self.upload_downloaded_files(downloaded_files)
+        self.download_completed.emit(True)
+
+    def run(self):
+        file_names = []
+        key_field_value = 0
+        src_cols = self.data_reader.getFields()
+        lyr = self.data_reader.getLayer()
+        lyr.ResetReading()
+        feat_defn = lyr.GetLayerDefn()
+        numFeat = lyr.GetFeatureCount()
 
         feat_len = len(lyr)
-        try:
-            self.btnDownload.setEnabled(False)
-            for index, feat in enumerate(lyr):
-                self.lblCurrRecord.setText(str(index+1)+' of '+ str(feat_len))
+        #self.btnDownload.setEnabled(False)
+        for index, feat in enumerate(lyr):
+            #**self.lblCurrRecord.setText(str(index+1)+' of '+ str(feat_len))
+            msg = 'Record: {} of {}'.format(str(index), str(feat_len))
+            self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+            for f in range(feat_defn.GetFieldCount()):
+                field_defn = feat_defn.GetFieldDefn(f)
+                field_name = field_defn.GetNameRef()
+                a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore').lower()
 
-                print "** A **"
+                if a_field_name == self.key_field:
+                    #if self.ucols[a_field_name] == 'KEY':
+                    key_field_value = feat.GetField(f)
+                    continue
 
-                for f in range(feat_defn.GetFieldCount()):
-                    field_defn = feat_defn.GetFieldDefn(f)
-                    field_name = field_defn.GetNameRef()
-                    a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore').lower()
+                #line_edit = self.findChild(QLineEdit, ucols[a_field_name])
+                #if line_edit.isEnabled():
+                if a_field_name not in self.selected_cols.keys():
+                    continue
 
-                    dest_folder = ''
-                    if a_field_name in ucols:
-                        if ucols[a_field_name] == 'KEY':
-                            key_field_value = feat.GetField(f)
-                            continue
+                dest_folder = ''
+                dest_folder = self.selected_cols[a_field_name]
+                field_value = feat.GetField(f)
 
-                        print "** C **"
-                        line_edit = self.findChild(QLineEdit, ucols[a_field_name])
-                        if line_edit.isEnabled():
-                            dest_folder = line_edit.text()
-                            field_value = feat.GetField(f)
+                if field_value == '': continue
 
-                            if field_value == '': continue
+                #**self.lblCurrFile.setText(field_value)
 
-                            self.lblCurrFile.setText(field_value)
+                dest_url = dest_folder + '\\'+field_value
+                src_url = self.kobo_url+field_value
 
-                            dest_url = dest_folder + '\\'+field_value
-                            src_url = self.edtMediaUrl.text()+field_value
+                msg = 'Downloading File: {} '.format(field_value)
 
-                            QApplication.processEvents()
+                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
-                            print "** D **"
-                            #self.download(src_url, dest_url, username, password)
+                time.sleep(2);
 
+                #self.download(src_url, dest_url, username, password)
 
-                            if a_field_name in doc_types:
-                                doc_type_id = doc_types[a_field_name]
-                            else:
-                                doc_type_id = -1
-
-                            file_names.append((doc_type_id, dest_url))
-
-                if key_field_value in downloaded_files:
-                    downloaded_files[key_field_value].extend(file_names)
+                if a_field_name in self.doc_types:
+                    doc_type_id = self.doc_types[a_field_name]
                 else:
-                    downloaded_files[key_field_value] = copy.deepcopy(file_names)
+                    doc_type_id = -1
 
-                print "** F **"
-                print downloaded_files
+                file_names.append((doc_type_id, dest_url))
 
-                file_names = []
+            if key_field_value in self.downloaded_files:
+                self.downloaded_files[key_field_value].extend(file_names)
+            else:
+                self.downloaded_files[key_field_value] = copy.deepcopy(file_names)
 
-            self.btnDownload.setEnabled(True)
-        except:
-            self.btnDownload.setEnabled(True)
+            file_names = []
 
-        return downloaded_files
-
-    def valid_credentials(self):
-        if self.edtMediaUrl.text() == '':
-            self.ErrorInfoMessage("Source of media files")
-            return false
-
-        if self.edtKoboUsername.text() == '':
-            self.ErrorInfoMessage("Please enter username")
-            return false
-
-        if self.edtKoboPassword.text() == '':
-            self.ErrorInfoMessage("Please enter password")
-            return false
-
-    def download(self, src_url, dest_url, username, password):
-        import requests
-
-        self.lblMsg.setText('Downloading ...')
-        QApplication.processEvents()
-        req = requests.get(src_url, auth=(username,password))
-
-        with open(dest_url, 'wb') as f:
-            f.write(req.content)
-
-        self.lblMsg.setText('Done.')
-        return req.status_code
+        return self.downloaded_files
 
     def upload_downloaded_files(self, downloaded_files):
         #1. Create and get ID from the supporting documents table
@@ -410,16 +492,16 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
         #4. Create a record of entity_supporting_document
         doc_type_cache = {}
 
-        support_doc_map = mapfile_section('support-doc-map')
+        #support_doc_map = mapfile_section('support-doc-map')
         for submission_id in downloaded_files.keys():
-            household_id = self.get_household_id(support_doc_map, submission_id)
+            household_id = self.get_household_id(self.support_doc_map, submission_id)
             if household_id is None:
                 continue
-            last_support_doc_id = get_last_id(support_doc_map['main_table'])
+            last_support_doc_id = get_last_id(self.support_doc_map['main_table'])
             for sfile in downloaded_files[submission_id]:
-                new_filename = self.create_supporting_doc(sfile[1], support_doc_map)
+                new_filename = self.create_supporting_doc(sfile[1], self.support_doc_map)
                 last_support_doc_id += 1
-                parent_support_table = support_doc_map['parent_support_table']
+                parent_support_table = self.support_doc_map['parent_support_table']
 
                 self.create_parent_supporting_doc(parent_support_table, last_support_doc_id, household_id, int(sfile[0]))
 
@@ -428,10 +510,10 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
                     doc_type = doc_type_cache[sfile[0]]
                 else:
                     doc_type = get_value_by_column(
-                            support_doc_map['doc_type_table'], 'value', 'id', sfile[0])
+                            self.support_doc_map['doc_type_table'], 'value', 'id', sfile[0])
                     doc_type_cache[sfile[0]] = doc_type
 
-                self.create_new_support_doc_file(sfile, new_filename, doc_type, support_doc_map)
+                self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
 
     def get_household_id(self, doc_map, value):
         table_name = doc_map['parent_table']
@@ -480,11 +562,16 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
 
         shutil.copy(old_filename, dest_filename)
 
-    def ErrorInfoMessage(self, message):
-        #Error Message Box
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText(message)
-        msg.exec_()
+    def download(self, src_url, dest_url, username, password):
+        import requests
 
+        #**self.lblMsg.setText('Downloading ...')
+        #QApplication.processEvents()
+        req = requests.get(src_url, auth=(username,password))
 
+        with open(dest_url, 'wb') as f:
+            f.write(req.content)
+
+        #**self.lblMsg.setText('Done.')
+        return req.status_code
+        

@@ -1808,7 +1808,8 @@ class STDMQGISLoader(object):
     def onDownload(self):
         #doc_downloader = DocumentDownloader(self.iface.mainWindow())
         doc_downloader = DocumentDownloader(self.iface.mainWindow())
-        status = doc_downloader.show()
+        doc_downloader.show()
+        print "opened DocumentDownloader."
 
     def onImportData(self):
         """

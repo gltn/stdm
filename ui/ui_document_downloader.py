@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_document_downloader.ui'
 #
-# Created: Thu Apr 16 18:20:11 2020
+# Created: Tue Apr 21 07:52:41 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,7 +27,7 @@ class Ui_DocumentDownloader(object):
     def setupUi(self, DocumentDownloader):
         DocumentDownloader.setObjectName(_fromUtf8("DocumentDownloader"))
         DocumentDownloader.setWindowModality(QtCore.Qt.ApplicationModal)
-        DocumentDownloader.resize(689, 543)
+        DocumentDownloader.resize(689, 590)
         self.verticalLayout = QtGui.QVBoxLayout(DocumentDownloader)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.groupBox = QtGui.QGroupBox(DocumentDownloader)
@@ -44,6 +44,9 @@ class Ui_DocumentDownloader(object):
         self.btnBrowseSource = QtGui.QPushButton(self.groupBox)
         self.btnBrowseSource.setObjectName(_fromUtf8("btnBrowseSource"))
         self.horizontalLayout_2.addWidget(self.btnBrowseSource)
+        self.btnDownload = QtGui.QPushButton(self.groupBox)
+        self.btnDownload.setObjectName(_fromUtf8("btnDownload"))
+        self.horizontalLayout_2.addWidget(self.btnDownload)
         self.btnHide = QtGui.QPushButton(self.groupBox)
         self.btnHide.setObjectName(_fromUtf8("btnHide"))
         self.horizontalLayout_2.addWidget(self.btnHide)
@@ -170,24 +173,9 @@ class Ui_DocumentDownloader(object):
         self.groupBox_9.setObjectName(_fromUtf8("groupBox_9"))
         self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_9)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
-        self.lblCurrFile = QtGui.QLabel(self.groupBox_9)
-        self.lblCurrFile.setObjectName(_fromUtf8("lblCurrFile"))
-        self.gridLayout_7.addWidget(self.lblCurrFile, 3, 2, 1, 1)
-        self.label_10 = QtGui.QLabel(self.groupBox_9)
-        self.label_10.setObjectName(_fromUtf8("label_10"))
-        self.gridLayout_7.addWidget(self.label_10, 3, 1, 1, 1)
-        self.labelrecord = QtGui.QLabel(self.groupBox_9)
-        self.labelrecord.setObjectName(_fromUtf8("labelrecord"))
-        self.gridLayout_7.addWidget(self.labelrecord, 0, 1, 1, 1)
-        self.lblCurrRecord = QtGui.QLabel(self.groupBox_9)
-        self.lblCurrRecord.setObjectName(_fromUtf8("lblCurrRecord"))
-        self.gridLayout_7.addWidget(self.lblCurrRecord, 0, 2, 1, 1)
-        self.btnDownload = QtGui.QPushButton(self.groupBox_9)
-        self.btnDownload.setObjectName(_fromUtf8("btnDownload"))
-        self.gridLayout_7.addWidget(self.btnDownload, 0, 3, 1, 1)
-        self.lblMsg = QtGui.QLabel(self.groupBox_9)
-        self.lblMsg.setObjectName(_fromUtf8("lblMsg"))
-        self.gridLayout_7.addWidget(self.lblMsg, 3, 3, 1, 1)
+        self.edtProgress = QtGui.QTextEdit(self.groupBox_9)
+        self.edtProgress.setObjectName(_fromUtf8("edtProgress"))
+        self.gridLayout_7.addWidget(self.edtProgress, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_9)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -196,19 +184,20 @@ class Ui_DocumentDownloader(object):
         QtCore.QMetaObject.connectSlotsByName(DocumentDownloader)
 
     def retranslateUi(self, DocumentDownloader):
-        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Dialog", None))
+        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Download Kobo Documents", None))
         self.groupBox.setTitle(_translate("DocumentDownloader", "Source:", None))
         self.label.setText(_translate("DocumentDownloader", "Dataset", None))
         self.btnBrowseSource.setText(_translate("DocumentDownloader", "Browse", None))
+        self.btnDownload.setText(_translate("DocumentDownloader", "Download", None))
         self.btnHide.setText(_translate("DocumentDownloader", "Hide", None))
-        self.groupBox_2.setTitle(_translate("DocumentDownloader", "Destination Repository Type:", None))
-        self.rbKoboMedia.setText(_translate("DocumentDownloader", "Kobo Images", None))
+        self.groupBox_2.setTitle(_translate("DocumentDownloader", "Document Type:", None))
+        self.rbKoboMedia.setText(_translate("DocumentDownloader", "Claims File Documents", None))
         self.rbSupportDoc.setText(_translate("DocumentDownloader", "Supporting Documents", None))
         self.groupBox_7.setTitle(_translate("DocumentDownloader", "Kobo Settings", None))
         self.label_4.setText(_translate("DocumentDownloader", "Media URL:", None))
         self.label_5.setText(_translate("DocumentDownloader", "Kobo Username:", None))
         self.label_6.setText(_translate("DocumentDownloader", "Kobo Password:", None))
-        self.groupBox_8.setTitle(_translate("DocumentDownloader", "Local Media Folders:", None))
+        self.groupBox_8.setTitle(_translate("DocumentDownloader", "Local Document Folders:", None))
         self.label_12.setText(_translate("DocumentDownloader", "ID Picture", None))
         self.label_8.setText(_translate("DocumentDownloader", "Signatures:", None))
         self.label_7.setText(_translate("DocumentDownloader", "Family Photos:", None))
@@ -229,11 +218,5 @@ class Ui_DocumentDownloader(object):
         self.cbIdPic.setText(_translate("DocumentDownloader", "Download", None))
         self.tbIdPic.setText(_translate("DocumentDownloader", "...", None))
         self.btnIdPic.setText(_translate("DocumentDownloader", "Browse ...", None))
-        self.groupBox_9.setTitle(_translate("DocumentDownloader", "Download:", None))
-        self.lblCurrFile.setText(_translate("DocumentDownloader", "0", None))
-        self.label_10.setText(_translate("DocumentDownloader", "Current File:", None))
-        self.labelrecord.setText(_translate("DocumentDownloader", "Current Record:", None))
-        self.lblCurrRecord.setText(_translate("DocumentDownloader", "0", None))
-        self.btnDownload.setText(_translate("DocumentDownloader", "Download", None))
-        self.lblMsg.setText(_translate("DocumentDownloader", "Ready.", None))
+        self.groupBox_9.setTitle(_translate("DocumentDownloader", "Download progress:", None))
 

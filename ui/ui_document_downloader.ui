@@ -10,11 +10,11 @@
     <x>0</x>
     <y>0</y>
     <width>689</width>
-    <height>543</height>
+    <height>590</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Download Kobo Documents</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -45,6 +45,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btnDownload">
+        <property name="text">
+         <string>Download</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="btnHide">
         <property name="text">
          <string>Hide</string>
@@ -57,13 +64,13 @@
    <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
-      <string>Destination Repository Type:</string>
+      <string>Document Type:</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QRadioButton" name="rbKoboMedia">
         <property name="text">
-         <string>Kobo Images</string>
+         <string>Claims File Documents</string>
         </property>
        </widget>
       </item>
@@ -131,7 +138,7 @@
    <item>
     <widget class="QGroupBox" name="groupBox_8">
      <property name="title">
-      <string>Local Media Folders:</string>
+      <string>Local Document Folders:</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="4" column="0">
@@ -298,50 +305,11 @@
    <item>
     <widget class="QGroupBox" name="groupBox_9">
      <property name="title">
-      <string>Download:</string>
+      <string>Download progress:</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_7">
-      <item row="3" column="2">
-       <widget class="QLabel" name="lblCurrFile">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Current File:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="labelrecord">
-        <property name="text">
-         <string>Current Record:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="lblCurrRecord">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="btnDownload">
-        <property name="text">
-         <string>Download</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLabel" name="lblMsg">
-        <property name="text">
-         <string>Ready.</string>
-        </property>
-       </widget>
+      <item row="0" column="0">
+       <widget class="QTextEdit" name="edtProgress"/>
       </item>
      </layout>
     </widget>
