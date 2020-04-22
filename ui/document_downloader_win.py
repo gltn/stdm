@@ -5,12 +5,14 @@ import copy
 from collections import OrderedDict
 from datetime import datetime
 import hashlib
+import requests
 
 import time
 
 from PyQt4.QtGui import (
         QApplication,
         QDialog,
+        QMainWindow,
         QFileDialog,
         QMessageBox,
         QLineEdit,
@@ -69,14 +71,24 @@ from stdm.data.pg_utils import (
 
 from stdm.data.importexport.reader import OGRReader
 
-from ui_document_downloader import Ui_DocumentDownloader
+from ui_document_downloader_win import Ui_DocumentDownloader
 
-class DocumentDownloader(QDialog, Ui_DocumentDownloader):
-    def __init__(self, parent=None):
-        QDialog.__init__(self, parent)
-        self.setupUi(self) 
+class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
+    def __init__(self, plugin):
+        QMainWindow.__init__(self, plugin.iface.mainWindow())
+
+        self.setWindowFlags( 
+                Qt.Window|
+                Qt.WindowTitleHint|
+                Qt.WindowMinimizeButtonHint|
+                Qt.WindowSystemMenuHint|
+                Qt.WindowCloseButtonHint|
+                Qt.CustomizeWindowHint);
+
+        self.setupUi(self)
+
         self.btnBrowseSource.clicked.connect(self.set_source_file)
-        self.btnHide.clicked.connect(self.hideWindow)
+
         self.rbKoboMedia.clicked.connect(self.kobo_media_clicked)
         self.rbSupportDoc.clicked.connect(self.support_doc_clicked)
 
@@ -86,7 +98,7 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
         self.tbHousePic.clicked.connect(self.house_pic_folder)
         self.tbIdPic.clicked.connect(self.id_pic_folder)
 
-        self.btnDownload.clicked.connect(self.download_media2)
+        self.btnDownload.clicked.connect(self.download_media)
 
         self.btnFamilyBrowse.clicked.connect(self.show_family_folder)
         self.btnSignFolder.clicked.connect(self.show_sign_folder)
@@ -225,15 +237,17 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
     def valid_credentials(self):
         if self.edtMediaUrl.text() == '':
             self.ErrorInfoMessage("Source of media files")
-            return false
+            return False
 
         if self.edtKoboUsername.text() == '':
             self.ErrorInfoMessage("Please enter username")
-            return false
+            return False
 
         if self.edtKoboPassword.text() == '':
             self.ErrorInfoMessage("Please enter password")
-            return false
+            return False
+
+        return True
 
     def show_family_folder(self):
         self.browse_folder(self.edtFamilyFolder.text())
@@ -335,7 +349,7 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
     def _downloader_thread_started(self):
         self.kobo_downloader.start_download()
 
-    def download_media2(self):
+    def download_media(self):
         if self.txtDataSource.text() == "":
             self.ErrorInfoMessage("Please select a source file.")
             return
@@ -358,7 +372,7 @@ class DocumentDownloader(QDialog, Ui_DocumentDownloader):
         sel_cols = self.selected_cols(doc_cols)
         key_field = self.get_key_field(doc_cols);
 
-        if not self.valid_credentials:
+        if not self.valid_credentials():
             return
 
         credentials = (self.edtKoboUsername.text(),
@@ -395,6 +409,7 @@ class KoboDownloader(QObject):
     download_completed = pyqtSignal(bool)
 
     INFORMATION, WARNING, ERROR = range(0, 3)
+    
     def __init__(self, data_reader, sel_cols, key_field, 
             doc_types, credentials, kobo_url, support_doc_map, 
             curr_profile, upload_after, parent=None):
@@ -416,8 +431,8 @@ class KoboDownloader(QObject):
         self.download_started.emit()
 
         downloaded_files = self.run()
-        #if self.upload_after:
-            #self.upload_downloaded_files(downloaded_files)
+        if self.upload_after:
+            self.upload_downloaded_files(downloaded_files)
         self.download_completed.emit(True)
 
     def run(self):
@@ -430,23 +445,20 @@ class KoboDownloader(QObject):
         numFeat = lyr.GetFeatureCount()
 
         feat_len = len(lyr)
-        #self.btnDownload.setEnabled(False)
         for index, feat in enumerate(lyr):
-            #**self.lblCurrRecord.setText(str(index+1)+' of '+ str(feat_len))
-            msg = 'Record: {} of {}'.format(str(index), str(feat_len))
+
+            msg = 'Record: {} of {}'.format(str(index+1), str(feat_len))
             self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
             for f in range(feat_defn.GetFieldCount()):
                 field_defn = feat_defn.GetFieldDefn(f)
                 field_name = field_defn.GetNameRef()
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore').lower()
 
                 if a_field_name == self.key_field:
-                    #if self.ucols[a_field_name] == 'KEY':
                     key_field_value = feat.GetField(f)
                     continue
 
-                #line_edit = self.findChild(QLineEdit, ucols[a_field_name])
-                #if line_edit.isEnabled():
                 if a_field_name not in self.selected_cols.keys():
                     continue
 
@@ -456,8 +468,6 @@ class KoboDownloader(QObject):
 
                 if field_value == '': continue
 
-                #**self.lblCurrFile.setText(field_value)
-
                 dest_url = dest_folder + '\\'+field_value
                 src_url = self.kobo_url+field_value
 
@@ -465,9 +475,8 @@ class KoboDownloader(QObject):
 
                 self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
-                time.sleep(2);
-
-                #self.download(src_url, dest_url, username, password)
+                # download file
+                self.download(src_url, dest_url, self.credentials[0], self.credentials[1])
 
                 if a_field_name in self.doc_types:
                     doc_type_id = self.doc_types[a_field_name]
@@ -492,7 +501,6 @@ class KoboDownloader(QObject):
         #4. Create a record of entity_supporting_document
         doc_type_cache = {}
 
-        #support_doc_map = mapfile_section('support-doc-map')
         for submission_id in downloaded_files.keys():
             household_id = self.get_household_id(self.support_doc_map, submission_id)
             if household_id is None:
@@ -523,7 +531,7 @@ class KoboDownloader(QObject):
         return id
 
     def create_supporting_doc(self, doc_name, doc_map):
-        doc_size = 0  #os.path.getsize(doc_name)
+        doc_size = os.path.getsize(doc_name)
         path, filename = os.path.split(doc_name)
         ht = hashlib.sha1(filename.encode('utf-8'))
         document = {}
@@ -563,15 +571,12 @@ class KoboDownloader(QObject):
         shutil.copy(old_filename, dest_filename)
 
     def download(self, src_url, dest_url, username, password):
-        import requests
 
-        #**self.lblMsg.setText('Downloading ...')
-        #QApplication.processEvents()
         req = requests.get(src_url, auth=(username,password))
 
         with open(dest_url, 'wb') as f:
             f.write(req.content)
 
-        #**self.lblMsg.setText('Done.')
         return req.status_code
+        
         

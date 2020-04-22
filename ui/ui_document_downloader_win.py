@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_document_downloader.ui'
+# Form implementation generated from reading ui file 'ui_document_downloader_win.ui'
 #
-# Created: Tue Apr 21 07:52:41 2020
+# Created: Wed Apr 22 13:59:36 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,11 +26,12 @@ except AttributeError:
 class Ui_DocumentDownloader(object):
     def setupUi(self, DocumentDownloader):
         DocumentDownloader.setObjectName(_fromUtf8("DocumentDownloader"))
-        DocumentDownloader.setWindowModality(QtCore.Qt.ApplicationModal)
-        DocumentDownloader.resize(689, 590)
-        self.verticalLayout = QtGui.QVBoxLayout(DocumentDownloader)
+        DocumentDownloader.resize(690, 600)
+        self.centralwidget = QtGui.QWidget(DocumentDownloader)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.groupBox = QtGui.QGroupBox(DocumentDownloader)
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.groupBox)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
@@ -47,11 +48,8 @@ class Ui_DocumentDownloader(object):
         self.btnDownload = QtGui.QPushButton(self.groupBox)
         self.btnDownload.setObjectName(_fromUtf8("btnDownload"))
         self.horizontalLayout_2.addWidget(self.btnDownload)
-        self.btnHide = QtGui.QPushButton(self.groupBox)
-        self.btnHide.setObjectName(_fromUtf8("btnHide"))
-        self.horizontalLayout_2.addWidget(self.btnHide)
         self.verticalLayout.addWidget(self.groupBox)
-        self.groupBox_2 = QtGui.QGroupBox(DocumentDownloader)
+        self.groupBox_2 = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox_2)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -62,7 +60,7 @@ class Ui_DocumentDownloader(object):
         self.rbSupportDoc.setObjectName(_fromUtf8("rbSupportDoc"))
         self.horizontalLayout.addWidget(self.rbSupportDoc)
         self.verticalLayout.addWidget(self.groupBox_2)
-        self.groupBox_7 = QtGui.QGroupBox(DocumentDownloader)
+        self.groupBox_7 = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_7.setObjectName(_fromUtf8("groupBox_7"))
         self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_7)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
@@ -88,7 +86,7 @@ class Ui_DocumentDownloader(object):
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.gridLayout_4.addWidget(self.label_6, 2, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_7)
-        self.groupBox_8 = QtGui.QGroupBox(DocumentDownloader)
+        self.groupBox_8 = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_8.setObjectName(_fromUtf8("groupBox_8"))
         self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_8)
         self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
@@ -169,27 +167,29 @@ class Ui_DocumentDownloader(object):
         self.btnIdPic.setObjectName(_fromUtf8("btnIdPic"))
         self.gridLayout_6.addWidget(self.btnIdPic, 4, 4, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_8)
-        self.groupBox_9 = QtGui.QGroupBox(DocumentDownloader)
+        self.groupBox_9 = QtGui.QGroupBox(self.centralwidget)
         self.groupBox_9.setObjectName(_fromUtf8("groupBox_9"))
         self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_9)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
         self.edtProgress = QtGui.QTextEdit(self.groupBox_9)
+        self.edtProgress.setReadOnly(True)
         self.edtProgress.setObjectName(_fromUtf8("edtProgress"))
         self.gridLayout_7.addWidget(self.edtProgress, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_9)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
+        DocumentDownloader.setCentralWidget(self.centralwidget)
+        self.statusbar = QtGui.QStatusBar(DocumentDownloader)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        DocumentDownloader.setStatusBar(self.statusbar)
 
         self.retranslateUi(DocumentDownloader)
         QtCore.QMetaObject.connectSlotsByName(DocumentDownloader)
 
     def retranslateUi(self, DocumentDownloader):
-        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Download Kobo Documents", None))
+        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "MainWindow", None))
         self.groupBox.setTitle(_translate("DocumentDownloader", "Source:", None))
         self.label.setText(_translate("DocumentDownloader", "Dataset", None))
         self.btnBrowseSource.setText(_translate("DocumentDownloader", "Browse", None))
         self.btnDownload.setText(_translate("DocumentDownloader", "Download", None))
-        self.btnHide.setText(_translate("DocumentDownloader", "Hide", None))
         self.groupBox_2.setTitle(_translate("DocumentDownloader", "Document Type:", None))
         self.rbKoboMedia.setText(_translate("DocumentDownloader", "Claims File Documents", None))
         self.rbSupportDoc.setText(_translate("DocumentDownloader", "Supporting Documents", None))

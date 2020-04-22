@@ -63,7 +63,7 @@ from stdm.ui.stdmdialog import DeclareMapping
 
 from stdm.ui.wizard.wizard import ConfigWizard
 
-from stdm.ui.document_downloader import DocumentDownloader
+from stdm.ui.document_downloader_win import DocumentDownloader
 
 from stdm.ui.import_data import ImportData
 from stdm.ui.export_data import ExportData
@@ -1806,10 +1806,8 @@ class STDMQGISLoader(object):
         doc_gen_wrapper.exec_()
 
     def onDownload(self):
-        #doc_downloader = DocumentDownloader(self.iface.mainWindow())
-        doc_downloader = DocumentDownloader(self.iface.mainWindow())
+        doc_downloader = DocumentDownloader(self)
         doc_downloader.show()
-        print "opened DocumentDownloader."
 
     def onImportData(self):
         """

@@ -112,7 +112,6 @@ def pg_create_supporting_document(document):
 def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id):
     sql = "INSERT INTO {} (supporting_doc_id, household_id, document_type) "\
              "VALUES ({},{},{}) ".format(table_name, doc_id, household_id, doc_type_id)
-    print sql
     sql_text = text(sql)
     _execute(sql_text)
 
