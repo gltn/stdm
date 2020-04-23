@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_document_downloader_win.ui'
 #
-# Created: Wed Apr 22 13:59:36 2020
+# Created: Wed Apr 22 20:22:01 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DocumentDownloader(object):
     def setupUi(self, DocumentDownloader):
         DocumentDownloader.setObjectName(_fromUtf8("DocumentDownloader"))
-        DocumentDownloader.resize(690, 600)
+        DocumentDownloader.resize(690, 626)
         self.centralwidget = QtGui.QWidget(DocumentDownloader)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -176,6 +176,14 @@ class Ui_DocumentDownloader(object):
         self.edtProgress.setObjectName(_fromUtf8("edtProgress"))
         self.gridLayout_7.addWidget(self.edtProgress, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_9)
+        self.horizontalLayout_3 = QtGui.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem)
+        self.btnClose = QtGui.QPushButton(self.centralwidget)
+        self.btnClose.setObjectName(_fromUtf8("btnClose"))
+        self.horizontalLayout_3.addWidget(self.btnClose)
+        self.verticalLayout.addLayout(self.horizontalLayout_3)
         DocumentDownloader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentDownloader)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -185,7 +193,7 @@ class Ui_DocumentDownloader(object):
         QtCore.QMetaObject.connectSlotsByName(DocumentDownloader)
 
     def retranslateUi(self, DocumentDownloader):
-        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "MainWindow", None))
+        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Download Documents", None))
         self.groupBox.setTitle(_translate("DocumentDownloader", "Source:", None))
         self.label.setText(_translate("DocumentDownloader", "Dataset", None))
         self.btnBrowseSource.setText(_translate("DocumentDownloader", "Browse", None))
@@ -219,4 +227,5 @@ class Ui_DocumentDownloader(object):
         self.tbIdPic.setText(_translate("DocumentDownloader", "...", None))
         self.btnIdPic.setText(_translate("DocumentDownloader", "Browse ...", None))
         self.groupBox_9.setTitle(_translate("DocumentDownloader", "Download progress:", None))
+        self.btnClose.setText(_translate("DocumentDownloader", "Close", None))
 

@@ -112,6 +112,8 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbHousePic.toggled.connect(self.enable_house_pic)
         self.cbIdPic.toggled.connect(self.enable_id_pic)
 
+        self.btnClose.clicked.connect(self.close_window)
+
         #Data Reader
         self.dataReader = None
         self.curr_profile = current_profile()
@@ -399,6 +401,9 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
 
         self.downloader_thread.start()
+
+    def close_window(self):
+        self.close()
 
 
 class KoboDownloader(QObject):
