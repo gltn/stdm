@@ -304,6 +304,10 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         msg.exec_()
 
     def selected_cols(self, doc_cols):
+        """
+        Extract text containing path from QLineEdit object.
+        Returns dict of {'csv_column_name':'path'}
+        """
         sel_cols = {}
         for k, v in doc_cols.iteritems():
             line_edit = self.findChild(QLineEdit, v)
@@ -318,6 +322,11 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 return k
 
     def fetch_doc_cols(self, media_columns):
+        """
+        Reads values from the mapfile to create a dict of
+        {'csv_column_name':name_of_QLineEdit_with_dest_path}
+        e.g. {'House Picture':'edtHousePic'}
+        """
         cols = {}
         for k,v in media_columns.iteritems():
             a_col = unicode(k, 'utf-8').encode('ascii', 'ignore')
@@ -386,9 +395,12 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
 
         support_doc_map = mapfile_section('support-doc-map')
 
+        parent_ref_column = support_doc_map['parent_ref_column']
+
         self.kobo_downloader = KoboDownloader(
                 OGRReader(unicode(self.txtDataSource.text())),
-                sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map, self.curr_profile, upload_after)
+                sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map,
+                self.curr_profile, upload_after, parent_ref_column)
 
         self.downloader_thread = QThread(self)
         self.kobo_downloader.moveToThread(self.downloader_thread)
@@ -417,7 +429,7 @@ class KoboDownloader(QObject):
     
     def __init__(self, data_reader, sel_cols, key_field, 
             doc_types, credentials, kobo_url, support_doc_map, 
-            curr_profile, upload_after, parent=None):
+            curr_profile, upload_after, parent_ref_column, parent=None):
 
         QObject.__init__(self, parent)
 
@@ -431,6 +443,7 @@ class KoboDownloader(QObject):
         self.support_doc_map = support_doc_map
         self.curr_profile = curr_profile
         self.upload_after = upload_after
+        self.parent_ref_column = parent_ref_column
 
     def start_download(self):
         self.download_started.emit()
@@ -499,6 +512,13 @@ class KoboDownloader(QObject):
 
         return self.downloaded_files
 
+    def upload_scanned_docs(self):
+        #1. Get directory where scanned docs are saved
+        #2. Get the files from the directory (pdf files)
+        #3. Make "downloaded_files" 
+        #4. call upload_downloaded_files(downloaded_files)
+        pass
+
     def upload_downloaded_files(self, downloaded_files):
         #1. Create and get ID from the supporting documents table
         #2. Get Household ID
@@ -506,12 +526,12 @@ class KoboDownloader(QObject):
         #4. Create a record of entity_supporting_document
         doc_type_cache = {}
 
-        for submission_id in downloaded_files.keys():
-            household_id = self.get_household_id(self.support_doc_map, submission_id)
+        for ref_key_field in downloaded_files.keys():
+            household_id = self.get_household_id(self.support_doc_map, ref_key_field, self.parent_ref_column)
             if household_id is None:
                 continue
             last_support_doc_id = get_last_id(self.support_doc_map['main_table'])
-            for sfile in downloaded_files[submission_id]:
+            for sfile in downloaded_files[ref_key_field]:
                 new_filename = self.create_supporting_doc(sfile[1], self.support_doc_map)
                 last_support_doc_id += 1
                 parent_support_table = self.support_doc_map['parent_support_table']
@@ -528,10 +548,10 @@ class KoboDownloader(QObject):
 
                 self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
 
-    def get_household_id(self, doc_map, value):
+    def get_household_id(self, doc_map, value, parent_ref_column):
         table_name = doc_map['parent_table']
         target_col = 'id'
-        where_col = doc_map['parent_ref_column']
+        where_col = parent_ref_column
         id = get_value_by_column(table_name, target_col, where_col, value)
         return id
 
