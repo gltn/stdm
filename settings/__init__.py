@@ -13,7 +13,8 @@ from stdm.settings.registryconfig import (
     SIGN_PHOTO,
     HOUSE_PHOTO,
     HOUSE_PICTURE,
-    ID_PICTURE
+    ID_PICTURE,
+    SCANNED_DOC
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -131,6 +132,9 @@ def get_house_pic():
 def get_id_pic():
     return get_key_value(ID_PICTURE)
 
+def get_scanned_doc():
+    return get_key_value(SCANNED_DOC)
+
 def save_media_url(value):
     save_key_value(MEDIA_URL, value)
 
@@ -154,4 +158,7 @@ def save_house_pic(value):
 
 def save_id_pic(value):
     save_key_value(ID_PICTURE, value)
+
+def save_scanned_doc(value):
+    save_key_value(SCANNED_DOC, value)
 
