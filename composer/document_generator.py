@@ -467,8 +467,7 @@ class DocumentGenerator(QObject):
 
     def format_entity_field_name(self, composer_datasource, entity):
         if '_vw_' in composer_datasource:
-            ds = composer_datasource[composer_datasource.find('_vw_')+4:]
-            return ds+'_'+entity[entity.find('_')+1:]+'_id'
+            return composer_datasource+'.'+entity[entity.find('_')+1:]+'_id'
         else:
             return 'id'
 

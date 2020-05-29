@@ -30,7 +30,8 @@ from PyQt4.QtCore import(
     Qt,
     QDir,
     QTimer,
-    SIGNAL
+    SIGNAL,
+    QSettings
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -78,9 +79,12 @@ def pg_profile_names():
 
     pg_connections = q_config.group_children()
 
+    print "Group children: ", pg_connections
+
     profiles = [(conn_name, u"{0}/{1}".format(pg_connection_path, conn_name))
                 for conn_name in pg_connections]
 
+    print "PROFILE: ", profiles
     return profiles
 
 class OptionsDialog(QDialog, Ui_DlgOptions):
@@ -125,9 +129,21 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
+        self.btnTest.clicked.connect(self.test_multi_string)
+
         self.manage_upgrade()
 
         self.init_gui()
+
+    def test_multi_string(self):
+        #ordering = QGISRegistryConfig('/STDM/Ordering/')
+        #db_items = q_config.read(['Database', 'Host', 'Port'])
+        settings = QSettings('HKEY_CURRENT_USER\Software\QGIS\QGIS2\STDM\Ordering', QSettings.NativeFormat);
+        settings.beginGroup('hh_household'); #Filter out this device only
+        regReturn = settings.allKeys()
+        print regReturn
+        #print settings.value(regReturn[i]).toStringList();
+        #print keyValue
 
     def init_gui(self):
         #Set integer validator for the port number
