@@ -132,8 +132,6 @@ class ImportData(QWizard, Ui_frmImport):
 
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
-        #self.auto_load_translators()
-
         #Initialize value translators from definitions
         self._init_translators()
 
@@ -513,48 +511,6 @@ class ImportData(QWizard, Ui_frmImport):
             self.assignCols()
             self.auto_load_translators()
             self._enable_disable_trans_tools()
-    
-    #def toggleKoboOptions(self, mode):
-        #self.toggleKoboSettings(mode)
-        #self.toggleMediaFolders(mode)
-
-    #def check_download_all(self):
-        #self.cbFamilyPhoto.setCheckState(Qt.Checked)
-        #self.cbSign.setCheckState(Qt.Checked)
-        #self.cbHousePhoto.setCheckState(Qt.Checked)
-        #self.cbHousePic.setCheckState(Qt.Checked)
-        #self.cbIdPic.setCheckState(Qt.Checked)
-
-    #def toggleKoboSettings(self, mode):
-        #self.edtMediaUrl.setEnabled(mode)
-        #self.edtKoboUsername.setEnabled(mode)
-        #self.edtKoboPassword.setEnabled(mode)
-
-    #def toggleMediaFolders(self, mode):
-        #self.edtFamilyFolder.setEnabled(mode)
-        #self.edtSignFolder.setEnabled(mode)
-        #self.edtHouseFolder.setEnabled(mode)
-        #self.tbFamilyFolder.setEnabled(mode)
-        #self.tbSignFolder.setEnabled(mode)
-        #self.tbHouseFolder.setEnabled(mode)
-        #self.btnFamilyBrowse.setEnabled(mode)
-        #self.btnSignFolder.setEnabled(mode)
-        #self.btnHouseFolder.setEnabled(mode)
-
-        #self.cbFamilyPhoto.setEnabled(mode)
-        #self.cbSign.setEnabled(mode)
-        #self.cbHousePhoto.setEnabled(mode)
-
-    #def toggleSupportDoc(self, mode):
-        #self.edtHousePic.setEnabled(mode);
-        #self.cbHousePic.setEnabled(mode);
-        #self.tbHousePic.setEnabled(mode);
-        #self.btnHousePic.setEnabled(mode);
-
-        #self.edtIdPic.setEnabled(mode);
-        #self.cbIdPic.setEnabled(mode);
-        #self.tbIdPic.setEnabled(mode);
-        #self.btnIdPic.setEnabled(mode);
 
     def _source_columns(self):
         """
