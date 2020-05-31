@@ -193,10 +193,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             'EntityBrowser',
             'Document Viewer'
         )
+
         self.doc_viewer_title = u'{0} {1}'.format(
             entity.ui_display(),
             viewer_title
         )
+
         self._doc_viewer = _EntityDocumentViewerHandler(
             self.doc_viewer_title,
             self
@@ -628,6 +630,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         self._tableModel = self.plugin.entity_table_model[
                             self._entity.name
                         ]
+
             if isinstance(self._parent, EntityEditorDialog):
                 load_data = True
 
@@ -647,10 +650,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                             col_name = getattr(child_model, col.name)
                             child_model_obj = child_model()
                             entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
-                    else:
-                        entity_records = entity_cls.queryObject().filter().limit(
-                                self.record_limit
-                                ).all()
+                    else: 
+                        if isinstance(self._parent, QMainWindow):
+                            entity_records = entity_cls.queryObject().filter().limit(
+                                    self.record_limit
+                                    ).all()
 
                     numRecords = len(entity_records)
 
@@ -875,6 +879,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         self.load_records = load_records
         self.selection_layer = None
         self.plugin = plugin
+        self.entity_browser = self
 
         #Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
@@ -1418,9 +1423,11 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         VIEW=2301, MANAGE=2302,
         SELECT=2303 #When widget is used to select one or more records from the table list
     """
-    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, state=VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW|MANAGE, plugin=plugin)
-        
+    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, current_user=None, load_recs=False, state=VIEW|MANAGE):
+        EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW|MANAGE, load_records=load_recs, plugin=plugin)
+
+        self.current_user = current_user
+
         self.resize(700,500)
         
         if not isinstance(tableContentGroup, TableContentGroup):
