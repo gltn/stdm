@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_options.ui'
 #
-# Created: Sun Apr 12 14:38:33 2020
+# Created: Tue Jun 02 15:27:51 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 595)
+        DlgOptions.resize(626, 631)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -43,7 +43,7 @@ class Ui_DlgOptions(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName(_fromUtf8("scrollArea"))
         self.scrollAreaWidgetContents = QtGui.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 540))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 608, 576))
         self.scrollAreaWidgetContents.setObjectName(_fromUtf8("scrollAreaWidgetContents"))
         self.gridLayout_5 = QtGui.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
@@ -62,11 +62,17 @@ class Ui_DlgOptions(object):
         self.cbo_profiles.setObjectName(_fromUtf8("cbo_profiles"))
         self.gridLayout_7.addWidget(self.cbo_profiles, 0, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_7, 0, 0, 1, 4)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.gridLayout_6 = QtGui.QGridLayout()
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
         self.label_10 = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.label_10.setObjectName(_fromUtf8("label_10"))
-        self.horizontalLayout.addWidget(self.label_10)
+        self.gridLayout_6.addWidget(self.label_10, 0, 0, 1, 1)
+        self.label_11 = QtGui.QLabel(self.scrollAreaWidgetContents)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.gridLayout_6.addWidget(self.label_11, 1, 0, 1, 1)
+        self.cbSortOrder = QtGui.QComboBox(self.scrollAreaWidgetContents)
+        self.cbSortOrder.setObjectName(_fromUtf8("cbSortOrder"))
+        self.gridLayout_6.addWidget(self.cbSortOrder, 1, 1, 1, 1)
         self.edtEntityRecords = QtGui.QSpinBox(self.scrollAreaWidgetContents)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(1)
@@ -75,10 +81,8 @@ class Ui_DlgOptions(object):
         self.edtEntityRecords.setSizePolicy(sizePolicy)
         self.edtEntityRecords.setMinimumSize(QtCore.QSize(0, 30))
         self.edtEntityRecords.setObjectName(_fromUtf8("edtEntityRecords"))
-        self.horizontalLayout.addWidget(self.edtEntityRecords)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.gridLayout_5.addLayout(self.horizontalLayout, 6, 0, 1, 5)
+        self.gridLayout_6.addWidget(self.edtEntityRecords, 0, 1, 1, 1)
+        self.gridLayout_5.addLayout(self.gridLayout_6, 6, 0, 1, 5)
         self.chk_logging = QtGui.QCheckBox(self.scrollAreaWidgetContents)
         self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
         self.gridLayout_5.addWidget(self.chk_logging, 8, 0, 1, 1)
@@ -141,8 +145,8 @@ class Ui_DlgOptions(object):
         self.txtPort.setObjectName(_fromUtf8("txtPort"))
         self.gridLayout.addWidget(self.txtPort, 1, 1, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 4, 1)
-        spacerItem1 = QtGui.QSpacerItem(20, 38, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem1, 0, 1, 1, 1)
+        spacerItem = QtGui.QSpacerItem(20, 38, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem, 0, 1, 1, 1)
         self.btn_db_conn_clear = QtGui.QPushButton(self.frame)
         self.btn_db_conn_clear.setMinimumSize(QtCore.QSize(0, 30))
         self.btn_db_conn_clear.setObjectName(_fromUtf8("btn_db_conn_clear"))
@@ -151,8 +155,8 @@ class Ui_DlgOptions(object):
         self.btn_test_db_connection.setMinimumSize(QtCore.QSize(0, 30))
         self.btn_test_db_connection.setObjectName(_fromUtf8("btn_test_db_connection"))
         self.gridLayout_2.addWidget(self.btn_test_db_connection, 2, 1, 1, 1)
-        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem2, 3, 1, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem1, 3, 1, 1, 1)
         self.gridLayout_3.addWidget(self.frame, 1, 0, 2, 3)
         self.gridLayout_5.addWidget(self.groupBox, 3, 0, 1, 5)
         self.groupBox_3 = QtGui.QGroupBox(self.scrollAreaWidgetContents)
@@ -231,7 +235,8 @@ class Ui_DlgOptions(object):
     def retranslateUi(self, DlgOptions):
         DlgOptions.setWindowTitle(_translate("DlgOptions", "Options", None))
         self.label.setText(_translate("DlgOptions", "Set current profile", None))
-        self.label_10.setText(_translate("DlgOptions", "Entity browser records limit", None))
+        self.label_10.setText(_translate("DlgOptions", "Entity browser records limit:", None))
+        self.label_11.setText(_translate("DlgOptions", "Order of Sorting Records:", None))
         self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
         self.label_9.setText(_translate("DlgOptions", "Upgrade STDM Configuration to 1.4 ", None))
         self.upgradeButton.setText(_translate("DlgOptions", "Upgrade", None))

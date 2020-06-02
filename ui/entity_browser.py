@@ -78,7 +78,10 @@ from stdm.utils.util import (
     entity_id_to_attr
 )
 
-from stdm.settings import get_entity_browser_record_limit
+from stdm.settings import (
+        get_entity_browser_record_limit,
+        get_entity_sort_order
+        )
 
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor", "ContentGroupEntityBrowser"]
 
@@ -233,6 +236,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         self.parent_record_id = ent_rec_id
         self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
+        self.sort_order = get_entity_sort_order()
 
         #Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -641,20 +645,26 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 else:
                     entity_cls = self._dbmodel()
 
+                    ordering = self.get_sorting_order(self._entity)
+
                     if type(self.parent_record_id) == int and self.parent_record_id > 0:
                         col = self.filter_col(self._entity)
                         if col is None:
-                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
+                            entity_records = entity_cls.queryObject().filter().order_by(
+                                    ordering).limit(
+                                            self.record_limit
+                                            ).all()
                         else:
                             child_model = entity_model(self._entity)
                             col_name = getattr(child_model, col.name)
                             child_model_obj = child_model()
-                            entity_records = child_model_obj.queryObject().filter(col_name==self.parent_record_id).all()
+                            entity_records = child_model_obj.queryObject().filter(
+                                    col_name==self.parent_record_id
+                                    ).order_by(ordering).all()
                     else: 
                         if isinstance(self._parent, QMainWindow):
-                            entity_records = entity_cls.queryObject().filter().limit(
-                                    self.record_limit
-                                    ).all()
+                            entity_records = entity_cls.queryObject().filter().order_by(
+                                    ordering).limit(self.record_limit).all()
 
                     numRecords = len(entity_records)
 
@@ -747,6 +757,40 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 #if parent_entity == self._entity:
                     #return col
 
+    def get_sorting_order(self, entity):
+        #Prepare sorting field and sorting order
+        ordering = ''
+
+        if self.sort_order is None:
+            return ordering
+
+        if self.sort_order=='':
+            return ordering
+
+        if self.sort_order == 'idasc':
+            ordering ='id asc'
+
+        if self.sort_order == 'iddesc':
+            ordering = 'id desc'
+
+        if self.sort_order not in ['idasc', 'iddesc']:
+            order_column = self.get_sorting_field(entity)
+            ordering = order_column+' '+self.sort_order
+
+        return ordering
+
+    def get_sorting_field(self, entity):
+        '''
+        Return sorting column based on the row_index of the column
+        in the entity. Row index is set when you re-order the columns
+        in the configration wizard.
+        '''
+        cols = {}
+        for k in entity.updated_columns.keys():
+            cols[int(entity.updated_columns[k].row_index)] = k
+        cols_ordered = OrderedDict(sorted(cols.items()))
+        return cols_ordered[0]
+            
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
 

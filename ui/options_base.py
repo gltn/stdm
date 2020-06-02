@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
+from collections import OrderedDict
 
 from PyQt4.QtGui import (
     QDialog,
@@ -42,7 +43,9 @@ from stdm.settings import (
     save_configuration,
     save_current_profile,
     get_entity_browser_record_limit,
-    save_entity_browser_record_limit
+    save_entity_browser_record_limit,
+    get_entity_sort_order,
+    save_entity_sort_order
 )
 
 from stdm.settings.registryconfig import (
@@ -79,12 +82,9 @@ def pg_profile_names():
 
     pg_connections = q_config.group_children()
 
-    print "Group children: ", pg_connections
-
     profiles = [(conn_name, u"{0}/{1}".format(pg_connection_path, conn_name))
                 for conn_name in pg_connections]
 
-    print "PROFILE: ", profiles
     return profiles
 
 class OptionsDialog(QDialog, Ui_DlgOptions):
@@ -129,21 +129,15 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
-        self.btnTest.clicked.connect(self.test_multi_string)
-
         self.manage_upgrade()
 
-        self.init_gui()
+        self.sort_order = OrderedDict()
+        self.sort_order['idasc'] = 'ID - Smallest to Biggest'
+        self.sort_order['iddesc'] = 'ID - Biggest to Smallest'
+        self.sort_order['asc']  = 'Smallest to Biggest' 
+        self.sort_order['desc'] = 'Biggest to Smallest'
 
-    def test_multi_string(self):
-        #ordering = QGISRegistryConfig('/STDM/Ordering/')
-        #db_items = q_config.read(['Database', 'Host', 'Port'])
-        settings = QSettings('HKEY_CURRENT_USER\Software\QGIS\QGIS2\STDM\Ordering', QSettings.NativeFormat);
-        settings.beginGroup('hh_household'); #Filter out this device only
-        regReturn = settings.allKeys()
-        print regReturn
-        #print settings.value(regReturn[i]).toStringList();
-        #print keyValue
+        self.init_gui()
 
     def init_gui(self):
         #Set integer validator for the port number
@@ -169,6 +163,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
+
+        #Sorting order
+        self.populate_sort_order()
+        self.set_current_sort_order(get_entity_sort_order())
 
         # Debug logging
         lvl = debug_logging()
@@ -535,6 +533,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
+        save_entity_sort_order(self.cbSortOrder.itemData(self.cbSortOrder.currentIndex()))
+
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
 
@@ -575,3 +575,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.upgradeButton.setEnabled(False)
         else:
             self.upgradeButton.setEnabled(False)
+
+    def populate_sort_order(self):
+        for k, v in self.sort_order.iteritems():
+            self.cbSortOrder.addItem(v, k)
+        
+    def set_current_sort_order(self, data):
+        self.cbSortOrder.setCurrentIndex(self.cbSortOrder.findData(data))
+
