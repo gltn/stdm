@@ -430,10 +430,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         # Get number of records
         numRecords = entity.queryObject().count()
+
         if init_data:
             if self.current_records < 1:
                 if numRecords > self.record_limit:
                     self.current_records = self.record_limit
+                    numRecords = self.record_limit
                 else:
                     self.current_records = numRecords
 
@@ -601,13 +603,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             )
 
         else:
-
             self._init_entity_columns()
 
             # Load entity data. There might be a better way in future in order
             # to ensure that there is a balance between user data discovery
             # experience and performance.
-
             if filtered_records is not None:
                 self.current_records = filtered_records.rowcount
 
@@ -662,7 +662,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                                     col_name==self.parent_record_id
                                     ).order_by(ordering).all()
                     else: 
-                        if isinstance(self._parent, QMainWindow):
+                        #if isinstance(self._parent, QMainWindow):
+                        if not isinstance(self._parent, EntityEditorDialog):
                             entity_records = entity_cls.queryObject().filter().order_by(
                                     ordering).limit(self.record_limit).all()
 
@@ -758,7 +759,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                     #return col
 
     def get_sorting_order(self, entity):
-        #Prepare sorting field and sorting order
+        '''
+        Return a string containing a column and sort order (asc-Ascending, desc-Descending)
+        :rtype ordering: str
+        '''
         ordering = ''
 
         if self.sort_order is None:
@@ -783,13 +787,14 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         Return sorting column based on the row_index of the column
         in the entity. Row index is set when you re-order the columns
-        in the configration wizard.
+        in the configration wizard (It is saved in the configuration file).
         '''
         cols = {}
         for k in entity.updated_columns.keys():
             cols[int(entity.updated_columns[k].row_index)] = k
         cols_ordered = OrderedDict(sorted(cols.items()))
-        return cols_ordered[0]
+        min_id = min(i for i in cols_ordered.keys() if i > -1)
+        return cols_ordered[min_id]
             
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
