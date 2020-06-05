@@ -785,9 +785,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
     def get_sorting_field(self, entity):
         '''
-        Return sorting column based on the row_index of the column
-        in the entity. Row index is set when you re-order the columns
+        Return sorting column based on the rowindex of the column
+        in the entity. Rowindex is set when you re-order the columns
         in the configration wizard (It is saved in the configuration file).
+        Column with the smallest(positive integer) rowindex is the first
+        column on an entity, and thats the column we use for sorting.
         '''
         cols = {}
         for k in entity.updated_columns.keys():
@@ -798,7 +800,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
-
         return col_info['name'], col_info['header_index']
 
     def set_proxy_model_filter_column(self, index):
