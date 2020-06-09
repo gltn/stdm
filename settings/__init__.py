@@ -3,7 +3,8 @@ from PyQt4.QtGui import QDesktopServices
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
     RegistryConfig,
-    ENTITY_BROWSER_RECORD_LIMIT
+    ENTITY_BROWSER_RECORD_LIMIT,
+    ENTITY_SORT_ORDER
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -64,4 +65,17 @@ def save_entity_browser_record_limit(limit):
     """
     reg_config = RegistryConfig()
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT:limit})
+
+def get_entity_sort_order():
+    reg_config = RegistryConfig()
+    rec_info = reg_config.read([ENTITY_SORT_ORDER])
+    sort_order = rec_info.get(ENTITY_SORT_ORDER, None)
+    return sort_order
+
+def save_entity_sort_order(sort_order):
+    """
+    :type sort_order: str
+    """
+    reg_config = RegistryConfig()
+    reg_config.write({ENTITY_SORT_ORDER:sort_order})
 

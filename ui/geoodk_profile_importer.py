@@ -636,7 +636,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                         self.parent_ids[fk_table_name] = [ref_id, fk_table_name]
                                         continue
 
-
                             self.count_import_file_step(counter, entity)
                             log_timestamp = '=== standalone table import  === : {0}'.format(entity)
                             cu_obj = entity

@@ -120,6 +120,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.plugin = plugin
 
+
         #Flag for mandatory columns
         self.has_mandatory = False
         self.reload_form = False
@@ -163,6 +164,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.collect_model = collect_model
 
         self.register_column_widgets()
+
+        if not isinstance(parent, QTabWidget):
+            self.current_user = parent.entity_browser.current_user
+
         try:
             if isinstance(parent._parent, EntityEditorDialog):
                 # hide collections form child editor
@@ -634,7 +639,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not hasattr(self._model, attr):
             return
 
-        table_content = TableContentGroup(self.plugin.current_user.UserName, child_entity.short_name)
+        table_content = TableContentGroup(self._parent.entity_browser.current_user.UserName, child_entity.short_name)
 
         if self.edit_model is not None:
             parent_id = self.edit_model.id
@@ -642,7 +647,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
             parent_id = 0
 
         entity_browser = ContentGroupEntityBrowser(
-                child_entity, table_content, rec_id=parent_id, parent=self,  plugin=self.plugin)
+                child_entity, table_content, rec_id=parent_id, parent=self,  plugin=self.plugin,
+                current_user=self.current_user, load_recs=False)
 
         #entity_browser = EntityBrowserWithEditor(
             #child_entity,
