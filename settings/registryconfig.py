@@ -53,6 +53,9 @@ HOUSE_PHOTO='HousePhoto'
 HOUSE_PICTURE='HousePicture'
 ID_PICTURE='IdPicture'
 SCANNED_DOC='ScannedDoc'
+SCANNED_HSE_MAP='ScannedHseMap'
+SCANNED_HSE_PIC='ScannedHsePic'
+SCANNED_ID_DOC='ScannedIdDoc'
 
 def registry_value(key_name):
     """
