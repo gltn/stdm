@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_document_downloader_win.ui'
 #
-# Created: Tue Jun 16 15:17:25 2020
+# Created: Thu Jun 18 14:34:47 2020
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -275,15 +275,15 @@ class Ui_DocumentDownloader(object):
         spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem2)
         self.verticalLayout_4.addLayout(self.horizontalLayout_4)
-        self.groupBox_9 = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox_9.setObjectName(_fromUtf8("groupBox_9"))
-        self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_9)
+        self.gbProgress = QtGui.QGroupBox(self.centralwidget)
+        self.gbProgress.setObjectName(_fromUtf8("gbProgress"))
+        self.gridLayout_7 = QtGui.QGridLayout(self.gbProgress)
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
-        self.edtProgress = QtGui.QTextEdit(self.groupBox_9)
+        self.edtProgress = QtGui.QTextEdit(self.gbProgress)
         self.edtProgress.setReadOnly(True)
         self.edtProgress.setObjectName(_fromUtf8("edtProgress"))
         self.gridLayout_7.addWidget(self.edtProgress, 0, 0, 1, 1)
-        self.verticalLayout_4.addWidget(self.groupBox_9)
+        self.verticalLayout_4.addWidget(self.gbProgress)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -298,11 +298,11 @@ class Ui_DocumentDownloader(object):
         DocumentDownloader.setStatusBar(self.statusbar)
 
         self.retranslateUi(DocumentDownloader)
-        self.twDocument.setCurrentIndex(1)
+        self.twDocument.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(DocumentDownloader)
 
     def retranslateUi(self, DocumentDownloader):
-        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Download Documents", None))
+        DocumentDownloader.setWindowTitle(_translate("DocumentDownloader", "Download and Upload Documents", None))
         self.groupBox_2.setTitle(_translate("DocumentDownloader", "Document Type:", None))
         self.rbKoboMedia.setText(_translate("DocumentDownloader", "Claims File Documents", None))
         self.rbSupportDoc.setText(_translate("DocumentDownloader", "Supporting Documents", None))
@@ -339,12 +339,12 @@ class Ui_DocumentDownloader(object):
         self.rbScannedDoc.setText(_translate("DocumentDownloader", "Scanned Documents", None))
         self.groupBox_4.setTitle(_translate("DocumentDownloader", "Local Documents Folder:", None))
         self.tbScannedDoc.setText(_translate("DocumentDownloader", "...", None))
-        self.label_2.setText(_translate("DocumentDownloader", "Certificate", None))
+        self.label_2.setText(_translate("DocumentDownloader", "Certificate:", None))
         self.cbScannedDoc.setText(_translate("DocumentDownloader", "Upload", None))
         self.btnScannedDoc.setText(_translate("DocumentDownloader", "Browse ...", None))
         self.label_3.setText(_translate("DocumentDownloader", "House Map:", None))
         self.label_10.setText(_translate("DocumentDownloader", "House Picture:", None))
-        self.label_13.setText(_translate("DocumentDownloader", "ID Document", None))
+        self.label_13.setText(_translate("DocumentDownloader", "ID Document:", None))
         self.cbScannedHseMap.setText(_translate("DocumentDownloader", "Upload", None))
         self.cbScannedHsePic.setText(_translate("DocumentDownloader", "Upload", None))
         self.cbScannedIdDoc.setText(_translate("DocumentDownloader", "Upload", None))
@@ -356,6 +356,6 @@ class Ui_DocumentDownloader(object):
         self.btnScannedIdDoc.setText(_translate("DocumentDownloader", "Browse ...", None))
         self.twDocument.setTabText(self.twDocument.indexOf(self.tbUpload), _translate("DocumentDownloader", "Upload", None))
         self.btnDownload.setText(_translate("DocumentDownloader", "Download", None))
-        self.groupBox_9.setTitle(_translate("DocumentDownloader", "Download progress:", None))
+        self.gbProgress.setTitle(_translate("DocumentDownloader", "Download progress:", None))
         self.btnClose.setText(_translate("DocumentDownloader", "Close", None))
 

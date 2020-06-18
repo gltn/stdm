@@ -631,6 +631,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         if page_index == 0:
             self.downloader_mode = DOWNLOAD_DOCS
             self.btnDownload.setText('Download')
+            self.gbProgress.setTitle("Download Progress:")
 
             if self.rbKoboMedia.isChecked():
                 self.kobo_media_clicked()
@@ -641,6 +642,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         if page_index == 1:
             self.downloader_mode = UPLOAD_DOCS
             self.btnDownload.setText('Upload')
+            self.gbProgress.setTitle("Upload Progress:")
             self.scanned_doc_clicked()
         
 
@@ -768,7 +770,7 @@ class KoboDownloader(QObject):
 
         src_folder = self.selected_cols.get(dtype)
 
-        if src_folder is None:
+        if src_folder is None or src_folder=='':
             return dfiles
 
         dtype_id = self.doc_types[dtype]
@@ -788,7 +790,7 @@ class KoboDownloader(QObject):
         dfiles = {}
         src_folder = self.selected_cols.get(doc_type)
 
-        if src_folder is None:
+        if src_folder is None or src_folder == '':
             return dfiles
 
         dtype_id = self.doc_types[doc_type]
@@ -817,7 +819,7 @@ class KoboDownloader(QObject):
             household_id = self.get_household_id(self.support_doc_map['parent_table'],
                                                  ref_key_value, self.parent_ref_column)
             if household_id is None:
-                msg = "ERROR. No record found for key: ",ref_key_value
+                msg = "ERROR. No record found for key: "+str(ref_key_value)
                 self.download_progress.emit(KoboDownloader.ERROR, msg)
                 continue
 
