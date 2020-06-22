@@ -173,7 +173,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     # is in SELECT state. It contains
     # the record id of the selected row.
 
-    recordSelected = pyqtSignal(int)
+    recordSelected = pyqtSignal(int, QDialog)
     
     def __init__(self, entity, parent=None, state=MANAGE, load_records=True, plugin=None):
         QDialog.__init__(self,parent)
@@ -228,6 +228,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         #ID of a record to select once records have been added to the table
         self._select_item = None
         self.current_records = 0
+        
+        self.selection_status = True
 
         self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
 
@@ -779,6 +781,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         Slot raised when user clicks to accept the dialog. The resulting action will be dependent
         on the state that the browser is currently configured in.
         '''
+        self.selection_status = True
+
         selIDs = self._selected_record_ids()
         if len(selIDs) == 0:
             return
@@ -786,15 +790,17 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self._mode == SELECT:
             #Get all selected records
             for sel_id in selIDs:
-                self.recordSelected.emit(sel_id)
+                self.recordSelected.emit(sel_id, self)
 
-            rec_selected = QApplication.translate(
-                'EntityBrowser',
-                'record(s) selected'
-            )
+            if self.selection_status:
 
-            msg = u'{0:d} {1}.'.format(len(selIDs), rec_selected)
-            self._notifBar.insertInformationNotification(msg)
+                rec_selected = QApplication.translate(
+                    'EntityBrowser',
+                    'record(s) selected'
+                )
+
+                msg = u'{0:d} {1}.'.format(len(selIDs), rec_selected)
+                self._notifBar.insertInformationNotification(msg)
 
     def addModelToView(self, model_obj):
         '''

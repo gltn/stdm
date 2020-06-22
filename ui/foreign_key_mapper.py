@@ -135,7 +135,7 @@ class ForeignKeyMapper(QWidget):
     using an ExpressionBuilder for filtering records.
     """
     #Custom signals
-    beforeEntityAdded = pyqtSignal("PyQt_PyObject")
+    beforeEntityAdded = pyqtSignal("PyQt_PyObject", QWidget)
     afterEntityAdded = pyqtSignal("PyQt_PyObject", int)
     entityRemoved = pyqtSignal("PyQt_PyObject")
     deletedRows = pyqtSignal(list)
@@ -208,6 +208,8 @@ class ForeignKeyMapper(QWidget):
         self.global_id = None
         self._deferred_objects = {}
         self._use_expression_builder = can_filter
+
+        self.signal_status = True
 
         if self._use_expression_builder:
             self._filter_entity_btn.setVisible(True)
@@ -617,13 +619,18 @@ class ForeignKeyMapper(QWidget):
 
         return modelInstances
         
-    def _onRecordSelectedEntityBrowser(self, rec, row_number=-1):
+    def _onRecordSelectedEntityBrowser(self, rec, sender, row_number=-1):
         '''
         Slot raised when the user has clicked the select button
         in the 'EntityBrowser' dialog
         to add the selected record to the table's list.
         Add the record to the foreign key table using the mappings.
+        :param rec: Selected record (selected row id)
+        :param sender: The dialog that emitted the signal
+        :param row_number:
         '''
+        self.signal_status = True
+
         #Check if the record exists using the primary key so as to ensure
         #only one instance is added to the table
         if isinstance(rec, int):
@@ -643,13 +650,14 @@ class ForeignKeyMapper(QWidget):
 
         if not modelObj is None:
             #Raise before entity added signal
-            self.beforeEntityAdded.emit(modelObj)
+            self.beforeEntityAdded.emit(modelObj, self)
             
-            #Validate for unique value configurations
-            '''
-            if not self._validate_unique_columns(modelObj, row_number):
+            # set status - control if notification bar is shown on the 
+            # entity browser
+            sender.selection_status = self.signal_status
+
+            if not self.signal_status:
                 return
-            '''
 
             if not self._supportsLists and self._tableModel.rowCount() > 0:
                 self._removeRow(0)

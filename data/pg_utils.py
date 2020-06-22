@@ -278,6 +278,19 @@ def pg_table_count(table_name):
     sql = text(sql_str)
 
     results = _execute(sql)
+    cnt = 0
+    for result in results:
+        cnt = result['cnt']
+
+    return cnt
+
+def pg_find_record(table_name, field_name, value):
+    sql_str = "Select COUNT(*) cnt from {0} Where {1} = {2}".format(table_name,
+            field_name, value)
+    sql = text(sql_str)
+
+    results = _execute(sql)
+    cnt = 0
     for result in results:
         cnt = result['cnt']
 

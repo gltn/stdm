@@ -58,6 +58,8 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT
 )
 
+from stdm.data.pg_utils import pg_find_record
+
 from .entity_browser import ForeignKeyBrowser
 from .foreign_key_mapper import ForeignKeyMapper
 from .notification import NotificationBar
@@ -303,7 +305,6 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             #Force list of column names to be loaded
             if self.tabWidget.currentIndex() != 0:
                 self.tabWidget.setCurrentIndex(0)
-
             else:
                 self.on_tab_index_changed(0)
 
@@ -412,7 +413,26 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
         fk_mapper.setDeleteonRemove(False)
         fk_mapper.setNotificationBar(self._notif_bar)
 
+        fk_mapper.beforeEntityAdded.connect(self.check_record_str)
+
         return fk_mapper
+
+    def check_record_str(self, model_obj, fk):
+        curr_entity = self.tabWidget.currentWidget()._entity.short_name 
+        str_column = curr_entity.replace(' ','_').lower()+'_id'
+
+        count = pg_find_record(self.curr_profile.social_tenure.name, str_column, model_obj.id)
+
+        if count == 0:
+            msg = QApplication.translate(
+                'DocumentGeneratorDialog',
+                'STR for the selected record is not created! Document cannot be generated.')
+
+            QMessageBox.critical(self,
+                QApplication.translate('DocumentGeneratorDialog',
+                    'Record selection'), msg)
+            fk.signal_status = False
+        
             
     def onSelectTemplate(self):
         """
