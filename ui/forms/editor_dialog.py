@@ -38,7 +38,9 @@ from PyQt4.QtGui import (
     QWidget,
     QApplication,
     QPushButton,
-    QMessageBox)
+    QMessageBox,
+    QMainWindow
+    )
 
 from qgis.utils import (
     iface,
@@ -166,8 +168,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.register_column_widgets()
 
         if not isinstance(parent, QTabWidget):
-            self.current_user = parent.entity_browser.current_user
-
+            if not isinstance(parent, QMainWindow):
+                self.current_user = parent.entity_browser.current_user
         try:
             if isinstance(parent._parent, EntityEditorDialog):
                 # hide collections form child editor
