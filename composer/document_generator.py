@@ -307,7 +307,7 @@ class DocumentGenerator(QObject):
             entityFieldName = self.format_entity_field_name(composerDS.name(), data_source)
             
             #Execute query
-            dsTable,records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
+            dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
 
             if records is None or len(records) == 0:
                 return False, QApplication.translate("DocumentGenerator",
