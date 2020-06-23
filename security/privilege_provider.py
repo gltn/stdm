@@ -9,6 +9,7 @@ class PrivilegeProvider(object):
     def __init__(self, content_name, profile=None):
         self.content_name = content_name
         self.content_short_name = self.fmt_short_name(self.content_name)
+        self.titlized_short_name = self.content_short_name.title().replace(' ','')
         self.related_contents = {}
         self.profile = profile 
         self.base_table_roles = self.get_base_table_roles()
@@ -49,24 +50,44 @@ class PrivilegeProvider(object):
             table_roles[bt] = copy.deepcopy(roles)
         return table_roles
 
+    def get_supporting_doc_table(self, entity_short_name):
+        '''
+        returns a supporting document entity
+        '''
+        support_doc_table = None
+        if entity_short_name in self.profile.entities:
+            entity = self.profile.entities[entity_short_name]
+            if entity.supports_documents:
+                support_doc_table = entity.supporting_doc
+        return support_doc_table
+
 
 class SinglePrivilegeProvider(PrivilegeProvider):
     def __init__(self, content_name, profile):
         super(SinglePrivilegeProvider, self).__init__(content_name, profile)
-        self.fetch_related_content(self.content_short_name)
+        self.fetch_related_content(self.titlized_short_name)
         self.content_table_name = self.table_name(self.content_short_name)
+        self.supporting_doc_table = self.get_supporting_doc_table(self.titlized_short_name)
+        self.support_doc_table_name =''
+        self.support_doc_type_name = ''
+        self._support_doc_names()
         self.role = ''
 
-    def fetch_related_content(self, short_name):
-        if short_name in self.profile.entities:
-            for column in self.profile.entities[short_name].columns.values():
+    def _support_doc_names(self):
+        if self.supporting_doc_table is not None:
+            self.support_doc_table_name = self.supporting_doc_table.name
+            self.support_doc_type_name = self.supporting_doc_table.doc_type.value_list.name
+
+    def fetch_related_content(self, entity_short_name):
+        if entity_short_name in self.profile.entities:
+            for column in self.profile.entities[entity_short_name].columns.values():
                 if hasattr(column, 'entity_relation'):
                     self.related_contents[column.name] = column.entity_relation.parent.name
 
-    def table_name(self, short_name):
+    def table_name(self, entity_short_name):
         table_name = ''
-        if short_name in self.profile.entities:
-            table_name = self.profile.entities[short_name].name
+        if entity_short_name in self.profile.entities:
+            table_name = self.profile.entities[entity_short_name].name
         return table_name
 
     def fmt_short_name(self, name):
@@ -97,9 +118,18 @@ class SinglePrivilegeProvider(PrivilegeProvider):
                 self.grant_or_revoke(operation, 'SELECT', self.content_table_name, self.role)
 
         for related_content in self.related_contents.values():
-            self.grant_or_revoke(operation, 'SELECT', related_content, self.role)
-            if privilege <> 'SELECT':
-                self.grant_or_revoke(operation, privilege, related_content, self.role)
+            self._grant_revoke(operation, privilege, related_content, self.role)
+
+        if self.support_doc_table_name <> '':
+            self._grant_revoke(operation, privilege, self.support_doc_table_name, self.role)
+            # Supporting document type 
+            self._grant_revoke(operation, privilege, self.support_doc_type_name, self.role)
+
+    def _grant_revoke(self, op, priv, cont, role):
+        self.grant_or_revoke(op, 'SELECT', cont, role)
+        if priv <> 'SELECT':
+            self.grant_or_revoke(op, priv, cont, role)
+
 
 
 class MultiPrivilegeProvider(PrivilegeProvider):

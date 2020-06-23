@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
+from collections import OrderedDict
 
 from PyQt4.QtGui import (
     QDialog,
@@ -30,7 +31,8 @@ from PyQt4.QtCore import(
     Qt,
     QDir,
     QTimer,
-    SIGNAL
+    SIGNAL,
+    QSettings
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -41,7 +43,9 @@ from stdm.settings import (
     save_configuration,
     save_current_profile,
     get_entity_browser_record_limit,
-    save_entity_browser_record_limit
+    save_entity_browser_record_limit,
+    get_entity_sort_order,
+    save_entity_sort_order
 )
 
 from stdm.settings.registryconfig import (
@@ -127,6 +131,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.manage_upgrade()
 
+        self.sort_order = OrderedDict()
+        self.sort_order['idasc'] = 'ID - Smallest to Biggest'
+        self.sort_order['iddesc'] = 'ID - Biggest to Smallest'
+        self.sort_order['asc']  = 'Smallest to Biggest' 
+        self.sort_order['desc'] = 'Biggest to Smallest'
+
         self.init_gui()
 
     def init_gui(self):
@@ -153,6 +163,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
+
+        #Sorting order
+        self.populate_sort_order()
+        self.set_current_sort_order(get_entity_sort_order())
 
         # Debug logging
         lvl = debug_logging()
@@ -519,6 +533,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
+        save_entity_sort_order(self.cbSortOrder.itemData(self.cbSortOrder.currentIndex()))
+
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
 
@@ -559,3 +575,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.upgradeButton.setEnabled(False)
         else:
             self.upgradeButton.setEnabled(False)
+
+    def populate_sort_order(self):
+        for k, v in self.sort_order.iteritems():
+            self.cbSortOrder.addItem(v, k)
+        
+    def set_current_sort_order(self, data):
+        self.cbSortOrder.setCurrentIndex(self.cbSortOrder.findData(data))
+

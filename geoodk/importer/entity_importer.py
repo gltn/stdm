@@ -307,9 +307,7 @@ class Save2DB:
         for k, v in attributes.iteritems():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
-                print 'k is {} '.format(col_type)
-                col_prop = self.model.columns[k]
-                print 'property is  {}'.format(col_prop)
+                col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
 
@@ -457,15 +455,10 @@ class Save2DB:
             else:
                 col_parent = col_prop.association.first_parent
                 lk_val_list = col_parent.values.values()
-                col_parent_model = entity_model(col_parent)
-                col_parent_inst= col_parent_model()
-                var_list = var.split(' ')
                 choices_list = []
-                print var_list
-                for vl in var_list:
-                    choices_list.append(col_parent_inst.queryObject().filter
-                                        (col_parent_inst.value == vl).first().id)
-                print choices_list
+                for code in lk_val_list:
+                    choices_list.append(entity_attr_to_id(
+                        col_parent.association.first_parent, 'value', code.value))
 
                 if len(choices_list) > 1:
                     return choices_list
@@ -488,46 +481,28 @@ class Save2DB:
                     return geom_provider.polygon_to_Wkt()
             else:
                 return None
+
         elif col_type == 'FOREIGN_KEY':
-            if self.parents_ids is None or len(self.parents_ids) < 0:
-                return None
-            else:
-                for code, val in self.parents_ids.iteritems():
-                    if col_prop.parent.name == code:
-                        return val[0]
-                    else:
-                        return None
+            ret_val = None
+            for code, val in self.parents_ids.iteritems():
+                if col_prop.parent.name == code:
+                    ret_val = val[0]
+                    break
+            return ret_val
+
         elif col_type == 'INT' or col_type == 'DOUBLE' or col_type == 'PERCENT':
-            if var == '':
-                return None
-            else:
-                return var
+            ret_val = None
+            if var <> '':
+                ret_val = var
+            return ret_val
 
         elif col_type == 'DATETIME' or col_type == 'DATE':
-            if var is None:
-                return None
-            if var == '':
-                return None
-            else:
-                return var
-
+            ret_val = None
+            if var <> '':
+                ret_val = var
+            return ret_val
         else:
             return var
-
-    def string_list_separator(self,list_str, sep):
-        '''
-        Pass a stringlist and split it into a list based on the separator
-        :param list_str:
-        :return: list
-        '''
-        return list_str.split(sep)
-
-    def abort_action(self):
-        """
-        Allow the current data import process to abort.
-        :return:
-        """
-
 
     def cleanup(self):
         """

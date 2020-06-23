@@ -797,6 +797,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         if not button_clicked: return
 
+
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
@@ -820,6 +821,8 @@ class DetailsTreeView(DetailsDBHandler):
         QApplication.processEvents()
         # if no active layer, show error message
         # and uncheck the feature tool
+
+        #self.zoom_to_selected(self.layer)
 
         if self.layer is None:
             if button_clicked:
@@ -845,7 +848,10 @@ class DetailsTreeView(DetailsDBHandler):
             sel_model.selectionChanged.connect(self.on_view_select)
 
     def on_view_select(self):
-        index = self.view.selectedIndexes()[0]
+        sel_indexes = self.view.selectedIndexes()
+        if len(sel_indexes) == 0:
+            return
+        index = sel_indexes[0]
         item = self.model.itemFromIndex(index)
         # STR Node
         if item.text() == self.str_text:
@@ -1008,7 +1014,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
 
-        self.zoom_to_selected(self.layer)
+        #self.zoom_to_selected(self.layer)
 
     def search_spatial_unit(self, entity, spatial_unit_ids):
         """

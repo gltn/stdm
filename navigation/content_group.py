@@ -44,7 +44,7 @@ class ContentGroup(QObject,HashableMixin):
     """
     contentAuthorized = pyqtSignal(Content)
     
-    def __init__(self,username,containerItem = None,parent = None):
+    def __init__(self, username, containerItem=None, parent=None):
         from stdm.security.authorization import Authorizer
 
         QObject.__init__(self,parent)
@@ -69,6 +69,12 @@ class ContentGroup(QObject,HashableMixin):
         cnt = Content()
         cnt.name = qAction.text()
         
+        return cnt
+
+    @staticmethod
+    def contentItemFromName(name):
+        cnt = Content()
+        cnt.name = name
         return cnt
     
     def contentItems(self):
@@ -194,8 +200,8 @@ class TableContentGroup(ContentGroup):
     update_op = QApplication.translate("DatabaseContentGroup", "Update")
     delete_op = QApplication.translate("DatabaseContentGroup", "Delete")
     
-    def __init__(self, username, groupName, action = None):
-        ContentGroup.__init__(self,username,action)
+    def __init__(self, username, groupName, action=None):
+        ContentGroup.__init__(self, username, action)
         self._groupName = groupName
         self._createDbOpContent()
         
@@ -206,25 +212,30 @@ class TableContentGroup(ContentGroup):
         """
         self._createCnt = Content()
         self._createCnt.name = self._buildName(self.create_op)
+        self._createCnt.code = self.hash_code(self._createCnt.name)
         self.addContentItem(self._createCnt)
         
         self._readCnt = Content()
         self._readCnt.name = self._buildName(self.read_op)
+        self._readCnt.code = self.hash_code(self._readCnt.name)
         self.addContentItem(self._readCnt)
         
         self._updateCnt = Content()
         self._updateCnt.name = self._buildName(self.update_op)
+        self._updateCnt.code = self.hash_code(self._updateCnt.name)
         self.addContentItem(self._updateCnt)
         
         self._deleteCnt = Content()
         self._deleteCnt.name = self._buildName(self.delete_op)
+        self._deleteCnt.code = self.hash_code(self._deleteCnt.name)
         self.addContentItem(self._deleteCnt)
         
-    def _buildName(self,contentName):
+    def _buildName(self, db_operation):
         """
-        Appends group name to the content name
+        Appends group name to the database operation 
+        `Create Person`
         """
-        return u"{0} {1}".format(contentName, self._groupName)
+        return u"{0} {1}".format(db_operation, self._groupName)
         
     def createContentItem(self):
         """
@@ -273,31 +284,5 @@ class TableContentGroup(ContentGroup):
         Returns whether the current user has delete permissions.
         """
         return self.hasPermission(self._deleteCnt)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         

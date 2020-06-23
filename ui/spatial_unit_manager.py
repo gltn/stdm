@@ -43,7 +43,8 @@ from qgis.core import (
 )
 from qgis.gui import (
     QgsCategorizedSymbolRendererV2Widget,
-    QgsGenericProjectionSelector)
+    QgsGenericProjectionSelector
+    )
 from stdm.data.configuration import entity_model
 
 from stdm.data.configuration.social_tenure import SocialTenure
@@ -67,13 +68,16 @@ from stdm.data.pg_utils import (
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import profile_and_user_views, lookup_id_to_value, entity_id_to_display_col
+from stdm.utils.util import (
+        profile_and_user_views, 
+        lookup_id_to_value, 
+        entity_id_to_display_col
+        )
 from stdm.mapping.utils import pg_layerNamesIDMapping
 
 from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 LOGGER = logging.getLogger('stdm')
-
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
@@ -81,7 +85,6 @@ class SpatialUnitManagerDockWidget(
     onLayerAdded = pyqtSignal(str, object)
 
     def __init__(self, iface, plugin=None):
-        """Constructor."""
         QDockWidget.__init__(self, iface.mainWindow())
         # Set up the user interface from Designer.
         self.setupUi(self)
@@ -113,9 +116,11 @@ class SpatialUnitManagerDockWidget(
         self.onLayerAdded.connect(
             self.init_spatial_form
         )
+
         self.add_to_canvas_button.clicked.connect(
             self.on_add_to_canvas_button_clicked
         )
+
         self.iface.projectRead.connect(self.on_project_opened)
 
     def on_project_opened(self):

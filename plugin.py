@@ -55,7 +55,8 @@ from stdm.ui.options_base import OptionsDialog
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.entity_browser import (
-    EntityBrowserWithEditor
+    EntityBrowserWithEditor,
+    ContentGroupEntityBrowser
 )
 from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.stdmdialog import DeclareMapping
@@ -107,8 +108,13 @@ from stdm.utils.util import (
     db_user_tables,
     format_name,
     setComboCurrentIndexWithText,
-    version_from_metadata
+    version_from_metadata,
+    documentTemplates,
+    user_non_profile_views
 )
+
+from stdm.composer.composer_data_source import composer_data_source
+
 from mapping.utils import pg_layerNamesIDMapping
 
 from composer import ComposerWrapper
@@ -125,8 +131,50 @@ from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 
-
 LOGGER = logging.getLogger('stdm')
+
+class _DocumentTemplate(object):
+    """
+    Contains basic information about a document template.
+    """
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', '')
+        self.path = kwargs.get('path', '')
+        self.data_source = kwargs.get('data_source', None)
+
+    @property
+    def referenced_table_name(self):
+        """
+        :return: Returns the referenced table name.
+        :rtype: str
+        """
+        if self.data_source is None:
+            return ''
+
+        return self.data_source.referenced_table_name
+
+    @staticmethod
+    def build_from_path(name, path):
+        """
+        Creates an instance of the _DocumentTemplate class from the path of
+        a document template.
+        :param name: Template name.
+        :type name: str
+        :param path: Absolute path to the document template.
+        :type path: str
+        :return: Returns an instance of the _DocumentTemplate class from the
+        absolute path of the document template.
+        :rtype: _DocumentTemplate
+        """
+        data_source = composer_data_source(path)
+        kwargs = {
+            'name': name,
+            'path': path,
+            'data_source': data_source
+        }
+
+        return _DocumentTemplate(**kwargs)
+
 
 class STDMQGISLoader(object):
 
@@ -166,6 +214,11 @@ class STDMQGISLoader(object):
 
         self._user_logged_in = False
         self.current_profile = None
+
+        # current logged-in user
+        self.current_user = None
+        self.profile_templates = []
+
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
@@ -299,6 +352,8 @@ class STDMQGISLoader(object):
         if retstatus == QDialog.Accepted:
             #Assign the connection object
             data.app_dbconn = frmLogin.dbConn
+
+            self.current_user = frmLogin.dbConn.User
 
             #Initialize the whole STDM database
 
@@ -443,7 +498,31 @@ class STDMQGISLoader(object):
             'Database Table Error'
         )
 
-        if pg_table_exists(entity.name):
+        if not pg_table_exists(entity.name):
+            message = QApplication.translate(
+                "STDMQGISLoader",
+                u'The system has detected that '
+                'a required database table - \n'
+                '{} is missing. \n'
+                'Do you want to re-run the '
+                'Configuration Wizard now?'.format(
+                    entity.name
+                ),
+                None,
+                QCoreApplication.UnicodeUTF8
+            )
+            database_check = QMessageBox.critical(
+                self.iface.mainWindow(),
+                title,
+                message,
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+            if database_check == QMessageBox.Yes:
+                self.load_config_wizard()
+            else:
+                return False
+        else:
             return True
         message = QApplication.translate(
             "STDMQGISLoader",
@@ -1156,6 +1235,36 @@ class STDMQGISLoader(object):
         geoodkSettingsCntGroup.append(self.mobileXformgenCntGroup)
         geoodkSettingsCntGroup.append(self.mobileXFormImportCntGroup)
 
+        # Register document templates
+        # Get templates for the current profile
+        templates = documentTemplates()
+        profile_tables = self.current_profile.table_names()
+        for name, path in templates.iteritems():
+            doc_temp = _DocumentTemplate.build_from_path(name, path)
+            if doc_temp.data_source is None:
+                continue
+            if doc_temp.data_source.referenced_table_name in profile_tables:
+                if not self._doc_temp_exist(doc_temp, self.profile_templates):
+                    self.profile_templates.append(doc_temp)
+
+            if doc_temp.data_source._dataSourceName in user_non_profile_views():
+                if not self._doc_temp_exist(doc_temp, self.profile_templates):
+                    self.profile_templates.append(doc_temp)
+
+        template_content_group = ContentGroup(username)
+        for template in self.profile_templates:
+            #template_content = ContentGroup.contentItemFromName(template.name)
+            template_content = self._create_table_content_group(
+                    template.name,
+                    self.current_user.UserName,
+                    'templates'
+                    )
+            #template_content.code = template_content_group.hash_code(unicode(template.name))
+            #template_content_group.addContentItem(template_content)
+            #template_content.name = template.name
+        #template_content_group.register()
+
+
         # Add Design Forms menu and tool bar actions
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
@@ -1215,8 +1324,15 @@ class STDMQGISLoader(object):
 
         self.create_spatial_unit_manager()
 
-
         self.profile_status_message()
+
+    def _doc_temp_exist(self, doc_temp, profile_templates):
+        doc_exist = False
+        for template in profile_templates:
+            if template.name == doc_temp.name:
+                doc_exist = True
+                break
+        return doc_exist
 
     def grant_privilege_base_tables(self, username):
         roles = []
@@ -1655,8 +1771,16 @@ class STDMQGISLoader(object):
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
+
+        access_templates = []
+        for pt in self.profile_templates:
+            tcg = TableContentGroup(self.current_user.UserName, pt.name)
+            if tcg.canRead():
+                access_templates.append(pt.name)
+
         doc_gen_wrapper = DocumentGeneratorDialogWrapper(
             self.iface,
+            access_templates,
             self.iface.mainWindow(),
             plugin=self
         )
@@ -1759,8 +1883,6 @@ class STDMQGISLoader(object):
 
             if database_status:
                 self.newSTR()
-
-
         else:
             table_name = self._moduleItems[dispName]
             if self.current_profile is None:
@@ -1773,22 +1895,30 @@ class STDMQGISLoader(object):
             database_status = self.entity_table_checker(
                 sel_entity
             )
+
             QApplication.processEvents()
+
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
                         self._reportModules.keys(), dispName
                     )
-                    self.entity_browser = EntityBrowserWithEditor(
-                        sel_entity,
-                        self.iface.mainWindow(),
-                        plugin=self
-                    )
+
+                    table_content = TableContentGroup(self.current_user.UserName, dispName)
+                    self.entity_browser = ContentGroupEntityBrowser(
+                            sel_entity, table_content, rec_id=0, parent=self.iface.mainWindow(),  plugin=self,
+                            current_user=self.current_user)
+                           
+                    #self.entity_browser = EntityBrowserWithEditor(
+                        #sel_entity,
+                        #self.iface.mainWindow(),
+                        #plugin=self
+                    #)
+
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()
                     else:
                         self.entity_browser.exec_()
-
                 else:
                     return
 
@@ -2061,3 +2191,4 @@ class STDMQGISLoader(object):
                                                      "folder or xml file and "
                                                      "restart QGIS.")
                 raise ConfigVersionException(err_msg)
+
