@@ -434,18 +434,18 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
             fk.signal_status = False
             return False
         
-        count = pg_find_record('oc_property_vw_social_tenure_relationship', 'id', model_obj.id)
+        #count = pg_find_record('oc_property_vw_social_tenure_relationship', 'id', model_obj.id)
 
-        if count == 0:
-            msg = QApplication.translate(
-                'DocumentGeneratorDialog',
-                'STR for the selected record is not created! Document cannot be generated.')
+        #if count == 0:
+            #msg = QApplication.translate(
+                #'DocumentGeneratorDialog',
+                #'STR for the selected record is not created! Document cannot be generated.')
 
-            QMessageBox.critical(self,
-                QApplication.translate('DocumentGeneratorDialog',
-                    'Record selection'), msg)
-            fk.signal_status = False
-            return False
+            #QMessageBox.critical(self,
+                #QApplication.translate('DocumentGeneratorDialog',
+                    #'Record selection'), msg)
+            #fk.signal_status = False
+            #return False
             
     def onSelectTemplate(self):
         """
