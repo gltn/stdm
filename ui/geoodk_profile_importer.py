@@ -619,7 +619,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             import_status = True
                             self.parent_ids[entity] = [ref_id, entity]
                             #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
-                            #self.log_table_entry(log_timestamp)
 
                             parents_info.append(entity)
                             single_occuring.pop(entity)
