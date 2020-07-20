@@ -572,6 +572,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         parent_ref_column = support_doc_map['parent_ref_column']
 
         self.kobo_downloader = KoboDownloader(
+                self,
                 OGRReader(unicode(self.txtDataSource.text())),
                 sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map,
                 self.curr_profile, upload_after, parent_ref_column)
@@ -599,6 +600,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         support_doc_map = mapfile_section('support-doc-map')
         parent_ref_column = support_doc_map['scanned_certificate']
         self.kobo_downloader = KoboDownloader(
+                self,
                 None,
                 sel_cols, 
                 key_field, 
@@ -655,12 +657,13 @@ class KoboDownloader(QObject):
 
     INFORMATION, WARNING, ERROR = range(0, 3)
     
-    def __init__(self, data_reader, sel_cols, key_field, 
+    def __init__(self, env, data_reader, sel_cols, key_field, 
             doc_types, credentials, kobo_url, support_doc_map, 
             curr_profile, upload_after, parent_ref_column, ref_type='int', parent=None):
 
         QObject.__init__(self, parent)
 
+        self.env = env
         self.downloaded_files = {}      # key: key_field_value, value: list of tuple of (doc_type_id, dest_url)
         self.data_reader = data_reader
         self.selected_cols = sel_cols   
@@ -684,17 +687,21 @@ class KoboDownloader(QObject):
     def start_upload(self):
         self.download_started.emit('Upload')
 
-        dfiles = self.fetch_scanned_certificates()
-        self.upload_downloaded_files(dfiles)
+        if self.env.cbScannedDoc.isChecked():
+            dfiles = self.fetch_scanned_certificates()
+            self.upload_downloaded_files(dfiles)
 
-        dfiles = self.fetch_scanned_docs('house map')
-        self.upload_downloaded_files(dfiles)
+        if self.env.cbScannedHseMap.isChecked():
+            dfiles = self.fetch_scanned_docs('house map')
+            self.upload_downloaded_files(dfiles)
 
-        dfiles = self.fetch_scanned_docs('house pictures')
-        self.upload_downloaded_files(dfiles)
+        if self.env.cbScannedHsePic.isChecked():
+            dfiles = self.fetch_scanned_docs('house pictures')
+            self.upload_downloaded_files(dfiles)
 
-        dfiles = self.fetch_scanned_docs('id documents')
-        self.upload_downloaded_files(dfiles)
+        if self.env.cbScannedIdDoc.isChecked():
+            dfiles = self.fetch_scanned_docs('id documents')
+            self.upload_downloaded_files(dfiles)
 
         self.download_completed.emit('Upload')
 
@@ -763,7 +770,9 @@ class KoboDownloader(QObject):
     def fetch_scanned_certificates(self):
         """
         Return a dict of {'filename':[(doc_type_id, src_dir)]}
-        :rtype dict:
+        :filename: Physical name of the file on the disk
+        :doc_type_id: Id picked from lookup "oc_check_household_document_type"
+        :src_dir : Path where the file is found in the disk
         """
         dtype = 'scanned certificate'
         dfiles = {}
@@ -829,10 +838,15 @@ class KoboDownloader(QObject):
                 msg = "Uploading file: "+sfile[1]
                 self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
-                new_filename = self.create_supporting_doc(sfile[1], self.support_doc_map)
+                support_doc = self.make_supporting_doc_dict(sfile[1], self.support_doc_map)
+                # Create a record in the supporting document table (oc_supporting_document)
+                pg_create_supporting_document(support_doc)
+
                 last_support_doc_id += 1
                 parent_support_table = self.support_doc_map['parent_support_table']
 
+                # Create a record in the parent table supporting document table (oc_household_supporting_document)
+                # parent table - oc_household
                 self.create_parent_supporting_doc(parent_support_table, last_support_doc_id, household_id, int(sfile[0]))
 
                 # copy file to STDM supporting document path
@@ -843,6 +857,7 @@ class KoboDownloader(QObject):
                             self.support_doc_map['doc_type_table'], 'value', 'id', sfile[0])
                     doc_type_cache[sfile[0]] = doc_type
 
+                new_filename = support_doc['doc_identifier']
                 self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
 
     def get_household_id(self, parent_table, value, parent_ref_column):
@@ -861,7 +876,7 @@ class KoboDownloader(QObject):
         id = get_value_by_column(table_name, target_col, where_col, value)
         return id
 
-    def create_supporting_doc(self, doc_name, doc_map):
+    def make_supporting_doc_dict(self, doc_name, doc_map):
         doc_size = os.path.getsize(doc_name)
         path, filename = os.path.split(doc_name)
         ht = hashlib.sha1(filename.encode('utf-8'))
@@ -872,11 +887,10 @@ class KoboDownloader(QObject):
         document['source_entity'] = doc_map['parent_table']
         document['doc_filename'] = filename
         document['document_size'] = doc_size
+        return document
 
         # write to db
-        pg_create_supporting_document(document)
-
-        return document['doc_identifier']
+        #pg_create_supporting_document(document)
 
     def create_parent_supporting_doc(self, table_name, doc_id, household_id, doc_type_id):
         pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id)
