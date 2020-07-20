@@ -695,7 +695,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 entity_relation.process_social_tenure(entity_data, self.parent_ids)
 
                         self.log_table_entry(" ----- saving social tenure relationship")
-                        entity_add.cleanup()
+                        #entity_add.cleanup()
 
                     self.txt_feedback.append('saving record "{0}" to database'.format(counter))
                     self.pgbar.setValue(counter)
