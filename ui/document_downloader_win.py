@@ -834,7 +834,6 @@ class KoboDownloader(QObject):
                 self.download_progress.emit(KoboDownloader.ERROR, msg)
                 continue
 
-            next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
             for sfile in downloaded_files[key]:
 
                 src_doc_type = sfile[0]
@@ -848,6 +847,7 @@ class KoboDownloader(QObject):
                 # Create a record in the supporting document table (oc_supporting_document)
                 pg_create_supporting_document(support_doc)
 
+                next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
                 next_support_doc_id += 1
                 support_doc_table = self.support_doc_map['parent_support_table']
 
