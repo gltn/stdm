@@ -808,8 +808,11 @@ class KoboDownloader(QObject):
                 name, file_ext = os.path.splitext(filename)
                 orig_name = name
                 # clean-up any postfix numbers in the filename
-                if name[name.rfind('_')+1:].isdigit():
-                    name = name[:name.rfind('_')]
+                split_name = name.split('_', 2)
+                if len(split_name) > 1:
+                    name = split_name[0]+'_'+split_name[1]
+                else:
+                    name = split_name[0]
                 doc_src = []
                 doc_src.append((dtype_id, name, src_folder+'\\'+filename))
                 dfiles[orig_name]=doc_src
