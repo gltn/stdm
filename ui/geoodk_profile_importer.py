@@ -252,9 +252,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         for instance in self.instance_list:
             self.uuid_extractor.set_file_path(instance)
 
-            field_data_nodes = self.uuid_extractor.document_entities_with_data(current_profile().name.replace(' ', '_'),
+            profile = 'ITSSF_Project_Enumeration_Laos'
+
+            field_data_nodes = self.uuid_extractor.document_entities_with_data(profile.replace(' ', '_'),
                                                                          self.user_selected_entities())
-            str_data_nodes = self.uuid_extractor.document_entities_with_data(current_profile().name.replace(' ', '_'),
+
+            str_data_nodes = self.uuid_extractor.document_entities_with_data(profile.replace(' ', '_'),
                                                                        ['social_tenure'])
             mobile_data[instance] = [field_data_nodes, str_data_nodes]
 
@@ -376,15 +379,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         party_tbls = str_tables.parties
         sp_tbls = str_tables.spatial_units
         self.relations = OrderedDict()
-        if len(self.instance_list) > 0:
-            if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
-                for party_tbl in party_tbls:
-                    self.relations[party_tbl.name] = ['social_tenure_relationship',
-                                                     party_tbl.short_name.lower() + '_id']
-                for sp_tbl in sp_tbls:
-                    self.relations[sp_tbl.name] = ['social_tenure_relationship',
-                                                  sp_tbl.short_name.lower() + '_id']
-           # print self.relations
+        # if len(self.instance_list) > 0:
+        #     if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
+        #         for party_tbl in party_tbls:
+        #             self.relations[party_tbl.name] = ['social_tenure_relationship',
+        #                                              party_tbl.short_name.lower() + '_id']
+        #         for sp_tbl in sp_tbls:
+        #             self.relations[sp_tbl.name] = ['social_tenure_relationship',
+        #                                           sp_tbl.short_name.lower() + '_id']
+        #    # print self.relations
 
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
@@ -396,13 +399,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         if parent_object.parent.name in self.relations:
                             self.relations[parent_object.parent.name].append([table, col.name])
                         else:
-
                             self.relations[parent_object.parent.name] = [table, col.name]
                             #self.relations[parent_object.parent.name].append([table, col.name])
                     has_relations = True
                 else:
                     continue
-
             return has_relations
 
     def parent_table_isselected(self):
@@ -419,7 +420,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 for table in self.relations.keys():
                     if table not in entities:
                         silent_list.append(table)
-            return silent_list
+                return silent_list
         except Exception as ex:
             self._notif_bar_str.insertErrorNotification(ex.message)
 
@@ -507,6 +508,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.available_records()
         self.on_dir_path()
         self.populate_entities_widget()
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
     def projection_settings(self):
         """
@@ -676,6 +678,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 import_status = True
                                 self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
                                 entity_add.cleanup()
+                                QCoreApplication.processEvents()
                             else:
                                 continue
 
@@ -684,7 +687,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         entity_relation = EntityImporter(instance_obj)
                         single_str, multiple_str = self.uuid_extractor.attribute_data_from_nodelist(
                             instance_obj_data[1])
-                        self.txt_feedback.append('----Creating social tenure relationship')
+                        #self.txt_feedback.append('----Creating social tenure relationship')
                         if len(single_str)>0:
                             entity_relation.process_social_tenure(single_str, self.parent_ids)
 
@@ -708,6 +711,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self._notif_bar_str.insertErrorNotification("No available records to import")
                 self.pgbar.setValue(0)
                 return
+        except Exception as ex:
+            self.feedback_message(unicode(ex.message))
         except SQLAlchemyError as ae:
             QCoreApplication.processEvents()
             QApplication.restoreOverrideCursor()
@@ -765,7 +770,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.buttonBox.setEnabled(True)
             self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
             QApplication.restoreOverrideCursor()
-            return
+        return
 
     def log_instance(self, instance):
         instance_short_name = self.importlogger.log_data_name(instance)
@@ -788,4 +793,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         for inst in del_list:
             self.instance_list.remove(inst)
         return count
+
+    def close(self):
+        """
+        when the user interrupts data import operations, we should close exit
+        """
+        self.instance_list = None
+        QApplication.restoreOverrideCursor()
+        QCoreApplication.processEvents()
+        self.close()
+
 
