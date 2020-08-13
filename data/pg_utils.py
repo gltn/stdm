@@ -98,7 +98,7 @@ def get_value_by_column(table_name, target_col, where_column, value):
 
 def pg_create_supporting_document(document):
     sql = "INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
-            " VALUES ('{}','{}','{}',{},'{}') ".format(
+            " VALUES ('{}','{}','{}',{},'{}') RETURNING id ".format(
                     document['support_doc_table'],
                     document['creation_date'],
                     document['doc_identifier'],
@@ -106,7 +106,7 @@ def pg_create_supporting_document(document):
                     document['document_size'],
                     document['doc_filename'])
     sql_text = text(sql)
-    _execute(sql_text)
+    return _execute(sql_text)
 
 
 def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id):

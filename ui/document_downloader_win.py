@@ -848,10 +848,11 @@ class KoboDownloader(QObject):
 
                 support_doc = self.make_supporting_doc_dict(full_filename, self.support_doc_map)
                 # Create a record in the supporting document table (oc_supporting_document)
-                pg_create_supporting_document(support_doc)
+                #pg_create_supporting_document(support_doc)
+                #next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
 
-                next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
-                #next_support_doc_id += 1
+                result_obj = pg_create_supporting_document(support_doc)
+                next_support_doc_id = result_obj.fetchone()[0]
                 support_doc_table = self.support_doc_map['parent_support_table']
 
                 # Create a record in the parent table supporting document table (oc_household_supporting_document)
