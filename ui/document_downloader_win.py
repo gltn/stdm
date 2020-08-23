@@ -76,7 +76,8 @@ from stdm.data.pg_utils import (
     get_last_id,
     get_value_by_column,
     pg_create_supporting_document,
-    pg_create_parent_supporting_document
+    pg_create_parent_supporting_document,
+    pg_fix_auto_sequence
 )
 
 from stdm.data.importexport.reader import OGRReader
@@ -526,7 +527,12 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def _uploader_thread_started(self):
         self.kobo_downloader.start_upload()
 
+    def fix_auto_sequence(self):
+        pg_fix_auto_sequence('oc_household_supporting_document', 'oc_household_supporting_document_id_seq')
+
     def download_media(self):
+        self.fix_auto_sequence()
+
         if self.twDocument.currentIndex() == 1:
             if self.rbScannedDoc.isChecked():
                 self.process_scanned_docs()

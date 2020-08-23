@@ -115,6 +115,11 @@ def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_t
     sql_text = text(sql)
     _execute(sql_text)
 
+def pg_fix_auto_sequence(table, seq_table):
+    sql =  "SELECT setval('"+seq_table+"',COALESCE((SELECT MAX(id)+1 FROM "+table+"), 1), false)"
+    sql_text = text(sql)
+    _execute(sql_text)
+
 def execute_query(query):
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()
