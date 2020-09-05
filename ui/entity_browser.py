@@ -779,7 +779,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         if self.sort_order not in ['idasc', 'iddesc']:
             order_column = self.get_sorting_field(entity)
-            ordering = order_column+' '+self.sort_order
+            if order_column == "":
+                ordering = 'id desc'
+            else:
+                ordering = order_column+' '+self.sort_order
 
         return ordering
 
@@ -795,8 +798,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         for k in entity.updated_columns.keys():
             cols[int(entity.updated_columns[k].row_index)] = k
         cols_ordered = OrderedDict(sorted(cols.items()))
-        min_id = min(i for i in cols_ordered.keys() if i > -1)
-        return cols_ordered[min_id]
+        try:
+            min_id = min(i for i in cols_ordered.keys() if i > -1)
+            column = cols_ordered[min_id]
+        except:
+            column = ""
+        return column
+
             
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
