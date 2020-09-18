@@ -741,7 +741,7 @@ class KoboDownloader(QObject):
                 if a_field_name not in self.selected_cols.keys():
                     continue
 
-                dest_folder = ''
+                #dest_folder = ''
                 dest_folder = self.selected_cols[a_field_name]
                 field_value = feat.GetField(f)
 
@@ -762,7 +762,14 @@ class KoboDownloader(QObject):
                 else:
                     doc_type_id = -1
 
-                file_names.append((doc_type_id, key_field_value, dest_url))
+                file_names.append(
+                        {'doc_type_id':doc_type_id, 
+                         'key_field_value':key_field_value,
+                         'filename':dest_url
+                            })
+
+            for fnames in file_names:
+                fnames['key_field_value'] = key_field_value
 
             if key_field_value in self.downloaded_files:
                 self.downloaded_files[key_field_value].extend(file_names)
@@ -775,7 +782,7 @@ class KoboDownloader(QObject):
 
     def fetch_scanned_certificates(self):
         """
-        Return a dict of {'filename':[(doc_type_id, src_dir)]}
+        Return a dict of {'filename':[{'doc_type_id', 'key_field_value', 'filename'}]}
         :filename: Physical name of the file on the disk
         :doc_type_id: Id picked from lookup "oc_check_household_document_type"
         :src_dir : Path where the file is found in the disk
@@ -789,11 +796,15 @@ class KoboDownloader(QObject):
             return dfiles
 
         dtype_id = self.doc_types[dtype]
+
         for filename in os.listdir(src_folder):
             if fnmatch.fnmatch(filename, '*.pdf'):
                 name, file_ext = os.path.splitext(filename)
                 doc_src = []
-                doc_src.append((dtype_id, src_folder+'\\'+filename))
+                doc_src.append(
+                        {'doc_type_id':dtype_id,
+                         'key_field_value':name,
+                         'filename':src_folder+'\\'+filename})
                 dfiles[name]=doc_src
         return dfiles
 
@@ -820,7 +831,10 @@ class KoboDownloader(QObject):
                 else:
                     name = split_name[0]
                 doc_src = []
-                doc_src.append((dtype_id, name, src_folder+'\\'+filename))
+                doc_src.append(
+                        {'doc_type_id':dtype_id, 
+                         'key_field_value':name, 
+                         'filename':src_folder+'\\'+filename})
                 dfiles[orig_name]=doc_src
         return dfiles
 
@@ -834,8 +848,13 @@ class KoboDownloader(QObject):
 
         doc_type_cache = {}
 
+        msg = "Uploading files to STDM started ..."
+        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
         for key, value in downloaded_files.iteritems():
-            ref_code = value[0][1]
+            ref_code = value[0]['key_field_value']
+            #ref_code = value[0][1]
+
             parent_id = self.get_parent_id(self.support_doc_map['parent_table'],
                                                  ref_code, self.parent_ref_column)
             if parent_id is None:
@@ -845,36 +864,41 @@ class KoboDownloader(QObject):
 
             for sfile in downloaded_files[key]:
 
-                src_doc_type = sfile[0]
-                short_filename = sfile[1]  
-                full_filename = sfile[2]  # full path of the source file
+                try:
+                    src_doc_type = sfile['doc_type_id']  #sfile[0]
+                    short_filename = sfile['key_field_value']  #sfile[1]  
+                    full_filename = sfile['filename']  #sfile[2]  # full path of the source file
 
-                msg = "Uploading file: "+short_filename
-                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+                    msg = "Uploading file: "+short_filename
+                    self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
-                support_doc = self.make_supporting_doc_dict(full_filename, self.support_doc_map)
-                # Create a record in the supporting document table (oc_supporting_document)
-                #pg_create_supporting_document(support_doc)
-                #next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
+                    support_doc = self.make_supporting_doc_dict(full_filename, self.support_doc_map)
+                    # Create a record in the supporting document table (oc_supporting_document)
+                    #pg_create_supporting_document(support_doc)
+                    #next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
 
-                result_obj = pg_create_supporting_document(support_doc)
-                next_support_doc_id = result_obj.fetchone()[0]
-                support_doc_table = self.support_doc_map['parent_support_table']
+                    result_obj = pg_create_supporting_document(support_doc)
+                    next_support_doc_id = result_obj.fetchone()[0]
+                    support_doc_table = self.support_doc_map['parent_support_table']
 
-                # Create a record in the parent table supporting document table (oc_household_supporting_document)
-                # parent table is "oc_household"
-                self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id, int(src_doc_type))
+                    # Create a record in the parent table supporting document table (oc_household_supporting_document)
+                    # parent table is "oc_household"
+                    self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id, int(src_doc_type))
 
-                # copy file to STDM supporting document path
-                if src_doc_type in doc_type_cache:
-                    doc_type = doc_type_cache[src_doc_type]
-                else:
-                    doc_type = get_value_by_column(
-                            self.support_doc_map['doc_type_table'], 'value', 'id', src_doc_type)
-                    doc_type_cache[src_doc_type] = doc_type
+                    # copy file to STDM supporting document path
+                    if src_doc_type in doc_type_cache:
+                        doc_type = doc_type_cache[src_doc_type]
+                    else:
+                        doc_type = get_value_by_column(
+                                self.support_doc_map['doc_type_table'], 'value', 'id', src_doc_type)
+                        doc_type_cache[src_doc_type] = doc_type
 
-                new_filename = support_doc['doc_identifier']
-                self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
+                    new_filename = support_doc['doc_identifier']
+                    self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
+                except:
+                    msg = "ERROR Uploading. File not found!: "+full_filename
+                    self.download_progress.emit(KoboDownloader.ERROR, msg)
+
 
     def get_parent_id(self, parent_table, value, parent_ref_column):
         """
@@ -914,8 +938,8 @@ class KoboDownloader(QObject):
     def create_new_support_doc_file(self, old_file, new_filename, dtype, support_doc_map):
         self.reg_config = RegistryConfig()
         support_doc_path = self.reg_config.read([NETWORK_DOC_RESOURCE])
-        old_file_type = old_file[0]
-        old_filename = old_file[2]
+        old_file_type = old_file['doc_type_id']  #old_file[0]
+        old_filename = old_file['filename']  #old_file[2]
         name, file_ext = os.path.splitext(old_filename)
 
         doc_path = support_doc_path.values()[0]
@@ -939,4 +963,8 @@ class KoboDownloader(QObject):
             f.write(req.content)
 
         return req.status_code
+
+    def fake_download(self, src_url, dest_url, username, password):
+        print "Test download - Nothing downloaded"
+        return 200
         
