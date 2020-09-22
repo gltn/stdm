@@ -44,13 +44,13 @@ STDM can be installed in two ways:
 
     4.  The GLTN repository entry should now be visible on the **“Plugin repositories”** list.
 
-        <img src="./images/readme/image4.png" width="516" height="273" />
+        <img src="stdm/images/readme/image4.png" width="516" height="273" />
 
     5.  While still on the **“Plugins”** window, select **“Not installed”** tab, then scroll down and look for **“Social Tenure Domain Model”** on the list of **“Not installed”** plugins. Select it and click **“Install plugin”.**
 
     6.  QGIS will download and install the STDM plugin. The plugin should now be available on the **“Installed”** page and also on the QGIS toolbar and main menu respectively.
         
-        <img src="./images/readme/image5.png" width="550" height="293" />
+        <img src="stdm/images/readme/image5.png" width="550" height="293" />
 
     7.  Now you are ready to start using STDM.
 

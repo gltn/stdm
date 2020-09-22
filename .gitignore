@@ -27,4 +27,4 @@ ui.make.bat
 .branch
 
 #sample form extension file
-ui/forms/ext/sample_extensions.py
+stdm/ui/forms/ext/sample_extensions.py
