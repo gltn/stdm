@@ -125,19 +125,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         profiles = StdmConfiguration.instance().profiles
         return profiles
 
-    def change_check_state(self, state):
-        """
-        Change the check state of items in a list widget
-        """
-        for i in range(self.lst_widget.count()):
-            self.lst_widget.item(i).setCheckState(state)
-
     def profiles(self):
         """
         Return a list of all profiles
         :rtype: list
         """
         return self.load_config().values()
+
+    def change_check_state(self, state):
+        """
+        Change the check state of items in a list widget
+        """
+        for i in range(self.lst_widget.count()):
+            self.lst_widget.item(i).setCheckState(state)
 
     def current_profile_changed(self):
         """
@@ -225,10 +225,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             directories = self.xform_xpaths()
             for directory in directories:
                 self.extract_guuid_and_rename_file(directory)
-        inst_count = len(self.instance_list)
-        rm_count = self.remove_imported_instances()
-        diff = inst_count - rm_count
-        self.txt_count.setText(unicode(diff))
+        self.importlogger.start_json_file()
+        self.previous_import_instances()
+        #diff = inst_count - rm_count
+        self.txt_count.setText(unicode(len(self.instance_list)))
 
     def extract_guuid_and_rename_file(self, path):
         """
@@ -249,15 +249,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         mobile_data = OrderedDict()
         social_tenure_info = OrderedDict()
         self.uuid_extractor.unset_path()
-        for instance in self.instance_list:
+        for instance_p in self.instance_list:
+            if os.path.isfile(instance_p):
+                isntance_dir, instance = os.path.split(instance_p)
+            else:
+                instance = instance_p
             self.uuid_extractor.set_file_path(instance)
-
-            profile = 'ITSSF_Project_Enumeration_Laos'
-
-            field_data_nodes = self.uuid_extractor.document_entities_with_data(profile.replace(' ', '_'),
+            field_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
                                                                          self.user_selected_entities())
 
-            str_data_nodes = self.uuid_extractor.document_entities_with_data(profile.replace(' ', '_'),
+            str_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
                                                                        ['social_tenure'])
             mobile_data[instance] = [field_data_nodes, str_data_nodes]
 
@@ -271,7 +272,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.uuid_extractor.set_file_path(file)
         self.uuid_extractor.on_file_passed()
-        self.instance_list = self.uuid_extractor.new_list
+        self.instance_list = self.uuid_extractor.file_list()
 
     def move_imported_file(self, file):
         """
@@ -284,7 +285,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                shutil.move(os.path.dirname(file), instance_path)
         except Exception as ex:
-            return ex
+            return unicode(ex.message)
 
     def populate_entities_widget(self):
         """
@@ -449,7 +450,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.importlogger.log_action(log_entry)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": "+io.message)
-            pass
+            raise NameError(io.message)
 
     def check_previous_import(self):
         """
@@ -519,14 +520,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         projection = project_select.loadAvailableSystems()
         self.txt_srid.setText(str(projection))
 
-    def on_projection_select(self):
-        """
-        Get the selected projection and set it during data import
-        :return:
-        """
-        vals = self.txt_srid.text().split(":")
-        return vals[1]
-
     def on_directory_search(self):
         """
         Let the user choose the directory with instances
@@ -543,6 +536,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.txt_directory.setText(str(dir_name))
             self.current_profile_changed()
         self.change_check_state(self.chk_all.checkState())
+
 
     def feedback_message(self, msg):
         """
@@ -586,141 +580,139 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                                                       .format(self.parent_table_isselected())),
                                        QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
                 return
+
+        if not len(mobile_field_data) > 0 and not len(mobile_field_data.values())>0:
+            self.feedback_message('Not matching data in mobile files')
+            return
+        print mobile_field_data
+        counter = 0
         try:
-            counter = 0
+            self.pgbar.setRange(counter, len(self.instance_list))
+            self.pgbar.setValue(0)
+            self.importlogger.log_action("Import started ...\n")
 
-            if len(mobile_field_data) > 0:
-                self.pgbar.setRange(counter, len(self.instance_list))
-                self.pgbar.setValue(0)
-                self.importlogger.log_action("Import started ...\n")
+            for instance_obj, instance_obj_data in mobile_field_data.iteritems():
 
+                self.importlogger.log_action("File {} ...\n".format(instance_obj))
+                parents_info = []
+                import_status = False
+                counter = counter + 1
+                self.parent_ids = {}
 
-                for instance_obj, instance_obj_data in mobile_field_data.iteritems():
-                    self.importlogger.log_action("File {} ...\n".format(instance_obj))
-                    parents_info = []
+                single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
+                    instance_obj_data[0])
+
+                for entity, entity_data in single_occuring.iteritems():
+                    print entity, entity_data
                     import_status = False
-                    counter = counter + 1
-                    self.parent_ids = {}
+                    if entity in self.relations.keys():
+                        if entity in self.parent_ids:
+                            continue
+                        self.count_import_file_step(counter, entity)
+                        log_timestamp = '=== parent table import  === : {0}'.format(entity)
+                        cu_obj = entity
+                        self.log_table_entry(log_timestamp)
 
-                    single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
-                        instance_obj_data[0])
+                        entity_add = Save2DB(entity, entity_data)
+                        entity_add.objects_from_supporting_doc(instance_obj)
+                        ref_id = entity_add.save_parent_to_db()
+                        import_status = True
+                        self.parent_ids[entity] = [ref_id, entity]
+                        #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
 
-                    for entity, entity_data in single_occuring.iteritems():
+                        parents_info.append(entity)
+                        single_occuring.pop(entity)
+
+                    elif entity not in self.relations.keys():
                         import_status = False
-                        if entity in self.relations.keys():
-                            if entity in self.parent_ids:
-                                continue
-                            self.count_import_file_step(counter, entity)
-                            log_timestamp = '=== parent table import  === : {0}'.format(entity)
-                            cu_obj = entity
-                            self.log_table_entry(log_timestamp)
 
-                            entity_add = Save2DB(entity, entity_data)
-                            entity_add.objects_from_supporting_doc(instance_obj)
-                            ref_id = entity_add.save_parent_to_db()
-                            import_status = True
-                            self.parent_ids[entity] = [ref_id, entity]
-                            #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
+                        for fk_table_name in self.relations.keys():
+                            if fk_table_name not in self.parent_ids:
+                                in_relations = [_item for subitem in self.relations[fk_table_name]
+                                                for _item in subitem]
+                                if entity in in_relations:
+                                    fk_table_data = single_occuring[fk_table_name]
+                                    entity_add = Save2DB(fk_table_name, fk_table_data)
+                                    ref_id = entity_add.save_parent_to_db()
+                                    self.parent_ids[fk_table_name] = [ref_id, fk_table_name]
+                                    continue
 
-                            parents_info.append(entity)
-                            single_occuring.pop(entity)
+                        self.count_import_file_step(counter, entity)
+                        log_timestamp = '=== standalone table import  === : {0}'.format(entity)
+                        cu_obj = entity
+                        self.log_table_entry(log_timestamp)
+                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
+                        entity_add.objects_from_supporting_doc(instance_obj)
+                        child_id = entity_add.save_to_db()
+                        cu_obj = entity
+                        import_status = True
+                        parents_info.append(entity)
+                        if entity in self.parent_ids:
+                            continue
+                        else:
+                            self.parent_ids[entity] = [child_id, entity]
+                        entity_add.cleanup()
 
-                        elif entity not in self.relations.keys():
-                            import_status = False
-
-                            for fk_table_name in self.relations.keys():
-                                if fk_table_name not in self.parent_ids:
-                                    in_relations = [_item for subitem in self.relations[fk_table_name]
-                                                    for _item in subitem]
-                                    if entity in in_relations:
-                                        fk_table_data = single_occuring[fk_table_name]
-                                        entity_add = Save2DB(fk_table_name, fk_table_data)
-                                        ref_id = entity_add.save_parent_to_db()
-                                        self.parent_ids[fk_table_name] = [ref_id, fk_table_name]
-                                        continue
-
-                            self.count_import_file_step(counter, entity)
-                            log_timestamp = '=== standalone table import  === : {0}'.format(entity)
-                            cu_obj = entity
-                            self.log_table_entry(log_timestamp)
-                            entity_add = Save2DB(entity, entity_data, self.parent_ids)
+                if repeated_entities:
+                    #self.log_table_entry(" ========== starting import of repeated tables ============")
+                    import_status = False
+                    for repeated_entity, entity_data in repeated_entities.iteritems():
+                        """We are assuming that the number of repeat table cannot exceed 99"""
+                        enum_index = repeated_entity[:2]
+                        if enum_index.isdigit():
+                            repeat_table = repeated_entity[2:]
+                        else:
+                            enum_index = repeated_entity[:1]
+                            repeat_table = repeated_entity[1:]
+                        log_timestamp = '          child table {0} >> : {1}' \
+                                .format(repeat_table, enum_index)
+                        self.count_import_file_step(counter, repeat_table)
+                        self.importlogger.log_action(log_timestamp)
+                        if repeat_table in self.profile_entities_names(current_profile()):
+                            entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                             entity_add.objects_from_supporting_doc(instance_obj)
                             child_id = entity_add.save_to_db()
-                            cu_obj = entity
+                            cu_obj = repeat_table
                             import_status = True
-                            parents_info.append(entity)
-                            if entity in self.parent_ids:
-                                continue
-                            else:
-                                self.parent_ids[entity] = [child_id, entity]
+                            self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
                             entity_add.cleanup()
+                            QCoreApplication.processEvents()
+                        else:
+                            continue
 
-                    if repeated_entities:
-                        #self.log_table_entry(" ========== starting import of repeated tables ============")
-                        import_status = False
-                        for repeated_entity, entity_data in repeated_entities.iteritems():
-                            """We are assuming that the number of repeat table cannot exceed 99"""
-                            enum_index = repeated_entity[:2]
-                            if enum_index.isdigit():
-                                repeat_table = repeated_entity[2:]
-                            else:
-                                enum_index = repeated_entity[:1]
-                                repeat_table = repeated_entity[1:]
-                            log_timestamp = '          child table {0} >> : {1}' \
-                                    .format(repeat_table, enum_index)
-                            self.count_import_file_step(counter, repeat_table)
-                            self.importlogger.log_action(log_timestamp)
-                            if repeat_table in self.profile_entities_names(current_profile()):
-                                entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
-                                entity_add.objects_from_supporting_doc(instance_obj)
-                                child_id = entity_add.save_to_db()
-                                cu_obj = repeat_table
-                                import_status = True
-                                self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
-                                entity_add.cleanup()
-                                QCoreApplication.processEvents()
-                            else:
-                                continue
+                if instance_obj_data[1]:
+                    '''We treat social tenure entities separately because of foreign key references'''
+                    entity_relation = EntityImporter(instance_obj)
+                    single_str, multiple_str = self.uuid_extractor.attribute_data_from_nodelist(
+                        instance_obj_data[1])
+                    #self.txt_feedback.append('----Creating social tenure relationship')
+                    if len(single_str)>0:
+                        entity_relation.process_social_tenure(single_str, self.parent_ids)
 
-                    if instance_obj_data[1]:
-                        '''We treat social tenure entities separately because of foreign key references'''
-                        entity_relation = EntityImporter(instance_obj)
-                        single_str, multiple_str = self.uuid_extractor.attribute_data_from_nodelist(
-                            instance_obj_data[1])
-                        #self.txt_feedback.append('----Creating social tenure relationship')
-                        if len(single_str)>0:
-                            entity_relation.process_social_tenure(single_str, self.parent_ids)
+                    elif len(multiple_str)>1:
+                        for repeated_entity, entity_data in multiple_str.iteritems():
+                            """We are assuming that the number of repeat str cannot exceed 10"""
+                            entity_relation.process_social_tenure(entity_data, self.parent_ids)
 
-                        elif len(multiple_str)>1:
-                            for repeated_entity, entity_data in multiple_str.iteritems():
-                                """We are assuming that the number of repeat str cannot exceed 10"""
-                                entity_relation.process_social_tenure(entity_data, self.parent_ids)
+                    self.log_table_entry(" ----- saving social tenure relationship")
+                    #entity_add.cleanup()
 
-                        self.log_table_entry(" ----- saving social tenure relationship")
-                        #entity_add.cleanup()
-
-                    self.txt_feedback.append('saving record "{0}" to database'.format(counter))
-                    self.pgbar.setValue(counter)
-
-                    QCoreApplication.processEvents()
-                    self.log_instance(instance_obj)
-                self.txt_feedback.append('Number of records successfully imported:  {}'
-                                         .format(counter))
-
-            else:
-                self._notif_bar_str.insertErrorNotification("No available records to import")
-                self.pgbar.setValue(0)
-                return
+                self.txt_feedback.append('saving record "{0}" to database'.format(counter))
+                self.pgbar.setValue(counter)
+                self.log_instance(instance_obj)
+                QCoreApplication.processEvents()
+            self.txt_feedback.append('Number of records successfully imported:  {}'
+                                     .format(counter))
         except Exception as ex:
             self.feedback_message(unicode(ex.message))
         except SQLAlchemyError as ae:
-            QCoreApplication.processEvents()
-            QApplication.restoreOverrideCursor()
-            self.feedback_message(unicode(ae.message))
-            self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
-            self.txt_feedback.append(str(ae.message))
-            self.log_table_entry(unicode(ae.message))
-            return
+             QCoreApplication.processEvents()
+             QApplication.restoreOverrideCursor()
+             self.feedback_message(unicode(ae.message))
+             self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
+             self.txt_feedback.append(str(ae.message))
+             self.log_table_entry(unicode(ae.message))
+             return
 
     def count_import_file_step(self, count = None, table = None):
         """
@@ -738,7 +730,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.buttonBox.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
-
         try:
             if self.lst_widget.count() < 1:
                 msg = 'No mobile records found for the current profile'
@@ -756,14 +747,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         'will be imported'), QMessageBox.Ok |
                                             QMessageBox.No) == QMessageBox.Ok:
                     entities = self.instance_entities()
+                    QApplication.restoreOverrideCursor()
                 else:
                     self.buttonBox.setEnabled(True)
+                    QApplication.restoreOverrideCursor()
                     return
-
-            self.save_instance_data_to_db(entities)
-            self.buttonBox.setEnabled(True)
-
-            QApplication.restoreOverrideCursor()
+            else:
+                self.save_instance_data_to_db(entities)
+                self.buttonBox.setEnabled(True)
+                QApplication.restoreOverrideCursor()
         except Exception as ex:
             self.feedback_message(ex.message)
             self.log_table_entry(unicode(ex.message))
@@ -773,26 +765,30 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         return
 
     def log_instance(self, instance):
-        instance_short_name = self.importlogger.log_data_name(instance)
+        #instance_short_name = self.importlogger.log_data_name(instance)
         log_data = self.importlogger.read_log_data()
-        if len(log_data)>0:
-            log_data[instance_short_name] = self.importlogger.log_date()
-            self.importlogger.write_log_data(log_data)
+        log_data[instance] = self.importlogger.log_date()
+        self.importlogger.write_log_data(log_data)
 
-    def remove_imported_instances(self):
+    def previous_import_instances(self):
         count = 0
         del_list = []
-        log_data = self.importlogger.read_log_data()
+        log_data= self.importlogger.read_log_data()
         if len(log_data) > 0:
             for instance in self.instance_list:
-                instance_short_name = self.importlogger.log_data_name(instance)
-                if instance_short_name in log_data:
-                    del_list.append(instance)
-                    count += 1
-
-        for inst in del_list:
-            self.instance_list.remove(inst)
-        return count
+                #dir_path, file_name = os.path.split(instance)
+                #if log_data.has_key(instance) or log_data.has_key(file_name):
+                try:
+                    if log_data.has_key(os.path.split(instance)[1]):
+                        #del_list. append(instance)
+                        print instance
+                        self.instance_list.remove(instance)
+                    else:
+                        continue
+                except:
+                    continue
+            # if len(del_list)>0:
+            # [self.instance_list.remove(inst) for inst in del_list]
 
     def close(self):
         """

@@ -238,6 +238,19 @@ class InstanceUUIDExtractor():
         else:
             return
 
+    def file_list(self):
+        """
+        check through the list of document to ensure they are complete file path
+        """
+        complete_file = []
+        for fi in self.new_list:
+            if os.path.isfile(fi):
+                complete_file.append(fi)
+            else:
+                continue
+        return complete_file
+
+
     def close_document(self):
         '''Close all the open documents and unset current paths'''
         self.file_path = None
