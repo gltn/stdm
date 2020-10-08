@@ -584,7 +584,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if not len(mobile_field_data) > 0 and not len(mobile_field_data.values())>0:
             self.feedback_message('Not matching data in mobile files')
             return
-        print mobile_field_data
         counter = 0
         try:
             self.pgbar.setRange(counter, len(self.instance_list))
