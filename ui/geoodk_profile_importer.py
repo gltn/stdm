@@ -380,15 +380,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         party_tbls = str_tables.parties
         sp_tbls = str_tables.spatial_units
         self.relations = OrderedDict()
-        # if len(self.instance_list) > 0:
-        #     if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
-        #         for party_tbl in party_tbls:
-        #             self.relations[party_tbl.name] = ['social_tenure_relationship',
-        #                                              party_tbl.short_name.lower() + '_id']
-        #         for sp_tbl in sp_tbls:
-        #             self.relations[sp_tbl.name] = ['social_tenure_relationship',
-        #                                           sp_tbl.short_name.lower() + '_id']
-        #    # print self.relations
+        if len(self.instance_list) > 0:
+            if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
+                for party_tbl in party_tbls:
+                    self.relations[party_tbl.name] = ['social_tenure_relationship',
+                                                     party_tbl.short_name.lower() + '_id']
+                for sp_tbl in sp_tbls:
+                    self.relations[sp_tbl.name] = ['social_tenure_relationship',
+                                                  sp_tbl.short_name.lower() + '_id']
+           # print self.relations
 
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
