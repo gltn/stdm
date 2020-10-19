@@ -66,7 +66,7 @@ class InstanceUUIDExtractor():
         self.file.close()
 
     def update_document(self):
-        '''Update the current instance by clearing the cache document'''
+        '''Update the current instance by clearing the document in the cache '''
         self.doc.clear()
         self.set_document()
 
@@ -237,6 +237,19 @@ class InstanceUUIDExtractor():
             self.file.close()
         else:
             return
+
+    def file_list(self):
+        """
+        check through the list of document to ensure they are complete file path
+        """
+        complete_file = []
+        for fi in self.new_list:
+            if os.path.isfile(fi):
+                complete_file.append(fi)
+            else:
+                continue
+        return complete_file
+
 
     def close_document(self):
         '''Close all the open documents and unset current paths'''

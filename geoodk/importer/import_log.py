@@ -51,19 +51,19 @@ class ImportLogger:
         if not os.access(LOGGER_HOME, os.F_OK):
             os.makedirs(unicode(LOGGER_HOME))
 
-    def enable_ini_log_file(self):
+    def start_json_file(self):
         """
         Create the log file document
         :return:
         """
         try:
-            config_location = LOGGER_HOME
-            if os.path.isfile(config_location + '/history.ini'):
-                return config_location + '/history.ini'
+            file_n = 'import_log.json'
+            if not os.path.isfile(os.path.normpath(LOGGER_HOME + '/' + file_n)):
+                return open(LOGGER_HOME + '/' + file_n, 'w+')
             else:
-                return open(config_location + '/history.ini', 'w+')
-        except:
-            pass
+                return os.path.normpath(LOGGER_HOME + '/' + file_n)
+        except IOError as ex:
+            raise (unicode(ex.message))
 
     def enable_logger_document(self):
         """
@@ -86,60 +86,12 @@ class ImportLogger:
         """
         return self.enable_logger_document()
 
-    def read_logger(self,):
+    def json_file(self):
         """
+        Update method to work with Json instead of txt file
+        return: Json file
         """
-        logger = self.enable_ini_log_file()
-        return logger
-
-    def logger_document(self):
-        """
-
-        :return:
-        """
-        return self.enable_ini_log_file()
-
-    def logger_sections(self):
-        """
-        Create sections in the logger document
-        :return:
-        """
-        logger = self.read_logger()
-        with open(logger, 'r') as f:
-            self.config_logger.read(f)
-            if self.config_logger.has_section(IMPORT_SECTION):
-                return
-            else:
-                self.config_logger.add_section(IMPORT_SECTION)
-            f.close()
-
-    def check_file_exist(self, instance):
-        """
-        Check if the logger file exist and the import section
-        :return:
-        """
-        try:
-            logger = self.read_logger()
-            with open(logger, 'r') as f:
-                self.config_logger.read(f)
-                if self.config_logger.has_section(IMPORT_SECTION):
-                    return self.config_logger.get(IMPORT_SECTION, instance)
-                else:
-                    return self.config_logger.add_section(IMPORT_SECTION)
-                f.close()
-        except:
-            pass
-
-    def write_section_data(self, path, file_name):
-        """
-        Method to write to an ini file
-        :return:
-        """
-        logger = self.read_logger()
-        with open(logger, 'w') as f:
-            self.config_logger.set(IMPORT_SECTION,path, file_name)
-            self.config_logger.write(f)
-            f.close()
+        return self.start_json_file()
 
     def log_action(self, action):
         """"
@@ -156,7 +108,7 @@ class ImportLogger:
         :param: data
         :type: dictionary
         """
-        raw_file = LOGGER_HOME + '/log_file.json'
+        raw_file = self.json_file()
         with open(raw_file, "w") as write_file:
             json.dump(data, write_file)
             write_file.close()
@@ -166,14 +118,14 @@ class ImportLogger:
         rtype: dictionary
         """
         data = {}
-        raw_file = LOGGER_HOME + '/log_file.json'
+        raw_file = self.json_file()
         if os.path.isfile(raw_file):
             try:
                 with open(raw_file, "r") as read_file:
                     data = json.load(read_file)
                     read_file.close()
-            except:
-                data = {}
+            except :
+               pass
         return data
     
     def log_data_name(self, full_name):
