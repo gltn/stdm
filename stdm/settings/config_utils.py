@@ -21,11 +21,11 @@ email                : stdm@unhabitat.org
 import os
 from collections import OrderedDict
 import datetime
-from PyQt4.QtCore import QFile
-from PyQt4.QtXml import QDomDocument
-from stdm import ConfigurationException
+from qgis.PyQt.QtCore import QFile
+from qgis.PyQt.QtXml import QDomDocument
+from stdm.data.configuration.exception import ConfigurationException
 
-from stdm import FilePaths
+from stdm.data.configfile_paths import FilePaths
 
 
 class ConfigurationUtils():

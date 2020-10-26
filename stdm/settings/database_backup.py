@@ -25,11 +25,11 @@ import sys
 import stat
 
 import datetime
-from PyQt4.QtGui import QDesktopServices
+from qgis.PyQt.QtGui import QDesktopServices
 from sqlalchemy.sql.expression import text
 
 from sqlalchemy import MetaData
-from stdm import _execute, pg_views, pg_tables
+from stdm.data.pg_utils import _execute, pg_views, pg_tables
 
 home = QDesktopServices.storageLocation(
             QDesktopServices.HomeLocation
@@ -43,7 +43,7 @@ def db_to_csv():
 
         statistics = os.stat(file_path)
         os.chmod(file_path, statistics.st_mode | stat.S_IEXEC)
-        os.chmod(file_path, 0777)
+        os.chmod(file_path, 0x777)
 
     for table in pg_tables():
         backup_path = '{}/{}.csv'.format(file_path, table)

@@ -17,14 +17,14 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QToolBar,
     QDockWidget,
     QApplication,
     QMessageBox,
     QInputDialog
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     QObject,
     pyqtSignal,
@@ -32,42 +32,51 @@ from PyQt4.QtCore import (
     QFileInfo,
     QIODevice
 )
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtXml import QDomDocument
 
 from qgis.core import (
-    QgsComposerArrow,
-    QgsComposerAttributeTableV2,
-    QgsComposerLabel,
-    QgsComposerItem,
-    QgsComposerMap,
-    QgsComposerPicture,
-    QgsMapLayerRegistry,
-    QgsPaperItem
+    QgsLayoutItemPolyline,
+    QgsLayoutItemAttributeTable,
+    QgsLayoutItemLabel,
+    QgsLayoutItem,
+    QgsLayoutItemMap,
+    QgsLayoutItemPicture,
+    QgsProject,
+    QgsLayoutItemPage
 )
 
-from stdm import (
+from stdm.data.pg_utils import (
     vector_layer
 )
-from stdm import RegistryConfig
-from stdm import (
-    ComposerChartConfigEditor,
-    ComposerDataSourceSelector,
-    ComposerFieldSelector,
-    ComposerPhotoDataSourceEditor,
-    ComposerSymbolEditor,
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.ui.composer.composer_chart_config import (
+    ComposerChartConfigEditor
+)
+from stdm.ui.composer.composer_data_source import (
+    ComposerDataSourceSelector
+)
+from stdm.ui.composer.composer_field_selector import (
+    ComposerFieldSelector)
+from stdm.ui.composer.composer_symbol_editor import (
+    ComposerSymbolEditor
+)
+from stdm.ui.composer.table_data_source import (
     ComposerTableDataSourceEditor
 )
-from stdm import documentTemplates
-from stdm import CaseInsensitiveDict
+from stdm.ui.composer.photo_data_source import (
+    ComposerPhotoDataSourceEditor,
+)
+from stdm.utils.util import documentTemplates
+from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 
-from .chart_configuration import ChartConfigurationCollection
-from .composer_item_config import ComposerItemConfig
-from .composer_data_source import ComposerDataSource
-from .photo_configuration import PhotoConfigurationCollection
-from .qr_code_configuration import QRCodeConfigurationCollection
-from .spatial_fields_config import SpatialFieldsConfiguration
-from .table_configuration import TableConfigurationCollection
-from .item_formatter import (
+from stdm.composer.chart_configuration import ChartConfigurationCollection
+from stdm.composer.composer_item_config import ComposerItemConfig
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.photo_configuration import PhotoConfigurationCollection
+from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
+from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
+from stdm.composer.table_configuration import TableConfigurationCollection
+from stdm.composer.item_formatter import (
     ChartFormatter,
     DataLabelFormatter,
     LineFormatter,
@@ -107,7 +116,7 @@ def load_table_layers(config_collection):
 
         v_layers.append(v_layer)
 
-    QgsMapLayerRegistry.instance().addMapLayers(v_layers, False)
+    QgsProject.instance().addMapLayers(v_layers, False)
 
     return v_layers
 
@@ -211,7 +220,7 @@ class ComposerWrapper(QObject):
         #Copy of template document file
         self._copy_template_file = None
 
-        self._selected_item_uuid = unicode()
+        self._selected_item_uuid = str()
 
         self._current_ref_table_index = -1
 
@@ -447,7 +456,7 @@ class ComposerWrapper(QObject):
         items = self.composition().items()
 
         for c_item in items:
-            if isinstance(c_item, QgsComposerItem) and not isinstance(c_item, QgsPaperItem):
+            if isinstance(c_item, QgsLayoutItem) and not isinstance(c_item, QgsLayoutItemPage):
                 if c_item.uuid() in self._widgetMappings:
                     #Remove corresponding widget as well as reference in the collection
                     del self._widgetMappings[c_item.uuid()]
@@ -646,7 +655,7 @@ class ComposerWrapper(QObject):
                                                                    "already exists")),
                                             QMessageBox.Yes|QMessageBox.No)
 
-                    if result <> QMessageBox.Yes:
+                    if result != QMessageBox.Yes:
                         return
                     else:
                         #Delete the existing template
@@ -687,7 +696,7 @@ class ComposerWrapper(QObject):
         try:
             self._writeXML(templateDoc, template_name)
         except Exception as exc:
-            msg = unicode(exc)
+            msg = str(exc)
             QMessageBox.critical(
                 self.composerView(),
                 QApplication.translate("ComposerWrapper", "Save Error"),
@@ -941,16 +950,16 @@ class ComposerWrapper(QObject):
                 if isinstance(stdmWidget, ComposerTableDataSourceEditor):
                     itemFormatter = TableFormatter()
 
-                if isinstance(composer_item, QgsComposerArrow):
+                if isinstance(composer_item, QgsLayoutItemPolyline):
                     itemFormatter = LineFormatter()
 
-                elif isinstance(composer_item, QgsComposerLabel):
+                elif isinstance(composer_item, QgsLayoutItemLabel):
                     itemFormatter = DataLabelFormatter()
 
-                elif isinstance(composer_item, QgsComposerMap):
+                elif isinstance(composer_item, QgsLayoutItemMap):
                     itemFormatter = MapFormatter()
 
-                elif isinstance(composer_item, QgsComposerPicture):
+                elif isinstance(composer_item, QgsLayoutItemPicture):
                     """
                     Use widget attribute to distinguish type i.e.
                     whether it is a photo, graph etc.
@@ -966,7 +975,7 @@ class ComposerWrapper(QObject):
                     elif isinstance(editor_widget, QRCodeConfigurationCollection.editor_type):
                         itemFormatter = QRCodeFormatter()
 
-                elif isinstance(composer_item, QgsComposerAttributeTableV2):
+                elif isinstance(composer_item, QgsLayoutItemAttributeTable):
                     itemFormatter = TableFormatter()
 
                 if itemFormatter is not None:

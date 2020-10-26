@@ -17,15 +17,16 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm import STDMDb, Role
-from stdm import profile_sequences
-from stdm import current_profile
-from stdm import getIndex
-from exception import SecurityException
+from qgis.PyQt.QtWidgets import QApplication
+
+from stdm.data.database import STDMDb, Role
+from stdm.data.pg_utils import profile_sequences
+from stdm.settings import current_profile
+from stdm.utils.util import getIndex
+from stdm.security.exception import SecurityException
 
 from sqlalchemy.sql.expression import text
 
-from PyQt4.QtGui import *
 
 class RoleProvider(object):
     '''

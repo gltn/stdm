@@ -15,19 +15,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QObject
 )
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import (
+    QIcon
+)
+from qgis.PyQt.QtWidgets import (
     QAction,
-    QIcon,
     QApplication,
     QDialog
 )
 
-from qgis.gui import QgsComposerView
+from qgis.gui import QgsLayoutView
 
-from stdm import (
+from stdm.ui.composer.composer_doc_selector import (
     TemplateDocumentSelector
 )
 

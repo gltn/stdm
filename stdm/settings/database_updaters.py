@@ -20,19 +20,19 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from datetime import datetime
-from PyQt4.QtCore import QObject, pyqtSignal
-from PyQt4.QtGui import QApplication
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtXml import QDomDocument
 
-from stdm import (
+from stdm.data.pg_utils import (
     copy_from_column_to_another,
     add_constraint,
     pg_table_exists,
     table_column_names
 )
-from stdm import FilePaths
+from stdm.data.configfile_paths import FilePaths
 
-from stdm import StdmConfiguration
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
 class DatabaseUpdater(QObject):
     db_update_complete = pyqtSignal(QDomDocument)

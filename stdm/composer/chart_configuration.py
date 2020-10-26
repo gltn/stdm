@@ -21,17 +21,17 @@ email                : stdm@unhabitat.org
 from collections import (
     OrderedDict
 )
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomElement
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QTemporaryFile
 )
-from PyQt4.QtGui import (
-    QApplication,
+from qgis.PyQt.QtGui import (
     QColor
 )
+from qgis.PyQt.QtWidgets import QApplication
 
 import matplotlib
 matplotlib.use('Agg')
@@ -415,7 +415,7 @@ class ChartConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing a collection of ChartConfiguration objects.
     """
-    from stdm import ComposerChartConfigEditor
+    from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 
     collection_root = "Charts"
     editor_type = ComposerChartConfigEditor

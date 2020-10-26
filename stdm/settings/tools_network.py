@@ -18,21 +18,22 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtNetwork import *
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtNetwork import QNetworkProxy
+
 
 def getProxy():
-    
-    # Adaption by source of "Plugin Installer - Version 1.0.10" 
+
+    # Adaption by source of "Plugin Installer - Version 1.0.10"
     proxy = None
     settings = QSettings()
     settings.beginGroup("proxy")
-    
+
     #Check if the 'proxy' group exists
     proxyKeys = settings.childKeys()
     if len(proxyKeys) == 0:
         return
-    
+
     if settings.value("/proxyEnabled",type=bool):
         proxy = QNetworkProxy()
         proxyType = settings.value("/proxyType","")
@@ -44,11 +45,11 @@ def getProxy():
             proxy.setType(QNetworkProxy.NoProxy)
         elif proxyType in ["3","HttpProxy"]:
             proxy.setType(QNetworkProxy.HttpProxy)
-        elif proxyType in ["4","HttpCachingProxy"] and QT_VERSION >= 0X040400:
+        elif proxyType in ["4","HttpCachingProxy"]:
             proxy.setType(QNetworkProxy.HttpCachingProxy)
-        elif proxyType in ["5","FtpCachingProxy"] and QT_VERSION >= 0X040400:
+        elif proxyType in ["5","FtpCachingProxy"]:
             proxy.setType(QNetworkProxy.FtpCachingProxy)
-        else: 
+        else:
             proxy.setType(QNetworkProxy.DefaultProxy)
             proxy.setHostName(settings.value("/proxyHost"))
             port = settings.value("/proxyPort")
@@ -56,6 +57,6 @@ def getProxy():
                 proxy.setPort(int(port))
             proxy.setUser(settings.value("/proxyUser"))
             proxy.setPassword(settings.value("/proxyPassword"))
-    
+
     settings.endGroup()
     return proxy

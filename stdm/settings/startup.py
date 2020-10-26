@@ -1,4 +1,4 @@
-from stdm import (
+from stdm.settings.registryconfig import (
     enable_stdm
 )
 

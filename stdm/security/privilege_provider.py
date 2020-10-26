@@ -1,5 +1,5 @@
 import copy
-from stdm import (
+from stdm.data.pg_utils import (
        pg_table_exists,
        _execute
        )
@@ -120,14 +120,14 @@ class SinglePrivilegeProvider(PrivilegeProvider):
         for related_content in self.related_contents.values():
             self._grant_revoke(operation, privilege, related_content, self.role)
 
-        if self.support_doc_table_name <> '':
+        if self.support_doc_table_name != '':
             self._grant_revoke(operation, privilege, self.support_doc_table_name, self.role)
             # Supporting document type
             self._grant_revoke(operation, privilege, self.support_doc_type_name, self.role)
 
     def _grant_revoke(self, op, priv, cont, role):
         self.grant_or_revoke(op, 'SELECT', cont, role)
-        if priv <> 'SELECT':
+        if priv != 'SELECT':
             self.grant_or_revoke(op, priv, cont, role)
 
 

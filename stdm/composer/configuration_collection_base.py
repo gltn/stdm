@@ -21,10 +21,10 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QWidget
 )
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomElement
 )
 
@@ -200,7 +200,7 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         :return: Object containing data properties of the linked tables.
         :rtype: LinkedTableProps
         """
-        from stdm import LinkedTableProps
+        from stdm.ui.composer.referenced_table_editor import LinkedTableProps
 
         return LinkedTableProps(linked_table=self._linked_table,
                                       source_field=self._source_field,
@@ -208,7 +208,7 @@ class LinkedTableItemConfiguration(ItemConfigBase):
 
     @staticmethod
     def linked_table_properties(dom_element):
-        from stdm import LinkedTableProps
+        from stdm.ui.composer.referenced_table_editor import LinkedTableProps
         """
         Creates a LinkedTableProps object which contains all the data
         properties of the linked table.

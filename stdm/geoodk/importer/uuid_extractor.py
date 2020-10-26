@@ -20,8 +20,8 @@ email                : stdm@unhabitat.org
 """
 
 import os
-from PyQt4.QtCore import QFile, QIODevice
-from PyQt4.QtXml import (
+from qgis.PyQt.QtCore import QFile, QIODevice
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomNode
 )

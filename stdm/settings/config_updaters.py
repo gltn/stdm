@@ -20,14 +20,14 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from datetime import datetime
-from PyQt4.QtCore import QObject, pyqtSignal
-from PyQt4.QtGui import QApplication
+from qgis.PyQt.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtWidgets import QApplication
 
 from PyQt4.QtXml import QDomDocument
-from stdm import StdmConfiguration
-from stdm import ConfigurationUtils
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.settings.config_utils import ConfigurationUtils
 
-from stdm import FilePaths
+from stdm.data.configfile_paths import FilePaths
 
 
 class ConfigurationUpdater(QObject):
@@ -376,8 +376,8 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         """
         if len(self.profiles_detail) < 1:
             return
-        layer_display = unicode(str_element.attribute(self.LAYER_DISPLAY, ''))
-        spatial_unit = unicode(str_element.attribute(self.SPATIAL_UNIT, ''))
+        layer_display = str(str_element.attribute(self.LAYER_DISPLAY, ''))
+        spatial_unit = str(str_element.attribute(self.SPATIAL_UNIT, ''))
 
         if '_vw' in layer_display:
             profile_name = layer_display.split('_vw')[0].lower()

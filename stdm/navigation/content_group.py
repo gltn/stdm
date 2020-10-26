@@ -18,17 +18,19 @@ email                : gkahiu@gmail.com
 """
 import hashlib
 
-from PyQt4.QtGui import QApplication
-from PyQt4.QtCore import pyqtSignal,QObject
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtCore import (
+    pyqtSignal,
+    QObject
+)
 
-from stdm import (
+from stdm.data.database import (
     Content,
     Role
 )
 
-from stdm import HashableMixin
+from stdm.utils.hashable_mixin import HashableMixin
 
-__all__ = ["ContentGroup,TableContentGroup"]
 
 class ContentGroup(QObject,HashableMixin):
     """
@@ -37,7 +39,7 @@ class ContentGroup(QObject,HashableMixin):
     contentAuthorized = pyqtSignal(Content)
 
     def __init__(self, username, containerItem=None, parent=None):
-        from stdm import Authorizer
+        from stdm.security.authorization import Authorizer
 
         QObject.__init__(self,parent)
         HashableMixin.__init__(self)
@@ -144,7 +146,7 @@ class ContentGroup(QObject,HashableMixin):
                     qo = cnt.queryObject()
 
                     if c.code is None:
-                        code = self.hash_code(unicode(c.name))
+                        code = self.hash_code(str(c.name))
                         cn = c
                     else:
                         code = c.code

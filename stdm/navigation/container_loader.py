@@ -18,17 +18,24 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QToolBar, QMenu, QListWidget, QApplication
-from PyQt4.QtCore import QObject,pyqtSignal
+from qgis.PyQt.QtWidgets import (
+    QToolBar,
+    QMenu,
+    QListWidget,
+    QApplication
+)
+from qgis.PyQt.QtCore import (
+    QObject,
+    pyqtSignal
+)
 
 from collections import OrderedDict
 
-from stdm import getIndex
-import stdm
-from stdm import (
+from stdm.utils.util import getIndex
+from stdm.data.database import (
     Content
 )
-from .content_group import ContentGroup
+from stdm.navigation.content_group import ContentGroup
 
 class QtContainerLoader(QObject):
     """
@@ -42,7 +49,7 @@ class QtContainerLoader(QObject):
     #contentAdded = pyqtSignal(Content)
 
     def __init__(self,parent,container, actionRef=None, register=False):
-        from stdm import Authorizer
+        from stdm.security.authorization import Authorizer
 
         QObject.__init__(self,parent)
         self._container = container
@@ -50,8 +57,10 @@ class QtContainerLoader(QObject):
         self._actionReference = actionRef
         self._contentGroups = OrderedDict()
         self._widgets = []
-        self._userName = stdm.data.app_dbconn.User.UserName
-        self._authorizer = Authorizer(stdm.data.app_dbconn.User.UserName)
+
+        from stdm.data.globals import app_dbconn
+        self._userName = app_dbconn.User.UserName
+        self._authorizer = Authorizer(app_dbconn.User.UserName)
         self._iter = 0
         self._separatorAction = None
 
@@ -77,7 +86,7 @@ class QtContainerLoader(QObject):
         Add defined items in the specified container.
         """
         #If the user does not belong to any STDM group then the system will raise an error so gracefully terminate
-        from stdm import SecurityException
+        from stdm.security.exception import SecurityException
 
         userRoles = self._authorizer.userRoles
 
@@ -86,7 +95,7 @@ class QtContainerLoader(QObject):
                                               "the system administrator for more information."%(self._userName,))
             raise SecurityException(msg)
 
-        for k,v in self._contentGroups.iteritems():
+        for k,v in self._contentGroups.items():
             #Generic content items
             if not isinstance(k,ContentGroup):
                 self._addItemtoContainer(k)
@@ -178,7 +187,7 @@ class QtContainerLoader(QObject):
         '''
         Remove all items in the container.
         '''
-        for k,v in self._contentGroups.iteritems():
+        for k,v in self._contentGroups.items():
             if isinstance(self._container,QToolBar) or isinstance(self._container,QMenu):
                 #If there is a parent then delete the widget
                 if v!= None:

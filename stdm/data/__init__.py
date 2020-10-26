@@ -1,1 +1,0 @@
-from .globals import app_dbconn

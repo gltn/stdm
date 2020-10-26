@@ -17,7 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
+from qgis.PyQt.QtGui import QIcon
 
 dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
 pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")

@@ -3,7 +3,7 @@
 Name                 : Registry Configuration
 Description          : Class for reading and writing generic KVP settings for
                         STDM stored in the registry
-Date                 : 24/May/2013 
+Date                 : 24/May/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -17,8 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings
-from PyQt4.QtGui import QColor
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtGui import QColor
 
 #Names of registry keys
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
@@ -204,7 +204,7 @@ class RegistryConfig(object):
     """
     def __init__(self):
         self.groupPath = "STDM"
-    
+
     def read(self, items):
         """
         Get the value of the user defined items from the STDM registry tree
@@ -212,14 +212,14 @@ class RegistryConfig(object):
         type items: list
         """
         userKeys = {}
-        settings = QSettings()        
+        settings = QSettings()
         settings.beginGroup("/")
         groups = settings.childGroups()
         for group in groups:
             if str(group) == self._base_group():
                 for t in items:
                     tKey = self.groupPath + "/" + t
-                    if settings.contains(tKey):                        
+                    if settings.contains(tKey):
                         tValue = settings.value(tKey)
                         userKeys[t] = tValue
                 break
@@ -273,7 +273,7 @@ class RegistryConfig(object):
 
         uSettings.endGroup()
         uSettings.sync()
-        
+
 class QGISRegistryConfig(RegistryConfig):
     """
     Class for reading and writing QGIS-wide registry settings.

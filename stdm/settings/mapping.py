@@ -19,12 +19,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QWidget,
     QApplication
 )
 
-from stdm import (
+from stdm.ui.notification import (
     WARNING,
     SUCCESS
 )
@@ -57,7 +57,7 @@ class SettingMapper(object):
         :param mandatory: Flag to indicate whether a value is required from the input control.
         :type mandatory: bool
         """
-        from stdm import (
+        from stdm.ui.helpers import (
             valueHandler
         )
         self._key = setting_key

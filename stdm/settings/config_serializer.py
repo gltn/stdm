@@ -24,43 +24,43 @@ from datetime import (
 )
 from decimal import Decimal
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QFileInfo,
     QIODevice,
     QObject,
     pyqtSignal
 )
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomElement,
     QDomNode
 )
 
-from stdm import StdmConfiguration
-from stdm import ConfigurationException
-from stdm import Entity
-from stdm import EntityRelation
-from stdm import Profile
-from stdm import ValueList
-from stdm import AssociationEntity
-from stdm import SocialTenure
-from stdm import (
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.profile import Profile
+from stdm.data.configuration.value_list import ValueList
+from stdm.data.configuration.association_entity import AssociationEntity
+from stdm.data.configuration.social_tenure import SocialTenure
+from stdm.data.configuration.entity import (
     BaseColumn,
     ForeignKeyColumn
 )
 
-from stdm import ConfigurationUpdater
-from stdm import DatabaseUpdater
-from stdm import (
+from stdm.settings.config_updaters import ConfigurationUpdater
+from stdm.settings.database_updaters import DatabaseUpdater
+from stdm.utils.util import (
     date_from_string,
     datetime_from_string,
     string_to_boolean
 )
 
-from stdm import FilePaths
+from stdm.data.configfile_paths import FilePaths
 
-from stdm import ConfigurationSchemaUpdater
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 
 LOGGER = logging.getLogger('stdm')
 
@@ -100,7 +100,7 @@ class ConfigurationFileSerializer(QObject):
 
         #Check if the suffix is in the file name
         #TODO: Remove str function
-        if not unicode(save_file_info.suffix()).lower != 'stc':
+        if not str(save_file_info.suffix()).lower != 'stc':
             self.path = u'{0}.{1}'.format(self.path, 'stc')
             save_file_info = QFileInfo(self.path)
 
@@ -352,7 +352,7 @@ def _populate_collections_from_element(element, tag_name, collection):
             er_el = er_collection.item(i).toElement()
 
             if er_el.hasAttribute('name'):
-                name = unicode(er_el.attribute('name'))
+                name = str(er_el.attribute('name'))
 
                 collection[name] = er_el
 
@@ -399,7 +399,7 @@ class ProfileSerializer(object):
             return None
 
         #TODO: Remove unicode
-        profile = Profile(unicode(profile_name), configuration)
+        profile = Profile(str(profile_name), configuration)
 
         #Set description
         description = element.attribute('description', '')
@@ -573,16 +573,16 @@ class SocialTenureSerializer(object):
         :param profile: Profile object whose STR attributes are to be set.
         :type profile: Profile
         """
-        party = unicode(child_element.attribute(
+        party = str(child_element.attribute(
             SocialTenureSerializer.PARTY, '')
         ).strip()
-        spatial_unit = unicode(child_element.attribute(
+        spatial_unit = str(child_element.attribute(
             SocialTenureSerializer.SPATIAL_UNIT, '')
         ).strip()
-        layer_display = unicode(child_element.attribute(
+        layer_display = str(child_element.attribute(
             SocialTenureSerializer.LAYER_DISPLAY, '')
         )
-        multi_party = unicode(child_element.attribute(
+        multi_party = str(child_element.attribute(
             SocialTenureSerializer.MULTIPARTY, '')
         )
 
@@ -1013,14 +1013,14 @@ class EntitySerializer(EntitySerializerCollection):
         information.
         :type profile: Profile
         """
-        short_name = unicode(child_element.attribute(
+        short_name = str(child_element.attribute(
             EntitySerializer.SHORT_NAME, '')
         )
         if short_name:
             optional_args = {}
 
             #Check global
-            is_global = unicode(child_element.attribute(
+            is_global = str(child_element.attribute(
                 EntitySerializer.GLOBAL, '')
             )
             if is_global:
@@ -1028,7 +1028,7 @@ class EntitySerializer(EntitySerializerCollection):
                 optional_args['is_global'] = is_global
 
             #Proxy
-            proxy = unicode(child_element.attribute(
+            proxy = str(child_element.attribute(
                 EntitySerializer.PROXY, '')
             )
             if proxy:
@@ -1036,7 +1036,7 @@ class EntitySerializer(EntitySerializerCollection):
                 optional_args['is_proxy'] = proxy
 
             #Create ID
-            create_id = unicode(child_element.attribute(
+            create_id = str(child_element.attribute(
                 EntitySerializer.CREATE_ID, '')
             )
             if create_id:
@@ -1044,7 +1044,7 @@ class EntitySerializer(EntitySerializerCollection):
                 optional_args['create_id_column'] = create_id
 
             #Supports documents
-            supports_docs = unicode(child_element.attribute(
+            supports_docs = str(child_element.attribute(
                 EntitySerializer.SUPPORTS_DOCUMENTS, '')
             )
             if supports_docs:
@@ -1054,7 +1054,7 @@ class EntitySerializer(EntitySerializerCollection):
             ent = Entity(short_name, profile, **optional_args)
 
             #Associative
-            associative = unicode(child_element.attribute(
+            associative = str(child_element.attribute(
                 EntitySerializer.ASSOCIATIVE, '')
             )
             if associative:
@@ -1062,7 +1062,7 @@ class EntitySerializer(EntitySerializerCollection):
                 ent.is_associative = associative
 
             #Editable
-            editable = unicode(child_element.attribute(
+            editable = str(child_element.attribute(
                 EntitySerializer.EDITABLE, '')
             )
             if editable:
@@ -1070,13 +1070,13 @@ class EntitySerializer(EntitySerializerCollection):
                 ent.user_editable = editable
 
             #Description
-            description = unicode(child_element.attribute(
+            description = str(child_element.attribute(
                 EntitySerializer.DESCRIPTION, '')
             )
             ent.description = description
 
             #RowIndex
-            row_index = unicode(child_element.attribute(
+            row_index = str(child_element.attribute(
                 EntitySerializer.ROW_INDEX, '')
             )
             if row_index:
@@ -1084,7 +1084,7 @@ class EntitySerializer(EntitySerializerCollection):
                 ent.row_index = row_index
 
             # Label
-            label = unicode(child_element.attribute(
+            label = str(child_element.attribute(
                 EntitySerializer.LABEL, '')
             )
             ent.label = label
@@ -1156,7 +1156,7 @@ class EntitySerializer(EntitySerializerCollection):
 
         for ce in column_elements:
             if ce.hasAttribute('TYPE_INFO'):
-                type_info = unicode(ce.attribute('TYPE_INFO'))
+                type_info = str(ce.attribute('TYPE_INFO'))
 
                 #Check if the type info is in the flags' list
                 if type_info in cls.DEPENDENCY_FLAGS:
@@ -1197,17 +1197,17 @@ class EntitySerializer(EntitySerializerCollection):
 
         for c in dep_cols:
             # Get foreign key columns
-            type_info = unicode(c.attribute('TYPE_INFO'))
+            type_info = str(c.attribute('TYPE_INFO'))
 
             if type_info == ForeignKeyColumn.TYPE_INFO:
                 #Get relation element
                 er_element = ForeignKeyColumnSerializer.entity_relation_element(c)
-                relation_name = unicode(er_element.attribute('name', ''))
+                relation_name = str(er_element.attribute('name', ''))
                 er_element = entity_relation_elements.get(relation_name, None)
 
                 if not er_element is None:
                     #Get parent
-                    parent = unicode(
+                    parent = str(
                         er_element.attribute(
                             EntityRelationSerializer.PARENT,
                             ''
@@ -1345,15 +1345,15 @@ class AssociationEntitySerializer(EntitySerializerCollection):
 
         short_name = element.attribute(EntitySerializer.SHORT_NAME, '')
         if short_name:
-            ae = AssociationEntity(unicode(short_name), profile)
+            ae = AssociationEntity(str(short_name), profile)
 
             first_parent = element.attribute(
                 AssociationEntitySerializer.FIRST_PARENT, '')
             second_parent = element.attribute(
                 AssociationEntitySerializer.SECOND_PARENT, '')
 
-            ae.first_parent = unicode(first_parent)
-            ae.second_parent = unicode(second_parent)
+            ae.first_parent = str(first_parent)
+            ae.second_parent = str(second_parent)
 
         return ae
 
@@ -1425,7 +1425,7 @@ class ValueListSerializer(EntitySerializerCollection):
             value_list_el = value_list_elements.item(i).toElement()
             name = value_list_el.attribute('name', '')
             if name:
-                value_list = ValueList(unicode(name), profile)
+                value_list = ValueList(str(name), profile)
 
                 #Get code values
                 cd_elements = value_list_el.elementsByTagName(
@@ -1529,25 +1529,25 @@ class EntityRelationSerializer(object):
         :rtype: EntityRelation
         """
         kw = {}
-        kw['parent'] = unicode(
+        kw['parent'] = str(
             element.attribute(EntityRelationSerializer.PARENT, '')
         )
-        kw['child'] = unicode(
+        kw['child'] = str(
             element.attribute(EntityRelationSerializer.CHILD, '')
         )
-        kw['parent_column'] = unicode(
+        kw['parent_column'] = str(
             element.attribute(EntityRelationSerializer.PARENT_COLUMN, '')
         )
-        kw['child_column'] = unicode(
+        kw['child_column'] = str(
             element.attribute(EntityRelationSerializer.CHILD_COLUMN, '')
         )
-        kw['show_in_parent'] = unicode(
+        kw['show_in_parent'] = str(
             element.attribute(EntityRelationSerializer.SHOW_IN_PARENT, 'True')
         )
-        kw['show_in_child'] = unicode(
+        kw['show_in_child'] = str(
             element.attribute(EntityRelationSerializer.SHOW_IN_CHILD, 'True')
         )
-        dc_str = unicode(
+        dc_str = str(
             element.attribute(EntityRelationSerializer.DISPLAY_COLUMNS, '')
         )
 
@@ -1654,56 +1654,56 @@ class ColumnSerializerCollection(object):
             return
 
         #Get column attributes
-        name = unicode(element.attribute(ColumnSerializerCollection.NAME, ''))
+        name = str(element.attribute(ColumnSerializerCollection.NAME, ''))
         if not name:
             return
 
         kwargs = {}
 
         #Description
-        description = unicode(
+        description = str(
             element.attribute(ColumnSerializerCollection.DESCRIPTION, '')
             )
         kwargs['description'] = description
 
         #Index
-        index = unicode(
+        index = str(
             element.attribute(ColumnSerializerCollection.INDEX, 'False')
         )
         kwargs['index'] = _str_to_bool(index)
 
         #Mandatory
-        mandatory = unicode(
+        mandatory = str(
             element.attribute(ColumnSerializerCollection.MANDATORY, 'False')
         )
         kwargs['mandatory'] = _str_to_bool(mandatory)
 
         #Searchable
-        searchable = unicode(
+        searchable = str(
             element.attribute(ColumnSerializerCollection.SEARCHABLE, 'False')
         )
         kwargs['searchable'] = _str_to_bool(searchable)
 
         #Unique
-        unique = unicode(
+        unique = str(
             element.attribute(ColumnSerializerCollection.UNIQUE, 'False')
         )
         kwargs['unique'] = _str_to_bool(unique)
 
         #User tip
-        user_tip = unicode(
+        user_tip = str(
             element.attribute(ColumnSerializerCollection.USER_TIP, '')
         )
         kwargs['user_tip'] = user_tip
 
         # Label
-        label = unicode(
+        label = str(
             element.attribute(ColumnSerializerCollection.LABEL, '')
         )
         kwargs['label'] = label
 
         # Row Index - for ordering on a viewer
-        row_index = unicode(
+        row_index = str(
             element.attribute(ColumnSerializerCollection.ROW_INDEX, '')
         )
         kwargs['row_index'] = row_index
@@ -2058,7 +2058,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
                 '4326'
             ))
 
-            display_name = unicode(geom_el.attribute(
+            display_name = str(geom_el.attribute(
                 GeometryColumnSerializer.LAYER_DISPLAY,
                 ''
             ))
@@ -2110,7 +2110,7 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
         )
 
         if not relation_el.isNull():
-            relation_name = unicode(relation_el.attribute('name', ''))
+            relation_name = str(relation_el.attribute('name', ''))
             er_element = entity_relation_elements.get(relation_name, None)
 
             if not er_element is None:
@@ -2299,11 +2299,11 @@ class MultipleSelectColumnSerializer(ColumnSerializerCollection):
         )
 
         if not assoc_el.isNull():
-            assoc_name = unicode(assoc_el.attribute('name', ''))
+            assoc_name = str(assoc_el.attribute('name', ''))
             association_element = associations.get(assoc_name, None)
 
             if not association_element is None:
-                first_parent = unicode(association_element.attribute(
+                first_parent = str(association_element.attribute(
                     AssociationEntitySerializer.FIRST_PARENT, '')
                 )
 
@@ -2329,7 +2329,7 @@ MultipleSelectColumnSerializer.register()
 def _str_to_bool(bool_str):
     if len(bool_str) > 1:
         bool_str = bool_str[0]
-    return unicode(bool_str).upper() == 'T'
+    return str(bool_str).upper() == 'T'
 
 
 class ExpressionColumnSerializer(ColumnSerializerCollection):

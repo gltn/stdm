@@ -20,11 +20,11 @@ email                : stdm@unhabitat.org
 """
 import os
 
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomNode
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QIODevice,
     QDate,
@@ -32,12 +32,12 @@ from PyQt4.QtCore import (
     QDir
 )
 
-from stdm import FilePaths
-from xform_model import EntityFormatter
-from stdm import (
+from stdm.data.configfile_paths import FilePaths
+from stdm.geoodk.xform_model import EntityFormatter
+from stdm.geoodk.geoodk_reader import (
     GeoODKReader
 )
-from stdm import BooleanColumn
+from stdm.ui.forms.widgets import BooleanColumn
 
 DOCSUFFIX = 'h'
 DOCEXTENSION = '.xml'

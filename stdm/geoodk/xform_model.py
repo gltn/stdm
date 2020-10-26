@@ -1,7 +1,7 @@
 """
 
 """
-from stdm import GeometryColumn
+from stdm.data.configuration.columns import GeometryColumn
 
 
 class EntityFormatter:
@@ -102,7 +102,7 @@ class EntityFormatter:
         :return:
         """
         typle_name = attrib.partition('.')
-        return unicode(typle_name[2])
+        return str(typle_name[2])
 
     def set_model_data_type(self, val):
         """

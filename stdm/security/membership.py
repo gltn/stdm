@@ -16,16 +16,17 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm import STDMDb
-from exception import SecurityException
-from user import User
+from qgis.PyQt.QtWidgets import QApplication
+
+from stdm.data.database import STDMDb
+from stdm.security.exception import SecurityException
+from stdm.security.user import User
 
 from sqlalchemy.sql.expression import text
 
 from sqlalchemy import exc
 
 
-from PyQt4.QtGui import *
 
 class Membership(object):
     '''

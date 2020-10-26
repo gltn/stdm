@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
@@ -31,10 +31,10 @@ from sqlalchemy import (
     String
 )
 
-from stdm import current_profile
-from stdm import entity_model
-from stdm import DeclareMapping
-from stdm import (
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
+from stdm.ui.stdmdialog import DeclareMapping
+from stdm.utils.util import (
     getIndex,
     entity_display_columns,
     profile_spatial_tables,
@@ -43,7 +43,7 @@ from stdm import (
     profile_lookup_columns
 )
 
-from .nodes import (
+from stdm.navigation.socialtenure.nodes import (
     BaseSTRNode,
     EntityNode,
     NoSTRNode,
@@ -261,7 +261,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         :rtype: list
         """
 
-        from stdm import (
+        from stdm.data.supporting_documents import (
             supporting_doc_tables,
             document_models
         )
@@ -353,7 +353,7 @@ class EntityNodeFormatter(STRNodeFormatter):
             source_col_value = getattr(source_model, source_column)
 
             #Create model if string is used as referenced model
-            if isinstance(ref_model, str) or isinstance(ref_model, unicode):
+            if isinstance(ref_model, str):
                 ref_model = DeclareMapping.instance().tableMapping(ref_model)
 
             if ref_model is None:

@@ -19,13 +19,13 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import ConfigParser
+from configparser import ConfigParser
 import os
 import json
 from datetime import datetime
 
 
-from PyQt4.QtCore import QDir
+from qgis.PyQt.QtCore import QDir
 
 HOME = QDir.home().path()
 
@@ -49,7 +49,7 @@ class ImportLogger:
         :return:
         """
         if not os.access(LOGGER_HOME, os.F_OK):
-            os.makedirs(unicode(LOGGER_HOME))
+            os.makedirs(str(LOGGER_HOME))
 
     def start_json_file(self):
         """
@@ -127,7 +127,7 @@ class ImportLogger:
             except :
                pass
         return data
-    
+
     def log_data_name(self, full_name):
         """
         rtype: str

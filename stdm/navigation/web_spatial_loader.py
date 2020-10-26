@@ -21,16 +21,30 @@ email                : stdm@unhabitat.org
 """
 import os.path
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-from PyQt4.QtNetwork import *
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QObject,
+    pyqtSignal,
+    QFile,
+    pyqtSlot,
+    QUrl,
+    qDebug
+)
+from qgis.PyQt.QtGui import (
+    QColor
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication
+)
+from qgis.PyQt.QtWebKitWidgets import QWebPage
 
-from qgis.core import *
+from qgis.core import (
+    QgsNetworkAccessManager
+)
 
-from stdm import getProxy
-from stdm import PLUGIN_DIR
-from stdm import STDMDb
+from stdm.settings.tools_network import getProxy
+from stdm.utils.util import PLUGIN_DIR
+from stdm.data.database import STDMDb
 
 from geoalchemy2 import WKBElement
 
@@ -349,7 +363,7 @@ class ProxyWebPage(QWebPage):
         proxy = getProxy()
 
         if not proxy is None:
-            self._manager = QNetworkAccessManager()
+            self._manager = QgsNetworkAccessManager()
             self._manager.setProxy(proxy)
             self.setNetworkAccessManager(self._manager)
 

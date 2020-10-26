@@ -23,18 +23,42 @@ import os.path
 import shutil
 from collections import OrderedDict
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QFileInfo,
+    QTranslator,
+    QCoreApplication,
+    Qt,
+    QFile
+)
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QKeySequence,
+    QDesktopServices
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QAction,
+    QMenu,
+    QLabel,
+    QMessageBox,
+    QToolButton,
+    QDialog,
+    QComboBox
+)
+from qgis.core import (
+    QgsApplication,
+    QgsProject
+)
 
-from qgis.core import *
 from sqlalchemy.exc import SQLAlchemyError
-from stdm.stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings import current_profile, save_current_profile
 from stdm.settings.startup_handler import copy_startup
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.stdm.settings.config_file_updater import ConfigurationFileUpdater
+from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.column_updaters import varchar_updater
 
@@ -63,12 +87,12 @@ from stdm.ui.export_data import ExportData
 
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 
-import data
+from stdm import data
 
 from stdm.data.database import (
     STDMDb
 )
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     pg_table_exists,
     spatial_tables,
     postgis_exists,
@@ -85,18 +109,17 @@ from stdm.settings.registryconfig import (
 )
 from stdm.ui.license_agreement import LicenseAgreement
 
-from navigation import (
-    STDMAction,
+from stdm.navigation.components import STDMAction
+from stdm.navigation.container_loader import (
     QtContainerLoader,
-    ContentGroup,
-    TableContentGroup
-)
+    ContentGroup)
+from stdm.navigation.content_group import TableContentGroup
 
-from stdm.stdm.utils import simple_dialog
+from stdm.utils.util import simple_dialog
 from stdm.ui.change_log import ChangeLog
 from stdm.settings.template_updater import TemplateFileUpdater
 
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     getIndex,
     db_user_tables,
     format_name,
@@ -106,11 +129,11 @@ from stdm.stdm.utils import (
     user_non_profile_views
 )
 
-from stdm.stdm.composer.composer_data_source import composer_data_source
+from stdm.composer.composer_data_source import composer_data_source
 
-from mapping.utils import pg_layerNamesIDMapping
+from stdm.mapping.utils import pg_layerNamesIDMapping
 
-from composer import ComposerWrapper
+from stdm.composer.composer_wrapper import ComposerWrapper
 from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.ui.feature_details import (
         DetailsTreeView,
@@ -121,8 +144,8 @@ from stdm.ui.social_tenure.str_editor import STREditor
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
 from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 
-from stdm.stdm.security import SinglePrivilegeProvider
-from stdm.stdm.security.roleprovider import RoleProvider
+from stdm.security.privilege_provider import SinglePrivilegeProvider
+from stdm.security.roleprovider import RoleProvider
 
 LOGGER = logging.getLogger('stdm')
 
@@ -699,7 +722,7 @@ class STDMQGISLoader(object):
                     QApplication.translate(
                         'STDM', 'Load Configuration Error'
                     ),
-                    unicode(io_err))
+                    str(io_err))
 
             return False
 
@@ -710,7 +733,7 @@ class STDMQGISLoader(object):
                     'STDM',
                     'Load Configuration Error'
                 ),
-                unicode(c_ex)
+                str(c_ex)
             )
 
             return False
@@ -1668,7 +1691,7 @@ class STDMQGISLoader(object):
                      "STDMPlugin",
                      "Error Loading the Configuration Wizard"
                  ),
-                 unicode(ex)
+                 str(ex)
             )
 
     def changePassword(self):
@@ -1804,7 +1827,7 @@ class STDMQGISLoader(object):
                         extent = active_layer.extent()
                         canvas.setExtent(extent)
         except Exception as ex:
-            LOGGER.debug(unicode(ex))
+            LOGGER.debug(str(ex))
 
     def onExportData(self):
         """
@@ -1925,7 +1948,7 @@ class STDMQGISLoader(object):
                         "STDMPlugin",
                         "Unable to load the entity in the browser. "
                         "Check if the entity is configured correctly. "
-                        "Error: %s")%unicode(ex.message))
+                        "Error: %s")%str(ex.message))
             finally:
                 STDMDb.instance().session.rollback()
 
@@ -1996,11 +2019,11 @@ class STDMQGISLoader(object):
         """
         Remove all STDM layers from the map registry.
         """
-        mapLayers = QgsMapLayerRegistry.instance().mapLayers().values()
+        mapLayers = QgsProject.instance().mapLayers().values()
 
         for layer in mapLayers:
             if self.isSTDMLayer(layer):
-                QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+                QgsProject.instance().removeMapLayer(layer.id())
 
         self.stdmTables = []
 
@@ -2046,7 +2069,7 @@ class STDMQGISLoader(object):
             self.current_profile = None
 
         except Exception as ex:
-            LOGGER.debug(unicode(ex))
+            LOGGER.debug(str(ex))
 
     def remove_spatial_unit_mgr(self):
         """
@@ -2091,7 +2114,7 @@ class STDMQGISLoader(object):
                     "STDMQGISLoader",
                     'Open Error'
                 ),
-                unicode(ex)
+                str(ex)
             )
 
     def reset_content_modules_id(self, title, message_text):
@@ -2099,7 +2122,7 @@ class STDMQGISLoader(object):
             self.iface.mainWindow(), title,
             QApplication.translate(
                 "STDMQGISLoader",
-                unicode(message_text)
+                str(message_text)
             )
         )
 

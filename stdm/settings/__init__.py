@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QDesktopServices
+from qgis.PyQt.QtGui import QDesktopServices
 
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
@@ -6,7 +6,7 @@ from stdm.settings.registryconfig import (
     ENTITY_BROWSER_RECORD_LIMIT,
     ENTITY_SORT_ORDER
 )
-from stdm.stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.settings.config_serializer import ConfigurationFileSerializer
 
 
 def current_profile():
@@ -27,7 +27,7 @@ def current_profile():
 
     profiles = StdmConfiguration.instance().profiles
 
-    return profiles.get(unicode(profile_name), None)
+    return profiles.get(str(profile_name), None)
 
 
 def save_current_profile(name):

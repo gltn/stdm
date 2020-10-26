@@ -19,13 +19,13 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QAction,
     QListWidgetItem,
     QApplication
 )
 
-from stdm import Content
+from stdm.data.database import Content
 
 class STDMContent(object):
     '''

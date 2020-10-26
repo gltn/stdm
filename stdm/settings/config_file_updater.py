@@ -29,17 +29,38 @@ from collections import OrderedDict
 from distutils import file_util
 
 import errno
-from PyQt4.QtCore import QFile, QIODevice, Qt, QTextStream, pyqtSignal
-from PyQt4.QtGui import QMessageBox, QProgressBar, QDialog, QVBoxLayout, QLabel, QApplication, \
-    QCheckBox, QDialogButtonBox, QFileDialog, QLineEdit
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtCore import (
+    QFile,
+    QIODevice,
+    Qt,
+    QTextStream,
+    pyqtSignal
+)
+from qgis.PyQt.QtWidgets import (
+     QMessageBox,
+     QProgressBar,
+     QDialog,
+     QVBoxLayout,
+     QLabel,
+     QApplication,
+     QCheckBox,
+     QDialogButtonBox,
+     QFileDialog,
+     QLineEdit
+)
+from qgis.PyQt.QtXml import QDomDocument
 
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.stdm.data.pg_utils import export_data, import_data, pg_table_exists, \
-    export_data_from_columns, fix_sequence
+from stdm.data.pg_utils import (
+    export_data,
+    import_data,
+    pg_table_exists,
+    export_data_from_columns,
+    fix_sequence
+)
 from stdm.settings.registryconfig import (
     RegistryConfig,
     CONFIG_UPDATED,
@@ -50,7 +71,7 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE
 )
-from stdm.stdm.data.pg_utils import delete_table_data
+from stdm.data.pg_utils import delete_table_data
 
 from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
 
@@ -339,7 +360,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         Renames old configuration file
         """
         old_file_wt_ext = "stdmConfig.xml".rstrip(".xml")
-        dt = unicode(datetime.datetime.now())
+        dt = str(datetime.datetime.now())
         timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = os.path.join(path, "{0}_{1}.xml".format(old_file_wt_ext,
                                                            timestamp))
@@ -350,7 +371,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         Renames old configuration file
         """
         config_file = "configuration"
-        dt = unicode(datetime.datetime.now())
+        dt = str(datetime.datetime.now())
         timestamp = time.strftime('%Y_%m_%d_%H_%M')
         new_file = '{}/{}_{}.stc'.format(
             self.file_handler.localPath(),
@@ -439,23 +460,23 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 for j in range(column_nodes.count()):
                     column_dict = OrderedDict()
                     column_node = column_nodes.item(j).toElement()
-                    col_name = unicode(column_node.attribute('name'))
+                    col_name = str(column_node.attribute('name'))
                     column_dict["col_name"] = col_name
-                    col_search = unicode(column_node.attribute('searchable'))
+                    col_search = str(column_node.attribute('searchable'))
                     column_dict["col_search"] = col_search
-                    col_description = unicode(
+                    col_description = str(
                         column_node.attribute('fullname'))
                     column_dict["col_descrpt"] = col_description
-                    xml_file_col_type = unicode(column_node.attribute('type'))
+                    xml_file_col_type = str(column_node.attribute('type'))
                     column_dict["parent"] = None
                     try:
                         stc_file_col_type = COLUMN_TYPE_DICT[xml_file_col_type]
                         column_dict["col_type"] = stc_file_col_type
                     except KeyError:
                         column_dict["col_type"] = xml_file_col_type
-                    if len(unicode(column_node.attribute('lookup'))) != 0:
+                    if len(str(column_node.attribute('lookup'))) != 0:
                         lookup_no_list = []
-                        lookup_val = unicode(
+                        lookup_val = str(
                             column_node.attribute('lookup'))
 
                         # Check to add lookup into value list if it only
@@ -467,7 +488,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                             self.lookup_dict[lookup_val] = {"G": "General"}
                             self.lookup_colum_name_values[lookup_val.lstrip(
                                 "check_")] = OrderedDict([(u'General', 1)])
-                        column_dict["lookup"] = unicode(
+                        column_dict["lookup"] = str(
                             column_node.attribute('lookup'))
                         column_dict["col_type"] = COLUMN_TYPE_DICT['lookup']
                     else:
@@ -485,12 +506,12 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                     for r in range(relations_nodes.count()):
                         relation_tables_list = []
                         relation_node = relations_nodes.item(r).toElement()
-                        parent = unicode(relation_node.attribute(
+                        parent = str(relation_node.attribute(
                             'table'))
-                        parent_column = unicode(relation_node.attribute(
+                        parent_column = str(relation_node.attribute(
                             'column'))
-                        child_col = unicode(relation_node.attribute('fk'))
-                        display_name = unicode(relation_node.attribute(
+                        child_col = str(relation_node.attribute('fk'))
+                        display_name = str(relation_node.attribute(
                             'display_name'))
                         relation_tables_list.append(parent)
                         relation_tables_list.append(parent_column)
@@ -526,14 +547,14 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                     column_dict = OrderedDict()
                     geom_dict = OrderedDict()
-                    column_dict["col_name"] = unicode(
+                    column_dict["col_name"] = str(
                             geometry_node.attribute('column'))
                     column_dict["col_search"] = 'no'
                     column_dict["col_descrpt"] = ''
                     column_dict["lookup"] = None
-                    geom_dict["srid"] = unicode(
+                    geom_dict["srid"] = str(
                                             geometry_node.attribute('srid'))
-                    geom_dict["type"] = GEOMETRY_TYPES[unicode(
+                    geom_dict["type"] = GEOMETRY_TYPES[str(
                         geometry_node.attribute('type'))]
                     column_dict["col_type"] = geom_dict
 
@@ -552,7 +573,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             profile_child_node = element.item(i).toElement()
 
             if profile_child_node.tagName() == "lookup":
-                lookup_name = unicode(profile_child_node.attribute('name'))
+                lookup_name = str(profile_child_node.attribute('name'))
                 lookup_nodes = profile_child_node.childNodes()
                 self._set_lookup_data(lookup_name, lookup_nodes)
 
@@ -561,11 +582,11 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             profile_child_node = element.item(i).toElement()
 
             if profile_child_node.tagName() == "table":
-                table_name = unicode(profile_child_node.attribute('name'))
-                table_descrpt = unicode(profile_child_node.attribute(
+                table_name = str(profile_child_node.attribute('name'))
+                table_descrpt = str(profile_child_node.attribute(
                                         'fullname'))
                 self.table_list.append(table_descrpt)
-                table_shortname = unicode(profile_child_node.attribute(
+                table_shortname = str(profile_child_node.attribute(
                                     'fullname'))
                 self.table_list.append(table_shortname)
                 columns_nodes = profile_child_node.childNodes()
@@ -573,7 +594,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 self.entities.append(table_name)
 
         # Adding new lookups for documents and participating strs
-        for k, v in self.relations_dict.iteritems():
+        for k, v in self.relations_dict.items():
             if k == "social_tenure_relationship":
                 for relation in v:
                     lookup = "check_{0}_document_type".format(relation[0])
@@ -596,10 +617,10 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             child_node = element.item(i).toElement()
 
             if child_node.hasAttribute('version'):
-                self.version = unicode(child_node.attribute('version'))
+                self.version = str(child_node.attribute('version'))
 
             if child_node.tagName() == "profile":
-                profile = unicode(child_node.attribute('name')).\
+                profile = str(child_node.attribute('name')).\
                     replace(" ", "_")
                 profile_child_nodes = child_node.childNodes()
                 self._set_table_attributes(profile_child_nodes)
@@ -792,7 +813,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                         # Adds supporting document check
                         for k, v in self.check_doc_relation_lookup_dict.\
-                                iteritems():
+                                items():
                             if k == entity_key:
                                 entities.setAttribute("documentTypeLookup", v)
                                 entities.setAttribute("supportsDocuments",
@@ -825,7 +846,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                                     "Geometry")
                                         geometry.setAttribute(
                                             "layerDisplay", "")
-                                        for k, v in col_v.iteritems():
+                                        for k, v in col_v.items():
                                             geometry.setAttribute(k, v)
                                         column.appendChild(geometry)
                                     else:
@@ -844,12 +865,12 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                     relation = self.doc_old.createElement(
                                         "Relation")
                                     attribute = "fk_{0}_{1}_id_{2}_{3}".format(
-                                        pref, col_v, entity_name, unicode(
+                                        pref, col_v, entity_name, str(
                                             self.table_col_name))
                                     relation.setAttribute("name", attribute)
                                     column.appendChild(relation)
                                     entity_relation_dict[attribute] = [
-                                        col_v, entity_key, unicode(
+                                        col_v, entity_key, str(
                                                     self.table_col_name)]
                                 if col_k == 'parent':
                                     self.parent = col_v
@@ -904,7 +925,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                             entity_relation = self.doc_old.createElement(
                                     "EntityRelation")
                             entity_relation.setAttribute("parent", relation[0])
-                            for k, v in sp_party_dict.iteritems():
+                            for k, v in sp_party_dict.items():
                                 if k == "spatial_unit_table" and v == \
                                         relation[0]:
                                     entity_relation.setAttribute(
@@ -961,7 +982,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                 "parent", relation[0])
                             entity_relation.setAttribute(
                                 "child", relation[0] + "_supporting_document")
-                            for k, v in sp_party_dict.iteritems():
+                            for k, v in sp_party_dict.items():
                                 if k == "spatial_unit_table" and v == \
                                         relation[0]:
                                     entity_relation.setAttribute(
@@ -1087,7 +1108,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 # Adding relation that exists within column to Entity
                 # relation nodes
                 if entity_relation_dict:
-                    for k, v in entity_relation_dict.iteritems():
+                    for k, v in entity_relation_dict.items():
                         entity_relation = self.doc_old.createElement(
                                 "EntityRelation")
                         entity_relation.setAttribute("parent", v[0])
@@ -1484,7 +1505,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                 value_list_node = value_list_nodes.item(
                                     value_list_i).toElement()
                                 if value_list_node.tagName() == "ValueList":
-                                    lookup_name = unicode(
+                                    lookup_name = str(
                                         value_list_node.attribute('name'))
 
                                     if lookup_name == lookup:
@@ -1496,7 +1517,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                             code_value_node = \
                                                     code_value_nodes.item(
                                                         code_v_i).toElement()
-                                            code_value = unicode(
+                                            code_value = str(
                                                 code_value_node.attribute(
                                                     'value'))
                                             code_values_lists.append(
@@ -1550,7 +1571,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                     if int(value[lookup_col_index]) == fk:
                         value[lookup_col_index] = int(fk)
                 except (ValueError, TypeError):
-                    if value[lookup_col_index] == unicode(lookup_value):
+                    if value[lookup_col_index] == str(lookup_value):
                         value[lookup_col_index] = int(fk)
                         break
 
@@ -1563,7 +1584,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                     if int(value[lookup_col_index]) == fk:
                         value[lookup_col_index] = int(fk)
                 except (ValueError, TypeError):
-                    if value[lookup_col_index] == unicode(lookup_value):
+                    if value[lookup_col_index] == str(lookup_value):
                         value[lookup_col_index] = int(fk)
                         break
 
@@ -1594,7 +1615,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         Set social tenure relations tables
         :return:
         """
-        for k, v in self.entities_lookup_relations.iteritems():
+        for k, v in self.entities_lookup_relations.items():
             for keys, values in v.iteritems():
                 if keys.endswith("relations") and values:
                     for relation_key, relation_values in values.iteritems():
@@ -1615,7 +1636,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                         isinstance(data, datetime.date):
 
                         if data.find("\'") is not -1:
-                            data = unicode(data)
+                            data = str(data)
                             data = data.replace("'", "`")
 
                             inner_data_list.append(data)
@@ -1682,7 +1703,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                         # Converts Var Char lookup to foreign key and add to
                         #  config file if it dosen't exist
                         for check_up, lookup_data in \
-                                self.lookup_colum_name_values.iteritems():
+                                self.lookup_colum_name_values.items():
                             if check_up in columns:
                                 lookup_col_index = columns.index(check_up)
                                 num_lookups = len(lookup_data)
@@ -1707,17 +1728,17 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                 l = tuple(list(first_v) + new_last_v)
 
                                 new_values.append(l)
-                            new_values = unicode(new_values).strip(
+                            new_values = str(new_values).strip(
                                 "[]")
                         else:
 
                             values = self._clean_data(values)
 
-                            new_values = unicode(values).replace("[[", "(")
-                            new_values = unicode(new_values).replace("]]", ")")
-                            new_values = unicode(new_values).replace("[", "(")
-                            new_values = unicode(new_values).replace("]", ")")
-                            new_values = unicode(new_values).replace("None",
+                            new_values = str(values).replace("[[", "(")
+                            new_values = str(new_values).replace("]]", ")")
+                            new_values = str(new_values).replace("[", "(")
+                            new_values = str(new_values).replace("]", ")")
+                            new_values = str(new_values).replace("None",
                                                                  "NULL")
 
                         # Remove Unicode
@@ -1751,9 +1772,9 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
             progress_i = 0
 
-            for STR_tables, v in STR_TABLES.iteritems():
-                old_columns = unicode(v['old']).strip("()").replace("\'", "")
-                new_columns = unicode(v['new']).strip("()").replace("\'", "")
+            for STR_tables, v in STR_TABLES.items():
+                old_columns = str(v['old']).strip("()").replace("\'", "")
+                new_columns = str(v['new']).strip("()").replace("\'", "")
 
                 if STR_tables == 'social_tenure_relationship':
                     new_STR_table = self.config_profiles_prefix[0] + "_" + STR_tables
@@ -1779,7 +1800,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                                 new_STR_data_list.append(tuple(list_data))
 
-                            new_STR_data = unicode(new_STR_data_list).strip("[]").replace(
+                            new_STR_data = str(new_STR_data_list).strip("[]").replace(
                                 "u\'", "\'")
 
                             if not import_data(new_STR_table, new_columns,
@@ -1807,7 +1828,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                             STR_data = [tuple(i) for i in STR_data]
 
-                            new_STR_data_list = unicode(STR_data).strip("[]").replace(
+                            new_STR_data_list = str(STR_data).strip("[]").replace(
                                 "u\'", "\'")
 
                             if not import_data(new_STR_table, new_columns,
@@ -1835,7 +1856,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                             STR_data = [tuple(i) for i in STR_data]
 
-                            new_STR_data_list = unicode(STR_data).strip("[]").replace(
+                            new_STR_data_list = str(STR_data).strip("[]").replace(
                                 "u\'", "\'").replace("None", "NULL")
 
                             if not import_data(new_STR_table, new_columns,

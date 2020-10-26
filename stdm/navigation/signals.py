@@ -3,7 +3,7 @@
 Name                 : STDM Signals
 Description          : Custom STDM signals raised by custom navigation components
                         when the item is authorized in the given context
-Date                 : 3/June/2013 
+Date                 : 3/June/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -17,11 +17,11 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QObject, pyqtSignal
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 
 class STDMContentSignal(QObject):
     '''
     Name of the STDM content item
     '''
-    authorized = pyqtSignal('QString')
+    authorized = pyqtSignal(str)
     finished = pyqtSignal()

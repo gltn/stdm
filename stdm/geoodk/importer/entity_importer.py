@@ -19,20 +19,19 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
-from PyQt4.QtXml import QDomDocument
-from PyQt4.QtCore import QFile, QIODevice
-from stdm import current_profile
-from stdm import entity_attr_to_id, entity_attr_to_model
-from stdm import entity_model
-from stdm import STDMGeometry
-from stdm import GeometryColumn
-from stdm import SourceDocumentManager
-from PyQt4.QtCore import \
-    (
+from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtCore import QFile, QIODevice
+from stdm.settings import current_profile
+from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
+from stdm.data.configuration import entity_model
+from stdm.geoodk.importer.geometry_provider import STDMGeometry
+from stdm.data.configuration.columns import GeometryColumn
+from stdm.ui.sourcedocument import SourceDocumentManager
+from qgis.PyQt.QtCore import (
     QDir
 )
 
-from PyQt4.QtGui import QVBoxLayout
+from qgis.PyQt.QtWidgets import QVBoxLayout
 
 GEOMPARAM = 0
 GROUPCODE = 0
@@ -250,18 +249,18 @@ class Save2DB:
         party_ref_column = ''
         spatial_ref_column = ''
         if self.parents_ids is not None:
-            print self.parents_ids
+            print(self.parents_ids)
             if self.attributes.has_key('party'):
                 full_party_ref_column = self.attributes.get('party')
 
                 party_ref_column = full_party_ref_column + '_id'
-                print 'party{}.'.format(party_ref_column)
+                print('party{}.'.format(party_ref_column))
                 setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
             if self.attributes.has_key('spatial_unit'):
                 full_spatial_ref_column = self.attributes.get('spatial_unit')
                 spatial_ref_column = full_spatial_ref_column + '_id'
-                print 'sp.{}.'.format(spatial_ref_column)
+                print('sp.{}.'.format(spatial_ref_column))
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
             return party_ref_column, spatial_ref_column
 
@@ -447,7 +446,7 @@ class Save2DB:
                 pass
 
         elif col_type == 'MULTIPLE_SELECT':
-            print 'multiple select {}'.format(var)
+            print('multiple select {}'.format(var))
             if var == '' or var is None:
                 return None
             else:
@@ -490,13 +489,13 @@ class Save2DB:
 
         elif col_type == 'INT' or col_type == 'DOUBLE' or col_type == 'PERCENT':
             ret_val = None
-            if var <> '':
+            if var != '':
                 ret_val = var
             return ret_val
 
         elif col_type == 'DATETIME' or col_type == 'DATE':
             ret_val = None
-            if var <> '':
+            if var != '':
                 ret_val = var
             return ret_val
         else:

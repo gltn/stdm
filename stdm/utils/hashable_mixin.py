@@ -18,9 +18,9 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QDate
+from qgis.PyQt.QtCore import QDate
 
-from util import randomCodeGenerator
+from stdm.utils.util import randomCodeGenerator
 
 __all__ = ["HashableMixin"]
 
@@ -35,10 +35,9 @@ class HashableMixin(object):
 
     def __hash__(self):
         return hash(self._code)
-    
+
     def __cmp__(self,other):
         return cmp(self._code,other._code)
 
-        
-    
-        
+
+

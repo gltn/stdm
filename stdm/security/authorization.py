@@ -17,8 +17,9 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from roleprovider import RoleProvider
-from stdm import Content
+from stdm.security.roleprovider import RoleProvider
+from stdm.data.database import Content
+from stdm.utils.util import getIndex
 
 
 class RoleMapper(object):

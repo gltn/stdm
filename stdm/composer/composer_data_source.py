@@ -15,15 +15,15 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QIODevice
 )
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument
 )
-from stdm.stdm.utils import getIndex
-from stdm.stdm.utils import ReverseDict
+from stdm.utils.util import getIndex
+from stdm.utils.reverse_dict import ReverseDict
 
 __all__ = ["ComposerDataSource"]
 
@@ -176,7 +176,7 @@ class ComposerDataSource(object):
         """
         Helper method that creates a data source DOM element from a composer wrapper instance.
         """
-        from stdm.stdm.ui.composer import ComposerFieldSelector
+        from stdm.ui.composer import ComposerFieldSelector
 
         dataSourceElement = domDocument.createElement("DataSource")
         dataSourceElement.setAttribute("name",composerWrapper.selectedDataSource())

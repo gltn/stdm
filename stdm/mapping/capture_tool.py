@@ -17,13 +17,29 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
-from qgis.gui import *
-from qgis.core import *
+from qgis.PyQt.QtCore import (
+    QSettings,
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QColor
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication
+)
 
-from .edit_tool import StdmMapToolEdit
+from qgis.core import (
+    QgsVectorLayer,
+    QgsCsException,
+    QgsWkbTypes,
+    QgsMessageLog
+)
+from qgis.gui import (
+    QgsVertexMarker
+)
+
+from stdm.mapping.edit_tool import StdmMapToolEdit
 
 # Enums for digitization mode
 CAPTURE_NONE = 0
@@ -117,11 +133,11 @@ class StdmMapToolCapture(StdmMapToolEdit):
             return
 
         geomType = layer.geometryType()
-        if geomType == QGis.Point:
+        if geomType == QgsWkbTypes.PointGeometry:
             self._mode = CAPTURE_POINT
-        elif geomType == QGis.Line:
+        elif geomType == QgsWkbTypes.LineGeometry:
             self._mode = CAPTURE_LINE
-        elif geomType == QGis.Polygon:
+        elif geomType == QgsWkbTypes.PolygonGeometry:
             self._mode = CAPTURE_POLYGON
         else:
             self._mode = CAPTURE_NONE
@@ -233,8 +249,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
                                          QgsMessageLog.CRITICAL)
                 return 3, layerPoint, mapPoint
 
-        geomType = QGis.Polygon if self.captureMode() == CAPTURE_POLYGON \
-            else QGis.Line
+        geomType = QgsWkbTypes.PolygonGeometry if self.captureMode() == CAPTURE_POLYGON \
+            else QgsWkbTypes.LineGeometry
 
         if self._rubberBand is None:
             self._rubberBand = self.createRubberBand(geomType)

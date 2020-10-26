@@ -26,10 +26,11 @@ from distutils.errors import DistutilsFileError
 import glob
 import xml.etree.ElementTree as ET
 
-from PyQt4.QtXml import QDomDocument
-from PyQt4.QtCore import QFile, QIODevice
-from PyQt4.QtGui import (
-    QApplication,  QMessageBox
+from qgis.PyQt.QtXml import QDomDocument
+from qgis.PyQt.QtCore import QFile, QIODevice
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QMessageBox
 )
 
 from qgis.utils import (
@@ -39,11 +40,11 @@ from qgis.core import QgsApplication
 
 from sqlalchemy.sql.expression import text
 
-from registryconfig import (
+from stdm.settings.registryconfig import (
     composer_template_path,
     source_documents_path
 )
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     _execute,
     pg_views,
     table_column_names,
@@ -52,7 +53,7 @@ from stdm.stdm.data.pg_utils import (
 )
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
-from config_file_updater import ConfigurationFileUpdater
+from stdm.settings.config_file_updater import ConfigurationFileUpdater
 
 class TemplateFileHandler:
     def __init__(self):
@@ -357,7 +358,7 @@ class TemplateViewHandler:
         :return: List containing table.column
         :rtype: List
         """
-        pattern = re.compile(ur'[a-z]+\w+\.\w+')
+        pattern = re.compile(r'[a-z]+\w+\.\w+')
 
         table_cols = re.findall(pattern, view_definition)
         return table_cols

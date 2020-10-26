@@ -22,8 +22,10 @@ import os
 from collections import OrderedDict
 from decimal import Decimal
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import (
     QIcon,
+)
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QAction,
     QDialog,
@@ -32,18 +34,14 @@ from PyQt4.QtGui import (
     QFileDialog,
     QVBoxLayout
 )
-from PyQt4.QtCore import (
-    Qt,
-    SIGNAL
+from qgis.PyQt.QtCore import (
+    Qt
 )
 
-from qgis.core import *
-
-from stdm.stdm.utils import *
 from stdm.ui.sourcedocument import source_document_location
 from stdm.settings import current_profile
 
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     gen_random_string,
     entity_id_to_attr
 )
@@ -330,10 +328,10 @@ class BaseSTRNode(object):
                 self._collapse_action.setEnabled(False)
 
         #Disconnect then reconnect signals
-        if self.signalReceivers(self._expand_action) > 0:
+        if self.signalReceivers(self._expand_action, self._expand_action.triggered) > 0:
             self._expand_action.triggered.disconnect()
 
-        if self.signalReceivers(self._collapse_action) > 0:
+        if self.signalReceivers(self._collapse_action, self._collapse_action.triggered) > 0:
             self._collapse_action.triggered.disconnect()
 
         #Connect expand/collapse signals to the respective actions
@@ -377,11 +375,11 @@ class BaseSTRNode(object):
         '''
         pass
 
-    def signalReceivers(self, action, signal = "triggered()"):
+    def signalReceivers(self, action, signal):
         '''
         Convenience method that returns the number of receivers connected to the signal of the action object.
         '''
-        return action.receivers(SIGNAL(signal))
+        return action.receivers(signal)
 
     def _concat_names_values(self, display_mapping, formatter):
         """
@@ -509,7 +507,7 @@ class NoSTRNode(BaseSTRNode):
     Node for showing that no STR relationship exists.
     """
     def __init__(self,parent=None):
-        noSTRText = unicode(QApplication.translate("NoSTRNode",
+        noSTRText = str(QApplication.translate("NoSTRNode",
                                                    "No STR Defined"))
 
         super(NoSTRNode,self).__init__([noSTRText],parent)
@@ -527,7 +525,7 @@ class InvalidSTRNode(BaseSTRNode):
     """
 
     def __init__(self, parent=None):
-        invalid_str_text = unicode(QApplication.translate("NoSTRNode",
+        invalid_str_text = str(QApplication.translate("NoSTRNode",
                                                    "Invalid STR"))
 
         super(InvalidSTRNode, self).__init__([invalid_str_text], parent)
@@ -553,7 +551,7 @@ class STRNode(EntityNode):
         """
         Return the column name from the node value.
         """
-        n_data = unicode(node_data)
+        n_data = str(node_data)
         display_col_name = n_data.split(self.separator)[0]
         return display_col_name.replace(" ", "_").lower(), display_col_name
 
@@ -681,11 +679,11 @@ class STRNode(EntityNode):
             )
             doc_path = '{}/{}/{}/{}/{}{}'.format(
                 source_document_location(),
-                unicode(curr_profile.name),
-                unicode(model.source_entity),
-                unicode(doc_type_val),
-                unicode(model.document_identifier),
-                unicode(extension)
+                str(curr_profile.name),
+                str(model.source_entity),
+                str(doc_type_val),
+                str(model.document_identifier),
+                str(extension)
             )
             os.remove(doc_path)
 
@@ -695,11 +693,11 @@ class STRNode(EntityNode):
         """
         super(STRNode, self).manageActions(model_index, menu)
 
-        editReceivers = self.signalReceivers(self.editAction)
+        editReceivers = self.signalReceivers(self.editAction, self.editAction.triggered)
         if editReceivers > 0:
             self.editAction.triggered.disconnect()
 
-        deleteReceivers = self.signalReceivers(self.deleteAction)
+        deleteReceivers = self.signalReceivers(self.deleteAction, self.deleteAction.triggered)
         if deleteReceivers > 0:
             self.deleteAction.triggered.disconnect()
 

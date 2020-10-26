@@ -20,25 +20,28 @@ email                : gkahiu@gmail.com
 """
 from uuid import uuid4
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QObject,
-    SIGNAL,
     pyqtSignal,
     QFile,
     pyqtSlot,
     QDir
 )
 
-from stdm import (
+from stdm.utils.util import (
     guess_extension
 )
-from stdm import current_profile
+from stdm.settings import current_profile
 
 class NetworkFileManager(QObject):
     """
     Provides methods for managing the upload and download of source
     documents from a network repository.
     """
+
+    blockWritten = pyqtSignal(int)
+    completed = pyqtSignal(str)
+
     def __init__(self, network_repository ,parent = None):
         QObject.__init__(self,parent)
         self.networkPath = network_repository
@@ -56,7 +59,7 @@ class NetworkFileManager(QObject):
         self._entity_source = entity_source
         self._doc_type = doc_type
         self.fileID = self.generateFileID()
-        self.sourcePath = unicode(fileinfo.filePath())
+        self.sourcePath = str(fileinfo.filePath())
         profile_name = self.curr_profile.name
         root_dir = QDir(self.networkPath)
         doc_dir = QDir(u'{}/{}/{}/{}'.format(
@@ -102,9 +105,9 @@ class NetworkFileManager(QObject):
             destinationFile.write(inbytes)
             totalRead += len(inbytes)
             #Raise signal on each block written
-            self.emit(SIGNAL("blockWritten(int)"),totalRead)
+            self.blockWritten.emit(totalRead)
 
-        self.emit(SIGNAL("completed(QString)"),self.fileID)
+        self.completed.emit(self.fileID)
 
         srcFile.close()
         destinationFile.close()
@@ -190,8 +193,8 @@ class DocumentTransferWorker(QObject):
         """
         Initiate document transfer
         """
-        self.connect(self._file_manager, SIGNAL("blockWritten(int)"),self.onBlockWritten)
-        self.connect(self._file_manager, SIGNAL("completed(QString)"),self.onWriteComplete)
+        self._file_manager.blockWritten.connect(self.onBlockWritten)
+        self._file_manager.completed.connect(self.onWriteComplete)
         self._file_manager.uploadDocument(
             self._entity_source, self._doc_type, self._file_info
         )

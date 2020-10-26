@@ -18,11 +18,11 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.core import (
-    QgsMapLayerRegistry,
-    QgsDataSourceURI
+    QgsProject,
+    QgsDataSourceUri
 )
 
-from stdm import ReverseDict
+from stdm.utils.reverse_dict import ReverseDict
 
 def pg_layerNamesIDMapping():
     '''
@@ -30,13 +30,13 @@ def pg_layerNamesIDMapping():
     QGIS legend for only those layers from a postgres database.
     '''
     mapping = ReverseDict()
-    layers = QgsMapLayerRegistry.instance().mapLayers()
+    layers = QgsProject.instance().mapLayers()
 
-    for name,layer in layers.iteritems():
+    for name,layer in layers.items():
         if hasattr(layer, 'dataProvider'):
             if layer.dataProvider().name() == 'postgres':
                 layerConnStr = layer.dataProvider().dataSourceUri()
-                dataSourceURI = QgsDataSourceURI(layerConnStr)
+                dataSourceURI = QgsDataSourceUri(layerConnStr)
                 mapping[dataSourceURI.table()] = layer.id()
 
     return mapping

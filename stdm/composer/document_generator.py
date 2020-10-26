@@ -21,29 +21,29 @@ import logging
 from datetime import date, datetime
 from numbers import Number
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QObject,
     QIODevice,
     QFile,
     QFileInfo,
     QDir
 )
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtXml import QDomDocument
 
 from qgis.core import (
-    QgsComposerLabel,
-    QgsComposerMap,
-    QgsComposerPicture,
-    QgsComposition,
+    QgsLayoutItemLabel,
+    QgsLayoutItemMap,
+    QgsLayoutItemPicture,
+    QgsPrintLayout,
     QgsFeature,
     QgsGeometry,
-    QGis,
-    QgsMapLayerRegistry,
+    Qgis,
     QgsProject,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsWkbTypes
 )
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,29 +53,29 @@ from sqlalchemy.schema import (
     MetaData
 )
 
-from stdm import RegistryConfig
-from stdm import (
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.data.pg_utils import (
     geometryType,
     pg_table_exists,
     vector_layer
 )
-from stdm import STDMDb
-from stdm import (
+from stdm.data.database import STDMDb
+from stdm.settings import (
     current_profile
 )
-from stdm import (
+from stdm.ui.sourcedocument import (
     network_document_path
 )
-from stdm import PLUGIN_DIR
-from stdm import EntityValueFormatter
+from stdm.utils.util import PLUGIN_DIR
+from stdm.ui.forms.widgets import EntityValueFormatter
 
-from .composer_data_source import ComposerDataSource
-from .composer_wrapper import load_table_layers
-from .chart_configuration import ChartConfigurationCollection
-from .spatial_fields_config import SpatialFieldsConfiguration
-from .photo_configuration import PhotoConfigurationCollection
-from .qr_code_configuration import QRCodeConfigurationCollection
-from .table_configuration import TableConfigurationCollection
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.composer_wrapper import load_table_layers
+from stdm.composer.chart_configuration import ChartConfigurationCollection
+from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
+from stdm.composer.photo_configuration import PhotoConfigurationCollection
+from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
+from stdm.composer.table_configuration import TableConfigurationCollection
 
 LOGGER = logging.getLogger('stdm')
 
@@ -103,7 +103,7 @@ class DocumentGenerator(QObject):
 
         #For cleanup after document compositions have been created
         self._map_memory_layers = []
-        self.map_registry = QgsMapLayerRegistry.instance()
+        self.map_registry = QgsProject.instance()
         self._table_mem_layers = []
         self._feature_ids = []
 
@@ -305,7 +305,7 @@ class DocumentGenerator(QObject):
             """
 
             for rec in records:
-                composition = QgsComposition(self._map_settings)
+                composition = QgsPrintLayout(self._map_settings)
                 composition.loadFromTemplate(templateDoc)
                 ref_layer = None
                 #Set value of composer items based on the corresponding db values
@@ -380,7 +380,7 @@ class DocumentGenerator(QObject):
                                 bbox.scale(spfm.zoomLevel())
 
                             #Workaround for zooming to single point extent
-                            if ref_layer.wkbType() == QGis.WKBPoint:
+                            if ref_layer.wkbType() == QgsWkbTypes.Point:
                                 canvas_extent = self._iface.mapCanvas().fullExtent()
                                 cnt_pnt = bbox.center()
                                 canvas_extent.scale(1.0/32, cnt_pnt)
@@ -467,7 +467,7 @@ class DocumentGenerator(QObject):
         map canvas.
         """
         mode = map_item.previewMode()
-        if mode == QgsComposerMap.Rectangle:
+        if mode == QgsLayoutItemMap.Rectangle:
             tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
             layer_ids = [lyt.layerId() for lyt in tree_layers]
             map_item.setLayerSet(layer_ids)
@@ -541,7 +541,7 @@ class DocumentGenerator(QObject):
         vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
                          u"index=yes".format(geom_type, srid)
 
-        ref_layer = QgsVectorLayer(vl_geom_config, unicode(layer_name), "memory")
+        ref_layer = QgsVectorLayer(vl_geom_config, str(layer_name), "memory")
         return ref_layer
 
     def _load_table_layers(self, config_collection):
@@ -862,7 +862,7 @@ class DocumentGenerator(QObject):
                 results = self._dbSession.query(dsTable).limit(100).all()
 
             else:
-                if isinstance(queryValue, str) or isinstance(queryValue, unicode):
+                if isinstance(queryValue, str):
                     queryValue = u"'{0}'".format(queryValue)
                 sql = "{0} = :qvalue".format(queryField)
                 results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
@@ -892,7 +892,7 @@ class DocumentGenerator(QObject):
         """
         Factory for setting values based on the composer item type and value.
         """
-        if isinstance(composer_item,QgsComposerLabel):
+        if isinstance(composer_item,QgsLayoutItemLabel):
             # if value is None:
             #     composer_item.setText("")
             #     return
@@ -943,7 +943,7 @@ class DocumentGenerator(QObject):
                 return
 
         #Composer picture requires the absolute file path
-        elif isinstance(composer_item, QgsComposerPicture):
+        elif isinstance(composer_item, QgsLayoutItemPicture):
             if value:
                 composer_item.setPictureFile(value)
 

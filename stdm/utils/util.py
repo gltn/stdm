@@ -28,14 +28,17 @@ from datetime import (
 )
 import re
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QDir,
     Qt,
     QSettings,
     QFileInfo,
-    QSize, SIGNAL)
-from PyQt4.QtGui import (
+    QSize,
+    pyqtSignal)
+from qgis.PyQt.QtGui import (
     QPixmap,
+    QIcon)
+from qgis.PyQt.QtWidgets import (
     QFileDialog,
     QDialog,
     QAbstractItemView,
@@ -44,7 +47,11 @@ from PyQt4.QtGui import (
     QApplication,
     QCheckBox,
     QDialogButtonBox,
-    QLineEdit, QHBoxLayout, QIcon, QToolButton, QTableWidget, QTableView,
+    QLineEdit,
+    QHBoxLayout,
+    QToolButton,
+    QTableWidget,
+    QTableView,
     QListWidget)
 from sqlalchemy import (
     func
@@ -303,11 +310,11 @@ def openDialog( parent, filtering="GPX (*.gpx)", dialogMode="SingleFile"):
     if not fileDialog.exec_() == QDialog.Accepted:
             return None, None
     files = fileDialog.selectedFiles()
-    settings.setValue("/UI/lastShapefileDir", QFileInfo( unicode( files[0] ) ).absolutePath() )
+    settings.setValue("/UI/lastShapefileDir", QFileInfo( str( files[0] ) ).absolutePath() )
     if dialogMode == "SingleFile":
-      return ( unicode( files[0] ), unicode( fileDialog.encoding() ) )
+      return ( str( files[0] ), str( fileDialog.encoding() ) )
     else:
-      return ( files, unicode( fileDialog.encoding() ) )
+      return ( files, str( fileDialog.encoding() ) )
 
 
 def datetime_from_string(str_val):
@@ -487,7 +494,7 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     :type admin: Boolean
     :rtype: Dictionary
     """
-    from stdm.stdm.data.pg_utils import (
+    from stdm.data.pg_utils import (
         pg_views
     )
 
@@ -543,8 +550,7 @@ def db_user_tables(profile):
     short name as a key and value.
     :rtype: Dictionary
     """
-    from stdm.stdm.data.pg_utils import (
-
+    from stdm.data.pg_utils import (
         pg_tables
     )
     db_tables = []
@@ -1127,7 +1133,7 @@ def profile_and_user_views(profile, check_party=False):
     :return: List of profile and user views
     :rtype: List
     """
-    from stdm.stdm.data.pg_utils import (
+    from stdm.data.pg_utils import (
         pg_views
     )
     from stdm.data.configuration.stdm_configuration import (
@@ -1174,7 +1180,7 @@ def user_non_profile_views():
     from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration
     )
-    from stdm.stdm.data.pg_utils import (
+    from stdm.data.pg_utils import (
         pg_views
     )
     source_tables = []

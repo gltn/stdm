@@ -18,7 +18,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
+from qgis.PyQt.QtWidgets import QApplication
 
 class ModuleSettings(object):
     def __init__(self):
