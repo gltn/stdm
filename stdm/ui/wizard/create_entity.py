@@ -18,20 +18,25 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QValidator
-
-from ui_entity import Ui_dlgEntity
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-        QDialog,
+from qgis.PyQt.QtCore import (
+    QSettings,
+    Qt,
+    QRegExp
+)
+from qgis.PyQt.QtGui import (
+    QValidator,
+    QRegExpValidator
+)
+from qgis.PyQt.QtWidgets import  (
+    QDialog,
 	QApplication,
 	QMessageBox,
-        QRegExpValidator
-	)
+)
 
-from stdm.stdm.data.pg_utils import pg_table_exists
+from stdm.ui.wizard.ui_entity import Ui_dlgEntity
+from stdm.data.pg_utils import pg_table_exists
 
-from stdm.data.configuration.entity import *
+from stdm.data.configuration.entity import entity_factory
 from stdm.data.configuration.db_items import DbItem
 from stdm.ui.notification import NotificationBar
 
@@ -144,7 +149,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.show_message(self.tr("Please enter a valid entity name."))
             return
 
-        sn = unicode(self.edtTable.text().strip())
+        sn = str(self.edtTable.text().strip())
         short_name = sn[0].upper()+sn[1:]
 
         if self.entity is None:  # New entity
@@ -187,7 +192,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         # remove old entity
         old_short_name = self.entity.short_name
 
-        if old_short_name <> short_name:
+        if old_short_name != short_name:
             status = self.profile.rename(old_short_name, short_name)
             self.entity.short_name = short_name
 
@@ -219,7 +224,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :type short_name: str
         :rtype: str
         """
-        name = unicode(short_name).strip()
+        name = str(short_name).strip()
         name = name.replace(' ', "_")
         name = name.lower()
         #Ensure prefix is not duplicated in the names

@@ -18,8 +18,8 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from .connection import DatabaseConnection
-from stdm import RegistryConfig
+from stdm.data.connection import DatabaseConnection
+from stdm.settings.registryconfig import RegistryConfig
 
 
 class DatabaseConfig(object):

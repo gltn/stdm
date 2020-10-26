@@ -25,16 +25,45 @@ import calendar
 from collections import OrderedDict
 import copy
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtCore import (
+    Qt,
+    QDir,
+    pyqtSignal,
+    QDate,
+    QFile,
+    QThread,
+    QCoreApplication,
+    QEvent,
+    QIODevice
+)
+from qgis.PyQt.QtGui import (
+    QStandardItemModel,
+    QStandardItem,
+    QColor
+)
+from qgis.PyQt.QtWidgets import (
+    QWizard,
+    QMessageBox,
+    QAbstractItemView,
+    QDialog,
+    QApplication,
+    QMenu,
+    QFileDialog,
+    QTableView
+)
+from qgis.PyQt.QtXml import QDomDocument
 
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration
 )
+from stdm.ui.wizard.custom_item_model import (
+    EntitiesModel,
+    ColumnEntitiesModel,
+    STRColumnEntitiesModel,
+    LookupEntitiesModel
+)
 
-from stdm.stdm.utils import enable_drag_sort
+from stdm.utils.util import enable_drag_sort
 from stdm.data.configuration.columns import (
     ForeignKeyColumn,
         AdministrativeSpatialUnitColumn,
@@ -44,11 +73,11 @@ from stdm.data.configuration.columns import (
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
         pg_table_exists,
         table_column_names
 )
-from stdm.stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.license_doc import LicenseDocument
@@ -71,19 +100,17 @@ from stdm.ui.wizard.entity_attributes_editor import (
     TenureCustomAttributesEditor
 )
 
-from custom_item_model import *
+from stdm.ui.wizard.ui_stdm_config import Ui_STDMWizard
+from stdm.ui.wizard.profile_editor import ProfileEditor
+from stdm.ui.wizard.create_entity import EntityEditor
+from stdm.ui.wizard.column_editor import ColumnEditor
+from stdm.ui.wizard.create_lookup import LookupEditor
+from stdm.ui.wizard.create_lookup_value import ValueEditor
+from stdm.ui.wizard.entity_depend import EntityDepend
+from stdm.ui.wizard.column_depend import ColumnDepend
+from stdm.ui.wizard.copy_editor import CopyProfileEditor
 
-from ui_stdm_config import Ui_STDMWizard
-from profile_editor import ProfileEditor
-from create_entity import EntityEditor
-from column_editor import ColumnEditor
-from create_lookup import LookupEditor
-from create_lookup_value import ValueEditor
-from entity_depend import EntityDepend
-from column_depend import ColumnDepend
-from copy_editor import CopyProfileEditor
-
-from stdm.stdm.security import MultiPrivilegeProvider
+from stdm.security.privilege_provider import MultiPrivilegeProvider
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -300,7 +327,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         '''
         config_is_dirty = False
         cnt = len(self.stdm_config)
-        if cnt <> self.orig_assets_count:
+        if cnt != self.orig_assets_count:
             config_is_dirty = True
         return config_is_dirty
 
@@ -326,7 +353,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
 
     def config_is_dirty(self):
         cnt = len(self.stdm_config)
-        if cnt <> self.orig_assets_count:
+        if cnt != self.orig_assets_count:
             return True
         else:
             return False
@@ -344,7 +371,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         try:
             config_file = self.healthy_config_file()
         except(ConfigurationException, IOError) as e:
-            self.show_message(self.tr(unicode(e) ))
+            self.show_message(self.tr(str(e) ))
         return config_file
 
     def load_stdm_config(self, config_file):
@@ -538,11 +565,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
 
         # disable editing of view widgets
-        self.pftableView.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tbvColumns.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.lvEntities.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.lvLookups.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.lvLookupValues.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.pftableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tbvColumns.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvEntities.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvLookups.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvLookupValues.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0,0))
 
@@ -633,7 +660,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         except IOError as io_err:
             QMessageBox.critical(self.iface.mainWindow(),
                 self.tr('Load Configuration Error'),
-                unicode(io_err)
+                str(io_err)
             )
 
             return False
@@ -642,7 +669,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 self.tr('Load Configuration Error'),
-                unicode(c_ex)
+                str(c_ex)
             )
 
             return False
@@ -930,7 +957,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :type path: str
         :rtype: str
         """
-        rpath = r''.join(unicode(path))
+        rpath = r''.join(str(path))
         return rpath.replace("\\", "/")
 
     def read_settings_path(self, reg_keys, os_path):
@@ -1404,7 +1431,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 cfs.save()
 
                 #Save current profile to the registry
-                profile_name = unicode(self.cboProfile.currentText())
+                profile_name = str(self.cboProfile.currentText())
                 save_current_profile(profile_name)
 
                 # delete config backup file
@@ -1416,7 +1443,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self.draft_config = False
 
             except(ConfigurationException, IOError) as e:
-                self.show_message(self.tr(unicode(e) ))
+                self.show_message(self.tr(str(e) ))
 
         else:
             self.txtHtml.append(self.tr("Failed to update configuration. "
@@ -1444,7 +1471,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         try:
             cfs.save()
         except(ConfigurationException, IOError) as e:
-            self.show_message(self.tr(unicode(e)))
+            self.show_message(self.tr(str(e)))
 
     def save_current_configuration(self, filename):
         """
@@ -1457,7 +1484,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         try:
             cfs.save()
         except(ConfigurationException, IOError) as e:
-            self.show_message(self.tr(unicode(e) ))
+            self.show_message(self.tr(str(e) ))
 
     def delete_config_backup_file(self):
         QFile.remove(CONFIG_BACKUP_FILE)
@@ -1564,7 +1591,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         :param message:message to show on the file selector
         :type message: str
         """
-        sel_dir = str(QtGui.QFileDialog.getExistingDirectory(
+        sel_dir = str(QFileDialog.getExistingDirectory(
                 self, self.tr("Select Folder"), ""))
         return sel_dir
 
@@ -1634,7 +1661,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         self.cboProfile.insertItems(0, profiles)
 
     def set_current_profile(self, name):
-        if name <> '':
+        if name != '':
             index = self.cboProfile.findText(name, Qt.MatchFixedString)
             if index >= 0:
                 self.cboProfile.setCurrentIndex(index)
@@ -1684,14 +1711,14 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile = None
         prof_name = self.cboProfile.currentText()
         if len(prof_name) > 0:
-            profile = self.stdm_config.profile(unicode(prof_name))
+            profile = self.stdm_config.profile(str(prof_name))
         return profile
 
     def delete_profile(self):
         """
         Delete the current selected profile, but not the last one.
         """
-        profile_name = unicode(self.cboProfile.currentText())
+        profile_name = str(self.cboProfile.currentText())
 
         if self.cboProfile.count() == 1:
             msg = self.tr(u'{0} profile cannot be deleted. At least one '
@@ -1927,7 +1954,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             if entity.action == DbItem.DROP:
                 continue
 
-            if hasattr(entity, 'user_editable') and entity.TYPE_INFO <> 'VALUE_LIST':
+            if hasattr(entity, 'user_editable') and entity.TYPE_INFO != 'VALUE_LIST':
                 if entity.user_editable == False:
                     continue
 
@@ -2001,7 +2028,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if not name:
             return
 
-        profile = self.stdm_config.profile(unicode(name))
+        profile = self.stdm_config.profile(str(name))
         if profile is None:
             return
         self.edtDesc.setText(profile.description)
@@ -2364,7 +2391,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         row_id = self.tbvColumns.selectedIndexes()[0].row()
         col_name = self.tbvColumns.model().data(
                 self.tbvColumns.model().index(row_id, 0))
-        column = model_item.entities()[unicode(col_name)]
+        column = model_item.entities()[str(col_name)]
         return row_id, column, model_item
 
     def delete_column(self):
@@ -2523,9 +2550,9 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         depends = []
         #for profile in profiles:
         for entity in profile.entities.values():
-            if entity.action <> DbItem.DROP:
+            if entity.action != DbItem.DROP:
                 for column in entity.columns.values():
-                    if column.action <> DbItem.DROP:
+                    if column.action != DbItem.DROP:
                         depends.append(column.dependencies())
         return depends
 
@@ -2566,7 +2593,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self.lookup_value_view_model.clear()
         for v in values:
-            if v.updated_value <> "":
+            if v.updated_value != "":
                 v.value = v.updated_value
 
             val = QStandardItem(v.value)
@@ -2625,7 +2652,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         lookup = self.lookup_item_model.currentIndex().model().entity_byId(row_id)
 
         # Hack to rename a lookup value
-        vt = unicode(value_text)
+        vt = str(value_text)
         # As the lookup value dictionary is converted to md5, convert this value
         hashed_vt = lookup.value_hash(vt)
         try:
@@ -2656,7 +2683,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         row_id, lookup = self._get_entity_item(self.lvLookups)
         model_index = self.lvLookupValues.selectedIndexes()[0]
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
-        lookup.remove_value(unicode(value_text))
+        lookup.remove_value(str(value_text))
         self.add_values(lookup.values.values())
 
     def show_message(self, message, msg_icon=QMessageBox.Critical):
@@ -2719,11 +2746,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         msgbox.setText(msg)
         msgbox.setStandardButtons(
                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-        btnY = msgbox.button(QtGui.QMessageBox.Yes)
+        btnY = msgbox.button(QMessageBox.Yes)
         btnY.setText(self.tr('Save'))
-        btnN = msgbox.button(QtGui.QMessageBox.No)
+        btnN = msgbox.button(QMessageBox.No)
         btnN.setText(self.tr("Don't Save"))
-        btnC = msgbox.button(QtGui.QMessageBox.Cancel)
+        btnC = msgbox.button(QMessageBox.Cancel)
         btnC.setText(self.tr("Cancel"))
         msgbox.setDefaultButton(QMessageBox.Yes)
         result = msgbox.exec_()

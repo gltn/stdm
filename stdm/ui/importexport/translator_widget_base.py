@@ -19,14 +19,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QMessageBox
+from qgis.PyQt.QtWidgets import QMessageBox
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
    table_column_names,
    pg_tables,
    spatial_tables
 )
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     profile_user_tables
 )
 from stdm.settings import current_profile

@@ -22,22 +22,24 @@ email                : stdm@unhabitat.org
 import logging
 
 from copy import deepcopy
-from PyQt4.QtGui import QApplication
+
+from qgis.PyQt.QtWidgets import QApplication
+
 from sqlalchemy.sql.expression import text
 from migrate.changeset import *
 
-from stdm import (
+from stdm.data.pg_utils import (
     _execute,
     drop_view,
     pg_table_exists
 )
-from stdm import (
+from stdm.data.configuration.columns import (
     ForeignKeyColumn,
     MultipleSelectColumn
 )
-from stdm import ConfigurationException
+from stdm.data.configuration.exception import ConfigurationException
 
-from stdm import entity_model
+from stdm.data.configuration import entity_model
 
 LOGGER = logging.getLogger('stdm')
 

@@ -18,9 +18,13 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ****
 """
-from PyQt4.QtGui import QMessageBox, QWidget, QApplication
-from .foreign_key_mapper import ForeignKeyMapper
-from stdm import DeclareMapping
+from qgis.PyQt.QtWidgets import (
+    QMessageBox,
+    QWidget,
+    QApplication
+)
+from stdm.ui.foreign_key_mapper import ForeignKeyMapper
+from stdm.ui.stdmdialog import DeclareMapping
 
 
 class ForeignKeyMapperDialog(QWidget):
@@ -41,7 +45,7 @@ class ForeignKeyMapperDialog(QWidget):
         Initialize foreign key mapper and pass the browser and display column
         :return:
         """
-        from stdm import ForeignKeyBrowser
+        from stdm.ui.entity_browser import ForeignKeyBrowser
         self.model()
 
         self.personFKMapper = ForeignKeyMapper()

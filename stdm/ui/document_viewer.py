@@ -24,31 +24,31 @@ import os
 
 import logging
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QMdiSubWindow,
     QMdiArea,
     QApplication,
     QMessageBox,
     QLabel,
-    QImage,
-    QPixmap,
     QWidget,
-    QPalette,
     QSizePolicy,
     QScrollArea,
-    QIcon,
     QAction,
-    QPrintDialog,
-    QPrinter,
     QDialog,
-    QPainter,
-    QWheelEvent,
     QMainWindow,
     QMenu,
     QDesktopWidget,
-    QResizeEvent
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import (
+    QImage,
+    QPixmap,
+    QPalette,
+    QIcon,
+    QPainter,
+    QWheelEvent,
+    QResizeEvent,
+)
+from qgis.PyQt.QtCore import (
     Qt,
     pyqtSignal,
     QSignalMapper,
@@ -56,8 +56,12 @@ from PyQt4.QtCore import (
     QFileInfo,
     QSize
 )
+from qgis.PyQt.QtPrintSupport import (
+    QPrinter,
+    QPrintDialog
+)
 
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     guess_extension
 )
 from stdm.settings import current_profile
@@ -327,7 +331,7 @@ class DocumentViewer(QMdiSubWindow):
 
                 self.update_size(self.doc_width, self.doc_height)
             except Exception as message:
-                LOGGER.debug(unicode(message))
+                LOGGER.debug(str(message))
 
     def update_size(self, doc_width, doc_height):
         """
@@ -626,8 +630,8 @@ class DocumentViewManager(QMainWindow):
             )
 
             abs_path = network_repository + "/" +profile_name + '/' +\
-                       unicode(source_entity) + "/" + unicode(doc_type) + "/" +\
-                       unicode(file_id) + unicode(file_extension)
+                       str(source_entity) + "/" + str(doc_type) + "/" +\
+                       str(file_id) + str(file_extension)
 
         return abs_path
 

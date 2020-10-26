@@ -44,7 +44,7 @@ from stdm.data.database import (
 )
 from . import _bind_metadata
 from stdm.data.configuration.db_items import DbItem
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     drop_cascade_column
 )
 

@@ -18,21 +18,31 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-from stdm.stdm.security.roleprovider import RoleProvider
+from qgis.PyQt.QtCore import (
+    QObject,
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QStandardItemModel,
+    QIcon,
+    QPixmap,
+    QStandardItem
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+from stdm.security.roleprovider import RoleProvider
 from stdm.data.database import (
     Content,
     Role
 )
 from stdm.data.qtmodels import UsersRolesModel
-from stdm.stdm.utils import getIndex
-from ui_content_auth import Ui_frmContentAuth
+from stdm.utils.util import getIndex
+from stdm.ui.ui_content_auth import Ui_frmContentAuth
 
 from stdm.settings import current_profile
 
-from stdm.stdm.security import SinglePrivilegeProvider
+from stdm.security.privilege_provider import SinglePrivilegeProvider
 
 class contentAuthDlg(QDialog, Ui_frmContentAuth):
     '''
@@ -62,10 +72,10 @@ class contentAuthDlg(QDialog, Ui_frmContentAuth):
         self.lstRoles.setEnabled(False)
 
         #Connect signals
-        QObject.connect(self.lstContent, SIGNAL("activated(const QModelIndex&)"),self.onContentClicked)
-        QObject.connect(self.lstContent, SIGNAL("clicked(const QModelIndex&)"),self.onContentClicked)
-        QObject.connect(self.lstRoles, SIGNAL("activated(const QModelIndex&)"),self.onRoleSelected)
-        QObject.connect(self.lstRoles, SIGNAL("clicked(const QModelIndex&)"),self.onRoleSelected)
+        self.lstContent.activated.connect(self.onContentClicked)
+        self.lstContent.clicked.connect(self.onContentClicked)
+        self.lstRoles.activated.connect(self.onRoleSelected)
+        self.lstRoles.clicked.connect(self.onRoleSelected)
 
     def loadContent(self):
         '''

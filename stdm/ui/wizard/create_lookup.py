@@ -18,19 +18,24 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QValidator
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QRegExp
+)
+from qgis.PyQt.QtGui import (
+    QValidator,
+    QRegExpValidator
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox,
+    QDialogButtonBox
+)
 
-from ui_lookup_entity import Ui_dlgLookup
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from stdm.ui.wizard.ui_lookup_entity import Ui_dlgLookup
+
 from stdm.ui.notification import NotificationBar
-from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
     ValueList,
     CodeValue,
@@ -72,7 +77,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
             self.edtName.setText(
                     self.lookup.short_name.replace('check_',''))
             self.edtName.setEnabled(not self.lookup.entity_in_database)
-            self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(not self.lookup.entity_in_database)
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(not self.lookup.entity_in_database)
         self.edtName.textChanged.connect(self.validate_text)
 
     def show_notification(self, message):
@@ -100,8 +105,8 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         locale = QSettings().value("locale/userLocale")[0:2]
         last_character = text[-1:]
         if locale == 'en':
-            name_regex = QtCore.QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
-            name_validator = QtGui.QRegExpValidator(name_regex)
+            name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
+            name_validator = QRegExpValidator(name_regex)
             text_edit.setValidator(name_validator)
             QApplication.processEvents()
 
@@ -132,14 +137,14 @@ class LookupEditor(QDialog, Ui_dlgLookup):
     def format_lookup_name(self, name):
         """
         Replace spaces with underscore in a name string
-        :param name: Name to replace spaces 
+        :param name: Name to replace spaces
         :type name: str
         :rtype: str
         """
         formatted_name = str(name).strip()
         formatted_name = formatted_name.replace(' ', "_")
         return formatted_name.lower()
-    
+
     def create_lookup(self, name):
         """
         Creates a lookup entity and add it to a profile.
@@ -151,7 +156,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         name = self.format_lookup_name(name)
         new_lookup = self.profile.create_entity(name, value_list_factory)
         return new_lookup
-	    
+
     def accept(self):
         if self.edtName.text() == '' or self.edtName.text() == '_':
             self.error_message(
@@ -167,7 +172,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
                 "Select another name for the lookup"))
             return
 
-        short_name = unicode(self.edtName.text())
+        short_name = str(self.edtName.text())
 
         if self.lookup is None:  # new lookup
             if self.duplicate_check(short_name):
@@ -203,7 +208,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
     def reject(self):
         self.done(0)
-    
+
     def error_message(self, message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)

@@ -19,20 +19,17 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from ui_bigint_property import Ui_BigintProperty
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from stdm.ui.wizard.ui_bigint_property import Ui_BigintProperty
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
+from qgis.PyQt.QtGui import QIntValidator
 
-from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
-        ValueList, 
-        CodeValue, 
+        ValueList,
+        CodeValue,
         value_list_factory
         )
 
@@ -60,7 +57,7 @@ class BigintProperty(QDialog, Ui_BigintProperty):
         """
         Initializes form widgets
         """
-        validator = QtGui.QIntValidator()
+        validator = QIntValidator()
         self.edtMinVal.setValidator(validator)
         self.edtMaxVal.setValidator(validator)
 
@@ -71,7 +68,7 @@ class BigintProperty(QDialog, Ui_BigintProperty):
 
         self.edtMinVal.setEnabled(not self.in_db)
         self.edtMaxVal.setEnabled(not self.in_db)
-	
+
     def add_values(self):
         """
         Sets min/max properties with values from form widgets
@@ -85,14 +82,14 @@ class BigintProperty(QDialog, Ui_BigintProperty):
         :rtype: int
         """
         return self._min_val
-        
+
     def max_val(self):
         """
         Returns maximum property
         :rtype: int
         """
         return self._max_val
-	    
+
     def accept(self):
         if self.edtMinVal.text()=='':
             self.show_message(QApplication.translate("BigintPropetyEditor",

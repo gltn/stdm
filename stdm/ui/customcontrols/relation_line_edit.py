@@ -17,25 +17,27 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QApplication,
     QMessageBox,
-    QIcon,
-    QItemSelectionModel,
     QLineEdit,
     QSpinBox,
     QDoubleSpinBox,
-    QPixmap,
     QStyle,
     QToolButton,
     QWidget
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QPixmap,
+)
+from qgis.PyQt.QtCore import (
     Qt,
     QModelIndex,
-    QVariant
+    QVariant,
+    QItemSelectionModel
 )
 from qgis.utils import (
     iface
@@ -45,14 +47,14 @@ from qgis.core import edit, QgsFeature, QgsExpression, QgsFeatureRequest
 from stdm.data.database import AdminSpatialUnitSet
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration import entity_model
-from stdm.stdm.utils import entity_id_to_attr, code_columns
+from stdm.utils.util import entity_id_to_attr, code_columns
 from stdm.data.code_generator import CodeGenerator
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.admin_unit_manager import SELECT
 from stdm.ui.lookup_value_selector import LookupValueSelector
 from stdm.settings import current_profile
 
-from stdm.stdm.data.pg_utils import vector_layer
+from stdm.data.pg_utils import vector_layer
 
 class ForeignKeyLineEdit(QLineEdit):
     """
@@ -266,7 +268,7 @@ class RelatedEntityLineEdit(ForeignKeyLineEdit):
                 if display_val is None:
                     display_val = ''
 
-                display_vals.append(unicode(display_val))
+                display_vals.append(str(display_val))
 
         try:
             return cls.COLUMN_SEPARATOR.join(display_vals)
@@ -894,4 +896,4 @@ class ExpressionLineEdit(QLineEdit):
         display columns.
         """
         if value is not None:
-            self.setText(unicode(value))
+            self.setText(str(value))

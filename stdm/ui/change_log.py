@@ -19,11 +19,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication
 )
-from PyQt4.QtCore import QUrl, Qt
+from qgis.PyQt.QtCore import (
+    QUrl,
+    Qt
+)
 
 # from stdm.settings.registryconfig import (
 #     RegistryConfig,
@@ -34,7 +37,7 @@ from PyQt4.QtCore import QUrl, Qt
 # from notification import NotificationBar, ERROR
 
 from stdm.ui.ui_change_log import Ui_ChangeLog
-from stdm.stdm.utils import file_text
+from stdm.utils.util import file_text
 
 class ChangeLog(QDialog, Ui_ChangeLog):
     def __init__(self, parent=None):

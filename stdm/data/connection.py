@@ -4,7 +4,7 @@ Name                 : Database Connection
 Description          : Class that represents the minimum properties for
                         connecting to a PostgreSQL database. The username and
                         password will not be persisted in this class
-Date                 : 25/May/2013 
+Date                 : 25/May/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -20,7 +20,7 @@ email                : gkahiu@gmail.com
 """
 import sqlalchemy
 from sqlalchemy import create_engine
-from qgis.core import QgsDataSourceURI
+from qgis.core import QgsDataSourceUri
 
 class DatabaseConnection(object):
     '''
@@ -31,7 +31,7 @@ class DatabaseConnection(object):
         self.Port = Port
         self.Database = Database
         self.User = None
-        
+
     def toAlchemyConnection(self):
         '''
         Returns the corresponding connection string in SQLAlchemy format
@@ -40,13 +40,13 @@ class DatabaseConnection(object):
             return "postgresql+psycopg2://%s:%s@%s:%s/%s"%(self.User.UserName,self.User.Password,self.Host,self.Port,self.Database)
         else:
             return None
-    
+
     def toPsycopg2Connection(self):
         '''
         Returns the corresponding connection string in Psycopg2 format
         '''
         pass
-    
+
     def validateConnection(self):
         '''
         Return whether the connection is valid or not
@@ -65,7 +65,7 @@ class DatabaseConnection(object):
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = oe.message
         except Exception as e:
-            errMsg = unicode(e)
+            errMsg = str(e)
 
         return isValid, errMsg
 
@@ -74,16 +74,16 @@ class DatabaseConnection(object):
         Returns a QgsDataSourceURI object with database connection properties
         defined.
         """
-        dt_source = QgsDataSourceURI()
-        dt_source.setConnection(self.Host, unicode(self.Port), self.Database,
-                                self.User.UserName, unicode(self.User.Password))
+        dt_source = QgsDataSourceUri()
+        dt_source.setConnection(self.Host, str(self.Port), self.Database,
+                                self.User.UserName, str(self.User.Password))
 
         return dt_source
-        
-        
-        
-        
-        
-        
-    
-    
+
+
+
+
+
+
+
+

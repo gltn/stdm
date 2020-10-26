@@ -19,12 +19,12 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     pyqtSignal
 )
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
@@ -47,8 +47,8 @@ from stdm.data.configuration.columns import (
     VirtualColumn
 )
 from stdm.data.mapping import MapperMixin
-from stdm.stdm.data.pg_utils import table_column_names
-from stdm.stdm.utils import format_name
+from stdm.data.pg_utils import table_column_names
+from stdm.utils.util import format_name
 from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
@@ -58,7 +58,7 @@ from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
 from stdm.ui.forms import entity_dlg_extension
 
-from stdm.stdm.navigation import (
+from stdm.navigation.content_group import (
     TableContentGroup
 )
 

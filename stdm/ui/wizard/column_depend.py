@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : column_depend  
+Name                 : column_depend
 Description          : show column dependecies
 Date                 : 01/May/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
@@ -18,22 +18,23 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from ui_column_depend import Ui_dlgColumnDepend
+from stdm.ui.wizard.ui_column_depend import Ui_dlgColumnDepend
 
-from PyQt4.QtGui import(
-        QDialog,
-        QTreeWidgetItem,
-        QApplication,
-        QFont,
-        QPixmap
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QTreeWidgetItem,
+    QApplication,
+)
+from qgis.PyQt.QtGui import (
+    QFont,
+    QPixmap
 )
 
-from PyQt4.QtCore import *
 
 class ColumnDepend(QDialog, Ui_dlgColumnDepend):
     def __init__(self, parent, column=None, dependencies=None):
         QDialog.__init__(self, parent)
-        self.setupUi(self) 
+        self.setupUi(self)
         self.column = column
         self.dependencies = dependencies
 

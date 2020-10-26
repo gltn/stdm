@@ -17,13 +17,20 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtGui import (
+    QIntValidator
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QApplication,
+    QMessageBox
+)
 
-from stdm import DatabaseConfig
-from stdm import DatabaseConnection
+from stdm.data.config import DatabaseConfig
+from stdm.data.connection import DatabaseConnection
 
-from .ui_dbconn import Ui_frmDbConn
+from stdm.ui.ui_dbconn import Ui_frmDbConn
 
 class dbconnDlg(QDialog, Ui_frmDbConn):
     '''
@@ -91,6 +98,6 @@ class dbconnDlg(QDialog, Ui_frmDbConn):
                 dbconfig.write(self.dbconn)
             except Exception as ex:
                 QMessageBox.critical(self, QApplication.translate("DbConnectionDialog","Error saving settings"),
-                                 QApplication.translate("DbConnectionDialog",unicode(ex.message)))
+                                 QApplication.translate("DbConnectionDialog",str(ex.message)))
 
             self.accept()

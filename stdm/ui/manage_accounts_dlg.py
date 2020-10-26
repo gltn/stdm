@@ -16,16 +16,29 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-from stdm.stdm.security.membership import Membership
-from stdm.stdm.security.roleprovider import RoleProvider
+from qgis.PyQt.QtCore import (
+    QObject,
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel,
+    QIcon,
+    QPixmap
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QApplication,
+    QMessageBox
+)
+from stdm.security.membership import Membership
+from stdm.security.roleprovider import RoleProvider
 from stdm.data.qtmodels import UsersRolesModel
-from stdm.stdm.utils import getIndex
-from ui_user_role_manage import Ui_frmSysManageAccounts
-from .new_user_dlg import newUserDlg
-from .new_role_dlg import newRoleDlg
+from stdm.utils.util import getIndex
+from stdm.ui.ui_user_role_manage import Ui_frmSysManageAccounts
+from stdm.ui.new_user_dlg import newUserDlg
+from stdm.ui.new_role_dlg import newRoleDlg
 
 class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
     '''
@@ -57,37 +70,37 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
         #Set properties for 'Users' button box
         btnUserNew = self.btnManageUsers.button(QDialogButtonBox.Ok)
         btnUserNew.setText(QApplication.translate("manageAccountsDlg", "New") + "...")
-        QObject.connect(btnUserNew, SIGNAL("clicked()"),self.onNewUser)
+        btnUserNew.clicked.connect(self.onNewUser)
 
         btnUserEdit = self.btnManageUsers.button(QDialogButtonBox.Save)
         btnUserEdit.setText(QApplication.translate("manageAccountsDlg", "Edit"))
-        QObject.connect(btnUserEdit, SIGNAL("clicked()"),self.onEditUser)
+        btnUserEdit.clicked.connect(self.onEditUser)
 
         btnUserDelete = self.btnManageUsers.button(QDialogButtonBox.Cancel)
         btnUserDelete.setText(QApplication.translate("manageAccountsDlg", "Delete"))
-        QObject.connect(btnUserDelete, SIGNAL("clicked()"),self.onDeleteUser)
+        btnUserDelete.clicked.connect(self.onDeleteUser)
 
         #Set properties for 'Roles' button box
         btnRoleNew = self.btnManageRoles.button(QDialogButtonBox.Ok)
         btnRoleNew.setText(QApplication.translate("manageAccountsDlg", "New") + "...")
-        QObject.connect(btnRoleNew, SIGNAL("clicked()"),self.onNewRole)
+        btnRoleNew.clicked.connect(self.onNewRole)
 
         btnRoleDelete = self.btnManageRoles.button(QDialogButtonBox.Cancel)
         btnRoleDelete.setText(QApplication.translate("manageAccountsDlg", "Delete"))
-        QObject.connect(btnRoleDelete, SIGNAL("clicked()"),self.onDeleteRole)
+        btnRoleDelete.clicked.connect(self.onDeleteRole)
 
         btnRoleSync = self.btnManageRoles.button(QDialogButtonBox.Apply)
         btnRoleSync.setText(QApplication.translate("manageAccountsDlg", "Sync"))
         btnRoleSync.setToolTip(QApplication.translate("manageAccountsDlg", "Synchronize STDM roles with database roles"))
-        QObject.connect(btnRoleSync, SIGNAL("clicked()"),self.onSyncRoles)
+        btnRoleSync.clicked.connect(self.onSyncRoles)
 
         #Data view signals
-        QObject.connect(self.lstRoles, SIGNAL("clicked(const QModelIndex&)"),self.onRoleSelected)
-        QObject.connect(self.lstRoles, SIGNAL("activated(const QModelIndex&)"),self.onRoleSelected)
-        QObject.connect(self.lstMappingRoles, SIGNAL("activated(const QModelIndex&)"),self.onRoleMappingSelected)
-        QObject.connect(self.lstMappingRoles, SIGNAL("clicked(const QModelIndex&)"),self.onRoleMappingSelected)
-        QObject.connect(self.lstMappingUsers, SIGNAL("activated(const QModelIndex&)"),self.onUserMappingSelected)
-        QObject.connect(self.lstMappingUsers, SIGNAL("clicked(const QModelIndex&)"),self.onUserMappingSelected)
+        self.lstRoles.clicked.connect(self.onRoleSelected)
+        self.lstRoles.activated.connect(self.onRoleSelected)
+        self.lstMappingRoles.clicked.connect(self.onRoleMappingSelected)
+        self.lstMappingRoles.activated.connect(self.onRoleMappingSelected)
+        self.lstMappingUsers.clicked.connect(self.onUserMappingSelected)
+        self.lstMappingUsers.activated.connect(self.onUserMappingSelected)
 
         #Disable any action by the user in the user roles mapping list view
         self.lstMappingUsers.setEnabled(False)

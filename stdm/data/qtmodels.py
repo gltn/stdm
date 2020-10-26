@@ -1,10 +1,10 @@
 """
 /***************************************************************************
 Name                 : PyQT Models
-Description          : Contains entity models for using in PyQt widgets 
-                       for those controls implementing the Model/View 
-                       framework                        
-Date                 : 4/June/2013 
+Description          : Contains entity models for using in PyQt widgets
+                       for those controls implementing the Model/View
+                       framework
+Date                 : 4/June/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -21,17 +21,30 @@ email                : gkahiu@gmail.com
 
 from decimal import Decimal
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtGui import (
+    QColor,
+    QFont
+)
 
-from .modelformatters import (
+from qgis.PyQt.QtCore import (
+    QAbstractTableModel,
+    QModelIndex,
+    Qt,
+    QVariant,
+    QAbstractListModel,
+    QDate,
+    QSortFilterProxyModel,
+    QAbstractItemModel
+)
+
+from stdm.data.modelformatters import (
     LookupFormatter,
-    DoBFormatter
+    DoBFormatter,
 )
 #Standard colors for widgets supporting alternating rows
 ALT_COLOR_EVEN = QColor(255,165,79)
 ALT_COLOR_ODD = QColor(135,206,255)
- 
+
 class EnumeratorTableModel(QAbstractTableModel):
     '''
     Model for displaying enumerators in a tableview
@@ -40,13 +53,13 @@ class EnumeratorTableModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self,parent)
         self.enumdata = enumdata
         self.headerdata = headerdata
-        
+
     def rowCount(self,parent = QModelIndex()):
         return len(self.enumdata)
-    
+
     def columnCount(self,parent):
         return 4
-    
+
     def data(self,index, role):
         if not index.isValid():
             return QVariant()
@@ -59,40 +72,40 @@ class EnumeratorTableModel(QAbstractTableModel):
             else:
                 #Blue
                 return QVariant(ALT_COLOR_ODD)
-        else:            
+        else:
             return QVariant()
-    
+
     def headerData(self,col,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
         return QVariant()
-    
+
     def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:            
+        if index.isValid() and role == Qt.EditRole:
             self.enumdata[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
             return True
-        
-        return False    
-    
+
+        return False
+
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self.enumdata):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
+
         for i in range(rows):
             self.enumdata.insert(position,["","","",""])
-        
+
         self.endInsertRows()
-        
+
         return True
-    
+
 class DepartmentTableModel(QAbstractTableModel):
     '''
     Model for displaying departments in a tableview
@@ -101,13 +114,13 @@ class DepartmentTableModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self,parent)
         self.dptdata = departmentdata
         self.headerdata = headerdata
-        
+
     def rowCount(self, parent = QModelIndex()):
         return len(self.dptdata)
-    
+
     def columnCount(self, parent = QModelIndex()):
         return 3
-    
+
     def data(self,index, role):
         if not index.isValid():
             return QVariant()
@@ -120,52 +133,52 @@ class DepartmentTableModel(QAbstractTableModel):
             else:
                 #Blue
                 return QVariant(ALT_COLOR_ODD)
-        else:            
+        else:
             return QVariant()
-    
+
     def headerData(self,col,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
         return QVariant()
-    
+
     def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:            
+        if index.isValid() and role == Qt.EditRole:
             self.dptdata[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
             return True
-        
-        return False    
-    
+
+        return False
+
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self.dptdata):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
+
         for i in range(rows):
             self.dptdata.insert(position,["","","",""])
-        
+
         self.endInsertRows()
-        
+
         return True
-        
+
     def removeRows(self,position,count,parent = QModelIndex()):
         if position < 0 or position > len(self.dptdata):
             return False
-        
+
         self.beginRemoveRows(parent,position,position + count - 1)
-        
-        for i in range(count):            
+
+        for i in range(count):
             del self.dptdata[position]
-            
+
         self.endRemoveRows()
-        
-        return True    
+
+        return True
 
 class QuestionnaireTableModel(QAbstractTableModel):
     '''
@@ -178,39 +191,39 @@ class QuestionnaireTableModel(QAbstractTableModel):
         self._wkformatter = WorksiteFormatter()
         self._enumformatter = InvestigatorFormatter()
         self._respformatter = RespondentFormatter()
-        
+
     def rowCount(self, parent = QModelIndex()):
         return len(self.questdata)
-    
+
     def columnCount(self, parent = QModelIndex()):
         return 8
-    
+
     def data(self,index, role):
-        
+
         indexData = self.questdata[index.row()][index.column()]
-        
+
         if not index.isValid():
             return QVariant()
-        
+
         elif role == Qt.DisplayRole:
-            
-            col = index.column()                        
-            #Specify formatters for columns with 
-            if col == 4: 
-                #Worksite formatter               
-                return self._wkformatter.setDisplay(indexData) 
+
+            col = index.column()
+            #Specify formatters for columns with
+            if col == 4:
+                #Worksite formatter
+                return self._wkformatter.setDisplay(indexData)
             elif col == 5:
                 #Enumerator formatter
-                return self._enumformatter.setDisplay(indexData) 
+                return self._enumformatter.setDisplay(indexData)
             elif col == 6:
-                return self._respformatter.setDisplay(indexData)           
+                return self._respformatter.setDisplay(indexData)
             else:
                 return QVariant(indexData)
-        
-        #For columns representing foreign keys then we need to pass the integer value to the editor    
+
+        #For columns representing foreign keys then we need to pass the integer value to the editor
         elif role == Qt.EditRole:
             return QVariant(indexData)
-            
+
         elif role == Qt.BackgroundRole:
             if index.row() % 2 == 0:
                 #Orange
@@ -218,57 +231,57 @@ class QuestionnaireTableModel(QAbstractTableModel):
             else:
                 #Blue
                 return QVariant(ALT_COLOR_ODD)
-            
-        else:            
+
+        else:
             return QVariant()
-    
+
     def headerData(self,col,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
         return QVariant()
-    
+
     def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:                        
-            self.questdata[index.row()][index.column()] = value            
+        if index.isValid() and role == Qt.EditRole:
+            self.questdata[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
             return True
-        
-        return False    
-    
+
+        return False
+
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self.questdata):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
+
         #Initialize column values for the new row
         initRowVals = ["" for c in range(self.columnCount())]
-        
-        for i in range(rows):            
+
+        for i in range(rows):
             self.questdata.insert(position,initRowVals)
-        
+
         self.endInsertRows()
-        
+
         return True
-        
+
     def removeRows(self,position,count,parent = QModelIndex()):
         if position < 0 or position > len(self.questdata):
             return False
-        
+
         self.beginRemoveRows(parent,position,position + count - 1)
-        
-        for i in range(count):            
+
+        for i in range(count):
             del self.questdata[position]
-            
+
         self.endRemoveRows()
-        
+
         return True
-    
+
 class UsersRolesModel(QAbstractListModel):
     """
     Model for showing existing system users/roles/contents in a QListView
@@ -291,38 +304,38 @@ class UsersRolesModel(QAbstractListModel):
             return lstFont
         else:
             return None
-        
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self._users):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
-        for i in range(rows):            
+
+        for i in range(rows):
             self._users.insert(position,"")
-        
+
         self.endInsertRows()
-        
+
         return True
-        
+
     def removeRows(self,row,count,parent = QModelIndex()):
         if row < 0 or row > len(self._users):
             return
-        
+
         self.beginRemoveRows(parent,row,row + count - 1)
         while count != 0:
             del self._users[row]
             count -= 1
         self.endRemoveRows()
-        
+
     def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:                        
-            self._users[index.row()] = value            
+        if index.isValid() and role == Qt.EditRole:
+            self._users[index.row()] = value
             self.dataChanged.emit(index,index)
             return True
-        
-        return False 
-    
+
+        return False
+
 class PersonTableModel(QAbstractTableModel):
     '''
     Model for use in the Person table view
@@ -330,55 +343,55 @@ class PersonTableModel(QAbstractTableModel):
     def __init__(self,persondata,headerdata,parent = None):
         QAbstractTableModel.__init__(self,parent)
         self.persondata = persondata
-        self.headerdata = headerdata   
+        self.headerdata = headerdata
         self._genderFormatter = LookupFormatter(CheckGender)
-        self._mStatFormatter = LookupFormatter(CheckMaritalStatus) 
+        self._mStatFormatter = LookupFormatter(CheckMaritalStatus)
         self._ageFormatter = DoBFormatter()
-        
+
     def rowCount(self, parent = QModelIndex()):
         return len(self.persondata)
-    
+
     def columnCount(self, parent = QModelIndex()):
         return 11
-    
+
     def data(self,index, role):
-        
+
         indexData = self.persondata[index.row()][index.column()]
-        
+
         if not index.isValid():
             return QVariant()
-        
-        elif role == Qt.DisplayRole:            
-            col = index.column()    
-                                
-            #Specify formatters for columns whose values are foreign keys            
+
+        elif role == Qt.DisplayRole:
+            col = index.column()
+
+            #Specify formatters for columns whose values are foreign keys
             if col == 5:
                 #Gender formatter
-                return self._genderFormatter.setDisplay(indexData) 
-            
-            elif col == 6:                        
+                return self._genderFormatter.setDisplay(indexData)
+
+            elif col == 6:
                 #Current age calculation
                 return self._ageFormatter.setDisplay(indexData)
-            
+
             elif col == 7:
-                return self._mStatFormatter.setDisplay(indexData) 
-                      
+                return self._mStatFormatter.setDisplay(indexData)
+
             else:
                 return QVariant(indexData)
-        
-        #For columns representing foreign keys then we need to pass the integer value to the editor    
+
+        #For columns representing foreign keys then we need to pass the integer value to the editor
         elif role == Qt.EditRole:
-            #Create QDate from Python date then pass it to QVariant constructor where applicable            
-            if index.column() == 6: 
-                
-                if isinstance(indexData,QVariant):        
-                    return QVariant(indexData)                 
-                else:                                             
-                    return QVariant(QDate(indexData))                                             
-                               
+            #Create QDate from Python date then pass it to QVariant constructor where applicable
+            if index.column() == 6:
+
+                if isinstance(indexData,QVariant):
+                    return QVariant(indexData)
+                else:
+                    return QVariant(QDate(indexData))
+
             else:
                 return QVariant(indexData)
-            
+
         elif role == Qt.BackgroundRole:
             if index.row() % 2 == 0:
                 #Orange
@@ -386,58 +399,58 @@ class PersonTableModel(QAbstractTableModel):
             else:
                 #Blue
                 return QVariant(ALT_COLOR_ODD)
-            
-        else:            
+
+        else:
             return QVariant()
-    
+
     def headerData(self,col,orientation,role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self.headerdata[col])
         return QVariant()
-    
+
     def setData(self,index,value,role = Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:                                   
-            self.persondata[index.row()][index.column()] = value            
+        if index.isValid() and role == Qt.EditRole:
+            self.persondata[index.row()][index.column()] = value
             self.dataChanged.emit(index,index)
             return True
-        
-        return False    
-    
+
+        return False
+
     def flags(self,index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        
+
         return Qt.ItemIsEditable|Qt.ItemIsSelectable|Qt.ItemIsEnabled
-    
+
     def insertRows(self,position,rows,parent = QModelIndex()):
         if position < 0 or position > len(self.persondata):
             return False
-                
+
         self.beginInsertRows(parent, position, position + rows - 1)
-        
+
         #Initialize column values for the new row
         initRowVals = ["" for c in range(self.columnCount())]
-        
-        for i in range(rows):            
+
+        for i in range(rows):
             self.persondata.insert(position,initRowVals)
-        
+
         self.endInsertRows()
-        
+
         return True
-        
+
     def removeRows(self,position,count,parent = QModelIndex()):
         if position < 0 or position > len(self.persondata):
             return False
-        
+
         self.beginRemoveRows(parent,position,position + count - 1)
-        
-        for i in range(count):            
+
+        for i in range(count):
             del self.persondata[position]
-            
+
         self.endRemoveRows()
-        
+
         return True
-    
+
 class BaseSTDMTableModel(QAbstractTableModel):
     """
     Generic table model for use in STDM table views.

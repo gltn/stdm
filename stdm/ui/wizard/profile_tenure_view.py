@@ -19,39 +19,41 @@ email                : gkahiu at gmail dot com
 """
 import math
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
-    QBrush,
-    QColor,
     QComboBox,
-    QCursor,
     QDialog,
-    QFont,
-    QFontMetrics,
     QGraphicsItem,
     QGraphicsLineItem,
     QGraphicsScene,
     QGraphicsTextItem,
     QGraphicsView,
     QGridLayout,
+    QLabel,
+    QMessageBox,
+    QSizePolicy,
+    QSpacerItem,
+    QToolButton,
+    QWidget
+)
+from qgis.PyQt.QtGui import (
+    QBrush,
+    QColor,
+    QCursor,
+    QFont,
+    QFontMetrics,
     QIcon,
     QImage,
-    QLabel,
     QLinearGradient,
     QKeyEvent,
-    QMessageBox,
     QPainter,
     QPainterPath,
     QPen,
     QPixmap,
     QPolygonF,
-    QSizePolicy,
-    QSpacerItem,
-    QTextLayout,
-    QToolButton,
-    QWidget
+    QTextLayout
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QFile,
     QIODevice,
@@ -772,7 +774,7 @@ class BaseTenureItem(QGraphicsItem):
         #Returns elided version of the text if greater than the width
         fm = QFontMetrics(font)
 
-        return unicode(fm.elidedText(text, Qt.ElideRight, width))
+        return str(fm.elidedText(text, Qt.ElideRight, width))
 
     def _elided_items(self, font, width):
         #Formats each item text to incorporate an elide if need be and

@@ -3,7 +3,7 @@
 Name                 : Model Attributes ListView
 Description          : Custom QListView implementation that displays checkable
                        model attributes.
-Date                 : 22/May/2014 
+Date                 : 22/May/2014
 copyright            : (C) 2014 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -19,12 +19,12 @@ email                : gkahiu@gmail.com
 """
 from collections import OrderedDict
 
-from PyQt4.QtGui import (
-     QListView,
+from qgis.PyQt.QtGui import (
      QStandardItemModel,
      QStandardItem
 )
-from PyQt4.QtCore import Qt
+from qgis.PyQt.QtWidgets import QListView
+from qgis.PyQt.QtCore import Qt
 
 __all__ = ["ModelAtrributesView"]
 
@@ -34,18 +34,18 @@ class ModelAtrributesView(QListView):
     """
     def __init__(self,parent=None,dataModel = None):
         QListView.__init__(self, parent)
-        
+
         self._dataModel = dataModel
         self._selectedDisplayMapping = OrderedDict()
         self._modelDisplayMapping = OrderedDict()
         self._attrModel = QStandardItemModel(self)
-        
+
     def dataModel(self):
         """
         Returns the data model instance.
         """
         return self._dataModel
-    
+
     def setDataModel(self,dataModel):
         """
         Sets the data model. Should be a callable class rather than the class.
@@ -53,16 +53,16 @@ class ModelAtrributesView(QListView):
         """
         if callable(dataModel):
             self._dataModel = dataModel
-            
+
         else:
             self._dataModel = dataModel.__class__
-    
+
     def modelDisplayMapping(self):
         """
         Returns the column name and display name collection.
         """
         return self._modelDisplayMapping
-    
+
     def setModelDisplayMapping(self, dataMapping):
         """
         Sets the mapping dictionary for the table object
@@ -76,7 +76,7 @@ class ModelAtrributesView(QListView):
         """
         if self._dataModel == None:
             return
-        
+
         try:
             self._loadAttrs(self._dataModel.displayMapping(), sort)
         except AttributeError:
@@ -97,7 +97,7 @@ class ModelAtrributesView(QListView):
         Sorts display name in ascending order.
         """
         self._attrModel.sort(0)
-        
+
     def _loadAttrs(self, attrMapping, sort=False):
         """
         Loads display mapping into the list view.
@@ -106,27 +106,27 @@ class ModelAtrributesView(QListView):
         """
         self._attrModel.clear()
         self._attrModel.setColumnCount(2)
-        
+
         for attrName,displayName in attrMapping.iteritems():
             #Exclude row ID in the list, other unique identifier attributes in the model can be used
             if attrName != "id":
                 displayNameItem = QStandardItem(displayName)
                 displayNameItem.setCheckable(True)
                 attrNameItem = QStandardItem(attrName)
-                
+
                 self._attrModel.appendRow([displayNameItem,attrNameItem])
-            
+
         self.setModel(self._attrModel)
 
         if sort:
             self._attrModel.sort(0)
-        
+
     def selectedMappings(self):
         """
         Return a dictionary of field names and their corresponding display values.
         """
         selectedAttrs = OrderedDict()
-        
+
         for i in range(self._attrModel.rowCount()):
             displayNameItem = self._attrModel.item(i,0)
 

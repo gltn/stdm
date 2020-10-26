@@ -19,7 +19,7 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
@@ -47,7 +47,7 @@ class ConfigurationSchemaUpdater(QObject):
     update_started = pyqtSignal()
 
     #Signal contains message type and message
-    update_progress = pyqtSignal(int, unicode)
+    update_progress = pyqtSignal(int, str)
 
     #Signal indicates True if the update succeeded, else False.
     update_completed = pyqtSignal(bool)
@@ -105,7 +105,7 @@ class ConfigurationSchemaUpdater(QObject):
             self.update_completed.emit(True)
 
         except SQLAlchemyError as sae:
-            msg = unicode(sae)
+            msg = str(sae)
 
             self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
 
@@ -175,7 +175,7 @@ class ConfigurationSchemaUpdater(QObject):
 
                 LOGGER.debug(msg)
         except ConfigurationException as ce:
-            msg = unicode(ce)
+            msg = str(ce)
             self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
             LOGGER.debug(msg)
             self.update_completed.emit(False)
@@ -211,7 +211,7 @@ class ConfigurationSchemaUpdater(QObject):
             profile.social_tenure.create_view(self.engine)
 
         except ConfigurationException as ce:
-            msg = unicode(ce)
+            msg = str(ce)
 
             self.update_progress.emit(ConfigurationSchemaUpdater.ERROR, msg)
 
@@ -224,7 +224,7 @@ class ConfigurationSchemaUpdater(QObject):
             action = e.action
 
             if action != DbItem.NONE:
-                action_txt = unicode(self._action_text(action))
+                action_txt = str(self._action_text(action))
                 entity_text = self.tr('entity')
                 trans_msg = u'{0} {1} {2}...'.format(
                     action_txt.capitalize(), e.short_name, entity_text)

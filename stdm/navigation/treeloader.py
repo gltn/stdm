@@ -118,13 +118,13 @@ class TreeSummaryLoader(object):
 
         topLevelItems = []
 
-        for k,v in dcollection.iteritems():
+        for k,v in dcollection.items():
             parentItem = QTreeWidgetItem()
 
             if isinstance(v,dict):
                 parentItem.setText(0,k)
 
-                for kc,vc in v.iteritems():
+                for kc,vc in v.items():
                     child = QTreeWidgetItem()
                     child.setText(0,self._combine(kc, vc))
                     parentItem.addChild(child)

@@ -18,15 +18,27 @@ email                : gkahiu@gmail.com
 """
 import string
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
 import sqlalchemy
 
-from ui_new_role import Ui_frmNewRole
-from stdm import Role
-from stdm import SecurityException
-from stdm import RoleProvider
+from qgis.PyQt.QtCore import (
+    QObject,
+    QRegExp
+)
+from qgis.PyQt.QtGui import (
+    QRegExpValidator
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QMessageBox,
+    QApplication
+)
+
+from stdm.ui.ui_new_role import Ui_frmNewRole
+from stdm.security.roleprovider import Role
+from stdm.security.exception import SecurityException
+from stdm.security.roleprovider import RoleProvider
+
 
 class newRoleDlg(QDialog, Ui_frmNewRole):
     '''
@@ -48,7 +60,7 @@ class newRoleDlg(QDialog, Ui_frmNewRole):
         #Set 'Create Role' button properties
         btnCreateRole = self.buttonBox.button(QDialogButtonBox.Ok)
         btnCreateRole.setText(QApplication.translate("newRoleDlg", "Create Role"))
-        QObject.connect(btnCreateRole, SIGNAL("clicked()"),self.acceptdlg)
+        btnCreateRole.clicked.connect(self.acceptdlg)
 
         #Set validator for preventing rolename from having whitespace
         rx = QRegExp("\\S+")

@@ -24,11 +24,11 @@ from sqlalchemy.exc import ProgrammingError
 
 from migrate.changeset.constraint import ForeignKeyConstraint
 
-from stdm import (
+from stdm.data.database import (
     metadata
 )
 
-from stdm import (
+from stdm.data.pg_utils import (
     pg_table_exists,
     table_column_names
 )
@@ -169,7 +169,7 @@ def create_foreign_key_constraint(entity_relation):
 
     except ProgrammingError as pe:
         LOGGER.debug('Creation of foreign key constraint failed - %s',
-                     unicode(pe))
+                     str(pe))
 
         return False
 
@@ -200,7 +200,7 @@ def drop_foreign_key_constraint(entity_relation):
 
     except ProgrammingError as pe:
         LOGGER.debug('Drop of foreign key constraint failed - %s',
-                     unicode(pe))
+                     str(pe))
 
         return False
 

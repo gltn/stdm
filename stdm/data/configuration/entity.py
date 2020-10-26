@@ -21,12 +21,12 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
 
-from stdm.stdm.utils import RenameableKeyDict
+from stdm.utils.renameable_dict import RenameableKeyDict
 from stdm.data.configuration.columns import (
     BaseColumn,
     ForeignKeyColumn,
@@ -40,7 +40,7 @@ from stdm.data.configuration.db_items import (
     TableItem
 )
 from stdm.data.configuration.entity_updaters import entity_updater
-from stdm.stdm.data.pg_utils import table_view_dependencies
+from stdm.data.pg_utils import table_view_dependencies
 
 LOGGER = logging.getLogger('stdm')
 
@@ -68,7 +68,7 @@ class Entity(QObject, TableItem):
     sql_updater = entity_updater
 
     column_added = pyqtSignal(BaseColumn)
-    column_removed = pyqtSignal(unicode)
+    column_removed = pyqtSignal(str)
 
     def __init__(self, name, profile, create_id_column=True, supports_documents=True,
                  is_global=False, is_proxy=False):
@@ -144,7 +144,7 @@ class Entity(QObject, TableItem):
         if not self.is_global:
             # format the internal name, replace spaces between words
             # with underscore and make all letters lower case.
-            name = unicode(name).strip()
+            name = str(name).strip()
 
         name = name.replace(' ', "_")
         name = name.lower()
@@ -525,7 +525,7 @@ class Entity(QObject, TableItem):
         if self.supports_documents:
             doc_types = self.document_types()
             for doc_type in doc_types:
-                u_doc_type = unicode(doc_type)
+                u_doc_type = str(doc_type)
                 text_value = self.supporting_doc._doc_types_value_list.values[
                     u_doc_type
                 ]

@@ -18,18 +18,29 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
 from collections import OrderedDict
-
-from PyQt4.QtGui import QApplication, QFontMetrics, QDialog, QListWidgetItem, \
-    QStandardItem, QStandardItemModel, QComboBox, QHeaderView
-from stdm import (
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QDialog,
+    QListWidgetItem,
+    QComboBox,
+    QHeaderView
+)
+from qgis.PyQt.QtGui import (
+    QFontMetrics,
+    QStandardItem,
+    QStandardItemModel,
+)
+from stdm.utils.util import (
     enable_drag_sort,
     code_columns,
     string_to_boolean
 )
-from stdm import GenericDelegate
-from ui_code_property import Ui_CodeProperty
+from stdm.ui.customcontrols.generic_delegate import GenericDelegate
+from stdm.ui.wizard.ui_code_property import Ui_CodeProperty
 
 class CodeProperty(QDialog, Ui_CodeProperty):
     """
@@ -405,7 +416,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         Set the prefix source.
         """
-        self._source = unicode(self.prefix_source_cbo.currentText())
+        self._source = str(self.prefix_source_cbo.currentText())
 
     def add_columns(self):
         """
@@ -450,7 +461,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         current_index = self.leading_zero_cbo.currentIndex()
         current_data = self.leading_zero_cbo.itemData(current_index)
-        self._leading_zero = unicode(current_data)
+        self._leading_zero = str(current_data)
 
     def add_separator(self):
         """
@@ -458,7 +469,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         current_index = self.separator_cbo.currentIndex()
         current_data = self.separator_cbo.itemData(current_index)
-        self._separator = unicode(current_data)
+        self._separator = str(current_data)
 
     def prefix_source(self):
         """

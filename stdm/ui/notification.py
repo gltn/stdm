@@ -1,10 +1,10 @@
 """
 /***************************************************************************
 Name                 : Notification Handler
-Description          : A class which is used to add notification 
-                       messages to the parent layout. This can be used as a 
+Description          : A class which is used to add notification
+                       messages to the parent layout. This can be used as a
                        handy replacement for message boxes in a form.
-Date                 : 22/June/2013 
+Date                 : 22/June/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -20,10 +20,21 @@ email                : gkahiu@gmail.com
 """
 from uuid import uuid4
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    QObject,
+    pyqtSignal,
+    QTimer,
+    QEvent
+)
+from qgis.PyQt.QtGui import (
+    QPixmap
+)
+from qgis.PyQt.QtWidgets import (
+    QVBoxLayout,
+    QWidget
+)
 
-from ui_notif_item import Ui_frmNotificationItem
+from stdm.ui.ui_notif_item import Ui_frmNotificationItem
 
 #Enums for type of notification to be displayed
 ERROR = 2005
@@ -34,7 +45,7 @@ INFORMATION = 2008
 
 class NotificationBar(QObject, object):
     '''
-    Used to display notifications in a vertical layout in order for 
+    Used to display notifications in a vertical layout in order for
     important user messages to be inserted in a widget.
     By default, the notification(s) will be removed after 10 seconds.
     To change this default behaviour, change the value of the 'timerinterval'
@@ -48,9 +59,9 @@ class NotificationBar(QObject, object):
         self.interval = timerinterval
 
         if isinstance(layout, QVBoxLayout):
-            self.layout = layout 
+            self.layout = layout
             self.layout.setSpacing(2)
-            
+
             #Set notification type stylesheet
             self.errorStyleSheet = "background-color: #FFBABA;"
             self.error_font_color = 'color: #D8000C;'
@@ -66,27 +77,24 @@ class NotificationBar(QObject, object):
             #Timer settings
             self.timer = QTimer(self.layout)
             self.timer.setInterval(self.interval)
-            QObject.connect(self.timer, SIGNAL("timeout()"),self.clear)
-            
+            self.timer.timeout.connect(self.clear)
+
         else:
-            self.layout = None                  
-                    
+            self.layout = None
+
         self._notifications = {}
-        
+
     def insertNotification(self, message, notificationType):
         '''
         Insert a message into notification bar/layout
         '''
         if self.layout != None:
-            notificationItem = NotificationItem() 
-            QObject.connect(
-                notificationItem,
-                SIGNAL("messageClosed(QString)"),
-                self.onNotificationClosed
-            )
+            notificationItem = NotificationItem()
+            notificationItem.messageClosed.connect(self.onNotificationClosed)
+
             font_color = "color: rgb(255, 255, 255);"
             frameStyle = "background-color: rgba(255, 255, 255, 0);"
-            if notificationType == ERROR:                        
+            if notificationType == ERROR:
                 frameStyle = self.errorStyleSheet
                 font_color = self.error_font_color
 
@@ -109,23 +117,23 @@ class NotificationBar(QObject, object):
             self._notifications[
                 str(notificationItem.code)
             ] = notificationItem
-            
+
             #Reset the timer
             self.timer.start()
             self.onShow.emit()
-            
+
     def insertErrorNotification(self,message):
         '''
-        A convenience method for inserting error messages 
+        A convenience method for inserting error messages
         '''
         self.insertNotification(message, ERROR)
-        
+
     def insertWarningNotification(self,message):
         '''
         A convenience method for inserting warning messages
         '''
         self.insertNotification(message, WARNING)
-        
+
     def insertSuccessNotification(self,message):
         '''
         A convenience method for inserting information messages
@@ -141,7 +149,7 @@ class NotificationBar(QObject, object):
     def clear(self):
         '''
         Remove all notifications.
-        '''  
+        '''
         if self.layout != None:
             for code,lbl in self._notifications.iteritems():
                 self.layout.removeWidget(lbl)
@@ -149,7 +157,7 @@ class NotificationBar(QObject, object):
                 lbl.deleteLater()
             self._notifications = {}
         self.onClear.emit()
-            
+
     def onNotificationClosed(self,code):
         '''
         Slot raised when a user chooses to close a notification item.
@@ -159,27 +167,27 @@ class NotificationBar(QObject, object):
         if strCode in self._notifications:
             del self._notifications[strCode]
             self.userClosed.emit()
-   
+
 class NotificationItem(QWidget,Ui_frmNotificationItem):
-    
+
     #Close signal
     messageClosed = pyqtSignal(str)
-    
+
     def __init__(self,parent = None):
         QWidget.__init__(self,parent)
-        self.setupUi(self) 
-        
+        self.setupUi(self)
+
         #Unique identifier for the message
         self.code = str(uuid4())
-        
-        #Set event filter for closing the message  
+
+        #Set event filter for closing the message
         self.lblClose.installEventFilter(self)
-        
+
         #Set labels to maximum transparency so that they do not inherit the background color of the frame
-        clearBGStyle = "background-color: rgba(255, 255, 255, 0);"    
+        clearBGStyle = "background-color: rgba(255, 255, 255, 0);"
         self.lblNotifIcon.setStyleSheet(clearBGStyle)
         self.lblNotifMessage.setStyleSheet("color: rgb(255, 255, 255);" + clearBGStyle)
-        
+
     def eventFilter(self,watched,e):
         '''
         Capture mouse release event when the user clicks to close the message
@@ -192,14 +200,14 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
             return True
         else:
             return QWidget.eventFilter(self,watched, e)
-        
+
     def setMessage(self,message,notificationType,stylesheet, font_color):
         '''
         Set display properties
         '''
         #Background color
-        if notificationType == ERROR:   
-            #Set icon resource and frame background color                     
+        if notificationType == ERROR:
+            #Set icon resource and frame background color
             notifPixMap = QPixmap(":/plugins/stdm/images/icons/remove.png")
         elif notificationType == SUCCESS:
             notifPixMap = QPixmap(":/plugins/stdm/images/icons/success.png")

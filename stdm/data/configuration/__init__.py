@@ -193,7 +193,7 @@ def profile_foreign_keys(profile):
     profile.
     :rtype: list(str)
     """
-    from stdm.stdm.data.pg_utils import pg_table_exists
+    from stdm.data.pg_utils import pg_table_exists
 
     _bind_metadata(metadata)
     insp = reflection.Inspector.from_engine(metadata.bind)

@@ -1,10 +1,15 @@
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QApplication, QDialogButtonBox, QMessageBox, \
-    QTabWidget, QLabel
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QDialogButtonBox,
+    QMessageBox,
+    QTabWidget,
+    QLabel
+)
 from qgis.core import (
     QgsExpression,
     QgsVectorLayer,
-    QGis
+    Qgis
 )
 from qgis.utils import (
     iface
@@ -29,7 +34,7 @@ class ExpressionProperty(QgsExpressionBuilderDialog):
         self.output_data_type = form_fields['output_data_type']
         self._ref_layer = layer
         self.expressionBuilder().loadRecent()
-        
+
     def layer(self):
         return self._ref_layer
 

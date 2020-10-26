@@ -1,19 +1,30 @@
-import  logging
+import logging
 
 from collections import OrderedDict
-from PyQt4.QtGui import *
-#QColor
-#QBrush
-from PyQt4.QtCore import Qt
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel,
+    QBrush,
+    QColor
+)
+from qgis.PyQt.QtWidgets import (
+    QTableView,
+    QAbstractItemView,
+    QComboBox,
+    QListView
+)
 
 LOGGER = logging.getLogger('stdm')
 
 class EntityModelItem(QStandardItem):
     headers_labels = ["Name", "Description"]
-    
+
     def __init__(self, entity=None):
         self._entity = None
-        
+
         super(EntityModelItem, self).__init__(entity.short_name)
 
         self.setColumnCount(len(self.headers_labels))
@@ -31,21 +42,21 @@ class EntityModelItem(QStandardItem):
 
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.short_name)
-        description = self._create_item(unicode(self._entity.description))
+        description = self._create_item(str(self._entity.description))
 
         self.appendRow([name_item, description])
 
     def set_entity(self, entity):
         self._entity = entity
         self._set_entity_properties()
-        
+
 class EntitiesModel(QStandardItemModel):
 
     def __init__(self, parent=None):
         super(EntitiesModel, self).__init__(parent)
-        
+
         self._entities = OrderedDict()
-        
+
         self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)
 
         self.setSupportedDragActions(Qt.MoveAction)
@@ -53,7 +64,7 @@ class EntitiesModel(QStandardItemModel):
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
-        
+
         return None
 
     def entity_byId(self, id):
@@ -103,14 +114,14 @@ class BaseEntitySelectionMixin(object):
             raise TypeError('Model is not of type <EntitiesModel>')
 
         selected_names = self._selected_names(model)
-        
+
         entities = model.entities()
 
         return [entities[name] for name in selected_names if name in entities]
 
     def _names_from_indexes(self, model, selected_indexes):
-        return [unicode(model.itemFromIndex(idx).text()) for idx in selected_indexes if idx.isValid()]
-       
+        return [str(model.itemFromIndex(idx).text()) for idx in selected_indexes if idx.isValid()]
+
     def _selected_names(self, model):
         raise NotImplementedError('Please use the sub-class object of <BaseEntitySelectionMixin>')
 
@@ -128,23 +139,23 @@ class EntityListSelectionMixin(BaseEntitySelectionMixin):
 
 class EntityComboBoxSelectionMixin(BaseEntitySelectionMixin):
     def _selected_names(self, model):
-        return [unicode(self.currentText())]
+        return [str(self.currentText())]
 
     def current_entity(self):
         entities = self.selected_entities()
-        
+
         if len(entities) > 0:
             return entities[0]
 
         return None
-       
+
 class EntitiesTableView(QTableView, EntityTableSelectionMixin):
     def __init__(self, parent=None):
         super(EntitiesTableView, self).__init__(parent)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ContiguousSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        
+
 class EntitiesListView(QListView, EntityListSelectionMixin):
     def __init__(self, parent=None):
         super(EntitiesListView, self).__init__(parent)
@@ -162,10 +173,10 @@ class EntitiesComboView(QComboBox, EntityComboBoxSelectionMixin):
 
 class ColumnEntityModelItem(QStandardItem):
     headers_labels = ["Name", "Data Type", "Description"]
-    
+
     def __init__(self, entity=None):
         self._entity = None
-        
+
         super(ColumnEntityModelItem, self).__init__(entity.name)
 
         self.setColumnCount(len(self.headers_labels))
@@ -183,7 +194,7 @@ class ColumnEntityModelItem(QStandardItem):
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
         col_data_type = self._create_item(self._entity.display_name())
-        description = self._create_item(unicode(self._entity.description))
+        description = self._create_item(str(self._entity.description))
 
         self.appendRow([name_item, col_data_type, description])
 
@@ -191,12 +202,12 @@ class ColumnEntityModelItem(QStandardItem):
         self._entity = entity
         self._set_entity_properties()
 
-        
+
 class ColumnEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
         super(ColumnEntitiesModel,self).__init__(parent)
         self._entities = OrderedDict()
-        
+
         self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
 
         self.setSupportedDragActions(Qt.MoveAction)
@@ -204,7 +215,7 @@ class ColumnEntitiesModel(QStandardItemModel):
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
-        
+
         return None
 
     def entity_byId(self, id):
@@ -245,7 +256,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         :param new_key: name of new key
         :type new_key: str
         """
-        self._entities = OrderedDict([(new_key, v) 
+        self._entities = OrderedDict([(new_key, v)
             if k == old_key else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
@@ -265,10 +276,10 @@ class ColumnEntitiesModel(QStandardItemModel):
 
 class LookupEntityModelItem(QStandardItem):
     headers_labels = ["Name"]
-    
+
     def __init__(self, entity=None):
         self._entity = None
-        
+
         super(LookupEntityModelItem, self).__init__(entity.short_name)
 
         self.setColumnCount(len(self.headers_labels))
@@ -292,18 +303,18 @@ class LookupEntityModelItem(QStandardItem):
     def set_entity(self, entity):
         self._entity = entity
         self._set_entity_properties()
-        
+
 class LookupEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
         super(LookupEntitiesModel,self).__init__(parent)
         self._entities = OrderedDict()
-        
+
         self.setHorizontalHeaderLabels(LookupEntityModelItem.headers_labels)
 
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
-        
+
         return None
 
     def entity_byId(self, id):
@@ -343,7 +354,7 @@ class LookupEntitiesModel(QStandardItemModel):
 # Social Tenure Relationship model item
 class STREntityModelItem(QStandardItem):
     headers_labels = ["Name", "Description"]
-    
+
     def __init__(self, entity=None):
         self._entity = None
         self.name = ""
@@ -367,25 +378,25 @@ class STREntityModelItem(QStandardItem):
     def _set_entity_properties(self):
         name_item = self._create_item(self._entity.name)
         self.name = name_item
-        description = self._create_item(unicode(self._entity.description))
+        description = self._create_item(str(self._entity.description))
 
         self.appendRow([name_item, description])
 
     def set_entity(self, entity):
         self._entity = entity
         self._set_entity_properties()
-        
+
 class STRColumnEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
         super(STRColumnEntitiesModel,self).__init__(parent)
         self._entities = OrderedDict()
-        
+
         self.setHorizontalHeaderLabels(STREntityModelItem.headers_labels)
 
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
-        
+
         return None
 
     def entity_byId(self, id):

@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHeaderView
@@ -38,7 +38,7 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
         Class constructor.
         :param parent: Dialog parent.
         :type parent: QObject
-        :param editable: Whether the spatial unit tenure mappings can be 
+        :param editable: Whether the spatial unit tenure mappings can be
         specified. Default is True.
         :type editable: bool
         """
@@ -77,9 +77,9 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
 
     def init(self, spatial_units_tenures):
         """
-        Adds the spatial units and corresponding tenure types to the 
+        Adds the spatial units and corresponding tenure types to the
         respective combo boxes.
-        :param spatial_units_tenures: Two-dimensional list containing the 
+        :param spatial_units_tenures: Two-dimensional list containing the
         spatial unit names and tenure type names.
         :type spatial_units_tenures: list
         """
@@ -91,8 +91,8 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
 
     def set_spatial_unit_tenure_type(self, spatial_unit, tenure_type):
         """
-        Set the tenure type for the given spatial unit. Both values need 
-        to exist in the collection of spatial units and tenure types 
+        Set the tenure type for the given spatial unit. Both values need
+        to exist in the collection of spatial units and tenure types
         respectively.
         :param spatial_unit: Name of the spatial unit.
         :type spatial_unit: str
@@ -112,7 +112,7 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
 
     def tenure_mapping(self):
         """
-        :return: Returns a collection containing spatial unit names and 
+        :return: Returns a collection containing spatial unit names and
         their corresponding tenure types.
         :rtype: dict
         """

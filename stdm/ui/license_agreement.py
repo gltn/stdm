@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication
 )
@@ -29,7 +29,7 @@ from stdm.settings.registryconfig import (
 )
 from stdm.data.license_doc import LicenseDocument
 
-from notification import NotificationBar, ERROR
+from stdm.ui.notification import NotificationBar, ERROR
 
 from stdm.ui.ui_license_agreement import Ui_LicenseAgreement
 
@@ -75,9 +75,9 @@ class LicenseAgreement(QDialog, Ui_LicenseAgreement):
         if len(license_key) > 0:
             show_lic = license_key[SHOW_LICENSE]
 
-        if show_lic == 1 or show_lic == unicode(1):
+        if show_lic == 1 or show_lic == str(1):
             return True
-        elif show_lic == 0 or show_lic == unicode(0):
+        elif show_lic == 0 or show_lic == str(0):
             self.accepted = True
             return False
 

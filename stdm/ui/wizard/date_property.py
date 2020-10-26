@@ -18,16 +18,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from qgis.PyQt.QtCore import QDate
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
 
-from ui_date_property import Ui_DateProperty
+from stdm.ui.wizard.ui_date_property import Ui_DateProperty
 
 class DateProperty(QDialog, Ui_DateProperty):
     """
@@ -56,8 +54,8 @@ class DateProperty(QDialog, Ui_DateProperty):
         """
         Initializes form widgets
         """
-        min_date = QtCore.QDate.currentDate()
-        today = QtCore.QDate.currentDate()
+        min_date = QDate.currentDate()
+        today = QDate.currentDate()
         self.edtMinDate.setDate(min_date)
         self.edtMaxDate.setDate(today)
         self.edtMinDate.setDate(self._min_val)
@@ -87,13 +85,13 @@ class DateProperty(QDialog, Ui_DateProperty):
 
     def min_fixed_toggle_handler(self, checked):
         self.edtMinDate.setEnabled(checked)
-	
+
     def max_fixed_toggle_handler(self, checked):
         self.edtMaxDate.setEnabled(checked)
 
     def min_curr_toggle_handler(self, checked):
         self.min_use_current_date = checked
-	
+
     def max_curr_toggle_handler(self, checked):
         self.max_use_current_date = checked
 
@@ -110,18 +108,18 @@ class DateProperty(QDialog, Ui_DateProperty):
         :rtype: int
         """
         return self._min_val
-	    
+
     def max_val(self):
         """
         Returns maximum property
         :rtype: int
         """
         return self._max_val
-	    
+
     def accept(self):
         self.add_values()
         self.done(1)
 
     def reject(self):
         self.done(0)
-    
+

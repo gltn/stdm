@@ -19,12 +19,12 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 import uuid
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     pyqtSignal
 )
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
@@ -36,29 +36,30 @@ from PyQt4.QtGui import (
     QWidget,
     QApplication,
     QPushButton,
-    QLineEdit, QMessageBox)
+    QLineEdit,
+    QMessageBox)
 
-from stdm import VIEW,MANAGE,SELECT
+from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
 
-from stdm import entity_model
-from stdm import Entity
-from stdm import (
+from stdm.data.configuration import entity_model
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.columns import (
     MultipleSelectColumn,
     VirtualColumn
 )
 from sqlalchemy.sql.expression import text
-from stdm import MapperMixin
-from stdm import table_column_names, fetch_with_filter
-from stdm import entity_display_columns, format_name, simple_dialog
-from stdm import (
+from stdm.data.mapping import MapperMixin
+from stdm.data.pg_utils import table_column_names, fetch_with_filter
+from stdm.utils.util import entity_display_columns, format_name, simple_dialog
+from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     UserTipLabel
 )
 
-from stdm import SupportingDocumentsWidget
-from stdm import NotificationBar
+from stdm.ui.forms.documents import SupportingDocumentsWidget
+from stdm.ui.notification import NotificationBar
 
-from editor_dialog import EntityEditorDialog
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 class AdvancedSearch(EntityEditorDialog):
     def __init__(self, entity, parent):
@@ -229,9 +230,9 @@ class AdvancedSearch(EntityEditorDialog):
             return None
         for attr, value in search_data.iteritems():
             if isinstance(value, (int, float)):
-                param.append(u'{} = {}'.format(unicode(attr), unicode(value)))
-            if isinstance(value, (unicode, str)):
-                param.append(u"{} = '{}'".format(unicode(attr), unicode(value)))
+                param.append(u'{} = {}'.format(str(attr), str(value)))
+            if isinstance(value, str):
+                param.append(u"{} = '{}'".format(str(attr), str(value)))
         final_sql = u'{} {}'.format(sql, ' AND '.join(param))
         # sql_text = text(final_sql)
         results = fetch_with_filter(final_sql)

@@ -18,16 +18,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from qgis.PyQt.QtCore import QDateTime
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
 
-from ui_dtime_property import Ui_DTimeProperty
+from stdm.ui.wizard.ui_dtime_property import Ui_DTimeProperty
 
 class DTimeProperty(QDialog, Ui_DTimeProperty):
     """
@@ -56,11 +54,11 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
         """
         Initializes form widgets
         """
-        min_dtime = QtCore.QDateTime.currentDateTime()
-        now = QtCore.QDateTime.currentDateTime()
+        min_dtime = QDateTime.currentDateTime()
+        now = QDateTime.currentDateTime()
         self.edtMinDTime.setDateTime(min_dtime)
         self.edtMaxDTime.setDateTime(now)
-        
+
         self.edtMinDTime.setDateTime(self._min_val)
         self.edtMaxDTime.setDateTime(self._max_val)
 
@@ -87,13 +85,13 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
 
     def min_fixed_toggle_handler(self, checked):
         self.edtMinDTime.setEnabled(checked)
-	
+
     def max_fixed_toggle_handler(self, checked):
         self.edtMaxDTime.setEnabled(checked)
-	
+
     def min_curr_toggle_handler(self, checked):
         self.min_use_current_datetime = checked
-	
+
     def max_curr_toggle_handler(self, checked):
         self.max_use_current_datetime = checked
 
@@ -107,21 +105,21 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
     def min_val(self):
         """
         Returns minimum datetime property
-        :rtype: QDateTime 
+        :rtype: QDateTime
         """
         return self._min_val
-	    
+
     def max_val(self):
         """
         Returns maximum datetime property
-        :rtype: QDateTime 
+        :rtype: QDateTime
         """
         return self._max_val
-	    
+
     def accept(self):
         self.add_values()
         self.done(1)
 
     def reject(self):
         self.done(0)
-    
+

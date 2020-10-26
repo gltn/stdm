@@ -25,16 +25,14 @@ from decimal import (
 
 import math
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import QDoubleValidator
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
     QMessageBox
 )
 
-from ui_double_property import Ui_DoubleProperty
+from stdm.ui.wizard.ui_double_property import Ui_DoubleProperty
 
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """
@@ -66,13 +64,13 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
         """
         Initializes form widgets
         """
-        validator = QtGui.QDoubleValidator()
+        validator = QDoubleValidator()
         self.edtMinVal.setValidator(validator)
         self.edtMaxVal.setValidator(validator)
 
         self.edtMinVal.setText(str(self._min_val))
         self.edtMaxVal.setText(str(self._max_val))
-	
+
         self.edtMinVal.setEnabled(not self.in_db)
         self.edtMaxVal.setEnabled(not self.in_db)
         self.sbPrecision.setEnabled(not self.in_db)
@@ -149,14 +147,14 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
         :rtype: int
         """
         return self._min_val
-	    
+
     def max_val(self):
         """
         Returns maximum property
         :rtype: int
         """
         return self._max_val
-	    
+
     def accept(self):
         if self.edtMinVal.text()=='':
             self.show_message(QApplication.translate("DoublePropetyEditor",

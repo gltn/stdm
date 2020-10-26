@@ -1,7 +1,6 @@
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialogButtonBox,
-    QApplication,
-    QMessageBox
+    QApplication
 )
 
 from stdm.ui.admin_unit_manager import MANAGE,VIEW,SELECT
@@ -14,7 +13,7 @@ class SupportsManageMixin(object):
     def __init__(self, mode=MANAGE):
         self._mode = mode
         self._onStateChanged()
-        
+
     def setManageMode(self,enableManage):
         '''
         :param enableManage: True to set the selector to manage mode or false to disable i.e.
@@ -22,12 +21,12 @@ class SupportsManageMixin(object):
         '''
         if enableManage:
             self._mode = MANAGE
-            
+
         else:
             self._mode = VIEW
-            
+
         self._onStateChanged()
-        
+
     def _onStateChanged(self):
         '''
         Configure controls upon changing the state of the widget.
@@ -41,24 +40,23 @@ class SupportsManageMixin(object):
             self.buttonBox.button(QDialogButtonBox.Save).setVisible(True)
             self.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Close).setVisible(True)
-            
+
         else:
             self.buttonBox.button(QDialogButtonBox.Save).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Close).setVisible(True)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

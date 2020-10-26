@@ -18,20 +18,26 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QWidget,
+    QAbstractItemView,
+    QMessageBox
+)
 
 from stdm.data.qtmodels import STRTreeViewModel
 from stdm.data.database import (
     AdminSpatialUnitSet
 )
-from stdm.stdm.navigation import (
+from stdm.navigation.socialtenure.formatters import (
     STRNodeFormatter,
     BaseSTRNode
 )
 
-from .ui_adminUnitManager import Ui_frmAdminUnitManager
-from .notification import NotificationBar
+from stdm.ui.ui_adminUnitManager import Ui_frmAdminUnitManager
+from stdm.ui.notification import NotificationBar
 
 
 class _AdminSpatialUnitConfiguration(object):
@@ -147,10 +153,10 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         self.tvAdminUnits.setColumnWidth(0,220)
         self.tvAdminUnits.expandAll()
         #Connects slots
-        self.connect(self.btnAdd, SIGNAL("clicked()"), self.onCreateAdminUnit)
-        self.connect(self.btnClear, SIGNAL("clicked()"), self.onClearSelection)
-        self.connect(self.btnRemove, SIGNAL("clicked()"), self.onDeleteSelection)
-        self.connect(self._adminUnitTreeModel, SIGNAL("dataChanged(const QModelIndex&,const QModelIndex&)"), self.onModelDataChanged)
+        self.btnAdd.clicked.connect(self.onCreateAdminUnit)
+        self.btnClear.clicked.connect(self.onClearSelection)
+        self.btnRemove.clicked.connect(self.onDeleteSelection)
+        self._adminUnitTreeModel.dataChanged.connect(self.onModelDataChanged)
 
     def model(self):
         """

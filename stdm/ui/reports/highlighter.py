@@ -2,9 +2,9 @@
 /***************************************************************************
 Name                 : SQL Highlighter
 Description          : Custom SQL Syntax Highlighter
-Date                 : 14/October/11 
+Date                 : 14/October/11
 copyright            : (C) 2011 by John Gitau
-email                : gkahiu@gmail.com 
+email                : gkahiu@gmail.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -16,35 +16,35 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
-                         QSyntaxHighlighter,
-                         QTextCharFormat,
-                         QFont
-                         )
-from PyQt4.QtCore import (
-                          Qt,
-                          QRegExp
-                          )
+from qgis.PyQt.QtGui import (
+    QSyntaxHighlighter,
+    QTextCharFormat,
+    QFont
+)
+from qgis.PyQt.QtCore import (
+    Qt,
+    QRegExp
+)
 
-class SqlHighlighter(QSyntaxHighlighter):     
-    def __init__(self,parent=None):         
-        QSyntaxHighlighter.__init__(self,parent) 
+class SqlHighlighter(QSyntaxHighlighter):
+    def __init__(self,parent=None):
+        QSyntaxHighlighter.__init__(self,parent)
         self.parent = parent
         sqlKeyword = QTextCharFormat()
         sqlOperator = QTextCharFormat()
-        
+
         self.highlightingRules = []
-        
-        #Keywords           
+
+        #Keywords
         sqlKeyword.setFontWeight(QFont.Bold)
         sqlKeyword.setForeground(Qt.blue)
-        
+
         sqlKeywords = ["AND","OR","LIKE"]
         for word in sqlKeywords:
             regExp = QRegExp("\\b" + word + "\\b",Qt.CaseInsensitive)
             rule = HighlightingRule(regExp,sqlKeyword)
             self.highlightingRules.append(rule)
-            
+
         #Comparison Operators
         sqlOperator.setForeground(Qt.magenta)
         sqlOperators = ["<",">","="]
@@ -52,22 +52,21 @@ class SqlHighlighter(QSyntaxHighlighter):
             regExp = QRegExp("\\W" + operator + "\\W",Qt.CaseInsensitive)
             rule=HighlightingRule(regExp,sqlOperator)
             self.highlightingRules.append(rule)
-                
+
     def highlightBlock(self, text):
         for rule in self.highlightingRules:
             expression = QRegExp(rule.pattern)
             index = expression.indexIn(text)
-            
+
             while index >= 0:
                 length = expression.matchedLength()
                 self.setFormat(index, length, rule.format)
                 index = expression.indexIn(text,index+length)
-                
+
         self.setCurrentBlockState(0)
-        
+
 class HighlightingRule():
     def __init__( self, pattern, highlightFormat):
         self.pattern = pattern
         self.format = highlightFormat
-                
-        
+

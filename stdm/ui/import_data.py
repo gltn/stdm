@@ -21,19 +21,30 @@ email                : gkahiu@gmail.com
 import sys
 import copy
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     QFile,
-    SIGNAL,
     QSignalMapper
+)
+from qgis.PyQt.QtGui import (
+    QColor,
+    QIcon
+)
+from qgis.PyQt.QtWidgets import (
+    QWizard,
+    QMessageBox,
+    QApplication,
+    QAction,
+    QMenu,
+    QDialog,
+    QListWidgetItem,
+    QFileDialog
 )
 
 
-from stdm.stdm.utils import *
-from stdm.stdm.utils import getIndex, enable_drag_sort_widgets
+from stdm.utils.util import getIndex, enable_drag_sort_widgets
 from stdm.data.database import alchemy_table_relationships
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     spatial_tables
@@ -44,16 +55,19 @@ from stdm.data.importexport import (
 )
 from stdm.data.importexport.value_translators import ValueTranslatorManager
 from stdm.data.importexport.reader import OGRReader
-from .importexport import (
-    ValueTranslatorConfig,
+from stdm.ui.importexport.translator_config import (
+    ValueTranslatorConfig
+)
+from stdm.ui.importexport.translator_widget_base import (
     TranslatorWidgetManager
 )
 from stdm.settings import current_profile
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
 )
-from .ui_import_data import Ui_frmImport
+from stdm.ui.ui_import_data import Ui_frmImport
+
 
 class ImportData(QWizard, Ui_frmImport):
     def __init__(self,parent=None):
@@ -152,7 +166,7 @@ class ImportData(QWizard, Ui_frmImport):
                             'ImportData',
                             'Value Translator'
                         ),
-                        unicode(re)
+                        str(re)
                     )
 
                     return
@@ -385,14 +399,14 @@ class ImportData(QWizard, Ui_frmImport):
         #Validate the current page before proceeding to the next one
         validPage=True
 
-        if not QFile.exists(unicode(self.field("srcFile"))):
+        if not QFile.exists(str(self.field("srcFile"))):
             self.ErrorInfoMessage("The specified source file does not exist.")
             validPage = False
 
         else:
             if self.dataReader:
                 self.dataReader.reset()
-            self.dataReader = OGRReader(unicode(self.field("srcFile")))
+            self.dataReader = OGRReader(str(self.field("srcFile")))
 
             if not self.dataReader.isValid():
                 self.ErrorInfoMessage("The source file could not be opened."
@@ -504,7 +518,7 @@ class ImportData(QWizard, Ui_frmImport):
                 setVectorFileDir(self.field("srcFile"))
                 success = True
         except:
-            self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
+            self.ErrorInfoMessage(str(sys.exc_info()[1]))
 
         return success
 

@@ -18,17 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel,
+)
+from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QComboBox,
     QHeaderView,
     QMessageBox,
     QStyledItemDelegate,
-    QStandardItem,
-    QStandardItemModel,
     QTableView
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     QModelIndex
 )
@@ -118,7 +120,7 @@ class _EditableStandardItemModel(QStandardItemModel):
     @property
     def disable_column_index(self):
         """
-        :return: Returns the index of the column which is disabled for 
+        :return: Returns the index of the column which is disabled for
         editing. -1 if not applicable.
         :rtype: int
         """
@@ -155,7 +157,7 @@ class ListPairTableView(QTableView):
         """
         Class constructor.
         :param parent: Parent
-        :param disable_editing: Index of the column to be disabled for 
+        :param disable_editing: Index of the column to be disabled for
         editing, should be either 0 or 1.
         """
         QTableView.__init__(self, parent)
@@ -195,7 +197,7 @@ class ListPairTableView(QTableView):
     @property
     def add_empty_row(self):
         """
-        :return: Returns True if an empty last row is to be added when a new 
+        :return: Returns True if an empty last row is to be added when a new
         record is added, otherwise False.
         :rtype: bool
         """
@@ -246,7 +248,7 @@ class ListPairTableView(QTableView):
 
     def append_data_row(self, column1, column2):
         """
-        Adds a new row with data for the two respective columns. Both values 
+        Adds a new row with data for the two respective columns. Both values
         for column1 and column2 need to exist.
         :param column1: Value for the first column.
         :param column2: Value for the second column.
@@ -341,7 +343,7 @@ class ListPairTableView(QTableView):
             return True
 
         else:
-            if (isinstance(val, str) or isinstance(val, unicode)) and not val:
+            if isinstance(val, str) and not val:
                 return True
 
         return False

@@ -18,8 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm import entity_model
-from stdm import current_profile
+from stdm.data.configuration import entity_model
+from stdm.settings import current_profile
 
 class CodeGenerator(object):
     """

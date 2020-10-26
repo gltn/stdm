@@ -18,22 +18,25 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import QValidator
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QRegExp
+)
+from qgis.PyQt.QtGui import (
+    QValidator,
+    QRegExpValidator
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
 
-from ui_lookup_value import Ui_LookupValue
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from stdm.ui.wizard.ui_lookup_value import Ui_LookupValue
 
-from stdm.data.configuration.entity import *
 from stdm.data.configuration.value_list import (
-        ValueList, 
-        CodeValue, 
+        ValueList,
+        CodeValue,
         value_list_factory
         )
 from stdm.ui.notification import NotificationBar
@@ -101,8 +104,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         locale = QSettings().value("locale/userLocale")[0:2]
 
         if locale == 'en':
-            name_regex = QtCore.QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
-            name_validator = QtGui.QRegExpValidator(name_regex)
+            name_regex = QRegExp('^[ _0-9a-zA-Z][a-zA-Z0-9_/\\-()|.:,; ]*$')
+            name_validator = QRegExpValidator(name_regex)
             text_edit.setValidator(name_validator)
             QApplication.processEvents()
             last_character = text[-1:]
@@ -128,15 +131,15 @@ class ValueEditor(QDialog, Ui_LookupValue):
         Adds a code value to a lookup object. Checks first if a previous value
         exist then removes it and then adds the new one.
         """
-        value = unicode(self.edtValue.text().strip())
-        code = unicode(self.edtCode.text().strip())
-        
+        value = str(self.edtValue.text().strip())
+        code = str(self.edtCode.text().strip())
+
         # if its an edit, first remove the previous value
         if self.code_value:
             self.lookup.rename(self.code_value.value, value, code)
         else:
             self.lookup.add_code_value(CodeValue(code, value))
-	    
+
     def accept(self):
         if self.edtValue.text() == '' or self.edtValue.text() == ' ':
                 self.error_message(QApplication.translate(
@@ -145,12 +148,12 @@ class ValueEditor(QDialog, Ui_LookupValue):
                 return
 
         self.add_value()
-        
+
         self.done(1)
 
     def reject(self):
         self.done(0)
-    
+
     def error_message(self, message):
         """
         Creates a message box and displays a message
@@ -161,4 +164,4 @@ class ValueEditor(QDialog, Ui_LookupValue):
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
         msg.setText(message)
-        msg.exec_()  
+        msg.exec_()

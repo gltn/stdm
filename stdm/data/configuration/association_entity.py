@@ -20,10 +20,8 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from stdm import Entity
-from stdm import (
-    ForeignKeyColumn
-)
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.columns import ForeignKeyColumn
 
 LOGGER = logging.getLogger('stdm')
 
@@ -133,7 +131,7 @@ class AssociationEntity(Entity):
         """Create corresponding table item from string."""
         obj = item
 
-        if isinstance(item, (str, unicode)):
+        if isinstance(item, str):
             if not item:
                 return None
 

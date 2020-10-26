@@ -17,13 +17,18 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import *
-
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QIODevice,
     QRegExp,
     QTextStream)
+
+from qgis.core import (
+    QgsGeometry,
+    QgsVectorLayer,
+    QgsCoordinateReferenceSystem
+)
+
 from qgis.utils import iface
 
 from sqlalchemy.sql.expression import text
@@ -35,7 +40,7 @@ from stdm.data.database import (
     STDMDb,
     Base
 )
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
@@ -94,7 +99,7 @@ def pg_tables(schema="public", exclude_lookups=False):
 
         #Remove default PostGIS tables
         tableIndex = getIndex(_postGISTables, tableName)
-        if tableIndex <> -1:
+        if tableIndex != -1:
             continue
         if exclude_lookups:
             #Validate if table is a lookup table and if it is, then omit
@@ -251,7 +256,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
     return _execute(t)
 
 def export_data(table_name):
-    sql = u"SELECT * FROM {0} ".format(unicode(table_name))
+    sql = u"SELECT * FROM {0} ".format(str(table_name))
 
     t = text(sql)
 
@@ -259,7 +264,7 @@ def export_data(table_name):
 
 
 def fetch_with_filter(sql_str):
-    sql = unicode(sql_str)
+    sql = str(sql_str)
 
     t = text(sql)
 
@@ -277,7 +282,7 @@ def fetch_from_table(table_name, limit):
     :rtype:
     """
     sql = u"SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
-        unicode(table_name), unicode(limit)
+        str(table_name), str(limit)
     )
 
     t = text(sql)
@@ -285,7 +290,7 @@ def fetch_from_table(table_name, limit):
     return _execute(t)
 
 def export_data_from_columns(columns, table_name):
-    sql = u"SELECT {0} FROM {1}".format(unicode(columns), unicode(table_name))
+    sql = u"SELECT {0} FROM {1}".format(str(columns), str(table_name))
 
     t = text(sql)
 
@@ -311,7 +316,7 @@ def fix_sequence(table_name):
 def import_data(table_name, columns_names, data, **kwargs):
 
     sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
-                                                    columns_names, unicode(data))
+                                                    columns_names, str(data))
 
     t = text(sql)
     conn = STDMDb.instance().engine.connect()
@@ -418,11 +423,11 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     dataType = columnType(tableName,columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     if "'" in columnName and '"' not in columnName:
-        sql = u'SELECT DISTINCT "{0}" FROM {1}'.format(unicode(columnName),
+        sql = u'SELECT DISTINCT "{0}" FROM {1}'.format(str(columnName),
                                                      tableName)
     else:
 
-        sql = u"SELECT DISTINCT {0} FROM {1}".format(unicode(columnName), tableName)
+        sql = u"SELECT DISTINCT {0} FROM {1}".format(str(columnName), tableName)
     t = text(sql)
     result = _execute(t)
 
@@ -430,7 +435,7 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
 
     for r in result:
 
-        if r[unicode(columnName)] == None:
+        if r[str(columnName)] == None:
             if quoteRequired == -1:
                 uniqueVals.append(u"NULL")
             else:
@@ -438,7 +443,7 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
 
         else:
             if quoteRequired == -1:
-                uniqueVals.append(unicode(r[columnName]))
+                uniqueVals.append(str(r[columnName]))
             else:
                 uniqueVals.append(u"'{0}'".format(r[columnName]))
 

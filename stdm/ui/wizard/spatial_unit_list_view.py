@@ -18,15 +18,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import (
     QStandardItem
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     Qt
 )
 
-from stdm import AbstractSTREnityListView
+from stdm.ui.wizard.str_entity_list_view import AbstractSTREnityListView
 
 
 class STRSpatialUnitListView(AbstractSTREnityListView):

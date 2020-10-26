@@ -18,16 +18,16 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
     QWidget
 )
 
-from stdm import RelatedTableDialog
-from stdm import SourceDocumentTranslatorDialog
-from stdm import LookupDialog
-from stdm import MultipleEnumerationDialog
+from stdm.ui.importexport.related_table_dialog import RelatedTableDialog
+from stdm.ui.importexport.source_document_dialog import SourceDocumentTranslatorDialog
+from stdm.ui.importexport.lookup_dialog import LookupDialog
+from stdm.ui.importexport.multiple_enumeration_dialog import MultipleEnumerationDialog
 
 class ValueTranslatorConfig(object):
     """

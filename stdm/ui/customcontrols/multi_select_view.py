@@ -18,13 +18,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
-    QAbstractItemView,
+from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
+)
+from qgis.PyQt.QtWidgets import (
+    QAbstractItemView,
     QListView
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt
 )
 

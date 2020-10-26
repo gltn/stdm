@@ -1,11 +1,20 @@
-#begin:            26th March 2012
-#copyright:        (c) 2012 by John Gitau
-#email:            gkahiu@gmail.com
-#about:            Wrapper class for writing PostgreSQL/PostGIS tables to user-defined OGR formats
+"""
+begin:            26th March 2012
+copyright:        (c) 2012 by John Gitau
+email:            gkahiu@gmail.com
+about:            Wrapper class for writing PostgreSQL/PostGIS tables to user-defined OGR formats
+"""
 
 import datetime
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from qgis.PyQt.QtCore import (
+    QFileInfo,
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QProgressDialog,
+    QApplication
+)
 
 try:
     from osgeo import gdal
@@ -16,14 +25,18 @@ except:
     import ogr
     import osr
 
-from stdm import (
+from stdm.data.pg_utils import (
     columnType,
     geometryType
 )
-from stdm import (
+from stdm.settings import (
     current_profile
 )
-from enums import *
+from stdm.data.importexport.enums import (
+    ogrTypes,
+    wkbTypes,
+    drivers
+)
 
 class OGRWriter():
 
@@ -147,7 +160,7 @@ class OGRWriter():
 
                 else:
                     field_value = r[i]
-                    field_value = unicode(field_value).encode('utf-8')
+                    field_value = str(field_value).encode('utf-8')
                     feat.SetField(i,field_value)
 
             if lyr.CreateFeature(feat) != 0:

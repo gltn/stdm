@@ -19,8 +19,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtGui import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QLabel,
+    QApplication,
+    QComboBox,
+    QPushButton,
+    QLineEdit,
+    QDialogButtonBox,
+    QGridLayout,
+    QMessageBox
+)
 
 from stdm import (
     geometry_collections,
@@ -29,7 +38,7 @@ from stdm import (
     setCollectiontypes,
     UserData
 )
-from stdm import projectionSelector
+from stdm.settings.projectionSelector import ProjectionSelector
 
 class GeometryProperty(QDialog):
     def __init__(self,parent):
@@ -65,7 +74,7 @@ class GeometryProperty(QDialog):
 
     def projectionsSettings(self):
         '''let user select the projections for the data'''
-        projSelect=projectionSelector(self)
+        projSelect=ProjectionSelector(self)
         projection=projSelect.loadAvailableSystems()
         self.textField.setText(str(projection))
 

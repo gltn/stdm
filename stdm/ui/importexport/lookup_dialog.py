@@ -19,16 +19,16 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
 )
 
-from stdm import LookupValueTranslator
+from stdm.data.importexport.value_translators import LookupValueTranslator
 
-from stdm import NotificationBar
-from stdm import TranslatorDialogBase
-from stdm import Ui_LookupTranslatorDialog
+from stdm.ui.notification import NotificationBar
+from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
+from stdm.ui.importexport.ui_lookup_dialog import Ui_LookupTranslatorDialog
 
 
 class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):

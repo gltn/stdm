@@ -17,17 +17,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QDialogButtonBox,
+    QMessageBox
+)
 
-from .ui_login import Ui_frmLogin
-from .db_conn_dlg import dbconnDlg
-from .notification import NotificationBar,ERROR
+from stdm.ui.ui_login import Ui_frmLogin
+from stdm.ui.db_conn_dlg import dbconnDlg
+from stdm.ui.notification import NotificationBar, ERROR
 
 from stdm.data.config import DatabaseConfig
 from stdm.data.connection import DatabaseConnection
 from stdm.settings.registryconfig import RegistryConfig
-from stdm.stdm.security import User
+from stdm.security.user import User
 
 SUPERUSER = 'postgres'
 
@@ -132,11 +136,11 @@ class loginDlg(QDialog, Ui_frmLogin):
         dbDlg = dbconnDlg(self)
 
         if 'Database' in setting_data.keys():
-            dbDlg.txtDatabase.setText(unicode(setting_data['Database']))
+            dbDlg.txtDatabase.setText(str(setting_data['Database']))
         if 'Host' in setting_data.keys():
-            dbDlg.txtHost.setText(unicode(setting_data['Host']))
+            dbDlg.txtHost.setText(str(setting_data['Host']))
         if 'Port' in setting_data.keys():
-            dbDlg.txtPort.setText(unicode(setting_data['Port']))
+            dbDlg.txtPort.setText(str(setting_data['Port']))
         dbDlg.exec_()
 
     def reg_setting(self):

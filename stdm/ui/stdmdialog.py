@@ -29,7 +29,7 @@ from stdm.data.database import (
     Base,
     STDMDb
 )
-from .python_object import class_from_table
+from stdm.ui.python_object import class_from_table
 
 from stdm.data.database import Singleton
 

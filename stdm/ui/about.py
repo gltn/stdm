@@ -16,24 +16,27 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import sys,os
+import sys
+import os
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QMessageBox,
-    QApplication,
+    QApplication
+)
+from qgis.PyQt.QtGui import (
     QDesktopServices,
     QTextCharFormat,
     QTextCursor
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QTextStream,
     QIODevice,
     QUrl
 )
-from stdm.stdm.utils import PLUGIN_DIR, version_from_metadata
-from ui_about_stdm import Ui_frmAbout
+from stdm.utils.util import PLUGIN_DIR, version_from_metadata
+from stdm.ui.ui_about_stdm import Ui_frmAbout
 
 
 class AboutSTDMDialog(QDialog,Ui_frmAbout):

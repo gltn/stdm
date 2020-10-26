@@ -1,7 +1,5 @@
 REG_EDITOR_CLS_EXTENSIONS = {}
 
-from stdm.ui.forms.ext import *
-
 
 def entity_dlg_extension(entity_dlg):
     """

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
-Name                 : entity_depend  
+Name                 : entity_depend
 Description          : show entities dependecies
 Date                 : 01/May/2016
 copyright            : (C) 2015 by UN-Habitat and implementing partners.
@@ -18,22 +18,23 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from ui_entity_depend import Ui_dlgEntityDepend
+from stdm.ui.wizard.ui_entity_depend import Ui_dlgEntityDepend
 
-from PyQt4.QtGui import(
-        QDialog,
-        QTreeWidgetItem,
-        QApplication,
-        QFont,
-        QPixmap
+from qgis.PyQt.QtWidgets import(
+    QDialog,
+    QTreeWidgetItem,
+    QApplication
+)
+from qgis.PyQt.QtGui import (
+    QFont,
+    QPixmap
 )
 
-from PyQt4.QtCore import *
 
 class EntityDepend(QDialog, Ui_dlgEntityDepend):
     def __init__(self, parent, entity=None, dependencies=None):
         QDialog.__init__(self, parent)
-        self.setupUi(self) 
+        self.setupUi(self)
         self.entity = entity
         self.dependencies = dependencies
 

@@ -50,7 +50,7 @@ from sqlalchemy.exc import (
 )
 from sqlalchemy.sql.expression import text
 
-import stdm.data
+from stdm.data.globals import app_dbconn
 
 metadata = MetaData()
 
@@ -110,7 +110,7 @@ class STDMDb(object):
 
     def __init__(self):
         #Initialize database engine
-        self.engine = create_engine(stdm.data.app_dbconn.toAlchemyConnection(), echo=False)
+        self.engine = create_engine(app_dbconn.toAlchemyConnection(), echo=False)
 
         #Check for PostGIS extension
         self.postgis_state = self._check_spatial_extension()
@@ -227,7 +227,7 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(unicode(db_error))
+            LOGGER.debug(str(db_error))
             raise db_error
 
     def saveMany(self,objects = []):
@@ -240,7 +240,7 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(unicode(db_error))
+            LOGGER.debug(str(db_error))
             raise db_error
 
     def update(self):
@@ -249,11 +249,11 @@ class Model(object):
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(unicode(db_error))
+            LOGGER.debug(str(db_error))
             raise db_error
 
     def delete(self):
-        from stdm.stdm.data.pg_utils import set_child_dependencies_null_on_delete
+        from stdm.data.pg_utils import set_child_dependencies_null_on_delete
 
         db = STDMDb.instance()
         try:
@@ -263,7 +263,7 @@ class Model(object):
             return True
         except exc.SQLAlchemyError as db_error:
             db.session.rollback()
-            LOGGER.debug(unicode(db_error))
+            LOGGER.debug(str(db_error))
 
             # Reset the constraints
             set_child_dependencies_null_on_delete(self.__table__)

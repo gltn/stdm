@@ -17,13 +17,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4. QtGui import (
+from qgis.PyQt.QtWidgets import (
     QPushButton,
     QComboBox,
     QFileDialog,
     QFrame,
     QGridLayout,
-    QIcon,
     QLabel,
     QScrollArea,
     QSpacerItem,
@@ -31,7 +30,8 @@ from PyQt4. QtGui import (
     QVBoxLayout,
     QWidget
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import (
     QDir,
     QFileInfo
 )

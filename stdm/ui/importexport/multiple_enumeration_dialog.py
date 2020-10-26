@@ -20,16 +20,16 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
 )
 
 from stdm.data.importexport.value_translators import MultipleEnumerationTranslator
 
-from ..notification import NotificationBar
-from .translator_widget_base import TranslatorDialogBase
-from .ui_multiple_enumeration_dialog import Ui_EnumerationTranslatorDialog
+from stdm.ui.notification import NotificationBar
+from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
+from stdm.ui.importexport.ui_multiple_enumeration_dialog import Ui_EnumerationTranslatorDialog
 
 __all__ = ["MultipleEnumerationDialog"]
 

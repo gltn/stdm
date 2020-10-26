@@ -17,14 +17,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
-    QAbstractItemView,
+from qgis.PyQt.QtGui import (
     QIcon,
-    QListView,
     QStandardItem,
     QStandardItemModel
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtWidgets import (
+    QAbstractItemView,
+    QListView
+)
+from qgis.PyQt.QtCore import (
     Qt
 )
 
@@ -97,8 +99,8 @@ class AbstractSTREnityListView(QListView):
 
     def _select_str_entities(self):
         """
-        Select the entities defined in the STR. E.g. parties for party 
-        entity and spatial units for spatial unit entity. Default 
+        Select the entities defined in the STR. E.g. parties for party
+        entity and spatial units for spatial unit entity. Default
         implementation does nothing, to be implemented by subclasses.
         """
         pass

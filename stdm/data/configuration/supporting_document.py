@@ -19,12 +19,12 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from stdm import (
+from stdm.data.configuration.columns import (
     DateTimeColumn,
     IntegerColumn,
     VarCharColumn
 )
-from stdm import Entity
+from stdm.data.configuration.entity import Entity
 
 LOGGER = logging.getLogger('stdm')
 

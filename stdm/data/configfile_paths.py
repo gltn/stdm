@@ -23,8 +23,11 @@ import os
 import shutil
 import platform
 import filecmp
-from stdm.stdm.utils import PLUGIN_DIR
-from PyQt4.QtGui import QApplication, QMessageBox
+from stdm.utils.util import PLUGIN_DIR
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QMessageBox
+)
 
 DEFAULT_CONFIG = "stdmConfig.xml"
 LICENSE = "LICENSE.txt"
@@ -36,7 +39,7 @@ HELP = "stdm.chm"
 xmldoc = os.path.dirname(os.path.abspath(__file__))
 
 from stdm.settings.registryconfig import RegistryConfig
-from .reports import SysFonts
+from stdm.data.reports.sys_fonts import SysFonts
 
 
 class FilePaths(object):

@@ -19,9 +19,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-# Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QLabel,
+    QApplication,
+    QComboBox,
+    QDialogButtonBox,
+    QLineEdit,
+    QPushButton,
+    QMessageBox,
+    QGridLayout
+)
 
 from stdm import edit_geom_column
 from stdm import (
@@ -34,7 +45,7 @@ from stdm import (
 )
 from stdm import UserData
 
-from stdm import projectionSelector
+from stdm.settings.projectionSelector import ProjectionSelector
 
 class GeometryEditor(QDialog):
     def __init__(self,parent,profile, table, args= None):
@@ -80,7 +91,7 @@ class GeometryEditor(QDialog):
 
     def projectionsSettings(self):
         '''let user select the projections for the data'''
-        projSelect = projectionSelector(self)
+        projSelect = ProjectionSelector(self)
         projection = projSelect.loadAvailableSystems()
         self.textField.setText(str(projection))
 

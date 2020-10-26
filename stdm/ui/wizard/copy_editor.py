@@ -18,16 +18,21 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QRegExp
+)
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
-    QMessageBox,
+    QMessageBox
+)
+from qgis.PyQt.QtGui import (
     QRegExpValidator,
     QValidator
 )
 
-from ui_copy_profile import Ui_dlgCopyProfile 
+from stdm.ui.wizard.ui_copy_profile import Ui_dlgCopyProfile
 
 class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
     def __init__(self, parent, orig_name, orig_desc, profile_names):
@@ -38,10 +43,10 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         self.copy_name = orig_name+'_copy'
         self.copy_desc = ''
         self.profile_names = profile_names
-        
+
         self.setupUi(self)
         self.init_controls()
-        
+
     def init_controls(self):
         self.edtFromProfile.setText(self.orig_name)
         self.edtDesc.setText(self.orig_desc)
@@ -91,9 +96,9 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
         ''''remove any trailing spaces in the name and replace them underscore'''
         formatted_name = txt.strip().replace(' ', "_")
         return formatted_name
-    
+
     def add_profile(self):
-        self.copy_name = self.format_name(unicode(self.edtName.text()))
+        self.copy_name = self.format_name(str(self.edtName.text()))
         self.copy_desc = self.edtDesc.text()
 
     def accept(self):
@@ -124,11 +129,11 @@ class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
 
     def reject(self):
         self.done(0)
-        
+
     def error_info_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
         msg.setText(Message)
-        msg.exec_()  
+        msg.exec_()
 

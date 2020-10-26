@@ -19,42 +19,44 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import re
-from PyQt4.QtGui import (
+
+from qgis.PyQt.QtWidgets import (
     QTabWidget,
     QApplication,
     QMessageBox
 )
+
 from qgis.gui import (
    QgsHighlight
 )
 from qgis.core import (
     QgsFeature,
     QgsGeometry,
-    QgsMapLayerRegistry,
     QgsProject,
     QgsVectorLayer
 )
 
-from stdm import (
+from stdm.navigation.web_spatial_loader import (
     WebSpatialLoader,
     GMAP_SATELLITE,
     OSM
 )
 
-from stdm import(
+from stdm.data.pg_utils import(
     pg_table_exists,
     qgsgeometry_from_wkbelement
 )
-from stdm import (
+from stdm.settings.registryconfig import (
     selection_color
 )
-from stdm import STDMDb
+from stdm.data.database import STDMDb
 
-from notification import (
+from stdm.ui.notification import (
     ERROR
 )
-from stdm import SpatialUnitManagerDockWidget
-from ui_property_preview import Ui_frmPropertyPreview
+from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
+from stdm.ui.ui_property_preview import Ui_frmPropertyPreview
+
 
 class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
     """
@@ -86,7 +88,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         self.zoomSlider.sliderReleased.connect(self.on_zoom_changed)
         self.btnResetMap.clicked.connect(self.on_reset_web_map)
         self.btnSync.clicked.connect(self.on_sync_extents)
-        QgsMapLayerRegistry.instance().layersWillBeRemoved.connect(self._on_overlay_to_be_removed)
+        QgsProject.instance().layersWillBeRemoved.connect(self._on_overlay_to_be_removed)
 
     def set_iface(self, iface):
         self._iface = iface
@@ -359,10 +361,10 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         :return: None
         """
         if layer is not None:
-            for lyr in QgsMapLayerRegistry.instance().mapLayers().values():
+            for lyr in QgsProject.instance().mapLayers().values():
                 if lyr.name() == name:
                     id = lyr.id()
-                    QgsMapLayerRegistry.instance().removeMapLayer(id)
+                    QgsProject.instance().removeMapLayer(id)
 
 
     def delete_local_features(self, feature_ids=[]):

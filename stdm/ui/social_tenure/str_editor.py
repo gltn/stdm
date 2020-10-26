@@ -23,16 +23,20 @@ from collections import OrderedDict
 from qgis.utils import (
     iface
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QTimer,
-    Qt
+    Qt,
+    QItemSelectionModel,
 )
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import (
     QIcon,
     QStandardItemModel,
     QStandardItem,
+)
+
+from qgis.PyQt.QtWidgets import (
     QTreeView,
     QApplication,
     QDialog,
@@ -40,7 +44,6 @@ from PyQt4.QtGui import (
     QWidget,
     QMessageBox,
     QDialogButtonBox,
-    QItemSelectionModel,
     QVBoxLayout,
     QDoubleSpinBox
 )
@@ -53,8 +56,8 @@ from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.notification import NotificationBar
 
 from stdm.data.configuration import entity_model
-from ui_str_editor import Ui_STREditor
-from str_components import (
+from stdm.ui.social_tenure.ui_str_editor import Ui_STREditor
+from stdm.ui.social_tenure.str_components import (
     Party,
     SpatialUnit,
     STRType,
@@ -62,14 +65,17 @@ from str_components import (
     ValidityPeriod,
     CustomTenureInfo
 )
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     format_name,
     entity_attr_to_model
 )
 
-from stdm.stdm.data.pg_utils import pg_table_count
+from stdm.data.pg_utils import pg_table_count
 
-from str_data import STRDataStore, STRDBHandler
+from stdm.ui.social_tenure.str_data import (
+    STRDataStore,
+    STRDBHandler
+)
 
 
 class BindSTREditor(object):
@@ -978,7 +984,7 @@ class STREditor(QDialog, Ui_STREditor):
 
         count = pg_table_count(self.social_tenure.name)
 
-        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+unicode(count)+' rows')))
+        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
 
         self.party_count = OrderedDict()
 

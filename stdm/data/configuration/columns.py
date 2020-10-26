@@ -27,10 +27,10 @@ from datetime import (
 )
 from decimal import Decimal
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QCoreApplication
 )
-from PyQt4.QtGui import QApplication
+from qgis.PyQt.QtWidgets import QApplication
 
 from stdm.data.configuration.column_updaters import (
     base_column_updater,
@@ -50,7 +50,7 @@ from stdm.data.configuration.db_items import (
     DbItem
 )
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.stdm.data.pg_utils import table_view_dependencies, table_column_names
+from stdm.data.pg_utils import table_view_dependencies, table_column_names
 
 LOGGER = logging.getLogger('stdm')
 

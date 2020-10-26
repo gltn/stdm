@@ -1,9 +1,9 @@
 """
 /***************************************************************************
 Name                 : Administrative Unit Selector
-Description          : Generic dialog that displays and manages the hierarchy 
+Description          : Generic dialog that displays and manages the hierarchy
                        of administrative spatial units.
-Date                 : 18/February/2014 
+Date                 : 18/February/2014
 copyright            : (C) 2014 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -17,11 +17,15 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QDialogButtonBox
+)
 
 from stdm.ui.admin_unit_manager import AdminUnitManager
-from .admin_unit_manager import VIEW, MANAGE
+from stdm.ui.admin_unit_manager import VIEW, MANAGE
 
 class AdminUnitSelector(QDialog):
     """
@@ -40,14 +44,14 @@ class AdminUnitSelector(QDialog):
             QDialogButtonBox.Cancel|QDialogButtonBox.Close|QDialogButtonBox.Ok
         )
         self.verticalLayout.addWidget(self.buttonBox)
-        
+
         self.selectedAdminUnit = None
-        
+
         #Connect signals
         self.adminUnitManager.stateChanged.connect(self.onStateChanged)
-        self.connect(self.buttonBox.button(QDialogButtonBox.Ok),SIGNAL("clicked()"),self.onAcceptDialog)
-        self.connect(self.buttonBox.button(QDialogButtonBox.Cancel),SIGNAL("clicked()"),self.onRejectDialog)
-        self.connect(self.buttonBox.button(QDialogButtonBox.Close),SIGNAL("clicked()"),self.onRejectDialog)
+        self.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.onAcceptDialog)
+        self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.onRejectDialog)
+        self.buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.onRejectDialog)
 
     def setManageMode(self, enableManage):
         """
@@ -57,7 +61,7 @@ class AdminUnitSelector(QDialog):
             self.adminUnitManager.setState(MANAGE)
         else:
             self.adminUnitManager.setState(VIEW)
-            
+
     def onStateChanged(self, isManageMode):
         '''
         Slot raised when the state of the admin unit manager widget changes
@@ -67,7 +71,7 @@ class AdminUnitSelector(QDialog):
             self.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Close).setVisible(True)
             title = self.tr('Manage Administrative Units')
-            
+
         else:
             self.buttonBox.button(QDialogButtonBox.Ok).setVisible(True)
             self.buttonBox.button(QDialogButtonBox.Cancel).setVisible(True)
@@ -75,7 +79,7 @@ class AdminUnitSelector(QDialog):
             title = self.tr('Select Administrative Unit')
 
         self.setWindowTitle(title)
-            
+
     def onAcceptDialog(self):
         '''
         Slot raised on accepting administrative unit selection.
@@ -84,20 +88,20 @@ class AdminUnitSelector(QDialog):
         self.adminUnitManager.notificationBar().clear()
 
         self.selectedAdminUnit = self.adminUnitManager.selectedAdministrativeUnit()
-        
+
         if self.selectedAdminUnit is None:
             msg = self.tr('Please select an administrative unit '
                           'from the list.')
             self.adminUnitManager.notificationBar().insertWarningNotification(
                 msg
             )
-            
+
         else:
             self.accept()
-    
+
     def onRejectDialog(self):
         '''
         Slot raised to close the dialog.
         '''
         self.reject()
-        
+

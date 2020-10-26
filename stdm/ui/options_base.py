@@ -20,17 +20,18 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QIntValidator,
     QMessageBox)
-from PyQt4.QtCore import(
+from qgis.PyQt.QtGui import (
+    QIntValidator
+)
+from qgis.PyQt.QtCore import(
     Qt,
     QDir,
-    QTimer,
-    SIGNAL
+    QTimer
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -59,11 +60,11 @@ from stdm.settings.registryconfig import (
     CONFIG_UPDATED
 )
 
-from stdm.stdm.utils import setComboCurrentIndexWithText, version_from_metadata
+from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
-from stdm.stdm.ui.ui_options import Ui_DlgOptions
+from stdm.ui.ui_options import Ui_DlgOptions
 
 MAX_LIMIT = 500 # Maximum records in a entity browser
 

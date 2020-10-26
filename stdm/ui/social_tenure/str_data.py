@@ -21,8 +21,8 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from PyQt4.QtCore import QDate
-from PyQt4.QtGui import (
+from qgis.PyQt.QtCore import QDate
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
@@ -425,7 +425,7 @@ class STRDBHandler():
             isValid = False
             STDMDb.instance().session.rollback()
         except Exception as e:
-            errMsg = unicode(e)
+            errMsg = str(e)
             QMessageBox.critical(
                 iface.mainWindow(),
                 QApplication.translate(

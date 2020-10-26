@@ -23,16 +23,23 @@ import re
 from collections import OrderedDict
 import cProfile
 import inspect
-from PyQt4.QtCore import Qt, QDateTime, QDate
-from PyQt4.QtGui import (
+
+from qgis.PyQt.QtCore import (
+    Qt,
+    QDateTime,
+    QDate
+)
+from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QMessageBox,
     QTreeView,
-    QStandardItem,
     QAbstractItemView,
+    QApplication,
+)
+from qgis.PyQt.QtGui import (
+    QStandardItem,
     QStandardItemModel,
     QIcon,
-    QApplication,
     QColor
 )
 
@@ -56,7 +63,7 @@ from stdm.settings.registryconfig import (
 from stdm.data.configuration import (
     entity_model
 )
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     spatial_tables,
     pg_views
 )
@@ -68,7 +75,7 @@ from stdm.data.supporting_documents import (
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     format_name,
     entity_id_to_model,
     profile_spatial_tables,
@@ -76,9 +83,9 @@ from stdm.stdm.utils import (
 )
 
 from stdm.ui.social_tenure.str_editor import EditSTREditor
-from stdm.stdm.data.pg_utils import pg_table_exists
+from stdm.data.pg_utils import pg_table_exists
 
-from ui_feature_details import Ui_DetailsDock
+from stdm.ui.ui_feature_details import Ui_DetailsDock
 
 DETAILS_DOCK_ON = False
 
@@ -988,7 +995,7 @@ class DetailsTreeView(DetailsDBHandler):
                 if isinstance(feature, QgsFeature):
                     id = feature.id()
 
-                if not isinstance(id, long):
+                if not isinstance(id, int):
                     continue
 
                 if self.entity in self.social_tenure.spatial_units:
@@ -1028,7 +1035,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         for spu_id in spatial_unit_ids:
 
-            root = QStandardItem(layer_icon, unicode(entity.short_name))
+            root = QStandardItem(layer_icon, str(entity.short_name))
             self.spatial_unit_items[root] = entity
             root.setData(spu_id)
             self.set_bold(root)
@@ -1060,7 +1067,7 @@ class DetailsTreeView(DetailsDBHandler):
         for spu_id in party_ids:
             str_records = self.party_str_link(entity, spu_id)
 
-            root = QStandardItem(table_icon, unicode(entity.short_name))
+            root = QStandardItem(table_icon, str(entity.short_name))
             self.party_items[root] = entity
             root.setData(spu_id)
             self.set_bold(root)
@@ -1089,7 +1096,7 @@ class DetailsTreeView(DetailsDBHandler):
         for feature_map in self.features_data():
             parent = QStandardItem(
                 layer_icon,
-                format_name(unicode(self.layer.name()))
+                format_name(str(self.layer.name()))
             )
             for k, v, in feature_map.iteritems():
                 if isinstance(v, QDate):
@@ -1121,7 +1128,7 @@ class DetailsTreeView(DetailsDBHandler):
         feature_data = []
 
         for elem in selected_features:
-            if feature_id <> -1:
+            if feature_id != -1:
                 if elem.id() == feature_id:
                     feature_map = OrderedDict(
                         zip(field_names, elem.attributes())
@@ -1180,7 +1187,7 @@ class DetailsTreeView(DetailsDBHandler):
         if selected_features is None:
             return None
         for feature_id in selected_features:
-            root = QStandardItem(icon, unicode(title))
+            root = QStandardItem(icon, str(title))
             root.setData(feature_id)
             self.set_bold(root)
             self.model.appendRow(root)
@@ -1268,7 +1275,7 @@ class DetailsTreeView(DetailsDBHandler):
             ':/plugins/stdm/images/icons/remove.png'
         )
         title = 'No STR Defined'
-        no_str_root = QStandardItem(no_str_icon, unicode(title))
+        no_str_root = QStandardItem(no_str_icon, str(title))
         self.set_bold(no_str_root)
         parent.appendRow([no_str_root])
 
@@ -1418,7 +1425,7 @@ class DetailsTreeView(DetailsDBHandler):
             ':/plugins/stdm/images/icons/table.png'
         )
         title = format_name(party_entity.short_name)
-        party_root = QStandardItem(party_icon, unicode(title))
+        party_root = QStandardItem(party_icon, str(title))
         party_root.setData(party_id)
         self.set_bold(party_root)
 
@@ -1440,7 +1447,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
         title = format_name(spatial_unit_entity.short_name)
-        party_root = QStandardItem(layer_icon, unicode(title))
+        party_root = QStandardItem(layer_icon, str(title))
         party_root.setData(spatial_unit_id)
         self.set_bold(party_root)
 
@@ -1515,7 +1522,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         title = QApplication.translate('DetailsTreeView',
                                        'Custom Tenure Information')
-        custom_attr_root = QStandardItem(custom_attr_icon, unicode(title))
+        custom_attr_root = QStandardItem(custom_attr_icon, str(title))
         # party_root.setData(party_id)
         self.set_bold(custom_attr_root)
 

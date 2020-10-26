@@ -18,17 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
-    QFileDialog,
+    QFileDialog
+)
+from qgis.PyQt.QtGui import (
     QImageWriter
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt
 )
 
 from stdm.ui.notification import NotificationBar
-from ui_image_export_settings import Ui_ImageExportSettings
+from stdm.ui.ui_image_export_settings import Ui_ImageExportSettings
 
 class ImageExportSettings(QDialog, Ui_ImageExportSettings):
     """A dialog for settings options for exporting an image."""

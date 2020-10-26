@@ -21,11 +21,11 @@ import hashlib
 import logging
 from collections import OrderedDict
 
-from stdm import (
+from stdm.data.configuration.columns import (
     VarCharColumn
 )
-from stdm import Entity
-from stdm import value_list_updater
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.entity_updaters import value_list_updater
 
 LOGGER = logging.getLogger('stdm')
 
@@ -239,7 +239,7 @@ class ValueList(Entity):
         # Remap the CodeValue collection to be indexed by updated value.
         updated_values = OrderedDict()
 
-        for v, cv in self.values.iteritems():
+        for v, cv in self.values.items():
             uv = cv.updated_value
             if uv:
                 digest = self.value_hash(uv)
@@ -255,7 +255,7 @@ class ValueList(Entity):
         :returns: True if the value was successfully removed, else False.
         :rtype: bool
         """
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             cv = self.code_value(value)
         else:
             cv = value

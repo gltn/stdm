@@ -26,9 +26,9 @@ from sqlalchemy import (
     Table
 )
 
-from stdm import entity_model
-from stdm import DbItem
-from stdm import (
+from stdm.data.configuration import entity_model
+from stdm.data.configuration.db_items import DbItem
+from stdm.data.pg_utils import (
     drop_cascade_table,
     drop_view,
     table_column_names

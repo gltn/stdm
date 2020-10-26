@@ -21,12 +21,14 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 import logging
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     Qt,
     QSize,
-    QModelIndex
+    QModelIndex,
+    QSortFilterProxyModel
 )
-from PyQt4.QtGui import (
+
+from qgis.PyQt.QtWidgets import (
     QComboBox,
     QItemDelegate,
     QTableView,
@@ -34,13 +36,12 @@ from PyQt4.QtGui import (
     QGraphicsDropShadowEffect,
     QHeaderView,
     QSizePolicy,
-    QSortFilterProxyModel,
     QDoubleSpinBox
 )
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     entity_display_columns,
     lookup_parent_entity
 )
@@ -102,12 +103,12 @@ class STRTypeDelegate(QItemDelegate):
 
         if index.column() == 0:
             str_combo = QComboBox(parent)
-            str_combo.setObjectName(unicode(index.row()))
+            str_combo.setObjectName(str(index.row()))
             return str_combo
         elif index.column() == 1:
 
             spinbox = QDoubleSpinBox(parent)
-            spinbox.setObjectName(unicode(index.row()))
+            spinbox.setObjectName(str(index.row()))
             spinbox.setMinimum(0.00)
             spinbox.setSuffix('%')
             spinbox.setMaximum(100.00)
@@ -127,14 +128,14 @@ class STRTypeDelegate(QItemDelegate):
             widget.insertItem(0, " ")
 
                 #, len(self.str_type_set_data())
-            for id, type in self.str_type_set_data().iteritems():
+            for id, type in self.str_type_set_data().items():
                 widget.addItem(type, id)
 
             list_item_index = None
             if not index.model() is None:
                 list_item_index = index.model().data(index, Qt.DisplayRole)
             if list_item_index is not None and \
-                    not isinstance(list_item_index, (unicode, str)):
+                    not isinstance(list_item_index, str):
 
                 value = list_item_index.toInt()
                 widget.blockSignals(True)

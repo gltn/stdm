@@ -18,16 +18,20 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
+from qgis.PyQt.QtCore import (
+    QSettings,
+    QRegExp
+)
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
-    QMessageBox,
-    QRegExpValidator
+    QMessageBox)
+from qgis.PyQt.QtGui import (
+    QRegExpValidator,
+    QValidator
 )
-from PyQt4.QtGui import QValidator
 
-from ui_profile import Ui_Profile
+from stdm.ui.wizard.ui_profile import Ui_Profile
 from stdm.ui.notification import NotificationBar
 
 
@@ -37,11 +41,11 @@ class ProfileEditor(QDialog, Ui_Profile):
 
         self.profile_name = ''
         self.desc = ''
-        
+
         self.setupUi(self)
         self.init_controls()
         self.notice_bar = NotificationBar(self.notif_bar)
-        
+
     def init_controls(self):
         self.edtProfile.clear()
         self.edtDesc.clear()
@@ -52,10 +56,10 @@ class ProfileEditor(QDialog, Ui_Profile):
         ''''remove any trailing spaces in the name and replace them underscore'''
         formatted_name = txt.strip().replace(' ', "_")
         return formatted_name
-    
+
     def add_profile(self):
-        self.profile_name = self.format_name(unicode(self.edtProfile.text()))
-        self.desc = unicode(self.edtDesc.text())
+        self.profile_name = self.format_name(str(self.edtProfile.text()))
+        self.desc = str(self.edtDesc.text())
 
     def show_notification(self, message):
         """
@@ -121,11 +125,11 @@ class ProfileEditor(QDialog, Ui_Profile):
 
     def reject(self):
         self.done(0)
-        
+
     def error_info_message(self, Message):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle("STDM")
         msg.setText(Message)
-        msg.exec_()  
+        msg.exec_()
 

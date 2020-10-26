@@ -3,11 +3,11 @@
 # email:            gkahiu@gmail.com
 # about:            System Fonts Helper Class
 
-from PyQt4.QtCore import QFile
+from qgis.PyQt.QtCore import QFile
 
 from stdm import ttffiles
-from stdm import RegistryConfig
-
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.utils.util import getIndex
 
 class SysFonts:
     '''

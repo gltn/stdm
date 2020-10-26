@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QMessageBox
@@ -46,16 +46,16 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         Class constructor.
         :param profile: Profile object.
         :type profile: Profile
-        :param tenure_custom_entities: Collection of tenure types and 
+        :param tenure_custom_entities: Collection of tenure types and
         corresponding custom attribute entities.
         :type tenure_custom_entities: OrderedDict
-        :param proxy_name: Name of the entity which will be used to create 
-        a proxy table.The attributes of the entity can then be copied to the 
+        :param proxy_name: Name of the entity which will be used to create
+        a proxy table.The attributes of the entity can then be copied to the
         target entity which shares the same name as the proxy entity.
         :type proxy_name: str
         :param parent: Parent object.
         :type parent: QWidget
-        :param editable: True if the attributes can be edited, otherwise 
+        :param editable: True if the attributes can be edited, otherwise
         False.
         :type editable: bool
         :param exclude_columns: List of column names to exclude.
@@ -117,8 +117,8 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
     @property
     def custom_tenure_attributes(self):
         """
-        :return: Returns a collection containing the attributes for each 
-        entity corresponding to the tenure types. Key is tenure type lookup 
+        :return: Returns a collection containing the attributes for each
+        entity corresponding to the tenure types. Key is tenure type lookup
         name, value is a list of tenure attributes.
         :rtype: dict(str, list)
         """
@@ -126,11 +126,11 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def exclude_column_names(self, names):
         """
-        Set the list of columns to be excluded from the view only, not from 
+        Set the list of columns to be excluded from the view only, not from
         the collection.
-        :param names: List containing column names that will be excluded 
-        from the view. If there are already existing columns in the view 
-        which are also in the list of excluded columns then they will be 
+        :param names: List containing column names that will be excluded
+        from the view. If there are already existing columns in the view
+        which are also in the list of excluded columns then they will be
         removed from the view but reference will remain in the collection.
         :type names: list
         """
@@ -245,7 +245,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         :type original_name: str
         :param column: Column object.
         :type column: BaseColumn
-        :return: Returns True if the operation succeeded, otherwise False 
+        :return: Returns True if the operation succeeded, otherwise False
         if the column does not exist.
         :rtype: bool
         """
@@ -279,7 +279,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def selected_column(self):
         """
-        :return: Returns the selected column object in the view otherwise 
+        :return: Returns the selected column object in the view otherwise
         None if there is no row selected.
         :rtype: BaseColumn
         """
@@ -368,7 +368,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         Removes the column with the given name from the view.
         :param name: Column name.
         :type name: str
-        :return: Return True if the column was successfully deleted, 
+        :return: Return True if the column was successfully deleted,
         otherwise False if the column does not exist.
         :rtype: bool
         """
@@ -386,7 +386,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def load_attributes_from_entity(self, entity):
         """
-        Loads the view with the attributes of the specified entity. Any 
+        Loads the view with the attributes of the specified entity. Any
         previous attributes will be removed.
         :param entity: Entity whose attributes will be loaded.
         :type entity: Entity
@@ -395,7 +395,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
     def load_attributes(self, attributes):
         """
-        Loads the collection of attibutes to the view. Any previous 
+        Loads the collection of attibutes to the view. Any previous
         attributes will be removed. The collection should not be empty.
         :param attributes: Collection of attributes to be loaded to te view.
         :type attributes: OrderedDict

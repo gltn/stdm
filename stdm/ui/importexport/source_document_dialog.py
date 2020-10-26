@@ -18,25 +18,25 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QDir
 )
 
-from stdm import SourceDocumentTranslator
-from stdm import entity_model
+from stdm.data.importexport.value_translators import SourceDocumentTranslator
+from stdm.data.configuration import entity_model
 
-from stdm import (
+from stdm.settings.registryconfig import (
     last_document_path
 )
 
-from stdm import NotificationBar
-from stdm import TranslatorDialogBase
-from stdm import (
+from stdm.ui.notification import NotificationBar
+from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
+from stdm.ui.importexport.ui_source_document_dialog import (
     Ui_SourceDocumentTranslatorDialog
 )
 

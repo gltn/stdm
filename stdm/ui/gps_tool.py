@@ -17,24 +17,33 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QMessageBox,
+    QTableWidgetItem
+)
 
-import PyQt4.QtCore as qc
-import PyQt4.QtGui as qg
-import qgis.core as q_core
-from ui_gps_tool import Ui_Dialog
-from .forms.editor_dialog import EntityEditorDialog
-from stdm.stdm.utils import util
-from stdm.stdm.data.pg_utils import vector_layer
+from qgis.core import (
+    QgsPoint
+)
+
+from stdm.ui.ui_gps_tool import Ui_Dialog
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.data.pg_utils import vector_layer
+from stdm.utils.util import openDialog
 import gps_tool_data_source_utils as gpx_source
 import gps_tool_data_view_utils as gpx_view
 from stdm.settings.registryconfig import (
     selection_color
 )
 
-class GPSToolDialog(qg.QDialog, Ui_Dialog):
+class GPSToolDialog(QDialog, Ui_Dialog):
     def __init__(self, iface, entity, sp_table, sp_col,
                  model=None, reload=True, row_number=None, entity_browser=None):
-        qg.QDialog.__init__(self, iface.mainWindow())
+        QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
         self.entity = entity
@@ -78,19 +87,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.table_widget.itemSelectionChanged.connect(
             self._table_widget_row_selection
         )
-        self.table_widget.connect(
-            self.table_widget,
-            qc.SIGNAL('itemDragEnter'),
-            self._table_widget_drag_enter
-        )
-        self.table_widget.connect(
-            self.table_widget,
-            qc.SIGNAL('itemDropped'),
-            self._table_widget_row_dropped
-        )
-        self.table_widget.itemDoubleClicked.connect(
-            self._table_widget_item_double_clicked
-        )
+        self.table_widget.itemDragEnter.connect(self._table_widget_drag_enter)
+        self.table_widget.itemDropped.connect(self._table_widget_row_dropped)
+        self.table_widget.itemDoubleClicked.connect(self._table_widget_item_double_clicked)
         self.table_widget.itemChanged.connect(self._table_widget_item_changed)
         self.select_all_bt.clicked.connect(self._select_all_items)
         self.clear_all_bt.clicked.connect(self._clear_all_items)
@@ -114,7 +113,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
             if tab_text != 'no_tab':
-                self.gpx_import_tab.addTab(tab_object, unicode(tab_text))
+                self.gpx_import_tab.addTab(tab_object, str(tab_text))
             else:
                 self.gpx_import_tab.addTab(tab_object, 'Primary')
 
@@ -124,7 +123,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        (gpx_file, encoding) = util.openDialog(self)
+        (gpx_file, encoding) = openDialog(self)
         if gpx_file:
             self.file_le.clear()
             self.file_le.setText(gpx_file)
@@ -135,7 +134,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        gpx_file = unicode(self.file_le.text()).strip()
+        gpx_file = str(self.file_le.text()).strip()
         if gpx_source.validate_file_path(gpx_file):
             if self.point_row_attr:
                 self._refresh_map_canvas()
@@ -262,7 +261,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         if self.active_layer is None:
             return
 
-        gpx_file = unicode(self.file_le.text()).strip()
+        gpx_file = str(self.file_le.text()).strip()
         feature_type = self.feature_type_cb.currentIndex()
         columns = 4
         headers = ["", "Point Name", "Longitude", "Latitude"]
@@ -279,7 +278,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                     self.prev_point_row_attr = list(self.point_row_attr)
                     self.init_gpx_file = gpx_file
                 else:
-                    qg.QMessageBox.critical(
+                    QMessageBox.critical(
                         self,
                         self.tr('Incompatibility Error'),
                         self.tr(
@@ -289,7 +288,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                         )
                     )
             else:
-                qg.QMessageBox.warning(
+                QMessageBox.warning(
                     self,
                     self.tr('Feature Type Error'),
                     'The selected .gpx file has no {} feature type.'.format(
@@ -319,7 +318,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         self.temp_layer_name = 'temp_layer'
         self._set_table_structure(table_widget, feature_count, columns, headers)
         for feature_attr, row in gpx_view.get_feature_attributes(self.gpx_layer):
-            point = q_core.QgsPoint(feature_attr[1], feature_attr[2])
+            point = QgsPoint(feature_attr[1], feature_attr[2])
             point_list.append(point)
             check_box = self._set_table_widget_item(feature_attr, table_widget, row)
             checkbox_state = check_box.checkState()
@@ -363,9 +362,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
                 check_box = self._set_checkbox_item()
                 table_widget.setItem(row, column_num, check_box)
             column_num += 1
-            if type(attr) is not basestring:
-                attr = unicode(attr)
-            table_widget.setItem(row, column_num, qg.QTableWidgetItem(attr))
+            if type(attr) is not str:
+                attr = str(attr)
+            table_widget.setItem(row, column_num, QTableWidgetItem(attr))
         return check_box
 
     def _set_checkbox_item(self):
@@ -374,9 +373,9 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: Table widget item
         :rtype: Object
         """
-        check_box = qg.QTableWidgetItem()
-        check_box.setCheckState(qc.Qt.Checked)
-        check_box.setFlags(qc.Qt.ItemIsUserCheckable | qc.Qt.ItemIsEnabled | qc.Qt.ItemIsSelectable)
+        check_box = QTableWidgetItem()
+        check_box.setCheckState(Qt.Checked)
+        check_box.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable)
         return check_box
 
     def _set_table_header_property(self, table_widget, enable=True):
@@ -410,7 +409,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
         :return: None
         :rtype: None
         """
-        if item.checkState() == qc.Qt.Unchecked:
+        if item.checkState() == Qt.Unchecked:
             qgs_points = gpx_view.check_uncheck_item(
                 self.point_row_attr, self.map_canvas, item
             )
@@ -631,7 +630,7 @@ class GPSToolDialog(qg.QDialog, Ui_Dialog):
             self.geometry_added = True
         # validate empty GPS field
         if not self.geometry_added and self.model is None:
-            qg.QMessageBox.critical(
+            QMessageBox.critical(
                 self,
                 self.tr('Missing GPS Feature Error'),
                 self.tr(

@@ -18,18 +18,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
     QMessageBox
 )
 
-from qgis.gui import QgsGenericProjectionSelector
+from qgis.gui import QgsProjectionSelectionDialog
 
-from ui_geom_property import Ui_GeometryProperty
+from stdm.ui.wizard.ui_geom_property import Ui_GeometryProperty
 
 geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
 'MULTIPOLYGON']
@@ -68,7 +65,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.load_geometry_types()
         self.btnCoord.clicked.connect(self.projection_selector)
         self.cboGeoType.setCurrentIndex(self._geom_type)
-        self.btnCoord.setText(unicode(self.srid()))
+        self.btnCoord.setText(str(self.srid()))
 
         # disable controls if columns exist in the database
         self.btnCoord.setEnabled(not self.in_db)
@@ -86,7 +83,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         """
         Opens the QGIS projection selector
         """
-        projection_selector = QgsGenericProjectionSelector(self)
+        projection_selector = QgsProjectionSelectionDialog(self)
 
         if projection_selector.exec_() == QDialog.Accepted:
             #Remove 'EPSG:' part
@@ -105,14 +102,14 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         :rtype: str
         """
         return self._geom_type
-	    
+
     def coord_sys(self):
         """
         Returns projection type
         :rtype: str
         """
         return self._srid
-	    
+
     def accept(self):
         if self._srid =="":
             self.show_message(QApplication.translate("GeometryPropetyEditor",

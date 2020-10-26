@@ -19,18 +19,27 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import sys
-from PyQt4.QtGui import *
-from PyQt4.QtCore import (
+
+from qgis.PyQt.QtWidgets import (
+    QWizard,
+    QApplication,
+    QListWidgetItem,
+    QFileDialog,
+    QMessageBox
+)
+from qgis.PyQt.QtGui import (
+    QTextOption,
+    QIcon
+)
+from qgis.PyQt.QtCore import (
     Qt,
-    SIGNAL
+    pyqtSignal
 )
 
 import sqlalchemy
 
-from stdm.stdm.utils import *
-from stdm.stdm.utils import getIndex
-from stdm.ui.reports import SqlHighlighter
-from stdm.stdm.data.pg_utils import (
+from stdm.ui.reports.highlighter import SqlHighlighter
+from stdm.data.pg_utils import (
     process_report_filter,
     table_column_names,
     unique_column_values,
@@ -43,10 +52,11 @@ from stdm.data.importexport import (
     setVectorFileDir
 )
 from stdm.settings import current_profile
-from stdm.stdm.utils import (
+from stdm.utils.util import (
+    getIndex,
     profile_user_tables
 )
-from .ui_export_data import Ui_frmExportWizard
+from stdm.ui.ui_export_data import Ui_frmExportWizard
 
 class ExportData(QWizard,Ui_frmExportWizard):
     def __init__(self,parent=None):
@@ -252,7 +262,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
 
         if len(selCols) > 0:
             selCol = selCols[0]
-            colName = unicode(selCol.text())
+            colName = str(selCol.text())
 
             uniqVals = unique_column_values(self.srcTab,colName)
 
@@ -435,7 +445,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle('Data Export Error')
-        msg.setText(unicode(Message))
+        msg.setText(str(Message))
         msg.exec_()
 
 

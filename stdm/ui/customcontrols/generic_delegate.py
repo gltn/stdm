@@ -18,10 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt, QTimer
+from qgis.PyQt.QtCore import (
+    Qt,
+    QTimer
+)
 
-from PyQt4.QtGui import QItemDelegate, QComboBox, QDoubleSpinBox, \
-    QAbstractItemDelegate, QStandardItem
+from qgis.PyQt.QtGui import QStandardItem
+
+from qgis.PyQt.QtWidgets import (
+    QItemDelegate,
+    QComboBox,
+    QDoubleSpinBox,
+    QAbstractItemDelegate
+)
 
 class GenericDelegate(QItemDelegate):
     """
@@ -74,7 +83,7 @@ class GenericDelegate(QItemDelegate):
         :rtype: QComboBox
         """
         combo = QComboBox(parent)
-        combo.setObjectName(unicode(index.row()))
+        combo.setObjectName(str(index.row()))
         editor = combo
         editor.activated.connect(
             lambda index, editor=editor: self._view.commitData(editor))
@@ -96,7 +105,7 @@ class GenericDelegate(QItemDelegate):
         :rtype: QDoubleSpinBox
         """
         spinbox = QDoubleSpinBox(parent)
-        spinbox.setObjectName(unicode(index.row()))
+        spinbox.setObjectName(str(index.row()))
 
         return spinbox
 
@@ -120,7 +129,7 @@ class GenericDelegate(QItemDelegate):
             if not index.model() is None:
                 list_item_index = index.model().data(index, Qt.DisplayRole)
             if list_item_index is not None and \
-                    not isinstance(list_item_index, (unicode, str)):
+                    not isinstance(list_item_index, str):
 
                 value = list_item_index.toInt()
                 widget.blockSignals(True)

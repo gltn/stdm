@@ -17,14 +17,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from ui_changepwd import Ui_frmChangePwd
+from qgis.PyQt.QtCore import (
+    QObject
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QApplication,
+    QMessageBox
+)
+from stdm.ui.ui_changepwd import Ui_frmChangePwd
 
-from stdm.stdm.security.membership import Membership
-from stdm.stdm.security.exception import SecurityException
-import stdm.data
+from stdm.security.membership import Membership
+from stdm.security.exception import SecurityException
+from stdm.data.globals import app_dbconn
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 class changePwdDlg(QDialog, Ui_frmChangePwd):
 
@@ -43,7 +50,7 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
         btnLogin=self.btnBox.button(QDialogButtonBox.Ok)
         btnLogin.setText(QApplication.translate("ChangePasswordDialog","Save"))
         #Connect slots
-        QObject.connect(self.btnBox, SIGNAL("accepted()"), self.acceptdlg)
+        self.btnBox.accepted.connect(self.acceptdlg)
 
     def validateInput(self):
         '''
@@ -76,7 +83,7 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
 
             try:
                 #Set new password
-                member.setPassword(stdm.data.app_dbconn.User.UserName, newPwd)
+                member.setPassword(app_dbconn.User.UserName, newPwd)
                 QMessageBox.information(self, QApplication.translate("ChangePasswordDialog","Change Password"),
                                         QApplication.translate("ChangePasswordDialog","Your password has successfully been changed"))
                 self.accept()

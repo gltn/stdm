@@ -20,14 +20,16 @@ email                : stdm@unhabitat.org
 
 from collections import OrderedDict
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
-    QStandardItem,
-    QStandardItemModel,
     QTableView
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel,
+)
+from qgis.PyQt.QtCore import (
     QModelIndex,
     Qt
 )
@@ -35,7 +37,7 @@ from PyQt4.QtCore import (
 
 class AttributesTableView(QTableView):
     """
-    Table view for displaying a collection of column objects. Management of 
+    Table view for displaying a collection of column objects. Management of
     the entity's columns will be done by the calling class.
     """
     def __init__(self, parent=None, attributes=None):
@@ -86,7 +88,7 @@ class AttributesTableView(QTableView):
         :type original_name: str
         :param attribute: BaseColumn to be edited in the view.
         :type attribute: BaseColumn
-        :return: Returns True if the column was successfully updated 
+        :return: Returns True if the column was successfully updated
         otherwise False if there is no column with the specified name.
         :rtype: bool
         """
@@ -117,7 +119,7 @@ class AttributesTableView(QTableView):
         Removes an existing column entry from the view.
         :param name: BaseColumn object to be removed.
         :type name: str
-        :return: Returns True if the column was successfully removed 
+        :return: Returns True if the column was successfully removed
         otherwise False if there is no column with the specified name.
         :rtype: bool
         """
@@ -134,7 +136,7 @@ class AttributesTableView(QTableView):
 
     def selected_column(self):
         """
-        :return: Returns the name of the selected column object in the view 
+        :return: Returns the name of the selected column object in the view
         otherwise an empty string if there is no row selected.
         :rtype: str
         """
@@ -151,7 +153,7 @@ class AttributesTableView(QTableView):
         Get the row index of the given column name.
         :param name: Name of the column.
         :type name: str
-        :return: Returns the row index of the matching column name, if not 
+        :return: Returns the row index of the matching column name, if not
         found then returns -1.
         :rtype: int
         """

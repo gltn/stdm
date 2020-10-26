@@ -24,29 +24,41 @@ import logging
 import datetime
 import collections
 
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
 from collections import OrderedDict
 
-from stdm.stdm.data.pg_utils import vector_layer
-from ui_column_editor import Ui_ColumnEditor
+from qgis.PyQt.QtCore import (
+    Qt,
+    QRegExp,
+    QSettings,
+)
+from qgis.PyQt.QtGui import (
+    QRegExpValidator,
+    QValidator
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QDialogButtonBox,
+    QMessageBox
+)
+
+from stdm.data.pg_utils import vector_layer
+from stdm.ui.wizard.ui_column_editor import Ui_ColumnEditor
 
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.entity_relation import EntityRelation
 
-from varchar_property import VarcharProperty
-from bigint_property import BigintProperty
-from double_property import DoubleProperty
-from date_property import DateProperty
-from dtime_property import DTimeProperty
-from geometry_property import GeometryProperty
-from fk_property import FKProperty
-from lookup_property import LookupProperty
-from multi_select_property import MultiSelectProperty
-from code_property import CodeProperty
-from expression_property import ExpressionProperty
+from stdm.ui.wizard.varchar_property import VarcharProperty
+from stdm.ui.wizard.bigint_property import BigintProperty
+from stdm.ui.wizard.double_property import DoubleProperty
+from stdm.ui.wizard.date_property import DateProperty
+from stdm.ui.wizard.dtime_property import DTimeProperty
+from stdm.ui.wizard.geometry_property import GeometryProperty
+from stdm.ui.wizard.fk_property import FKProperty
+from stdm.ui.wizard.lookup_property import LookupProperty
+from stdm.ui.wizard.multi_select_property import MultiSelectProperty
+from stdm.ui.wizard.code_property import CodeProperty
+from stdm.ui.wizard.expression_property import ExpressionProperty
 from stdm.ui.notification import NotificationBar, INFORMATION
 
 LOGGER = logging.getLogger('stdm')
@@ -121,7 +133,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         self.FK_EXCLUDE.append(self.entity.short_name)
 
         self.type_names = \
-                [unicode(name) for name in BaseColumn.types_by_display_name().keys()]
+                [str(name) for name in BaseColumn.types_by_display_name().keys()]
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
         self.btnColProp.clicked.connect(self.data_type_property)
@@ -189,8 +201,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         self.cboDataType.setEnabled(not self.in_db)
 
-        self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.accept)
-        self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.cancel)
+        self.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.accept)
+        self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.cancel)
 
         col_type = self._column_type_info(self.column)
         if not self.in_db and col_type == 'GEOMETRY':
@@ -216,8 +228,8 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         if len(text) == 0:
             return
 
-        name_regex = QtCore.QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
-        name_validator = QtGui.QRegExpValidator(name_regex)
+        name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
+        name_validator = QRegExpValidator(name_regex)
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
@@ -663,7 +675,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         fk_ent = [entity for entity in self.profile.entities.items() \
                 if entity[1].TYPE_INFO not in self.EX_TYPE_INFO]
 
-        fk_ent = [entity for entity in fk_ent if unicode(entity[0]) \
+        fk_ent = [entity for entity in fk_ent if str(entity[0]) \
                 not in self.FK_EXCLUDE]
 
         relation = {}
@@ -671,7 +683,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         relation['fk_entities'] = fk_ent
         relation['profile'] = self.profile
         relation['entity'] = self.entity
-        relation['column_name'] = unicode(self.edtColName.text())
+        relation['column_name'] = str(self.edtColName.text())
         relation['show_in_parent'] = '1'
         relation['show_in_child'] = '1'
         editor = FKProperty(self, relation)
@@ -760,7 +772,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         column = None
 
-        if self.type_info <> "":
+        if self.type_info != "":
             if self.type_info == 'ADMIN_SPATIAL_UNIT':
                 self.admin_spatial_unit_property()
                 column = BaseColumn.registered_types[self.type_info] \
@@ -882,14 +894,14 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         Sets work area 'form_fields' with form control values
         """
-        self.form_fields['colname'] = unicode(self.edtColName.text())
-        self.form_fields['description'] = unicode(self.edtColDesc.text())
-        self.form_fields['label'] = unicode(self.txt_form_label.text())
+        self.form_fields['colname'] = str(self.edtColName.text())
+        self.form_fields['description'] = str(self.edtColDesc.text())
+        self.form_fields['label'] = str(self.txt_form_label.text())
         self.form_fields['index'] = self.cbIndex.isChecked()
         self.form_fields['mandatory'] = self.cbMandt.isChecked()
         self.form_fields['searchable'] = self.cbSearch.isChecked()
         self.form_fields['unique'] = self.cbUnique.isChecked()
-        self.form_fields['user_tip'] = unicode(self.edtUserTip.text())
+        self.form_fields['user_tip'] = str(self.edtUserTip.text())
 
     def show_message(self, message):
         msg = QMessageBox()
@@ -899,7 +911,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         msg.exec_()
 
     def accept(self):
-        col_name = unicode(self.edtColName.text()).strip()
+        col_name = str(self.edtColName.text()).strip()
         # column name is not empty
         if len(col_name)==0 or col_name == '_':
             self.show_message(self.tr('Please enter a valid column name.'))

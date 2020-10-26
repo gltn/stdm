@@ -1,15 +1,15 @@
 
 import os
 
-from PyQt4 import uic
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import (
+    pyqtSignal
+)
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QFileSystemModel,
     QMessageBox
-
 )
-from PyQt4.QtCore import *
-
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(

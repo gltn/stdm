@@ -18,13 +18,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.association_entity import AssociationEntity
+from stdm.ui.wizard.create_lookup import LookupEditor
 
-from ui_lookup_property import Ui_LookupProperty
-from stdm import EntityRelation
-from stdm import AssociationEntity
-from create_lookup import LookupEditor
 
 class MultiSelectProperty(QDialog, Ui_LookupProperty):
     """
@@ -107,7 +108,7 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
         """
         Construct a ValueList instance
         """
-        lookup_name = unicode(self.cboPrimaryEntity.currentText())
+        lookup_name = str(self.cboPrimaryEntity.currentText())
         self._lookup_name = lookup_name
 
         self._first_parent = self._profile.entity(lookup_name)

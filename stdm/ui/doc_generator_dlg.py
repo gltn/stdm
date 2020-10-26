@@ -23,19 +23,21 @@ import os
 import sys
 import subprocess
 
-from PyQt4.QtGui import (
-    QCursor,
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QApplication,
     QProgressDialog,
     QProgressBar,
     QMessageBox,
-    QImageWriter,
     QFileDialog,
     QTableView
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import (
+    QCursor,
+    QImageWriter
+)
+from qgis.PyQt.QtCore import (
     Qt,
     QFileInfo,
     QTimer
@@ -43,8 +45,8 @@ from PyQt4.QtCore import (
 
 from stdm.settings import current_profile
 from stdm.data.configuration import entity_model
-from stdm.stdm.composer.document_generator import DocumentGenerator
-from stdm.stdm.utils import (
+from stdm.composer.document_generator import DocumentGenerator
+from stdm.utils.util import (
     format_name,
     entity_display_columns,
     enable_drag_sort,
@@ -56,11 +58,11 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT
 )
 
-from .foreign_key_mapper import ForeignKeyMapper
-from .notification import NotificationBar
-from .ui_doc_generator import Ui_DocumentGeneratorDialog
-from .composer import TemplateDocumentSelector
-from .sourcedocument import source_document_location
+from stdm.ui.foreign_key_mapper import ForeignKeyMapper
+from stdm.ui.notification import NotificationBar
+from stdm.ui.ui_doc_generator import Ui_DocumentGeneratorDialog
+from stdm.ui.composer import TemplateDocumentSelector
+from stdm.ui.sourcedocument import source_document_location
 
 __all__ = ["DocumentGeneratorDialog", "EntityConfig"]
 

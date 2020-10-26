@@ -19,7 +19,12 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QApplication, QProgressDialog, QLabel, QMessageBox
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QProgressDialog,
+    QLabel,
+    QMessageBox
+)
 from qgis.utils import iface
 
 class STDMProgressDialog(QProgressDialog):

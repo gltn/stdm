@@ -19,20 +19,19 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from ui_varchar_property import Ui_VarcharProperty
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
-		QDialog, 
-		QApplication, 
-		QMessageBox
-		)
+from stdm.ui.wizard.ui_varchar_property import Ui_VarcharProperty
 
-from stdm.data.configuration.entity import *
+from qgis.PyQt.QtCore import QRegExp
+from qgis.PyQt.QtGui import QRegExpValidator
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox
+)
+
 from stdm.data.configuration.value_list import (
-        ValueList, 
-        CodeValue, 
+        ValueList,
+        CodeValue,
         value_list_factory
         )
 
@@ -59,15 +58,15 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         """
         Initializes form widgets
         """
-        charlen_regex = QtCore.QRegExp('^[0-9]{1,3}$')
-        charlen_validator = QtGui.QRegExpValidator(charlen_regex)
+        charlen_regex = QRegExp('^[0-9]{1,3}$')
+        charlen_validator = QRegExpValidator(charlen_regex)
         self.edtCharLen.setValidator(charlen_validator)
 
         self.edtCharLen.setText(str(self._max_len))
         self.edtCharLen.setFocus()
 
         self.edtCharLen.setEnabled(not self.in_db)
-	
+
     def add_len(self):
         """
         Sets the max_len property from the form widget.
@@ -80,7 +79,7 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         :rtype: int
         """
         return self._max_len
-        
+
     def accept(self):
         if self.edtCharLen.text()=='':
             self.show_message(QApplication.translate("VarcharPropetyEditor",

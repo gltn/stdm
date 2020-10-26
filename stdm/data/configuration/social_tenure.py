@@ -21,21 +21,21 @@ import logging
 
 from collections import OrderedDict
 
-from stdm import (
+from stdm.data.configuration.columns import (
     DateColumn,
     ForeignKeyColumn,
     LookupColumn,
     PercentColumn,
     VarCharColumn
 )
-from stdm import ConfigurationException
-from stdm import Entity
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration.entity import Entity
 
-from stdm import (
+from stdm.data.configuration.social_tenure_updater import (
     view_deleter,
     view_updater
 )
-from stdm import ValueList
+from stdm.data.configuration.value_list import ValueList
 
 LOGGER = logging.getLogger('stdm')
 
@@ -953,7 +953,7 @@ class SocialTenure(Entity):
         """Create corresponding table item from string."""
         obj = item
 
-        if isinstance(item, (str, unicode)):
+        if isinstance(item, str):
             if not item:
                 return None
 

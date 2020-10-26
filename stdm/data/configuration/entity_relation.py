@@ -18,11 +18,11 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QCoreApplication
 )
 
-from stdm import (
+from stdm.data.configuration.entity_relation_updater import (
     create_foreign_key_constraint,
     drop_foreign_key_constraint
 )
@@ -107,7 +107,7 @@ class EntityRelation(object):
         """Create corresponding table item from string."""
         obj = item
 
-        if isinstance(item, (str, unicode)):
+        if isinstance(item, str):
             if not item:
                 return None
 

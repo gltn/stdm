@@ -20,22 +20,28 @@ email                : stdm@unhabitat.org
 """
 import os
 import shutil
-from PyQt4 import uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import (
+
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import (
+    Qt,
+    QCoreApplication
+)
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QMessageBox,
     QListWidgetItem,
     QFileDialog,
-    QIcon,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QApplication
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtGui import (
+    QIcon
+)
+from qgis.PyQt.QtCore import (
     QDir,
     QFile,
     QDateTime
 )
-from PyQt4.Qt import QApplication
 
 from stdm.data.configuration.stdm_configuration import (
         StdmConfiguration
@@ -43,15 +49,15 @@ from stdm.data.configuration.stdm_configuration import (
 
 from stdm.ui.notification import NotificationBar
 from stdm.settings import current_profile
-from stdm.stdm.settings.config_serializer import ConfigurationFileSerializer
-from stdm.stdm.geoodk.importer import InstanceUUIDExtractor
+from stdm.settings.config_serializer import ConfigurationFileSerializer
+from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
 from stdm.ui.wizard.custom_item_model import EntitiesModel
-from stdm.stdm.geoodk.importer import EntityImporter
+from stdm.geoodk.importer.entity_importer import EntityImporter
 from stdm.settings.projectionSelector import ProjectionSelector
-from stdm.stdm.geoodk.importer import ImportLogger
-from stdm.stdm.geoodk.importer import Save2DB
+from stdm.geoodk.importer.import_log import ImportLogger
+from stdm.geoodk.importer.entity_importer import Save2DB
 
-from stdm.stdm.third_party import SQLAlchemyError
+from stdm.third_party import SQLAlchemyError
 #from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 from collections import OrderedDict
 
@@ -161,7 +167,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.inst_path = CONFIG_FILE+"_imported"
         if not os.access(self.inst_path, os.F_OK):
-            os.makedirs(unicode(self.inst_path))
+            os.makedirs(str(self.inst_path))
         else:
             return self.inst_path
 
@@ -196,7 +202,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :rtype: string
         """
         if not os.access(path, os.F_OK):
-            os.makedirs(unicode(path))
+            os.makedirs(str(path))
         return path
 
     def xform_xpaths(self):
@@ -223,7 +229,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.importlogger.start_json_file()
         self.previous_import_instances()
         #diff = inst_count - rm_count
-        self.txt_count.setText(unicode(len(self.instance_list)))
+        self.txt_count.setText(str(len(self.instance_list)))
 
     def extract_guuid_and_rename_file(self, path):
         """
@@ -280,7 +286,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                shutil.move(os.path.dirname(file), instance_path)
         except Exception as ex:
-            return unicode(ex.message)
+            return str(ex.message)
 
     def populate_entities_widget(self):
         """
@@ -474,7 +480,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
          for inport process
         :return:
         """
-        self.txt_count.setText(unicode(self.record_count()))
+        self.txt_count.setText(str(self.record_count()))
 
     def record_count(self):
         """
@@ -597,7 +603,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     instance_obj_data[0])
 
                 for entity, entity_data in single_occuring.iteritems():
-                    print entity, entity_data
+                    print(entity, entity_data)
                     import_status = False
                     if entity in self.relations.keys():
                         if entity in self.parent_ids:
@@ -698,14 +704,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
         except Exception as ex:
-            self.feedback_message(unicode(ex.message))
+            self.feedback_message(str(ex.message))
         except SQLAlchemyError as ae:
              QCoreApplication.processEvents()
              QApplication.restoreOverrideCursor()
-             self.feedback_message(unicode(ae.message))
+             self.feedback_message(str(ae.message))
              self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
              self.txt_feedback.append(str(ae.message))
-             self.log_table_entry(unicode(ae.message))
+             self.log_table_entry(str(ae.message))
              return
 
     def count_import_file_step(self, count = None, table = None):
@@ -752,7 +758,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 QApplication.restoreOverrideCursor()
         except Exception as ex:
             self.feedback_message(ex.message)
-            self.log_table_entry(unicode(ex.message))
+            self.log_table_entry(str(ex.message))
             self.buttonBox.setEnabled(True)
             self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
             QApplication.restoreOverrideCursor()
@@ -775,7 +781,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 try:
                     if log_data.has_key(os.path.split(instance)[1]):
                         #del_list. append(instance)
-                        print instance
+                        print(instance)
                         self.instance_list.remove(instance)
                     else:
                         continue

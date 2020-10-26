@@ -3,11 +3,11 @@
 Name                 : PyQT model formatters
 Description          : When using foreign key relations in a table model, it
                        is useful to display the information derived from the
-                       foreign key table rather than display the id of the 
-                       foreign key. Hence, these classes are ideal for using 
+                       foreign key table rather than display the id of the
+                       foreign key. Hence, these classes are ideal for using
                        in Qt models for displaying the text/or custom object
                        properties as well as setting the model data
-Date                 : 13/June/2013 
+Date                 : 13/June/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -21,15 +21,19 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    QVariant,
+    QDate,
+    NULL
+)
+from stdm.data.database import STDMDb
 
 def intFromQType(intitem):
     '''
     OBSOLETE:Converts integer from QVariant or QString to Python int, otherwise returns -1
     '''
-    pyint = intitem   
-    if isinstance(intitem,QVariant) or isinstance(intitem,QString):
+    pyint = intitem
+    if isinstance(intitem, QVariant) or isinstance(intitem, str):
         qint, ok = intitem.toInt()
         if ok:
             pyint = qint
@@ -39,13 +43,13 @@ def dateFromQType(dateitem):
     '''
     Converts date from QVariant or QDate to Python Date
     '''
-    pydate = dateitem   
-    if isinstance(pydate,QVariant):        
+    pydate = dateitem
+    if isinstance(pydate,QVariant):
         pydate = pydate.toDate()
-    if isinstance(pydate,QDate):        
+    if isinstance(pydate,QDate):
         pydate = pydate.toPyDate()
-               
-    return pydate    
+
+    return pydate
 
 class LookupFormatter(object):
     """
@@ -54,17 +58,17 @@ class LookupFormatter(object):
     def __init__(self,model):
         self._model = model
         self._modelInstance = self._model()
-        
+
     def setDisplay(self,itemid):
         """
         Set display information
         """
         md = self._modelInstance.queryObject().filter(self._model.id == itemid).first()
-        if md:            
+        if md:
             return md.name
         else:
-            return QPyNullVariant
-        
+            return None
+
 class BasePersonFormatter(LookupFormatter):
     """
     Formatter for classes that implement base person mixin. It formats the object to
@@ -72,23 +76,23 @@ class BasePersonFormatter(LookupFormatter):
     """
     def setDisplay(self, itemid):
         md = self._modelInstance.queryObject().filter(self._model.id == itemid).first()
-        if md:            
+        if md:
             return "{0} {1}".format(md.FirstName,md.LastName)
         else:
-            return QPyNullVariant
+            return None
 
 def geometryFormatter(geom):
     '''
     Reads point data in WKB format to X,Y coordinate value.
     '''
     x = y = 0
-    
+
     dbSession = STDMDb.instance().session
     geomType = dbSession.scalar(geom.ST_GeometryType())
     if geomType == "ST_Point":
         x = dbSession.scalar(geom.ST_X())
         y = dbSession.scalar(geom.ST_Y())
-    
+
     return "X: {0}, Y: {1}".format(str(x),str(y))
 
 def dateFormatter(dt):
@@ -96,7 +100,7 @@ def dateFormatter(dt):
     Formats the date object to a string representation.
     """
     return dt.strftime("%d-%b-%Y")
-            
+
 def respondentRoleFormatter(roleId):
     lkFormatter = LookupFormatter(CheckRespondentType)
     return lkFormatter.setDisplay(roleId)
@@ -136,7 +140,7 @@ def socioEconImpactFormatter(impactId):
 def foodCropCategoryFormatter(foodCropId):
     lkFormatter = LookupFormatter(CheckFoodCropCategory)
     return lkFormatter.setDisplay(foodCropId)
-    
+
 class DoBFormatter(object):
     '''
     Formatter for displaying the current age (in years) calculated from the date of birth
@@ -145,46 +149,45 @@ class DoBFormatter(object):
         '''
         Set display information
         '''
-        dob = dateFromQType(dob)        
+        dob = dateFromQType(dob)
         if dob > QDate.currentDate().toPyDate():
             return QVariant()
-        
+
         tmDelta = (QDate.currentDate().toPyDate()) - dob
         diffDays = tmDelta.days
         years = diffDays/365.2425
-        
+
         return int(years)
-    
+
 class LocalityFormatter(object):
     '''
     Formatter for displaying user-friendly information about a locality
     '''
     def __init__(self):
         self.locality = Locality()
-        
+
     def setDisplay(self,locality):
         '''
         Display the area name and street number
         '''
-        if isinstance(locality,int):                     
+        if isinstance(locality,int):
             loc = self.locality.queryObject().filter(Locality.id == locality).first()
-            if loc:                
-                locality = loc                
+            if loc:
+                locality = loc
             else:
                 return QVariant("")
-         
+
         localityInfo = ("%s - %s")%(locality.area,locality.street_number)
-        
+
         return QVariant(localityInfo)
-        
-        
-            
-    
-    
-    
-    
-        
-        
-        
-        
-        
+
+
+
+
+
+
+
+
+
+
+

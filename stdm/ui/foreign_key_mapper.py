@@ -21,13 +21,32 @@ email                : gkahiu@gmail.com
 """
 from collections import OrderedDict
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    pyqtSignal,
+    QSortFilterProxyModel,
+    QVariant
+)
+from qgis.PyQt.QtGui import (
+    QIcon
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QDialogButtonBox,
+    QWidget,
+    QAbstractItemView,
+    QMessageBox,
+    QToolButton,
+    QTableView,
+    QVBoxLayout,
+    QHBoxLayout,
+    QHeaderView,
+    QGridLayout
+)
 
 from qgis.core import (
     QgsExpression,
     QgsVectorLayer,
-    QGis
+    Qgis
 )
 from qgis.gui import QgsExpressionBuilderDialog
 
@@ -36,9 +55,9 @@ from stdm.data.configuration.columns import (
     VirtualColumn
 )
 from stdm.data.configuration import entity_model
-from stdm.stdm.data.pg_utils import table_column_names
+from stdm.data.pg_utils import table_column_names
 from stdm.data.qtmodels import BaseSTDMTableModel
-from stdm.stdm.utils import getIndex
+from stdm.utils.util import getIndex
 from stdm.ui.admin_unit_manager import SELECT
 from stdm.settings import current_profile
 from stdm.ui.forms.widgets import (
@@ -305,7 +324,7 @@ class ForeignKeyMapper(QWidget):
                             'Error in creating column:'
                         )
                         msg = '{0} {1}:{2}\n{3}'.format(
-                            msg, self._entity.name, c.name, unicode(we)
+                            msg, self._entity.name, c.name, str(we)
                         )
                         QMessageBox.critical(
                             self,
@@ -585,11 +604,10 @@ class ForeignKeyMapper(QWidget):
         rows contained in the model.
         '''
         if isinstance (columnValue, QVariant):
-            columnValue = unicode(columnValue.toString())
+            columnValue = str(columnValue.toString())
 
-        if not isinstance(columnValue, str) or \
-                not isinstance(columnValue, unicode):
-            columnValue = unicode(columnValue)
+        if not isinstance(columnValue, str):
+            columnValue = str(columnValue)
 
         columnValue = columnValue.strip()
 
@@ -785,7 +803,7 @@ class ForeignKeyMapper(QWidget):
         specified in the mapper including the system-wide data connection
         properties.
         """
-        from stdm.stdm.data.pg_utils import vector_layer
+        from stdm.data.pg_utils import vector_layer
 
         if self._dbmodel is None:
             msg = QApplication.translate("ForeignKeyMapper",

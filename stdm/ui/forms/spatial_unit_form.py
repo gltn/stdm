@@ -26,7 +26,7 @@ import logging
 from decimal import Decimal
 from collections import OrderedDict
 
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -34,18 +34,19 @@ from qgis.core import (
     QgsVectorLayerCache,
     QgsGeometry,
     QgsFeatureRequest,
-    QgsMapLayerRegistry,
+    QgsProject,
     QgsFeature,
     QgsPoint,
     QgsVectorLayer,
-    QgsField)
-from PyQt4.QtGui import (
+    QgsField,
+    Qgis)
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QLabel,
     QHBoxLayout,
-    QColor,
     QMessageBox,
     QAction)
+from qgis.PyQt.QtGui import QColor
 
 from qgis.gui import (
     QgsEditorWidgetWrapper,
@@ -55,8 +56,7 @@ from qgis.gui import (
 )
 
 from qgis.utils import (
-    iface,
-    QGis
+    iface
 )
 from sqlalchemy import func
 
@@ -76,7 +76,7 @@ from stdm.settings import (
 
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     format_name
 )
@@ -624,7 +624,7 @@ class STDMFieldWidget():
                 control = attrMapper.valueHandler().control
                 if isinstance(control, ExpressionLineEdit):
                     value = control.on_expression_triggered(model)
-                    print attrMapper._attrName, value
+                    print(attrMapper._attrName, value)
                     setattr(model, attrMapper._attrName, value)
             model.update()
 

@@ -18,12 +18,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-
-from ui_lookup_property import Ui_LookupProperty
-from stdm import EntityRelation
-from create_lookup import LookupEditor
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.ui.wizard.create_lookup import LookupEditor
 
 EX_VALUE_LIST = []
 
@@ -106,7 +106,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         """
         Construct an EntityRelation instance
         """
-        lookup_name = unicode(self.cboPrimaryEntity.currentText())
+        lookup_name = str(self.cboPrimaryEntity.currentText())
         self._lookup_name = lookup_name
 
         er_fields = {}

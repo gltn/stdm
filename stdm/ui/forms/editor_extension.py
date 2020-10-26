@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
 import logging
 from abc import ABCMeta
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QComboBox,
     QWidget
 )

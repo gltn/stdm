@@ -18,14 +18,27 @@ email                : gkahiu@gmail.com
 """
 from datetime import date
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import (
+    QRegExp,
+    QObject,
+    Qt,
+    QDateTime
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QApplication,
+    QMessageBox
+)
+from qgis.PyQt.QtGui import (
+    QRegExpValidator
+)
 
-from stdm import User
-from stdm import Membership
-from stdm import SecurityException
+from stdm.security.user import User
+from stdm.security.membership import Membership
+from stdm.security.exception import SecurityException
 
-from ui_new_user import Ui_frmNewUser
+from stdm.ui.ui_new_user import Ui_frmNewUser
 
 class newUserDlg(QDialog, Ui_frmNewUser):
     '''
@@ -57,7 +70,7 @@ class newUserDlg(QDialog, Ui_frmNewUser):
         #Set 'Create User' button properties
         btnCreateUser = self.buttonBox.button(QDialogButtonBox.Ok)
         btnCreateUser.setText(QApplication.translate("newUserDlg", "Create User"))
-        QObject.connect(btnCreateUser, SIGNAL("clicked()"),self.acceptdlg)
+        btnCreateUser.clicked.connect(self.acceptdlg)
 
         #Set validator for preventing username from having whitespace
         rx = QRegExp("\\S+")
@@ -65,7 +78,7 @@ class newUserDlg(QDialog, Ui_frmNewUser):
         self.txtUserName.setValidator(rxValidator)
 
         #Connect signals
-        QObject.connect(self.chkValidity, SIGNAL("stateChanged(int)"),self.validityChanged)
+        self.chkValidity.stateChanged.connect(self.validityChanged)
 
         if self.user != None:
             self.txtUserName.setText(self.user.UserName)

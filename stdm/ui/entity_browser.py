@@ -21,13 +21,35 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 
 import cProfile
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from qgis.PyQt.QtCore import (
+    Qt,
+    QDir,
+    pyqtSignal,
+    QSize,
+    QModelIndex,
+    QItemSelectionModel,
+    QRegExp
+)
+from qgis.PyQt.QtGui import (
+    QIcon
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QMessageBox,
+    QProgressDialog,
+    QDialog,
+    QToolBar,
+    QAction,
+    QHeaderView
+)
+
+
 from qgis.utils import (
     iface
 )
 from qgis.core import (
-    QgsMapLayerRegistry
+    QgsProject
 )
 
 from stdm.data.configuration import entity_model
@@ -37,7 +59,7 @@ from stdm.data.configuration.columns import (
     VirtualColumn
 )
 from stdm.data.configuration.entity import Entity
-from stdm.stdm.data.pg_utils import(
+from stdm.data.pg_utils import(
     table_column_names,
     pg_table_count
 )
@@ -48,8 +70,8 @@ from stdm.data.qtmodels import (
 )
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
-from stdm.stdm.navigation import TableContentGroup
-from stdm.stdm.network import NetworkFileManager
+from stdm.navigation.content_group import TableContentGroup
+from stdm.network.filemanager import NetworkFileManager
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 # from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.sourcedocument import (
@@ -63,12 +85,12 @@ from stdm.ui.spatial_unit_manager import (
 
 from stdm.ui.document_viewer import DocumentViewManager
 
-from stdm.stdm.ui.gps_tool import GPSToolDialog
-from .admin_unit_manager import VIEW,MANAGE,SELECT
-from .ui_entity_browser import Ui_EntityBrowser
-from .helpers import SupportsManageMixin
-from .notification import NotificationBar
-from stdm.stdm.utils import (
+from stdm.ui.gps_tool import GPSToolDialog
+from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
+from stdm.ui.ui_entity_browser import Ui_EntityBrowser
+from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
+from stdm.ui.notification import NotificationBar
+from stdm.utils.util import (
     entity_id_to_attr
 )
 
@@ -379,7 +401,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         This is for improved user experience i.e. to prevent the dialog from taking
         long to load.
         '''
-        self.setWindowTitle(unicode(self.title()))
+        self.setWindowTitle(str(self.title()))
 
         if self._data_initialized:
             return
@@ -392,7 +414,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 QApplication.translate(
                     'EntityBrowser', 'showEvent method'
                 ),
-                unicode(ex.message))
+                str(ex.message))
             return
 
         self._data_initialized = True
@@ -688,7 +710,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                             QApplication.translate(
                                 'EntityBrowser', 'Loading Records'
                             ),
-                            unicode(ex.message))
+                            str(ex.message))
                         return
 
                     entity_records_collection.append(entity_row_info)
@@ -731,8 +753,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self.tbEntity.resizeColumnsToContents()
 
             #Connect signals
-            self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
-            self.connect(self.txtFilterPattern, SIGNAL('textChanged(const QString&)'), self.onFilterRegExpChanged)
+            self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)
+            self.txtFilterPattern.textChanged.connect(self.onFilterRegExpChanged)
 
             #Select record with the given ID if specified
             if not self._select_item is None:
@@ -942,7 +964,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
                                             add, self)
 
-            self.connect(self._newEntityAction,SIGNAL("triggered()"),self.onNewEntity)
+            self._newEntityAction.triggered.connect(self.onNewEntity)
 
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
                                              edit,self)
@@ -950,15 +972,14 @@ class EntityBrowserWithEditor(EntityBrowser):
                 QApplication.translate("EntityBrowserWithEditor", "edit_tool")
             )
 
-
-            self.connect(self._editEntityAction,SIGNAL("triggered()"),self.onEditEntity)
+            self._editEntityAction.triggered.connect(self.onEditEntity)
 
             self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
                                   remove, self)
             self._removeEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "remove_tool")
             )
-            self.connect(self._removeEntityAction,SIGNAL("triggered()"),self.onRemoveEntity)
+            self._removeEntityAction.triggered.connected(self.onRemoveEntity)
 
             #Manage position of the actions based on whether the entity
             # supports documents.
@@ -1388,7 +1409,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 )
 
                 self.add_spatial_unit_layer(sel_lyr_name)
-                layers = QgsMapLayerRegistry.instance().mapLayersByName(
+                layers = QgsProject.instance().mapLayersByName(
                     sel_lyr_name
                 )
 
@@ -1527,7 +1548,7 @@ class ForeignKeyBrowser(EntityBrowser):
     def __init__(self, parent=None, table=None, state=MANAGE):
         model = table
 
-        if isinstance(table, str) or isinstance(table, unicode):
+        if isinstance(table, str):
             #mapping = DeclareMapping.instance()
             #model = mapping.tableMapping(table)
             self._data_source_name = table

@@ -3,7 +3,7 @@
 /***************************************************************************
 Name                 : Dockable MirrorMap
 Description          : Creates a dockable map canvas
-Date                 : February 1, 2011 
+Date                 : February 1, 2011
 copyright            : (C) 2011 by Giuseppe Sucameli (Faunalia)
 email                : brush.tyler@gmail.com
 
@@ -19,11 +19,30 @@ email                : brush.tyler@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtWidgets import (
+    QWidget,
+    QGridLayout,
+    QToolButton,
+    QCheckBox,
+    QDoubleSpinBox,
+    QLabel
+)
+from qgis.PyQt.QtGui import (
+    QColor,
+    QIcon
+)
+from qgis.PyQt.QtCore import (
+    QSettings,
+    Qt
+)
 
-from qgis.core import *
-from qgis.gui import *
+from qgis.core import (
+    QgsProject
+)
+from qgis.gui import (
+    QgsMapCanvas,
+    QgsMapToolPan,
+)
 
 class MirrorMap(QWidget):
     def __init__(self, parent=None, iface=None):
@@ -44,10 +63,10 @@ class MirrorMap(QWidget):
             self.iface.mapCanvas().mapRenderer().destinationCrsChanged.disconnect(self.onCrsChanged)
             self.iface.mapCanvas().mapRenderer().mapUnitsChanged.disconnect(self.onCrsChanged)
             self.iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.disconnect(self.onCrsTransformEnabled)
-            QgsMapLayerRegistry.instance().layerWillBeRemoved.disconnect(self.delLayer)
+            QgsProject.instance().layerWillBeRemoved.disconnect(self.delLayer)
             self.iface.currentLayerChanged.disconnect(self.refreshLayerButtons)
 
-        self.emit(SIGNAL("closed(PyQt_PyObject)"), self)
+        self.closed.emit()
 
         return QWidget.closeEvent(self, event)
 
@@ -145,7 +164,7 @@ class MirrorMap(QWidget):
         self.iface.mapCanvas().mapRenderer().destinationSrsChanged.connect(self.onCrsChanged)
         self.iface.mapCanvas().mapRenderer().mapUnitsChanged.connect(self.onCrsChanged)
         self.iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.connect(self.onCrsTransformEnabled)
-        QgsMapLayerRegistry.instance().layerWillBeRemoved.connect(self.delLayer)
+        QgsProject.instance().layerWillBeRemoved.connect(self.delLayer)
         self.iface.currentLayerChanged.connect(self.refreshLayerButtons)
 
         self.refreshLayerButtons()
@@ -236,7 +255,7 @@ class MirrorMap(QWidget):
         if layerId == None:
             layer = self.iface.activeLayer()
         else:
-            layer = QgsMapLayerRegistry.instance().mapLayer(layerId)
+            layer = QgsProject.instance().mapLayer(layerId)
 
         if layer == None:
             return

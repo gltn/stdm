@@ -19,10 +19,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
-from stdm import FilePaths
+from qgis.PyQt.QtGui import QFont
+
+from stdm.data.configfile_paths import FilePaths
 
 
 class LicenseDocument(object):

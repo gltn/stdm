@@ -25,40 +25,53 @@ import logging
 import re
 from collections import OrderedDict
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from qgis.core import *
+from qgis.PyQt.QtCore import (
+    pyqtSignal,
+    Qt,
+    QTimer
+)
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QFontMetrics
+)
+from qgis.PyQt.QtWidgets import (
+    QDockWidget,
+    QApplication,
+    QMessageBox,
+    QInputDialog
+)
+
 from qgis.core import (
-    QgsMapLayerRegistry,
-    QgsVectorJoinInfo
+    QgsProject,
+    QgsVectorLayerJoinInfo,
+    QgsCoordinateReferenceSystem,
+    QgsDataSourceUri
 )
 
 from stdm.data.configuration.social_tenure import SocialTenure
-from gps_tool import GPSToolDialog
+from stdm.ui.gps_tool import GPSToolDialog
 from stdm.settings import (
     current_profile,
     save_configuration
 )
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
     table_column_names,
-    vector_layer
-)
-from stdm.stdm.data.pg_utils import (
+    vector_layer,
     pg_views
 )
 
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.stdm.utils import (
+from stdm.utils.util import (
         profile_and_user_views
 )
-from stdm.stdm.mapping import pg_layerNamesIDMapping
+from stdm.mapping.utils import pg_layerNamesIDMapping
 
-from ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
+from stdm.ui.ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 
 LOGGER = logging.getLogger('stdm')
 
@@ -184,7 +197,7 @@ class SpatialUnitManagerDockWidget(
         :return:
         :rtype:
         """
-        join = QgsVectorJoinInfo()
+        join = QgsVectorLayerJoinInfo()
         join.joinLayerId = fk_layer.id()
         join.joinFieldName = 'id'
 
@@ -210,7 +223,7 @@ class SpatialUnitManagerDockWidget(
             fk_entity.name,
             layer_name=fk_entity.name
         )
-        QgsMapLayerRegistry.instance().addMapLayer(
+        QgsProject.instance().addMapLayer(
             fk_layer, False
         )
         # hide the fk id column
@@ -408,7 +421,7 @@ class SpatialUnitManagerDockWidget(
                     table, spatial_column, curr_layer
                 )
             except Exception as ex:
-                LOGGER.debug(unicode(ex))
+                LOGGER.debug(str(ex))
 
     def _format_layer_display_name(self, col, table):
         return u'{0}.{1}'.format(table, col)
@@ -432,7 +445,7 @@ class SpatialUnitManagerDockWidget(
                 if c.TYPE_INFO == 'GEOMETRY'
             ]
 
-            spatial_unit_item = unicode(
+            spatial_unit_item = str(
                 table + '.' + spatial_column[0]
             )
             index = self.stdm_layers_combo.findText(
@@ -461,7 +474,7 @@ class SpatialUnitManagerDockWidget(
 
     def _geom_icon(self, table, column):
         # Get column type and apply the appropriate icon
-        geometry_typ = unicode(geometryType(table, column)[0])
+        geometry_typ = str(geometryType(table, column)[0])
 
         icon = None
 
@@ -525,7 +538,7 @@ class SpatialUnitManagerDockWidget(
 
         if col is None: return
 
-        if isinstance(col, str) or isinstance(col, unicode):
+        if isinstance(col, str):
 
             spatial_layer_item = u'{}.{}'.format(table, col)
 
@@ -573,7 +586,7 @@ class SpatialUnitManagerDockWidget(
         )
 
         if layer_name in self._map_registry_layer_names():
-            layer = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)[0]
+            layer = QgsProject.instance().mapLayersByName(layer_name)[0]
             self.iface.setActiveLayer(layer)
             return
 
@@ -581,7 +594,7 @@ class SpatialUnitManagerDockWidget(
         self.curr_lyr_sp_col = spatial_column
 
         if not layer_item is None:
-            if isinstance(layer_item, str) or isinstance(layer_item, unicode):
+            if isinstance(layer_item, str):
                 layer_name = layer_item
             else:
                 layer_name = layer_item.layer_display()
@@ -619,7 +632,7 @@ class SpatialUnitManagerDockWidget(
             if curr_layer.name() in self._map_registry_layer_names():
                 return
 
-            QgsMapLayerRegistry.instance().addMapLayer(
+            QgsProject.instance().addMapLayer(
                 curr_layer
             )
             self.zoom_to_layer()
@@ -788,17 +801,17 @@ class SpatialUnitManagerDockWidget(
             # of the same entity
             if layer_name != sel_lyr_name:
 
-                layer_objects = QgsMapLayerRegistry. \
+                layer_objects = QgsProject. \
                     instance().mapLayersByName(layer_name)
 
                 if len(layer_objects) > 0:
                     for layer in layer_objects:
                         layer_id = layer.id()
-                        QgsMapLayerRegistry. \
+                        QgsProject. \
                             instance().removeMapLayer(layer_id)
             # Change the crs of the canvas based on the new layer
 
-            layer_list = QgsMapLayerRegistry.instance(). \
+            layer_list = QgsProject.instance(). \
                 mapLayersByName(sel_lyr_name)
             if len(layer_list) > 0:
                 self.set_canvas_crs(
@@ -819,7 +832,7 @@ class SpatialUnitManagerDockWidget(
         if hasattr(layer, 'dataProvider'):
             if layer.dataProvider().name() == 'postgres':
                 layerConnStr = layer.dataProvider().dataSourceUri()
-                dataSourceURI = QgsDataSourceURI(layerConnStr)
+                dataSourceURI = QgsDataSourceUri(layerConnStr)
                 table, column = dataSourceURI.table(), \
                                 dataSourceURI.geometryColumn()
 
@@ -829,11 +842,10 @@ class SpatialUnitManagerDockWidget(
         """
         Returns a list of layers names.
         """
-        layers = QgsMapLayerRegistry.instance().mapLayers()
+        layers = QgsProject.instance().mapLayers()
         layer_names = [lyr.name() for lyr in layers.values()]
         return layer_names
 
-    @pyqtSignature("")
     def on_set_display_name_button_clicked(self):
         """
         Method to change display name
@@ -963,13 +975,12 @@ class SpatialUnitManagerDockWidget(
         except KeyError:
             return False
 
-    @pyqtSignature("")
     def on_import_gpx_file_button_clicked(self):
         """
         Method to load GPS dialog
         """
         source_status = self.active_layer_source()
-        layer_map = QgsMapLayerRegistry.instance().mapLayers()
+        layer_map = QgsProject.instance().mapLayers()
         error_title = QApplication.translate(
             'SpatialUnitManagerDockWidget',
             'GPS Feature Import Loading Error'

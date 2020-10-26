@@ -18,9 +18,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QProgressDialog
+)
 
 try:
     from osgeo import gdal
@@ -29,24 +31,24 @@ except:
     import gdal
     import ogr
 
-from stdm import (
+from stdm.data.pg_utils import (
     delete_table_data,
     geometryType
 )
-from stdm import getIndex
-from stdm import (
+from stdm.utils.util import getIndex
+from stdm.settings import (
     current_profile
 )
-from stdm import (
+from stdm.data.database import (
     STDMDb
 )
-from stdm import (
+from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager
 )
-from stdm import entity_model
-from stdm import ConfigurationException
-from stdm import SourceDocumentManager
+from stdm.data.configuration import entity_model
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.ui.sourcedocument import SourceDocumentManager
 
 
 class OGRReader(object):
@@ -274,7 +276,7 @@ class OGRReader(object):
         names to the corresponding column values.
         """
         model_instance = self._mapped_cls()
-        for col, value in columnValueMapping.iteritems():
+        for col, value in columnValueMapping.items():
             if hasattr(model_instance, col):
                 # 'documents' is not a column so exclude it.
                 if col != 'documents' and not 'collection' in col:
@@ -542,8 +544,8 @@ class OGRReader(object):
 
             try:
                 if not isinstance(value, str) or not isinstance(value,
-                                                                unicode):
-                    value = unicode(value)
+                                                                str):
+                    value = str(value)
 
                 enum_symbol = enum_obj.from_string(value.strip())
 

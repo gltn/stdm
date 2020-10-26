@@ -20,10 +20,29 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-import PyQt4.QtCore as qc
-import PyQt4.QtGui as qg
-import qgis.core as q_core
-import qgis.gui as q_gui
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QColor
+)
+from qgis.PyQt.QtWidgets import (
+    QAbstractItemView
+)
+
+from qgis.core import (
+    edit,
+    QgsGeometry,
+    QgsProject,
+    QgsPoint,
+    QgsVectorLayer,
+    QgsFeature,
+    QgsRectangle
+)
+from qgis.gui import (
+    QgsVertexMarker
+)
+
 from decimal import Decimal, DecimalException
 VERTEX_COLOR = '#008000'
 
@@ -40,9 +59,9 @@ def enable_drag_drop(qt_widget):
     qt_widget.viewport().setAcceptDrops(True)
     qt_widget.setDragDropOverwriteMode(False)
     qt_widget.setDropIndicatorShown(True)
-    qt_widget.setSelectionMode(qg.QAbstractItemView.SingleSelection)
-    qt_widget.setSelectionBehavior(qg.QAbstractItemView.SelectRows)
-    qt_widget.setDragDropMode(qg.QAbstractItemView.InternalMove)
+    qt_widget.setSelectionMode(QAbstractItemView.SingleSelection)
+    qt_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+    qt_widget.setDragDropMode(QAbstractItemView.InternalMove)
     qt_widget.__class__.dropEvent = _drop_event
     qt_widget.__class__.dragEnterEvent = _drag_enter_event
 
@@ -74,10 +93,10 @@ def _drop_event(qt_widget, event):
             else:
                 row_mapping[row + len(rows)] = target_row + idx
         col_count = qt_widget.columnCount()
-        for srcRow, tgtRow in sorted(row_mapping.iteritems()):
+        for srcRow, tgtRow in sorted(row_mapping.items()):
             for col in range(0, col_count):
                 qt_widget.setItem(tgtRow, col, qt_widget.takeItem(srcRow, col))
-        qt_widget.emit(qc.SIGNAL('itemDropped'))
+        qt_widget.itemDropped.emit()
         event.accept()
         return
     event.ignore()
@@ -93,7 +112,7 @@ def _drag_enter_event(qt_widget, event):
     :rtype: None
     """
     if qt_widget is not None:
-        qt_widget.emit(qc.SIGNAL('itemDragEnter'))
+        qt_widget.itemDragEnter.emit()
         event.accept()
         return
     event.ignore()
@@ -124,10 +143,10 @@ def set_feature_vertex_marker(map_canvas, lon, lat, color=VERTEX_COLOR):
     :return marker: Vertex object
     :rtype marker: Object
     """
-    marker = q_gui.QgsVertexMarker(map_canvas)
-    marker.setCenter(q_core.QgsPoint(lon, lat))
-    marker.setColor(qg.QColor(color))
-    marker.setIconType(q_gui.QgsVertexMarker.ICON_CIRCLE)
+    marker = QgsVertexMarker(map_canvas)
+    marker.setCenter(QgsPoint(lon, lat))
+    marker.setColor(QColor(color))
+    marker.setIconType(QgsVertexMarker.ICON_CIRCLE)
     marker.setPenWidth(4)
     return marker
 
@@ -183,12 +202,12 @@ def create_geometry(geom_type, point_list):
     new_geometry = None
     if geom_type == 'Point':
         for point in point_list:
-            new_geometry = q_core.QgsGeometry.fromPoint(point)
+            new_geometry = QgsGeometry.fromPoint(point)
 
     elif geom_type == 'LineString':
-        new_geometry = q_core.QgsGeometry.fromPolyline(point_list)
+        new_geometry = QgsGeometry.fromPolyline(point_list)
     else:
-        new_geometry = q_core.QgsGeometry.fromPolygon([point_list])
+        new_geometry = QgsGeometry.fromPolygon([point_list])
 
     return new_geometry
 
@@ -206,7 +225,7 @@ def _create_temp_vector_layer(active_layer, geom_type, temp_layer_name):
     """
     active_layer_crs = str(active_layer.crs().authid())
     uri = '{0}?crs={1}&field=id:integer&index=yes'.format(geom_type, active_layer_crs)
-    temp_mem_layer = q_core.QgsVectorLayer(uri, temp_layer_name, 'memory')
+    temp_mem_layer = QgsVectorLayer(uri, temp_layer_name, 'memory')
     data_provider = temp_mem_layer.dataProvider()
     temp_mem_layer.startEditing()
     return temp_mem_layer, data_provider,
@@ -220,7 +239,7 @@ def add_feature(data_provider, geom_container):
     :return: None
     :rtype: None
     """
-    new_feature = q_core.QgsFeature()
+    new_feature = QgsFeature()
     new_feature.setGeometry(geom_container)
     data_provider.addFeatures([new_feature])
 
@@ -233,7 +252,7 @@ def add_map_layer(temp_mem_layer):
     :rtype: None
     """
     commit_feature_edits(temp_mem_layer)
-    q_core.QgsMapLayerRegistry.instance().addMapLayer(temp_mem_layer)
+    QgsProject.instance().addMapLayer(temp_mem_layer)
 
 
 def commit_feature_edits(temp_mem_layer):
@@ -256,7 +275,7 @@ def set_layer_extent(map_canvas, gpx_layer):
     :rtype: None
     """
     x_min, x_max, y_min, y_max = gpx_layer.GetExtent()
-    extent = q_core.QgsRectangle(x_min, y_min, x_max, y_max)
+    extent = QgsRectangle(x_min, y_min, x_max, y_max)
     extent.scale(1.1)
     map_canvas.setExtent(extent)
     map_canvas.refresh()
@@ -290,11 +309,11 @@ def check_uncheck_item(
                 qgs_points.append(point_attr['qgs_point'])
         else:
             # On select all or clear all button click
-            if point_attr['checkbox'].checkState() == qc.Qt.Unchecked and check_transform == 'check':
-                _change_item_vertex_state(point_attr, color, qc.Qt.Checked)
+            if point_attr['checkbox'].checkState() == Qt.Unchecked and check_transform == 'check':
+                _change_item_vertex_state(point_attr, color, Qt.Checked)
                 qgs_points.append(point_attr['qgs_point'])
-            elif point_attr['checkbox'].checkState() == qc.Qt.Checked and check_transform == 'uncheck':
-                _change_item_vertex_state(point_attr, color, qc.Qt.Unchecked)
+            elif point_attr['checkbox'].checkState() == Qt.Checked and check_transform == 'uncheck':
+                _change_item_vertex_state(point_attr, color, Qt.Unchecked)
                 qgs_points.append(point_attr['qgs_point'])
     map_canvas.refresh()
     return qgs_points
@@ -332,7 +351,7 @@ def _change_item_vertex_state(attr, color, check_state=None):
     if check_state == 0 or check_state == 2:
         attr['checkbox'].setCheckState(check_state)
     if attr['marker']:
-        attr['marker'].setColor(qg.QColor(color))
+        attr['marker'].setColor(QColor(color))
 
 
 def remove_from_list(item_list, item):
@@ -388,7 +407,7 @@ def remove_map_layer(map_canvas, temp_mem_layer):
     :rtype: None
     """
     layer_id = temp_mem_layer.id()
-    q_core.QgsMapLayerRegistry.instance().removeMapLayer(layer_id)
+    QgsProject.instance().removeMapLayer(layer_id)
     map_canvas.refresh()
 
 
@@ -399,7 +418,7 @@ def get_layer_by_name(layer_name):
     :return layers: List of layers matching the layer name
     :rtype: List object
     """
-    layer_list = q_core.QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
+    layer_list = QgsProject.instance().mapLayersByName(layer_name)
     return layer_list
 
 
@@ -422,21 +441,21 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
     row_count = qt_widget.rowCount()
     column_count = qt_widget.columnCount()
     row = 0
-    for row_index in xrange(row_count):
-        for column_index in xrange(column_count):
+    for row_index in range(row_count):
+        for column_index in range(column_count):
             column_name = qt_widget.horizontalHeaderItem(column_index).text()
             cell_item = qt_widget.item(row_index, column_index)
             if cell_item:
-                if unicode(column_name) == checkbox_col:
+                if str(column_name) == checkbox_col:
                     checkbox_state = cell_item.checkState()
-                elif unicode(column_name) == lon_col:
+                elif str(column_name) == lon_col:
                     lon_value = cell_item.text().strip()
-                elif unicode(column_name) == lat_col:
+                elif str(column_name) == lat_col:
                     lat_value = cell_item.text().strip()
         lon_value = _valid_number(lon_value)
         lat_value = _valid_number(lat_value)
         if lon_value and lat_value:
-            point = q_core.QgsPoint(lon_value, lat_value)
+            point = QgsPoint(lon_value, lat_value)
             new_point_row_attr.append({'row': row, 'qgs_point': point, 'check_state': checkbox_state})
             if checkbox_state == 2:
                 point_list.append(point)
@@ -504,7 +523,7 @@ def delete_feature(map_canvas, temp_mem_layer):
     :return: None
     :rtype: None
     """
-    with q_core.edit(temp_mem_layer):
+    with edit(temp_mem_layer):
         feature_ids = [feature.id() for feature in temp_mem_layer.getFeatures()]
         temp_mem_layer.deleteFeatures(feature_ids)
     map_canvas.refresh()

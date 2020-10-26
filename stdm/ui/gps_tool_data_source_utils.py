@@ -22,7 +22,6 @@ import os.path
 import re
 import logging
 
-from PyQt4.QtGui import QApplication
 from osgeo import ogr
 
 

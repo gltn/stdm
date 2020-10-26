@@ -19,11 +19,11 @@ email                : stdm@unhabitat.org
 """
 from collections import defaultdict
 from collections import OrderedDict
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QRegExp
 )
-from stdm import entity_model
-from .pg_utils import foreign_key_parent_tables
+from stdm.data.configuration import entity_model
+from stdm.data.pg_utils import foreign_key_parent_tables
 
 SUPPORTING_DOC_TAGS = ["supporting_document"]
 

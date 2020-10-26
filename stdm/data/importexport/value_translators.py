@@ -22,11 +22,11 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 import itertools
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QVBoxLayout
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QDir,
     QFile
 )
@@ -37,14 +37,14 @@ from sqlalchemy.schema import (
     MetaData
 )
 
-from stdm import (
+from stdm.data.database import (
     STDMDb
 )
-from stdm import table_column_names
-from stdm import (
+from stdm.data.pg_utils import table_column_names
+from stdm.utils.util import (
     getIndex
 )
-from stdm import entity_model
+from stdm.data.configuration import entity_model
 
 from .exceptions import TranslatorException
 
@@ -387,7 +387,7 @@ class RelatedTableTranslator(SourceValueTranslator):
 
         query_attrs = {}
 
-        for source_col, val in field_values.iteritems():
+        for source_col, val in field_values.items():
             ref_table_col = self._input_referenced_columns.get(source_col, None)
 
             if not ref_table_col is None:
@@ -519,7 +519,7 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
 
         num_cols = len(self._input_referenced_columns)
         cols_iter = itertools.islice(
-            self._input_referenced_columns.iteritems(),
+            self._input_referenced_columns.items(),
             num_cols
         )
 
@@ -532,7 +532,7 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
         if not delimited_source_value:
             return IgnoreType()
 
-        if not isinstance(delimited_source_value, basestring):
+        if not isinstance(delimited_source_value, str):
             return IgnoreType()
 
         # Get the lookup values used in the multiple select

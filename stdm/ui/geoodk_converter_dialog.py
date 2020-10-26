@@ -21,14 +21,17 @@ email                : stdm@unhabitat.org
 
 import os
 import sys
+import subprocess
 
-from PyQt4 import uic
-from PyQt4.QtGui import (
-    QDialog
-
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import (
+    QDir,
+    Qt
 )
-from PyQt4.QtCore import *
-from PyQt4.QtCore import (
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+from qgis.PyQt.QtCore import (
     QDir,
     pyqtSignal,
 
@@ -36,7 +39,7 @@ from PyQt4.QtCore import (
 from stdm.ui.notification import NotificationBar
 from stdm.data.configuration.db_items import DbItem
 from stdm.ui.wizard.custom_item_model import EntitiesModel
-from stdm.stdm.geoodk import GeoodkWriter
+from stdm.geoodk.geoodk_writer import GeoodkWriter
 from stdm.settings import current_profile
 #from stdm.geoodk import  FormUploader
 
@@ -125,7 +128,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             if entity.action == DbItem.DROP:
                 continue
 
-            if hasattr(entity, 'user_editable') and entity.TYPE_INFO <> 'VALUE_LIST':
+            if hasattr(entity, 'user_editable') and entity.TYPE_INFO != 'VALUE_LIST':
                 if entity.user_editable == False:
                     continue
 
@@ -178,7 +181,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         :return:
         """
         if not os.access(FORM_HOME, os.F_OK):
-            os.makedirs(unicode(FORM_HOME))
+            os.makedirs(str(FORM_HOME))
 
     def upload_generated_form(self):
         """
@@ -187,6 +190,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         manually to the mobile device
         :return:
         """
+        from stdm.ui.geoodk_mobile_upload import FormUploader
         form_uploader = FormUploader(self)
         form_uploader.exec_()
 

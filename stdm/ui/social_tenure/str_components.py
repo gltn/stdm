@@ -26,7 +26,7 @@ from datetime import (
 
 from dateutil.relativedelta import relativedelta
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject,
     Qt,
@@ -34,7 +34,7 @@ from PyQt4.QtCore import (
     QRegExp
 )
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QGridLayout,
@@ -54,25 +54,26 @@ from PyQt4.QtGui import (
 )
 
 from qgis.utils import iface
-from stdm import NotificationBar, ERROR, INFORMATION
-from stdm import SourceDocumentManager
-from stdm import ForeignKeyMapper
-from stdm import current_profile
-from stdm import entity_model
-from stdm import (
+from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
+from stdm.ui.sourcedocument import SourceDocumentManager
+from stdm.ui.foreign_key_mapper import ForeignKeyMapper
+from stdm.settings import current_profile
+from stdm.data.configuration import entity_model
+from stdm.utils.util import (
     format_name,
     entity_display_columns
 )
 
-from stdm import (
+from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
 )
-from stdm import (
-    EntityConfig, FreezeTableWidget
+from stdm.ui.doc_generator_dlg import (
+    EntityConfig
 )
+from stdm.ui.social_tenure.str_helpers import FreezeTableWidget
 
-from stdm import EntityEditorDialog
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
 
 
 class ComponentUtility(QObject):

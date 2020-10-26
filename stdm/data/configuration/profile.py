@@ -21,32 +21,32 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
 
-from stdm import (
+from stdm.data.configuration.administative_spatial_unit import (
     AdministrativeSpatialUnit
 )
-from stdm import (
+from stdm.data.configuration.association_entity import (
     association_entity_factory,
     AssociationEntity
 )
-from stdm import EntityRelation
-from stdm import (
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.entity import (
     Entity,
     EntitySupportingDocument
 )
-from stdm import DbItem
-from stdm import SocialTenure
-from stdm import SupportingDocument
-from stdm import (
+from stdm.data.configuration.db_items import DbItem
+from stdm.data.configuration.social_tenure import SocialTenure
+from stdm.data.configuration.supporting_document import SupportingDocument
+from stdm.data.configuration.value_list import (
     value_list_factory,
     ValueList
 )
 
-from stdm import AutoGenerateCode
+from stdm.data.configuration.auto_generate_code import AutoGenerateCode
 
 LOGGER = logging.getLogger('stdm')
 
@@ -64,7 +64,7 @@ class Profile(QObject):
 
     """
     entity_added = pyqtSignal(Entity)
-    entity_removed = pyqtSignal(unicode)
+    entity_removed = pyqtSignal(str)
 
     def __init__(self, name, configuration):
         """
@@ -383,7 +383,7 @@ class Profile(QObject):
         # and that item action is not DROP, then do not add this.
         if item.short_name in self.entities:
             old_item = self.entities[item.short_name]
-            if old_item.action <> DbItem.DROP:
+            if old_item.action != DbItem.DROP:
                 return
 
         self.entities[item.short_name] = item

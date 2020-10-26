@@ -18,11 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+from stdm.ui.wizard.ui_fk_property import Ui_FKProperty
+from stdm.data.configuration.entity_relation import EntityRelation
 
-from ui_fk_property import Ui_FKProperty
-from stdm import EntityRelation
 
 class FKProperty(QDialog, Ui_FKProperty):
     """
@@ -128,7 +136,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         checks previously selected display columns
         """
         for row in range(self.column_model.rowCount()):
-            if unicode(self.column_model.item(row).text()) in display_cols:
+            if str(self.column_model.item(row).text()) in display_cols:
                 self.column_model.item(row).setCheckState(Qt.Checked)
 
     def load_fk_entities(self):
@@ -210,8 +218,8 @@ class FKProperty(QDialog, Ui_FKProperty):
         Construct an EntityRelation instance from form fields
         """
         er_fields = {}
-        er_fields['parent'] = unicode(self.cboPrimaryEntity.currentText())
-        er_fields['parent_column'] = unicode(self.cboPrimaryUKey.currentText())
+        er_fields['parent'] = str(self.cboPrimaryEntity.currentText())
+        er_fields['parent_column'] = str(self.cboPrimaryUKey.currentText())
         er_fields['display_columns'] = self.display_columns()
         er_fields['child'] = self.entity
         er_fields['child_column'] = self.column_name
@@ -224,7 +232,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         selected/checked columns for display in foreign key
         rtype: list
         """
-        return [unicode(self.column_model.item(row).text()) \
+        return [str(self.column_model.item(row).text()) \
                 for row in range(self.column_model.rowCount()) \
                 if self.column_model.item(row).checkState()==Qt.Checked]
 

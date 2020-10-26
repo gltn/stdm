@@ -20,7 +20,16 @@ import logging
 from datetime import datetime
 from collections import OrderedDict
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QWidget,
+    QMessageBox
+)
+from qgis.PyQt.QtGui import (
+    QPixmap,
+    QImage
+)
+from qgis.PyQt.QtCore import (
     QFile,
     QFileInfo,
     QDir,
@@ -30,13 +39,12 @@ from PyQt4.QtCore import (
     QThread,
     QRect
 )
-from PyQt4.QtGui import *
 
 import sqlalchemy
 
-from stdm.stdm.utils import size
-from stdm.stdm.utils import getIndex
-from stdm.stdm.network import (
+from stdm.utils.util import getIndex
+from stdm.utils.filesize import size
+from stdm.network.filemanager import (
     NetworkFileManager,
     DocumentTransferWorker
 )
@@ -49,9 +57,9 @@ from stdm.settings import (
     current_profile
 )
 from stdm.data.configuration import entity_model
-from .document_viewer import DocumentViewManager
-from ui_doc_item import Ui_frmDocumentItem
-from stdm.stdm.utils import (
+from stdm.ui.document_viewer import DocumentViewManager
+from stdm.ui.ui_doc_item import Ui_frmDocumentItem
+from stdm.utils.util import (
     entity_id_to_attr
 )
 #Document Type Enumerations
@@ -64,7 +72,7 @@ TAX_RECEIPT_STATE = 2025
 
 #Display text for document types
 DOC_TYPE_MAPPING = {
-    DEFAULT_DOCUMENT: unicode(QApplication.translate("sourceDocument",
+    DEFAULT_DOCUMENT: str(QApplication.translate("sourceDocument",
                                                      "Supporting Document"))
 }
 
@@ -367,12 +375,12 @@ class SourceDocumentManager(QObject):
                 for w in range(widgCount):
                     docWidg = v.itemAt(w).widget()
                     if editing:
-                        srcFilePath = unicode(docWidg._displayName)
+                        srcFilePath = str(docWidg._displayName)
                         locTr = QApplication.translate(
                             "sourceDocumentManager", "File Name"
                         )
                     else:
-                        srcFilePath = unicode(docWidg.fileInfo.absoluteFilePath())
+                        srcFilePath = str(docWidg.fileInfo.absoluteFilePath())
                         locTr = QApplication.translate(
                             "sourceDocumentManager", "Location"
                         )
@@ -692,7 +700,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         if self._mode == UPLOAD_MODE:
             self.fileInfo = QFileInfo(dfile)
-            self._displayName = unicode(self.fileInfo.fileName())
+            self._displayName = str(self.fileInfo.fileName())
             self._docSize = self.fileInfo.size()
             self._source_entity = source_entity
             self._doc_type = doc_type
@@ -786,11 +794,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         QApplication.processEvents()
         doc_path = u'{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
-            unicode(self.curr_profile.name),
-            unicode(self._source_entity),
-            unicode(self.doc_type_value()).replace(' ', '_'),
-            unicode(self.fileUUID),
-            unicode(extension)
+            str(self.curr_profile.name),
+            str(self._source_entity),
+            str(self.doc_type_value()).replace(' ', '_'),
+            str(self.fileUUID),
+            str(extension)
         ).lower()
 
         ph_image = QImage(doc_path)
@@ -813,7 +821,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
 
         if not self._docSize is None:
-            display_doc_size = unicode(size(self._docSize))
+            display_doc_size = str(size(self._docSize))
         else:
             display_doc_size = '0'
 
@@ -835,7 +843,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
                        '</p>' \
                    '</body>' \
                '</html>'.format(
-            unicode(self._displayName),
+            str(self._displayName),
             display_doc_size
         )
         self.lblName.setText(html)

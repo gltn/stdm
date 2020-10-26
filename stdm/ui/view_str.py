@@ -23,8 +23,38 @@ from sqlalchemy import exc
 from collections import OrderedDict
 
 import logging
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+
+from qgis.PyQt.QtCore import (
+    QTimer,
+    Qt,
+    QSize,
+    QObject,
+    pyqtSignal,
+    QThread,
+    QRegExp,
+    QSortFilterProxyModel,
+    pyqtSlot
+)
+from qgis.PyQt.QtGui import (
+    QIcon,
+)
+from qgis.PyQt.QtWidgets import (
+    QMainWindow,
+    QDesktopWidget,
+    QToolBar,
+    QAction,
+    QApplication,
+    QProgressDialog,
+    QProgressBar,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+    QScrollArea,
+    QFrame,
+    QCheckBox,
+    QTabBar,
+    QCompleter
+)
 
 from qgis.utils import (
     iface
@@ -49,27 +79,27 @@ from stdm.data.configuration import entity_model
 
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
-from stdm.stdm.security import Authorizer
-from stdm.stdm.utils import (
+from stdm.security.authorization import Authorizer
+from stdm.utils.util import (
     entity_searchable_columns,
     entity_display_columns,
     format_name,
     lookup_parent_entity
 )
 
-from stdm.stdm.data.pg_utils import pg_table_count
+from stdm.data.pg_utils import pg_table_count
 
 from stdm.ui.feature_details import DetailsTreeView, SelectedItem
-from .notification import (
+from stdm.ui.notification import (
     NotificationBar
 )
-from .sourcedocument import (
+from stdm.ui.sourcedocument import (
     SourceDocumentManager,
     DocumentWidget
 )
 
-from ui_view_str import Ui_frmManageSTR
-from ui_str_view_entity import Ui_frmSTRViewEntity
+from stdm.ui.ui_view_str import Ui_frmManageSTR
+from stdm.ui.ui_str_view_entity import Ui_frmSTRViewEntity
 
 
 LOGGER = logging.getLogger('stdm')
@@ -330,7 +360,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         except Exception as pe:
             self._notif_search_config.clear()
-            self._notif_search_config.insertErrorNotification(unicode(pe))
+            self._notif_search_config.insertErrorNotification(str(pe))
 
     def _entity_config_from_profile(self, table_name, short_name):
         """
@@ -576,7 +606,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     "STDMPlugin",
                     "Loading Error"
                 ),
-                unicode(ex)
+                str(ex)
             )
 
     def delete_str(self):
@@ -1248,9 +1278,9 @@ class ModelWorker(QObject):
     values stored in the database.
     """
     retrieved = pyqtSignal(object)
-    error = pyqtSignal(unicode)
+    error = pyqtSignal(str)
 
-    pyqtSlot(object, unicode)
+    pyqtSlot(object, str)
     def fetch(self, model, fieldname):
         """
         Fetch attribute values from the
@@ -1267,4 +1297,4 @@ class ModelWorker(QObject):
                 self.retrieved.emit(model_values)
 
         except Exception as ex:
-            self.error.emit(unicode(ex))
+            self.error.emit(str(ex))

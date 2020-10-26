@@ -18,8 +18,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm import ControlValueHandler
-from stdm import getIndex
+from stdm.ui.helpers.valuehandlers import ControlValueHandler
+from stdm.utils.util import getIndex
 
 class ControlReaderMapper(object):
     '''

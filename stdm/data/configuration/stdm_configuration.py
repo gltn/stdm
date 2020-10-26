@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
@@ -40,7 +40,7 @@ class StdmConfiguration(QObject):
     """
     VERSION = 1.3
     profile_added = pyqtSignal(Profile)
-    profile_removed = pyqtSignal(unicode)
+    profile_removed = pyqtSignal(str)
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -85,7 +85,7 @@ class StdmConfiguration(QObject):
         :param profile: Profile object.
         :type profile: Profile
         """
-        profile_name = unicode(profile.name)
+        profile_name = str(profile.name)
 
         if not profile_name in self.profiles:
             self.profiles[profile_name] = profile
