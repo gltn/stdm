@@ -30,4 +30,3 @@ def valueHandler(ctl):
         return ControlValueHandler.handlers[ctlName]
     else:
         return None
-

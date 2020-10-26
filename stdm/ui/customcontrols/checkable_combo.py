@@ -34,7 +34,8 @@ from qgis.PyQt.QtWidgets import (
 
 class MultipleChoiceCombo(QComboBox):
     """Class initialization"""
-    def __init__(self, parent= None):
+
+    def __init__(self, parent=None):
         super(MultipleChoiceCombo, self).__init__()
         self.view().pressed.connect(self.current_item_state)
         self.setModel(QStandardItemModel(self))
@@ -77,14 +78,13 @@ class MultipleChoiceCombo(QComboBox):
         convinent method for adding selected items to database
         :return:
         """
-        string_values =""
-        if len(self._cur_list)>0:
+        string_values = ""
+        if len(self._cur_list) > 0:
             for item in self._cur_list:
-                string_values+=item+','
-            return string_values[:len(string_values)-1]
+                string_values += item + ','
+            return string_values[:len(string_values) - 1]
         else:
             return None
-
 
     def set_values(self, data):
         """
@@ -111,9 +111,10 @@ class MultipleChoiceCombo(QComboBox):
             item = self.model().itemFromIndex(i)
             item.setCheckState(Qt.Unchecked)
 
+
 class Dialog(QDialog):
     def __init__(self):
-        super(Dialog,self).__init__()
+        super(Dialog, self).__init__()
 
         boxLayout = QVBoxLayout()
         self.setLayout(boxLayout)
@@ -125,15 +126,15 @@ class Dialog(QDialog):
         self.button.clicked.connect(self.setdataset)
         self.button1.clicked.connect(self.joined)
         for i in range(3):
-            self.combo.addItem("added item "+ str(i))
-            #self.combo.model().appendRow("added item "+ str(i))
-            item = self.combo.model().item(i,0)
+            self.combo.addItem("added item " + str(i))
+            # self.combo.model().appendRow("added item "+ str(i))
+            item = self.combo.model().item(i, 0)
             item.setCheckState(Qt.Unchecked)
-        #self.combo.setModel(self.model())
+        # self.combo.setModel(self.model())
         boxLayout.addWidget(self.combo)
         boxLayout.addWidget(self.button)
         boxLayout.addWidget(self.button1)
-        self.resize(100,300)
+        self.resize(100, 300)
 
     def setdataset(self):
         list = "solomon, njogu, njoroge"
@@ -141,4 +142,4 @@ class Dialog(QDialog):
 
     def joined(self):
         listed = self.combo.values()
-        QMessageBox.information(None,"Value",str(listed))
+        QMessageBox.information(None, "Value", str(listed))

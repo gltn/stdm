@@ -21,11 +21,13 @@ email                : stdm@unhabitat.org
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 
+
 class CodeGenerator(object):
     """
     Generate unique code for a column using prefix, separator and leading zero
     parameters.
     """
+
     def __init__(self, entity, column):
         """
         Initializes entity and column property.
@@ -34,7 +36,7 @@ class CodeGenerator(object):
         :param column: The column object
         :type column: Object
         """
-        #TODO disable once committed to the database
+        # TODO disable once committed to the database
         self.entity = entity
         self.current_profile = current_profile()
         self.code_entity = self.current_profile.auto_generate_code
@@ -99,7 +101,7 @@ class CodeGenerator(object):
                 # get the serial number
                 try:
                     last_code = record_match[0].rsplit(separator, 1)
-                  # if the separator is empty - '', split by numbers and letters.
+                    # if the separator is empty - '', split by numbers and letters.
                     if len(last_code) > 1:
                         last_serial = last_code[1]
 
@@ -110,7 +112,7 @@ class CodeGenerator(object):
                     else:
                         prefix_and_serial = record_match[0].split(separator)
                         if len(prefix_and_serial) > 0:
-                            last_serial = prefix_and_serial[len(prefix_and_serial)-1]
+                            last_serial = prefix_and_serial[len(prefix_and_serial) - 1]
 
                     # match = re.match(
                     #     r'([a-zA-Z]+)([0-9]+)', record_match[0], re.I
@@ -120,7 +122,6 @@ class CodeGenerator(object):
                 #         if len(text_numbers) == 2:
                 #             last_code = text_numbers
                 #
-
 
             if last_serial is None:
                 # print last_serial, 'last '
@@ -167,9 +168,9 @@ class CodeGenerator(object):
         """
         column_obj = getattr(self.code_model, 'code')
         matches = self.code_model_obj.queryObject([column_obj]
-                                                ).filter(
+                                                  ).filter(
             column_obj.op('~')(u'^{}{}[0-9]'.format(prefix, separator))
-            ).order_by(column_obj.desc()).all()
+        ).order_by(column_obj.desc()).all()
 
         return matches
     #

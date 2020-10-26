@@ -18,11 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from datetime import date
-from sqlalchemy import exc
-from collections import OrderedDict
-
 import logging
+from collections import OrderedDict
+from datetime import date
 
 from qgis.PyQt.QtCore import (
     QTimer,
@@ -55,31 +53,37 @@ from qgis.PyQt.QtWidgets import (
     QTabBar,
     QCompleter
 )
-
 from qgis.utils import (
     iface
 )
+from sqlalchemy import exc
 from sqlalchemy import (
     func,
     String
 )
 
-from stdm.ui.social_tenure.str_editor import STREditor
-
 import stdm.data
-
+from stdm.data.configuration import entity_model
+from stdm.data.database import Content
+from stdm.data.pg_utils import pg_table_count
 from stdm.data.qtmodels import (
     BaseSTDMTableModel
 )
-
-from stdm.data.database import Content
-
-from stdm.settings import current_profile
-from stdm.data.configuration import entity_model
-
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
-from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.security.authorization import Authorizer
+from stdm.settings import current_profile
+from stdm.ui.feature_details import DetailsTreeView, SelectedItem
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
+from stdm.ui.notification import (
+    NotificationBar
+)
+from stdm.ui.social_tenure.str_editor import STREditor
+from stdm.ui.sourcedocument import (
+    SourceDocumentManager,
+    DocumentWidget
+)
+from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
+from stdm.ui.ui_str_view_entity import Ui_frmSTRViewEntity
+from stdm.ui.ui_view_str import Ui_frmManageSTR
 from stdm.utils.util import (
     entity_searchable_columns,
     entity_display_columns,
@@ -87,28 +91,15 @@ from stdm.utils.util import (
     lookup_parent_entity
 )
 
-from stdm.data.pg_utils import pg_table_count
-
-from stdm.ui.feature_details import DetailsTreeView, SelectedItem
-from stdm.ui.notification import (
-    NotificationBar
-)
-from stdm.ui.sourcedocument import (
-    SourceDocumentManager,
-    DocumentWidget
-)
-
-from stdm.ui.ui_view_str import Ui_frmManageSTR
-from stdm.ui.ui_str_view_entity import Ui_frmSTRViewEntity
-
-
 LOGGER = logging.getLogger('stdm')
+
 
 class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     """
     Search and browse the social tenure relationship
     of all participating entities.
     """
+
     def __init__(self, plugin):
         QMainWindow.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
@@ -123,7 +114,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self.curr_profile = current_profile()
 
         self.spatial_units = self.curr_profile.social_tenure.spatial_units
-        #Center me
+        # Center me
         self.move(QDesktopWidget().availableGeometry().center() -
                   self.frameGeometry().center())
         self.sp_unit_manager = SpatialUnitManagerDockWidget(
@@ -152,9 +143,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._strID = None
         self.removed_docs = None
-        #Used to store the root hash of the currently selected node.
+        # Used to store the root hash of the currently selected node.
         self._curr_rootnode_hash = ""
-
 
         self.str_model, self.str_doc_model = entity_model(
             self.curr_profile.social_tenure, False, True
@@ -186,7 +176,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         count = pg_table_count(self.curr_profile.social_tenure.name)
         self.setWindowTitle(
             self.tr(u'{}{}'.format(
-                self.windowTitle(), '- ' + str(count) +' rows'
+                self.windowTitle(), '- ' + str(count) + ' rows'
             ))
         )
 
@@ -264,13 +254,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self.add_tool_buttons()
 
-        #Connect signals
+        # Connect signals
         self.tbSTREntity.currentChanged.connect(self.entityTabIndexChanged)
         self.btnSearch.clicked.connect(self.searchEntityRelations)
         self.btnClearSearch.clicked.connect(self.clearSearch)
         # self.tvSTRResults.expanded.connect(self.onTreeViewItemExpanded)
 
-        #Set the results treeview to accept requests for context menus
+        # Set the results treeview to accept requests for context menus
         # self.tvSTRResults.setContextMenuPolicy(Qt.CustomContextMenu)
         # self.tvSTRResults.customContextMenuRequested.connect(
         #     self.onResultsContextMenuRequested
@@ -294,7 +284,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self.editSTR.triggered.connect(self.load_edit_str_editor)
 
-        #Load async for the current widget
+        # Load async for the current widget
         self.entityTabIndexChanged(0)
 
     def init_progress_dialog(self):
@@ -376,7 +366,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         model = entity_model(entity)
 
         if model is not None:
-            #Entity configuration
+            # Entity configuration
             entity_cfg = EntityConfiguration()
             entity_cfg.Title = table_display_name
             entity_cfg.STRModel = model
@@ -431,7 +421,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Raised when the tab index of the entity search tab widget changes.
         """
-        #Get the current widget in the tab container
+        # Get the current widget in the tab container
         entityWidget = self.tbSTREntity.currentWidget()
 
         if isinstance(entityWidget, EntitySearchItem):
@@ -449,7 +439,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         self._reset_controls()
 
-        if isinstance(entityWidget,EntitySearchItem):
+        if isinstance(entityWidget, EntitySearchItem):
             valid, msg = entityWidget.validate()
 
             if not valid:
@@ -460,7 +450,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             results, searchWord = entityWidget.executeSearch()
 
-            #Show error message
+            # Show error message
             if len(results) == 0:
                 noResultsMsg = QApplication.translate(
                     'ViewSTR',
@@ -488,9 +478,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
                     entity, result_ids
                 )
 
-            #self.tbPropertyPreview._iface.activeLayer().selectByExpression("id={}".format(self.active_spu_id))
-            #self.details_tree_view._selected_features = self.tbPropertyPreview._iface.activeLayer().selectedFeatures()
-            #self._load_root_node(entity_name, formattedNode)
+            # self.tbPropertyPreview._iface.activeLayer().selectByExpression("id={}".format(self.active_spu_id))
+            # self.details_tree_view._selected_features = self.tbPropertyPreview._iface.activeLayer().selectedFeatures()
+            # self._load_root_node(entity_name, formattedNode)
 
     def clearSearch(self):
         """
@@ -502,13 +492,13 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         self._reset_controls()
 
     def _reset_controls(self):
-        #Clear tree view
+        # Clear tree view
         self._resetTreeView()
 
-        #Clear document listings
+        # Clear document listings
         self._deleteSourceDocTabs()
 
-        #Remove spatial unit memory layer
+        # Remove spatial unit memory layer
         self.tbPropertyPreview.remove_layer()
 
     def on_select_results(self):
@@ -680,8 +670,8 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         tabCount = self.tbSupportingDocs.count()
 
         while tabCount != 0:
-            srcDocWidget = self.tbSupportingDocs.widget(tabCount-1)
-            self.tbSupportingDocs.removeTab(tabCount-1)
+            srcDocWidget = self.tbSupportingDocs.widget(tabCount - 1)
+            self.tbSupportingDocs.removeTab(tabCount - 1)
             del srcDocWidget
             tabCount -= 1
 
@@ -692,7 +682,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         """
         Clears the results tree view.
         """
-        #Reset tree view
+        # Reset tree view
         strModel = self.details_tree_view.view.model()
         resultsSelModel = self.details_tree_view.view.selectionModel()
 
@@ -738,7 +728,6 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
-
 
             tab_widget = QWidget()
             tab_widget.setObjectName(tab_title)
@@ -818,7 +807,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
         authorizer = Authorizer(userName)
         newSTRCode = "9576A88D-C434-40A6-A318-F830216CA15A"
 
-        #Get the name of the content from the code
+        # Get the name of the content from the code
         cnt = Content()
         createSTRCnt = cnt.queryObject().filter(
             Content.code == newSTRCode
@@ -828,6 +817,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             canEdit = authorizer.CheckAccess(name)
 
         return canEdit
+
 
 class EntitySearchItem(QObject):
     """
@@ -880,12 +870,12 @@ class EntitySearchItem(QObject):
         """
         pass
 
-    def errorHandler(self,error):
+    def errorHandler(self, error):
         """
         Generic handler that logs error
         messages to the QGIS message log
         """
-        #QgsMessageLog.logMessage(error,2)
+        # QgsMessageLog.logMessage(error,2)
         LOGGER.debug(error)
 
     def reset(self):
@@ -893,6 +883,7 @@ class EntitySearchItem(QObject):
         Clear search results.
         """
         pass
+
 
 class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
     """
@@ -910,11 +901,11 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         self.curr_profile = current_profile()
         self.social_tenure = self.curr_profile.social_tenure
         self.str_model = entity_model(self.social_tenure)
-        #Model for storing display and actual mapping values
+        # Model for storing display and actual mapping values
         self._completer_model = None
         self._proxy_completer_model = None
 
-        #Hook up signals
+        # Hook up signals
         self.cboFilterCol.currentIndexChanged.connect(
             self._on_column_index_changed
         )
@@ -942,7 +933,6 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         else:
             self.validity.setDisabled(True)
 
-
     def set_minimum_to_date(self):
         """
         Set the minimum to date based on the
@@ -953,7 +943,6 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         self.validity_to_date.setMinimumDate(
             self.validity_from_date.date()
         )
-
 
     def init_validity_dates(self):
         """
@@ -967,11 +956,12 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         self.validity_to_date.setDate(
             date.today()
         )
+
     def setConfigOptions(self):
         """
         Apply configuration options.
         """
-        #Set filter columns and remove id column
+        # Set filter columns and remove id column
         for col_name, display_name in self.config.filterColumns.iteritems():
             if col_name != "id":
                 self.cboFilterCol.addItem(
@@ -984,12 +974,12 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         """
         self.asyncStarted.emit()
 
-        #Create model worker
+        # Create model worker
         workerThread = QThread(self)
         modelWorker = ModelWorker()
         modelWorker.moveToThread(workerThread)
 
-        #Connect signals
+        # Connect signals
         modelWorker.error.connect(self.errorHandler)
         workerThread.started.connect(
             lambda: modelWorker.fetch(
@@ -1001,7 +991,7 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         workerThread.finished.connect(modelWorker.deleteLater)
         workerThread.finished.connect(workerThread.deleteLater)
 
-        #Start thread
+        # Start thread
         workerThread.start()
 
     def validate(self):
@@ -1041,15 +1031,15 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         search_term = self._searchTerm()
 
         prog_dialog.setValue(2)
-        #Try to get the corresponding search term value from the completer model
+        # Try to get the corresponding search term value from the completer model
         if not self._completer_model is None:
-            reg_exp = QRegExp("^%s$"%(search_term), Qt.CaseInsensitive,
+            reg_exp = QRegExp("^%s$" % (search_term), Qt.CaseInsensitive,
                               QRegExp.RegExp2)
             self._proxy_completer_model.setFilterRegExp(reg_exp)
 
             if self._proxy_completer_model.rowCount() > 0:
-                #Get corresponding actual value from the first matching item
-                value_model_idx  = self._proxy_completer_model.index(0, 1)
+                # Get corresponding actual value from the first matching item
+                value_model_idx = self._proxy_completer_model.index(0, 1)
                 source_model_idx = self._proxy_completer_model.mapToSource(
                     value_model_idx
                 )
@@ -1059,7 +1049,6 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
                 )
 
         modelInstance = self.config.STRModel()
-
 
         modelQueryObj = modelInstance.queryObject()
 
@@ -1092,12 +1081,12 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
                         lkp_model, 'value'
                     )
 
-                    result  = lkp_obj.queryObject().filter(
+                    result = lkp_obj.queryObject().filter(
                         func.lower(value_obj) == func.lower(search_term)
                     ).first()
                     if result is None:
                         result = lkp_obj.queryObject().filter(
-                            func.lower(value_obj).like(search_term+'%')
+                            func.lower(value_obj).like(search_term + '%')
                         ).first()
 
                     if not result is None:
@@ -1123,8 +1112,8 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
             return model_root_node, [], search_term
 
         # if self.formatter is not None:
-            # self.formatter.setData(results)
-            # model_root_node = self.formatter.root(valid_str_ids)
+        # self.formatter.setData(results)
+        # model_root_node = self.formatter.root(valid_str_ids)
         prog_dialog.setValue(10)
         prog_dialog.hide()
 
@@ -1148,15 +1137,12 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
             str_result = self.str_model_obj.queryObject().filter(
                 self.str_model.validity_start >= from_date).filter(
                 self.str_model.validity_end <= to_date
-            ).filter(str_column_obj==result.id).all()
+            ).filter(str_column_obj == result.id).all()
 
             for res in str_result:
                 valid_str_ids.append(res.id)
 
         return valid_str_ids
-
-
-
 
     def reset(self):
         """
@@ -1189,12 +1175,12 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         """
         Slot raised when worker has finished retrieving items.
         """
-        #Create QCompleter and add values to it.
+        # Create QCompleter and add values to it.
         self._update_completer(model_values)
         self.asyncFinished.emit()
 
     def _update_completer(self, values):
-        #Get the items in a tuple and put them in a list
+        # Get the items in a tuple and put them in a list
 
         # Store display and actual values in a
         # model for easier mapping and
@@ -1221,16 +1207,16 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
 
             model_attr_mapping.append(f_model_values)
 
-        self._completer_model = BaseSTDMTableModel(model_attr_mapping, ["",""], self)
+        self._completer_model = BaseSTDMTableModel(model_attr_mapping, ["", ""], self)
 
-        #We will use the QSortFilterProxyModel for filtering purposes
+        # We will use the QSortFilterProxyModel for filtering purposes
         self._proxy_completer_model = QSortFilterProxyModel()
         self._proxy_completer_model.setDynamicSortFilter(True)
         self._proxy_completer_model.setSourceModel(self._completer_model)
         self._proxy_completer_model.setSortCaseSensitivity(Qt.CaseInsensitive)
         self._proxy_completer_model.setFilterKeyColumn(0)
 
-        #Configure completer
+        # Configure completer
         mod_completer = QCompleter(self._completer_model, self)
         mod_completer.setCaseSensitivity(Qt.CaseInsensitive)
         mod_completer.setCompletionMode(QCompleter.PopupCompletion)
@@ -1239,12 +1225,13 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
 
         self.txtFilterPattern.setCompleter(mod_completer)
 
-    def _on_column_index_changed(self,int):
+    def _on_column_index_changed(self, int):
         """
         Slot raised when the user selects a different filter column.
         """
         self.txtFilterPattern.clear()
         self.loadAsync()
+
 
 class EntityConfiguration(object):
     """
@@ -1268,9 +1255,10 @@ class EntityConfiguration(object):
     LookupFormatters = {}
 
     def __init__(self):
-        #Reset filter and display columns
+        # Reset filter and display columns
         self.filterColumns = OrderedDict()
         self.displayColumns = OrderedDict()
+
 
 class ModelWorker(QObject):
     """
@@ -1281,6 +1269,7 @@ class ModelWorker(QObject):
     error = pyqtSignal(str)
 
     pyqtSlot(object, str)
+
     def fetch(self, model, fieldname):
         """
         Fetch attribute values from the

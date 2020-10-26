@@ -17,7 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from osgeo import osr,gdal
+from osgeo import gdal
 
 
 def convert_to_mbtiles(input_file, outputfile):
@@ -27,4 +27,3 @@ def convert_to_mbtiles(input_file, outputfile):
     :return:file
     """
     return gdal.Translate(input_file, outputfile)
-

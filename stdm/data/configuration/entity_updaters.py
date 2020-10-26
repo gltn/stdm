@@ -55,7 +55,7 @@ def entity_updater(entity, engine, metadata):
 
     LOGGER.debug('Attempting to update %s entity', entity.name)
 
-    #All tables will have an ID column
+    # All tables will have an ID column
     table = Table(entity.name, metadata,
                   Column('id', Integer, primary_key=True),
                   extend_existing=True
@@ -65,7 +65,7 @@ def entity_updater(entity, engine, metadata):
         LOGGER.debug('Creating %s entity...', entity.name)
         create_entity(entity, table, engine)
 
-        #Clear remnants
+        # Clear remnants
         _remove_dropped_columns(entity, table)
 
     elif entity.action == DbItem.ALTER:
@@ -74,7 +74,7 @@ def entity_updater(entity, engine, metadata):
 
     elif entity.action == DbItem.DROP:
         LOGGER.debug('Deleting %s entity...', entity.name)
-        #drop_entity(entity, table, engine)
+        # drop_entity(entity, table, engine)
         drop_cascade_table(entity.name)
 
 
@@ -248,5 +248,5 @@ def value_list_updater(value_list, engine, metadata):
             lookup_obj = model_obj.queryObject().filter(
                 model.value == lookup_val
             ).one()
-            if not lookup_obj is None:
+            if lookup_obj is not None:
                 lookup_obj.delete()

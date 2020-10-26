@@ -19,20 +19,17 @@ email                : stdm@unhabitat.org
 """
 import logging
 
+from migrate.changeset.constraint import ForeignKeyConstraint
 from sqlalchemy import Table
 from sqlalchemy.exc import ProgrammingError
-
-from migrate.changeset.constraint import ForeignKeyConstraint
 
 from stdm.data.database import (
     metadata
 )
-
 from stdm.data.pg_utils import (
     pg_table_exists,
     table_column_names
 )
-
 
 LOGGER = logging.getLogger('stdm')
 
@@ -42,7 +39,7 @@ def _table_col_attr(table, col_names):
 
     for c in col_names:
         col_attr = getattr(table.c, c, None)
-        if not col_attr is None:
+        if col_attr is not None:
             col_attrs.append(col_attr)
 
     return col_attrs
@@ -204,6 +201,7 @@ def drop_foreign_key_constraint(entity_relation):
 
         return False
 
+
 def _get_table(table_name):
     # Get Table object from metadata or create one
     table = metadata.tables.get(table_name, None)
@@ -228,7 +226,7 @@ def _check_table_exists(table):
 def _check_column_exists(column, table):
     table_columns = table_column_names(table)
 
-    if not column in table_columns:
+    if column not in table_columns:
         LOGGER.debug('%s column does not exist in % table. Foreign key will '
                      'not be created', column, table)
 

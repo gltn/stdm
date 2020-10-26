@@ -25,32 +25,29 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
-
-from qgis.gui import (
-   QgsHighlight
-)
 from qgis.core import (
     QgsFeature,
     QgsGeometry,
     QgsProject,
     QgsVectorLayer
 )
+from qgis.gui import (
+    QgsHighlight
+)
 
+from stdm.data.database import STDMDb
+from stdm.data.pg_utils import (
+    pg_table_exists,
+    qgsgeometry_from_wkbelement
+)
 from stdm.navigation.web_spatial_loader import (
     WebSpatialLoader,
     GMAP_SATELLITE,
     OSM
 )
-
-from stdm.data.pg_utils import(
-    pg_table_exists,
-    qgsgeometry_from_wkbelement
-)
 from stdm.settings.registryconfig import (
     selection_color
 )
-from stdm.data.database import STDMDb
-
 from stdm.ui.notification import (
     ERROR
 )
@@ -62,6 +59,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
     """
     Widget for previewing spatial unit on either local map or web source.
     """
+
     def __init__(self, parent=None, iface=None):
         QTabWidget.__init__(self, parent)
         self.setupUi(self)
@@ -75,10 +73,10 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         self.set_iface(iface)
 
-        #Web config
+        # Web config
         self._web_spatial_loader = WebSpatialLoader(self.spatial_web_view, self)
 
-        #Connect signals
+        # Connect signals
         self._web_spatial_loader.loadError.connect(self.on_spatial_browser_error)
         self._web_spatial_loader.loadProgress.connect(self.on_spatial_browser_loading)
         self._web_spatial_loader.loadFinished.connect(self.on_spatial_browser_finished)
@@ -107,7 +105,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         """
         return self._notif_bar
 
-    def _insert_notification(self, msg, level, clear_first = True):
+    def _insert_notification(self, msg, level, clear_first=True):
         if self._notif_bar is None:
             return
 
@@ -125,7 +123,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         """
         self.set_canvas_background_color(self.canvasBgColor)
 
-    def set_canvas_background_color(self,color):
+    def set_canvas_background_color(self, color):
         """
         Set the background color of the map canvas
         """
@@ -157,7 +155,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         """
         self._overlay_layer = QgsVectorLayer(
             u"{0}?crs=epsg:{1!s}&field=lbname:string(20)&index=yes".format(geom_type,
-                                                                      prj_code),
+                                                                           prj_code),
             "view_str_spatial_unit",
             "memory")
 
@@ -176,8 +174,8 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
                                          "unit cannot be rendered.")
             QMessageBox.critical(self,
                                  QApplication.translate(
-                                    "SpatialPreview",
-                                    "Spatial Unit Preview"),
+                                     "SpatialPreview",
+                                     "Spatial Unit Preview"),
                                  msg)
 
             return
@@ -206,7 +204,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         for sc in spatial_cols:
 
             db_geom = getattr(model, sc.name)
-            #Use the first non-empty geometry
+            # Use the first non-empty geometry
             # value in the collection
             if not db_geom is None:
                 sc_obj = sc
@@ -221,8 +219,6 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         sp_unit_manager.add_layer_by_name(lyr)
 
         if geom is not None:
-
-
             self.highlight_spatial_unit(
                 spatial_unit, geom, self.local_map.canvas
             )
@@ -280,7 +276,6 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
                 "Error",
                 not_sp_msg
             )
-
 
     def active_layer_check(self):
         """
@@ -352,7 +347,6 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         else:
             return
 
-
     def remove_preview_layer(self, layer, name):
         """
         Removes the preview layer from legend.
@@ -365,7 +359,6 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
                 if lyr.name() == name:
                     id = lyr.id()
                     QgsProject.instance().removeMapLayer(id)
-
 
     def delete_local_features(self, feature_ids=[]):
         """
@@ -388,7 +381,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         if not self._overlay_layer is None:
             QgsProject.instance().layerTreeRoot().removeLayer(self._overlay_layer)
 
-            #Clear web overlays
+            # Clear web overlays
             self._web_spatial_loader.removeOverlay()
 
             self._overlay_layer = None
@@ -418,18 +411,18 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         else:
             self.lblInfo.setVisible(True)
-            self.lblInfo.setText("Loading...%d%%)"%(progress))
+            self.lblInfo.setText("Loading...%d%%)" % (progress))
 
     def on_spatial_browser_finished(self, status):
         """
         Slot raised when the property browser finishes loading the content
         """
         if status:
-            if len(self.local_map.canvas_layers()) > 0:# and not self._ol_loaded:
+            if len(self.local_map.canvas_layers()) > 0:  # and not self._ol_loaded:
                 self.on_sync_extents()
 
             self._ol_loaded = True
-            #self._overlay_spatial_unit()
+            # self._overlay_spatial_unit()
 
         else:
             msg = QApplication.translate("SpatialPreview",
@@ -477,7 +470,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         Slot raised to synchronize the webview extents with those of the
         local map canvas.
         """
-        if len(self.local_map.canvas_layers()) > 0:# and self._ol_loaded:
+        if len(self.local_map.canvas_layers()) > 0:  # and self._ol_loaded:
             curr_extent = self.map_extents()
             self._web_spatial_loader.zoom_to_map_extents(curr_extent)
 

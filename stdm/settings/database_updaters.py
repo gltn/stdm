@@ -20,23 +20,25 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from datetime import datetime
+
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtXml import QDomDocument
 
+from stdm.data.configfile_paths import FilePaths
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.pg_utils import (
     copy_from_column_to_another,
     add_constraint,
     pg_table_exists,
     table_column_names
 )
-from stdm.data.configfile_paths import FilePaths
 
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
 class DatabaseUpdater(QObject):
     db_update_complete = pyqtSignal(QDomDocument)
     db_update_progress = pyqtSignal(str)
+
     def __init__(self, document, parent=None):
         QObject.__init__(self, parent)
         self.file_handler = FilePaths()
@@ -69,15 +71,15 @@ class DatabaseUpdater(QObject):
             self.append_log('Error extracting version '
                             'number from the '
                             'configuration file.'
-            )
+                            )
         return config_version
+
     def version_updater(self):
 
         if self.version() in self.base_updater.UPDATERS:
             return self.base_updater.UPDATERS[self.version()]
         else:
             return None
-
 
     def append_log(self, info):
         """
@@ -136,6 +138,7 @@ class DatabaseUpdater(QObject):
         """
         self.db_update_progress.emit(message)
 
+
 class DatabaseVersionUpdater(QObject):
     FROM_VERSION = None
     TO_VERSION = None
@@ -170,7 +173,7 @@ class DatabaseVersionUpdater(QObject):
             previous_updater = updaters[len(updaters) - 1]
             previous_updater.NEXT_UPDATER = cls
 
-        #Add our new updater to the collection
+        # Add our new updater to the collection
         DatabaseVersionUpdater.UPDATERS[cls.FROM_VERSION] = cls
 
     def append_log(self, info):
@@ -190,11 +193,13 @@ class DatabaseVersionUpdater(QObject):
         info_file.write('\n')
         info_file.close()
 
+
 class DatabaseVersionUpdater13(DatabaseVersionUpdater):
     FROM_VERSION = 1.2
     TO_VERSION = 1.3
 
     columns = {}
+
     def __init__(self, log_file):
         DatabaseVersionUpdater.__init__(self, log_file)
 
@@ -203,11 +208,11 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
         Backups up the database and emits signals on the progress.
         """
         self.append_log('Started the backup the database version {}.'
-            .format(self.FROM_VERSION)
-        )
+                        .format(self.FROM_VERSION)
+                        )
         self.append_log('Successfully backed up up the database to version {}.'
-            .format(self.TO_VERSION)
-        )
+                        .format(self.TO_VERSION)
+                        )
         message = QApplication.translate(
             'DatabaseVersionUpdater13',
             'Successfully backed up the database version {}.'.format(
@@ -254,7 +259,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
         if not self.NEXT_UPDATER is None:
             pass
             # if there is next updater, show progress
-        #TODO add an if condition if the to version is the ...
+        # TODO add an if condition if the to version is the ...
         # latest version to be sure when emitting update_complete signal.
         else:
 
@@ -270,5 +275,6 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
                 'Successfully updated the database to version 1.5'
             )
             self.db_update_progress.emit(message)
+
 
 DatabaseVersionUpdater13.register()

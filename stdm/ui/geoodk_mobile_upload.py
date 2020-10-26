@@ -1,4 +1,3 @@
-
 import os
 
 from qgis.PyQt import uic
@@ -7,10 +6,8 @@ from qgis.PyQt.QtCore import (
 )
 from qgis.PyQt.QtWidgets import (
     QDialog,
-    QFileSystemModel,
     QMessageBox
 )
-
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_mobile_upload_form.ui'))
@@ -37,7 +34,7 @@ class FormUploader(QDialog, FORM_CLASS):
         """
         model = QFSFileEngine()
         for drive in model.drives():
-            self.cbo_path.insertItem(0,str(drive.absolutePath()))
+            self.cbo_path.insertItem(0, str(drive.absolutePath()))
         # self.dirs = QFileSystemModel()
         # self.dirs.setFilter(QDir.Drives)
         # self.dirs.setRootPath(self.dirs.myComputer())

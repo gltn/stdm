@@ -26,10 +26,9 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.data.importexport.value_translators import MultipleEnumerationTranslator
-
-from stdm.ui.notification import NotificationBar
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.importexport.ui_multiple_enumeration_dialog import Ui_EnumerationTranslatorDialog
+from stdm.ui.notification import NotificationBar
 
 __all__ = ["MultipleEnumerationDialog"]
 
@@ -39,6 +38,7 @@ class MultipleEnumerationDialog(QDialog, Ui_EnumerationTranslatorDialog, Transla
     Dialog for defining configuration settings for the MultipleEnumerationTranslator
     class implementation.
     """
+
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
@@ -51,26 +51,26 @@ class MultipleEnumerationDialog(QDialog, Ui_EnumerationTranslatorDialog, Transla
 
         self._load_separators()
 
-        #Init user selection to the corresponding UI controls
+        # Init user selection to the corresponding UI controls
         self.txt_source_col.setText(self._src_col)
 
     def _load_separators(self):
         separators = []
 
         comma_sep = (QApplication.translate("MultipleEnumerationDialog",
-                    "Comma (,)"), ",")
+                                            "Comma (,)"), ",")
         separators.append(comma_sep)
 
         colon_sep = (QApplication.translate("MultipleEnumerationDialog",
-                    "Colon (:)"), ":")
+                                            "Colon (:)"), ":")
         separators.append(colon_sep)
 
         semi_colon_sep = (QApplication.translate("MultipleEnumerationDialog",
-                    "Semi-colon (;)"), ";")
+                                                 "Semi-colon (;)"), ";")
         separators.append(semi_colon_sep)
 
         asterisk_sep = (QApplication.translate("MultipleEnumerationDialog",
-                    "Asterisk (*)"), "*")
+                                               "Asterisk (*)"), "*")
         separators.append(asterisk_sep)
 
         self.cbo_separator.addItem("")
@@ -85,7 +85,7 @@ class MultipleEnumerationDialog(QDialog, Ui_EnumerationTranslatorDialog, Transla
         """
         if not self.txt_source_col.text():
             msg = QApplication.translate("MultipleEnumerationDialog",
-                    "Source column does not exist.")
+                                         "Source column does not exist.")
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(msg)
 
@@ -93,7 +93,7 @@ class MultipleEnumerationDialog(QDialog, Ui_EnumerationTranslatorDialog, Transla
 
         if not self.cbo_separator.currentText():
             msg = QApplication.translate("MultipleEnumerationDialog",
-                    "Please specify a separator for the multiple select data.")
+                                         "Please specify a separator for the multiple select data.")
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(msg)
 

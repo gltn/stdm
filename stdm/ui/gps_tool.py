@@ -17,6 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import gps_tool_data_source_utils as gpx_source
+import gps_tool_data_view_utils as gpx_view
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -25,20 +27,18 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QTableWidgetItem
 )
-
 from qgis.core import (
     QgsPoint
 )
 
-from stdm.ui.ui_gps_tool import Ui_Dialog
-from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.data.pg_utils import vector_layer
-from stdm.utils.util import openDialog
-import gps_tool_data_source_utils as gpx_source
-import gps_tool_data_view_utils as gpx_view
 from stdm.settings.registryconfig import (
     selection_color
 )
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.ui_gps_tool import Ui_Dialog
+from stdm.utils.util import openDialog
+
 
 class GPSToolDialog(QDialog, Ui_Dialog):
     def __init__(self, iface, entity, sp_table, sp_col,
@@ -328,7 +328,8 @@ class GPSToolDialog(QDialog, Ui_Dialog):
             })
         self._set_table_header_property(table_widget)
         self._remove_prev_layer()
-        self.temp_mem_layer = gpx_view.create_feature(self.active_layer, self.geom_type, point_list, self.temp_layer_name)
+        self.temp_mem_layer = gpx_view.create_feature(self.active_layer, self.geom_type, point_list,
+                                                      self.temp_layer_name)
         gpx_view.add_map_layer(self.temp_mem_layer, )
         gpx_view.set_layer_extent(self.map_canvas, self.gpx_layer)
         self.qgs_point_list = list(point_list)
@@ -617,7 +618,6 @@ class GPSToolDialog(QDialog, Ui_Dialog):
         # If qgs_point_list length is 0, then it is in edit mode so
         # allow attribute edit too.
         if len(self.qgs_point_list) > 0:
-
             new_geometry = gpx_view.create_geometry(
                 self.geom_type, self.qgs_point_list
             )

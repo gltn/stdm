@@ -1,5 +1,6 @@
 import collections
 
+
 class CaseInsensitiveDict(collections.MutableMapping):
     """
     A case-insensitive ``dict``-like object.
@@ -28,6 +29,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
     behavior is undefined.
 
     """
+
     def __init__(self, data=None, **kwargs):
         self._store = dict()
         if data is None:
@@ -69,8 +71,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     # Copy is required
     def copy(self):
-         return CaseInsensitiveDict(self._store.values())
+        return CaseInsensitiveDict(self._store.values())
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, dict(self.items()))
-

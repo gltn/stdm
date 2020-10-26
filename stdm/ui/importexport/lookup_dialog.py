@@ -25,10 +25,9 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.data.importexport.value_translators import LookupValueTranslator
-
-from stdm.ui.notification import NotificationBar
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.importexport.ui_lookup_dialog import Ui_LookupTranslatorDialog
+from stdm.ui.notification import NotificationBar
 
 
 class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
@@ -36,6 +35,7 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
     Dialog for defining configuration settings for the lookup translation
     implementation.
     """
+
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
@@ -111,7 +111,6 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
             return
 
         lk_values = lk_ent.lookups()
-
 
         self.cbo_default.addItem('')
 

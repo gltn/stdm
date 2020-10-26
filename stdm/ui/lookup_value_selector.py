@@ -20,19 +20,19 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from collections import OrderedDict
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QDialog
-)
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel
 )
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QDialog
+)
+
+from stdm.settings import current_profile
 from stdm.ui.notification import NotificationBar
 from stdm.ui.ui_lookup_value_selector import Ui_LookupValueSelector
-from stdm.settings import current_profile
 
 
 class LookupValueSelector(QDialog, Ui_LookupValueSelector):
@@ -87,8 +87,8 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
             code_value = self.lookup_entity.values[u_value]
 
             value_code = QStandardItem('{} ({})'.format(
-                    code_value.value, code.code
-                )
+                code_value.value, code.code
+            )
             )
             value_code.setData(code.code)
             self._view_model.appendRow(value_code)

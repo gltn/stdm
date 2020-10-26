@@ -18,6 +18,10 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    Qt,
+    QModelIndex
+)
 from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
@@ -26,24 +30,21 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QComboBox,
     QHeaderView,
-    QMessageBox,
     QStyledItemDelegate,
     QTableView
 )
-from qgis.PyQt.QtCore import (
-    Qt,
-    QModelIndex
-)
+
 
 class PairComboBoxDelegate(QStyledItemDelegate):
     """
     Provides a combobox for editing table view data.
     """
+
     def __init__(self, parent=None, items_pair=None):
         QStyledItemDelegate.__init__(self, parent)
         self._items_pair = items_pair
         if self._items_pair is None:
-            self._items_pair = [[],[]]
+            self._items_pair = [[], []]
 
     def _insert_empty_item(self, items_lst):
         if len(items_lst) > 0:
@@ -58,10 +59,10 @@ class PairComboBoxDelegate(QStyledItemDelegate):
             raise RuntimeError("Item columns' list contains less than two sub-lists.")
 
         if not isinstance(items_pair[0], list) or \
-            not isinstance(items_pair[1], list):
+                not isinstance(items_pair[1], list):
             raise TypeError("Column data should be of type 'list'.")
 
-        #Ensure empty item is only inserted once
+        # Ensure empty item is only inserted once
         if empty_item:
             items_pair[0] = self._insert_empty_item(items_pair[0])
             items_pair[1] = self._insert_empty_item(items_pair[1])
@@ -111,6 +112,7 @@ class _EditableStandardItemModel(QStandardItemModel):
     """
     Supports enabling/disabling columns for the list pair table view.
     """
+
     def __init__(self, parent=None, disable_column=-1):
         super(_EditableStandardItemModel, self).__init__(1, 2, parent)
 
@@ -153,6 +155,7 @@ class ListPairTableView(QTableView):
     """
     2-column table view that enables pairing of list data through combo boxes.
     """
+
     def __init__(self, parent=None, disable_editing=-1):
         """
         Class constructor.
@@ -163,7 +166,7 @@ class ListPairTableView(QTableView):
         QTableView.__init__(self, parent)
 
         self.setEditTriggers(QAbstractItemView.DoubleClicked |
-            QAbstractItemView.SelectedClicked)
+                             QAbstractItemView.SelectedClicked)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         self._pair_model = _EditableStandardItemModel(self, disable_editing)
@@ -380,17 +383,3 @@ class ListPairTableView(QTableView):
                 col_pairings[col_val_0] = col_val_1
 
         return col_pairings
-
-
-
-
-
-
-
-
-
-
-
-
-
-

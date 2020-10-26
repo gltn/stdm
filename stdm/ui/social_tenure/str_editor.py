@@ -20,22 +20,17 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
-from qgis.utils import (
-    iface
-)
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     QTimer,
     Qt,
     QItemSelectionModel,
 )
-
 from qgis.PyQt.QtGui import (
     QIcon,
     QStandardItemModel,
     QStandardItem,
 )
-
 from qgis.PyQt.QtWidgets import (
     QTreeView,
     QApplication,
@@ -47,16 +42,17 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QDoubleSpinBox
 )
-
+from qgis.utils import (
+    iface
+)
 from sqlalchemy import (
     func
 )
+
+from stdm.data.pg_utils import pg_table_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.notification import NotificationBar
-
-from stdm.data.configuration import entity_model
-from stdm.ui.social_tenure.ui_str_editor import Ui_STREditor
 from stdm.ui.social_tenure.str_components import (
     Party,
     SpatialUnit,
@@ -65,16 +61,14 @@ from stdm.ui.social_tenure.str_components import (
     ValidityPeriod,
     CustomTenureInfo
 )
-from stdm.utils.util import (
-    format_name,
-    entity_attr_to_model
-)
-
-from stdm.data.pg_utils import pg_table_count
-
 from stdm.ui.social_tenure.str_data import (
     STRDataStore,
     STRDBHandler
+)
+from stdm.ui.social_tenure.ui_str_editor import Ui_STREditor
+from stdm.utils.util import (
+    format_name,
+    entity_attr_to_model
 )
 
 
@@ -326,7 +320,6 @@ class SyncSTREditorData(object):
             for i, (party_id, model) in \
                     enumerate(data_store.custom_tenure.iteritems()):
                 if party_id in data_store.party.keys():
-
                     self.editor.add_custom_tenure_info_data(
                         data_store.party[party_id], i, model
                     )
@@ -405,8 +398,8 @@ class SyncSTREditorData(object):
         # reset spinbox values into equal values based on the new count
         if str_number in self.editor.party_count.keys():
             if len(self.editor.party_count) > 0 and \
-                            party_count > \
-                            self.editor.party_count[str_number]:
+                    party_count > \
+                    self.editor.party_count[str_number]:
                 self.editor.reset_share_spinboxes(data_store)
 
         self.editor.party_count[str_number] = party_count
@@ -420,7 +413,6 @@ class SyncSTREditorData(object):
         for i, (party_id, str_type_id) in \
                 enumerate(data_store.str_type.iteritems()):
             if party_id in data_store.party.keys():
-
                 self.editor.str_type_component.add_str_type_data(
                     self.editor.spatial_unit,
                     self.editor.copied_party_row[party_id], i
@@ -599,7 +591,6 @@ class ValidateSTREditor(object):
             # if handle_child:
             #     next_item.child().setEnabled(enable)
 
-
             self.enable_save_button()
         except Exception:
             pass
@@ -677,7 +668,6 @@ class ValidateSTREditor(object):
                 self.enable_next(selected_item, 3, False)
                 # Disable custom tenure information item
                 if selected_item.child(0, 0) is not None:
-
                     selected_item.child(0, 0).setEnabled(False)
                 self.enable_next(selected_item, 4, False)
                 self.enable_next(selected_item, 5, False)
@@ -713,7 +703,7 @@ class ValidateSTREditor(object):
                 self._warning_message
             )
 
-    def validate_party_count(self, spatial_unit_obj) :
+    def validate_party_count(self, spatial_unit_obj):
         """
         Validates the number of party assigned to a spatial unt.
         :param spatial_unit_obj: Spatial unit model object
@@ -889,9 +879,9 @@ class ValidateSTREditor(object):
         # returns the number of entries for a specific parcel.
         str_obj = self.editor.str_model()
         spatial_unit_id = getattr(self.editor.str_model, '{}_id'.format(
-                self.editor.spatial_unit.short_name.replace(
-                    ' ', '_'
-                ).lower()))
+            self.editor.spatial_unit.short_name.replace(
+                ' ', '_'
+            ).lower()))
         usage_count = str_obj.queryObject(
             [func.count().label('spatial_unit_count')]
         ).filter(spatial_unit_id == model_obj.id).first()
@@ -920,7 +910,7 @@ class ValidateSTREditor(object):
             for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
                 if custom_model is not None:
                     if (str_number, i) in \
-                            self.editor.custom_tenure_info_component.\
+                            self.editor.custom_tenure_info_component. \
                                     entity_editors.keys():
                         editor = self.editor.custom_tenure_info_component.entity_editors[
                             (str_number, i)]
@@ -938,14 +928,11 @@ class ValidateSTREditor(object):
         if len(errors) > 0:
             self.editor.notice.clear()
             for error in errors:
-
                 self.editor.notice.insertWarningNotification(
                     error
                 )
             return False
         return True
-
-
 
 
 class STREditor(QDialog, Ui_STREditor):
@@ -984,7 +971,7 @@ class STREditor(QDialog, Ui_STREditor):
 
         count = pg_table_count(self.social_tenure.name)
 
-        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- '+str(count)+' rows')))
+        self.setWindowTitle(self.tr(u'{}{}'.format(self.windowTitle(), '- ' + str(count) + ' rows')))
 
         self.party_count = OrderedDict()
 
@@ -998,7 +985,6 @@ class STREditor(QDialog, Ui_STREditor):
             self.spatial_unit = self.spatial_units[0]
         else:
             self.spatial_unit = None
-
 
         self.add_str_tree_node()
         self.party_component = None
@@ -1080,7 +1066,6 @@ class STREditor(QDialog, Ui_STREditor):
             '''
         )
         self.view_selection = self.tree_view.selectionModel()
-
 
     def translate_str_items(self):
         """
@@ -1181,7 +1166,7 @@ class STREditor(QDialog, Ui_STREditor):
             )
 
             if custom_attr is not None:
-                if len(custom_attr.columns) > 2: # check if user columns are added
+                if len(custom_attr.columns) > 2:  # check if user columns are added
                     tenure_type_item = self.str_item(
                         self.tenure_type_text, self.str_number)
                     item.setEnabled(False)
@@ -1751,7 +1736,6 @@ class STREditor(QDialog, Ui_STREditor):
         current_store.str_type.clear()
         current_store.share.clear()
 
-
     def update_str_type_lookup(self):
         """
         Removes str_type row from the data store.
@@ -2023,7 +2007,6 @@ class STREditor(QDialog, Ui_STREditor):
         self.validate.validate_str_type_length(
             current_store, self.current_item()
         )
-
 
     def remove_spatial_unit_model(self):
         """

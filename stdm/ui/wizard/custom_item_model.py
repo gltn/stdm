@@ -1,6 +1,6 @@
 import logging
-
 from collections import OrderedDict
+
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -18,6 +18,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 LOGGER = logging.getLogger('stdm')
+
 
 class EntityModelItem(QStandardItem):
     headers_labels = ["Name", "Description"]
@@ -50,6 +51,7 @@ class EntityModelItem(QStandardItem):
         self._entity = entity
         self._set_entity_properties()
 
+
 class EntitiesModel(QStandardItemModel):
 
     def __init__(self, parent=None):
@@ -81,7 +83,7 @@ class EntitiesModel(QStandardItemModel):
     def edit_entity(self, old_entity_name, new_entity):
         self._entities[old_entity_name] = new_entity
         self._entities[new_entity.short_name] = \
-                self._entities.pop(old_entity_name)
+            self._entities.pop(old_entity_name)
 
     # ++
     def delete_entity(self, entity):
@@ -107,6 +109,7 @@ class EntitiesModel(QStandardItemModel):
 
         self.appendRow([name_item, description])
 
+
 class BaseEntitySelectionMixin(object):
     def selected_entities(self):
         model = self.model()
@@ -125,17 +128,20 @@ class BaseEntitySelectionMixin(object):
     def _selected_names(self, model):
         raise NotImplementedError('Please use the sub-class object of <BaseEntitySelectionMixin>')
 
+
 class EntityTableSelectionMixin(BaseEntitySelectionMixin):
     def _selected_names(self, model):
         sel_indexes = self.selectionModel().selectedRows()
 
         return self._names_from_indexes(model, sel_indexes)
 
+
 class EntityListSelectionMixin(BaseEntitySelectionMixin):
     def _selected_names(self, model):
         sel_indexes = self.selectionModel().selectedIndexes()
 
         return self._names_from_indexes(model, sel_indexes)
+
 
 class EntityComboBoxSelectionMixin(BaseEntitySelectionMixin):
     def _selected_names(self, model):
@@ -149,6 +155,7 @@ class EntityComboBoxSelectionMixin(BaseEntitySelectionMixin):
 
         return None
 
+
 class EntitiesTableView(QTableView, EntityTableSelectionMixin):
     def __init__(self, parent=None):
         super(EntitiesTableView, self).__init__(parent)
@@ -156,11 +163,13 @@ class EntitiesTableView(QTableView, EntityTableSelectionMixin):
         self.setSelectionMode(QAbstractItemView.ContiguousSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+
 class EntitiesListView(QListView, EntityListSelectionMixin):
     def __init__(self, parent=None):
         super(EntitiesListView, self).__init__(parent)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
 
 class EntitiesComboView(QComboBox, EntityComboBoxSelectionMixin):
     def __init__(self, parent=None):
@@ -205,7 +214,7 @@ class ColumnEntityModelItem(QStandardItem):
 
 class ColumnEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
-        super(ColumnEntitiesModel,self).__init__(parent)
+        super(ColumnEntitiesModel, self).__init__(parent)
         self._entities = OrderedDict()
 
         self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
@@ -257,7 +266,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         :type new_key: str
         """
         self._entities = OrderedDict([(new_key, v)
-            if k == old_key else (k, v) for k, v in self._entities.items()])
+                                      if k == old_key else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
         brush = QBrush(QColor(255, 204, 204))
@@ -269,6 +278,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         col_data_type = entity_item._create_item(entity.display_name())
         description = entity_item._create_item(entity.description)
         self.appendRow([name_item, col_data_type, description])
+
 
 ######
 # Lookup Entity item model
@@ -304,9 +314,10 @@ class LookupEntityModelItem(QStandardItem):
         self._entity = entity
         self._set_entity_properties()
 
+
 class LookupEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
-        super(LookupEntitiesModel,self).__init__(parent)
+        super(LookupEntitiesModel, self).__init__(parent)
         self._entities = OrderedDict()
 
         self.setHorizontalHeaderLabels(LookupEntityModelItem.headers_labels)
@@ -331,7 +342,7 @@ class LookupEntitiesModel(QStandardItemModel):
     def edit_entity(self, old_entity_name, new_entity):
         self._entities[old_entity_name] = new_entity
         self._entities[new_entity.short_name] = \
-                self._entities.pop(old_entity_name)
+            self._entities.pop(old_entity_name)
 
     # ++
     def delete_entity(self, entity):
@@ -386,9 +397,10 @@ class STREntityModelItem(QStandardItem):
         self._entity = entity
         self._set_entity_properties()
 
+
 class STRColumnEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
-        super(STRColumnEntitiesModel,self).__init__(parent)
+        super(STRColumnEntitiesModel, self).__init__(parent)
         self._entities = OrderedDict()
 
         self.setHorizontalHeaderLabels(STREntityModelItem.headers_labels)

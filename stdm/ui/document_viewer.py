@@ -20,10 +20,30 @@ email                : stdm@unhabitat.org
 """
 from __future__ import division
 
+import logging
 import os
 
-import logging
-
+from qgis.PyQt.QtCore import (
+    Qt,
+    pyqtSignal,
+    QSignalMapper,
+    QFile,
+    QFileInfo,
+    QSize
+)
+from qgis.PyQt.QtGui import (
+    QImage,
+    QPixmap,
+    QPalette,
+    QIcon,
+    QPainter,
+    QWheelEvent,
+    QResizeEvent,
+)
+from qgis.PyQt.QtPrintSupport import (
+    QPrinter,
+    QPrintDialog
+)
 from qgis.PyQt.QtWidgets import (
     QMdiSubWindow,
     QMdiArea,
@@ -36,41 +56,22 @@ from qgis.PyQt.QtWidgets import (
     QAction,
     QDialog,
     QMainWindow,
-    QMenu,
     QDesktopWidget,
 )
-from qgis.PyQt.QtGui import (
-    QImage,
-    QPixmap,
-    QPalette,
-    QIcon,
-    QPainter,
-    QWheelEvent,
-    QResizeEvent,
-)
-from qgis.PyQt.QtCore import (
-    Qt,
-    pyqtSignal,
-    QSignalMapper,
-    QFile,
-    QFileInfo,
-    QSize
-)
-from qgis.PyQt.QtPrintSupport import (
-    QPrinter,
-    QPrintDialog
-)
 
+from stdm.settings import current_profile
 from stdm.utils.util import (
     guess_extension
 )
-from stdm.settings import current_profile
+
 LOGGER = logging.getLogger('stdm')
+
 
 class PhotoViewer(QScrollArea):
     """
     Widget for viewing images by incorporating basic navigation options.
     """
+
     def __init__(self, parent=None, photo_path=""):
         QScrollArea.__init__(self, parent)
         self.setBackgroundRole(QPalette.Dark)
@@ -79,7 +80,7 @@ class PhotoViewer(QScrollArea):
 
         self._lbl_photo = QLabel()
         self._lbl_photo.setBackgroundRole(QPalette.Base)
-        self._lbl_photo.setSizePolicy(QSizePolicy.Ignored,QSizePolicy.Ignored)
+        self._lbl_photo.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self._lbl_photo.setScaledContents(True)
 
         self.setWidget(self._lbl_photo)
@@ -94,46 +95,45 @@ class PhotoViewer(QScrollArea):
         if self._photo_path:
             self.load_document(self._photo_path)
 
-
     def _create_actions(self):
         """
         Create actions for basic image navigation.
         """
         self._zoom_in_act = QAction(
-            QApplication.translate("PhotoViewer","Zoom &In (25%)"), self)
+            QApplication.translate("PhotoViewer", "Zoom &In (25%)"), self)
         self._zoom_in_act.setShortcut(
-            QApplication.translate("PhotoViewer","Ctrl++"))
+            QApplication.translate("PhotoViewer", "Ctrl++"))
         self._zoom_in_act.setEnabled(False)
         self._zoom_in_act.triggered.connect(self.zoom_in)
 
         self._zoom_out_act = QAction(
-            QApplication.translate("PhotoViewer","Zoom &Out (25%)"), self)
+            QApplication.translate("PhotoViewer", "Zoom &Out (25%)"), self)
         self._zoom_out_act.setShortcut(
-            QApplication.translate("PhotoViewer","Ctrl+-"))
+            QApplication.translate("PhotoViewer", "Ctrl+-"))
         self._zoom_out_act.setEnabled(False)
         self._zoom_out_act.triggered.connect(self.zoom_out)
 
         self._normal_size_act = QAction(
-            QApplication.translate("PhotoViewer","&Normal Size"), self)
+            QApplication.translate("PhotoViewer", "&Normal Size"), self)
         self._normal_size_act.setShortcut(
-            QApplication.translate("PhotoViewer","Ctrl+S"))
+            QApplication.translate("PhotoViewer", "Ctrl+S"))
         self._normal_size_act.setEnabled(False)
         self._normal_size_act.triggered.connect(self.normal_size)
 
         self._fit_to_window_act = QAction(
-            QApplication.translate("PhotoViewer","&Fit to Window"), self)
+            QApplication.translate("PhotoViewer", "&Fit to Window"), self)
         self._fit_to_window_act.setShortcut(
-            QApplication.translate("PhotoViewer","Ctrl+F"))
+            QApplication.translate("PhotoViewer", "Ctrl+F"))
         self._fit_to_window_act.setEnabled(False)
         self._fit_to_window_act.setCheckable(True)
         self._fit_to_window_act.triggered.connect(self.fit_to_window)
 
         self._print_act = QAction(
-            QApplication.translate("PhotoViewer","&Print"), self)
-        self._print_act .setShortcut(
-            QApplication.translate("PhotoViewer","Ctrl+P"))
-        self._print_act .setEnabled(False)
-        self._print_act .triggered.connect(self.print_photo)
+            QApplication.translate("PhotoViewer", "&Print"), self)
+        self._print_act.setShortcut(
+            QApplication.translate("PhotoViewer", "Ctrl+P"))
+        self._print_act.setEnabled(False)
+        self._print_act.triggered.connect(self.print_photo)
 
     def zoom_in(self):
         self.scale_photo(1.25)
@@ -155,7 +155,7 @@ class PhotoViewer(QScrollArea):
         self.update_actions()
 
     def print_photo(self):
-        print_dialog = QPrintDialog(self._printer,self)
+        print_dialog = QPrintDialog(self._printer, self)
 
         if print_dialog.exec_() == QDialog.Accepted:
             painter = QPainter(self._printer)
@@ -177,7 +177,7 @@ class PhotoViewer(QScrollArea):
 
         if num_steps < 0:
             abs_num_steps = abs(num_steps)
-            zoom_factor  = 1 + (abs_num_steps * 0.25)
+            zoom_factor = 1 + (abs_num_steps * 0.25)
 
         else:
             zoom_factor = 1 - (num_steps * 0.2)
@@ -204,7 +204,7 @@ class PhotoViewer(QScrollArea):
         self._zoom_in_act.setEnabled(not self._fit_to_window_act.isChecked())
         self._normal_size_act.setEnabled(not self._fit_to_window_act.isChecked())
 
-    def scale_photo(self,factor):
+    def scale_photo(self, factor):
         """
         :param factor: Value by which the image will be increased/decreased in the view.
         :type factor: float
@@ -221,7 +221,7 @@ class PhotoViewer(QScrollArea):
 
     def _adjust_scroll_bar(self, scroll_bar, factor):
         scroll_bar.setValue(int(factor * scroll_bar.value()
-                + ((factor - 1) * scroll_bar.pageStep()/2)))
+                                + ((factor - 1) * scroll_bar.pageStep() / 2)))
 
     def load_document(self, photo_path):
         if photo_path:
@@ -254,7 +254,7 @@ class PhotoViewer(QScrollArea):
         """
         return self._photo_path
 
-    def set_actions(self,menu):
+    def set_actions(self, menu):
         """
         Add custom actions to the sub-window menu
         """
@@ -265,6 +265,7 @@ class PhotoViewer(QScrollArea):
         menu.addAction(self._fit_to_window_act)
         menu.addSeparator()
         menu.addAction(self._print_act)
+
 
 class DocumentViewer(QMdiSubWindow):
     """
@@ -290,7 +291,7 @@ class DocumentViewer(QMdiSubWindow):
         """
         return self._file_identifier
 
-    def set_file_identifier(self,file_identifier):
+    def set_file_identifier(self, file_identifier):
         """
         :param file_identifier: Unique identifier of the file being displayed
         by the widget.
@@ -314,7 +315,7 @@ class DocumentViewer(QMdiSubWindow):
         self.setWidget(self._view_widget)
 
     def sizeHint(self):
-        #Reset size hint of the document viewer.
+        # Reset size hint of the document viewer.
         return QSize(400, 300)
 
     def load_document(self, doc_path):
@@ -360,12 +361,14 @@ class DocumentViewer(QMdiSubWindow):
         self.closed.emit(self._file_identifier)
         event.accept()
 
+
 class DocumentViewManager(QMainWindow):
     """
     MDI area for displaying supporting documents within a given context e.g.
     supporting documents for a specific household based on the lifetime of the
     'SourceDocumentManager' instance.
     """
+
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
         self.setWindowFlags(Qt.Window)
@@ -418,11 +421,11 @@ class DocumentViewManager(QMainWindow):
     def _create_menu_actions(self):
         self._window_menu = self.menuBar().addMenu(
             QApplication.translate(
-                "DocumentViewManager","&Windows"))
+                "DocumentViewManager", "&Windows"))
 
         self._close_act = QAction(
             QApplication.translate("DocumentViewManager",
-                                                         "Cl&ose"), self)
+                                   "Cl&ose"), self)
         self._close_act.setStatusTip(
             QApplication.translate("DocumentViewManager",
                                    "Close the active document viewer"))
@@ -488,11 +491,11 @@ class DocumentViewManager(QMainWindow):
         self._window_menu.aboutToShow.connect(self.update_window_menu)
 
     def cascade_windows(self):
-        #Cascade document windows
+        # Cascade document windows
         self._mdi_area.cascadeSubWindows()
 
     def tile_windows(self):
-        #Arrange document windows to occupy the available space in mdi area
+        # Arrange document windows to occupy the available space in mdi area
         self._mdi_area.tileSubWindows()
 
     def update_actions(self):
@@ -570,7 +573,7 @@ class DocumentViewManager(QMainWindow):
                 QMessageBox.critical(
                     self,
                     QApplication.translate(
-                        "DocumentViewManager","Invalid Document"
+                        "DocumentViewManager", "Invalid Document"
                     ),
                     msg
                 )
@@ -629,8 +632,8 @@ class DocumentViewManager(QMainWindow):
                 document_widget.displayName()
             )
 
-            abs_path = network_repository + "/" +profile_name + '/' +\
-                       str(source_entity) + "/" + str(doc_type) + "/" +\
+            abs_path = network_repository + "/" + profile_name + '/' + \
+                       str(source_entity) + "/" + str(doc_type) + "/" + \
                        str(file_id) + str(file_extension)
 
         return abs_path
@@ -684,7 +687,7 @@ class DocumentViewManager(QMainWindow):
 
         self._on_viewer_closed(viewer_id)
 
-    def _on_viewer_closed(self,file_id):
+    def _on_viewer_closed(self, file_id):
         """
         Slot raised when a document viewer is closed.
         """

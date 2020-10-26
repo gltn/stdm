@@ -18,14 +18,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import datetime
 import os
 from collections import OrderedDict
-import datetime
+
 from qgis.PyQt.QtCore import QFile
 from qgis.PyQt.QtXml import QDomDocument
-from stdm.data.configuration.exception import ConfigurationException
 
 from stdm.data.configfile_paths import FilePaths
+from stdm.data.configuration.exception import ConfigurationException
 
 
 class ConfigurationUtils():
@@ -95,7 +96,7 @@ class ConfigurationUtils():
 
             status, msg, line, col = self.document.setContent(config_file_path)
             if not status:
-                error_message = u'Configuration file cannot be loaded: {0}'.\
+                error_message = u'Configuration file cannot be loaded: {0}'. \
                     format(msg)
                 self.append_log(str(error_message))
 
@@ -181,7 +182,6 @@ class ConfigurationUtils():
             self.SOCIAL_TENURE
         )
         return social_tenure_nodes
-
 
     def run(self):
         nodes = self.find_node('Entity')

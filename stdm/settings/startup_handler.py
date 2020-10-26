@@ -1,7 +1,8 @@
-from os.path import expanduser, isfile
+import os
 import shutil
 import traceback
-import os
+from os.path import expanduser, isfile
+
 from qgis.core import QgsApplication
 
 

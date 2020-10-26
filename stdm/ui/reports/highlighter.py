@@ -16,41 +16,42 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    Qt,
+    QRegExp
+)
 from qgis.PyQt.QtGui import (
     QSyntaxHighlighter,
     QTextCharFormat,
     QFont
 )
-from qgis.PyQt.QtCore import (
-    Qt,
-    QRegExp
-)
+
 
 class SqlHighlighter(QSyntaxHighlighter):
-    def __init__(self,parent=None):
-        QSyntaxHighlighter.__init__(self,parent)
+    def __init__(self, parent=None):
+        QSyntaxHighlighter.__init__(self, parent)
         self.parent = parent
         sqlKeyword = QTextCharFormat()
         sqlOperator = QTextCharFormat()
 
         self.highlightingRules = []
 
-        #Keywords
+        # Keywords
         sqlKeyword.setFontWeight(QFont.Bold)
         sqlKeyword.setForeground(Qt.blue)
 
-        sqlKeywords = ["AND","OR","LIKE"]
+        sqlKeywords = ["AND", "OR", "LIKE"]
         for word in sqlKeywords:
-            regExp = QRegExp("\\b" + word + "\\b",Qt.CaseInsensitive)
-            rule = HighlightingRule(regExp,sqlKeyword)
+            regExp = QRegExp("\\b" + word + "\\b", Qt.CaseInsensitive)
+            rule = HighlightingRule(regExp, sqlKeyword)
             self.highlightingRules.append(rule)
 
-        #Comparison Operators
+        # Comparison Operators
         sqlOperator.setForeground(Qt.magenta)
-        sqlOperators = ["<",">","="]
+        sqlOperators = ["<", ">", "="]
         for operator in sqlOperators:
-            regExp = QRegExp("\\W" + operator + "\\W",Qt.CaseInsensitive)
-            rule=HighlightingRule(regExp,sqlOperator)
+            regExp = QRegExp("\\W" + operator + "\\W", Qt.CaseInsensitive)
+            rule = HighlightingRule(regExp, sqlOperator)
             self.highlightingRules.append(rule)
 
     def highlightBlock(self, text):
@@ -61,12 +62,12 @@ class SqlHighlighter(QSyntaxHighlighter):
             while index >= 0:
                 length = expression.matchedLength()
                 self.setFormat(index, length, rule.format)
-                index = expression.indexIn(text,index+length)
+                index = expression.indexIn(text, index + length)
 
         self.setCurrentBlockState(0)
 
+
 class HighlightingRule():
-    def __init__( self, pattern, highlightFormat):
+    def __init__(self, pattern, highlightFormat):
         self.pattern = pattern
         self.format = highlightFormat
-

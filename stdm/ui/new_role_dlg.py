@@ -19,9 +19,7 @@ email                : gkahiu@gmail.com
 import string
 
 import sqlalchemy
-
 from qgis.PyQt.QtCore import (
-    QObject,
     QRegExp
 )
 from qgis.PyQt.QtGui import (
@@ -34,37 +32,38 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.ui.ui_new_role import Ui_frmNewRole
-from stdm.security.roleprovider import Role
 from stdm.security.exception import SecurityException
+from stdm.security.roleprovider import Role
 from stdm.security.roleprovider import RoleProvider
+from stdm.ui.ui_new_role import Ui_frmNewRole
 
 
 class newRoleDlg(QDialog, Ui_frmNewRole):
     '''
     Create New Role Dialog
     '''
-    def __init__(self,parent = None,role = None):
-        QDialog.__init__(self,parent)
+
+    def __init__(self, parent=None, role=None):
+        QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self.role = role
 
-        #Initialize the dialog
+        # Initialize the dialog
         self.initGui()
 
     def initGui(self):
         '''
         Set control properties based on the mode
         '''
-        #Set 'Create Role' button properties
+        # Set 'Create Role' button properties
         btnCreateRole = self.buttonBox.button(QDialogButtonBox.Ok)
         btnCreateRole.setText(QApplication.translate("newRoleDlg", "Create Role"))
         btnCreateRole.clicked.connect(self.acceptdlg)
 
-        #Set validator for preventing rolename from having whitespace
+        # Set validator for preventing rolename from having whitespace
         rx = QRegExp("\\S+")
-        rxValidator = QRegExpValidator(rx,self)
+        rxValidator = QRegExpValidator(rx, self)
         self.txtRoleName.setValidator(rxValidator)
 
         self.txtRoleName.setFocus()
@@ -74,8 +73,8 @@ class newRoleDlg(QDialog, Ui_frmNewRole):
         Assert whether required fields have been entered
         '''
         if str(self.txtRoleName.text()) == "":
-            QMessageBox.critical(self, QApplication.translate("newRoleDlg","Required field"),
-                                 QApplication.translate("newRoleDlg","Role name cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("newRoleDlg", "Required field"),
+                                 QApplication.translate("newRoleDlg", "Role name cannot be empty"))
             self.txtRoleName.setFocus()
             return False
 
@@ -103,11 +102,11 @@ class newRoleDlg(QDialog, Ui_frmNewRole):
             roleProvider = RoleProvider()
 
             try:
-                #Create new or update user
+                # Create new or update user
                 if self.role == None:
                     self._setRole()
 
-                    #Update the db cluster roles as well
+                    # Update the db cluster roles as well
                     roleProvider.CreateRole(self.role.name, self.role.description)
 
                     roleProvider.AddSTDMRole(self.role.name, self.role.description)
@@ -116,52 +115,10 @@ class newRoleDlg(QDialog, Ui_frmNewRole):
 
             except SecurityException as se:
                 QMessageBox.critical(self,
-                                     QApplication.translate("newUserDlg","Create New User Error"), str(se))
+                                     QApplication.translate("newUserDlg", "Create New User Error"), str(se))
                 self.user = None
 
             except sqlalchemy.exc.ProgrammingError as pe:
                 QMessageBox.critical(self,
-                                     QApplication.translate("newUserDlg","Create New User Error"), str(pe.message))
+                                     QApplication.translate("newUserDlg", "Create New User Error"), str(pe.message))
                 self.user = None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

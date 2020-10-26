@@ -19,11 +19,10 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from configparser import ConfigParser
-import os
 import json
+import os
+from configparser import ConfigParser
 from datetime import datetime
-
 
 from qgis.PyQt.QtCore import QDir
 
@@ -32,10 +31,12 @@ HOME = QDir.home().path()
 LOGGER_HOME = HOME + '/.stdm/geoodk'
 IMPORT_SECTION = 'imports'
 
+
 class ImportLogger:
     """
     Class constructor
     """
+
     def __init__(self):
         """
         Initialize vairables
@@ -124,8 +125,8 @@ class ImportLogger:
                 with open(raw_file, "r") as read_file:
                     data = json.load(read_file)
                     read_file.close()
-            except :
-               pass
+            except:
+                pass
         return data
 
     def log_data_name(self, full_name):

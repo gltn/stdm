@@ -17,49 +17,27 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
-import uuid
 from qgis.PyQt.QtCore import (
-    Qt,
-    pyqtSignal
+    Qt
 )
-
 from qgis.PyQt.QtWidgets import (
-    QDialog,
     QDialogButtonBox,
     QFrame,
     QGridLayout,
     QLabel,
     QScrollArea,
     QTabWidget,
-    QVBoxLayout,
-    QWidget,
     QApplication,
-    QPushButton,
-    QLineEdit,
-    QMessageBox)
+    QPushButton)
 
-from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
-
-from stdm.data.configuration import entity_model
-from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
     VirtualColumn
 )
-from sqlalchemy.sql.expression import text
-from stdm.data.mapping import MapperMixin
 from stdm.data.pg_utils import table_column_names, fetch_with_filter
-from stdm.utils.util import entity_display_columns, format_name, simple_dialog
-from stdm.ui.forms.widgets import (
-    ColumnWidgetRegistry,
-    UserTipLabel
-)
-
-from stdm.ui.forms.documents import SupportingDocumentsWidget
-from stdm.ui.notification import NotificationBar
-
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.utils.util import entity_display_columns, format_name, simple_dialog
+
 
 class AdvancedSearch(EntityEditorDialog):
     def __init__(self, entity, parent):
@@ -189,14 +167,14 @@ class AdvancedSearch(EntityEditorDialog):
             new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
             if result.rowcount > 3000:
                 title = QApplication.translate(
-                        'AdvancedSearch',
-                        'Advanced Search'
+                    'AdvancedSearch',
+                    'Advanced Search'
                 )
                 message = QApplication.translate(
                     'AdvancedSearch',
                     'The search result returned {0} records, which is above the '
                     'search result limit. <br>Would you like to see the first 3000 '
-                    'records?'.format("{:,}".format(result.rowcount ))
+                    'records?'.format("{:,}".format(result.rowcount))
                 )
 
                 res, chk_result = simple_dialog(self, title, message)
@@ -273,7 +251,6 @@ class AdvancedSearch(EntityEditorDialog):
 
                 self.c_label.setText(header)
                 self.gl.addWidget(self.c_label, row_id, 0, 1, 1)
-
 
                 if c.TYPE_INFO == 'AUTO_GENERATED':
                     column_widget.setReadOnly(False)

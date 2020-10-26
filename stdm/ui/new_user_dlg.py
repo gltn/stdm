@@ -20,9 +20,11 @@ from datetime import date
 
 from qgis.PyQt.QtCore import (
     QRegExp,
-    QObject,
     Qt,
     QDateTime
+)
+from qgis.PyQt.QtGui import (
+    QRegExpValidator
 )
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -30,54 +32,51 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
-from qgis.PyQt.QtGui import (
-    QRegExpValidator
-)
 
-from stdm.security.user import User
-from stdm.security.membership import Membership
 from stdm.security.exception import SecurityException
-
+from stdm.security.membership import Membership
+from stdm.security.user import User
 from stdm.ui.ui_new_user import Ui_frmNewUser
+
 
 class newUserDlg(QDialog, Ui_frmNewUser):
     '''
     Create New User Dialog
     '''
-    def __init__(self,parent = None,User = None):
-        QDialog.__init__(self,parent)
+
+    def __init__(self, parent=None, User=None):
+        QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self.user = User
 
         self.txtUserName.textChanged.connect(self.validate_username)
 
-        #Initialize the dialog
+        # Initialize the dialog
         self.initGui()
 
     def validate_username(self, text):
         text_edit = self.sender()
         text_edit.setText(text.lower())
 
-
     def initGui(self):
         '''
         Set control properties based on the mode
         '''
-        #Set the minimum date to current
+        # Set the minimum date to current
         self.dtValidity.setMinimumDate(date.today())
 
-        #Set 'Create User' button properties
+        # Set 'Create User' button properties
         btnCreateUser = self.buttonBox.button(QDialogButtonBox.Ok)
         btnCreateUser.setText(QApplication.translate("newUserDlg", "Create User"))
         btnCreateUser.clicked.connect(self.acceptdlg)
 
-        #Set validator for preventing username from having whitespace
+        # Set validator for preventing username from having whitespace
         rx = QRegExp("\\S+")
-        rxValidator = QRegExpValidator(rx,self)
+        rxValidator = QRegExpValidator(rx, self)
         self.txtUserName.setValidator(rxValidator)
 
-        #Connect signals
+        # Connect signals
         self.chkValidity.stateChanged.connect(self.validityChanged)
 
         if self.user != None:
@@ -93,7 +92,7 @@ class newUserDlg(QDialog, Ui_frmNewUser):
                 if self.user.Validity == 'infinity':
                     self.chkValidity.setCheckState(Qt.Checked)
                 else:
-                    #Try convert the date from string
+                    # Try convert the date from string
                     expDate = QDateTime.fromString(self.user.Validity, "yyyy-MM-dd")
                     self.dtValidity.setDate(expDate.date())
                     self.chkValidity.setCheckState(Qt.Unchecked)
@@ -103,7 +102,7 @@ class newUserDlg(QDialog, Ui_frmNewUser):
 
         self.txtUserName.setFocus()
 
-    def validityChanged(self,state):
+    def validityChanged(self, state):
         '''
         Slot raised when the user checks/unchecks the 'Infinite Validity Period' checkbox
         '''
@@ -117,26 +116,26 @@ class newUserDlg(QDialog, Ui_frmNewUser):
         Assert whether required fields have been entered
         '''
         if str(self.txtUserName.text()) == "":
-            QMessageBox.critical(self, QApplication.translate("newUserDlg","Required field"),
-                                 QApplication.translate("LoginDialog","UserName cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("newUserDlg", "Required field"),
+                                 QApplication.translate("LoginDialog", "UserName cannot be empty"))
             self.txtUserName.setFocus()
             return False
 
         if str(self.txtPass.text()) == "":
-            QMessageBox.critical(self, QApplication.translate("newUserDlg","Required field"),
-                                 QApplication.translate("newUserDlg","Password cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("newUserDlg", "Required field"),
+                                 QApplication.translate("newUserDlg", "Password cannot be empty"))
             self.txtPass.setFocus()
             return False
 
         if str(self.txtConfirmPass.text()) == "":
-            QMessageBox.critical(self, QApplication.translate("newUserDlg","Required field"),
-                                 QApplication.translate("newUserDlg","Confirm Password cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("newUserDlg", "Required field"),
+                                 QApplication.translate("newUserDlg", "Confirm Password cannot be empty"))
             self.txtConfirmPass.setFocus()
             return False
 
         if self.txtPass.text() != self.txtConfirmPass.text():
-            QMessageBox.critical(self,QApplication.translate("newUserDlg","Password Compare"),
-                                 QApplication.translate("newUserDlg","Passwords do not match"))
+            QMessageBox.critical(self, QApplication.translate("newUserDlg", "Password Compare"),
+                                 QApplication.translate("newUserDlg", "Passwords do not match"))
             self.txtConfirmPass.setFocus()
             return False
 
@@ -170,7 +169,6 @@ class newUserDlg(QDialog, Ui_frmNewUser):
 
         return password_validity
 
-
     def acceptdlg(self):
         '''
         On user clicking the create user button
@@ -189,6 +187,5 @@ class newUserDlg(QDialog, Ui_frmNewUser):
 
             except SecurityException as se:
                 QMessageBox.critical(self,
-                                     QApplication.translate("newUserDlg","Create User Error"), str(se))
+                                     QApplication.translate("newUserDlg", "Create User Error"), str(se))
                 self.user = None
-

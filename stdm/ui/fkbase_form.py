@@ -23,6 +23,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
     QApplication
 )
+
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
 
@@ -31,12 +32,13 @@ class ForeignKeyMapperDialog(QWidget):
     """
     The class initialization expects model name and the model display column
     """
-    def __init__(self, parent = None, model =None, display_col = None):
+
+    def __init__(self, parent=None, model=None, display_col=None):
         QWidget.__init__(self, parent)
         self._model = model
         self._dbModel = model
         self.attribute = None
-        self.display_col =display_col
+        self.display_col = display_col
         self.mapping = DeclareMapping.instance()
 
     def foreign_key_modeller(self):
@@ -59,8 +61,8 @@ class ForeignKeyMapperDialog(QWidget):
 
     def model(self):
         if not self._model:
-            QMessageBox.information(None, QApplication.translate("AttributeBrowser","Loading foreign keys"),
-                                    QApplication.translate("AttributeBrowser","Foreign Key cannot be loaded"))
+            QMessageBox.information(None, QApplication.translate("AttributeBrowser", "Loading foreign keys"),
+                                    QApplication.translate("AttributeBrowser", "Foreign Key cannot be loaded"))
             return
         else:
             self._dbModel = self.mapping.tableMapping(self._model)
@@ -83,7 +85,3 @@ class ForeignKeyMapperDialog(QWidget):
                 return self.personFKMapper.global_id.display_value()
         except Exception as ex:
             raise ex.message
-
-
-
-

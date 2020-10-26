@@ -34,37 +34,35 @@ from qgis.PyQt.QtWidgets import (
     QGridLayout
 )
 
+from stdm import UserData
 from stdm import edit_geom_column
 from stdm import (
-    data_types,
     geometry_collections
 )
 from stdm import (
-    setCollectiontypes,
-    UserData
+    setCollectiontypes
 )
-from stdm import UserData
-
 from stdm.settings.projectionSelector import ProjectionSelector
 
+
 class GeometryEditor(QDialog):
-    def __init__(self,parent,profile, table, args= None):
-        QDialog.__init__(self,parent)
+    def __init__(self, parent, profile, table, args=None):
+        QDialog.__init__(self, parent)
 
         self.profile = profile
-        self.tableName =  table
+        self.tableName = table
         self.geom_data = args
         self.oldText = self.geom_data[0]
-        #add control to the dialog
+        # add control to the dialog
         self.label = QLabel()
         self.labelName = QLabel()
 
-        self.label.setText(QApplication .translate("GeometryEditor","Select Geometry Type"))
+        self.label.setText(QApplication.translate("GeometryEditor", "Select Geometry Type"))
         self.comboField = QComboBox()
-        self.labelName.setText(QApplication .translate("GeometryEditor","Edit Type Name"))
+        self.labelName.setText(QApplication.translate("GeometryEditor", "Edit Type Name"))
         self.textFieldName = QLineEdit()
         self.sridButton = QPushButton()
-        self.sridButton.setText(QApplication .translate("GeometryEditor","Select Coordinate System "))
+        self.sridButton.setText(QApplication.translate("GeometryEditor", "Select Coordinate System "))
         self.textField = QLineEdit()
 
         setCollectiontypes(geometry_collections, self.comboField)
@@ -83,7 +81,7 @@ class GeometryEditor(QDialog):
         layout.addWidget(self.textField)
         layout.addWidget(self.buttons)
         self.setLayout(layout)
-        self.setWindowTitle(QApplication .translate("GeometryEditor","Geometry Column Property"))
+        self.setWindowTitle(QApplication.translate("GeometryEditor", "Geometry Column Property"))
 
         self.on_edit_session()
         self.buttons.accepted.connect(self.setGeometrySetting)
@@ -112,10 +110,11 @@ class GeometryEditor(QDialog):
         self.value = self.textField.text()[5:]
         if not self.value:
             self.value = self.textField.text()
-        geomType=UserData(self.comboField)
-        edit_geom_column(self.profile,self.tableName,'column',str(self.oldText),str(self.textFieldName.text()),str(geomType),str(self.value))
-        QMessageBox.information(None,QApplication.translate("GeometryEditor","Saving geometry"),
-                                QApplication.translate("GeometryEditor","New data Saved successfully"))
+        geomType = UserData(self.comboField)
+        edit_geom_column(self.profile, self.tableName, 'column', str(self.oldText), str(self.textFieldName.text()),
+                         str(geomType), str(self.value))
+        QMessageBox.information(None, QApplication.translate("GeometryEditor", "Saving geometry"),
+                                QApplication.translate("GeometryEditor", "New data Saved successfully"))
         self.accept()
 
     def cancel(self):
@@ -128,7 +127,3 @@ class GeometryEditor(QDialog):
         msg.setWindowTitle(QApplication.translate("GeometryEditor", "Geometry Settings"))
         msg.setText(Message)
         msg.exec_()
-
-
-
-

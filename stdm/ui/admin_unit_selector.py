@@ -27,10 +27,12 @@ from qgis.PyQt.QtWidgets import (
 from stdm.ui.admin_unit_manager import AdminUnitManager
 from stdm.ui.admin_unit_manager import VIEW, MANAGE
 
+
 class AdminUnitSelector(QDialog):
     """
     Generic admin unit manager dialog.
     """
+
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
         self.resize(400, 410)
@@ -41,13 +43,13 @@ class AdminUnitSelector(QDialog):
         self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(
-            QDialogButtonBox.Cancel|QDialogButtonBox.Close|QDialogButtonBox.Ok
+            QDialogButtonBox.Cancel | QDialogButtonBox.Close | QDialogButtonBox.Ok
         )
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.selectedAdminUnit = None
 
-        #Connect signals
+        # Connect signals
         self.adminUnitManager.stateChanged.connect(self.onStateChanged)
         self.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.onAcceptDialog)
         self.buttonBox.button(QDialogButtonBox.Cancel).clicked.connect(self.onRejectDialog)
@@ -104,4 +106,3 @@ class AdminUnitSelector(QDialog):
         Slot raised to close the dialog.
         '''
         self.reject()
-

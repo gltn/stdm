@@ -24,7 +24,7 @@ class EntityFormatter:
         :return:
         """
         self._profile = entity
-        return self._profile.replace(' ','_')
+        return self._profile.replace(' ', '_')
 
     def table_foreign_columns(self, function_call):
         """
@@ -80,7 +80,7 @@ class EntityFormatter:
         :param bool:
         :return:
         """
-        return '/'+profile+'/{}'.format(item)
+        return '/' + profile + '/{}'.format(item)
 
     def process_lookup(self):
         """
@@ -127,7 +127,7 @@ class EntityFormatter:
             value_list.append(r_type)
         return value_list
 
-    def set_model_xpath(self, item, entity = None):
+    def set_model_xpath(self, item, entity=None):
         """
         This method formats and returns an entity short path
         as required by model within the bind item section in the final document
@@ -136,10 +136,9 @@ class EntityFormatter:
         :return: string
         """
         if entity:
-            return '/'+self._profile+'/'+entity+'/{}'.format(item)
+            return '/' + self._profile + '/' + entity + '/{}'.format(item)
         else:
-            return '/'+self._profile+'/{}'.format(item)
-
+            return '/' + self._profile + '/{}'.format(item)
 
     def model_xpaths(self, items):
         """
@@ -152,7 +151,7 @@ class EntityFormatter:
         """
         path_lst = []
         for key in items.keys():
-            xpath = '/'+self._entity+'/'+key
+            xpath = '/' + self._entity + '/' + key
             path_lst.append(xpath)
         return path_lst
 

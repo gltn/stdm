@@ -33,19 +33,19 @@ from qgis.PyQt.QtWidgets import (
     QDialogButtonBox
 )
 
-from stdm.ui.wizard.ui_lookup_entity import Ui_dlgLookup
-
-from stdm.ui.notification import NotificationBar
 from stdm.data.configuration.value_list import (
     ValueList,
-    CodeValue,
     value_list_factory
 )
+from stdm.ui.notification import NotificationBar
+from stdm.ui.wizard.ui_lookup_entity import Ui_dlgLookup
+
 
 class LookupEditor(QDialog, Ui_dlgLookup):
     """
     Form to add/edit lookup entities.
     """
+
     def __init__(self, parent, profile, lookup=None):
         """
         :param parent: Owner of this dialog
@@ -75,7 +75,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         self.edtName.setFocus()
         if self.lookup:
             self.edtName.setText(
-                    self.lookup.short_name.replace('check_',''))
+                self.lookup.short_name.replace('check_', ''))
             self.edtName.setEnabled(not self.lookup.entity_in_database)
             self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(not self.lookup.entity_in_database)
         self.edtName.textChanged.connect(self.validate_text)
@@ -161,15 +161,15 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         if self.edtName.text() == '' or self.edtName.text() == '_':
             self.error_message(
                 QApplication.translate(
-                    "LookupEditor","Please enter a valid lookup name."
+                    "LookupEditor", "Please enter a valid lookup name."
                 )
             )
             return
 
         if self.edtName.text() == 'check':
             self.error_message(QApplication.translate("LookupEditor",
-                "'check' is used internally by STDM! "
-                "Select another name for the lookup"))
+                                                      "'check' is used internally by STDM! "
+                                                      "Select another name for the lookup"))
             return
 
         short_name = str(self.edtName.text())
@@ -192,7 +192,6 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
         self.done(1)
 
-
     def duplicate_check(self, name):
         """
         Return True if we have an entity in the current profile with same 'name'
@@ -203,7 +202,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         return self.profile.entities.has_key(name)
 
     def edit_lookup(self, short_name):
-        short_name = short_name.replace('check_','')
+        short_name = short_name.replace('check_', '')
         self.lookup.short_name = u'{0}_{1}'.format('check', short_name)
 
     def reject(self):

@@ -20,20 +20,15 @@ email                : stdm@unhabitat.org
 """
 import csv
 import os
-import sys
-
 import stat
 
-import datetime
 from qgis.PyQt.QtGui import QDesktopServices
-from sqlalchemy.sql.expression import text
 
-from sqlalchemy import MetaData
-from stdm.data.pg_utils import _execute, pg_views, pg_tables
+from stdm.data.pg_utils import _execute, pg_tables
 
 home = QDesktopServices.storageLocation(
-            QDesktopServices.HomeLocation
-        )
+    QDesktopServices.HomeLocation
+)
 
 
 def db_to_csv():

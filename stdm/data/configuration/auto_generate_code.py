@@ -20,8 +20,8 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import VarCharColumn
+from stdm.data.configuration.entity import Entity
 
 LOGGER = logging.getLogger('stdm')
 
@@ -34,7 +34,7 @@ class AutoGenerateCode(Entity):
 
     def __init__(self, profile):
         Entity.__init__(self, 'auto_generate_code', profile,
-                    is_global=False, is_proxy=False, supports_documents=False)
+                        is_global=False, is_proxy=False, supports_documents=False)
 
         self.user_editable = False
 

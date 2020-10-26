@@ -21,16 +21,19 @@ email                : stdm@unhabitat.org
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
-from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
+
 from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.ui.wizard.create_lookup import LookupEditor
+from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
 
 EX_VALUE_LIST = []
+
 
 class LookupProperty(QDialog, Ui_LookupProperty):
     """
     Editor to create/edit Lookup column property
     """
+
     def __init__(self, parent, form_fields, profile=None):
         """
         :param parent: Owner of this form
@@ -60,7 +63,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
         if self._entity_relation:
             self._lookup_name = self._entity_relation.parent.short_name
             self.cboPrimaryEntity.setCurrentIndex( \
-                    self.cboPrimaryEntity.findText(self._lookup_name))
+                self.cboPrimaryEntity.findText(self._lookup_name))
 
         # disable controls if the column already exist in the database
         self.cboPrimaryEntity.setEnabled(not self.in_db)
@@ -80,7 +83,7 @@ class LookupProperty(QDialog, Ui_LookupProperty):
             names.append(name)
             self.cboPrimaryEntity.insertItems(0, names)
             self.cboPrimaryEntity.setCurrentIndex( \
-                    self.cboPrimaryEntity.findText(name))
+                self.cboPrimaryEntity.findText(name))
 
     def lookup_entities(self):
         """

@@ -17,19 +17,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.security.roleprovider import RoleProvider
 from stdm.data.database import Content
+from stdm.security.roleprovider import RoleProvider
 from stdm.utils.util import getIndex
 
 
 class RoleMapper(object):
     pass
 
+
 class Authorizer(object):
     '''
     This class has the responsibility of asserting whether an account with
     the given user name has permissions to access a particular content item
     '''
+
     def __init__(self, username):
         self.username = username
         self.userRoles = []
@@ -56,7 +58,7 @@ class Authorizer(object):
         item with the gien code.
         '''
         hasPermission = False
-        #Get roles with permission
+        # Get roles with permission
         try:
             cnt = Content()
             qo = cnt.queryObject()
@@ -65,9 +67,9 @@ class Authorizer(object):
             '''
             cntRef = qo.filter(Content.code == contentCode).first()
             if cntRef != None:
-                cntRoles =cntRef.roles
+                cntRoles = cntRef.roles
                 for rl in cntRoles:
-                    if getIndex(self.userRoles,rl.name) != -1:
+                    if getIndex(self.userRoles, rl.name) != -1:
                         hasPermission = True
                         break
         except Exception:
@@ -75,18 +77,6 @@ class Authorizer(object):
             Current user does not have permission to access the content tables.
             Catches all errors
             '''
-            #pass
+            # pass
             raise
         return hasPermission
-
-
-
-
-
-
-
-
-
-
-
-

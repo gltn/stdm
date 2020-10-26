@@ -1,20 +1,11 @@
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QApplication,
-    QDialogButtonBox,
-    QMessageBox,
     QTabWidget,
     QLabel
 )
-from qgis.core import (
-    QgsExpression,
-    QgsVectorLayer,
-    Qgis
-)
-from qgis.utils import (
-    iface
-)
 from qgis.gui import QgsExpressionBuilderDialog
+
 
 class ExpressionProperty(QgsExpressionBuilderDialog):
     """

@@ -20,14 +20,14 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 from datetime import datetime
+
+from PyQt4.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.PyQt.QtWidgets import QApplication
 
-from PyQt4.QtXml import QDomDocument
+from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_utils import ConfigurationUtils
-
-from stdm.data.configfile_paths import FilePaths
 
 
 class ConfigurationUpdater(QObject):
@@ -53,7 +53,6 @@ class ConfigurationUpdater(QObject):
             document, self.log_file_path
         )
         self.document = document
-
 
     def append_log(self, info):
         """
@@ -97,7 +96,7 @@ class ConfigurationUpdater(QObject):
             self.append_log('Error extracting version '
                             'number from the '
                             'configuration file.'
-            )
+                            )
         return config_version
 
     def version_updater(self, version):
@@ -182,6 +181,7 @@ class ConfigurationUpdater(QObject):
         """
         self.version_updated.emit(document)
 
+
 class ConfigurationVersionUpdater(QObject):
     """
     A parent class for the version updaters designed for each
@@ -224,7 +224,7 @@ class ConfigurationVersionUpdater(QObject):
             previous_updater = updaters[len(updaters) - 1]
             previous_updater.NEXT_UPDATER = cls
 
-        #Add our new updater to the collection
+        # Add our new updater to the collection
         ConfigurationVersionUpdater.UPDATERS[cls.FROM_VERSION] = cls
 
     def append_log(self, info):
@@ -336,7 +336,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         # TODO update the dom_document version in the next version
         # Not the latest version and found updater for the next version
         if self.NEXT_UPDATER is not None and \
-                        self.config.VERSION > self.TO_VERSION:
+                self.config.VERSION > self.TO_VERSION:
             next_updater = self.NEXT_UPDATER(self.document, self.log_file)
             message = QApplication.translate(
                 'ConfigVersionUpdater13',
@@ -348,7 +348,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
 
         # Updating to the latest version
         elif self.NEXT_UPDATER is None and \
-                        self.config.VERSION == self.TO_VERSION:
+                self.config.VERSION == self.TO_VERSION:
             self.update_complete.emit(self.document)
             self.append_log('Successfully updated dom_document to version 1.5')
 
@@ -423,5 +423,6 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
                 str_element, self.END_TAG, self.MAXIMUM, sql_max
             )
             parent_node.appendChild(str_element)
+
 
 ConfigVersionUpdater13.register()

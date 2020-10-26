@@ -20,17 +20,17 @@ email                : stdm@unhabitat.org
 """
 from qgis.PyQt.QtCore import QDateTime
 from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QApplication,
-    QMessageBox
+    QDialog
 )
 
 from stdm.ui.wizard.ui_dtime_property import Ui_DTimeProperty
+
 
 class DTimeProperty(QDialog, Ui_DTimeProperty):
     """
     Editor to create/edit date column property
     """
+
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of the form
@@ -122,4 +122,3 @@ class DTimeProperty(QDialog, Ui_DTimeProperty):
 
     def reject(self):
         self.done(0)
-

@@ -24,7 +24,6 @@ from qgis.PyQt.QtWidgets import (
     QHeaderView
 )
 
-from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.ui_spatial_unit_tenure_dialog import Ui_SpatialUnitTenureDialog
 
 
@@ -33,6 +32,7 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.
     """
+
     def __init__(self, parent=None, editable=True):
         """
         Class constructor.
@@ -117,4 +117,3 @@ class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
         :rtype: dict
         """
         return self.sp_tenure_view.column_pairings()
-

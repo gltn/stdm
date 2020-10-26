@@ -48,6 +48,7 @@ class CodeValue(object):
     """
     Represents a code and corresponding value for use in a ValueList object.
     """
+
     def __init__(self, code='', value=''):
         self.code = code
         self.value = value
@@ -87,7 +88,7 @@ class ValueList(Entity):
 
     def _append_check(self, name):
         # Appends a 'check_prefix' to the name.
-        idx = name.find(self.PREFIX+'_')
+        idx = name.find(self.PREFIX + '_')
 
         if idx != -1:
             return name
@@ -184,7 +185,7 @@ class ValueList(Entity):
         :rtype: bool
         """
         old_value_digest = self.value_hash(old_value)
-        if not old_value_digest in self.values:
+        if old_value_digest not in self.values:
             LOGGER.debug('%s lookup value could not be found in the %s value '
                          'list.', old_value, self.name)
 
@@ -206,7 +207,7 @@ class ValueList(Entity):
         :type lookup_value: str
         """
         lk_digest = self.value_hash(lookup_value)
-        if not lk_digest in self.values:
+        if lk_digest not in self.values:
             return
 
         code_value = self.values.pop(lk_digest)
@@ -281,6 +282,3 @@ class ValueList(Entity):
         :rtype: list
         """
         return [cv.value for cv in self.values.values()]
-
-
-

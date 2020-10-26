@@ -23,10 +23,11 @@ email                : gkahiu@gmail.com
 """
 from qgis.PyQt.QtCore import (
     QVariant,
-    QDate,
-    NULL
+    QDate
 )
+
 from stdm.data.database import STDMDb
+
 
 def intFromQType(intitem):
     '''
@@ -39,27 +40,30 @@ def intFromQType(intitem):
             pyint = qint
     return pyint
 
+
 def dateFromQType(dateitem):
     '''
     Converts date from QVariant or QDate to Python Date
     '''
     pydate = dateitem
-    if isinstance(pydate,QVariant):
+    if isinstance(pydate, QVariant):
         pydate = pydate.toDate()
-    if isinstance(pydate,QDate):
+    if isinstance(pydate, QDate):
         pydate = pydate.toPyDate()
 
     return pydate
+
 
 class LookupFormatter(object):
     """
     Formatter for displaying user-friendly information about a checkup model
     """
-    def __init__(self,model):
+
+    def __init__(self, model):
         self._model = model
         self._modelInstance = self._model()
 
-    def setDisplay(self,itemid):
+    def setDisplay(self, itemid):
         """
         Set display information
         """
@@ -69,17 +73,20 @@ class LookupFormatter(object):
         else:
             return None
 
+
 class BasePersonFormatter(LookupFormatter):
     """
     Formatter for classes that implement base person mixin. It formats the object to
     return a string containing the first and last names.
     """
+
     def setDisplay(self, itemid):
         md = self._modelInstance.queryObject().filter(self._model.id == itemid).first()
         if md:
-            return "{0} {1}".format(md.FirstName,md.LastName)
+            return "{0} {1}".format(md.FirstName, md.LastName)
         else:
             return None
+
 
 def geometryFormatter(geom):
     '''
@@ -93,7 +100,8 @@ def geometryFormatter(geom):
         x = dbSession.scalar(geom.ST_X())
         y = dbSession.scalar(geom.ST_Y())
 
-    return "X: {0}, Y: {1}".format(str(x),str(y))
+    return "X: {0}, Y: {1}".format(str(x), str(y))
+
 
 def dateFormatter(dt):
     """
@@ -101,51 +109,63 @@ def dateFormatter(dt):
     """
     return dt.strftime("%d-%b-%Y")
 
+
 def respondentRoleFormatter(roleId):
     lkFormatter = LookupFormatter(CheckRespondentType)
     return lkFormatter.setDisplay(roleId)
+
 
 def respondentNamesFormatter(respondentId):
     bpFormatter = BasePersonFormatter(Respondent)
     return bpFormatter.setDisplay(respondentId)
 
+
 def enumeratorNamesFormatter(enumeratorId):
     bpFormatter = BasePersonFormatter(Enumerator)
     return bpFormatter.setDisplay(enumeratorId)
+
 
 def witnessRelationshipFormatter(relationshipId):
     lkFormatter = LookupFormatter(CheckWitnessRelationship)
     return lkFormatter.setDisplay(relationshipId)
 
+
 def genderFormatter(genderId):
     lkFormatter = LookupFormatter(CheckGender)
     return lkFormatter.setDisplay(genderId)
+
 
 def maritalStatusFormatter(mStatusId):
     lkFormatter = LookupFormatter(CheckMaritalStatus)
     return lkFormatter.setDisplay(mStatusId)
 
+
 def savingOptionFormatter(optionId):
     lkFormatter = LookupFormatter(CheckSavingsOption)
     return lkFormatter.setDisplay(optionId)
+
 
 def inputServiceFormatter(serviceId):
     lkFormatter = LookupFormatter(CheckInputService)
     return lkFormatter.setDisplay(serviceId)
 
+
 def socioEconImpactFormatter(impactId):
     lkFormatter = LookupFormatter(CheckSocioEconomicImpact)
     return lkFormatter.setDisplay(impactId)
+
 
 def foodCropCategoryFormatter(foodCropId):
     lkFormatter = LookupFormatter(CheckFoodCropCategory)
     return lkFormatter.setDisplay(foodCropId)
 
+
 class DoBFormatter(object):
     '''
     Formatter for displaying the current age (in years) calculated from the date of birth
     '''
-    def setDisplay(self,dob):
+
+    def setDisplay(self, dob):
         '''
         Set display information
         '''
@@ -155,39 +175,30 @@ class DoBFormatter(object):
 
         tmDelta = (QDate.currentDate().toPyDate()) - dob
         diffDays = tmDelta.days
-        years = diffDays/365.2425
+        years = diffDays / 365.2425
 
         return int(years)
+
 
 class LocalityFormatter(object):
     '''
     Formatter for displaying user-friendly information about a locality
     '''
+
     def __init__(self):
         self.locality = Locality()
 
-    def setDisplay(self,locality):
+    def setDisplay(self, locality):
         '''
         Display the area name and street number
         '''
-        if isinstance(locality,int):
+        if isinstance(locality, int):
             loc = self.locality.queryObject().filter(Locality.id == locality).first()
             if loc:
                 locality = loc
             else:
                 return QVariant("")
 
-        localityInfo = ("%s - %s")%(locality.area,locality.street_number)
+        localityInfo = ("%s - %s") % (locality.area, locality.street_number)
 
         return QVariant(localityInfo)
-
-
-
-
-
-
-
-
-
-
-

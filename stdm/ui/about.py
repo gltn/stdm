@@ -16,44 +16,39 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import sys
-import os
 
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QMessageBox,
-    QApplication
+from qgis.PyQt.QtCore import (
+    QUrl
 )
 from qgis.PyQt.QtGui import (
     QDesktopServices,
     QTextCharFormat,
     QTextCursor
 )
-from qgis.PyQt.QtCore import (
-    QFile,
-    QTextStream,
-    QIODevice,
-    QUrl
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication
 )
-from stdm.utils.util import PLUGIN_DIR, version_from_metadata
+
 from stdm.ui.ui_about_stdm import Ui_frmAbout
+from stdm.utils.util import version_from_metadata
 
 
-class AboutSTDMDialog(QDialog,Ui_frmAbout):
-    def __init__(self,parent=None, metadata=None):
+class AboutSTDMDialog(QDialog, Ui_frmAbout):
+    def __init__(self, parent=None, metadata=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self._metadata = metadata
 
-        #Connect signals
+        # Connect signals
         self.btnContactUs.clicked.connect(self.onContactUs)
         self.btnSTDMHome.clicked.connect(self.onSTDMHome)
 
         self._insert_metadata_info()
 
     def _insert_metadata_info(self):
-        #Insert version and build numbers respectively.
+        # Insert version and build numbers respectively.
         if not self._metadata is None:
             installed_version = self._metadata.get('version_installed', None)
         else:
@@ -67,7 +62,7 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         cursor.insertBlock()
         cursor.insertBlock()
 
-        #Insert installed version text
+        # Insert installed version text
         version_msg = QApplication.translate(
             'AboutSTDMDialog',
             'STDM version'
@@ -91,4 +86,3 @@ class AboutSTDMDialog(QDialog,Ui_frmAbout):
         """
         contactURL = "http://www.stdm.gltn.net/?page_id=291"
         QDesktopServices.openUrl(QUrl(contactURL))
-

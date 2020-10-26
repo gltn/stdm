@@ -18,17 +18,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.ui.wizard.ui_entity_depend import Ui_dlgEntityDepend
-
-from qgis.PyQt.QtWidgets import(
+from qgis.PyQt.QtGui import (
+    QFont
+)
+from qgis.PyQt.QtWidgets import (
     QDialog,
     QTreeWidgetItem,
     QApplication
 )
-from qgis.PyQt.QtGui import (
-    QFont,
-    QPixmap
-)
+
+from stdm.ui.wizard.ui_entity_depend import Ui_dlgEntityDepend
 
 
 class EntityDepend(QDialog, Ui_dlgEntityDepend):
@@ -53,7 +52,7 @@ class EntityDepend(QDialog, Ui_dlgEntityDepend):
         views = self.create_views_node(self.twEntityDepend, self.dependencies['views'])
         nodes.append(entities)
         nodes.append(views)
-        #self.twEntityDepend.insertTopLevelItems(0, views)
+        # self.twEntityDepend.insertTopLevelItems(0, views)
         self.twEntityDepend.expandAll()
 
     def create_root_node(self, name):
@@ -92,4 +91,3 @@ class EntityDepend(QDialog, Ui_dlgEntityDepend):
 
     def delete_entity(self):
         self.done(1)
-

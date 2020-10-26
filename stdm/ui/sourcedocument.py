@@ -17,18 +17,10 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import logging
-from datetime import datetime
 from collections import OrderedDict
+from datetime import datetime
 
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QWidget,
-    QMessageBox
-)
-from qgis.PyQt.QtGui import (
-    QPixmap,
-    QImage
-)
+import sqlalchemy
 from qgis.PyQt.QtCore import (
     QFile,
     QFileInfo,
@@ -39,30 +31,38 @@ from qgis.PyQt.QtCore import (
     QThread,
     QRect
 )
+from qgis.PyQt.QtGui import (
+    QPixmap,
+    QImage
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QWidget,
+    QMessageBox
+)
 
-import sqlalchemy
-
-from stdm.utils.util import getIndex
-from stdm.utils.filesize import size
+from stdm.data.configuration import entity_model
 from stdm.network.filemanager import (
     NetworkFileManager,
     DocumentTransferWorker
+)
+from stdm.settings import (
+    current_profile
 )
 from stdm.settings.registryconfig import (
     RegistryConfig,
     NETWORK_DOC_RESOURCE,
     LOCAL_SOURCE_DOC
 )
-from stdm.settings import (
-    current_profile
-)
-from stdm.data.configuration import entity_model
 from stdm.ui.document_viewer import DocumentViewManager
 from stdm.ui.ui_doc_item import Ui_frmDocumentItem
+from stdm.utils.filesize import size
 from stdm.utils.util import (
     entity_id_to_attr
 )
-#Document Type Enumerations
+from stdm.utils.util import getIndex
+
+# Document Type Enumerations
 DEFAULT_DOCUMENT = 2020
 STATUTORY_REF_PAPER = 2021
 SURVEYOR_REF = 2022
@@ -70,25 +70,26 @@ NOTARY_REF = 2023
 TAX_RECEIPT_PRIVATE = 2024
 TAX_RECEIPT_STATE = 2025
 
-#Display text for document types
+# Display text for document types
 DOC_TYPE_MAPPING = {
     DEFAULT_DOCUMENT: str(QApplication.translate("sourceDocument",
-                                                     "Supporting Document"))
+                                                 "Supporting Document"))
 }
 
-#Display text for STR document types
+# Display text for STR document types
 STR_DOC_TYPE_MAPPING = {}
-document_type_class={}
-#Mode for initializing the document widget
+document_type_class = {}
+# Mode for initializing the document widget
 UPLOAD_MODE = 2100
 DOWNLOAD_MODE = 2101
 LOGGER = logging.getLogger('stdm')
+
 
 class SourceDocumentManager(QObject):
     """
     Manages the display of source documents in vertical layout container(s).
     """
-    #Signal raised when a document is removed from its container.
+    # Signal raised when a document is removed from its container.
     documentRemoved = pyqtSignal(int, str, list)
     fileUploaded = pyqtSignal('PyQt_PyObject')
 
@@ -110,10 +111,10 @@ class SourceDocumentManager(QObject):
 
         for id in self.doc_types.keys():
             document_type_class[id] = self.document_model
-        #Container for document references based on their unique IDs
+        # Container for document references based on their unique IDs
         self._docRefs = []
 
-        #Set default manager for document viewing
+        # Set default manager for document viewing
         self._doc_view_manager = DocumentViewManager(self.parent_widget())
 
         self.doc_type_mapping = OrderedDict()
@@ -151,14 +152,14 @@ class SourceDocumentManager(QObject):
 
         return None
 
-    def setEditPermissions(self,state):
+    def setEditPermissions(self, state):
         '''
         Sets whether the user can edit existing source document records.
         This applies for all containers managed by this class.
         '''
         self._canEdit = state
 
-    def registerContainer(self,container, id):
+    def registerContainer(self, container, id):
         '''
         Register a container for displaying the document widget
         '''
@@ -173,7 +174,7 @@ class SourceDocumentManager(QObject):
         if containerid in self.containers:
             del self.containers[containerid]
 
-    def container(self,containerid):
+    def container(self, containerid):
         '''
         Get the container from the given id
         '''
@@ -211,7 +212,7 @@ class SourceDocumentManager(QObject):
             if doc_type_id in self.containers:
                 container = self.containers[doc_type_id]
 
-                #Check if the file exists
+                # Check if the file exists
                 if QFile.exists(path):
 
                     network_location = network_document_path()
@@ -221,7 +222,7 @@ class SourceDocumentManager(QObject):
 
                         return
 
-                    #Check if the directory exists
+                    # Check if the directory exists
                     doc_dir = QDir(network_location)
 
                     if not doc_dir.exists():
@@ -284,7 +285,6 @@ class SourceDocumentManager(QObject):
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
-
             self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
             self._docRefs.append(docWidget.fileUUID)
 
@@ -303,7 +303,7 @@ class SourceDocumentManager(QObject):
         """
         Renders the source document info from a subclass of 'SupportingDocumentMixin'.
         """
-        #Check if the document has already been inserted in the manager.
+        # Check if the document has already been inserted in the manager.
         docIndex = getIndex(self._docRefs, sourcedoc.document_identifier)
         if docIndex != -1:
             return
@@ -320,7 +320,7 @@ class SourceDocumentManager(QObject):
                     return
 
                 networkManager = NetworkFileManager(network_document_path())
-                #Add document widget
+                # Add document widget
                 docWidg = DocumentWidget(
                     self.document_model,
                     networkManager,
@@ -342,8 +342,8 @@ class SourceDocumentManager(QObject):
             "check the path settings."
         )
         QMessageBox.critical(None,
-                            QApplication.translate("sourceDocumentManager",
-                                                   "Document Manager"),msg)
+                             QApplication.translate("sourceDocumentManager",
+                                                    "Document Manager"), msg)
 
     def networkResource(self):
         '''
@@ -366,7 +366,7 @@ class SourceDocumentManager(QObject):
         """
         srcDocMapping = OrderedDict()
 
-        for k,v in self.containers.iteritems():
+        for k, v in self.containers.iteritems():
 
             if not v is None:
                 docItems = OrderedDict()
@@ -384,10 +384,10 @@ class SourceDocumentManager(QObject):
                         locTr = QApplication.translate(
                             "sourceDocumentManager", "Location"
                         )
-                    locTxt = "%s %s"%(locTr, str(w+1))
+                    locTxt = "%s %s" % (locTr, str(w + 1))
                     docItems[locTxt] = srcFilePath
 
-                docTypeText = "%s (%s)"%(self.doc_type_mapping[k], str(widgCount))
+                docTypeText = "%s (%s)" % (self.doc_type_mapping[k], str(widgCount))
                 srcDocMapping[docTypeText] = docItems
 
         return srcDocMapping
@@ -419,7 +419,7 @@ class SourceDocumentManager(QObject):
         """
         delete_error_docs = []
 
-        for k,v in self.containers.iteritems():
+        for k, v in self.containers.iteritems():
             layout_item = v.takeAt(0)
 
             while layout_item is not None:
@@ -443,7 +443,7 @@ class SourceDocumentManager(QObject):
         if remDocWidget:
             self.container(containerid).removeWidget(remDocWidget)
 
-            #Remove document reference in the list
+            # Remove document reference in the list
             if remDocWidget.mode() == UPLOAD_MODE:
                 doc_uuid = remDocWidget.fileUUID
 
@@ -451,7 +451,7 @@ class SourceDocumentManager(QObject):
                 doc_uuid = remDocWidget.fileUUID
 
             if doc_uuid:
-                #Remove corresponding viewer
+                # Remove corresponding viewer
                 self._doc_view_manager.remove_viewer(doc_uuid)
 
                 try:
@@ -467,7 +467,7 @@ class SourceDocumentManager(QObject):
             remDocWidget.removed_doc
         )
 
-    def eventFilter(self,watched,e):
+    def eventFilter(self, watched, e):
         '''
         Intercept signals raised by the
         widgets managed by this container.
@@ -475,13 +475,13 @@ class SourceDocumentManager(QObject):
         '''
         pass
 
-    def _addDocumentReference(self,docid):
+    def _addDocumentReference(self, docid):
         """
         Add a document reference to the
         list that the document manager
         contains
         """
-        docIndex = getIndex(self._docRefs,docid)
+        docIndex = getIndex(self._docRefs, docid)
 
         if docIndex == -1:
             self._docRefs.append(docid)
@@ -492,7 +492,7 @@ class SourceDocumentManager(QObject):
         """
         return self._docRefs
 
-    def _installEventFilter(self,widget):
+    def _installEventFilter(self, widget):
         """
         Installs an event filter for the
         widget so that the class can now handle the
@@ -500,12 +500,13 @@ class SourceDocumentManager(QObject):
         """
         widget.installEventFilter(self)
 
-    def _linkWidgetRemovedSignal(self,widget):
+    def _linkWidgetRemovedSignal(self, widget):
         """
         Connects 'destroyed' signal raised
         when a widget is removed from the container.
         """
         widget.referencesRemoved.connect(self.onDocumentRemoved)
+
 
 class DocumentWidget(QWidget, Ui_frmDocumentItem):
     """
@@ -547,11 +548,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self._source_entity = ""
         self._doc_type = ""
         self._doc_type_id = None
-        #Set defaults
+        # Set defaults
         self.fileNameColor = "#5555ff"
         self.fileMetaColor = "#8f8f8f"
 
-    def eventFilter(self,watched,e):
+    def eventFilter(self, watched, e):
         """
         Capture label mouse release events
         for deleting and opening a source
@@ -569,7 +570,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             return True
 
         else:
-            return QWidget.eventFilter(self,watched,e)
+            return QWidget.eventFilter(self, watched, e)
 
     def initGui(self):
         """
@@ -598,10 +599,11 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         and corresponding database record.
         """
         msgConfirm = QApplication.translate("DocumentWidget",
-                                         """Are you sure you want to delete this document? This action cannot be undone.
-                                         \nClick Yes to proceed or No to cancel.""")
-        response = QMessageBox.warning(self.parent(), QApplication.translate("DocumentWidget", "Delete Source Document"),
-                                 msgConfirm, QMessageBox.Yes | QMessageBox.No)
+                                            """Are you sure you want to delete this document? This action cannot be undone.
+                                            \nClick Yes to proceed or No to cancel.""")
+        response = QMessageBox.warning(self.parent(),
+                                       QApplication.translate("DocumentWidget", "Delete Source Document"),
+                                       msgConfirm, QMessageBox.Yes | QMessageBox.No)
 
         if response == QMessageBox.No:
             return
@@ -644,8 +646,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         if not status:
             if not suppress_messages:
                 msg = QApplication.translate("DocumentWidget",
-                        "The system could not delete the document. Please "
-                        "check your document repository settings.")
+                                             "The system could not delete the document. Please "
+                                             "check your document repository settings.")
                 QMessageBox.critical(self.parent(),
                                      QApplication.translate("DocumentWidget",
                                                             "Delete Source Document"),
@@ -653,7 +655,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             return False
 
         if self._mode == DOWNLOAD_MODE:
-            #Try to delete document and suppress error if it does not exist
+            # Try to delete document and suppress error if it does not exist
             try:
                 self._srcDoc.delete()
                 # Remove the same document from supporting
@@ -671,7 +673,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             except sqlalchemy.exc.SQLAlchemyError as exc:
                 LOGGER.debug(str(exc))
 
-        #Emit signal to indicate the widget is ready to be removed
+        # Emit signal to indicate the widget is ready to be removed
         self.referencesRemoved.emit(self._doc_type_id)
 
         self.deleteLater()
@@ -683,10 +685,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Open the document referenced by this widget.
         """
         if not self._view_manager is None:
-
             self._view_manager.load_viewer(self)
 
-    def setCanRemoveDocument(self,state):
+    def setCanRemoveDocument(self, state):
         """
         Disable the close button so that users are not able to remove the
         document from the list.
@@ -770,7 +771,6 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         Builds the database model for the source document file reference.
         """
         if self._mode == UPLOAD_MODE:
-
             entity_doc_obj = self.document_model()
             entity_doc_obj.document_identifier = self.fileUUID
             entity_doc_obj.filename = self.fileInfo.fileName()
@@ -826,32 +826,32 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             display_doc_size = '0'
 
         html = u'<html>' \
-                   '<head/>' \
-                   '<body>' \
-                       '<p>' \
-                       '<span ' \
-                            'style="font-weight:600;' \
-                                   'text-decoration: underline;' \
-                                   'color:#5555ff;"' \
-                       '>' \
-                       '{}</span>' \
-                       '<span ' \
-                            'style="font-weight:600;' \
-                            'color:#8f8f8f;"' \
-                       '>&nbsp;({})' \
-                       '</span>' \
-                       '</p>' \
-                   '</body>' \
+               '<head/>' \
+               '<body>' \
+               '<p>' \
+               '<span ' \
+               'style="font-weight:600;' \
+               'text-decoration: underline;' \
+               'color:#5555ff;"' \
+               '>' \
+               '{}</span>' \
+               '<span ' \
+               'style="font-weight:600;' \
+               'color:#8f8f8f;"' \
+               '>&nbsp;({})' \
+               '</span>' \
+               '</p>' \
+               '</body>' \
                '</html>'.format(
             str(self._displayName),
             display_doc_size
         )
         self.lblName.setText(html)
 
-        #Enable/disable close
+        # Enable/disable close
         self.setCanRemoveDocument(self._canRemove)
 
-        #Disable link if no view manager has been configured
+        # Disable link if no view manager has been configured
         if self._view_manager is None:
             self.lblName.setEnabled(False)
 
@@ -873,8 +873,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
             docWorker = DocumentTransferWorker(
                 self.fileManager,
                 self.fileInfo,
-                "%s"%(self._source_entity),
-                "%s"%(self._doc_type),
+                "%s" % (self._source_entity),
+                "%s" % (self._doc_type),
                 self
             )
             docWorker.moveToThread(workerThread)
@@ -887,15 +887,15 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
 
             workerThread.start()
             # Call transfer() to get fileUUID early
-            #docWorker.transfer()
+            # docWorker.transfer()
             self.fileUUID = docWorker.file_uuid
 
-    def onBlockWritten(self,size):
+    def onBlockWritten(self, size):
         """
         Raised when a block of data is written to the central repository.
         Updates the progress bar with the bytes transferred as a percentage.
         """
-        progress = (size * 100)/self._docSize
+        progress = (size * 100) / self._docSize
 
         self.pgBar.setValue(progress)
         QApplication.processEvents()
@@ -908,7 +908,8 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
 
-def source_document_location(default = "/home"):
+
+def source_document_location(default="/home"):
     """
     :return: Last used source directory for
     source documents prior to uploading.
@@ -927,6 +928,7 @@ def source_document_location(default = "/home"):
 
     return source_doc_dir
 
+
 def set_source_document_location(doc_path):
     """
     Set the latest source directory of uploaded source documents.
@@ -934,7 +936,7 @@ def set_source_document_location(doc_path):
      attempt to extract the directory path from the file name.
     """
     doc_dir_path = ""
-    #Check if it is a file or directory
+    # Check if it is a file or directory
     doc_dir = QDir(doc_path)
 
     if not doc_dir.exists():
@@ -948,7 +950,7 @@ def set_source_document_location(doc_path):
 
     if len(doc_dir_path) > 0:
         reg_config = RegistryConfig()
-        reg_config.write({LOCAL_SOURCE_DOC:doc_dir_path})
+        reg_config.write({LOCAL_SOURCE_DOC: doc_dir_path})
 
 
 def network_document_path():

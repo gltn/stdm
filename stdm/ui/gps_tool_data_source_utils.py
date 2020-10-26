@@ -18,15 +18,15 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+import logging
 import os.path
 import re
-import logging
 
 from osgeo import ogr
 
-
 LOGGER = logging.getLogger('stdm')
 FEATURE_TYPES = ['waypoint', 'track', 'route']
+
 
 def validate_file_path(gpx_file):
     """
@@ -86,7 +86,7 @@ def get_feature_layer(gpx_data_source, feature_type):
     """
     if feature_type >= 0:
         if FEATURE_TYPES[feature_type] == 'track' or \
-                        FEATURE_TYPES[feature_type] == 'route':
+                FEATURE_TYPES[feature_type] == 'route':
             feature_type = '{}_points'.format(FEATURE_TYPES[feature_type])
         else:
             feature_type = '{}s'.format(FEATURE_TYPES[feature_type])

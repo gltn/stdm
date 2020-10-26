@@ -27,48 +27,49 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.data.qtmodels import STRTreeViewModel
 from stdm.data.database import (
     AdminSpatialUnitSet
 )
+from stdm.data.qtmodels import STRTreeViewModel
 from stdm.navigation.socialtenure.formatters import (
     STRNodeFormatter,
     BaseSTRNode
 )
-
-from stdm.ui.ui_adminUnitManager import Ui_frmAdminUnitManager
 from stdm.ui.notification import NotificationBar
+from stdm.ui.ui_adminUnitManager import Ui_frmAdminUnitManager
 
 
 class _AdminSpatialUnitConfiguration(object):
-    #Format of each dictionary item: property/db column name - display name
+    # Format of each dictionary item: property/db column name - display name
     displayColumns = OrderedDict()
 
     def __init__(self):
-        #Reset filter and display columns
+        # Reset filter and display columns
         self.displayColumns = OrderedDict()
+
 
 class AdminUnitFormatter(STRNodeFormatter):
     """
     Renderer for administrative spatial unit nodes.
     """
+
     def __init__(self, treeview=None, parentwidget=None):
         """
         Initialize header labels then call base class constructor.
         """
         aus_cfg = _AdminSpatialUnitConfiguration()
         aus_cfg.displayColumns["name"] = QApplication.translate(
-            "AdminUnitFormatter","Name"
+            "AdminUnitFormatter", "Name"
         )
         aus_cfg.displayColumns["code"] = QApplication.translate(
-            "AdminUnitFormatter","Code"
+            "AdminUnitFormatter", "Code"
         )
         aus_cfg.displayColumns["id"] = QApplication.translate(
-            "AdminUnitFormatter","ID"
+            "AdminUnitFormatter", "ID"
         )
 
-        super(AdminUnitFormatter,self).__init__(aus_cfg, treeview,
-                                                parentwidget)
+        super(AdminUnitFormatter, self).__init__(aus_cfg, treeview,
+                                                 parentwidget)
 
     def root(self):
         '''
@@ -77,7 +78,7 @@ class AdminUnitFormatter(STRNodeFormatter):
 
         adminSUSet = AdminSpatialUnitSet()
 
-        #Get top-level items
+        # Get top-level items
         adminUnits = adminSUSet.queryObject().filter(AdminSpatialUnitSet.Parent
                                                      == None).order_by(AdminSpatialUnitSet.Name)
 
@@ -88,7 +89,7 @@ class AdminUnitFormatter(STRNodeFormatter):
 
         return self.rootNode
 
-    def _populateAUSChildren(self,parentNode,ausModel):
+    def _populateAUSChildren(self, parentNode, ausModel):
         '''
         Populate the parent node with its corresponding children.
         Using depth-first search approach.
@@ -96,29 +97,31 @@ class AdminUnitFormatter(STRNodeFormatter):
         if len(ausModel.Children) > 0:
             for ausChild in ausModel.Children:
                 cNodeData = self._extractAdminUnitSetInfo(ausChild)
-                ausNode = BaseSTRNode(cNodeData,parentNode)
+                ausNode = BaseSTRNode(cNodeData, parentNode)
                 self._populateAUSChildren(ausNode, ausChild)
 
-    def _extractAdminUnitSetInfo(self,aus):
+    def _extractAdminUnitSetInfo(self, aus):
         '''
         Returns the properties of the admin unit set object.
         '''
-        return [aus.Name,aus.Code,aus.id]
+        return [aus.Name, aus.Code, aus.id]
 
-#Widget States
+
+# Widget States
 VIEW = 2301
 MANAGE = 2302
-SELECT = 2303 #When widget is used to select one or more records from the table list
+SELECT = 2303  # When widget is used to select one or more records from the table list
+
 
 class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
     '''
     Administrative Unit Manager Widget
     '''
-    #Signal raised when the state (view/manage) of the widet changes.
+    # Signal raised when the state (view/manage) of the widet changes.
     stateChanged = pyqtSignal('bool')
 
     def __init__(self, parent=None, State=VIEW):
-        QWidget.__init__(self,parent)
+        QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self._defaultEditTriggers = self.tvAdminUnits.editTriggers()
@@ -128,7 +131,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
 
         self._notifBar = NotificationBar(self.vlNotification)
 
-        #Configure validating line edit controls
+        # Configure validating line edit controls
         # invalidMsg = "{} already exists."
         # self.txtUnitCode.setModelAttr(AdminSpatialUnitSet,"Code")
         # self.txtUnitCode.setInvalidMessage(invalidMsg)
@@ -150,9 +153,9 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         )
         self.tvAdminUnits.setModel(self._adminUnitTreeModel)
         self.tvAdminUnits.hideColumn(2)
-        self.tvAdminUnits.setColumnWidth(0,220)
+        self.tvAdminUnits.setColumnWidth(0, 220)
         self.tvAdminUnits.expandAll()
-        #Connects slots
+        # Connects slots
         self.btnAdd.clicked.connect(self.onCreateAdminUnit)
         self.btnClear.clicked.connect(self.onClearSelection)
         self.btnRemove.clicked.connect(self.onDeleteSelection)
@@ -180,7 +183,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         '''
         return self._state
 
-    def setState(self,state):
+    def setState(self, state):
         '''
         Set the state of the widget.
         '''
@@ -218,7 +221,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         self._notifBar.clear()
 
         if self.txtUnitName.text() == "":
-            msg = QApplication.translate("AdminUnitManager","Name of the administrative unit cannot be empty.")
+            msg = QApplication.translate("AdminUnitManager", "Name of the administrative unit cannot be empty.")
             self._notifBar.insertErrorNotification(msg)
             self.txtUnitName.setFocus()
             return
@@ -227,7 +230,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
             return
 
         if self.txtUnitCode.text() == "":
-            msg = QApplication.translate("AdminUnitManager","Code of the administrative unit cannot be empty.")
+            msg = QApplication.translate("AdminUnitManager", "Code of the administrative unit cannot be empty.")
             self._notifBar.insertErrorNotification(msg)
             self.txtUnitCode.setFocus()
             return
@@ -235,11 +238,11 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         # if not self.txtUnitCode.validate():
         #     return
 
-        #Get current row selection
+        # Get current row selection
         selIndexes = self.tvAdminUnits.selectionModel().selectedRows(0)
 
         if len(selIndexes) == 0:
-            #Get the number of items in the tree view
+            # Get the number of items in the tree view
             rootIndex = self.tvAdminUnits.rootIndex()
             rowCount = self._adminUnitTreeModel.rowCount(rootIndex)
 
@@ -248,26 +251,28 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
                                              "You have not selected any parent node for the new administrative unit. Do " \
                                              "you want to add it as one of the topmost administrative units?\nClick Yes to " \
                                              "proceed or No to cancel.")
-                selOption = QMessageBox.warning(self,QApplication.translate("AdminUnitManager","No Parent Node Selected"),msg,
-                                                QMessageBox.Yes|QMessageBox.No)
+                selOption = QMessageBox.warning(self,
+                                                QApplication.translate("AdminUnitManager", "No Parent Node Selected"),
+                                                msg,
+                                                QMessageBox.Yes | QMessageBox.No)
 
                 if selOption == QMessageBox.Yes:
                     parentNode = self._rtNode
-                    #We are interested in the model index of the root node
+                    # We are interested in the model index of the root node
                     parentModelIndex = rootIndex
                     parentModel = None
 
                 else:
                     return
 
-            #Do not prompt user and immediately add the administrative unit to the root node.
+            # Do not prompt user and immediately add the administrative unit to the root node.
             else:
                 parentNode = self._rtNode
                 parentModelIndex = rootIndex
                 parentModel = None
 
         else:
-            #Get model index for the first column as this is where the new node will be added as the child
+            # Get model index for the first column as this is where the new node will be added as the child
             parentModelIndex = selIndexes[0]
             parentNode = self._adminUnitTreeModel._getNode(parentModelIndex)
 
@@ -277,15 +282,15 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
 
         adminUnitModel = AdminSpatialUnitSet(self.txtUnitName.text(), self.txtUnitCode.text(), parentModel)
 
-        #Commit transaction to the database
+        # Commit transaction to the database
         adminUnitModel.save()
 
-        #Extract properties from the model
+        # Extract properties from the model
         ausProps = self._adminUnitNodeFormatter._extractAdminUnitSetInfo(adminUnitModel)
 
         childNode = BaseSTRNode(ausProps, parentNode)
 
-        #Insert row into the view
+        # Insert row into the view
         self._adminUnitTreeModel.insertRows(parentNode.childCount(), 1, parentModelIndex)
 
         self.clearInputs()
@@ -296,11 +301,11 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         '''
         self.tvAdminUnits.selectionModel().clearSelection()
 
-    def onModelDataChanged(self,oldindex,newindex):
+    def onModelDataChanged(self, oldindex, newindex):
         '''
         Slot raised when the model data is changed.
         '''
-        #Get model index containing ID property
+        # Get model index containing ID property
         refNode = self._adminUnitTreeModel._getNode(newindex)
         ausID = refNode.data(2)
 
@@ -321,7 +326,7 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         Slot raised to delete current selection of administrative unit.
         '''
         self._notifBar.clear()
-        #Get current row selection
+        # Get current row selection
         selIndexes = self.tvAdminUnits.selectionModel().selectedRows(2)
 
         if len(selIndexes) == 0:
@@ -331,14 +336,15 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
 
         else:
             delmsg = QApplication.translate("AdminUnitManager",
-                                         "This action will delete the selected administrative unit plus any " \
-                                         "existing children under it. It cannot be undone.\nClick Yes to " \
-                                         "delete or No to cancel.")
-            selOption = QMessageBox.warning(self,QApplication.translate("AdminUnitManager","Confirm deletion"),delmsg,
-                                            QMessageBox.Yes|QMessageBox.No)
+                                            "This action will delete the selected administrative unit plus any " \
+                                            "existing children under it. It cannot be undone.\nClick Yes to " \
+                                            "delete or No to cancel.")
+            selOption = QMessageBox.warning(self, QApplication.translate("AdminUnitManager", "Confirm deletion"),
+                                            delmsg,
+                                            QMessageBox.Yes | QMessageBox.No)
 
             if selOption == QMessageBox.Yes:
-                #Get the node in the current selection
+                # Get the node in the current selection
                 delIndex = selIndexes[0]
                 ausNode = self._adminUnitTreeModel._getNode(delIndex)
                 ausId = ausNode.data(2)
@@ -348,13 +354,13 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
                 if not ausObj is None:
                     ausObj.delete()
 
-                    #Remove item in tree view
+                    # Remove item in tree view
                     self._adminUnitTreeModel.removeRows(delIndex.row(), 1, delIndex.parent())
 
-                    #Notify user
+                    # Notify user
                     self._notifBar.clear()
                     successmsg = QApplication.translate("AdminUnitManager",
-                                         "Administrative unit successfully deleted.")
+                                                        "Administrative unit successfully deleted.")
                     self._notifBar.insertSuccessNotification(successmsg)
 
     def selectedAdministrativeUnit(self):
@@ -382,37 +388,3 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
         '''
         self.txtUnitCode.clear()
         self.txtUnitName.clear()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

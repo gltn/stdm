@@ -23,15 +23,14 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
+from stdm.data.license_doc import LicenseDocument
 from stdm.settings.registryconfig import (
     RegistryConfig,
     SHOW_LICENSE
 )
-from stdm.data.license_doc import LicenseDocument
-
 from stdm.ui.notification import NotificationBar, ERROR
-
 from stdm.ui.ui_license_agreement import Ui_LicenseAgreement
+
 
 class LicenseAgreement(QDialog, Ui_LicenseAgreement):
     def __init__(self, parent=None):

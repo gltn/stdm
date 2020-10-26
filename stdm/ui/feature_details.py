@@ -21,13 +21,17 @@ email                : stdm@unhabitat.org
 """
 import re
 from collections import OrderedDict
-import cProfile
-import inspect
 
 from qgis.PyQt.QtCore import (
     Qt,
     QDateTime,
     QDate
+)
+from qgis.PyQt.QtGui import (
+    QStandardItem,
+    QStandardItemModel,
+    QIcon,
+    QColor
 )
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -36,16 +40,6 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QApplication,
 )
-from qgis.PyQt.QtGui import (
-    QStandardItem,
-    QStandardItemModel,
-    QIcon,
-    QColor
-)
-
-from qgis.gui import (
-    QgsHighlight
-)
 from qgis.core import (
     QgsFeatureRequest,
     QgsExpression,
@@ -53,41 +47,37 @@ from qgis.core import (
     NULL,
     QgsFeature
 )
-
-from stdm.settings import current_profile
-
-from stdm.settings.registryconfig import (
-    selection_color
+from qgis.gui import (
+    QgsHighlight
 )
 
 from stdm.data.configuration import (
     entity_model
 )
+from stdm.data.pg_utils import pg_table_exists
 from stdm.data.pg_utils import (
     spatial_tables,
     pg_views
 )
-
 from stdm.data.supporting_documents import (
     supporting_doc_tables,
     document_models
 )
+from stdm.settings import current_profile
+from stdm.settings.registryconfig import (
+    selection_color
+)
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
-
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
+from stdm.ui.social_tenure.str_editor import EditSTREditor
+from stdm.ui.ui_feature_details import Ui_DetailsDock
 from stdm.utils.util import (
     format_name,
-    entity_id_to_model,
-    profile_spatial_tables,
     entity_attr_to_model
 )
 
-from stdm.ui.social_tenure.str_editor import EditSTREditor
-from stdm.data.pg_utils import pg_table_exists
-
-from stdm.ui.ui_feature_details import Ui_DetailsDock
-
 DETAILS_DOCK_ON = False
+
 
 class LayerSelectionHandler(object):
     """
@@ -194,7 +184,6 @@ class LayerSelectionHandler(object):
 
         entity_table = self.current_profile.entity_by_name(table_name)
         return table_name
-
 
     def active_layer_check(self):
         """
@@ -390,7 +379,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         if isinstance(id, QgsFeature):
             id = id.id()
 
-        #result = model_obj.queryObject().filter(model.id == id).all()
+        # result = model_obj.queryObject().filter(model.id == id).all()
         result = model_obj.queryObject().all()
         if len(result) > 0:
             for r in result:
@@ -428,7 +417,6 @@ class DetailsDBHandler(LayerSelectionHandler):
         ).all()
 
         return result
-
 
     def party_str_link(self, party_entity, party_id):
         """
@@ -532,6 +520,7 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
     """
     The logic for the spatial entity details dock widget.
     """
+
     def __init__(self, iface, plugin):
         """
         Initializes the DetailsDockWidget.
@@ -577,7 +566,6 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
         :rtype:
         """
         self.open_dock() if checked else self.close_dock()
-
 
     def clear_feature_selection(self):
         """
@@ -626,9 +614,11 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
     #         self.plugin.feature_details_act
     #     )
 
+
 class SelectedItem(object):
     def __init__(self, q_standard_item):
         self.standard_item = q_standard_item
+
 
 class DetailsTreeView(DetailsDBHandler):
     """
@@ -712,7 +702,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         self.selected_model = None
         self.selected_index = None
-        self.selected_item  = None
+        self.selected_item = None
 
         # show tree message if dock is open and button clicked
         if self.plugin is not None:
@@ -767,8 +757,9 @@ class DetailsTreeView(DetailsDBHandler):
             return
 
         if self.layer_table in spatial_tables() and \
-                        self.layer_table not in pg_views():
+                self.layer_table not in pg_views():
             self.entity = self.current_profile.entity_by_name(self.layer_table)
+
     #
     # def activate_feature_details(self, button_clicked=True):
     #     if cProfile is None:
@@ -787,8 +778,8 @@ class DetailsTreeView(DetailsDBHandler):
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(
-                "DetailsTreeView",
-                'Default Profile Error'
+                    "DetailsTreeView",
+                    'Default Profile Error'
                 ),
                 msg
             )
@@ -803,7 +794,6 @@ class DetailsTreeView(DetailsDBHandler):
         :type button_clicked: Boolean
         """
         if not button_clicked: return
-
 
         # if self.plugin is None:
         # Registry column widget
@@ -829,7 +819,7 @@ class DetailsTreeView(DetailsDBHandler):
         # if no active layer, show error message
         # and uncheck the feature tool
 
-        #self.zoom_to_selected(self.layer)
+        # self.zoom_to_selected(self.layer)
 
         if self.layer is None:
             if button_clicked:
@@ -866,7 +856,6 @@ class DetailsTreeView(DetailsDBHandler):
             str_model = self.str_models[item.data()]
             self.selected_model = str_model
             self.selected_item = SelectedItem(item)
-
 
     def prepare_for_selection(self):
         """
@@ -1008,7 +997,7 @@ class DetailsTreeView(DetailsDBHandler):
                 else:
                     data = self.features_data(id)
 
-                    #if len(self.features_data(id)) > 0:
+                    # if len(self.features_data(id)) > 0:
                     if len(data[0]) > 0:
                         db_model = data[0]
                     else:
@@ -1021,7 +1010,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
 
-        #self.zoom_to_selected(self.layer)
+        # self.zoom_to_selected(self.layer)
 
     def search_spatial_unit(self, entity, spatial_unit_ids):
         """
@@ -1054,7 +1043,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.layer.selectByIds(
             self.feature_models.keys()
         )
-        #self.zoom_to_selected(self.layer)
+        # self.zoom_to_selected(self.layer)
 
     def search_party(self, entity, party_ids):
         """
@@ -1082,10 +1071,10 @@ class DetailsTreeView(DetailsDBHandler):
 
         return getattr(str_records[0], self.layer_table).id  # Nasty hack!!
 
-        #self.layer.selectByIds(
-            #self.feature_models.keys()
-        #)
-        #self.zoom_to_selected(self.layer)
+        # self.layer.selectByIds(
+        # self.feature_models.keys()
+        # )
+        # self.zoom_to_selected(self.layer)
 
     def add_non_entity_parent(self, layer_icon):
         """
@@ -1142,7 +1131,6 @@ class DetailsTreeView(DetailsDBHandler):
                 feature_data.append(feature_map)
         return feature_data
 
-
     def party_data(self, party_id=None):
         """
         Gets data column and value of a feature from party.
@@ -1169,7 +1157,6 @@ class DetailsTreeView(DetailsDBHandler):
                 )
                 feature_data.append(feature_map)
         return feature_data
-
 
     def add_parent_tree(self, icon, title):
         """
@@ -1208,7 +1195,7 @@ class DetailsTreeView(DetailsDBHandler):
         if model is None: return
 
         if isinstance(model, OrderedDict):
-            #if len(model) == 0: return
+            # if len(model) == 0: return
             feature_id = model['id']
         else:
             feature_id = model.id
@@ -1339,7 +1326,7 @@ class DetailsTreeView(DetailsDBHandler):
         spatial_unit_names = [sp.name for sp in self.spatial_units]
 
         # If the layer table is not spatial unit table, don't show STR node.
-        if self.layer_table not in spatial_unit_names  and self.plugin is not None:
+        if self.layer_table not in spatial_unit_names and self.plugin is not None:
             return
 
         for record in str_records:
@@ -1635,7 +1622,6 @@ class DetailsTreeView(DetailsDBHandler):
                     QgsFeatureRequest(expression)
                 )
 
-
                 # Retrieve geometry and attributes
                 for feature in ft_iteration:
                     # Fetch geometry
@@ -1695,7 +1681,7 @@ class DetailsTreeView(DetailsDBHandler):
         item = None
         index = self.view.selectedIndexes()[0]
         item = self.model.itemFromIndex(index)
-        #item = self.selected_item.standard_item #self.model.itemFromIndex(self.selected_index)
+        # item = self.selected_item.standard_item #self.model.itemFromIndex(self.selected_index)
         result = self.selected_item.standard_item.data()
         return result, item
 
@@ -1729,13 +1715,12 @@ class DetailsTreeView(DetailsDBHandler):
 
         return result, item
 
-
     def edit_selected_node(self, self_ref=None):
         """
         Edits the record based on the selected item in the tree view.
         """
         self.edit_btn_connected = True
-        #data, item = self.node_data('edit', self._selected_features)
+        # data, item = self.node_data('edit', self._selected_features)
         index = self.view.selectedIndexes()[0]
         item = self.model.itemFromIndex(index)
         data = self.selected_item.standard_item.data()
@@ -1769,7 +1754,7 @@ class DetailsTreeView(DetailsDBHandler):
                     model_ = self.str_models[child_.data()]
                     child_model_rec = model_.__dict__
 
-                    #str_model_rec = self.str_models[item.data()].__dict__
+                    # str_model_rec = self.str_models[item.data()].__dict__
 
                     spatial_unit_id = self.current_spatial_unit(child_model_rec)[1]
 
@@ -1837,12 +1822,12 @@ class DetailsTreeView(DetailsDBHandler):
 
         # if self.plugin is not None:
         elif item.text() == format_name(self.entity.short_name) and \
-                        id not in self.feature_str_model.keys():
+                id not in self.feature_str_model.keys():
             db_model = self.feature_model(self._entity, id)
 
         # if spatial unit is linked to STR, don't allow delete
         elif item.text() == format_name(self.entity.short_name) and \
-                        id in self.feature_str_model.keys():
+                id in self.feature_str_model.keys():
 
             delete_warning = QApplication.translate(
                 'DetailsTreeView',
@@ -1978,7 +1963,7 @@ class DetailsTreeView(DetailsDBHandler):
                 feature_ids
             )
         else:
-            item.removeRows(0, 5)  #<------------------------ What is the 5 magic number?
+            item.removeRows(0, 5)  # <------------------------ What is the 5 magic number?
             # No other STR record remains for the spatial unit,
             # show No STR Defined
             if remaining_str == 0:

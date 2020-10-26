@@ -12,43 +12,39 @@ except:
     import gdal
     import ogr
 
-drivers={
-         "shp":"ESRI Shapefile",
-         "csv":"CSV",
-         "tab":"MapInfo File",
-         "gpx":"GPX",
-         "dxf":"DXF"
-         }
+drivers = {
+    "shp": "ESRI Shapefile",
+    "csv": "CSV",
+    "tab": "MapInfo File",
+    "gpx": "GPX",
+    "dxf": "DXF"
+}
 
-ogrTypes={
-          "character varying":ogr.OFTString,
-          "bigint":ogr.OFTInteger,
-          "bigserial":ogr.OFTInteger,
-          "boolean":ogr.OFTString,
-          "bytea":ogr.OFTBinary,
-          "character":ogr.OFTString,
-          "date":ogr.OFTDate,
-          "double precision":ogr.OFTReal,
-          "integer":ogr.OFTInteger,
-          "numeric":ogr.OFTReal,
-          "real":ogr.OFTReal,
-          "smallint":ogr.OFTInteger,
-          "serial":ogr.OFTInteger,
-          "text":ogr.OFTString,
-          "timestamp without time zone":ogr.OFTDateTime
-          }
+ogrTypes = {
+    "character varying": ogr.OFTString,
+    "bigint": ogr.OFTInteger,
+    "bigserial": ogr.OFTInteger,
+    "boolean": ogr.OFTString,
+    "bytea": ogr.OFTBinary,
+    "character": ogr.OFTString,
+    "date": ogr.OFTDate,
+    "double precision": ogr.OFTReal,
+    "integer": ogr.OFTInteger,
+    "numeric": ogr.OFTReal,
+    "real": ogr.OFTReal,
+    "smallint": ogr.OFTInteger,
+    "serial": ogr.OFTInteger,
+    "text": ogr.OFTString,
+    "timestamp without time zone": ogr.OFTDateTime
+}
 
-#WKT geometry mappings
-wkbTypes={
-          "POINT":ogr.wkbPoint,
-          "LINESTRING":ogr.wkbLineString,
-          "POLYGON":ogr.wkbPolygon,
-          "MULTIPOINT":ogr.wkbMultiPoint,
-          "MULTILINESTRING":ogr.wkbMultiLineString,
-          "MULTIPOLYGON":ogr.wkbMultiPolygon,
-          "GEOMETRYCOLLECTION":ogr.wkbGeometryCollection
-          }
-
-
-
-
+# WKT geometry mappings
+wkbTypes = {
+    "POINT": ogr.wkbPoint,
+    "LINESTRING": ogr.wkbLineString,
+    "POLYGON": ogr.wkbPolygon,
+    "MULTIPOINT": ogr.wkbMultiPoint,
+    "MULTILINESTRING": ogr.wkbMultiLineString,
+    "MULTIPOLYGON": ogr.wkbMultiPolygon,
+    "GEOMETRYCOLLECTION": ogr.wkbGeometryCollection
+}

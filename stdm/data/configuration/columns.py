@@ -17,9 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import sys
 import logging
-from copy import deepcopy
+import sys
 from collections import OrderedDict
 from datetime import (
     date,
@@ -44,13 +43,12 @@ from stdm.data.configuration.column_updaters import (
     text_updater,
     varchar_updater
 )
-
 from stdm.data.configuration.db_items import (
     ColumnItem,
     DbItem
 )
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.pg_utils import table_view_dependencies, table_column_names
+from stdm.data.pg_utils import table_view_dependencies
 
 LOGGER = logging.getLogger('stdm')
 
@@ -75,7 +73,7 @@ class BaseColumn(ColumnItem):
     """
     registered_types = OrderedDict()
 
-    #Callable for updating the column in the database Table object.
+    # Callable for updating the column in the database Table object.
     sql_updater = base_column_updater
 
     TYPE_INFO = 'BASE_COLUMN'
@@ -111,7 +109,7 @@ class BaseColumn(ColumnItem):
         self._intialized = True
 
         # Attributes in the database that need to monitored for any changes
-        self._monitor_attrs = ['mandatory', 'searchable', 'index', 'unique' ]
+        self._monitor_attrs = ['mandatory', 'searchable', 'index', 'unique']
 
         self.updated_db_attrs = {}
 
@@ -125,12 +123,11 @@ class BaseColumn(ColumnItem):
         self.user_tip = kwargs.get('user_tip', '')
         self.label = kwargs.get('label', '')
 
-        self.row_index = kwargs.get('row_index',-1)
+        self.row_index = kwargs.get('row_index', -1)
 
         self.reset_updated_attrs()
 
-
-        LOGGER.debug('%s column initialized in %s entity.',self.name, self.entity.name)
+        LOGGER.debug('%s column initialized in %s entity.', self.name, self.entity.name)
 
     def reset_updated_attrs(self):
         """
@@ -215,7 +212,7 @@ class BaseColumn(ColumnItem):
         exclude = ['entity', 'profile', '_minimum', '_maximum',
                    'entity_relation']
 
-        for k,v in self.__dict__:
+        for k, v in self.__dict__:
             if not k in exclude:
                 attr = k.replace('_', ' ').capitalize()
                 disp.append(u'{0}: {1}'.format(attr, v))
@@ -236,19 +233,19 @@ class BaseColumn(ColumnItem):
         views respectively.
         :rtype: dict
         """
-        #Get all relations to this column
+        # Get all relations to this column
         child_relations = self.entity.column_children_relations(self.name)
         parent_relations = self.entity.column_parent_relations(self.name)
 
         r = child_relations + parent_relations
 
-        #Get children entities
+        # Get children entities
         parent_entities = [er.parent for er in child_relations if er.parent.action != DbItem.DROP]
         child_entities = [er.child for er in parent_relations if er.child.action != DbItem.DROP]
 
         all_entities = parent_entities + child_entities
 
-        #Dependent entity names
+        # Dependent entity names
         dep_ent_names = [e.name for e in all_entities]
 
         # Add views related to this column
@@ -310,7 +307,7 @@ class BaseColumn(ColumnItem):
         for attr in self._monitor_attrs:
             attr_val = getattr(column, attr)
 
-            #Set value
+            # Set value
             setattr(self, attr, attr_val)
 
     def __setattr__(self, key, value):
@@ -322,7 +319,7 @@ class BaseColumn(ColumnItem):
             if len(self.updated_db_attrs) > 0 and self.action == DbItem.NONE:
                 self.action = DbItem.ALTER
 
-                #Notify parent
+                # Notify parent
                 self.entity.append_updated_column(self)
 
         object.__setattr__(self, key, value)
@@ -408,7 +405,7 @@ class BoundsColumn(BaseColumn):
 
     @minimum.setter
     def minimum(self, val):
-        #Normalize to allowable limits
+        # Normalize to allowable limits
         val = self._check_type_min_max(val)
 
         if val > self._maximum:
@@ -419,7 +416,7 @@ class BoundsColumn(BaseColumn):
 
     @maximum.setter
     def maximum(self, val):
-        #Normalize to allowable limits
+        # Normalize to allowable limits
         val = self._check_type_min_max(val)
 
         if val < self._minimum:
@@ -453,9 +450,10 @@ class VarCharColumn(BoundsColumn):
         return tr('Varying-length Text')
 
     def can_create_check_constraints(self):
-        #No need to create constraints since the extents are set while
+        # No need to create constraints since the extents are set while
         # creating the column.
         return False
+
 
 VarCharColumn.register()
 
@@ -474,8 +472,9 @@ class TextColumn(BoundsColumn):
         return tr('Unlimited-length Text')
 
     def can_create_check_constraints(self):
-        #Not applicable.
+        # Not applicable.
         return False
+
 
 TextColumn.register()
 
@@ -493,10 +492,10 @@ class IntegerColumn(BoundsColumn):
     def display_name(cls):
         return tr('Whole Number')
 
+
 IntegerColumn.register()
 
-
-_ff= Decimal.from_float
+_ff = Decimal.from_float
 
 
 class DoubleColumn(BoundsColumn):
@@ -579,6 +578,7 @@ class DateColumn(BoundsColumn):
     @classmethod
     def display_name(cls):
         return tr('Date')
+
 
 DateColumn.register()
 
@@ -835,7 +835,7 @@ class ForeignKeyColumn(IntegerColumn):
         Add entity relation to the collection only once the primary parent
         attributes have been set.
         '''
-        if not self.entity_relation.parent is None and self.entity_relation.parent_column:
+        if self.entity_relation.parent is not None and self.entity_relation.parent_column:
             self.profile.add_entity_relation(self.entity_relation)
 
     @classmethod
@@ -865,7 +865,7 @@ class LookupColumn(ForeignKeyColumn):
     def __init__(self, *args, **kwargs):
         ForeignKeyColumn.__init__(self, *args, **kwargs)
 
-        #Set the definite entity relation properties
+        # Set the definite entity relation properties
         self.set_entity_relation_attr('parent_column', 'id')
         self.set_entity_relation_attr('display_cols', ['name', 'code'])
 
@@ -893,6 +893,7 @@ class LookupColumn(ForeignKeyColumn):
     def display_name(cls):
         return tr('Single Select Lookup')
 
+
 LookupColumn.register()
 
 
@@ -907,7 +908,7 @@ class AdministrativeSpatialUnitColumn(ForeignKeyColumn):
 
         ForeignKeyColumn.__init__(self, *args, **kwargs)
 
-        #Set the parent info
+        # Set the parent info
         self.set_entity_relation_attr('parent', 'admin_spatial_unit_set')
         self.set_entity_relation_attr('parent_column', 'id')
         self.set_entity_relation_attr('display_cols', ['name', 'code'])
@@ -915,6 +916,7 @@ class AdministrativeSpatialUnitColumn(ForeignKeyColumn):
     @classmethod
     def display_name(cls):
         return tr('Administrative Spatial Unit')
+
 
 AdministrativeSpatialUnitColumn.register()
 
@@ -931,7 +933,6 @@ class AutoGeneratedColumn(VarCharColumn):
     columns_name = 'columns'
 
     def __init__(self, *args, **kwargs):
-
         self.prefix_source = kwargs.pop('prefix_source', '')
         self.columns = kwargs.pop(self.columns_name, '')
         self.leading_zero = kwargs.pop('leading_zero', '')
@@ -951,6 +952,7 @@ class AutoGeneratedColumn(VarCharColumn):
     @classmethod
     def display_name(cls):
         return tr('Auto Generated Code')
+
 
 AutoGeneratedColumn.register()
 
@@ -980,7 +982,7 @@ class MultipleSelectColumn(VirtualColumn):
         )
         self.association.second_parent = self.entity
 
-        #Add association to the collection
+        # Add association to the collection
         self.profile.add_entity(self.association)
 
         LOGGER.debug('%s multiple select column initialized.')
@@ -1018,6 +1020,7 @@ class MultipleSelectColumn(VirtualColumn):
         # Rename association entity
         self.profile.rename(old_name, name)
 
+
 MultipleSelectColumn.register()
 
 
@@ -1030,7 +1033,7 @@ class PercentColumn(DoubleColumn):
     TYPE_INFO = 'PERCENT'
 
     def __init__(self, *args, **kwargs):
-        #Set/override user-defined min amd max respectively
+        # Set/override user-defined min amd max respectively
         kwargs['minimum'] = 0
         kwargs['maximum'] = 100
 
@@ -1040,9 +1043,11 @@ class PercentColumn(DoubleColumn):
     def display_name(cls):
         return tr('Percent')
 
+
 PercentColumn.register()
 
-#TODO: Include ExpressionColumn
+
+# TODO: Include ExpressionColumn
 
 
 class ExpressionColumn(DoubleColumn, VarCharColumn, IntegerColumn):
@@ -1053,6 +1058,7 @@ class ExpressionColumn(DoubleColumn, VarCharColumn, IntegerColumn):
     TYPE_INFO = 'EXPRESSION'
     SQL_MAX = 4000
     SQL_MIN = 0
+
     # sql_updater = base_column_updater
 
     def __init__(self, *args, **kwargs):
@@ -1075,5 +1081,5 @@ class ExpressionColumn(DoubleColumn, VarCharColumn, IntegerColumn):
     def display_name(cls):
         return tr('Expression')
 
-ExpressionColumn.register()
 
+ExpressionColumn.register()

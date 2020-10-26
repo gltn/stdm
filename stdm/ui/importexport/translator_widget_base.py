@@ -19,26 +19,22 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtWidgets import QMessageBox
 
-from stdm.data.pg_utils import (
-   table_column_names,
-   pg_tables,
-   spatial_tables
-)
+from stdm.data.importexport.value_translators import ValueTranslatorManager
+from stdm.settings import current_profile
 from stdm.utils.util import (
     profile_user_tables
 )
-from stdm.settings import current_profile
-from stdm.data.importexport.value_translators import ValueTranslatorManager
 
 __all__ = ["TranslatorDialogBase", "TranslatorWidgetManager"]
+
 
 class TranslatorDialogBase(object):
     """
     Abstract class for implementation by translator dialog. Basically ensures
     that an instance of a source value translator is returned.
     """
+
     def __init__(self, source_cols, dest_table, dest_col, src_col):
         self._source_cols = source_cols
         self._dest_table = dest_table
@@ -107,11 +103,13 @@ class TranslatorDialogBase(object):
 
         return tables
 
+
 class TranslatorWidgetManager(object):
     """
     This class manages multiple instances of value translator widgets or
     dialogs.
     """
+
     def __init__(self, parent=None):
         self._parent = parent
         self._widgets = {}
@@ -139,7 +137,6 @@ class TranslatorWidgetManager(object):
         :type translator_widgets: dict
         """
         for key, translator_widget in translator_widgets:
-
             self.add_widget(key, translator_widget)
 
     def translator_widget(self, name):

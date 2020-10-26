@@ -19,22 +19,17 @@ email                : gkahiu at gmail dot com
 """
 import math
 
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QComboBox,
-    QDialog,
-    QGraphicsItem,
-    QGraphicsLineItem,
-    QGraphicsScene,
-    QGraphicsTextItem,
-    QGraphicsView,
-    QGridLayout,
-    QLabel,
-    QMessageBox,
-    QSizePolicy,
-    QSpacerItem,
-    QToolButton,
-    QWidget
+from qgis.PyQt.QtCore import (
+    pyqtSignal,
+    QFile,
+    QIODevice,
+    QLineF,
+    QPointF,
+    QRect,
+    QRectF,
+    QSize,
+    QSizeF,
+    Qt
 )
 from qgis.PyQt.QtGui import (
     QBrush,
@@ -53,20 +48,26 @@ from qgis.PyQt.QtGui import (
     QPolygonF,
     QTextLayout
 )
-from qgis.PyQt.QtCore import (
-    pyqtSignal,
-    QFile,
-    QIODevice,
-    QLineF,
-    QPointF,
-    QRect,
-    QRectF,
-    QSize,
-    QSizeF,
-    Qt
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QGraphicsItem,
+    QGraphicsLineItem,
+    QGraphicsScene,
+    QGraphicsTextItem,
+    QGraphicsView,
+    QGridLayout,
+    QLabel,
+    QMessageBox,
+    QSizePolicy,
+    QSpacerItem,
+    QToolButton,
+    QWidget
 )
 
 from stdm.ui.image_export_settings import ImageExportSettings
+
 
 class Arrow(QGraphicsLineItem):
     """
@@ -74,6 +75,7 @@ class Arrow(QGraphicsLineItem):
     another. The arrow head size can be customized by specifying the angle
     and width of the arrow base.
     """
+
     def __init__(self, start_item, end_item, base_width=None,
                  tip_angle=None, fill_arrow_head=False,
                  parent_item=None, scene=None):
@@ -232,7 +234,7 @@ class Arrow(QGraphicsLineItem):
         self.setLine(line)
 
     def _intersection_point(self, item, reference_line):
-        #Computes the intersection point between the item's line segments
+        # Computes the intersection point between the item's line segments
         # with the reference line.
         intersect_point = QPointF()
 
@@ -254,7 +256,7 @@ class Arrow(QGraphicsLineItem):
 
         center_line = QLineF(self.start_item.center(), self.end_item.center())
 
-        #Get intersection points
+        # Get intersection points
         start_intersection_point = self._intersection_point(
             self._start_item,
             center_line
@@ -264,7 +266,7 @@ class Arrow(QGraphicsLineItem):
             center_line
         )
 
-        #Do not draw if there are no intersection points
+        # Do not draw if there are no intersection points
         if start_intersection_point is None or end_intersection_point is None:
             return
 
@@ -273,31 +275,31 @@ class Arrow(QGraphicsLineItem):
 
         arrow_length = arrow_line.length()
 
-        #Setup computation parameters
-        cnt_factor = (self.base_width / 2.0)/(
-            math.tan(self._angle / 2.0) * arrow_length
+        # Setup computation parameters
+        cnt_factor = (self.base_width / 2.0) / (
+                math.tan(self._angle / 2.0) * arrow_length
         )
-        cnt_point_delta = (self.base_width/2.0)/arrow_length
+        cnt_point_delta = (self.base_width / 2.0) / arrow_length
 
-        #Get arrow base along the line
+        # Get arrow base along the line
         arrow_base_x = end_intersection_point.x() - (arrow_line.dx() * cnt_factor)
         arrow_base_y = end_intersection_point.y() - (arrow_line.dy() * cnt_factor)
 
-        #Get deltas to arrow points from centre point of arrow base
+        # Get deltas to arrow points from centre point of arrow base
         cnt_point_dx = -(arrow_line.dy() * cnt_point_delta)
         cnt_point_dy = arrow_line.dx() * cnt_point_delta
 
-        #Compute absolute arrow positions
+        # Compute absolute arrow positions
         A1 = QPointF(arrow_base_x - cnt_point_dx, arrow_base_y - cnt_point_dy)
         A2 = QPointF(arrow_base_x + cnt_point_dx, arrow_base_y + cnt_point_dy)
 
-        #Update arrow points
+        # Update arrow points
         self._arrow_head_points = [A1, A2, end_intersection_point]
 
-        #Draw main arrow line
+        # Draw main arrow line
         painter.drawLine(arrow_line)
 
-        #Draw arrow head
+        # Draw arrow head
         if not self.fill_arrow_head:
             painter.drawLine(A1, end_intersection_point)
             painter.drawLine(end_intersection_point, A2)
@@ -314,6 +316,7 @@ class BaseIconRender(object):
     item. See bounding_rect function for positioning of the icon in the
     tenure item. This is an abstract class and needs to be sub-classed for
     custom renderers."""
+
     def __init__(self):
         # Icon area is 16px by 16px
         # TODO: Set location based on screen resolution
@@ -367,13 +370,13 @@ class EntityIconRenderer(BaseIconRender):
     """Renderer for an icon depicting a data table."""
 
     def draw(self, p, item):
-        #Save painter state
+        # Save painter state
         p.save()
 
         p.setPen(self.pen)
 
-        #Draw outline
-        #Define gradient
+        # Draw outline
+        # Define gradient
         grad = QLinearGradient(self.upper_left, self.bottom_right)
         grad.setColorAt(0.0, Qt.white)
         grad.setColorAt(0.65, QColor('#D2F6FC'))
@@ -383,7 +386,7 @@ class EntityIconRenderer(BaseIconRender):
         p.setBrush(grad_bush)
         p.drawRect(self.bounding_rect())
 
-        #Draw column header
+        # Draw column header
         cols_header_rect = QRectF(
             self.upper_left.x() + 0.5,
             self.upper_left.y() + 0.5,
@@ -433,7 +436,7 @@ class DocumentIconRenderer(BaseIconRender):
     def draw(self, p, item):
         p.save()
 
-        #Draw primary folder
+        # Draw primary folder
         outline = QPen(self.pen)
         outline.setColor(QColor('#1399FC'))
         p.setPen(outline)
@@ -453,7 +456,7 @@ class DocumentIconRenderer(BaseIconRender):
         leaf_1.closeSubpath()
         p.drawPath(leaf_1)
 
-        #Front folder leaf
+        # Front folder leaf
         p.setBrush(QBrush(Qt.white))
         leaf_2 = QPainterPath()
         leaf_2.moveTo(self.upper_left + QPointF(0.5, (self.height - 0.5)))
@@ -479,11 +482,11 @@ class TenureLinkRenderer(BaseIconRender):
         outline.setWidthF(1.6)
         p.setPen(outline)
 
-        #Set segment fill brush
+        # Set segment fill brush
         seg_brush = QBrush(QColor('#ECF8FF'))
         p.setBrush(seg_brush)
 
-        #Draw link segment
+        # Draw link segment
         link_path = QPainterPath()
         link_path.moveTo(self.upper_left + QPointF(2.0, 5.0))
         rect_pos = self.upper_left + QPointF(0.5, 5.0)
@@ -496,11 +499,11 @@ class TenureLinkRenderer(BaseIconRender):
         link_path.closeSubpath()
         p.drawPath(link_path)
 
-        #Draw 2nd segment
+        # Draw 2nd segment
         p.translate(8.5, 0)
         p.drawPath(link_path)
 
-        #Draw segment connector
+        # Draw segment connector
         p.translate(-8.5, 0)
         start_p = self.upper_left + QPointF(5.0, 8.0)
         end_p = self.upper_left + QPointF(11.0, 8.0)
@@ -519,7 +522,7 @@ class BaseTenureItem(QGraphicsItem):
         super(BaseTenureItem, self).__init__(parent, scene)
         self.setFlag(QGraphicsItem.ItemIsMovable)
 
-        #Renderer for header icon
+        # Renderer for header icon
         self.icon_renderer = kwargs.get('icon_renderer', None)
 
         self.arrows = []
@@ -532,7 +535,7 @@ class BaseTenureItem(QGraphicsItem):
             Qt.RoundJoin
         )
 
-        #Display properties
+        # Display properties
         self._default_header = QApplication.translate(
             'ProfileTenureView',
             'Not Defined'
@@ -544,17 +547,17 @@ class BaseTenureItem(QGraphicsItem):
         self.font_name = 'Consolas'
         self._entity = None
 
-        #Distance between the primary shape and its shadow
+        # Distance between the primary shape and its shadow
         self.shadow_thickness = 4
 
         self._side = 156
         self._height = self._side
         self._start_pos = 10
 
-        #The start and stop positions match the size of the item
+        # The start and stop positions match the size of the item
         stop_position = self._start_pos + self._side
 
-        #Main item gradient
+        # Main item gradient
         self._gradient = QLinearGradient(
             self._start_pos,
             self._start_pos,
@@ -568,8 +571,8 @@ class BaseTenureItem(QGraphicsItem):
         self._gradient.setColorAt(1.0, self._gradient_dark)
         self._brush = QBrush(self._gradient)
 
-        #Shadow gradient
-        #The start and stop positions match the size of the item
+        # Shadow gradient
+        # The start and stop positions match the size of the item
         shadow_start_pos = self._start_pos + self.shadow_thickness
         shadow_stop_pos = self._start_pos + self._side + self.shadow_thickness
         self._shadow_gradient = QLinearGradient(
@@ -758,26 +761,26 @@ class BaseTenureItem(QGraphicsItem):
 
             p1 = poly[i]
 
-            #Close to first point if the last item is reached
+            # Close to first point if the last item is reached
             if i + 1 == len(poly):
                 p2 = poly[0]
             else:
                 p2 = poly[i + 1]
 
-            #Construct line object
+            # Construct line object
             line = QLineF(p1, p2)
             lines.append(line)
 
         return lines
 
     def _elided_text(self, font, text, width):
-        #Returns elided version of the text if greater than the width
+        # Returns elided version of the text if greater than the width
         fm = QFontMetrics(font)
 
         return str(fm.elidedText(text, Qt.ElideRight, width))
 
     def _elided_items(self, font, width):
-        #Formats each item text to incorporate an elide if need be and
+        # Formats each item text to incorporate an elide if need be and
         # return the items in a list.
         return map(
             lambda item: self._elided_text(font, item, width),
@@ -854,7 +857,7 @@ class BaseTenureItem(QGraphicsItem):
         layout = QTextLayout(text, font)
 
         layout.beginLayout()
-        #Create the required number of lines in the layout
+        # Create the required number of lines in the layout
         while layout.createLine().isValid():
             pass
         layout.endLayout()
@@ -862,29 +865,29 @@ class BaseTenureItem(QGraphicsItem):
         y = 0
         max_width = 0
 
-        #Set line positions relative to the layout
+        # Set line positions relative to the layout
         for i in range(layout.lineCount()):
             line = layout.lineAt(i)
             max_width = max(max_width, line.naturalTextWidth())
             line.setPosition(QPointF(0, y))
             y += line.height()
 
-        #Defaults
+        # Defaults
         start_x = bounds.left()
         start_y = bounds.top()
 
-        #Horizontal flags
+        # Horizontal flags
         if (alignment & Qt.AlignLeft) == Qt.AlignLeft:
             start_x = bounds.left()
         elif (alignment & Qt.AlignCenter) == Qt.AlignCenter or \
-                        (alignment & Qt.AlignHCenter) == Qt.AlignHCenter:
+                (alignment & Qt.AlignHCenter) == Qt.AlignHCenter:
             start_x = bounds.left() + (bounds.width() - max_width) / 2.0
 
-        #Vertical flags
+        # Vertical flags
         if (alignment == Qt.AlignTop) == Qt.AlignTop:
             start_y = bounds.top()
         elif (alignment & Qt.AlignCenter) == Qt.AlignCenter or \
-                        (alignment & Qt.AlignVCenter) == Qt.AlignVCenter:
+                (alignment & Qt.AlignVCenter) == Qt.AlignVCenter:
             start_y = bounds.top() + (bounds.height() - y) / 2.0
 
         layout.draw(painter, QPointF(start_x, start_y))
@@ -902,7 +905,7 @@ class BaseTenureItem(QGraphicsItem):
         """
         shadow_start_pos = self._start_pos + self.shadow_thickness
 
-        #Use height of subsections to compute the appropriate height
+        # Use height of subsections to compute the appropriate height
         header_height = self._font_height(self.header_font, self.header) + 7
 
         items_title_height = self._font_height(
@@ -941,7 +944,7 @@ class BaseTenureItem(QGraphicsItem):
         painter_pen.setColor(self._normal_text_color)
         painter_pen.setWidth(0)
 
-        #Create shadow effect using linear gradient
+        # Create shadow effect using linear gradient
         painter.setBrush(self._shadow_gradient)
         painter.setPen(Qt.NoPen)
         painter.drawRect(shadow_rect)
@@ -949,7 +952,7 @@ class BaseTenureItem(QGraphicsItem):
         painter.setPen(self.pen)
         painter.setBrush(self._brush)
 
-        #Main item outline
+        # Main item outline
         painter.drawRect(main_item_rect)
         line_y_pos = header_height + margin * 2
         painter.drawLine(
@@ -959,7 +962,7 @@ class BaseTenureItem(QGraphicsItem):
             self._start_pos + line_y_pos
         )
 
-        #Draw header text
+        # Draw header text
         header_start_pos = self._start_pos + margin
         header_rect = QRect(
             header_start_pos,
@@ -968,13 +971,13 @@ class BaseTenureItem(QGraphicsItem):
             header_height
         )
 
-        #Adjust header text area if there is an icon renderer
+        # Adjust header text area if there is an icon renderer
         if not self.icon_renderer is None:
             init_width = header_rect.width()
             adj_width = init_width - (self.icon_renderer.width + 6)
             header_rect.setWidth(adj_width)
 
-        #Draw header icon if renderer is available
+        # Draw header icon if renderer is available
         if not self.icon_renderer is None:
             if isinstance(self.icon_renderer, BaseIconRender):
                 self.icon_renderer.draw(painter, self)
@@ -991,10 +994,10 @@ class BaseTenureItem(QGraphicsItem):
             self.header,
             header_rect.width()
         )
-        #print elided_header
+        # print elided_header
         self.draw_text(painter, elided_header, self.header_font, header_rect)
 
-        #Draw items header
+        # Draw items header
         items_title_rect = QRect(
             header_start_pos + 1,
             header_height + items_title_height - 1,
@@ -1007,7 +1010,7 @@ class BaseTenureItem(QGraphicsItem):
         painter.setBrush(items_title_brush)
         painter.drawRect(items_title_rect)
 
-        #Adjust left margin of items title
+        # Adjust left margin of items title
         items_title_rect.adjust(1, 0, 0, 0)
         painter.setPen(self._normal_text_color)
         self.draw_text(
@@ -1017,7 +1020,7 @@ class BaseTenureItem(QGraphicsItem):
             items_title_rect
         )
 
-        #Items listing
+        # Items listing
         items_margin = 6
         items_vertical_pos = header_height + items_title_height + 16
         items_w = self._side - (items_margin * 2)
@@ -1028,20 +1031,20 @@ class BaseTenureItem(QGraphicsItem):
             items_height
         )
 
-        #Draw if there are items
+        # Draw if there are items
         if len(self.items) > 0:
             painter.setFont(self.items_font)
             painter.setPen(self._text_item_color)
             multiline_items = self._elided_items(self.items_font, items_w)
 
-            #If auto-adjust is disabled then extract subset that will fit
+            # If auto-adjust is disabled then extract subset that will fit
             if not self.auto_adjust_height():
                 multiline_items = self.items_by_height(
                     items_height,
                     multiline_items
                 )
 
-            #QTextLayout requires the unicode character of the line separator
+            # QTextLayout requires the unicode character of the line separator
             multiline_items = u'\u2028'.join(multiline_items)
             self.draw_text(
                 painter,
@@ -1067,7 +1070,7 @@ class EntityItem(BaseTenureItem):
         )
         self.items_title = u'<<{0}>>'.format(columns)
 
-        #Use default renderer if none is specified
+        # Use default renderer if none is specified
         if self.icon_renderer is None:
             self.icon_renderer = EntityIconRenderer()
 
@@ -1113,7 +1116,7 @@ class TenureRelationshipItem(BaseTenureItem):
             'Social Tenure'
         )
 
-        #Use default renderer if none is specified
+        # Use default renderer if none is specified
         if self.icon_renderer is None:
             self.icon_renderer = TenureLinkRenderer()
 
@@ -1121,7 +1124,7 @@ class TenureRelationshipItem(BaseTenureItem):
         return TenureRelationshipItem.Type
 
     def auto_adjust_height(self):
-        #Base class override
+        # Base class override
         return False
 
     def _on_set_entity(self):
@@ -1150,7 +1153,7 @@ class TenureDocumentItem(BaseTenureItem):
             'Documents'
         )
 
-        #Use default renderer if none is specified
+        # Use default renderer if none is specified
         if self.icon_renderer is None:
             self.icon_renderer = DocumentIconRenderer()
 
@@ -1158,7 +1161,7 @@ class TenureDocumentItem(BaseTenureItem):
         return TenureDocumentItem.Type
 
     def auto_adjust_height(self):
-        #Base class override
+        # Base class override
         return False
 
     def _on_set_entity(self):
@@ -1189,7 +1192,7 @@ class Annotation(QGraphicsTextItem):
 
         font = 'Consolas'
 
-        #Set font size
+        # Set font size
         if self.size == Annotation.Minor:
             self.setFont(QFont(font, 10, 50))
 
@@ -1199,13 +1202,13 @@ class Annotation(QGraphicsTextItem):
             self.setFont(font)
 
     def focusOutEvent(self, event):
-        #Disable text interaction
+        # Disable text interaction
         self.setTextInteractionFlags(Qt.NoTextInteraction)
         self.lost_focus.emit(self)
         super(Annotation, self).focusOutEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        #Enable text interaction
+        # Enable text interaction
         if self.textInteractionFlags() == Qt.NoTextInteraction:
             self.setTextInteractionFlags(Qt.TextEditorInteraction)
 
@@ -1258,7 +1261,7 @@ class ProfileTenureScene(QGraphicsScene):
         super(ProfileTenureScene, self).mousePressEvent(event)
 
     def _insert_annotation_item(self, size, scene_pos):
-        #Insert major or minor annotation based on size
+        # Insert major or minor annotation based on size
         annotation = Annotation(size=size)
         annotation.setTextInteractionFlags(Qt.TextEditorInteraction)
         annotation.setZValue(1000.0)
@@ -1285,7 +1288,6 @@ class ProfileTenureView(QGraphicsView):
         # Specify STR graphic items adding policy
         self.add_party_policy = ProfileTenureView.ADD_TO_EXISTING
         self.add_spatial_unit_policy = ProfileTenureView.ADD_TO_EXISTING
-
 
         # Init items
         # Container for party entities and corresponding items
@@ -1663,7 +1665,7 @@ class ProfileTenureView(QGraphicsView):
         # Deletes selected annotation items in the scene
         for item in self.scene().selectedItems():
             if isinstance(item, Annotation):
-                #Only remove if item is not on interactive text edit mode
+                # Only remove if item is not on interactive text edit mode
                 if item.textInteractionFlags() == Qt.NoTextInteraction:
                     self.scene().removeItem(item)
                     item.deleteLater()
@@ -1800,6 +1802,7 @@ class ProfileTenureDiagram(QWidget):
     It provides controls for zooming, adding text and exporting the view to
     an image file, and wraps most of the ProfileTenureView functionality.
     """
+
     def __init__(self, parent=None, profile=None):
         super(ProfileTenureDiagram, self).__init__(parent)
 
@@ -1932,7 +1935,7 @@ class ProfileTenureDiagram(QWidget):
 
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
-            #Attempt to save the image
+            # Attempt to save the image
             status, msg = self.save_image_to_file(
                 self._path,
                 self._resolution,
@@ -2010,7 +2013,7 @@ class ProfileTenureDiagram(QWidget):
 
         factor = self.zoom_cbo.itemData(idx)
 
-        #Compute relative scale
+        # Compute relative scale
         scale = factor / self._current_zoom_factor
         self.scale(scale)
         self._current_zoom_factor = factor

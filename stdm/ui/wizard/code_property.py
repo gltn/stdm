@@ -18,29 +18,27 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
 from qgis.PyQt.QtCore import (
     Qt
-)
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QDialog,
-    QListWidgetItem,
-    QComboBox,
-    QHeaderView
 )
 from qgis.PyQt.QtGui import (
     QFontMetrics,
     QStandardItem,
     QStandardItemModel,
 )
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QDialog,
+    QHeaderView
+)
+
+from stdm.ui.customcontrols.generic_delegate import GenericDelegate
+from stdm.ui.wizard.ui_code_property import Ui_CodeProperty
 from stdm.utils.util import (
-    enable_drag_sort,
     code_columns,
     string_to_boolean
 )
-from stdm.ui.customcontrols.generic_delegate import GenericDelegate
-from stdm.ui.wizard.ui_code_property import Ui_CodeProperty
+
 
 class CodeProperty(QDialog, Ui_CodeProperty):
     """
@@ -68,7 +66,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
 
         self._leading_zero = form_fields['leading_zero']
         self._separator = form_fields['separator']
-        self._hide_prefix =  string_to_boolean(form_fields['hide_prefix'], False)
+        self._hide_prefix = string_to_boolean(form_fields['hide_prefix'], False)
         self._parent_column_name = form_fields['colname']
         self._disable_auto_increment = string_to_boolean(
             form_fields['disable_auto_increment'], False)
@@ -95,10 +93,10 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         self.underscore = QApplication.translate('CodeProperty', 'Underscore')
 
         self.separators = {
-            '':self.none, '/':'{} (/)'.format(self.forward_slash),
-            '\\':'{} (\\)'.format(self.backward_slash),
-            '-':'{} (-)'.format(self.hyphen),
-            '_':'{} (_)'.format(self.underscore), ' ':self.space
+            '': self.none, '/': '{} (/)'.format(self.forward_slash),
+            '\\': '{} (\\)'.format(self.backward_slash),
+            '-': '{} (-)'.format(self.hyphen),
+            '_': '{} (_)'.format(self.underscore), ' ': self.space
         }
 
         self.zeros = [self.none, '0', '00', '000', '0000', '00000']
@@ -250,7 +248,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         model = QStandardItemModel(2, 2)
         i = 0
         for row, col in enumerate(self._columns):
-
             column_item = QStandardItem(self._entity.columns[col].header())
             column_item.setCheckable(True)
 
@@ -306,7 +303,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         self.disable_auto_increment_chk.setChecked(self._disable_auto_increment)
 
-
     def set_hide_prefix(self):
         """
         Check if serial is enabled from the configuration.
@@ -343,7 +339,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         """
         return self._enable_editing
 
-
     def hide_prefix(self):
         """
         Returns the state of prefix hide option.
@@ -352,7 +347,6 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         .. versionadded:: 1.7.5
         """
         return self._hide_prefix
-
 
     def add_enable_auto_increment(self):
         """

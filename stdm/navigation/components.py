@@ -25,29 +25,32 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.data.database import Content
 
 class STDMContent(object):
     '''
     Abstract class for welding custom attributes to
     a navigation item.
     '''
-    def __init__(self,code):
+
+    def __init__(self, code):
         self.Name = ""
         self.Group = ""
         self.Code = code
+
 
 class STDMAction(QAction, STDMContent):
     '''
     Custom STDM Actions for inclusion in toolbars and/or menus
     '''
-    def __init__(self, icon, text, parent,code):
+
+    def __init__(self, icon, text, parent, code):
         if icon == None:
-            QAction.__init__(self,text, parent)
+            QAction.__init__(self, text, parent)
         else:
-            QAction.__init__(self,icon, text, parent)
-        STDMContent.__init__(self,code)
-        self.Name = text + " " + QApplication.translate("STDMModule","Module")
+            QAction.__init__(self, icon, text, parent)
+        STDMContent.__init__(self, code)
+        self.Name = text + " " + QApplication.translate("STDMModule", "Module")
+
 
 class STDMListWidgetItem(QListWidgetItem, STDMContent):
     '''
@@ -55,10 +58,12 @@ class STDMListWidgetItem(QListWidgetItem, STDMContent):
     that is subsequently used for registering the item as a
     content type
     '''
-    def __init__(self,text,name,icon,parent,code):
-        QListWidgetItem.__init__(self,icon,text,parent)
-        STDMContent.__init__(self,code)
-        self.Name = name + " " + QApplication.translate("STDMEntity","Entity")
+
+    def __init__(self, text, name, icon, parent, code):
+        QListWidgetItem.__init__(self, icon, text, parent)
+        STDMContent.__init__(self, code)
+        self.Name = name + " " + QApplication.translate("STDMEntity", "Entity")
+
 
 '''
 Define enumerations for all administrative unit levels
@@ -67,18 +72,3 @@ DEPARTMENT = 2001
 MUNICIPALITY = 2002
 MUNICIPALITY_SECTION = 2003
 LOCALITY = 2004
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

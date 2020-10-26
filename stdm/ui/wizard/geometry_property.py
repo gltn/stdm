@@ -23,18 +23,19 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
-
 from qgis.gui import QgsProjectionSelectionDialog
 
 from stdm.ui.wizard.ui_geom_property import Ui_GeometryProperty
 
 geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
-'MULTIPOLYGON']
+              'MULTIPOLYGON']
+
 
 class GeometryProperty(QDialog, Ui_GeometryProperty):
     """
     Geometry column property editor
     """
+
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of this dialog window
@@ -53,7 +54,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         self.init_gui()
 
     def srid(self):
-        if self._srid=="":
+        if self._srid == "":
             return "Select..."
         else:
             return self._srid
@@ -86,7 +87,7 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         projection_selector = QgsProjectionSelectionDialog(self)
 
         if projection_selector.exec_() == QDialog.Accepted:
-            #Remove 'EPSG:' part
+            # Remove 'EPSG:' part
             self._srid = projection_selector.selectedAuthId()[5:]
             self.btnCoord.setText(projection_selector.selectedAuthId())
 
@@ -111,9 +112,9 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
         return self._srid
 
     def accept(self):
-        if self._srid =="":
+        if self._srid == "":
             self.show_message(QApplication.translate("GeometryPropetyEditor",
-                "Please set geometry coordinate system"))
+                                                     "Please set geometry coordinate system"))
             return
 
         self.add_values()
@@ -125,6 +126,6 @@ class GeometryProperty(QDialog, Ui_GeometryProperty):
     def show_message(self, message, msg_icon=QMessageBox.Critical):
         msg = QMessageBox(self)
         msg.setIcon(msg_icon)
-        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard", "STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard", message))
         msg.exec_()

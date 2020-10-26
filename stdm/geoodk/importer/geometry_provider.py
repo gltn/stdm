@@ -27,10 +27,12 @@ from qgis.core import (
     QgsCoordinateTransform
 )
 
+
 class GeometryProvider:
     """
     Class constructor
     """
+
     def __init__(self, string_list):
         """
         Initialize variables for the class
@@ -72,7 +74,7 @@ class GeometryProvider:
         """
         self.point_to_list()
         if len(self._local_list) < 2:
-            return self._local_list[0].replace('0.0 0.0','').strip()
+            return self._local_list[0].replace('0.0 0.0', '').strip()
         else:
             return self._local_list[0]
 
@@ -90,7 +92,7 @@ class GeometryProvider:
         """
         return self.point().split()[0]
 
-    def set_point(self,x):
+    def set_point(self, x):
         """
 
         :param x:
@@ -177,6 +179,7 @@ class STDMGeometry(GeometryProvider):
     """
     Class constructor
     """
+
     def __init__(self, geomlist):
         """
         Initialize variables
@@ -187,7 +190,7 @@ class STDMGeometry(GeometryProvider):
         """
         Check if there are enough points for geometry creation
         """
-        if len(self.point_list)>0:
+        if len(self.point_list) > 0:
             return True
         else:
             return False
@@ -230,7 +233,3 @@ class STDMGeometry(GeometryProvider):
         point = self.create_point()
         point_wkt = point.exportToWkt()
         return 'SRID={};{}'.format(self.srid, point_wkt)
-
-
-
-

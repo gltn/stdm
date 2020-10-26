@@ -27,23 +27,23 @@ from qgis.PyQt.QtGui import (
     QValidator,
     QRegExpValidator
 )
-from qgis.PyQt.QtWidgets import  (
+from qgis.PyQt.QtWidgets import (
     QDialog,
-	QApplication,
-	QMessageBox,
+    QApplication,
+    QMessageBox,
 )
 
-from stdm.ui.wizard.ui_entity import Ui_dlgEntity
-from stdm.data.pg_utils import pg_table_exists
-
 from stdm.data.configuration.entity import entity_factory
-from stdm.data.configuration.db_items import DbItem
+from stdm.data.pg_utils import pg_table_exists
 from stdm.ui.notification import NotificationBar
+from stdm.ui.wizard.ui_entity import Ui_dlgEntity
+
 
 class EntityEditor(QDialog, Ui_dlgEntity):
     """
     Dialog to add and edit entities
     """
+
     def __init__(self, **kwargs):
         """
         :param parent: Owner of this dialog
@@ -70,7 +70,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             self.txt_display_name.setText(self.entity.label)
 
             self.cbSupportDoc.setCheckState(
-                    self.bool_to_check(self.entity.supports_documents)
+                self.bool_to_check(self.entity.supports_documents)
             )
 
             if self.entity.supports_documents and self.supporting_document_exists():
@@ -81,7 +81,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
     def supporting_document_exists(self):
         sd_name = u'{0}_{1}_{2}'.format(self.profile.prefix,
-                          self.entity.short_name.lower(), 'supporting_document')
+                                        self.entity.short_name.lower(), 'supporting_document')
         return pg_table_exists(sd_name)
 
     def show_notification(self, message):
@@ -150,7 +150,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
             return
 
         sn = str(self.edtTable.text().strip())
-        short_name = sn[0].upper()+sn[1:]
+        short_name = sn[0].upper() + sn[1:]
 
         if self.entity is None:  # New entity
             if self.duplicate_check(short_name):
@@ -176,11 +176,11 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         """
         self.entity = self._create_entity(short_name)
         self.profile.add_entity(self.entity)
-        #return True
+        # return True
 
     def _create_entity(self, short_name):
         entity = self.profile.create_entity(short_name, entity_factory,
-                supports_documents=self.support_doc())
+                                            supports_documents=self.support_doc())
         entity.description = self.edtDesc.text()
         entity.label = self.txt_display_name.text()
         entity.column_added.connect(self.form_parent.add_column_item)
@@ -227,11 +227,11 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         name = str(short_name).strip()
         name = name.replace(' ', "_")
         name = name.lower()
-        #Ensure prefix is not duplicated in the names
+        # Ensure prefix is not duplicated in the names
         prfx = self.profile.prefix
         prefix_idx = name.find(prfx, 0, len(prfx))
 
-        #If there is no prefix then append
+        # If there is no prefix then append
         if prefix_idx == -1:
             name = u'{0}_{1}'.format(self.profile.prefix, name)
 

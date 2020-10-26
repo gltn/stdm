@@ -20,28 +20,29 @@ email                : stdm@unhabitat.org
 """
 
 import os
-import sys
 import subprocess
+import sys
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import (
-    QDir,
-    Qt
-)
-from qgis.PyQt.QtWidgets import (
-    QDialog
-)
 from qgis.PyQt.QtCore import (
     QDir,
     pyqtSignal,
 
 )
-from stdm.ui.notification import NotificationBar
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog
+)
+
 from stdm.data.configuration.db_items import DbItem
-from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.geoodk.geoodk_writer import GeoodkWriter
 from stdm.settings import current_profile
-#from stdm.geoodk import  FormUploader
+from stdm.ui.notification import NotificationBar
+from stdm.ui.wizard.custom_item_model import EntitiesModel
+
+# from stdm.geoodk import  FormUploader
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -77,7 +78,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
 
         self.chk_all.stateChanged.connect(self.check_state_on)
         self.btnShowOutputFolder.clicked.connect(self.onShowOutputFolder)
-        #self.btn_upload.clicked.connect(self.upload_generated_form)
+        # self.btn_upload.clicked.connect(self.upload_generated_form)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
@@ -95,7 +96,6 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         # macOS
         if sys.platform.startswith('darwin'):
             subprocess.Popen(['open', output_path])
-
 
     def check_state_on(self):
         """
@@ -133,8 +133,8 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                     continue
 
             if entity.TYPE_INFO not in ['SUPPORTING_DOCUMENT',
-                    'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
-                    'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY', 'AUTO_GENERATE_CODE']:
+                                        'SOCIAL_TENURE', 'ADMINISTRATIVE_SPATIAL_UNIT',
+                                        'ENTITY_SUPPORTING_DOCUMENT', 'ASSOCIATION_ENTITY', 'AUTO_GENERATE_CODE']:
 
                 if entity.TYPE_INFO == 'VALUE_LIST':
                     pass
@@ -154,9 +154,9 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Ensure that the entities  are checkable
         :return:
         """
-        if self.entity_model.rowCount() >0:
+        if self.entity_model.rowCount() > 0:
             for row in range(self.entity_model.rowCount()):
-                index = self.entity_model.index(row,0)
+                index = self.entity_model.index(row, 0)
                 item_index = self.entity_model.itemFromIndex(index)
                 item_index.setCheckable(True)
 
@@ -166,7 +166,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         to Xform from the user selection
         :return:
         """
-        entity_list =[]
+        entity_list = []
         if self.entity_model.rowCount() > 0:
             for row in range(self.entity_model.rowCount()):
                 item = self.entity_model.item(row)
@@ -199,7 +199,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Generate mobile form based on the selected entities.
         :return:
         """
-        #try:
+        # try:
         self._notif_bar_str.clear()
         if len(selected_entities) == 0:
             self._notif_bar_str.insertErrorNotification(
@@ -211,7 +211,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             geoodk_writer.write_data_to_xform()
             msg = 'File saved in: {}'
             self._notif_bar_str.insertInformationNotification(msg.format(FORM_HOME))
-        #except Exception as ex:
+        # except Exception as ex:
         #    self._notif_bar_str.insertErrorNotification(ex.message +
         #                                                ': Unable to generate Mobile Form')
         #   return
@@ -234,8 +234,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                     'One of the entities required to define str is not selected. Form not saved'
                 )
                 return
-            #else:
-                #self.generate_mobile_form(user_entities)
-        #else:
+            # else:
+            # self.generate_mobile_form(user_entities)
+        # else:
         self.generate_mobile_form(user_entities)
-

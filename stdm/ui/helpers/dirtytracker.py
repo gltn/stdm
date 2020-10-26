@@ -21,12 +21,14 @@ email                : gkahiu@gmail.com
 from stdm.ui.helpers.valuehandlers import ControlValueHandler
 from stdm.utils.util import getIndex
 
+
 class ControlReaderMapper(object):
     '''
     Key-value mapper for control and their corresponding value readers.
     The reader must be a subclass of ControlValueReader class.
     '''
-    def __init__(self,control,reader):
+
+    def __init__(self, control, reader):
         self._control = control
         self._reader = reader
         self._reader.setControl(control)
@@ -43,6 +45,7 @@ class ControlReaderMapper(object):
         '''
         return self._reader
 
+
 class ControlDirtyTracker(object):
     '''
     Tracks a control's value based on its last saved state. It compares a
@@ -50,11 +53,11 @@ class ControlDirtyTracker(object):
     are different, then the control is considered "dirty" and so is the form.
     '''
 
-    def __init__(self,controlReaderMapper):
+    def __init__(self, controlReaderMapper):
         self._ctlRdMapper = controlReaderMapper
         self._cleanValue = None
 
-        #If control is supported then set can track to True
+        # If control is supported then set can track to True
         if ControlDirtyTracker.isControlTypeSupported(self._ctlRdMapper.control())[0]:
             self._cleanValue = self.controlCurrentValue()
 
@@ -67,7 +70,7 @@ class ControlDirtyTracker(object):
         This is based on whether there exists a registered value handler class
         for the specified control.
         '''
-        #Define default list of supported control names
+        # Define default list of supported control names
         supportedControls = ControlValueHandler.handlers.keys()
         ctlName = str(ctl.metaObject().className())
 
@@ -76,10 +79,10 @@ class ControlDirtyTracker(object):
         typeIndex = getIndex(supportedControls, ctlName)
 
         if typeIndex == -1:
-            return False,handler
+            return False, handler
         else:
             handler = ControlValueHandler.handlers[ctlName]
-            return True,handler
+            return True, handler
 
     def control(self):
         '''
@@ -91,7 +94,7 @@ class ControlDirtyTracker(object):
         '''
         Returns the current control value based on the type of control.
         '''
-        #Validate
+        # Validate
         if self._ctlRdMapper.reader().isControlTypeValid():
             return self._ctlRdMapper.reader().value()
 
@@ -112,10 +115,12 @@ class ControlDirtyTracker(object):
         '''
         return self._cleanValue != self.controlCurrentValue()
 
+
 class ControlDirtyTrackerCollection(object):
     '''
     Enables us to track multiple controls in a widget or dialog.
     '''
+
     def __init__(self):
         self._ctlTrackerColl = []
 
@@ -123,24 +128,24 @@ class ControlDirtyTrackerCollection(object):
         '''
         Register a control and its corresponding reader for monitoring its dirty state.
         '''
-        #Try to search through registered value handlers
+        # Try to search through registered value handlers
         if reader == None:
             supported, handler = ControlDirtyTracker.isControlTypeSupported(control)
-            #Do not add to the collection if a matching reader does not exist
+            # Do not add to the collection if a matching reader does not exist
             if not supported:
                 return
             reader = handler()
 
-        ctlRdMapper = ControlReaderMapper(control,reader)
+        ctlRdMapper = ControlReaderMapper(control, reader)
         self.RegisterControlReaderMappersForMonitor(ctlRdMapper)
 
-    def addControlReaderMapper(self,ctlrdmapper):
+    def addControlReaderMapper(self, ctlrdmapper):
         '''
         Register a ControlReaderMapper object.
         '''
         self.RegisterControlReaderMappersForMonitor(ctlrdmapper)
 
-    def RegisterControlReaderMappersForMonitor(self,ctlrdmapper):
+    def RegisterControlReaderMappersForMonitor(self, ctlrdmapper):
         '''
         Validate if the control is supported and if true, add it to the collection.
         '''
@@ -171,33 +176,3 @@ class ControlDirtyTrackerCollection(object):
         '''
         for ct in self._ctlTrackerColl:
             ct.setValueAsClean()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

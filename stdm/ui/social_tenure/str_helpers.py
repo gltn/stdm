@@ -18,8 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
 
 from qgis.PyQt.QtCore import (
     Qt,
@@ -27,30 +27,32 @@ from qgis.PyQt.QtCore import (
     QModelIndex,
     QSortFilterProxyModel
 )
-
 from qgis.PyQt.QtWidgets import (
     QComboBox,
     QItemDelegate,
     QTableView,
     QAbstractItemView,
-    QGraphicsDropShadowEffect,
     QHeaderView,
     QSizePolicy,
     QDoubleSpinBox
 )
+
+from stdm.data.configuration import entity_model
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
-from stdm.data.configuration import entity_model
 from stdm.utils.util import (
     entity_display_columns,
     lookup_parent_entity
 )
 
 LOGGER = logging.getLogger('stdm')
+
+
 class STRTypeDelegate(QItemDelegate):
     """
     It is a combobox delegate embedded in STR Type column.
     """
+
     def __init__(self, spatial_unit, parent=None):
         """
         Initializes STRTypeDelegate and QItemDelegate.
@@ -127,7 +129,7 @@ class STRTypeDelegate(QItemDelegate):
                 return
             widget.insertItem(0, " ")
 
-                #, len(self.str_type_set_data())
+            # , len(self.str_type_set_data())
             for id, type in self.str_type_set_data().items():
                 widget.addItem(type, id)
 
@@ -136,12 +138,10 @@ class STRTypeDelegate(QItemDelegate):
                 list_item_index = index.model().data(index, Qt.DisplayRole)
             if list_item_index is not None and \
                     not isinstance(list_item_index, str):
-
                 value = list_item_index.toInt()
                 widget.blockSignals(True)
                 widget.setCurrentIndex(value[0])
                 widget.blockSignals(False)
-
 
     def setModelData(self, editor, model, index):
         """
@@ -161,7 +161,7 @@ class STRTypeDelegate(QItemDelegate):
             model.setData(
                 index,
                 editor.itemData(
-                value, Qt.DisplayRole)
+                    value, Qt.DisplayRole)
             )
         if index.column() == 1:
             pass
@@ -179,10 +179,11 @@ class STRTypeDelegate(QItemDelegate):
         """
         editor.setGeometry(option.rect)
 
+
 class FreezeTableWidget(QTableView):
 
     def __init__(
-            self, table_data, headers, parent = None, *args
+            self, table_data, headers, parent=None, *args
     ):
         """
         Creates two QTableViews one of which is a frozen table while the
@@ -214,10 +215,10 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.verticalHeader().hide()
         # Widget does not accept focus
         self.frozen_table_view.setFocusPolicy(
-            Qt.StrongFocus|Qt.TabFocus|Qt.ClickFocus
+            Qt.StrongFocus | Qt.TabFocus | Qt.ClickFocus
         )
         # The user can not resize columns
-        self.frozen_table_view.horizontalHeader().\
+        self.frozen_table_view.horizontalHeader(). \
             setResizeMode(QHeaderView.Fixed)
         self.frozen_table_view.setObjectName('frozen_table')
         self.setSelectionMode(QAbstractItemView.NoSelection)
@@ -239,12 +240,12 @@ class FreezeTableWidget(QTableView):
         self.set_column_width()
         # Set properties header lines
         vh = self.verticalHeader()
-        vh.setDefaultSectionSize(25) # height lines
+        vh.setDefaultSectionSize(25)  # height lines
         # text alignment centered
         vh.setDefaultAlignment(Qt.AlignCenter)
         vh.setVisible(True)
         # Height of rows - as in the main widget
-        self.frozen_table_view.verticalHeader().\
+        self.frozen_table_view.verticalHeader(). \
             setDefaultSectionSize(
             vh.defaultSectionSize()
         )
@@ -397,7 +398,7 @@ class FreezeTableWidget(QTableView):
         :param newSize: The new size of the section
         :type newSize: Integer
         """
-        if logicalIndex==0 or logicalIndex==1:
+        if logicalIndex == 0 or logicalIndex == 1:
             self.frozen_table_view.setColumnWidth(
                 logicalIndex, newSize
             )
@@ -484,15 +485,16 @@ class FreezeTableWidget(QTableView):
             self, cursor_action, modifiers
         )
         if cursor_action == self.MoveLeft and current.column() > 1 and \
-                        self.visualRect(current).topLeft().x() < \
-                        (self.frozen_table_view.columnWidth(0) +
-                             self.frozen_table_view.columnWidth(1)):
+                self.visualRect(current).topLeft().x() < \
+                (self.frozen_table_view.columnWidth(0) +
+                 self.frozen_table_view.columnWidth(1)):
             new_value = self.horizontalScrollBar().value() + \
-                       self.visualRect(current).topLeft().x() - \
-                       (self.frozen_table_view.columnWidth(0) +
-                        self.frozen_table_view.columnWidth(1))
+                        self.visualRect(current).topLeft().x() - \
+                        (self.frozen_table_view.columnWidth(0) +
+                         self.frozen_table_view.columnWidth(1))
             self.horizontalScrollBar().setValue(new_value)
         return current
+
 
 class EntityConfig(object):
 
@@ -537,4 +539,3 @@ class EntityConfig(object):
         :rtype: SQLAlchemy Model
         """
         return self._base_model
-

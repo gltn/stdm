@@ -1,4 +1,3 @@
-
 """
 /***************************************************************************
 Name                 : Config
@@ -26,10 +25,11 @@ from qgis.PyQt.QtCore import (
     QObject
 )
 
-from stdm.data.database import Singleton
 from stdm.data.configuration.profile import Profile
+from stdm.data.database import Singleton
 
 LOGGER = logging.getLogger('stdm')
+
 
 @Singleton
 class StdmConfiguration(QObject):
@@ -58,7 +58,7 @@ class StdmConfiguration(QObject):
         for p in self.profiles.values():
             for e in p.entities.values():
                 if e.TYPE_INFO == 'VALUE_LIST':
-                        count += len(e.values.values())
+                    count += len(e.values.values())
                 count += len(e.columns)
             count += len(p.entities)
         count += len(self.profiles)
@@ -87,7 +87,7 @@ class StdmConfiguration(QObject):
         """
         profile_name = str(profile.name)
 
-        if not profile_name in self.profiles:
+        if profile_name not in self.profiles:
             self.profiles[profile_name] = profile
 
             LOGGER.debug('%s profile added', profile_name)
@@ -95,7 +95,7 @@ class StdmConfiguration(QObject):
             if self.is_null:
                 self.is_null = False
 
-            #Raise profile_added signal
+            # Raise profile_added signal
             self.profile_added.emit(profile)
 
     def create_profile(self, name):
@@ -119,7 +119,7 @@ class StdmConfiguration(QObject):
         profile was not found.
         :rtype: bool
         """
-        if not name in self.profiles:
+        if name not in self.profiles:
             LOGGER.debug('Profile named %s not found.', name)
 
             return False
@@ -129,11 +129,11 @@ class StdmConfiguration(QObject):
         if len(self.profiles) == 0:
             self.is_null = True
 
-        #Remove all references for the profile using the clone object
-        if not del_profile is None:
+        # Remove all references for the profile using the clone object
+        if del_profile is not None:
             del_profile.on_delete()
 
-        #Add to the list of removed profiles
+        # Add to the list of removed profiles
         self._removed_profiles.append(del_profile)
 
         LOGGER.debug('%s profile removed.', name)
@@ -176,7 +176,7 @@ class StdmConfiguration(QObject):
         for i in range(2, len(profile)):
             curr_prefix = profile[0:i].lower()
 
-            if not curr_prefix in prefixes:
+            if curr_prefix not in prefixes:
                 prefix = curr_prefix
 
                 LOGGER.debug('Prefix determined %s for %s profile',
@@ -194,4 +194,3 @@ class StdmConfiguration(QObject):
         """
         self.profiles = OrderedDict()
         self.is_null = True
-

@@ -27,15 +27,16 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
+
 class ComboBoxWithOther(QWidget):
     '''
     Custom QComboBox which activates a QLineEdit control
     for entering those items that are not in the list.
     '''
 
-    def __init__(self, parent = None):
-        QWidget.__init__(self,parent)
-        self.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self._vboxLayout = QVBoxLayout(self)
         self._vboxLayout.setMargin(0)
@@ -49,17 +50,17 @@ class ComboBoxWithOther(QWidget):
         self._txtOther.setVisible(False)
         self._vboxLayout.addWidget(self._txtOther)
 
-        #We are using random text here so that the custom line edit is not shown on selecting a blank item in the list.
+        # We are using random text here so that the custom line edit is not shown on selecting a blank item in the list.
         self._activatorText = QApplication.translate("ComboBoxWithOther", "Other")
 
-        #Connect signals
+        # Connect signals
         self._cboItem.currentIndexChanged[str].connect(self.onComboIndexChanged)
 
     def sizeHint(self):
         '''
         Size hint for the control.
         '''
-        return QSize(190,80)
+        return QSize(190, 80)
 
     def minimumHeight(self):
         '''
@@ -86,17 +87,17 @@ class ComboBoxWithOther(QWidget):
         '''
         return self._activatorText
 
-    def setActivatorText(self,activatorText):
+    def setActivatorText(self, activatorText):
         '''
         Set the text that will be used to display the line edit control that enables the user to
         enter values that are not available in the combobox list.
         '''
-        if not isinstance(activatorText,str):
+        if not isinstance(activatorText, str):
             self._activatorText = str(activatorText)
         else:
             self._activatorText = activatorText
 
-    def onComboIndexChanged(self,indexText):
+    def onComboIndexChanged(self, indexText):
         '''
         Slot raised when the current index of the combobox changes. This searches for the activator text
         and loads the line edit for entering 'Other' value.
@@ -120,32 +121,4 @@ class ComboBoxWithOther(QWidget):
                                          "'{0}' text cannot be empty.".format(str(self._activatorText)))
             isValid = False
 
-        return isValid,msg
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        return isValid, msg

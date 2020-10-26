@@ -24,10 +24,9 @@ class ProjectionSelector(QDialog):
         super(ProjectionSelector, self).__init__(parent)
         self.parent = parent
 
-
     def loadAvailableSystems(self):
-        coordSys=""
-        crsDlg=QgsProjectionSelectionDialog(self.parent)
-        if crsDlg.exec_()==QDialog.Accepted:
-            coordSys=str(crsDlg.selectedAuthId())
+        coordSys = ""
+        crsDlg = QgsProjectionSelectionDialog(self.parent)
+        if crsDlg.exec_() == QDialog.Accepted:
+            coordSys = str(crsDlg.selectedAuthId())
         return coordSys

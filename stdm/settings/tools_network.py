@@ -23,31 +23,30 @@ from qgis.PyQt.QtNetwork import QNetworkProxy
 
 
 def getProxy():
-
     # Adaption by source of "Plugin Installer - Version 1.0.10"
     proxy = None
     settings = QSettings()
     settings.beginGroup("proxy")
 
-    #Check if the 'proxy' group exists
+    # Check if the 'proxy' group exists
     proxyKeys = settings.childKeys()
     if len(proxyKeys) == 0:
         return
 
-    if settings.value("/proxyEnabled",type=bool):
+    if settings.value("/proxyEnabled", type=bool):
         proxy = QNetworkProxy()
-        proxyType = settings.value("/proxyType","")
-        #if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
+        proxyType = settings.value("/proxyType", "")
+        # if len(args)>0 and settings.value("/proxyExcludedUrls").toString().contains(args[0]):
         #  proxyType = "NoProxy"
-        if proxyType in ["1","Socks5Proxy"]:
+        if proxyType in ["1", "Socks5Proxy"]:
             proxy.setType(QNetworkProxy.Socks5Proxy)
-        elif proxyType in ["2","NoProxy"]:
+        elif proxyType in ["2", "NoProxy"]:
             proxy.setType(QNetworkProxy.NoProxy)
-        elif proxyType in ["3","HttpProxy"]:
+        elif proxyType in ["3", "HttpProxy"]:
             proxy.setType(QNetworkProxy.HttpProxy)
-        elif proxyType in ["4","HttpCachingProxy"]:
+        elif proxyType in ["4", "HttpCachingProxy"]:
             proxy.setType(QNetworkProxy.HttpCachingProxy)
-        elif proxyType in ["5","FtpCachingProxy"]:
+        elif proxyType in ["5", "FtpCachingProxy"]:
             proxy.setType(QNetworkProxy.FtpCachingProxy)
         else:
             proxy.setType(QNetworkProxy.DefaultProxy)

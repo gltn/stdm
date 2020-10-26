@@ -19,15 +19,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import os
-import shutil
-import platform
 import filecmp
-from stdm.utils.util import PLUGIN_DIR
+import os
+import platform
+import shutil
+
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
+
+from stdm.utils.util import PLUGIN_DIR
 
 DEFAULT_CONFIG = "stdmConfig.xml"
 LICENSE = "LICENSE.txt"

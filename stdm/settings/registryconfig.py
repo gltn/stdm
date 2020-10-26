@@ -20,11 +20,11 @@ email                : gkahiu@gmail.com
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QColor
 
-#Names of registry keys
+# Names of registry keys
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
-PATHKEYS = ['Config','NetDocumentResource','ComposerOutputs','ComposerTemplates']
+PATHKEYS = ['Config', 'NetDocumentResource', 'ComposerOutputs', 'ComposerTemplates']
 DATABASE_LOOKUP = 'LookupInit'
-#There was a mixup in these 2 keys. Consolidation required across the plugin.
+# There was a mixup in these 2 keys. Consolidation required across the plugin.
 LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
@@ -42,6 +42,7 @@ STDM_PLUGIN = 'stdm'
 STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 ENTITY_SORT_ORDER = 'EntitySortOrder'
+
 
 def registry_value(key_name):
     """
@@ -99,6 +100,7 @@ def source_documents_path():
     """
     return registry_value(NETWORK_DOC_RESOURCE)
 
+
 def last_document_path():
     """
     :return: Returns the latest path used for uploading supporting documents.
@@ -131,6 +133,7 @@ def set_debug_logging(state):
 
     set_registry_value(DEBUG_LOG, lvl)
 
+
 def set_last_document_path(path):
     """
     Sets the latest path used for uploading supporting documents.
@@ -147,7 +150,8 @@ def enable_stdm():
     config_plugins = QGISRegistryConfig(QGIS_PYTHON_PLUGINS)
     stdm_status = config_plugins.read([STDM_PLUGIN])
     if stdm_status[STDM_PLUGIN] == 'false':
-        config_plugins.write({STDM_PLUGIN:'true'})
+        config_plugins.write({STDM_PLUGIN: 'true'})
+
 
 def selection_color():
     """
@@ -172,7 +176,7 @@ def selection_color():
         ['default_selection_color_alpha']
     )
     if len(red_dic) < 1 or len(green_dic) < 1 or \
-                    len(blue_dic) < 1 or len(alpha_dic) < 1:
+            len(blue_dic) < 1 or len(alpha_dic) < 1:
         rgba = QColor(255, 255, 0, 255)
 
         return rgba
@@ -202,6 +206,7 @@ class RegistryConfig(object):
     """
     Utility class for reading and writing STDM user settings in Windows Registry
     """
+
     def __init__(self):
         self.groupPath = "STDM"
 
@@ -268,21 +273,23 @@ class RegistryConfig(object):
         stdmGroup = "/" + self.groupPath
         uSettings.beginGroup(stdmGroup)
 
-        for k,v in settings.iteritems():
-            uSettings.setValue(k,v)
+        for k, v in settings.iteritems():
+            uSettings.setValue(k, v)
 
         uSettings.endGroup()
         uSettings.sync()
+
 
 class QGISRegistryConfig(RegistryConfig):
     """
     Class for reading and writing QGIS-wide registry settings.
     The user has to specify the group path which contains the keys.
     """
-    def __init__(self,path):
+
+    def __init__(self, path):
         RegistryConfig.__init__(self)
 
-        #Insert forward slash if it does not exist in the path
+        # Insert forward slash if it does not exist in the path
         if len(path) > 0:
             slash = path[0]
             slash_char = "/"

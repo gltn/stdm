@@ -18,16 +18,18 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
+
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
     QWidget
 )
 
-from stdm.ui.importexport.related_table_dialog import RelatedTableDialog
-from stdm.ui.importexport.source_document_dialog import SourceDocumentTranslatorDialog
 from stdm.ui.importexport.lookup_dialog import LookupDialog
 from stdm.ui.importexport.multiple_enumeration_dialog import MultipleEnumerationDialog
+from stdm.ui.importexport.related_table_dialog import RelatedTableDialog
+from stdm.ui.importexport.source_document_dialog import SourceDocumentTranslatorDialog
+
 
 class ValueTranslatorConfig(object):
     """
@@ -79,6 +81,7 @@ class RelatedTableTranslatorConfig(ValueTranslatorConfig):
         return RelatedTableDialog(parent, source_cols, dest_table, dest_col,
                                   src_col)
 
+
 RelatedTableTranslatorConfig.register()
 
 
@@ -98,6 +101,7 @@ class SourceDocumentTranslatorConfig(ValueTranslatorConfig):
             dest_col,
             src_col
         )
+
 
 SourceDocumentTranslatorConfig.register()
 
@@ -119,6 +123,7 @@ class LookupTranslatorConfig(ValueTranslatorConfig):
             src_col
         )
 
+
 LookupTranslatorConfig.register()
 
 
@@ -136,5 +141,3 @@ class MultipleEnumerationTranslatorConfig(ValueTranslatorConfig):
 
 
 MultipleEnumerationTranslatorConfig.register()
-
-

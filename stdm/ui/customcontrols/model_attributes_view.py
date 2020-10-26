@@ -19,20 +19,22 @@ email                : gkahiu@gmail.com
 """
 from collections import OrderedDict
 
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import (
-     QStandardItemModel,
-     QStandardItem
+    QStandardItemModel,
+    QStandardItem
 )
 from qgis.PyQt.QtWidgets import QListView
-from qgis.PyQt.QtCore import Qt
 
 __all__ = ["ModelAtrributesView"]
+
 
 class ModelAtrributesView(QListView):
     """
     Custom QListView implementation that displays checkable model attributes.
     """
-    def __init__(self,parent=None,dataModel = None):
+
+    def __init__(self, parent=None, dataModel=None):
         QListView.__init__(self, parent)
 
         self._dataModel = dataModel
@@ -46,7 +48,7 @@ class ModelAtrributesView(QListView):
         """
         return self._dataModel
 
-    def setDataModel(self,dataModel):
+    def setDataModel(self, dataModel):
         """
         Sets the data model. Should be a callable class rather than the class.
         instance.
@@ -68,7 +70,7 @@ class ModelAtrributesView(QListView):
         Sets the mapping dictionary for the table object
         """
         if dataMapping != None:
-            self._modelDisplayMapping=dataMapping
+            self._modelDisplayMapping = dataMapping
 
     def load(self, sort=False):
         """
@@ -107,14 +109,14 @@ class ModelAtrributesView(QListView):
         self._attrModel.clear()
         self._attrModel.setColumnCount(2)
 
-        for attrName,displayName in attrMapping.iteritems():
-            #Exclude row ID in the list, other unique identifier attributes in the model can be used
+        for attrName, displayName in attrMapping.iteritems():
+            # Exclude row ID in the list, other unique identifier attributes in the model can be used
             if attrName != "id":
                 displayNameItem = QStandardItem(displayName)
                 displayNameItem.setCheckable(True)
                 attrNameItem = QStandardItem(attrName)
 
-                self._attrModel.appendRow([displayNameItem,attrNameItem])
+                self._attrModel.appendRow([displayNameItem, attrNameItem])
 
         self.setModel(self._attrModel)
 
@@ -128,11 +130,10 @@ class ModelAtrributesView(QListView):
         selectedAttrs = OrderedDict()
 
         for i in range(self._attrModel.rowCount()):
-            displayNameItem = self._attrModel.item(i,0)
+            displayNameItem = self._attrModel.item(i, 0)
 
             if displayNameItem.checkState() == Qt.Checked:
-
-                attrNameItem = self._attrModel.item(i,1)
+                attrNameItem = self._attrModel.item(i, 1)
 
                 selectedAttrs[attrNameItem.text()] = displayNameItem.text()
 

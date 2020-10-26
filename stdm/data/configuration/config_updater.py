@@ -23,19 +23,17 @@ from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
-
 from qgis.core import QgsApplication
-
 from sqlalchemy.exc import SQLAlchemyError
 
+from stdm.data.configuration import profile_foreign_keys
+from stdm.data.configuration.db_items import DbItem
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.database import (
     metadata,
     STDMDb
 )
-from stdm.data.configuration.db_items import DbItem
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.data.configuration.exception import ConfigurationException
-from stdm.data.configuration import profile_foreign_keys
 
 LOGGER = logging.getLogger('stdm')
 
@@ -46,13 +44,13 @@ class ConfigurationSchemaUpdater(QObject):
     """
     update_started = pyqtSignal()
 
-    #Signal contains message type and message
+    # Signal contains message type and message
     update_progress = pyqtSignal(int, str)
 
-    #Signal indicates True if the update succeeded, else False.
+    # Signal indicates True if the update succeeded, else False.
     update_completed = pyqtSignal(bool)
 
-    #Message types
+    # Message types
     INFORMATION, WARNING, ERROR = range(0, 3)
 
     def __init__(self, engine=None, parent=None):
@@ -62,11 +60,11 @@ class ConfigurationSchemaUpdater(QObject):
         self.engine = engine
         self.metadata = metadata
 
-        #Use the default engine if None is specified.
+        # Use the default engine if None is specified.
         if self.engine is None:
             self.engine = STDMDb.instance().engine
 
-        #Ensure there is a connectable set in the metadata
+        # Ensure there is a connectable set in the metadata
         if self.metadata.bind is None:
             self.metadata.bind = self.engine
 
@@ -91,15 +89,15 @@ class ConfigurationSchemaUpdater(QObject):
             return
 
         try:
-            #Iterate through removed profiles first
+            # Iterate through removed profiles first
             for rp in self.config.removed_profiles:
                 self.remove_profile(rp)
 
-            #Iterate through profiles
+            # Iterate through profiles
             for p in self.config.profiles.values():
                 self.update_profile(p)
 
-            #Delete removed profile objects
+            # Delete removed profile objects
             self._clean_removed_profiles()
 
             self.update_completed.emit(True)
@@ -114,7 +112,7 @@ class ConfigurationSchemaUpdater(QObject):
             self.update_completed.emit(False)
 
     def _clean_removed_profiles(self):
-        #Delete removed profiles
+        # Delete removed profiles
         for p in self.config.removed_profiles:
             p.deleteLater()
             QgsApplication.processEvents()
@@ -135,20 +133,20 @@ class ConfigurationSchemaUpdater(QObject):
 
         self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, msg)
 
-        #Delete basic view first
+        # Delete basic view first
         profile.social_tenure.delete_view(self.engine)
 
-        #Drop relations
+        # Drop relations
         self._drop_entity_relations(profile)
 
-        #Drop entities
+        # Drop entities
         self._update_entities(profile.removed_entities)
 
     def _drop_entity_relations(self, profile):
         trans_msg = self.tr('Removing redundant foreign key constraints...')
         self.update_progress.emit(ConfigurationSchemaUpdater.INFORMATION, trans_msg)
 
-        #Get existing foreign key names
+        # Get existing foreign key names
         fks = profile_foreign_keys(profile)
 
         try:
@@ -197,16 +195,16 @@ class ConfigurationSchemaUpdater(QObject):
 
         self._drop_entity_relations(profile)
 
-        #Drop removed entities first
+        # Drop removed entities first
         self._update_entities(profile.removed_entities)
 
-        #Now iterate through new or updated entities
+        # Now iterate through new or updated entities
         self._update_entities(profile.entities.values())
 
-        #Update entity relations by creating foreign key references
+        # Update entity relations by creating foreign key references
         self.update_entity_relations(profile)
 
-        #Create basic STR database view
+        # Create basic STR database view
         try:
             profile.social_tenure.create_view(self.engine)
 
@@ -249,14 +247,13 @@ class ConfigurationSchemaUpdater(QObject):
         fks = profile_foreign_keys(profile)
 
         for er in profile.relations.values():
-            #Assert if the EntityRelation object is valid
+            # Assert if the EntityRelation object is valid
             if er.valid()[0]:
-                #Assert if the entity relation already exists
+                # Assert if the entity relation already exists
                 if er.autoname in fks:
                     LOGGER.debug('{0} foreign key already exists.'.format(er.autoname))
 
                     continue
-
 
                 status = er.create_foreign_key_constraint()
                 if not status:
@@ -283,4 +280,3 @@ class ConfigurationSchemaUpdater(QObject):
 
         else:
             return 'UNKNOWN ACTION'
-

@@ -210,11 +210,11 @@ class OGRReader(object):
                             if isinstance(value, int):
                                 if value == 0:
                                     if entity.columns[col_name].TYPE_INFO in \
-                                        ['LOOKUP', 'ADMIN_SPATIAL_UNIT',
-                                        'FOREIGN_KEY']:
+                                            ['LOOKUP', 'ADMIN_SPATIAL_UNIT',
+                                             'FOREIGN_KEY']:
                                         value = None
                     except ValueError:
-                        #TODO show warning to the user that
+                        # TODO show warning to the user that
                         #  some values cannot be converted to integer.
                         value = None
 
@@ -311,17 +311,17 @@ class OGRReader(object):
         """
         # Convert polygon to multipolygon if the destination table is multi-polygon.
         if source_geom_type.lower() == 'polygon' and \
-                        destination_geom_type.lower() == 'multipolygon':
+                destination_geom_type.lower() == 'multipolygon':
             geom_wkb, geom_type = self.to_ogr_multi_type(geom,
-                                                            ogr.wkbMultiPolygon)
+                                                         ogr.wkbMultiPolygon)
 
         elif source_geom_type.lower() == 'linestring' and \
-                        destination_geom_type.lower() == 'multilinestring':
+                destination_geom_type.lower() == 'multilinestring':
             geom_wkb, geom_type = self.to_ogr_multi_type(geom,
-                                                            ogr.wkbMultiLineString)
+                                                         ogr.wkbMultiLineString)
 
         elif source_geom_type.lower() == 'point' and \
-                        destination_geom_type.lower() == 'multipoint':
+                destination_geom_type.lower() == 'multipoint':
             geom_wkb, geom_type = self.to_ogr_multi_type(geom, ogr.wkbMultiPoint)
         else:
             geom_wkb = geom.ExportToWkt()

@@ -17,39 +17,36 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import (
-    QObject
-)
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QApplication,
     QMessageBox
 )
-from stdm.ui.ui_changepwd import Ui_frmChangePwd
 
-from stdm.security.membership import Membership
-from stdm.security.exception import SecurityException
 from stdm.data.globals import app_dbconn
+from stdm.security.exception import SecurityException
+from stdm.security.membership import Membership
+from stdm.ui.ui_changepwd import Ui_frmChangePwd
 
 
 class changePwdDlg(QDialog, Ui_frmChangePwd):
 
-    def __init__(self,plugin):
-        QDialog.__init__(self,plugin.iface.mainWindow())
+    def __init__(self, plugin):
+        QDialog.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
 
-        #gui initialization
+        # gui initialization
         self.initGui()
 
     def initGui(self):
         '''
         Initialize GUI
         '''
-        #Change the name of the OK button to Login
-        btnLogin=self.btnBox.button(QDialogButtonBox.Ok)
-        btnLogin.setText(QApplication.translate("ChangePasswordDialog","Save"))
-        #Connect slots
+        # Change the name of the OK button to Login
+        btnLogin = self.btnBox.button(QDialogButtonBox.Ok)
+        btnLogin.setText(QApplication.translate("ChangePasswordDialog", "Save"))
+        # Connect slots
         self.btnBox.accepted.connect(self.acceptdlg)
 
     def validateInput(self):
@@ -57,21 +54,20 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
         Assert whether required fields have been entered
         '''
         if self.txtNewPass.text() == "":
-            QMessageBox.critical(self, QApplication.translate("ChangePasswordDialog","Required field"),
-                                 QApplication.translate("ChangePasswordDialog","New Password cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("ChangePasswordDialog", "Required field"),
+                                 QApplication.translate("ChangePasswordDialog", "New Password cannot be empty"))
             return False
         if self.txtConfirmPass.text() == "":
-            QMessageBox.critical(self, QApplication.translate("ChangePasswordDialog","Required field"),
-                                 QApplication.translate("ChangePasswordDialog","Confirm Password field cannot be empty"))
+            QMessageBox.critical(self, QApplication.translate("ChangePasswordDialog", "Required field"),
+                                 QApplication.translate("ChangePasswordDialog",
+                                                        "Confirm Password field cannot be empty"))
             return False
         if self.txtNewPass.text() != self.txtConfirmPass.text():
-            QMessageBox.critical(self,QApplication.translate("ChangePasswordDialog","Password Compare"),
-                                 QApplication.translate("ChangePasswordDialog","Passwords do not match"))
+            QMessageBox.critical(self, QApplication.translate("ChangePasswordDialog", "Password Compare"),
+                                 QApplication.translate("ChangePasswordDialog", "Passwords do not match"))
             return False
         else:
             return True
-
-
 
     def acceptdlg(self):
         '''
@@ -82,27 +78,14 @@ class changePwdDlg(QDialog, Ui_frmChangePwd):
             newPwd = self.txtConfirmPass.text()
 
             try:
-                #Set new password
+                # Set new password
                 member.setPassword(app_dbconn.User.UserName, newPwd)
-                QMessageBox.information(self, QApplication.translate("ChangePasswordDialog","Change Password"),
-                                        QApplication.translate("ChangePasswordDialog","Your password has successfully been changed"))
+                QMessageBox.information(self, QApplication.translate("ChangePasswordDialog", "Change Password"),
+                                        QApplication.translate("ChangePasswordDialog",
+                                                               "Your password has successfully been changed"))
                 self.accept()
 
             except SecurityException as se:
                 QMessageBox.critical(self,
-                                     QApplication.translate("ChangePasswordDialog","Password Error"), str(se))
+                                     QApplication.translate("ChangePasswordDialog", "Password Error"), str(se))
                 self.txtNewPass.selectAll()
-
-
-
-
-
-
-
-
-
-
-
-
-
-

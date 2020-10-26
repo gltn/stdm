@@ -28,14 +28,16 @@ from qgis.PyQt.QtGui import (
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
-from stdm.ui.wizard.ui_fk_property import Ui_FKProperty
+
 from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.ui.wizard.ui_fk_property import Ui_FKProperty
 
 
 class FKProperty(QDialog, Ui_FKProperty):
     """
     Editor to create/edit ForeignKey column property
     """
+
     def __init__(self, parent, relation={}):
         """
         :param parent: Owner of the form
@@ -70,7 +72,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         Initializes form fields
         """
         self.cboPrimaryEntity.currentIndexChanged.connect( \
-                self.load_entity_columns)
+            self.load_entity_columns)
 
         self.load_fk_entities()
         if self._entity_relation:
@@ -79,10 +81,10 @@ class FKProperty(QDialog, Ui_FKProperty):
             display_cols = self._entity_relation.display_cols
 
             self.cboPrimaryEntity.setCurrentIndex( \
-                    self.cboPrimaryEntity.findText(parent))
+                self.cboPrimaryEntity.findText(parent))
 
             self.cboPrimaryUKey.setCurrentIndex( \
-                    self.cboPrimaryUKey.findText(parent_column))
+                self.cboPrimaryUKey.findText(parent_column))
 
             self.show_display_cols(display_cols)
 
@@ -113,7 +115,6 @@ class FKProperty(QDialog, Ui_FKProperty):
         if self.show_in_child_chk.isChecked():
             self.show_in_parent_chk.setChecked(False)
             self._show_in_child = True
-
 
     def show_in_parent(self):
         """
@@ -146,7 +147,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         """
         self.cboPrimaryEntity.clear()
         self.cboPrimaryEntity.insertItems(0,
-                [name[0] for name in self.fk_entities])
+                                          [name[0] for name in self.fk_entities])
 
         self.cboPrimaryEntity.setCurrentIndex(0)
 
@@ -159,7 +160,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         index = self.cboPrimaryEntity.currentIndex()
 
         entity_columns = \
-                [column for column in self.fk_entities[index][1].columns.items()]
+            [column for column in self.fk_entities[index][1].columns.items()]
 
         column_names = [column[0] for column in entity_columns]
 
@@ -173,7 +174,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         """
         index = self.cboPrimaryEntity.currentIndex()
         entity_columns = \
-                [column for column in self.fk_entities[index][1].columns.items()]
+            [column for column in self.fk_entities[index][1].columns.items()]
 
         columns = [column[0] for column in entity_columns \
                    if column[1].TYPE_INFO != 'SERIAL']
@@ -234,7 +235,7 @@ class FKProperty(QDialog, Ui_FKProperty):
         """
         return [str(self.column_model.item(row).text()) \
                 for row in range(self.column_model.rowCount()) \
-                if self.column_model.item(row).checkState()==Qt.Checked]
+                if self.column_model.item(row).checkState() == Qt.Checked]
 
     def entity_relation(self):
         """
@@ -249,4 +250,3 @@ class FKProperty(QDialog, Ui_FKProperty):
 
     def reject(self):
         self.done(0)
-

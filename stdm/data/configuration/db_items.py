@@ -17,6 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
+
 class DbItem(object):
     """
     Represents the main objects
@@ -30,9 +32,10 @@ class DbItem(object):
         self.name = name
         self.action = action
 
+
 class TableItem(DbItem):
     pass
 
+
 class ColumnItem(DbItem):
     pass
-

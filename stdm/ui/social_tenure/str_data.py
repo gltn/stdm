@@ -26,29 +26,26 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox
 )
-
 from qgis.utils import (
     iface
 )
-
-from sqlalchemy import exc, inspect
-from stdm.data.database import (
-    STDMDb,
-    Base
-)
-
-from stdm.ui.progress_dialog import STDMProgressDialog
-
-from stdm.settings import current_profile
+from sqlalchemy import exc
 
 from stdm.data.configuration import entity_model
+from stdm.data.database import (
+    STDMDb
+)
+from stdm.settings import current_profile
+from stdm.ui.progress_dialog import STDMProgressDialog
 
 LOGGER = logging.getLogger('stdm')
+
 
 class STRDataStore():
     """
     A data container for STR Editor.
     """
+
     def __init__(self):
         """
         Initializes the container dictionaries and lists.
@@ -67,10 +64,12 @@ class STRDataStore():
         self.current_spatial_unit = None
         self.current_party = None
 
+
 class STRDBHandler():
     """
     Handles the saving of data in the STR table.
     """
+
     def __init__(
             self, data_store, str_model, str_edit_node=None
     ):
@@ -205,7 +204,6 @@ class STRDBHandler():
                     custom_attr_model = custom_attr_obj
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     if col.parent.name == self.social_tenure.name:
-
                         setattr(custom_attr_model, col.name, str_objs[i].id)
                         custom_attr_objs.append(custom_attr_model)
 
@@ -298,10 +296,10 @@ class STRDBHandler():
             if len(new_doc_objs) > 0:
                 row.documents.extend([doc for doc in new_doc_objs])
 
-            #for r in row.in_check_tenure_type_str_attrs_collection:
+            # for r in row.in_check_tenure_type_str_attrs_collection:
             # Update custom tenure information
             if party_id in party_keys:
-                attrs_column = str_store.current_party.name[:2]+'_check_tenure_type_str_attrs_collection'
+                attrs_column = str_store.current_party.name[:2] + '_check_tenure_type_str_attrs_collection'
                 attrs = getattr(row, attrs_column)
                 for r in attrs:
                     custom_tenure = str_store.custom_tenure
@@ -328,14 +326,14 @@ class STRDBHandler():
             if not self.str_edit_node:
                 QApplication.processEvents()
                 self.progress.setRange(0, len(self.data_store))
-                self.progress.overall_progress('Creating a STR...',)
+                self.progress.overall_progress('Creating a STR...', )
 
                 for i, str_store in enumerate(self.data_store.values()):
                     self.progress.progress_message(
-                        'Saving STR {}'.format(i+1), '')
+                        'Saving STR {}'.format(i + 1), '')
                     self.progress.setValue(i + 1)
 
-                    self.on_add_str(str_store)     #==>
+                    self.on_add_str(str_store)  # ==>
 
                 self.progress.hide()
                 strMsg = QApplication.translate(
@@ -353,11 +351,11 @@ class STRDBHandler():
                 QApplication.processEvents()
                 self.progress.setRange(0, 1)
                 self.progress.setValue(0)
-                self.progress.overall_progress('Editing a STR...',)
+                self.progress.overall_progress('Editing a STR...', )
 
                 self.progress.progress_message('Updating STR', '')
 
-                updated_str_obj = self.on_edit_str(self.data_store[1])  #===>
+                updated_str_obj = self.on_edit_str(self.data_store[1])  # ===>
 
                 self.progress.setValue(1)
 

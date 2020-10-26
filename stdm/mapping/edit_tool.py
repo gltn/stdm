@@ -22,15 +22,14 @@ from qgis.PyQt.QtCore import (
     Qt,
     QSettings
 )
-from qgis.PyQt.QtWidgets import (
-    QMenu,
-    QApplication
-)
 from qgis.PyQt.QtGui import (
     QColor,
     QCursor
 )
-
+from qgis.PyQt.QtWidgets import (
+    QMenu,
+    QApplication
+)
 from qgis.core import QgsWkbTypes
 from qgis.gui import (
     QgsMapTool,
@@ -45,18 +44,19 @@ class StdmMapToolEdit(QgsMapTool):
     '''
     Base class for all STDM editing map tools.
     '''
-    def __init__(self,iface):
+
+    def __init__(self, iface):
         self.iface = iface
         self.canvas = self.iface.mapCanvas()
-        QgsMapTool.__init__(self,self.canvas)
+        QgsMapTool.__init__(self, self.canvas)
 
-        #Snapper object that reads the settings from project and applies to the map canvas
+        # Snapper object that reads the settings from project and applies to the map canvas
         self._snapper = QgsMapCanvasSnapper(self.canvas)
 
-        #Dialog for setting textual attributes of the spatial unit being digitized.
+        # Dialog for setting textual attributes of the spatial unit being digitized.
         self._editorWidget = None
 
-        #Initial context menu state of the map canvas
+        # Initial context menu state of the map canvas
         self._mpCanvasContentMenuPolicy = self.canvas.contextMenuPolicy()
 
     def isEditTool(self):
@@ -76,17 +76,17 @@ class StdmMapToolEdit(QgsMapTool):
 
         QgsMapTool.deactivate(self)
 
-    def onMapContextMenuRequested(self,pnt):
+    def onMapContextMenuRequested(self, pnt):
         '''
         Slot raised upon right-clicking the map canvas.
         '''
         editMenu = QMenu(self.iface.mainWindow())
-        self.mapContextMenuRequested(pnt,editMenu)
+        self.mapContextMenuRequested(pnt, editMenu)
 
         if not editMenu.isEmpty():
             editMenu.exec_(QCursor.pos())
 
-    def mapContextMenuRequested(self,pnt,menu):
+    def mapContextMenuRequested(self, pnt, menu):
         '''
         Protected function to be implemented by subclasses for adding edit actions into the context menu.
         Default does nothing.
@@ -101,7 +101,7 @@ class StdmMapToolEdit(QgsMapTool):
         '''
         return False
 
-    def snapPointFromResults(self,snapResults,screenCoords):
+    def snapPointFromResults(self, snapResults, screenCoords):
         '''
         Extracts a single snapping point from a set of snapping results.
         This is useful for snapping operations that just require a position to snap to and not all the
@@ -114,18 +114,18 @@ class StdmMapToolEdit(QgsMapTool):
         else:
             return snapResults[0].snappedVertex
 
-    def createRubberBand(self,geomType,alternativeBand=False):
+    def createRubberBand(self, geomType, alternativeBand=False):
         '''
         Creates a rubber band with the color/line width from the QGIS settings.
         '''
         settings = QSettings()
-        rb = QgsRubberBand(self.canvas,geomType)
-        rb.setWidth(settings.value("/Qgis/digitizing/line_width",1))
-        color = QColor(settings.value("/Qgis/digitizing/line_color_red", 255),\
-                       settings.value("/Qgis/digitizing/line_color_green",0), \
+        rb = QgsRubberBand(self.canvas, geomType)
+        rb.setWidth(settings.value("/Qgis/digitizing/line_width", 1))
+        color = QColor(settings.value("/Qgis/digitizing/line_color_red", 255), \
+                       settings.value("/Qgis/digitizing/line_color_green", 0), \
                        settings.value("/Qgis/digitizing/line_color_blue", 0))
 
-        myAlpha = settings.value("/Qgis/digitizing/line_color_alpha", 200)/255.0
+        myAlpha = settings.value("/Qgis/digitizing/line_color_alpha", 200) / 255.0
 
         if alternativeBand:
             myAlpha = myAlpha * 0.75
@@ -157,13 +157,13 @@ class StdmMapToolEdit(QgsMapTool):
         '''
         self.messageEmitted.emit(QApplication.translate("StdmMapToolEdit", "Layer not editable"))
 
-    def setEditorWidget(self,editorWidget):
+    def setEditorWidget(self, editorWidget):
         '''
         Set the widget for editing attributing values
         '''
         self._editorWidget = editorWidget
 
-    def _configureSpatialEditor(self,layer):
+    def _configureSpatialEditor(self, layer):
         '''
         Factory method that sets the spatial editor dialog using the configuration specified in the
         editor_config module.
@@ -173,28 +173,6 @@ class StdmMapToolEdit(QgsMapTool):
         layerId = layer.id()
         if layerId in pg_layerNamesIDMapping().reverse:
             tableName = pg_layerNamesIDMapping().reverse[layerId]
-            #Get corresponding editor widget from the config
+            # Get corresponding editor widget from the config
             if tableName in spatial_editor_widgets:
                 self._editorWidget = spatial_editor_widgets[tableName]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

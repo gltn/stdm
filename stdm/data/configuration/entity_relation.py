@@ -94,11 +94,11 @@ class EntityRelation(object):
         """
         rel_name = ''
 
-        if not self.parent is None:
+        if self.parent is not None:
             rel_name += u'fk_{0}_{1}'.format(self.parent.name,
                                              self.parent_column)
 
-        if not self.child is None:
+        if self.child is not None:
             rel_name += u'_{0}_{1}'.format(self.child.name, self.child_column)
 
         return rel_name

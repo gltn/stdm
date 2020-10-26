@@ -18,8 +18,15 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import sys
 
+import sqlalchemy
+from qgis.PyQt.QtCore import (
+    Qt
+)
+from qgis.PyQt.QtGui import (
+    QTextOption,
+    QIcon
+)
 from qgis.PyQt.QtWidgets import (
     QWizard,
     QApplication,
@@ -27,48 +34,37 @@ from qgis.PyQt.QtWidgets import (
     QFileDialog,
     QMessageBox
 )
-from qgis.PyQt.QtGui import (
-    QTextOption,
-    QIcon
-)
-from qgis.PyQt.QtCore import (
-    Qt,
-    pyqtSignal
-)
-
-import sqlalchemy
-
-from stdm.ui.reports.highlighter import SqlHighlighter
-from stdm.data.pg_utils import (
-    process_report_filter,
-    table_column_names,
-    unique_column_values,
-    pg_tables
-)
-from stdm.data.importexport.writer import OGRWriter
 
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
+from stdm.data.importexport.writer import OGRWriter
+from stdm.data.pg_utils import (
+    process_report_filter,
+    table_column_names,
+    unique_column_values
+)
 from stdm.settings import current_profile
+from stdm.ui.reports.highlighter import SqlHighlighter
+from stdm.ui.ui_export_data import Ui_frmExportWizard
 from stdm.utils.util import (
     getIndex,
     profile_user_tables
 )
-from stdm.ui.ui_export_data import Ui_frmExportWizard
 
-class ExportData(QWizard,Ui_frmExportWizard):
-    def __init__(self,parent=None):
-        QWizard.__init__(self,parent)
+
+class ExportData(QWizard, Ui_frmExportWizard):
+    def __init__(self, parent=None):
+        QWizard.__init__(self, parent)
         self.setupUi(self)
         self.curr_profile = current_profile()
-        #Event Handlers
+        # Event Handlers
         self.btnDestFile.clicked.connect(self.setDestFile)
         self.lstSrcTab.itemSelectionChanged.connect(self.srcSelectChanged)
         self.btnUniqueVals.clicked.connect(self.colUniqueValues)
 
-        #Query Builder signals
+        # Query Builder signals
         self.lstQueryCols.itemDoubleClicked.connect(self.filter_insertField)
         self.lstUniqueVals.itemDoubleClicked.connect(self.filter_insertField)
         self.btnOpEq.clicked.connect(self.filter_insertEq)
@@ -84,42 +80,42 @@ class ExportData(QWizard,Ui_frmExportWizard):
         self.btnQueryVerify.clicked.connect(self.filter_verifyQuery)
         self.select_all.clicked.connect(self.select_all_columns)
         self.select_none.clicked.connect(self.select_none_columns)
-        #Init controls
+        # Init controls
         self.initControls()
 
-        #Register fields
+        # Register fields
         self.registerFields()
 
     def initControls(self):
-        #Initialize controls
+        # Initialize controls
         self.cboSpatialCols_2.setEnabled(False)
         self.gpQBuilder.setChecked(False)
 
-        #Query Builder section
+        # Query Builder section
         self.txtWhereQuery.setWordWrapMode(QTextOption.WordWrap)
 
-        #Custom SQL highlighter
+        # Custom SQL highlighter
         sqlHighlighter = SqlHighlighter(self.txtWhereQuery)
 
     def registerFields(self):
-        #Destination file name and format
+        # Destination file name and format
         pgDestination = self.page(0)
-        pgDestination.registerField("destFile*",self.txtExportPath)
+        pgDestination.registerField("destFile*", self.txtExportPath)
 
-        #Export table options page
+        # Export table options page
         pgExportTab = self.page(1)
-        pgExportTab.registerField("srcTabIndex*",self.lstSrcTab)
-        pgExportTab.registerField("geomCol",self.cboSpatialCols_2,
-                                  "currentText",SIGNAL("currentIndexChanged(int)"))
+        pgExportTab.registerField("srcTabIndex*", self.lstSrcTab)
+        pgExportTab.registerField("geomCol", self.cboSpatialCols_2,
+                                  "currentText", SIGNAL("currentIndexChanged(int)"))
 
-    def initializePage(self,int):
-        #Re-implementation of wizard page initialization
-        if int==1:
-            #Load tables
+    def initializePage(self, int):
+        # Re-implementation of wizard page initialization
+        if int == 1:
+            # Load tables
             self.loadSourceTables()
 
-        if int==2:
-            #Load columns for query builder
+        if int == 2:
+            # Load columns for query builder
             selTableIndex = self.field("srcTabIndex")
             self.srcTab = str(self.lstSrcTab.item(selTableIndex).text())
             self.lstQueryCols.clear()
@@ -127,7 +123,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
             self.lstQueryCols.addItems(self.allCols)
 
     def validateCurrentPage(self):
-        #Validate the current page before proceeding to the next one
+        # Validate the current page before proceeding to the next one
         validPage = True
 
         if self.currentId() == 1:
@@ -137,33 +133,33 @@ class ExportData(QWizard,Ui_frmExportWizard):
                     u"Please select a table whose contents are to be exported.")
 
                 self.ErrorInfoMessage(msg)
-                validPage=False
+                validPage = False
 
             else:
-                if len(self.selectedColumns())==0:
+                if len(self.selectedColumns()) == 0:
                     msg = QApplication.translate(
                         'ExportData',
                         u"Please select at least one textual column "
                         u"whose values are to be exported.")
 
                     self.ErrorInfoMessage(msg)
-                    validPage=False
+                    validPage = False
 
-            #Set Geometry column
+            # Set Geometry column
             geomCol = str(self.field("geomCol"))
             self.geomColumn = "" if geomCol == "NULL" else geomCol
 
-        if self.currentId()==2:
+        if self.currentId() == 2:
             validPage = self.execExport()
 
         return validPage
 
     def selectedColumns(self):
-        #Get the selected columns to be imported
-        tabCols=[]
+        # Get the selected columns to be imported
+        tabCols = []
 
         for c in range(self.lstSrcCols_2.count()):
-            srcCol=self.lstSrcCols_2.item(c)
+            srcCol = self.lstSrcCols_2.item(c)
 
             if srcCol.checkState() == Qt.Checked:
                 tabCols.append(srcCol.text())
@@ -182,19 +178,19 @@ class ExportData(QWizard,Ui_frmExportWizard):
             column.setCheckState(Qt.Unchecked)
 
     def loadSourceTables(self):
-        #Load all STDM tables
+        # Load all STDM tables
         self.lstSrcTab.clear()
         # tables = pg_tables()
         tables = profile_user_tables(
             self.curr_profile, True, True, sort=True
         )
         for t in tables.keys():
-            tabItem = QListWidgetItem(t,self.lstSrcTab)
+            tabItem = QListWidgetItem(t, self.lstSrcTab)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
             self.lstSrcTab.addItem(tabItem)
 
     def setDestFile(self):
-        #Set the file path to the destination file
+        # Set the file path to the destination file
         if self.rbShp.isChecked():
             ogrFilter = "ESRI Shapefile (*.shp)"
         elif self.rbCSV.isChecked():
@@ -207,7 +203,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
             ogrFilter = "DXF (*.dxf)"
 
         destFile = QFileDialog.getSaveFileName(
-            self,"Select Output File",vectorFileDir(),ogrFilter
+            self, "Select Output File", vectorFileDir(), ogrFilter
         )
 
         if destFile != "":
@@ -218,33 +214,32 @@ class ExportData(QWizard,Ui_frmExportWizard):
         Handler when a source table item is clicked,
         clears previous selections
         '''
-        selTabs=self.lstSrcTab.selectedItems()
+        selTabs = self.lstSrcTab.selectedItems()
 
         if len(selTabs) > 0:
-            selTab=selTabs[0]
+            selTab = selTabs[0]
 
-            #Load columns for the selected table
+            # Load columns for the selected table
             self.loadColumns(selTab.text())
 
-    def loadColumns(self,table):
-        #Load textual and spatial (if available) columns
-        #Get spatial columns first
-        spColumns = table_column_names(table,True, creation_order=True)
+    def loadColumns(self, table):
+        # Load textual and spatial (if available) columns
+        # Get spatial columns first
+        spColumns = table_column_names(table, True, creation_order=True)
         self.cboSpatialCols_2.clear()
         self.cboSpatialCols_2.addItems(spColumns)
 
-        #Textual Columns
+        # Textual Columns
         self.lstSrcCols_2.clear()
         self.allCols = table_column_names(table, creation_order=True)
 
         for sc in spColumns:
-            colIndex = getIndex(self.allCols,sc)
+            colIndex = getIndex(self.allCols, sc)
             if colIndex != -1:
                 self.allCols.remove(sc)
 
         for col in self.allCols:
             if ' ' in col:
-
                 col = u'"{}"'.format(col)
 
             tabItem = QListWidgetItem(col, self.lstSrcCols_2)
@@ -256,7 +251,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
             self.cboSpatialCols_2.setEnabled(True)
 
     def colUniqueValues(self):
-        #Slot for getting unique values for the selected column
+        # Slot for getting unique values for the selected column
         self.lstUniqueVals.clear()
         selCols = self.lstQueryCols.selectedItems()
 
@@ -264,13 +259,13 @@ class ExportData(QWizard,Ui_frmExportWizard):
             selCol = selCols[0]
             colName = str(selCol.text())
 
-            uniqVals = unique_column_values(self.srcTab,colName)
+            uniqVals = unique_column_values(self.srcTab, colName)
 
             self.lstUniqueVals.addItems(uniqVals)
             self.lstUniqueVals.sortItems()
 
     def execExport(self):
-        #Initiate the export process
+        # Initiate the export process
         succeed = False
 
         targetFile = str(self.field("destFile"))
@@ -309,11 +304,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
         return succeed
 
     def filter_clearQuery(self):
-        #Deletes all the text in the SQL text editor
+        # Deletes all the text in the SQL text editor
         self.txtWhereQuery.clear()
 
     def filter_verifyQuery(self):
-        #Verify the query expression
+        # Verify the query expression
         self._format_stmnt()  # Format WHERE clause expression
         if len(self.txtWhereQuery.toPlainText()) == 0:
             msg = QApplication.translate(
@@ -356,11 +351,11 @@ class ExportData(QWizard,Ui_frmExportWizard):
             self.txtWhereQuery.setPlainText(where_stmnt)
 
     def filter_buildQuery(self):
-        #Build query set and return results
+        # Build query set and return results
         queryCols = self.selectedColumns()
 
         if self.geomColumn != "":
-            queryCols.append(u"ST_AsText(%s)"%(self.geomColumn))
+            queryCols.append(u"ST_AsText(%s)" % (self.geomColumn))
         # remove quote from each column
 
         columnList = u",".join(queryCols)
@@ -368,10 +363,10 @@ class ExportData(QWizard,Ui_frmExportWizard):
         whereStmnt = self.txtWhereQuery.toPlainText()
 
         sortStmnt = ''
-        results=None
+        results = None
 
         try:
-            results = process_report_filter(self.srcTab,columnList,whereStmnt,sortStmnt)
+            results = process_report_filter(self.srcTab, columnList, whereStmnt, sortStmnt)
 
         except sqlalchemy.exc.DataError:
             msg = QApplication.translate(
@@ -381,7 +376,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
 
         return results
 
-    def filter_insertField(self,lstItem):
+    def filter_insertField(self, lstItem):
         '''
         Inserts the text of the clicked field item into the
         SQL parser text editor.
@@ -391,29 +386,28 @@ class ExportData(QWizard,Ui_frmExportWizard):
             field = u'{}'.format(field)
         self.txtWhereQuery.insertPlainText(field)
 
-
     def filter_insertEq(self):
-        #Insert Equal operator
+        # Insert Equal operator
         self.txtWhereQuery.insertPlainText(" = ")
 
     def filter_insertNotEq(self):
-        #Insert Not Equal to
+        # Insert Not Equal to
         self.txtWhereQuery.insertPlainText(" <> ")
 
     def filter_insertLike(self):
-        #Insert LIKE operator
+        # Insert LIKE operator
         self.txtWhereQuery.insertPlainText(" LIKE ")
 
     def filter_greaterThan(self):
-        #Insert greater than
+        # Insert greater than
         self.txtWhereQuery.insertPlainText(" > ")
 
     def filter_greaterEq(self):
-        #Insert Greater than or equal to
+        # Insert Greater than or equal to
         self.txtWhereQuery.insertPlainText(" >= ")
 
     def filter_insertAnd(self):
-        #Insert AND
+        # Insert AND
         self.txtWhereQuery.insertPlainText(" AND ")
 
     def filter_insertLess(self):
@@ -425,7 +419,7 @@ class ExportData(QWizard,Ui_frmExportWizard):
     def filter_insertOR(self):
         self.txtWhereQuery.insertPlainText(" OR ")
 
-    def keyPressEvent(self,e):
+    def keyPressEvent(self, e):
         '''
         Override method for preventing the dialog from
         closing itself when the escape key is hit
@@ -433,20 +427,17 @@ class ExportData(QWizard,Ui_frmExportWizard):
         if e.key() == Qt.Key_Escape:
             pass
 
-    def InfoMessage(self,message):
-        #Information message box
+    def InfoMessage(self, message):
+        # Information message box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(message)
         msg.exec_()
 
-    def ErrorInfoMessage(self,Message):
-        #Error Message Box
+    def ErrorInfoMessage(self, Message):
+        # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setWindowTitle('Data Export Error')
         msg.setText(str(Message))
         msg.exec_()
-
-
-

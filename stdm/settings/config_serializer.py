@@ -37,19 +37,20 @@ from qgis.PyQt.QtXml import (
     QDomNode
 )
 
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.data.configuration.exception import ConfigurationException
-from stdm.data.configuration.entity import Entity
-from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.configuration.profile import Profile
-from stdm.data.configuration.value_list import ValueList
+from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.association_entity import AssociationEntity
-from stdm.data.configuration.social_tenure import SocialTenure
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.entity import (
     BaseColumn,
     ForeignKeyColumn
 )
-
+from stdm.data.configuration.entity import Entity
+from stdm.data.configuration.entity_relation import EntityRelation
+from stdm.data.configuration.exception import ConfigurationException
+from stdm.data.configuration.profile import Profile
+from stdm.data.configuration.social_tenure import SocialTenure
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration.value_list import ValueList
 from stdm.settings.config_updaters import ConfigurationUpdater
 from stdm.settings.database_updaters import DatabaseUpdater
 from stdm.utils.util import (
@@ -57,10 +58,6 @@ from stdm.utils.util import (
     datetime_from_string,
     string_to_boolean
 )
-
-from stdm.data.configfile_paths import FilePaths
-
-from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 
 LOGGER = logging.getLogger('stdm')
 
@@ -98,19 +95,19 @@ class ConfigurationFileSerializer(QObject):
 
         save_file_info = QFileInfo(self.path)
 
-        #Check if the suffix is in the file name
-        #TODO: Remove str function
+        # Check if the suffix is in the file name
+        # TODO: Remove str function
         if not str(save_file_info.suffix()).lower != 'stc':
             self.path = u'{0}.{1}'.format(self.path, 'stc')
             save_file_info = QFileInfo(self.path)
 
-        #Test if the file is writeable
+        # Test if the file is writeable
         save_file = QFile(self.path)
         if not save_file.open(QIODevice.WriteOnly):
             raise IOError(u'The file cannot be saved in '
                           u'{0}'.format(self.path))
 
-        #Create DOM document and populate it with STDM config properties
+        # Create DOM document and populate it with STDM config properties
         config_document = QDomDocument()
         self.write_xml(config_document)
 
@@ -126,10 +123,10 @@ class ConfigurationFileSerializer(QObject):
         config_element = document.createElement('Configuration')
         config_element.setAttribute('version', str(self.config.VERSION))
 
-        #Append main element
+        # Append main element
         document.appendChild(config_element)
 
-        #Append profile information
+        # Append profile information
         for p in self.config.profiles.values():
             ProfileSerializer.write_xml(p, config_element, document)
 
@@ -155,7 +152,7 @@ class ConfigurationFileSerializer(QObject):
             raise ConfigurationException(u'Configuration file cannot be '
                                          u'loaded: {0}'.format(msg))
 
-        #Load configuration items
+        # Load configuration items
         self.read_xml(config_doc)
 
     def update(self, document):
@@ -227,7 +224,7 @@ class ConfigurationFileSerializer(QObject):
 
         db_updater.upgrade_database()
         # Restore lost views that may have been lost during drop cascade.
-        #TODO second time exec_ needs to be removed when schema updater is refactored
+        # TODO second time exec_ needs to be removed when schema updater is refactored
         schema_updater.exec_()
         # TODO emit update_complete here when the schema updater is refactored
 
@@ -257,45 +254,45 @@ class ConfigurationFileSerializer(QObject):
         :param document: Main document object containing config information.
         :type document: QDomDocument
         """
-        #Reset items in the config file
+        # Reset items in the config file
         self.config._clear()
 
-        #Load items afresh
-        #Check tag and version attribute first
+        # Load items afresh
+        # Check tag and version attribute first
         doc_element = document.documentElement()
 
         if doc_element.isNull():
-            #Its an older config file hence, try upgrade
+            # Its an older config file hence, try upgrade
             updated_document = self._update_status(document)
 
         if not doc_element.hasAttribute('version'):
-            #Again, an older version
+            # Again, an older version
             updated_document = self._update_status(document)
 
-        #Check version
+        # Check version
         config_version = doc_element.attribute('version')
         if config_version:
             config_version = float(config_version)
 
         else:
-            #Fatal error
+            # Fatal error
             raise ConfigurationException('Error extracting version '
                                          'number from the '
                                          'configuration file.')
 
         if config_version < StdmConfiguration.instance().VERSION:
-            #Upgrade configuration
+            # Upgrade configuration
             updated_document = self._update_status(document)
 
             doc_element = updated_document.documentElement()
         elif config_version == StdmConfiguration.instance().VERSION:
             doc_element = document.documentElement()
 
-        #All should be well at this point so start parsing the items
+        # All should be well at this point so start parsing the items
         self._load_config_items(doc_element)
 
     def _load_config_items(self, element):
-        #Load profiles
+        # Load profiles
         profile_elements = element.elementsByTagName('Profile')
 
         p_count = profile_elements.count()
@@ -304,7 +301,6 @@ class ConfigurationFileSerializer(QObject):
             profile_element = profile_elements.item(i).toElement()
             profile = ProfileSerializer.read_xml(profile_element, element,
                                                  self.config)
-
 
             if not profile is None:
                 profile.sort_entities()
@@ -361,9 +357,10 @@ class ProfileSerializer(object):
     """
     (De)serialize profile information.
     """
+
     @staticmethod
     def _populate_entity_relations(element, collection):
-        #Populate collection
+        # Populate collection
         _populate_collections_from_element(
             element,
             'Relations',
@@ -372,7 +369,7 @@ class ProfileSerializer(object):
 
     @staticmethod
     def _populate_associations(element, collection):
-        #Populate collection
+        # Populate collection
         _populate_collections_from_element(
             element,
             AssociationEntitySerializer.GROUP_TAG,
@@ -398,10 +395,10 @@ class ProfileSerializer(object):
 
             return None
 
-        #TODO: Remove unicode
+        # TODO: Remove unicode
         profile = Profile(str(profile_name), configuration)
 
-        #Set description
+        # Set description
         description = element.attribute('description', '')
         profile.description = description
 
@@ -428,7 +425,7 @@ class ProfileSerializer(object):
 
         deferred_elements = []
 
-        #Process entity elements with no dependency first
+        # Process entity elements with no dependency first
         child_nodes = element.childNodes()
         for i in range(child_nodes.count()):
             child_element = child_nodes.item(i).toElement()
@@ -439,17 +436,17 @@ class ProfileSerializer(object):
 
             if child_element.tagName() == 'Entity':
                 if not item_serializer is None:
-                    #Check if element has dependency
+                    # Check if element has dependency
                     if not item_serializer.has_dependency(child_element):
                         item_serializer.read_xml(child_element, profile,
                                                  association_elements,
                                                  entity_relation_elements)
 
                     else:
-                        #Queue the item - tuple containing element and serializer
+                        # Queue the item - tuple containing element and serializer
                         deferred_elements.append((child_element, item_serializer))
 
-        #Process deferred items
+        # Process deferred items
         for c in deferred_elements:
             el, serializer = c[0], c[1]
             '''
@@ -457,7 +454,7 @@ class ProfileSerializer(object):
                         entity_relation_elements)
             '''
 
-            #Resolve dependency
+            # Resolve dependency
             serializer.resolve_dependency(
                 el,
                 profile,
@@ -466,7 +463,7 @@ class ProfileSerializer(object):
                 entity_relation_elements
             )
 
-        #Set social tenure entities
+        # Set social tenure entities
         str_el = element.firstChildElement('SocialTenure')
         if not str_el.isNull():
             SocialTenureSerializer.read_xml(str_el, profile,
@@ -521,21 +518,21 @@ class ProfileSerializer(object):
         profile_element.setAttribute('name', profile.name)
         profile_element.setAttribute('description', profile.description)
 
-        #Append entity information
+        # Append entity information
         for e in profile.entities.values():
             item_serializer = EntitySerializerCollection.handler(e.TYPE_INFO)
 
             if item_serializer:
                 item_serializer.write_xml(e, profile_element, document)
 
-        #Append entity relation information
+        # Append entity relation information
         er_parent_element = document.createElement('Relations')
         for er in profile.relations.values():
             EntityRelationSerializer.write_xml(er, er_parent_element, document)
 
         profile_element.appendChild(er_parent_element)
 
-        #Append social tenure information
+        # Append social tenure information
         SocialTenureSerializer.write_xml(profile.social_tenure,
                                          profile_element, document)
 
@@ -765,11 +762,11 @@ class SocialTenureSerializer(object):
         )
 
         social_tenure_element.setAttribute(SocialTenureSerializer.TENURE_TYPE,
-                                    social_tenure.tenure_type_collection.short_name)
+                                           social_tenure.tenure_type_collection.short_name)
         social_tenure_element.setAttribute(SocialTenureSerializer.LAYER_DISPLAY,
-                                    social_tenure.layer_display())
+                                           social_tenure.layer_display())
         social_tenure_element.setAttribute(SocialTenureSerializer.MULTIPARTY,
-                                    str(social_tenure.multi_party))
+                                           str(social_tenure.multi_party))
 
         # Append validity dates if specified (v1.5)
         if social_tenure.validity_start_column.minimum > social_tenure.validity_start_column.SQL_MIN:
@@ -970,7 +967,7 @@ class EntitySerializerCollection(object):
 
         group_tag = getattr(cls, 'GROUP_TAG')
 
-        #Search for group element and create if it does not exist
+        # Search for group element and create if it does not exist
         group_element = parent_node.firstChildElement(group_tag)
 
         if group_element.isNull():
@@ -1019,7 +1016,7 @@ class EntitySerializer(EntitySerializerCollection):
         if short_name:
             optional_args = {}
 
-            #Check global
+            # Check global
             is_global = str(child_element.attribute(
                 EntitySerializer.GLOBAL, '')
             )
@@ -1027,7 +1024,7 @@ class EntitySerializer(EntitySerializerCollection):
                 is_global = _str_to_bool(is_global)
                 optional_args['is_global'] = is_global
 
-            #Proxy
+            # Proxy
             proxy = str(child_element.attribute(
                 EntitySerializer.PROXY, '')
             )
@@ -1035,7 +1032,7 @@ class EntitySerializer(EntitySerializerCollection):
                 proxy = _str_to_bool(proxy)
                 optional_args['is_proxy'] = proxy
 
-            #Create ID
+            # Create ID
             create_id = str(child_element.attribute(
                 EntitySerializer.CREATE_ID, '')
             )
@@ -1043,7 +1040,7 @@ class EntitySerializer(EntitySerializerCollection):
                 create_id = _str_to_bool(create_id)
                 optional_args['create_id_column'] = create_id
 
-            #Supports documents
+            # Supports documents
             supports_docs = str(child_element.attribute(
                 EntitySerializer.SUPPORTS_DOCUMENTS, '')
             )
@@ -1053,7 +1050,7 @@ class EntitySerializer(EntitySerializerCollection):
 
             ent = Entity(short_name, profile, **optional_args)
 
-            #Associative
+            # Associative
             associative = str(child_element.attribute(
                 EntitySerializer.ASSOCIATIVE, '')
             )
@@ -1061,7 +1058,7 @@ class EntitySerializer(EntitySerializerCollection):
                 associative = _str_to_bool(associative)
                 ent.is_associative = associative
 
-            #Editable
+            # Editable
             editable = str(child_element.attribute(
                 EntitySerializer.EDITABLE, '')
             )
@@ -1069,13 +1066,13 @@ class EntitySerializer(EntitySerializerCollection):
                 editable = _str_to_bool(editable)
                 ent.user_editable = editable
 
-            #Description
+            # Description
             description = str(child_element.attribute(
                 EntitySerializer.DESCRIPTION, '')
             )
             ent.description = description
 
-            #RowIndex
+            # RowIndex
             row_index = str(child_element.attribute(
                 EntitySerializer.ROW_INDEX, '')
             )
@@ -1089,14 +1086,13 @@ class EntitySerializer(EntitySerializerCollection):
             )
             ent.label = label
 
-            #Add entity to the profile so that it is discoverable
+            # Add entity to the profile so that it is discoverable
             profile.add_entity(ent)
-
 
             column_elements = EntitySerializer.column_elements(child_element)
 
             for ce in column_elements:
-                #Just validate that it is a 'Column' element
+                # Just validate that it is a 'Column' element
                 if str(ce.tagName()) == 'Column':
                     '''
                     Read element and load the corresponding column object
@@ -1121,7 +1117,7 @@ class EntitySerializer(EntitySerializerCollection):
         cols_group_el = entity_element.firstChildElement('Columns')
 
         if not cols_group_el.isNull():
-            #Populate columns in the entity
+            # Populate columns in the entity
             column_elements = cols_group_el.childNodes()
 
             for i in range(column_elements.count()):
@@ -1149,7 +1145,7 @@ class EntitySerializer(EntitySerializerCollection):
 
     @classmethod
     def _dependency_columns(cls, element):
-        #Returns a list of dependency column elements
+        # Returns a list of dependency column elements
         dep_col_elements = []
 
         column_elements = EntitySerializer.column_elements(element)
@@ -1158,7 +1154,7 @@ class EntitySerializer(EntitySerializerCollection):
             if ce.hasAttribute('TYPE_INFO'):
                 type_info = str(ce.attribute('TYPE_INFO'))
 
-                #Check if the type info is in the flags' list
+                # Check if the type info is in the flags' list
                 if type_info in cls.DEPENDENCY_FLAGS:
                     dep_col_elements.append(ce)
 
@@ -1200,13 +1196,13 @@ class EntitySerializer(EntitySerializerCollection):
             type_info = str(c.attribute('TYPE_INFO'))
 
             if type_info == ForeignKeyColumn.TYPE_INFO:
-                #Get relation element
+                # Get relation element
                 er_element = ForeignKeyColumnSerializer.entity_relation_element(c)
                 relation_name = str(er_element.attribute('name', ''))
                 er_element = entity_relation_elements.get(relation_name, None)
 
                 if not er_element is None:
-                    #Get parent
+                    # Get parent
                     parent = str(
                         er_element.attribute(
                             EntityRelationSerializer.PARENT,
@@ -1214,7 +1210,7 @@ class EntitySerializer(EntitySerializerCollection):
                         )
                     )
 
-                    #Get parent entity element
+                    # Get parent entity element
                     if parent:
                         parent_element = ProfileSerializer.entity_element(
                             profile_element,
@@ -1222,9 +1218,9 @@ class EntitySerializer(EntitySerializerCollection):
                         )
 
                         if not parent_element is None:
-                            #Check if parent has dependency
+                            # Check if parent has dependency
                             if EntitySerializer.has_dependency(parent_element):
-                                #Resolve dependency
+                                # Resolve dependency
                                 EntitySerializer.resolve_dependency(
                                     parent_element,
                                     profile,
@@ -1233,7 +1229,7 @@ class EntitySerializer(EntitySerializerCollection):
                                     entity_relation_elements
                                 )
 
-                            #No more dependencies
+                            # No more dependencies
                             else:
                                 EntitySerializer.read_xml(
                                     parent_element,
@@ -1242,14 +1238,13 @@ class EntitySerializer(EntitySerializerCollection):
                                     entity_relation_elements
                                 )
 
-        #Now add entity to profile
+        # Now add entity to profile
         EntitySerializer.read_xml(
             element,
             profile,
             association_elements,
             entity_relation_elements
         )
-
 
     @staticmethod
     def write_xml(entity, parent_node, document):
@@ -1265,12 +1260,12 @@ class EntitySerializer(EntitySerializerCollection):
         """
         entity_element = document.createElement(EntitySerializer.TAG_NAME)
 
-        #Set entity attributes
+        # Set entity attributes
         entity_element.setAttribute(EntitySerializer.GLOBAL,
                                     str(entity.is_global))
         entity_element.setAttribute(EntitySerializer.SHORT_NAME,
                                     entity.short_name)
-        #Name will be ignored when the deserializing the entity object
+        # Name will be ignored when the deserializing the entity object
         entity_element.setAttribute(EntitySerializer.NAME,
                                     entity.name)
         entity_element.setAttribute(EntitySerializer.DESCRIPTION,
@@ -1290,16 +1285,16 @@ class EntitySerializer(EntitySerializerCollection):
         entity_element.setAttribute(EntitySerializer.LABEL,
                                     entity.label)
 
-        #Set document type lookup
+        # Set document type lookup
         if entity.supports_documents:
             doc_type_lookup = entity.supporting_doc.document_type_entity
             entity_element.setAttribute(EntitySerializer.DOCUMENT_TYPE_LOOKUP,
-                                    str(doc_type_lookup.short_name))
+                                        str(doc_type_lookup.short_name))
 
-        #Root columns element
+        # Root columns element
         columns_element = document.createElement('Columns')
 
-        #Append column information
+        # Append column information
         for c in entity.columns.values():
             column_serializer = ColumnSerializerCollection.handler(c.TYPE_INFO)
 
@@ -1309,6 +1304,7 @@ class EntitySerializer(EntitySerializerCollection):
         entity_element.appendChild(columns_element)
 
         parent_node.appendChild(entity_element)
+
 
 EntitySerializer.register()
 
@@ -1320,11 +1316,11 @@ class AssociationEntitySerializer(EntitySerializerCollection):
     GROUP_TAG = 'Associations'
     TAG_NAME = 'Association'
 
-    #Attribute names
+    # Attribute names
     FIRST_PARENT = 'firstParent'
     SECOND_PARENT = 'secondParent'
 
-    #Corresponding type info to (de)serialize
+    # Corresponding type info to (de)serialize
     ENTITY_TYPE_INFO = 'ASSOCIATION_ENTITY'
 
     @staticmethod
@@ -1385,6 +1381,7 @@ class AssociationEntitySerializer(EntitySerializerCollection):
 
         group_node.appendChild(assoc_entity_element)
 
+
 AssociationEntitySerializer.register()
 
 
@@ -1396,12 +1393,12 @@ class ValueListSerializer(EntitySerializerCollection):
     TAG_NAME = 'ValueList'
     CODE_VALUE_TAG = 'CodeValue'
 
-    #Attribute names
+    # Attribute names
     NAME = 'name'
     CV_CODE = 'code'
     CV_VALUE = 'value'
 
-    #Corresponding type info to (de)serialize
+    # Corresponding type info to (de)serialize
     ENTITY_TYPE_INFO = 'VALUE_LIST'
 
     @staticmethod
@@ -1427,7 +1424,7 @@ class ValueListSerializer(EntitySerializerCollection):
             if name:
                 value_list = ValueList(str(name), profile)
 
-                #Get code values
+                # Get code values
                 cd_elements = value_list_el.elementsByTagName(
                     ValueListSerializer.CODE_VALUE_TAG
                 )
@@ -1437,15 +1434,15 @@ class ValueListSerializer(EntitySerializerCollection):
                     code = cd_el.attribute(ValueListSerializer.CV_CODE, '')
                     value = cd_el.attribute(ValueListSerializer.CV_VALUE, '')
 
-                    #Add lookup items only when value is not empty
+                    # Add lookup items only when value is not empty
                     if value:
                         value_list.add_value(value, code)
 
-                #Check if the value list is for tenure types
+                # Check if the value list is for tenure types
 
                 if name == 'check_tenure_type':
                     profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
-                                       value_list)
+                                                   value_list)
 
                 elif name == 'check_social_tenure_relationship_document_type':
                     tenure_doc_type_t_name = profile.social_tenure.supporting_doc. \
@@ -1457,10 +1454,10 @@ class ValueListSerializer(EntitySerializerCollection):
 
 
                 else:
-                    #Add value list to the profile
+                    # Add value list to the profile
                     profile.add_entity(value_list)
 
-    #Specify attribute names
+    # Specify attribute names
     @staticmethod
     def write_xml(value_list, parent_node, document):
         """
@@ -1478,7 +1475,7 @@ class ValueListSerializer(EntitySerializerCollection):
         value_list_element.setAttribute(ValueListSerializer.NAME,
                                         value_list.short_name)
 
-        #Add code value elements
+        # Add code value elements
         for cv in value_list.values.values():
             cd_element = document.createElement(ValueListSerializer.CODE_VALUE_TAG)
 
@@ -1490,6 +1487,7 @@ class ValueListSerializer(EntitySerializerCollection):
         group_node = ValueListSerializer.group_element(parent_node, document)
 
         group_node.appendChild(value_list_element)
+
 
 ValueListSerializer.register()
 
@@ -1574,7 +1572,7 @@ class EntityRelationSerializer(object):
         """
         er_element = document.createElement(EntityRelationSerializer.TAG_NAME)
 
-        #Set attributes
+        # Set attributes
         er_element.setAttribute(EntityRelationSerializer.NAME,
                                 entity_relation.name)
         er_element.setAttribute(EntityRelationSerializer.PARENT,
@@ -1613,7 +1611,7 @@ class ColumnSerializerCollection(object):
     MINIMUM = 'minimum'
     MAXIMUM = 'maximum'
     LABEL = 'label'
-    ROW_INDEX='rowindex' # for ordering on a listview
+    ROW_INDEX = 'rowindex'  # for ordering on a listview
 
     @classmethod
     def register(cls):
@@ -1644,7 +1642,7 @@ class ColumnSerializerCollection(object):
 
         if not column_handler is None:
             column_handler.read(element, entity, association_elements,
-                 entity_relation_elements)
+                                entity_relation_elements)
 
     @classmethod
     def read(cls, element, entity, association_elements,
@@ -1653,44 +1651,44 @@ class ColumnSerializerCollection(object):
         if not col_type_info:
             return
 
-        #Get column attributes
+        # Get column attributes
         name = str(element.attribute(ColumnSerializerCollection.NAME, ''))
         if not name:
             return
 
         kwargs = {}
 
-        #Description
+        # Description
         description = str(
             element.attribute(ColumnSerializerCollection.DESCRIPTION, '')
-            )
+        )
         kwargs['description'] = description
 
-        #Index
+        # Index
         index = str(
             element.attribute(ColumnSerializerCollection.INDEX, 'False')
         )
         kwargs['index'] = _str_to_bool(index)
 
-        #Mandatory
+        # Mandatory
         mandatory = str(
             element.attribute(ColumnSerializerCollection.MANDATORY, 'False')
         )
         kwargs['mandatory'] = _str_to_bool(mandatory)
 
-        #Searchable
+        # Searchable
         searchable = str(
             element.attribute(ColumnSerializerCollection.SEARCHABLE, 'False')
         )
         kwargs['searchable'] = _str_to_bool(searchable)
 
-        #Unique
+        # Unique
         unique = str(
             element.attribute(ColumnSerializerCollection.UNIQUE, 'False')
         )
         kwargs['unique'] = _str_to_bool(unique)
 
-        #User tip
+        # User tip
         user_tip = str(
             element.attribute(ColumnSerializerCollection.USER_TIP, '')
         )
@@ -1708,7 +1706,7 @@ class ColumnSerializerCollection(object):
         )
         kwargs['row_index'] = row_index
 
-        #Minimum
+        # Minimum
         if element.hasAttribute(ColumnSerializerCollection.MINIMUM):
             minimum = element.attribute(ColumnSerializerCollection.MINIMUM)
             '''
@@ -1729,21 +1727,21 @@ class ColumnSerializerCollection(object):
             except ValueError:
                 pass
 
-        #Mandatory arguments
+        # Mandatory arguments
         args = [name, entity]
 
-        #Custom arguments provided by subclasses
+        # Custom arguments provided by subclasses
         custom_args, custom_kwargs = cls._obj_args(args, kwargs, element,
                                                    association_elements,
                                                    entity_relation_elements)
 
-        #Get column type based on type info
+        # Get column type based on type info
         column_cls = BaseColumn.column_type(col_type_info)
 
         if not column_cls is None:
             column = column_cls(*custom_args, **custom_kwargs)
 
-            #Append column to the entity
+            # Append column to the entity
             entity.add_column(column)
 
     @classmethod
@@ -1770,7 +1768,7 @@ class ColumnSerializerCollection(object):
     def write_xml(cls, column, parent_node, document):
         col_element = document.createElement(cls.TAG_NAME)
 
-        #Append general column information
+        # Append general column information
         col_element.setAttribute('TYPE_INFO', cls.COLUMN_TYPE_INFO)
         col_element.setAttribute(ColumnSerializerCollection.DESCRIPTION,
                                  column.description)
@@ -1798,7 +1796,7 @@ class ColumnSerializerCollection(object):
             col_element.setAttribute(ColumnSerializerCollection.MAXIMUM,
                                      str(column.maximum))
 
-        #Append any additional information defined by subclasses.
+        # Append any additional information defined by subclasses.
         cls._write_xml(column, col_element, document)
 
         parent_node.appendChild(col_element)
@@ -1822,6 +1820,7 @@ class TextColumnSerializer(ColumnSerializerCollection):
     """
     COLUMN_TYPE_INFO = 'TEXT'
 
+
 TextColumnSerializer.register()
 
 
@@ -1834,6 +1833,7 @@ class VarCharColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _convert_bounds_type(cls, value):
         return int(value)
+
 
 VarCharColumnSerializer.register()
 
@@ -1848,6 +1848,7 @@ class TextColumnSerializer(ColumnSerializerCollection):
     def _convert_bounds_type(cls, value):
         return int(value)
 
+
 TextColumnSerializer.register()
 
 
@@ -1860,6 +1861,7 @@ class IntegerColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _convert_bounds_type(cls, value):
         return int(value)
+
 
 IntegerColumnSerializer.register()
 
@@ -1915,6 +1917,7 @@ class DoubleColumnSerializer(ColumnSerializerCollection):
     def _convert_bounds_type(cls, value):
         return Decimal.from_float(float(value))
 
+
 DoubleColumnSerializer.register()
 
 
@@ -1923,6 +1926,7 @@ class SerialColumnSerializer(ColumnSerializerCollection):
     (De)serializes serial/auto-increment column type.
     """
     COLUMN_TYPE_INFO = 'SERIAL'
+
 
 SerialColumnSerializer.register()
 
@@ -1946,7 +1950,7 @@ class DateColumnSerializer(ColumnSerializerCollection):
                 'minimum',
                 ''
             ))
-            current_max= _str_to_bool(curr_date_el.attribute(
+            current_max = _str_to_bool(curr_date_el.attribute(
                 'maximum',
                 ''
             ))
@@ -1959,7 +1963,7 @@ class DateColumnSerializer(ColumnSerializerCollection):
 
     @classmethod
     def _write_xml(cls, column, column_element, document):
-        #Append use current date settings
+        # Append use current date settings
         dt_element = \
             document.createElement(DateColumnSerializer.CURRENT_DATE)
         dt_element.setAttribute('minimum', str(column.min_use_current_date))
@@ -1970,6 +1974,7 @@ class DateColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _convert_bounds_type(cls, value):
         return date_from_string(value)
+
 
 DateColumnSerializer.register()
 
@@ -1984,7 +1989,7 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #Set current date time settings
+        # Set current date time settings
         curr_date_time_el = element.firstChildElement(
             DateTimeColumnSerializer.CURRENT_DATE_TIME
         )
@@ -1993,12 +1998,12 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
                 'minimum',
                 ''
             ))
-            current_max= _str_to_bool(curr_date_time_el.attribute(
+            current_max = _str_to_bool(curr_date_time_el.attribute(
                 'maximum',
                 ''
             ))
 
-            #Append additional information
+            # Append additional information
             kwargs['min_use_current_datetime'] = current_min
             kwargs['max_use_current_datetime'] = current_max
 
@@ -2006,7 +2011,7 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
 
     @classmethod
     def _write_xml(cls, column, column_element, document):
-        #Append use current datetime settings
+        # Append use current datetime settings
         dt_element = \
             document.createElement(DateTimeColumnSerializer.CURRENT_DATE_TIME)
         dt_element.setAttribute('minimum', str(column.min_use_current_datetime))
@@ -2018,6 +2023,7 @@ class DateTimeColumnSerializer(ColumnSerializerCollection):
     def _convert_bounds_type(cls, value):
         return datetime_from_string(value)
 
+
 DateTimeColumnSerializer.register()
 
 
@@ -2026,6 +2032,7 @@ class BooleanColumnSerializer(ColumnSerializerCollection):
     (De)serializes yes/no column type.
     """
     COLUMN_TYPE_INFO = 'BOOL'
+
 
 BooleanColumnSerializer.register()
 
@@ -2037,7 +2044,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
     COLUMN_TYPE_INFO = 'GEOMETRY'
     GEOM_TAG = 'Geometry'
 
-    #Attribute names
+    # Attribute names
     SRID = 'srid'
     GEOMETRY_TYPE = 'type'
     LAYER_DISPLAY = 'layerDisplay'
@@ -2045,7 +2052,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #Include the geometry type and SRID in the arguments.
+        # Include the geometry type and SRID in the arguments.
         geom_el = element.firstChildElement(GeometryColumnSerializer.GEOM_TAG)
         if not geom_el.isNull():
             geom_type = int(geom_el.attribute(
@@ -2063,7 +2070,7 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
                 ''
             ))
 
-            #Append additional geometry information
+            # Append additional geometry information
             args.append(geom_type)
             kwargs['srid'] = srid
             kwargs['layer_display'] = display_name
@@ -2076,13 +2083,14 @@ class GeometryColumnSerializer(ColumnSerializerCollection):
         geom_element = \
             document.createElement(GeometryColumnSerializer.GEOM_TAG)
         geom_element.setAttribute(GeometryColumnSerializer.SRID,
-                                    str(column.srid))
+                                  str(column.srid))
         geom_element.setAttribute(GeometryColumnSerializer.GEOMETRY_TYPE,
-                                    column.geom_type)
+                                  column.geom_type)
         geom_element.setAttribute(GeometryColumnSerializer.LAYER_DISPLAY,
-                                    column.layer_display_name)
+                                  column.layer_display_name)
 
         column_element.appendChild(geom_element)
+
 
 GeometryColumnSerializer.register()
 
@@ -2096,7 +2104,7 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
 
     @classmethod
     def entity_relation_element(cls, foreign_key_element):
-        #Returns the entity relation element from a foreign key element.
+        # Returns the entity relation element from a foreign key element.
         return foreign_key_element.firstChildElement(
             ForeignKeyColumnSerializer.RELATION_TAG
         )
@@ -2104,7 +2112,7 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #Include entity relation information.
+        # Include entity relation information.
         relation_el = ForeignKeyColumnSerializer.entity_relation_element(
             element
         )
@@ -2121,19 +2129,20 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
 
                 status, msg = er.valid()
                 if status:
-                    #Append entity relation information
+                    # Append entity relation information
                     kwargs['entity_relation'] = er
 
         return args, kwargs
 
     @classmethod
     def _write_xml(cls, column, column_element, document):
-        #Append entity relation name
+        # Append entity relation name
         fk_element = \
             document.createElement(ForeignKeyColumnSerializer.RELATION_TAG)
         fk_element.setAttribute('name', column.entity_relation.name)
 
         column_element.appendChild(fk_element)
+
 
 ForeignKeyColumnSerializer.register()
 
@@ -2144,6 +2153,7 @@ class LookupColumnSerializer(ForeignKeyColumnSerializer):
     """
     COLUMN_TYPE_INFO = 'LOOKUP'
 
+
 LookupColumnSerializer.register()
 
 
@@ -2152,6 +2162,7 @@ class PercentColumnSerializer(DoubleColumnSerializer):
     (De)serializes percent column type.
     """
     COLUMN_TYPE_INFO = 'PERCENT'
+
 
 PercentColumnSerializer.register()
 
@@ -2166,6 +2177,7 @@ class AdminSpatialUnitColumnSerializer(ForeignKeyColumnSerializer):
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
         return args, kwargs
+
 
 AdminSpatialUnitColumnSerializer.register()
 
@@ -2189,11 +2201,10 @@ class AutoGeneratedColumnSerializer(ColumnSerializerCollection):
     def _convert_bounds_type(cls, value):
         return int(value)
 
-
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-        #Include the prefix_code in the arguments.
+        # Include the prefix_code in the arguments.
         code_ele = element.firstChildElement(
             AutoGeneratedColumnSerializer.CODE
         )
@@ -2280,6 +2291,7 @@ class AutoGeneratedColumnSerializer(ColumnSerializerCollection):
         )
         column_element.appendChild(dt_element)
 
+
 AutoGeneratedColumnSerializer.register()
 
 
@@ -2293,7 +2305,7 @@ class MultipleSelectColumnSerializer(ColumnSerializerCollection):
 
     @classmethod
     def _obj_args(cls, args, kwargs, element, associations, entity_relations):
-        #Include entity relation information.
+        # Include entity relation information.
         assoc_el = element.firstChildElement(
             MultipleSelectColumnSerializer.ASSOCIATION_TAG
         )
@@ -2308,20 +2320,21 @@ class MultipleSelectColumnSerializer(ColumnSerializerCollection):
                 )
 
                 if first_parent:
-                    #Include the name of the first_parent table in kwargs
+                    # Include the name of the first_parent table in kwargs
                     kwargs['first_parent'] = first_parent
 
         return args, kwargs
 
     @classmethod
     def _write_xml(cls, column, column_element, document):
-        #Append association entity short name
+        # Append association entity short name
         association_entity_element = \
             document.createElement(MultipleSelectColumnSerializer.ASSOCIATION_TAG)
         association_entity_element.setAttribute('name',
                                                 column.association.name)
 
         column_element.appendChild(association_entity_element)
+
 
 MultipleSelectColumnSerializer.register()
 
@@ -2340,20 +2353,18 @@ class ExpressionColumnSerializer(ColumnSerializerCollection):
 
     EXPRESSION = 'expression'
     OUTPUT_DATA_TYPE = 'outputDataType'
+
     @classmethod
     def _convert_bounds_type(cls, value):
         return int(value)
 
-
     @classmethod
     def _obj_args(cls, args, kwargs, element, assoc_elements,
                   entity_relation_elements):
-
         exp_ele = element.firstChildElement(
             ExpressionColumnSerializer.EXPRESSION
         )
         if not exp_ele.isNull():
-
             expression = exp_ele.attribute(
                 ExpressionColumnSerializer.EXPRESSION,
                 ''
@@ -2362,7 +2373,6 @@ class ExpressionColumnSerializer(ColumnSerializerCollection):
                 ExpressionColumnSerializer.OUTPUT_DATA_TYPE,
                 ''
             )
-
 
             kwargs['expression'] = expression
             kwargs['output_data_type'] = output_data_type
@@ -2379,5 +2389,6 @@ class ExpressionColumnSerializer(ColumnSerializerCollection):
         dt_element.setAttribute('outputDataType', column.output_data_type)
 
         column_element.appendChild(dt_element)
+
 
 ExpressionColumnSerializer.register()

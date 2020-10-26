@@ -18,9 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from collections import OrderedDict
-
 import cProfile
+from collections import OrderedDict
 
 from qgis.PyQt.QtCore import (
     Qt,
@@ -43,13 +42,11 @@ from qgis.PyQt.QtWidgets import (
     QAction,
     QHeaderView
 )
-
-
-from qgis.utils import (
-    iface
-)
 from qgis.core import (
     QgsProject
+)
+from qgis.utils import (
+    iface
 )
 
 from stdm.data.configuration import entity_model
@@ -59,20 +56,27 @@ from stdm.data.configuration.columns import (
     VirtualColumn
 )
 from stdm.data.configuration.entity import Entity
-from stdm.data.pg_utils import(
+from stdm.data.pg_utils import (
     table_column_names,
     pg_table_count
 )
-
 from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
 )
-
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.navigation.content_group import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
+from stdm.settings import (
+    get_entity_browser_record_limit,
+    get_entity_sort_order
+)
+from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
+from stdm.ui.document_viewer import DocumentViewManager
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
+from stdm.ui.gps_tool import GPSToolDialog
+from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
+from stdm.ui.notification import NotificationBar
 # from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.sourcedocument import (
     DocumentWidget,
@@ -82,30 +86,20 @@ from stdm.ui.sourcedocument import (
 from stdm.ui.spatial_unit_manager import (
     SpatialUnitManagerDockWidget
 )
-
-from stdm.ui.document_viewer import DocumentViewManager
-
-from stdm.ui.gps_tool import GPSToolDialog
-from stdm.ui.admin_unit_manager import VIEW,MANAGE,SELECT
 from stdm.ui.ui_entity_browser import Ui_EntityBrowser
-from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
-from stdm.ui.notification import NotificationBar
 from stdm.utils.util import (
     entity_id_to_attr
 )
 
-from stdm.settings import (
-        get_entity_browser_record_limit,
-        get_entity_sort_order
-        )
-
 __all__ = ["EntityBrowser", "EntityBrowserWithEditor", "ContentGroupEntityBrowser"]
+
 
 class _EntityDocumentViewerHandler(object):
     """
     Class that loads the document viewer to display all documents
     pertaining to a given entity record.
     """
+
     def __init__(self, title='', parent=None):
         self._title = title
         self._parent = parent
@@ -155,8 +149,8 @@ class _EntityDocumentViewerHandler(object):
         # Create document widgets proxies
         # for loading into the doc viewer
         for i, d in enumerate(documents):
-            #Update progress dialog
-            p_msg = prog_msg.format((i+1), num_docs)
+            # Update progress dialog
+            p_msg = prog_msg.format((i + 1), num_docs)
             prog_dlg.setLabelText(p_msg)
             prog_dlg.setValue(i)
 
@@ -170,7 +164,7 @@ class _EntityDocumentViewerHandler(object):
 
         prog_dlg.setValue(num_docs)
 
-        #cRestore pointer cursor
+        # cRestore pointer cursor
         QApplication.restoreOverrideCursor()
 
         self._doc_view_manager.setVisible(True)
@@ -195,7 +189,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     recordSelected = pyqtSignal(int)
 
     def __init__(self, entity, ent_rec_id=0, parent=None, state=MANAGE, load_records=True, plugin=None):
-        QDialog.__init__(self,parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
 
         # Add maximize buttons
@@ -224,7 +218,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         )
 
         self.load_records = load_records
-        #Initialize toolbar
+        # Initialize toolbar
         self.plugin = plugin
         self.tbActions = QToolBar()
         self.tbActions.setObjectName('eb_actions_toolbar')
@@ -246,20 +240,20 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         self._searchable_columns = OrderedDict()
         self._show_docs_col = False
         self.child_model = OrderedDict()
-        #ID of a record to select once records have been added to the table
+        # ID of a record to select once records have been added to the table
         self._select_item = None
         self.current_records = 0
 
         self.parent_record_id = ent_rec_id
-        self.record_limit = self.get_records_limit() #get_entity_browser_record_limit()
+        self.record_limit = self.get_records_limit()  # get_entity_browser_record_limit()
         self.sort_order = get_entity_sort_order()
 
-        #Enable viewing of supporting documents
+        # Enable viewing of supporting documents
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
         # self._add_advanced_search_btn()
-        #Connect signals
+        # Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
 
@@ -302,7 +296,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         return False
 
     def _add_view_supporting_docs_btn(self):
-        #Add button for viewing supporting documents if supported
+        # Add button for viewing supporting documents if supported
         view_docs_str = QApplication.translate(
             'EntityBrowser',
             'View Documents'
@@ -313,11 +307,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self
         )
 
-        #Connect signal for showing document viewer
+        # Connect signal for showing document viewer
         self._view_docs_act.triggered.connect(self.on_load_document_viewer)
 
         self.tbActions.addAction(self._view_docs_act)
-
 
     # def _add_advanced_search_btn(self):
     #     #Add button for viewing supporting documents if supported
@@ -342,7 +335,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         """
         return self._dateFormatter
 
-    def setDateFormatter(self,formatter):
+    def setDateFormatter(self, formatter):
         """
         Sets the function for formatting date values. Overrides the default function.
         """
@@ -354,7 +347,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         return self._state
 
-    def setState(self,state):
+    def setState(self, state):
         '''
         Set the state of the dialog.
         '''
@@ -382,20 +375,20 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         return u'{} {}'.format(title, records)
 
-    def setCellFormatters(self,formattermapping):
+    def setCellFormatters(self, formattermapping):
         '''
         Dictionary of attribute mappings and corresponding functions for
         formatting the attribute value to the display value.
         '''
         self._cell_formatters = formattermapping
 
-    def addCellFormatter(self,attributeName,formatterFunc):
+    def addCellFormatter(self, attributeName, formatterFunc):
         '''
         Add a new cell formatter configuration to the collection
         '''
         self._cell_formatters[attributeName] = formatterFunc
 
-    def showEvent(self,showEvent):
+    def showEvent(self, showEvent):
         '''
         Override event for loading the database records once the dialog is visible.
         This is for improved user experience i.e. to prevent the dialog from taking
@@ -419,7 +412,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         self._data_initialized = True
 
-    def hideEvent(self,hideEvent):
+    def hideEvent(self, hideEvent):
         '''
         Override event which just sets a flag to indicate that the data records have already been
         initialized.
@@ -480,10 +473,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         header_idx = 0
 
-        #Iterate entity column and assert if they exist
+        # Iterate entity column and assert if they exist
 
         for c in self._entity.columns.values():
-
 
             # Exclude geometry columns
             if isinstance(c, GeometryColumn):
@@ -537,12 +529,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             QMessageBox.warning(
                 self,
-                QApplication.translate('EntityBrowser','Entity Browser'),
+                QApplication.translate('EntityBrowser', 'Entity Browser'),
                 msg
             )
 
     def _select_record(self, id):
-        #Selects record with the given ID.
+        # Selects record with the given ID.
         if id is None:
             return
 
@@ -560,10 +552,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
         if len(idxs) > 0:
             sel_idx = idxs[0]
-             #Select item
+            # Select item
             s.select(
                 sel_idx,
-                QItemSelectionModel.ClearAndSelect|QItemSelectionModel.Rows
+                QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows
             )
 
     # def on_advanced_search(self):
@@ -571,13 +563,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     #     search.show()
 
     def on_load_document_viewer(self):
-        #Slot raised to show the document viewer for the selected entity
+        # Slot raised to show the document viewer for the selected entity
         sel_rec_ids = self._selected_record_ids()
 
         if len(sel_rec_ids) == 0:
             return
 
-        #Get document objects
+        # Get document objects
         ent_obj = self._dbmodel()
 
         for sel_id in sel_rec_ids:
@@ -585,7 +577,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             if not er is None:
                 docs = er.documents
 
-                #Notify there are no documents for the selected doc
+                # Notify there are no documents for the selected doc
                 if len(docs) == 0:
                     msg = QApplication.translate(
                         'EntityBrowser',
@@ -667,25 +659,25 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         col = self.filter_col(self._entity)
                         if col is None:
                             entity_records = entity_cls.queryObject().filter().order_by(
-                                    ordering).limit(
-                                            self.record_limit
-                                            ).all()
+                                ordering).limit(
+                                self.record_limit
+                            ).all()
                         else:
                             child_model = entity_model(self._entity)
                             col_name = getattr(child_model, col.name)
                             child_model_obj = child_model()
                             entity_records = child_model_obj.queryObject().filter(
-                                    col_name==self.parent_record_id
-                                    ).order_by(ordering).all()
+                                col_name == self.parent_record_id
+                            ).order_by(ordering).all()
                     else:
-                        #if isinstance(self._parent, QMainWindow):
+                        # if isinstance(self._parent, QMainWindow):
                         if not isinstance(self._parent, EntityEditorDialog):
                             entity_records = entity_cls.queryObject().filter().order_by(
-                                    ordering).limit(self.record_limit).all()
+                                ordering).limit(self.record_limit).all()
 
                     numRecords = len(entity_records)
 
-            # if self._tableModel is None:
+                # if self._tableModel is None:
                 entity_records_collection = []
                 for i, er in enumerate(entity_records):
                     if i == self.record_limit:
@@ -699,7 +691,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                             # Check if there are display formatters and apply if
                             # one exists for the given attribute.
-                            if attr_val is not None: # No need of formatter for None value
+                            if attr_val is not None:  # No need of formatter for None value
                                 if attr in self._cell_formatters:
                                     formatter = self._cell_formatters[attr]
                                     attr_val = formatter.format_column_value(attr_val)
@@ -715,14 +707,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     entity_records_collection.append(entity_row_info)
 
-
                 self._tableModel = BaseSTDMTableModel(
                     entity_records_collection, self._headers, self
                 )
 
                 if self.plugin is not None:
                     self.plugin.entity_table_model[self._entity.name] = \
-                            self._tableModel
+                        self._tableModel
 
             # Add filter columns
             for header, info in self._searchable_columns.iteritems():
@@ -730,13 +721,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 if column_name != 'id':
                     self.cboFilterColumn.addItem(header, info)
 
-            #Use sortfilter proxy model for the view
+            # Use sortfilter proxy model for the view
             self._proxyModel = VerticalHeaderSortFilterProxyModel()
             self._proxyModel.setDynamicSortFilter(True)
             self._proxyModel.setSourceModel(self._tableModel)
             self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
 
-            #USe first column in the combo for filtering
+            # USe first column in the combo for filtering
             if self.cboFilterColumn.count() > 0:
                 self.set_proxy_model_filter_column(0)
 
@@ -745,18 +736,18 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.tbEntity.setSortingEnabled(True)
                 self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
-            #First (ID) column will always be hidden
+            # First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
 
             self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
 
             self.tbEntity.resizeColumnsToContents()
 
-            #Connect signals
+            # Connect signals
             self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)
             self.txtFilterPattern.textChanged.connect(self.onFilterRegExpChanged)
 
-            #Select record with the given ID if specified
+            # Select record with the given ID if specified
             if not self._select_item is None:
                 self._select_record(self._select_item)
 
@@ -770,9 +761,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         for col in child_entity.columns.values():
             if col.TYPE_INFO == 'FOREIGN_KEY':
                 return col
-                #parent_entity = col.parent
-                #if parent_entity == self._entity:
-                    #return col
+                # parent_entity = col.parent
+                # if parent_entity == self._entity:
+                # return col
 
     def get_sorting_order(self, entity):
         '''
@@ -784,11 +775,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if self.sort_order is None:
             return ordering
 
-        if self.sort_order=='':
+        if self.sort_order == '':
             return ordering
 
         if self.sort_order == 'idasc':
-            ordering ='id asc'
+            ordering = 'id asc'
 
         if self.sort_order == 'iddesc':
             ordering = 'id desc'
@@ -798,7 +789,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             if order_column == "":
                 ordering = 'id desc'
             else:
-                ordering = order_column+' '+self.sort_order
+                ordering = order_column + ' ' + self.sort_order
 
         return ordering
 
@@ -821,13 +812,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             column = ""
         return column
 
-
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)
         return col_info['name'], col_info['header_index']
 
     def set_proxy_model_filter_column(self, index):
-        #Set the filter column for the proxy model using the combo index
+        # Set the filter column for the proxy model using the combo index
         name, header_idx = self._header_index_from_filter_combo_index(index)
         self._proxyModel.setFilterKeyColumn(header_idx)
 
@@ -837,17 +827,17 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         '''
         self.set_proxy_model_filter_column(index)
 
-    def _onFilterRegExpChanged(self,text):
+    def _onFilterRegExpChanged(self, text):
         cProfile.runctx('self._onFilterRegExpChanged(text)', globals(), locals())
 
-    def onFilterRegExpChanged(self,text):
+    def onFilterRegExpChanged(self, text):
         '''
         Slot raised whenever the filter text changes.
         '''
-        regExp = QRegExp(text,Qt.CaseInsensitive,QRegExp.FixedString)
+        regExp = QRegExp(text, Qt.CaseInsensitive, QRegExp.FixedString)
         self._proxyModel.setFilterRegExp(regExp)
 
-    def onDoubleClickView(self,modelindex):
+    def onDoubleClickView(self, modelindex):
         '''
         Slot raised upon double clicking the table view.
         To be implemented by subclasses.
@@ -872,7 +862,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             return selected_ids
 
         for proxyRowIndex in sel_row_indices:
-            #Get the index of the source or else the row items will have unpredictable behavior
+            # Get the index of the source or else the row items will have unpredictable behavior
             row_index = self._proxyModel.mapToSource(proxyRowIndex)
             entity_id = row_index.data(Qt.DisplayRole)
             selected_ids.append(entity_id)
@@ -889,7 +879,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             return
 
         if self._mode == SELECT:
-            #Get all selected records
+            # Get all selected records
             for sel_id in selIDs:
                 self.recordSelected.emit(sel_id)
 
@@ -934,7 +924,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         ).first()
 
         if modelObj is None:
-            modelObj = self.child_model[row_number+1]
+            modelObj = self.child_model[row_number + 1]
 
         return modelObj
 
@@ -944,8 +934,10 @@ class EntityBrowserWithEditor(EntityBrowser):
     Entity browser with added functionality for carrying out CRUD operations
     directly.
     """
+
     def __init__(self, entity, r_id=0, parent=None, state=MANAGE, load_records=True, plugin=None):
-        EntityBrowser.__init__(self, entity, ent_rec_id=r_id, parent=parent, state=MANAGE, load_records=load_records, plugin=plugin)
+        EntityBrowser.__init__(self, entity, ent_rec_id=r_id, parent=parent, state=MANAGE, load_records=load_records,
+                               plugin=plugin)
 
         self.record_id = 0
 
@@ -955,10 +947,10 @@ class EntityBrowserWithEditor(EntityBrowser):
         self.plugin = plugin
         self.entity_browser = self
 
-        #Add action toolbar if the state contains Manage flag
+        # Add action toolbar if the state contains Manage flag
         if (state & MANAGE) != 0:
             add = QApplication.translate("EntityBrowserWithEditor", "Add")
-            edit = QApplication.translate("EntityBrowserWithEditor","Edit")
+            edit = QApplication.translate("EntityBrowserWithEditor", "Edit")
             remove = QApplication.translate("EntityBrowserWithEditor", "Remove")
 
             self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
@@ -967,7 +959,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._newEntityAction.triggered.connect(self.onNewEntity)
 
             self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
-                                             edit,self)
+                                             edit, self)
             self._editEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "edit_tool")
             )
@@ -975,20 +967,20 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._editEntityAction.triggered.connect(self.onEditEntity)
 
             self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
-                                  remove, self)
+                                               remove, self)
             self._removeEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "remove_tool")
             )
             self._removeEntityAction.triggered.connected(self.onRemoveEntity)
 
-            #Manage position of the actions based on whether the entity
+            # Manage position of the actions based on whether the entity
             # supports documents.
             if self.can_view_supporting_documents:
                 manage_acts = [self._newEntityAction, self._editEntityAction,
                                self._removeEntityAction]
                 self.tbActions.insertActions(self._view_docs_act, manage_acts)
 
-                #Add action separator
+                # Add action separator
                 self._act_sep = QAction(self)
                 self._act_sep.setSeparator(True)
                 self.tbActions.insertAction(self._view_docs_act, self._act_sep)
@@ -1007,10 +999,10 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self.parent_entity = None
 
             # hide the add button and add layer preview for spatial entity
-            if entity.has_geometry_column(): #and self.parent_entity is None:
+            if entity.has_geometry_column():  # and self.parent_entity is None:
                 self.sp_unit_manager = SpatialUnitManagerDockWidget(
-                        iface, self.plugin)
-                #self.sp_unit_manager = self.plugin.spatialLayerManagerDockWidget
+                    iface, self.plugin)
+                # self.sp_unit_manager = self.plugin.spatialLayerManagerDockWidget
 
                 self.geom_cols = self.sp_unit_manager.geom_columns(
                     self._entity
@@ -1060,7 +1052,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             )
 
             result = gps_tool.exec_()
-            result = False # a workaround to avoid duplicate model insert
+            result = False  # a workaround to avoid duplicate model insert
             self.addEntityDlg = gps_tool.entity_editor
         else:
             self.addEntityDlg = self._editor_dlg(
@@ -1131,7 +1123,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             return
 
-        #Exit if more than one record has been selected
+        # Exit if more than one record has been selected
         if len(selRowIndices) > 1:
             msg = QApplication.translate(
                 "EntityBrowserWithEditor",
@@ -1156,7 +1148,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         self.child_model[row_position] = model
 
-
     def onRemoveEntity(self):
         '''
         Load editor dialog for editing an existing record.
@@ -1164,7 +1155,6 @@ class EntityBrowserWithEditor(EntityBrowser):
         self._notifBar.clear()
 
         sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
-
 
         if len(sel_row_indices) == 0:
             msg = QApplication.translate(
@@ -1188,7 +1178,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 "EntityBrowserWithEditor",
                 "Delete Record(s)"),
             msg,
-            QMessageBox.Yes|QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
 
         if response == QMessageBox.No:
@@ -1202,30 +1192,29 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             row_number = source_row_index.row()
 
-            #Delete record
+            # Delete record
             result = self._delete_record(record_id, row_number)
 
             if not result:
                 title = QApplication.translate(
-                'EntityBrowserWithEditor',
-                'Delete Record(s)'
+                    'EntityBrowserWithEditor',
+                    'Delete Record(s)'
                 )
 
-                msg =  QApplication.translate(
-                'EntityBrowserWithEditor',
-                'An error occurred while attempting to delete a record, this '
-                'is most likely caused by a dependency issue.\nPlease check '
-                'if the record has dependencies such as social tenure '
-                'relationship or related entities. If it has then delete '
-                'these dependencies first.'
+                msg = QApplication.translate(
+                    'EntityBrowserWithEditor',
+                    'An error occurred while attempting to delete a record, this '
+                    'is most likely caused by a dependency issue.\nPlease check '
+                    'if the record has dependencies such as social tenure '
+                    'relationship or related entities. If it has then delete '
+                    'these dependencies first.'
                 )
                 QMessageBox.critical(self, title, msg)
 
                 break
 
-            #Refresh list of selected records
+            # Refresh list of selected records
             sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
-
 
     def remove_rows(self):
         """
@@ -1257,9 +1246,9 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             result = gps_tool.exec_()
         else:
-            #Load editor dialog
+            # Load editor dialog
             edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
-                                             parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
+                                               parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
 
             result = edit_entity_dlg.exec_()
 
@@ -1292,7 +1281,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         del_result = True
 
         if self.parent_entity is not None:
-            idx = row_number+1
+            idx = row_number + 1
             if idx in self.child_model:
                 del self.child_model[idx]
                 del self._parent.child_models[idx, self.entity]
@@ -1301,10 +1290,10 @@ class EntityBrowserWithEditor(EntityBrowser):
             # Update number of records
             self.recomputeRecordCount()
 
-            #Clear previous notifications
+            # Clear previous notifications
             self._notifBar.clear()
 
-        #Remove record from the database
+        # Remove record from the database
         dbHandler = self._dbmodel()
         entity = dbHandler.queryObject().filter(
             self._dbmodel.id == rec_id
@@ -1318,10 +1307,10 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             self._tableModel.removeRows(row_number, 1)
 
-            #Clear previous notifications
+            # Clear previous notifications
             self._notifBar.clear()
 
-            #Notify user
+            # Notify user
             delMsg = QApplication.translate(
                 "EntityBrowserWithEditor",
                 "Record successfully deleted!"
@@ -1329,7 +1318,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             self._notifBar.insertInformationNotification(delMsg)
 
-            #Update number of records
+            # Update number of records
             self.recomputeRecordCount()
 
         return del_result
@@ -1343,8 +1332,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         recordIdIndex = self._tableModel.index(rowNumber, 0)
 
         recordId = recordIdIndex.data()
-        self._load_editor_dialog(recordId,recordIdIndex.row())
-
+        self._load_editor_dialog(recordId, recordIdIndex.row())
 
     def shift_spatial_entity_browser(self):
         """
@@ -1360,7 +1348,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         dialog_height = self.height()
         self.setGeometry(
             parent_x,
-            parent_y+parent_height-dialog_height-40,
+            parent_y + parent_height - dialog_height - 40,
             dialog_width,
             dialog_height
         )
@@ -1369,7 +1357,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         """
         Slot raised when selecting a spatial entity row.
         """
-        sel_row_indices = self.tbEntity.\
+        sel_row_indices = self.tbEntity. \
             selectionModel().selectedRows(0)
         record_ids = []
 
@@ -1429,10 +1417,10 @@ class EntityBrowserWithEditor(EntityBrowser):
 
                     canvas.zoomToSelected(layers[0])
 
-                    #iface.mapCanvas().setExtent(bounding_box)
-                    #layers[0].select(record_ids)
-                    #canvas.refresh()
-                    #self.selection_layer = layers[0]
+                    # iface.mapCanvas().setExtent(bounding_box)
+                    # layers[0].select(record_ids)
+                    # canvas.refresh()
+                    # self.selection_layer = layers[0]
 
     def add_spatial_unit_layer(self, layer_name=None):
         """
@@ -1450,8 +1438,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                     self.sp_unit_manager.geom_col_layer_name(
                         self._entity.name,
                         self.geom_cols[0]
-                )
-                self.sp_unit_manager.\
+                    )
+                self.sp_unit_manager. \
                     add_layer_by_name(layer_name_item)
 
     def closeEvent(self, event):
@@ -1496,19 +1484,22 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         VIEW=2301, MANAGE=2302,
         SELECT=2303 #When widget is used to select one or more records from the table list
     """
-    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, current_user=None, load_recs=False, state=VIEW|MANAGE):
-        EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW|MANAGE, load_records=load_recs, plugin=plugin)
+
+    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, current_user=None,
+                 load_recs=False, state=VIEW | MANAGE):
+        EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW | MANAGE,
+                                         load_records=load_recs, plugin=plugin)
 
         self.current_user = current_user
 
-        self.resize(700,500)
+        self.resize(700, 500)
 
         if not isinstance(tableContentGroup, TableContentGroup):
             raise TypeError("Content group is not of type 'TableContentGroup'")
 
         self._tableContentGroup = tableContentGroup
 
-        #Enable/disable tools based on permissions
+        # Enable/disable tools based on permissions
         if (state & MANAGE) != 0:
             if not self._tableContentGroup.canCreate():
                 self._newEntityAction.setVisible(False)
@@ -1533,7 +1524,7 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         Checks if user has permission to edit.
         """
         if self._tableContentGroup.canUpdate():
-            super(ContentGroupEntityBrowser,self).onDoubleClickView(modelindex)
+            super(ContentGroupEntityBrowser, self).onDoubleClickView(modelindex)
 
     def tableContentGroup(self):
         """
@@ -1541,16 +1532,18 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         """
         return self._tableContentGroup
 
+
 class ForeignKeyBrowser(EntityBrowser):
     """
     Browser for  foreign key records.
     """
+
     def __init__(self, parent=None, table=None, state=MANAGE):
         model = table
 
         if isinstance(table, str):
-            #mapping = DeclareMapping.instance()
-            #model = mapping.tableMapping(table)
+            # mapping = DeclareMapping.instance()
+            # model = mapping.tableMapping(table)
             self._data_source_name = table
 
         else:
@@ -1560,4 +1553,4 @@ class ForeignKeyBrowser(EntityBrowser):
 
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser",
-                    "%s Entity Records")%(self._data_source_name).replace("_"," ").capitalize()
+                                      "%s Entity Records") % (self._data_source_name).replace("_", " ").capitalize()

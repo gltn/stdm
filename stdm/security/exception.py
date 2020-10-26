@@ -1,8 +1,8 @@
 """
 /***************************************************************************
-Name                 : STDM Security Exception 
+Name                 : STDM Security Exception
 Description          : Raised when an STDM security condition is not met
-Date                 : 1/June/2013 
+Date                 : 1/June/2013
 copyright            : (C) 2013 by John Gitau
 email                : gkahiu@gmail.com
  ***************************************************************************/
@@ -17,12 +17,14 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
+
 class SecurityException(Exception):
     """
     Raised when an STDM security condition is not met
     """
-    def __init__(self,message):
+
+    def __init__(self, message):
         self.message = message
-        
+
     def __str__(self):
         return repr(self.message)

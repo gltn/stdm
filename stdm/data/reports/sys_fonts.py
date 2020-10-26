@@ -9,6 +9,7 @@ from stdm import ttffiles
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import getIndex
 
+
 class SysFonts:
     '''
     Provides helper methods for querying the
@@ -80,4 +81,3 @@ def fontCachePath():
         return cachePath + "/font.cache"
     except:
         return None
-

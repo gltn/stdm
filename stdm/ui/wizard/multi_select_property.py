@@ -21,16 +21,16 @@ email                : stdm@unhabitat.org
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
-from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
-from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.configuration.association_entity import AssociationEntity
+
 from stdm.ui.wizard.create_lookup import LookupEditor
+from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
 
 
 class MultiSelectProperty(QDialog, Ui_LookupProperty):
     """
     Editor to create/edit MultiSelect column property
     """
+
     def __init__(self, parent, form_fields, entity, profile):
         """
         :param parent: Owner of this window
@@ -63,7 +63,7 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
         if self._first_parent:
             self._lookup_name = self._first_parent.short_name
             self.cboPrimaryEntity.setCurrentIndex( \
-                    self.cboPrimaryEntity.findText(self._lookup_name))
+                self.cboPrimaryEntity.findText(self._lookup_name))
 
         # disable controls if column already exists in database
         self.btnNewlookup.setEnabled(not self.in_db)
@@ -82,7 +82,7 @@ class MultiSelectProperty(QDialog, Ui_LookupProperty):
             names.append(name)
             self.cboPrimaryEntity.insertItems(0, names)
             self.cboPrimaryEntity.setCurrentIndex( \
-                    self.cboPrimaryEntity.findText(name))
+                self.cboPrimaryEntity.findText(name))
 
     def lookup_entities(self):
         """

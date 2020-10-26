@@ -19,24 +19,21 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from stdm.ui.wizard.ui_bigint_property import Ui_BigintProperty
+from qgis.PyQt.QtGui import QIntValidator
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
     QMessageBox
 )
-from qgis.PyQt.QtGui import QIntValidator
 
-from stdm.data.configuration.value_list import (
-        ValueList,
-        CodeValue,
-        value_list_factory
-        )
+from stdm.ui.wizard.ui_bigint_property import Ui_BigintProperty
+
 
 class BigintProperty(QDialog, Ui_BigintProperty):
     """
     Editor to create/edit integer column property
     """
+
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of the form
@@ -91,14 +88,14 @@ class BigintProperty(QDialog, Ui_BigintProperty):
         return self._max_val
 
     def accept(self):
-        if self.edtMinVal.text()=='':
+        if self.edtMinVal.text() == '':
             self.show_message(QApplication.translate("BigintPropetyEditor",
-                "Please set minimum value."))
+                                                     "Please set minimum value."))
             return
 
-        if self.edtMaxVal.text()=='':
+        if self.edtMaxVal.text() == '':
             self.show_message(QApplication.translate("BigintPropetyEditor",
-                "Please set maximum value."))
+                                                     "Please set maximum value."))
             return
 
         self.add_values()
@@ -110,6 +107,6 @@ class BigintProperty(QDialog, Ui_BigintProperty):
     def show_message(self, message, msg_icon=QMessageBox.Critical):
         msg = QMessageBox(self)
         msg.setIcon(msg_icon)
-        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard", "STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard", message))
         msg.exec_()

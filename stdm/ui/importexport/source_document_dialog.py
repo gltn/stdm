@@ -18,35 +18,34 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    QDir
+)
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QFileDialog,
     QMessageBox
 )
-from qgis.PyQt.QtCore import (
-    QDir
-)
 
-from stdm.data.importexport.value_translators import SourceDocumentTranslator
 from stdm.data.configuration import entity_model
-
+from stdm.data.importexport.value_translators import SourceDocumentTranslator
 from stdm.settings.registryconfig import (
     last_document_path
 )
-
-from stdm.ui.notification import NotificationBar
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.importexport.ui_source_document_dialog import (
     Ui_SourceDocumentTranslatorDialog
 )
+from stdm.ui.notification import NotificationBar
 
 
 class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
-    TranslatorDialogBase):
+                                     TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the
     SourceDocumentTranslator implementation.
     """
+
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
@@ -60,22 +59,22 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
 
         self._notif_bar = NotificationBar(self.vlNotification)
 
-        #Assert if the entity supports documents
+        # Assert if the entity supports documents
         self._assert_entity_supports_documents()
 
-        #Set the source document directory
+        # Set the source document directory
         self.source_document_directory = None
 
-        #Document type name
+        # Document type name
         self._document_type_name = self._dest_col
 
-        #Document type ID
+        # Document type ID
         self._document_type_id = None
 
-        #Set document type ID
+        # Set document type ID
         self._set_document_type_id()
 
-        #Connect slots
+        # Connect slots
         self.btn_source_doc_folder.clicked.connect(
             self._load_source_document_directory_selector
         )
@@ -106,7 +105,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
         return self.txtRootFolder.text()
 
     def _assert_entity_supports_documents(self):
-        #Check if the entity supports documents and close automatically if not.
+        # Check if the entity supports documents and close automatically if not.
         entity = self.entity()
 
         if entity is None:
@@ -122,7 +121,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
             raise RuntimeError(msg)
 
     def _set_document_type_id(self):
-        #Load document id based on the name
+        # Load document id based on the name
         entity = self.entity()
 
         if entity is None:
@@ -148,15 +147,15 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
             title = self.tr('Invalid Document Type')
             QMessageBox.critical(self, title, msg)
 
-            #Close dialog
+            # Close dialog
             self.reject()
 
     def _load_source_document_directory_selector(self):
-        #Load file dialog for selecting source documents directory
+        # Load file dialog for selecting source documents directory
         title = self.tr('Select Source Document Directory')
         def_path = self.txtRootFolder.text()
 
-        #Use the last set source document directory
+        # Use the last set source document directory
         if not def_path:
             def_path = last_document_path()
 
@@ -172,7 +171,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
         source_doc_translator.set_referencing_table(self._dest_table)
         source_doc_translator.set_referencing_column(self._dest_col)
 
-        #Just use the source column for getting the relative image path
+        # Just use the source column for getting the relative image path
         # and name
         source_doc_translator.add_source_reference_column(
             self._src_col,
@@ -193,7 +192,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
         """
         source_doc_path = self.txtRootFolder.text()
 
-        #Clear previous notifications
+        # Clear previous notifications
         self._notif_bar.clear()
 
         if not source_doc_path:

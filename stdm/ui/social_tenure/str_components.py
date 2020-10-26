@@ -25,7 +25,6 @@ from datetime import (
 )
 
 from dateutil.relativedelta import relativedelta
-
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject,
@@ -33,7 +32,6 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QRegExp
 )
-
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget,
@@ -49,21 +47,12 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QSizePolicy,
     QSpacerItem,
-    QDoubleSpinBox,
-    QTabBar
+    QDoubleSpinBox
 )
-
 from qgis.utils import iface
-from stdm.ui.notification import NotificationBar, ERROR, INFORMATION
-from stdm.ui.sourcedocument import SourceDocumentManager
-from stdm.ui.foreign_key_mapper import ForeignKeyMapper
-from stdm.settings import current_profile
-from stdm.data.configuration import entity_model
-from stdm.utils.util import (
-    format_name,
-    entity_display_columns
-)
 
+from stdm.data.configuration import entity_model
+from stdm.settings import current_profile
 from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
@@ -71,9 +60,14 @@ from stdm.settings.registryconfig import (
 from stdm.ui.doc_generator_dlg import (
     EntityConfig
 )
-from stdm.ui.social_tenure.str_helpers import FreezeTableWidget
-
+from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.social_tenure.str_helpers import FreezeTableWidget
+from stdm.ui.sourcedocument import SourceDocumentManager
+from stdm.utils.util import (
+    format_name,
+    entity_display_columns
+)
 
 
 class ComponentUtility(QObject):
@@ -620,7 +614,6 @@ class CustomTenureInfo(object):
         self.parties = current_profile().social_tenure.parties
         self.parent = parent
         self.entity_editors = OrderedDict()
-
 
     def textual_display_columns(self, party_entity):
         """

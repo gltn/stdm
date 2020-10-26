@@ -28,20 +28,21 @@ from sqlalchemy import func
 
 INVALIDATESTYLESHEET = "background-color: rgba(255, 0, 0, 100);"
 
+
 class ValidatingLineEdit(QLineEdit):
     '''
     Custom QLineEdit control that validates user input against database
     values as the user types.
     '''
-    #Signal raised when the user input is invalid.
+    # Signal raised when the user input is invalid.
     invalidatedInput = pyqtSignal()
 
-    def __init__(self, parent = None, notificationbar = None, dbmodel = None, attrname = None):
+    def __init__(self, parent=None, notificationbar=None, dbmodel=None, attrname=None):
         '''
         :param parent: Parent widget
         :param notificationbar: instance of stdm.ui.NotificationBar class.
         '''
-        QLineEdit.__init__(self,parent)
+        QLineEdit.__init__(self, parent)
         self._notifBar = notificationbar
         self._dbmodel = None
         self._attrName = None
@@ -54,7 +55,7 @@ class ValidatingLineEdit(QLineEdit):
         self._isValid = True
         self._currInvalidMsg = ""
 
-        #Connect signals
+        # Connect signals
         self._timer.timeout.connect(self.validateInput)
         self.textChanged.connect(self.onTextChanged)
 
@@ -66,12 +67,12 @@ class ValidatingLineEdit(QLineEdit):
             if callable(self._dbmodel):
                 modelObj = self._dbmodel()
 
-            #Then it is a class instance
+            # Then it is a class instance
             else:
                 modelObj = self._dbmodel
                 self._dbmodel = self._dbmodel.__class__
 
-            objQueryProperty = getattr(self._dbmodel,self._attrName)
+            objQueryProperty = getattr(self._dbmodel, self._attrName)
             modelRecord = modelObj.queryObject().filter(func.lower(objQueryProperty) == func.lower(self.text())).first()
 
             if modelRecord != None:
@@ -82,7 +83,7 @@ class ValidatingLineEdit(QLineEdit):
                 if self._notifBar:
                     self._notifBar.insertErrorNotification(self._currInvalidMsg)
 
-    def setInvalidMessage(self,message):
+    def setInvalidMessage(self, message):
         '''
         The message to be displayed when the user input is invalid.
         '''
@@ -94,32 +95,32 @@ class ValidatingLineEdit(QLineEdit):
         '''
         return self._invalidMsg
 
-    def setDatabaseModel(self,dbmodel):
+    def setDatabaseModel(self, dbmodel):
         '''
         Set database model which should be callable.
         '''
         self._dbmodel = dbmodel
 
-    def setAttributeName(self,attrname):
+    def setAttributeName(self, attrname):
         '''
         Attribute name of the database model for validating against.
         '''
         self._attrName = attrname
 
-    def setModelAttr(self,model,attributeName):
+    def setModelAttr(self, model, attributeName):
         '''
         Set a callable model class and attribute name.
         '''
         self._dbmodel = model
         self._attrName = attributeName
 
-    def setNotificationBar(self,notifBar):
+    def setNotificationBar(self, notifBar):
         '''
         Sets the notification bar.
         '''
         self._notifBar = notifBar
 
-    def setQueryOperator(self,queryOp):
+    def setQueryOperator(self, queryOp):
         '''
         Specify a string-based value for the filter operator that validates
         the user input.
@@ -144,7 +145,7 @@ class ValidatingLineEdit(QLineEdit):
         else:
             return True
 
-    def onTextChanged(self,userText):
+    def onTextChanged(self, userText):
         '''
         Slot raised whenever the text changes in the control.
         '''
@@ -155,21 +156,3 @@ class ValidatingLineEdit(QLineEdit):
             self._notifBar.clear()
 
         self._timer.start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

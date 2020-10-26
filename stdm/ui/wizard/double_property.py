@@ -18,12 +18,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import math
 from decimal import (
     Decimal,
     InvalidOperation
 )
-
-import math
 
 from qgis.PyQt.QtGui import QDoubleValidator
 from qgis.PyQt.QtWidgets import (
@@ -34,10 +33,12 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.ui.wizard.ui_double_property import Ui_DoubleProperty
 
+
 class DoubleProperty(QDialog, Ui_DoubleProperty):
     """
     Editor to create/edit Double column property
     """
+
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of the form
@@ -156,14 +157,14 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
         return self._max_val
 
     def accept(self):
-        if self.edtMinVal.text()=='':
+        if self.edtMinVal.text() == '':
             self.show_message(QApplication.translate("DoublePropetyEditor",
-                "Please set minimum value"))
+                                                     "Please set minimum value"))
             return
 
-        if self.edtMaxVal.text()=='':
+        if self.edtMaxVal.text() == '':
             self.show_message(QApplication.translate("DoublePropetyEditor",
-                "Pleasei set maximum value."))
+                                                     "Pleasei set maximum value."))
             return
 
         self.add_values()
@@ -175,6 +176,6 @@ class DoubleProperty(QDialog, Ui_DoubleProperty):
     def show_message(self, message, msg_icon=QMessageBox.Critical):
         msg = QMessageBox(self)
         msg.setIcon(msg_icon)
-        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard", "STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard", message))
         msg.exec_()

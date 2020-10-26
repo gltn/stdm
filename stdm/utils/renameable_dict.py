@@ -27,6 +27,7 @@ class RenameableKeyDict(MutableMapping):
     replacing their values while still retaining their position in the
     collection.
     """
+
     def __init__(self, *args, **kwds):
         """
         Initializes the dictionary. The signature is the same as
@@ -95,8 +96,8 @@ class RenameableKeyDict(MutableMapping):
         # ascending order
         return map(
             lambda s: s[0],
-            sorted(self._idx_map.items(), key=lambda c:c[1])
-            )
+            sorted(self._idx_map.items(), key=lambda c: c[1])
+        )
 
     def _remap_indices(self, ref_idx):
         # Remap the index of items in the list as stored in the dict.
@@ -125,13 +126,13 @@ class RenameableKeyDict(MutableMapping):
 
     def rename(self, old, new, item=None):
         """
-        Rename a key with a new value while still retaining the position of 
+        Rename a key with a new value while still retaining the position of
         the value. Optionally, the value could also be replaced.
         :param old: Old key whose value is to be replaced.
         :type old: str
         :param new: New key which replaces the existing one.
         :type new: str
-        :param item: An optional value to replace the existing value 
+        :param item: An optional value to replace the existing value
         for the given key.
         :type item: None
         """

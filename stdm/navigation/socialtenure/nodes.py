@@ -19,41 +19,36 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 import os
-from collections import OrderedDict
-from decimal import Decimal
 
+from qgis.PyQt.QtCore import (
+    Qt
+)
 from qgis.PyQt.QtGui import (
     QIcon,
 )
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QAction,
-    QDialog,
-    QMessageBox,
-    QMenu,
-    QFileDialog,
-    QVBoxLayout
-)
-from qgis.PyQt.QtCore import (
-    Qt
+    QMessageBox
 )
 
-from stdm.ui.sourcedocument import source_document_location
 from stdm.settings import current_profile
-
+from stdm.ui.sourcedocument import source_document_location
 from stdm.utils.util import (
     gen_random_string,
     entity_id_to_attr
 )
+
 EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
 DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
 NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
 
-class BaseSTRNode(object):
 
+class BaseSTRNode(object):
     """
     Base class for all STR nodes.
     """
+
     def __init__(self, data, parent=None, view=None, parentWidget=None,
                  isChild=False, styleIfChild=True, rootDepthForHash=1,
                  model=None):
@@ -67,7 +62,7 @@ class BaseSTRNode(object):
 
         if parent is not None:
             parent.addChild(self)
-            #Inherit view from parent
+            # Inherit view from parent
             self._view = parent.treeView()
             self._parentWidget = parent.parentWidget()
 
@@ -81,7 +76,7 @@ class BaseSTRNode(object):
         elif self.depth() > rootDepthForHash:
             self._rootNodeHash = self._parent.rootHash()
 
-        #Separator for child text
+        # Separator for child text
         self.separator = ": "
 
         if isChild:
@@ -90,24 +85,24 @@ class BaseSTRNode(object):
         else:
             self._styleIfChild = False
 
-        #Default actions that will be most commonly used by the nodes with data management capabilities
+        # Default actions that will be most commonly used by the nodes with data management capabilities
         self.editAction = QAction(EDIT_ICON,
-                             QApplication.translate("BaseSTRNode","Edit..."),None)
+                                  QApplication.translate("BaseSTRNode", "Edit..."), None)
         self.deleteAction = QAction(DELETE_ICON,
-                             QApplication.translate("BaseSTRNode","Delete"),None)
+                                    QApplication.translate("BaseSTRNode", "Delete"), None)
 
-        self._expand_action = QAction(QApplication.translate("BaseSTRNode","Expand"),
+        self._expand_action = QAction(QApplication.translate("BaseSTRNode", "Expand"),
                                       self._parentWidget)
-        self._collapse_action = QAction(QApplication.translate("BaseSTRNode","Collapse"),
-                                      self._parentWidget)
+        self._collapse_action = QAction(QApplication.translate("BaseSTRNode", "Collapse"),
+                                        self._parentWidget)
 
-    def addChild(self,child):
+    def addChild(self, child):
         '''
         Add child to the parent node.
         '''
         self._children.append(child)
 
-    def insertChild(self,position,child):
+    def insertChild(self, position, child):
         '''
         Append child at the specified position in the list
         '''
@@ -119,7 +114,7 @@ class BaseSTRNode(object):
 
         return True
 
-    def removeChild(self,position):
+    def removeChild(self, position):
         '''
         Remove child at the specified position.
         '''
@@ -141,7 +136,7 @@ class BaseSTRNode(object):
         except:
             return False
 
-    def child(self,row):
+    def child(self, row):
         '''
         Get the child node at the specified row.
         '''
@@ -273,7 +268,7 @@ class BaseSTRNode(object):
         '''
         return len(self._data)
 
-    def column(self,position):
+    def column(self, position):
         '''
         Get the data in the specified column.
         '''
@@ -282,7 +277,7 @@ class BaseSTRNode(object):
 
         return self._data[position]
 
-    def removeColumns(self,position,columns):
+    def removeColumns(self, position, columns):
         '''
         Removes columns in the STR node.
         '''
@@ -327,15 +322,15 @@ class BaseSTRNode(object):
                 self._expand_action.setEnabled(True)
                 self._collapse_action.setEnabled(False)
 
-        #Disconnect then reconnect signals
+        # Disconnect then reconnect signals
         if self.signalReceivers(self._expand_action, self._expand_action.triggered) > 0:
             self._expand_action.triggered.disconnect()
 
         if self.signalReceivers(self._collapse_action, self._collapse_action.triggered) > 0:
             self._collapse_action.triggered.disconnect()
 
-        #Connect expand/collapse signals to the respective actions
-        self._expand_action.triggered.connect(lambda:self._on_expand(modelindex))
+        # Connect expand/collapse signals to the respective actions
+        self._expand_action.triggered.connect(lambda: self._on_expand(modelindex))
         self._collapse_action.triggered.connect(lambda: self._on_collapse(modelindex))
 
         menu.addAction(self._expand_action)
@@ -361,14 +356,14 @@ class BaseSTRNode(object):
         if index.isValid():
             self._view.collapse(index)
 
-    def onEdit(self,index):
+    def onEdit(self, index):
         '''
         Slot triggered when the Edit action of the node is triggered by the user.
         Subclasses to implement.
         '''
         pass
 
-    def onDelete(self,index):
+    def onDelete(self, index):
         '''
         Slot triggered when the Delete action of the node is triggered by the user.
         Subclasses to implement.
@@ -402,7 +397,7 @@ class BaseSTRNode(object):
             if prop in formatter:
                 attr_val = formatter[prop](attr_val)
 
-            name_val = "%s%s %s" %(prop_display, self.separator, attr_val)
+            name_val = "%s%s %s" % (prop_display, self.separator, attr_val)
             name_values.append(name_val)
 
         return name_values
@@ -439,10 +434,12 @@ class BaseSTRNode(object):
         """
         raise NotImplementedError
 
+
 class SupportsDocumentsNode(BaseSTRNode):
     """
     Node for those entities with supporting documents.
     """
+
     def __init__(self, *args, **kwargs):
         self._doc_models = kwargs.pop('document_models', [])
         super(SupportsDocumentsNode, self).__init__(*args, **kwargs)
@@ -463,10 +460,12 @@ class SupportsDocumentsNode(BaseSTRNode):
     def typeInfo(self):
         return "SUPPORTING_DOCUMENT_NODE"
 
+
 class EntityNode(SupportsDocumentsNode):
     """
     Node for displaying general information pertaining to an entity.
     """
+
     def __init__(self, *args, **kwargs):
         self._colname_display_value = args[0]
 
@@ -499,18 +498,19 @@ class EntityNode(SupportsDocumentsNode):
                                                      self._value_formatters)
 
         for p_val in prop_val_mapping:
-
             ch_ent_node = BaseSTRNode([p_val], self)
+
 
 class NoSTRNode(BaseSTRNode):
     """
     Node for showing that no STR relationship exists.
     """
-    def __init__(self,parent=None):
-        noSTRText = str(QApplication.translate("NoSTRNode",
-                                                   "No STR Defined"))
 
-        super(NoSTRNode,self).__init__([noSTRText],parent)
+    def __init__(self, parent=None):
+        noSTRText = str(QApplication.translate("NoSTRNode",
+                                               "No STR Defined"))
+
+        super(NoSTRNode, self).__init__([noSTRText], parent)
 
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/remove.png")
@@ -526,7 +526,7 @@ class InvalidSTRNode(BaseSTRNode):
 
     def __init__(self, parent=None):
         invalid_str_text = str(QApplication.translate("NoSTRNode",
-                                                   "Invalid STR"))
+                                                      "Invalid STR"))
 
         super(InvalidSTRNode, self).__init__([invalid_str_text], parent)
 
@@ -535,6 +535,7 @@ class InvalidSTRNode(BaseSTRNode):
 
     def typeInfo(self):
         return "INVALID_STR_NODE"
+
 
 class STRNode(EntityNode):
     """
@@ -566,14 +567,13 @@ class STRNode(EntityNode):
 
                 idx = view_model.index(row_num, index.column(), index)
 
-                #if idx.isValid():
+                # if idx.isValid():
 
-                #Get column name from node display information
+                # Get column name from node display information
                 node_data = c_node.data(0)
                 col_name, display_name = self._column_name(node_data)
 
                 if hasattr(model, col_name):
-
                     col_value = getattr(model, col_name)
 
                     node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
@@ -590,11 +590,11 @@ class STRNode(EntityNode):
         """
 
         if self._model is None:
-            msg = QApplication.translate("STRNode","The object representing "
-                                                   "the social tenure "
-                                                   "relationship cannot "
-                                                   "be found")
-            QMessageBox.critical(self._parentWidget,"STDM", msg)
+            msg = QApplication.translate("STRNode", "The object representing "
+                                                    "the social tenure "
+                                                    "relationship cannot "
+                                                    "be found")
+            QMessageBox.critical(self._parentWidget, "STDM", msg)
 
             return
 
@@ -643,19 +643,19 @@ class STRNode(EntityNode):
             self.parentWidget(),
             QApplication.translate("STRNode",
                                    "Delete Social Tenure Relationship"),
-                                        del_msg,
-                                        QMessageBox.Yes|QMessageBox.No)
+            del_msg,
+            QMessageBox.Yes | QMessageBox.No)
 
         if del_result == QMessageBox.Yes:
             model = self._view.model()
             self.delete_document_file(self._model.documents)
             model.removeAllChildren(index.row(), self.childCount(), index.parent())
 
-            #Remove source documents listings
+            # Remove source documents listings
             self.parentWidget()._deleteSourceDocTabs()
             self._model.delete()
 
-            #Notify model that we have inserted a new child i.e. NoSTRNode
+            # Notify model that we have inserted a new child i.e. NoSTRNode
             model.insertRows(index.row(), 1, index.parent())
 
     def delete_document_file(self, model_obj_list):
@@ -672,7 +672,7 @@ class STRNode(EntityNode):
             curr_profile = current_profile()
             doc_id = model.document_type
 
-            doc_type_entity = curr_profile.social_tenure.\
+            doc_type_entity = curr_profile.social_tenure. \
                 supporting_doc.document_type_entity
             doc_type_val = entity_id_to_attr(
                 doc_type_entity, 'value', doc_id
@@ -706,17 +706,19 @@ class STRNode(EntityNode):
         menu.addSeparator()
         menu.addAction(self.deleteAction)
 
-        #Disable if the user does not have permission.
+        # Disable if the user does not have permission.
         if not self.parentWidget()._can_edit:
             menu.setEnabled(False)
 
         self.editAction.triggered.connect(lambda: self.onEdit(model_index))
         self.deleteAction.triggered.connect(lambda: self.onDelete(model_index))
 
+
 class SpatialUnitNode(EntityNode):
     """
     Node for rendering spatial unit information.
     """
+
     def icon(self):
         return QIcon(":/plugins/stdm/images/icons/layer.gif")
 

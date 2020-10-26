@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+from decimal import Decimal, DecimalException
+
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -29,7 +31,6 @@ from qgis.PyQt.QtGui import (
 from qgis.PyQt.QtWidgets import (
     QAbstractItemView
 )
-
 from qgis.core import (
     edit,
     QgsGeometry,
@@ -43,7 +44,6 @@ from qgis.gui import (
     QgsVertexMarker
 )
 
-from decimal import Decimal, DecimalException
 VERTEX_COLOR = '#008000'
 
 
@@ -100,7 +100,6 @@ def _drop_event(qt_widget, event):
         event.accept()
         return
     event.ignore()
-
 
 
 def _drag_enter_event(qt_widget, event):
@@ -370,7 +369,6 @@ def remove_from_list(item_list, item):
     return []
 
 
-
 def add_to_list(item_list, item):
     """
     Adds an element to a list
@@ -437,7 +435,7 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
     """
     point_list = []
     new_point_row_attr = []
-    checkbox_state = lon_value = lat_value= None
+    checkbox_state = lon_value = lat_value = None
     row_count = qt_widget.rowCount()
     column_count = qt_widget.columnCount()
     row = 0
@@ -464,7 +462,7 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
                 new_point_row_attr.append({'row': row, 'qgs_point': None, 'check_state': checkbox_state})
         if checkbox_state is not None:
             row += 1
-        checkbox_state = lon_value = lat_value= None
+        checkbox_state = lon_value = lat_value = None
     return point_list, new_point_row_attr
 
 
@@ -527,4 +525,3 @@ def delete_feature(map_canvas, temp_mem_layer):
         feature_ids = [feature.id() for feature in temp_mem_layer.getFeatures()]
         temp_mem_layer.deleteFeatures(feature_ids)
     map_canvas.refresh()
-

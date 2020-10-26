@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 """
 
 import os
+
 from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtXml import (
     QDomDocument,
@@ -29,10 +30,12 @@ from qgis.PyQt.QtXml import (
 UUID = "uuid"
 from collections import OrderedDict
 
+
 class InstanceUUIDExtractor():
     """
     Class constructor
     """
+
     def __init__(self, path):
         """
         Initatlize class variables
@@ -54,7 +57,6 @@ class InstanceUUIDExtractor():
     def unset_path(self):
         """Clear the current document path"""
         self.file_path = None
-
 
     def set_document(self):
         """
@@ -145,7 +147,7 @@ class InstanceUUIDExtractor():
         attribute_data = OrderedDict()
         for attr_nodes, entity in args_list.iteritems():
             '''The assuption is that there are repeated entities from mobile sub forms. handle them separately'''
-            if attr_nodes.count()>1:
+            if attr_nodes.count() > 1:
                 for i in range(attr_nodes.count()):
                     attrib_node = attr_nodes.at(i).childNodes()
                     attr_list = OrderedDict()
@@ -153,10 +155,10 @@ class InstanceUUIDExtractor():
                         field_name = attrib_node.at(j).nodeName()
                         field_value = attrib_node.at(j).toElement().text()
                         attr_list[field_name] = field_value
-                    repeat_instance_data['{}'.format(i)+entity] = attr_list
+                    repeat_instance_data['{}'.format(i) + entity] = attr_list
             else:
                 '''Entities must appear onces in the form'''
-                node_list_var =OrderedDict()
+                node_list_var = OrderedDict()
                 attr_node = attr_nodes.at(0).childNodes()
                 for j in range(attr_node.count()):
                     field_name = attr_node.at(j).nodeName()
@@ -177,8 +179,7 @@ class InstanceUUIDExtractor():
         attributes[entity_name] = node_list_var
         return attributes
 
-
-    def str_definition(self, instance = None):
+    def str_definition(self, instance=None):
         """
         Check if the instance file has entry social tenure
         :return:
@@ -215,7 +216,7 @@ class InstanceUUIDExtractor():
         Format the guuid from the file
         :return:
         """
-        return self.node.replace(":","")
+        return self.node.replace(":", "")
 
     def rename_file(self):
         """
@@ -227,7 +228,7 @@ class InstanceUUIDExtractor():
             dir_n, file_n = os.path.split(self.file_path)
             os.chdir(dir_n)
             if not file_n.startswith(UUID):
-                new_file_name = self.uuid_element()+".xml"
+                new_file_name = self.uuid_element() + ".xml"
                 isrenamed = self.file.setFileName(new_file_name)
                 os.rename(file_n, new_file_name)
                 self.new_list.append(new_file_name)
@@ -249,7 +250,6 @@ class InstanceUUIDExtractor():
             else:
                 continue
         return complete_file
-
 
     def close_document(self):
         '''Close all the open documents and unset current paths'''

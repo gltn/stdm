@@ -19,19 +19,20 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
-from qgis.PyQt.QtXml import QDomDocument
-from qgis.PyQt.QtCore import QFile, QIODevice
-from stdm.settings import current_profile
-from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
-from stdm.data.configuration import entity_model
-from stdm.geoodk.importer.geometry_provider import STDMGeometry
-from stdm.data.configuration.columns import GeometryColumn
-from stdm.ui.sourcedocument import SourceDocumentManager
+
 from qgis.PyQt.QtCore import (
     QDir
 )
-
+from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtWidgets import QVBoxLayout
+from qgis.PyQt.QtXml import QDomDocument
+
+from stdm.data.configuration import entity_model
+from stdm.data.configuration.columns import GeometryColumn
+from stdm.geoodk.importer.geometry_provider import STDMGeometry
+from stdm.settings import current_profile
+from stdm.ui.sourcedocument import SourceDocumentManager
+from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
 
 GEOMPARAM = 0
 GROUPCODE = 0
@@ -39,10 +40,12 @@ HOME = QDir.home().path()
 
 CONFIG_FILE = HOME + '/.stdm/geoodk/instances'
 
+
 class EntityImporter():
     """
     class constructor
     """
+
     def __init__(self, instance):
         """
         Initialize variables
@@ -106,10 +109,12 @@ class EntityImporter():
             entity_add.objects_from_supporting_doc(self.instance)
             entity_add.save_to_db()
 
+
 class Save2DB:
     """
     Class to insert entity data into db
     """
+
     def __init__(self, entity, attributes, ids=None):
         """
         Initialize class and class variable
@@ -117,7 +122,7 @@ class Save2DB:
         self.attributes = attributes
         self.form_entity = entity
         self.doc_model = None
-        self._doc_manager =None
+        self._doc_manager = None
         self.entity = self.object_from_entity_name(self.form_entity)
         self.model = self.dbmodel_from_entity()
         self.key = 0
@@ -169,14 +174,14 @@ class Save2DB:
                     obj_doc_col = self.entity.supporting_doc
 
                 self._doc_manager = SourceDocumentManager(
-                        obj_doc_col, self.doc_model
-                    )
+                    obj_doc_col, self.doc_model
+                )
         else:
             entity_object = entity_model(self.entity)
             entity_object_model = entity_object()
         return entity_object_model
 
-    def objects_from_supporting_doc(self, instance_file = None):
+    def objects_from_supporting_doc(self, instance_file=None):
         """
         Create supporting doc path  instances based on the collected documents
         :return:paths
@@ -188,12 +193,12 @@ class Save2DB:
                 if str(document).endswith('supporting_document'):
                     if val != '':
                         doc = self.format_document_name_from_attribute(document)
-                        doc_path = os.path.normpath(f_dir+'/'+val)
-                        abs_path = doc_path.replace('\\','/').strip()
+                        doc_path = os.path.normpath(f_dir + '/' + val)
+                        abs_path = doc_path.replace('\\', '/').strip()
                         if QFile.exists(abs_path):
                             self.supporting_document_model(abs_path, doc)
 
-    def supporting_document_model(self,doc_path,doc):
+    def supporting_document_model(self, doc_path, doc):
         """
         :param doc_path: absolute document path
         :param doc: document name
@@ -210,11 +215,11 @@ class Save2DB:
             doc_container,
             document_type_id
         )
-        #Copy the document to STDM working directory
+        # Copy the document to STDM working directory
         self._doc_manager.insertDocumentFromFile(
-                doc_path,
-                document_type_id,
-                self.entity
+            doc_path,
+            document_type_id,
+            self.entity
         )
 
     def format_document_name_from_attribute(self, doc):
@@ -225,7 +230,7 @@ class Save2DB:
         """
         formatted_doc_list = self.entity_supported_document_types()
         default = 'General'
-        doc_type = str(doc).split('_',1)
+        doc_type = str(doc).split('_', 1)
         if doc_type[0].startswith('supporting') and formatted_doc_list[0] == default:
             return default
         elif doc_type[0].startswith('supporting') and formatted_doc_list[0] != default:
@@ -273,7 +278,7 @@ class Save2DB:
         attributes = self.attributes
         try:
             if self.entity.short_name == 'social_tenure_relationship':
-                #try:
+                # try:
 
                 prefix = current_profile().prefix + '_'
                 if self.attributes.has_key('party'):
@@ -282,7 +287,7 @@ class Save2DB:
                     self.attributes.pop('party')
                 else:
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
-                    party_ref_column = full_party_ref_column.replace(prefix,'') + '_id'
+                    party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
 
                 setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
@@ -292,7 +297,7 @@ class Save2DB:
                     self.attributes.pop('spatial_unit')
                 else:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
-                    spatial_ref_column = full_spatial_ref_column.replace(prefix,'') + '_id'
+                    spatial_ref_column = full_spatial_ref_column.replace(prefix, '') + '_id'
 
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
 
@@ -325,7 +330,7 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
-                #print "property{0}....  and type.{1}".format(col_prop, col_type)
+                # print "property{0}....  and type.{1}".format(col_prop, col_type)
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
@@ -382,7 +387,7 @@ class Save2DB:
         if col_type == 'BOOL':
             if len(var) < 1:
                 return None
-            if len(var)>1:
+            if len(var) > 1:
                 if var == '' or var is None:
                     return None
                 if var == 'Yes' or var == True:
@@ -395,7 +400,7 @@ class Save2DB:
         if col_type == 'LOOKUP':
             if len(var) < 1 or var is None:
                 return None
-            if len(var) <4:
+            if len(var) < 4:
                 if var == 'Yes' or var == 'No':
                     return entity_attr_to_model(col_prop.parent, 'value', var).id
                 if var != 'Yes' and var != 'No':
@@ -410,7 +415,7 @@ class Save2DB:
                     id_value = entity_attr_to_model(col_prop.parent, 'value', var)
                     if id_value is not None:
                         return id_value.id
-                    #return entity_attr_to_model(col_prop.parent, 'value', var).id
+                    # return entity_attr_to_model(col_prop.parent, 'value', var).id
                 else:
                     lk_code = entity_attr_to_id(col_prop.parent, "code", var)
                     if not str(lk_code).isdigit():
@@ -511,6 +516,3 @@ class Save2DB:
         self.entity = None
         self.attributes = None
         self._doc_manager = None
-
-
-

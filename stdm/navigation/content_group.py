@@ -18,21 +18,20 @@ email                : gkahiu@gmail.com
 """
 import hashlib
 
-from qgis.PyQt.QtWidgets import QApplication
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     QObject
 )
+from qgis.PyQt.QtWidgets import QApplication
 
 from stdm.data.database import (
     Content,
     Role
 )
-
 from stdm.utils.hashable_mixin import HashableMixin
 
 
-class ContentGroup(QObject,HashableMixin):
+class ContentGroup(QObject, HashableMixin):
     """
     Groups related content items together.
     """
@@ -41,14 +40,14 @@ class ContentGroup(QObject,HashableMixin):
     def __init__(self, username, containerItem=None, parent=None):
         from stdm.security.authorization import Authorizer
 
-        QObject.__init__(self,parent)
+        QObject.__init__(self, parent)
         HashableMixin.__init__(self)
         self._username = username
         self._contentItems = []
         self._authorizer = Authorizer(self._username)
         self._containerItem = containerItem
 
-    def hasPermission(self,content):
+    def hasPermission(self, content):
         """
         Checks whether the currently logged in user has permissions to access
         the given content item.
@@ -77,7 +76,7 @@ class ContentGroup(QObject,HashableMixin):
         """
         return self._contentItems
 
-    def addContent(self,name,code):
+    def addContent(self, name, code):
         """
         Create a new Content item and add it to the collection.
         """
@@ -87,19 +86,19 @@ class ContentGroup(QObject,HashableMixin):
 
         self._contentItems.append(cnt)
 
-    def addContentItems(self,contents):
+    def addContentItems(self, contents):
         """
         Append list of content items to the group's collection.
         """
         self._contentItems.extend(contents)
 
-    def addContentItem(self,content):
+    def addContentItem(self, content):
         """
         Adds a Content instance to the collection.
         """
         self._contentItems.append(content)
 
-    def setContainerItem(self,containerItem):
+    def setContainerItem(self, containerItem):
         """
         ContainerItem can be a QAction, QListWidgetItem, etc. that can be associated with the group.
         """
@@ -141,7 +140,7 @@ class ContentGroup(QObject,HashableMixin):
 
         if self._username == PG_ACCOUNT:
             for c in self.contentItems():
-                if isinstance(c,Content):
+                if isinstance(c, Content):
                     cnt = Content()
                     qo = cnt.queryObject()
 
@@ -153,9 +152,9 @@ class ContentGroup(QObject,HashableMixin):
 
                     cn = qo.filter(Content.code == code).first()
 
-                    #If content not found then add
+                    # If content not found then add
                     if cn is None:
-                        #Check if the 'postgres' role is defined, if not then create one
+                        # Check if the 'postgres' role is defined, if not then create one
                         rl = Role()
                         rolequery = rl.queryObject()
                         role = rolequery.filter(Role.name == PG_ACCOUNT).first()
@@ -166,22 +165,21 @@ class ContentGroup(QObject,HashableMixin):
                             rl.save()
                         else:
                             existingContents = role.contents
-                            #Append new content to existing
+                            # Append new content to existing
                             if c.code is None:
                                 c.code = code
 
-                            if len([e_cont for e_cont in existingContents if e_cont.name ==  c.name])==0:
+                            if len([e_cont for e_cont in existingContents if e_cont.name == c.name]) == 0:
                                 existingContents.append(c)
                                 role.contents = existingContents
                                 role.update()
         else:
             for c in self.contentItems():
-                if isinstance(c,Content):
+                if isinstance(c, Content):
                     cnt = Content()
                     qo = cnt.queryObject()
                     cn = qo.filter(Content.name == c.name).first()
                     c.code = cn.code
-
 
 
 class TableContentGroup(ContentGroup):
@@ -278,5 +276,3 @@ class TableContentGroup(ContentGroup):
         Returns whether the current user has delete permissions.
         """
         return self.hasPermission(self._deleteCnt)
-
-

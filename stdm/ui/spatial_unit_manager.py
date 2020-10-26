@@ -40,7 +40,6 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QInputDialog
 )
-
 from qgis.core import (
     QgsProject,
     QgsVectorLayerJoinInfo,
@@ -49,12 +48,6 @@ from qgis.core import (
 )
 
 from stdm.data.configuration.social_tenure import SocialTenure
-from stdm.ui.gps_tool import GPSToolDialog
-from stdm.settings import (
-    current_profile,
-    save_configuration
-)
-
 from stdm.data.pg_utils import (
     geometryType,
     spatial_tables,
@@ -62,18 +55,22 @@ from stdm.data.pg_utils import (
     vector_layer,
     pg_views
 )
-
+from stdm.mapping.utils import pg_layerNamesIDMapping
+from stdm.settings import (
+    current_profile,
+    save_configuration
+)
 from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
-from stdm.utils.util import (
-        profile_and_user_views
-)
-from stdm.mapping.utils import pg_layerNamesIDMapping
-
+from stdm.ui.gps_tool import GPSToolDialog
 from stdm.ui.ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
+from stdm.utils.util import (
+    profile_and_user_views
+)
 
 LOGGER = logging.getLogger('stdm')
+
 
 class SpatialUnitManagerDockWidget(
     QDockWidget, Ui_SpatialUnitManagerWidget
@@ -120,7 +117,7 @@ class SpatialUnitManagerDockWidget(
         self.iface.projectRead.connect(self.on_project_opened)
 
     def on_project_opened(self):
-        legend_layers =  self.iface.legendInterface().layers()
+        legend_layers = self.iface.legendInterface().layers()
         for layer in legend_layers:
             source = self.layer_source(layer)
             if source is not bool and source is not None:
@@ -171,7 +168,6 @@ class SpatialUnitManagerDockWidget(
                 joined_column = self.get_column_config(config, joined_column_name)
 
                 if joined_column is not None:
-
                     updated_columns.append(joined_column)
 
                     updated_columns.append(column)
@@ -359,8 +355,8 @@ class SpatialUnitManagerDockWidget(
         # add old config views and custom views.
         for sp_table in self.sp_tables:
             if sp_table in pg_views() and sp_table not in str_views and \
-                            sp_table in profile_and_user_views(
-                        self._curr_profile):
+                    sp_table in profile_and_user_views(
+                self._curr_profile):
                 view_geom_columns = table_column_names(
                     sp_table, True
                 )
@@ -465,7 +461,7 @@ class SpatialUnitManagerDockWidget(
             layer_info = self.stdm_layers_combo.itemData(i)
 
             if layer_info['table_name'] == table and \
-                            layer_info['column_name'] == column:
+                    layer_info['column_name'] == column:
                 idx, layer_info = i, layer_info
 
                 break
@@ -627,7 +623,6 @@ class SpatialUnitManagerDockWidget(
                 table_name, geom_column=spatial_column
             )
 
-
         if curr_layer.isValid():
             if curr_layer.name() in self._map_registry_layer_names():
                 return
@@ -694,7 +689,6 @@ class SpatialUnitManagerDockWidget(
             alias = u'{} Value'.format(header)
 
             layer.addAttributeAlias(f_index, alias)
-
 
     def zoom_to_layer(self):
         """

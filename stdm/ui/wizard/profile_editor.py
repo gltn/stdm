@@ -22,17 +22,17 @@ from qgis.PyQt.QtCore import (
     QSettings,
     QRegExp
 )
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QApplication,
-    QMessageBox)
 from qgis.PyQt.QtGui import (
     QRegExpValidator,
     QValidator
 )
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QApplication,
+    QMessageBox)
 
-from stdm.ui.wizard.ui_profile import Ui_Profile
 from stdm.ui.notification import NotificationBar
+from stdm.ui.wizard.ui_profile import Ui_Profile
 
 
 class ProfileEditor(QDialog, Ui_Profile):
@@ -132,4 +132,3 @@ class ProfileEditor(QDialog, Ui_Profile):
         msg.setWindowTitle("STDM")
         msg.setText(Message)
         msg.exec_()
-

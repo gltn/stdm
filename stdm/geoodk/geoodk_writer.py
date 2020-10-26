@@ -20,10 +20,6 @@ email                : stdm@unhabitat.org
 """
 import os
 
-from qgis.PyQt.QtXml import (
-    QDomDocument,
-    QDomNode
-)
 from qgis.PyQt.QtCore import (
     QFile,
     QIODevice,
@@ -31,12 +27,16 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QDir
 )
+from qgis.PyQt.QtXml import (
+    QDomDocument,
+    QDomNode
+)
 
 from stdm.data.configfile_paths import FilePaths
-from stdm.geoodk.xform_model import EntityFormatter
 from stdm.geoodk.geoodk_reader import (
     GeoODKReader
 )
+from stdm.geoodk.xform_model import EntityFormatter
 from stdm.ui.forms.widgets import BooleanColumn
 
 DOCSUFFIX = 'h'
@@ -46,10 +46,10 @@ BINDPARAMS = "jr:preloadParams"
 CUSTOMBINDPARAMS = "jr:preload"
 DOCUMENT = 'supporting_document'
 
-
 HOME = QDir.home().path()
 
 FORM_HOME = HOME + '/.stdm/geoodk/forms'
+
 
 class XFORMDocument:
     """
@@ -57,6 +57,7 @@ class XFORMDocument:
     using mobile device. The class creates the file and QDOM sections
     for holding data once the file is called
     """
+
     def __init__(self, fname):
         """
         Initalize the class so that we have a new file
@@ -87,7 +88,7 @@ class XFORMDocument:
         if len(self.fname.split(".")) > 1:
             return self.fname
         else:
-            return self.fname+"{}".format(DOCEXTENSION)
+            return self.fname + "{}".format(DOCEXTENSION)
 
     def set_form_name(self, local_name):
         """
@@ -96,7 +97,7 @@ class XFORMDocument:
         :param local_name: string
         :return: QFile
         """
-        self.fname = local_name+"{}".format(DOCEXTENSION)
+        self.fname = local_name + "{}".format(DOCEXTENSION)
         self.form.setFileName(self.fname)
         self.create_form()
 
@@ -110,12 +111,12 @@ class XFORMDocument:
         :return: file
         """
         self.form = QFile(os.path.join(FORM_HOME,
-                                             self.form_name()))
+                                       self.form_name()))
         if not QFileInfo(self.form).suffix() == DOCEXTENSION:
             self.form_name()
 
         if not self.form.open(QIODevice.ReadWrite | QIODevice.Truncate |
-                                            QIODevice.Text):
+                              QIODevice.Text):
             return self.form.OpenError
 
     def create_node(self, name):
@@ -205,7 +206,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.initialize_entity_reader(self.entities[0])
-        self.profile_entity = self.entity_read.profile_name().replace(' ','_')
+        self.profile_entity = self.entity_read.profile_name().replace(' ', '_')
         XFORMDocument.__init__(self, self.profile_entity)
         EntityFormatter.__init__(self, self.profile_entity)
 
@@ -227,17 +228,17 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return: Dom element
         """
         self.xform_document().appendChild(
-                self.xform_document().createProcessingInstruction("xml", "version=\"1.0\" "))
+            self.xform_document().createProcessingInstruction("xml", "version=\"1.0\" "))
         root = self.create_node("h:html")
         root.setPrefix(DOCSUFFIX)
         root.setAttribute("xmlns", "http://www.w3.org/2002/xforms")
         root.setAttribute("xmlns:ev",
-                           "http://www.w3.org/2001/xml-events")
+                          "http://www.w3.org/2001/xml-events")
         root.setAttribute("xmlns:h", "http://www.w3.org/1999/xhtml")
 
         root.setAttribute("xmlns:orx", "http://openrosa.org/xforms")
         root.setAttribute("xmlns:xsd",
-                           "http://www.w3.org/2001/XMLSchema")
+                          "http://www.w3.org/2001/XMLSchema")
         root.setAttribute("xmlns:jr", "http://openrosa.org/javarosa")
         return root
 
@@ -269,8 +270,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         doc_model = self.create_node("model")
         doc_model.appendChild(self._create_model_props())
-        #self.create_header_intro(doc_model)
-        #self.create_form_identifier_field(doc_model)
+        # self.create_header_intro(doc_model)
+        # self.create_form_identifier_field(doc_model)
         self.bind_default_parameters(doc_model)
         self.create_model_bind_attributes(doc_model)
         doc_model.appendChild(self.model_unique_id_generator())
@@ -293,7 +294,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         instance_id = self.create_node(self.profile_entity)
-        instance_id.setAttribute("id", self.profile_entity.replace('_',' ').title())
+        instance_id.setAttribute("id", self.profile_entity.replace('_', ' ').title())
         """ add entity data into the instance node as form fields,
         language translation aspect of the instance child 
         has not been considered
@@ -332,14 +333,14 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             for key_field in entity_values.keys():
                 col_node = self.create_node(key_field)
                 field_group.appendChild(col_node)
-            if len(doc_list)<2:
+            if len(doc_list) < 2:
                 document_node = self.create_node(self.supports_doc)
                 field_group.appendChild(document_node)
             else:
                 for doc in doc_list:
                     if doc == 'General':
                         continue
-                    document_node = self.create_node(doc.replace(' ','-') + '_' + self.supports_doc)
+                    document_node = self.create_node(doc.replace(' ', '-') + '_' + self.supports_doc)
                     field_group.appendChild(document_node)
         else:
             for key_field in entity_values.keys():
@@ -415,7 +416,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         for key, val in entity_values.iteritems():
             bind_node = self.create_node("bind")
             bind_node.setAttribute("nodeset",
-                    self.set_model_xpath(key, self.entity_read.default_entity()))
+                                   self.set_model_xpath(key, self.entity_read.default_entity()))
             if self.entity_read.col_is_mandatory(key):
                 bind_node.setAttribute("required", "true()")
             if val == 'GEOMETRY':
@@ -475,11 +476,11 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :rtype:QDomNode
         """
         doc_list = self.entity_read.entity_supported_document_types()
-        if len(doc_list)<2:
+        if len(doc_list) < 2:
             doc_bind_node = self.create_node("bind")
             doc_bind_node.setAttribute("nodeset",
-                                    self.set_model_xpath(self.supports_doc,
-                                                         self.entity_read.default_entity()))
+                                       self.set_model_xpath(self.supports_doc,
+                                                            self.entity_read.default_entity()))
             doc_bind_node.setAttribute("type", 'binary')
             parent_node.appendChild(doc_bind_node)
         else:
@@ -507,7 +508,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         bind_node.setAttribute("type", "string")
         return bind_node
 
-    def bind_default_parameters(self,parent_node):
+    def bind_default_parameters(self, parent_node):
         """
         Ensure that the default parameters for Xform are included
         :return:
@@ -518,8 +519,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             if item_val == "deviceid":
                 cast_param = "property"
             else:
-                cast_param ="timestamp"
-            bind_node.setAttribute(CUSTOMBINDPARAMS,cast_param)
+                cast_param = "timestamp"
+            bind_node.setAttribute(CUSTOMBINDPARAMS, cast_param)
             bind_node.setAttribute(BINDPARAMS, item_val)
             bind_node.setAttribute("nodeset", self.set_model_xpath(item_val))
             bind_node.setAttribute("type", self.xform_custom_params_types(item_val))
@@ -567,7 +568,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         ref = 'ref'
 
         label_txt = self.create_text_node(
-                self.entity_read.user_entity_name())
+            self.entity_read.user_entity_name())
         cate_name = self.model_category_group(self.profile_entity,
                                               entity)
 
@@ -595,7 +596,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             group_node.appendChild(group_label)
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
-        #print repeat_node
+        # print repeat_node
         return group_node, repeat_node
 
     def social_tenure_nodes(self):
@@ -628,7 +629,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             str_label.appendChild(label_txt)
 
             group_label.appendChild(self.create_text_node(
-             'Social Tenure Relationship'))
+                'Social Tenure Relationship'))
             repeat_node.appendChild(str_label)
             group_node.appendChild(group_label)
             group_node.appendChild(repeat_node)
@@ -643,28 +644,28 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         has_multiple = False
         party_tbl = self.entity_read.social_tenure().parties
         spunit_tbl = self.entity_read.social_tenure().spatial_units
-        if len(party_tbl)>1 or len(spunit_tbl)>1:
+        if len(party_tbl) > 1 or len(spunit_tbl) > 1:
             has_multiple = True
         return has_multiple
 
-    def _body_section_data(self,entity_values, parent_node):
+    def _body_section_data(self, entity_values, parent_node):
         """
         Add entity attributes to the body section as labels to the Xform file
         Create label fields to the input fields
         :return:
         """
-        parent_path = self.profile_entity +"/"+ self.entity_read.default_entity()
+        parent_path = self.profile_entity + "/" + self.entity_read.default_entity()
         for key in entity_values.keys():
             if self.entity_read.on_column_info(key):
                 self.format_lookup_data(key, parent_node)
             else:
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
-                body_node.setAttribute("ref",self.model_category_group(parent_path, key))
+                body_node.setAttribute("ref", self.model_category_group(parent_path, key))
 
                 label_text_info = self.entity_read.col_label(key)
-                label_txt= self.create_text_node(label_text_info)
-                #label_node.setAttribute("ref", label)
+                label_txt = self.create_text_node(label_text_info)
+                # label_node.setAttribute("ref", label)
                 label_node.appendChild(label_txt)
                 body_node.appendChild(label_node)
                 parent_node.appendChild(body_node)
@@ -672,10 +673,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         Document considered at this point, image type'''
         if self.entity_read.entity_has_supporting_documents():
             doc_list = self.entity_read.entity_supported_document_types()
-            self._supporting_documents_field_labels(doc_list, parent_node, entity = None)
+            self._supporting_documents_field_labels(doc_list, parent_node, entity=None)
         return parent_node
 
-    def _supporting_documents_field_labels(self, doc_list, parent_node, entity =None):
+    def _supporting_documents_field_labels(self, doc_list, parent_node, entity=None):
         """
         Create labels for document capture field so that the user
         Knows what document is capturing
@@ -689,7 +690,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         if not entity:
             entity_name = self.entity_read.default_entity()
             doc_list = self.entity_read.entity_supported_document_types()
-        if len(doc_list)<2:
+        if len(doc_list) < 2:
             doc_node = self.create_node('upload')
             doc_node.setAttribute('mediatype', 'image/*')
             doc_node.setAttribute('ref', self.set_model_xpath(self.supports_doc,
@@ -774,7 +775,6 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.appendChild(lk_node_title)
 
         for key in str_entity_tbl:
-
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")
             encode_key = key[:int(key.index('_id'))].encode('utf_8')
@@ -798,7 +798,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         self.entity_read.read_attributes()
         child_node = self.lookup_formatter(
-            self.entity_read.default_entity(),col)
+            self.entity_read.default_entity(), col)
         parent_node.appendChild(child_node)
 
     def lookup_formatter(self, entity, col):
@@ -831,10 +831,10 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
         lk_name_values = None
         if isinstance(col_obj, BooleanColumn):
-            #Lookup values for yes no have been hardcoded
+            # Lookup values for yes no have been hardcoded
             lk_name_values = self.yes_no_list()
         else:
-            #Read lookup from configuration
+            # Read lookup from configuration
             lk_name_values = self.entity_read.format_lookup_items(col)
         if lk_name_values:
             self.lookup_value_list(lk_node, lk_name_values)
@@ -851,7 +851,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
 
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")
-            #encode_key = key.encode('utf_8')
+            # encode_key = key.encode('utf_8')
             lk_item_label_txt = self.create_text_node(key)
             lk_item_label_txt_val = self.create_node("value")
             if val == "":
@@ -886,7 +886,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         str_lookup_attributes = self.entity_read.social_tenure_lkup_from_col(key)
         self.lookup_value_list(lk_node, str_lookup_attributes)
         parent.appendChild(lk_node)
-        #return lk_node
+        # return lk_node
 
     def write_data_to_xform(self):
         """

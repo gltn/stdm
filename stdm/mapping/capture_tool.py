@@ -28,7 +28,6 @@ from qgis.PyQt.QtGui import (
 from qgis.PyQt.QtWidgets import (
     QApplication
 )
-
 from qgis.core import (
     QgsVectorLayer,
     QgsCsException,
@@ -207,7 +206,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
                 QgsMessageLog.logMessage(QApplication.translate(
                     "StdmMapToolCapture", "Transformation to layer "
                                           "coordinate failed"),
-                                         QgsMessageLog.CRITICAL)
+                    QgsMessageLog.CRITICAL)
                 return 2, layerPoint, mapPoint
 
         return 0, layerPoint, mapPoint
@@ -246,7 +245,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
                 QgsMessageLog.logMessage(QApplication.translate(
                     "StdmMapToolCapture", "Transformation to map coordinate "
                                           "failed"),
-                                         QgsMessageLog.CRITICAL)
+                    QgsMessageLog.CRITICAL)
                 return 3, layerPoint, mapPoint
 
         geomType = QgsWkbTypes.PolygonGeometry if self.captureMode() == CAPTURE_POLYGON \

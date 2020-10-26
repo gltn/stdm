@@ -40,22 +40,22 @@ from stdm import (
 )
 from stdm.settings.projectionSelector import ProjectionSelector
 
+
 class GeometryProperty(QDialog):
-    def __init__(self,parent):
-        QDialog.__init__(self,parent)
+    def __init__(self, parent):
+        QDialog.__init__(self, parent)
 
-
-        #add control to the dialog
+        # add control to the dialog
         self.label = QLabel()
-        self.label.setText(QApplication.translate("GeometryProperty","Select Geometry Type"))
+        self.label.setText(QApplication.translate("GeometryProperty", "Select Geometry Type"))
         self.comboField = QComboBox()
         self.sridButton = QPushButton()
-        self.sridButton.setText(QApplication.translate("GeometryProperty","Select Coordinate System "))
+        self.sridButton.setText(QApplication.translate("GeometryProperty", "Select Coordinate System "))
         self.textField = QLineEdit()
 
         setCollectiontypes(geometry_collections, self.comboField)
 
-        self.buttons=QDialogButtonBox()
+        self.buttons = QDialogButtonBox()
         self.buttons.addButton(QDialogButtonBox.Ok)
         self.buttons.addButton(QDialogButtonBox.Cancel)
         self.sridButton.clicked.connect(self.projectionsSettings)
@@ -67,15 +67,15 @@ class GeometryProperty(QDialog):
         layout.addWidget(self.textField)
         layout.addWidget(self.buttons)
         self.setLayout(layout)
-        self.setWindowTitle(QApplication.translate("GeometryProperty","Geometry Column Property"))
+        self.setWindowTitle(QApplication.translate("GeometryProperty", "Geometry Column Property"))
 
         self.buttons.accepted.connect(self.setGeometrySetting)
         self.buttons.rejected.connect(self.cancel)
 
     def projectionsSettings(self):
         '''let user select the projections for the data'''
-        projSelect=ProjectionSelector(self)
-        projection=projSelect.loadAvailableSystems()
+        projSelect = ProjectionSelector(self)
+        projection = projSelect.loadAvailableSystems()
         self.textField.setText(str(projection))
 
     def setGeometrySetting(self):
@@ -84,8 +84,8 @@ class GeometryProperty(QDialog):
             return
 
         self.value = self.textField.text()[5:]
-        geomType=UserData(self.comboField)
-        self.geomCollection = [self.value,geomType]
+        geomType = UserData(self.comboField)
+        self.geomCollection = [self.value, geomType]
         self.accept()
 
     def cancel(self):
@@ -98,7 +98,3 @@ class GeometryProperty(QDialog):
         msg.setWindowTitle(QApplication.translate("GeometryProperty", "Geometry Settings"))
         msg.setText(Message)
         msg.exec_()
-
-
-
-

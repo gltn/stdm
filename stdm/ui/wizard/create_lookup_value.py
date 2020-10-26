@@ -32,20 +32,20 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.data.configuration.value_list import (
+    ValueList,
+    CodeValue
+)
+from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.ui_lookup_value import Ui_LookupValue
 
-from stdm.data.configuration.value_list import (
-        ValueList,
-        CodeValue,
-        value_list_factory
-        )
-from stdm.ui.notification import NotificationBar
 
 class ValueEditor(QDialog, Ui_LookupValue):
     """
     Form to add/edit values added to a lookup. Values are objects of type
     CodeValue
     """
+
     def __init__(self, parent, lookup, code_value=None):
         """
         :param parent: Owner of this dialog window
@@ -142,10 +142,10 @@ class ValueEditor(QDialog, Ui_LookupValue):
 
     def accept(self):
         if self.edtValue.text() == '' or self.edtValue.text() == ' ':
-                self.error_message(QApplication.translate(
-                    "ValueEditor", "Please enter a valid lookup value.")
-                )
-                return
+            self.error_message(QApplication.translate(
+                "ValueEditor", "Please enter a valid lookup value.")
+            )
+            return
 
         self.add_value()
 

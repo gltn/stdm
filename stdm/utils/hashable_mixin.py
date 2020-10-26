@@ -24,11 +24,13 @@ from stdm.utils.util import randomCodeGenerator
 
 __all__ = ["HashableMixin"]
 
+
 class HashableMixin(object):
     """
     Mixin class that enables objects to be hashable using a concatenation of
     current date and a randomly generated code.
     """
+
     def __init__(self):
         currDate = QDate.currentDate().toString()
         self._code = currDate + randomCodeGenerator()
@@ -36,8 +38,5 @@ class HashableMixin(object):
     def __hash__(self):
         return hash(self._code)
 
-    def __cmp__(self,other):
-        return cmp(self._code,other._code)
-
-
-
+    def __cmp__(self, other):
+        return cmp(self._code, other._code)

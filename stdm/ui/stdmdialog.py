@@ -29,9 +29,8 @@ from stdm.data.database import (
     Base,
     STDMDb
 )
-from stdm.ui.python_object import class_from_table
-
 from stdm.data.database import Singleton
+from stdm.ui.python_object import class_from_table
 
 
 @Singleton
@@ -39,12 +38,12 @@ class DeclareMapping(object):
     """
     this class takes an instance of the table defined the pg schema and returns a sqlalchemy table mapper model
     """
+
     def __init__(self, tlist=None):
         self.list = tlist
         self._mapping = {}
         self.attDictionary = OrderedDict()
         self.tablecol_mapping = OrderedDict()
-
 
     def setTableMapping(self, tablist):
         """
@@ -153,7 +152,7 @@ class DeclareMapping(object):
         """
         return self.tablecol_mapping.get(table)
 
-    def raw_table(self,table):
+    def raw_table(self, table):
         """
         Method to return a table reflection from postgres to sqlalchemy object: not a mapper
         :param table:

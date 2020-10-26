@@ -17,6 +17,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    QDir,
+    QFileInfo
+)
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QPushButton,
     QComboBox,
@@ -25,22 +30,15 @@ from qgis.PyQt.QtWidgets import (
     QGridLayout,
     QLabel,
     QScrollArea,
-    QSpacerItem,
     QTabWidget,
     QVBoxLayout,
     QWidget
 )
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtCore import (
-    QDir,
-    QFileInfo
-)
 
+from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import (
-    Entity,
     EntitySupportingDocument
 )
-from stdm.data.configuration import entity_model
 from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
@@ -52,6 +50,7 @@ class _DocumentTypeContainer(QWidget):
     """
     Container for a single document type.
     """
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self._gl = QGridLayout(self)
@@ -77,6 +76,7 @@ class SupportingDocumentsWidget(QWidget):
     Widget for managing an entity's supporting documents. It enables listing
     of documents grouped by tabs depending on type.
     """
+
     def __init__(self, entity_supporting_document, supporting_doc_model_cls,
                  parent=None):
         """
@@ -96,10 +96,10 @@ class SupportingDocumentsWidget(QWidget):
 
         self._entity_supporting_doc = entity_supporting_document
 
-        #Container for document type widgets based on lookup id
+        # Container for document type widgets based on lookup id
         self._doc_type_widgets = {}
 
-        #Init document manager
+        # Init document manager
         self.source_document_manager = SourceDocumentManager(
             self._entity_supporting_doc,
             supporting_doc_model_cls,
@@ -108,7 +108,7 @@ class SupportingDocumentsWidget(QWidget):
 
         self._load_document_types()
 
-        #Connect signals
+        # Connect signals
         self._btn_add_document.clicked.connect(
             self._on_add_supporting_document
         )
@@ -218,7 +218,7 @@ class SupportingDocumentsWidget(QWidget):
         return self._doc_type_widgets.get(rec_id, None)
 
     def _load_document_types(self):
-        #Load document types in the combobox and tab widget
+        # Load document types in the combobox and tab widget
         vl_cls = entity_model(
             self._entity_supporting_doc.document_type_entity,
             entity_only=True
@@ -227,22 +227,22 @@ class SupportingDocumentsWidget(QWidget):
         vl_obj = vl_cls()
         res = vl_obj.queryObject().all()
         for r in res:
-            #Add to combo
+            # Add to combo
             self._cbo_doc_type.addItem(r.value, r.id)
 
-            #Add to tab widget
+            # Add to tab widget
             doc_type_widget = _DocumentTypeContainer(self)
             self._doc_tab_container.addTab(doc_type_widget, r.value)
             self._doc_type_widgets[r.id] = doc_type_widget
 
-            #Register container
+            # Register container
             self.source_document_manager.registerContainer(
                 doc_type_widget.container,
                 r.id
             )
 
     def _on_add_supporting_document(self):
-        #Slot raised when the user select to add a supporting document
+        # Slot raised when the user select to add a supporting document
         if self.count == 0:
             return
 
@@ -258,7 +258,7 @@ class SupportingDocumentsWidget(QWidget):
             supporting_docs_str
         )
 
-        #Get last path for supporting documents
+        # Get last path for supporting documents
         last_path = last_document_path()
         if last_path is None:
             last_path = '/home'
@@ -282,10 +282,9 @@ class SupportingDocumentsWidget(QWidget):
                 parent_entity
             )
 
-        #Set last path
+        # Set last path
         if len(source_docs) > 0:
             doc = source_docs[0]
             fi = QFileInfo(doc)
             dir_path = fi.absolutePath()
             set_last_document_path(dir_path)
-

@@ -19,70 +19,41 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import os
-import json
-import re
 import logging
-from decimal import Decimal
+import re
 from collections import OrderedDict
 
 from qgis.PyQt.QtCore import QCoreApplication
-from qgis.core import (
-    NULL,
-    QgsFeatureRequest,
-    QgsMessageLog,
-    QgsVectorLayerCache,
-    QgsGeometry,
-    QgsFeatureRequest,
-    QgsProject,
-    QgsFeature,
-    QgsPoint,
-    QgsVectorLayer,
-    QgsField,
-    Qgis)
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QLabel,
     QHBoxLayout,
-    QMessageBox,
-    QAction)
-from qgis.PyQt.QtGui import QColor
-
+    QMessageBox)
+from qgis.core import (
+    NULL,
+    QgsFeatureRequest,
+    QgsVectorLayer,
+    QgsField)
 from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
     QgsEditorWidgetFactory,
     QgsEditorWidgetRegistry
 )
-
 from qgis.utils import (
     iface
 )
-from sqlalchemy import func
 
-from sqlalchemy.sql import (
-    select
-)
+from stdm.data.configuration import entity_model
 from stdm.data.database import (
     STDMDb
 )
-from stdm.data.configuration import entity_model
-
-from stdm.ui.forms.widgets import ColumnWidgetRegistry
-
 from stdm.settings import (
     current_profile
 )
-
-from stdm.ui.forms.editor_dialog import EntityEditorDialog
-
-from stdm.utils.util import (
-    setComboCurrentIndexWithItemData,
-    format_name
-)
-
 from stdm.ui.customcontrols.relation_line_edit import ExpressionLineEdit
-
+from stdm.ui.forms.editor_dialog import EntityEditorDialog
+from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')

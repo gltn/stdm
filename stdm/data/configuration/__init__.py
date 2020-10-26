@@ -4,7 +4,6 @@ from sqlalchemy import (
 from sqlalchemy.engine import reflection
 from sqlalchemy.orm.interfaces import (
     MANYTOMANY,
-    ONETOMANY
 )
 from sqlalchemy.ext.automap import (
     automap_base,
@@ -36,7 +35,7 @@ def _rename_supporting_doc_collection(base, local_cls, ref_cls, constraint):
 
 
 def _gen_relationship(base, direction, return_fn,
-                                attrname, local_cls, referred_cls, **kw):
+                      attrname, local_cls, referred_cls, **kw):
     # Disable type check for many-to-many relationships
     if direction is MANYTOMANY:
         kw['enable_typechecks'] = False
@@ -94,7 +93,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
 
         ent_supporting_docs_table = rf_metadata.tables.get(ent_supporting_doc,
                                                            None
-        )
+                                                           )
         profile_supporting_docs_table = rf_metadata.tables.get(
             profile_supporting_doc, None
         )
@@ -147,6 +146,7 @@ def configure_supporting_documents_inheritance(entity_supporting_docs_t,
     :type parent_entity: str
     :return: Database model corresponding to an entity's supporting document.
     """
+
     class ProfileSupportingDocumentProxy(base):
         """
         Represents the root table for storing supporting documents in a
@@ -200,7 +200,7 @@ def profile_foreign_keys(profile):
 
     fks = []
     for t in profile.table_names():
-        #Assert if the table exists
+        # Assert if the table exists
         if not pg_table_exists(t):
             continue
 

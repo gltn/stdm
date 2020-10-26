@@ -19,7 +19,6 @@ email                : gkahiu@gmail.com
 """
 
 import sys
-import copy
 
 from qgis.PyQt.QtCore import (
     Qt,
@@ -41,41 +40,36 @@ from qgis.PyQt.QtWidgets import (
     QFileDialog
 )
 
-
-from stdm.utils.util import getIndex, enable_drag_sort_widgets
-from stdm.data.database import alchemy_table_relationships
-from stdm.data.pg_utils import (
-    table_column_names,
-    pg_tables,
-    spatial_tables
-)
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
-from stdm.data.importexport.value_translators import ValueTranslatorManager
 from stdm.data.importexport.reader import OGRReader
+from stdm.data.pg_utils import (
+    table_column_names
+)
+from stdm.settings import current_profile
 from stdm.ui.importexport.translator_config import (
     ValueTranslatorConfig
 )
 from stdm.ui.importexport.translator_widget_base import (
     TranslatorWidgetManager
 )
-from stdm.settings import current_profile
+from stdm.ui.ui_import_data import Ui_frmImport
+from stdm.utils.util import getIndex
 from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
 )
-from stdm.ui.ui_import_data import Ui_frmImport
 
 
 class ImportData(QWizard, Ui_frmImport):
-    def __init__(self,parent=None):
-        QWizard.__init__(self,parent)
+    def __init__(self, parent=None):
+        QWizard.__init__(self, parent)
         self.setupUi(self)
         self.curr_profile = current_profile()
 
-        #Connect signals
+        # Connect signals
         self.btnBrowseSource.clicked.connect(self.setSourceFile)
         self.lstDestTables.itemClicked.connect(self.destSelectChanged)
         self.btnSrcUp.clicked.connect(self.srcItemUp)
@@ -89,19 +83,19 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
 
-        #Data Reader
+        # Data Reader
         self.dataReader = None
 
-        #Init
+        # Init
         self.registerFields()
 
-        #Geometry columns
+        # Geometry columns
         self.geomcols = []
 
-        #Initialize value translators from definitions
+        # Initialize value translators from definitions
         self._init_translators()
 
-        #self._set_target_fields_stylesheet()
+        # self._set_target_fields_stylesheet()
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -110,9 +104,9 @@ class ImportData(QWizard, Ui_frmImport):
         self._trans_signal_mapper = QSignalMapper(self)
 
         for trans_name, config in ValueTranslatorConfig.translators.iteritems():
-            trans_action = QAction( u'{}...'.format(trans_name),
-                translator_menu
-            )
+            trans_action = QAction(u'{}...'.format(trans_name),
+                                   translator_menu
+                                   )
 
             self._trans_signal_mapper.setMapping(trans_action, trans_name)
             trans_action.triggered.connect(self._trans_signal_mapper.map)
@@ -141,13 +135,13 @@ class ImportData(QWizard, Ui_frmImport):
         src_column = self._selected_source_column()
 
         if dest_column:
-            #Check if there is an existing dialog in the manager
+            # Check if there is an existing dialog in the manager
             trans_dlg = self._trans_widget_mgr.translator_widget(dest_column)
 
             if trans_dlg is None:
                 trans_config = ValueTranslatorConfig.translators.get(config_key, None)
 
-                #Safety precaution
+                # Safety precaution
                 if trans_config is None: return
 
                 try:
@@ -186,7 +180,7 @@ class ImportData(QWizard, Ui_frmImport):
         dest_column = self._selected_destination_column()
 
         if dest_column:
-            #Check if there is an existing dialog in the manager
+            # Check if there is an existing dialog in the manager
             trans_dlg = self._trans_widget_mgr.translator_widget(dest_column)
 
             self._handle_translator_dlg(dest_column, trans_dlg)
@@ -215,7 +209,7 @@ class ImportData(QWizard, Ui_frmImport):
         dest_column = self._selected_destination_column()
 
         if dest_column:
-            #Check if there is an existing dialog in the manager
+            # Check if there is an existing dialog in the manager
             trans_dlg = self._trans_widget_mgr.translator_widget(dest_column)
 
             if trans_dlg is None:
@@ -256,24 +250,24 @@ class ImportData(QWizard, Ui_frmImport):
                                            " { selection-background-color: darkblue }")
 
     def registerFields(self):
-        #Register wizard fields
+        # Register wizard fields
         pgSource = self.page(0)
-        pgSource.registerField("srcFile*",self.txtDataSource)
-        pgSource.registerField("typeText",self.rbTextType)
-        pgSource.registerField("typeSpatial",self.rbSpType)
+        pgSource.registerField("srcFile*", self.txtDataSource)
+        pgSource.registerField("typeText", self.rbTextType)
+        pgSource.registerField("typeSpatial", self.rbSpType)
 
-        #Destination table configuration
+        # Destination table configuration
         destConf = self.page(1)
-        destConf.registerField("optAppend",self.rbAppend)
-        destConf.registerField("optOverwrite",self.rbOverwrite)
-        destConf.registerField("tabIndex*",self.lstDestTables)
-        destConf.registerField("geomCol",self.geomClm,"currentText",SIGNAL("currentIndexChanged(int)"))
+        destConf.registerField("optAppend", self.rbAppend)
+        destConf.registerField("optOverwrite", self.rbOverwrite)
+        destConf.registerField("tabIndex*", self.lstDestTables)
+        destConf.registerField("geomCol", self.geomClm, "currentText", SIGNAL("currentIndexChanged(int)"))
 
-    def initializePage(self,pageid):
-        #Re-implementation of wizard page initialization
+    def initializePage(self, pageid):
+        # Re-implementation of wizard page initialization
         if pageid == 1:
-            #Reference to checked listwidget item representing table name
-            self.destCheckedItem=None
+            # Reference to checked listwidget item representing table name
+            self.destCheckedItem = None
             self.geomClm.clear()
 
             if self.field("typeText"):
@@ -294,27 +288,27 @@ class ImportData(QWizard, Ui_frmImport):
         return self.dataReader.getFields()
 
     def assignCols(self):
-        #Load source and target columns respectively
+        # Load source and target columns respectively
         srcCols = self._source_columns()
 
         for c in srcCols:
-            srcItem = QListWidgetItem(c,self.lstSrcFields)
+            srcItem = QListWidgetItem(c, self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
             srcItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
             self.lstSrcFields.addItem(srcItem)
 
-        #Destination Columns
+        # Destination Columns
         tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
         targetCols = table_column_names(self.targetTab, False, True)
 
-        #Remove geometry columns in the target columns list
+        # Remove geometry columns in the target columns list
         for gc in self.geomcols:
-            colIndex = getIndex(targetCols,gc)
+            colIndex = getIndex(targetCols, gc)
             if colIndex != -1:
                 targetCols.remove(gc)
 
-        #Remove 'id' column if there
+        # Remove 'id' column if there
         id_idx = getIndex(targetCols, 'id')
         if id_idx != -1:
             targetCols.remove('id')
@@ -340,7 +334,7 @@ class ImportData(QWizard, Ui_frmImport):
         if state:
             if len(virtual_columns) == 0:
                 msg = QApplication.translate("ImportData",
-                    "There are no virtual columns for the specified table.")
+                                             "There are no virtual columns for the specified table.")
                 QMessageBox.warning(
                     self,
                     QApplication.translate(
@@ -370,17 +364,17 @@ class ImportData(QWizard, Ui_frmImport):
                 rem_item = self.lstTargetFields.takeItem(row)
                 del rem_item
 
-                #Delete translator if already defined for the given column
+                # Delete translator if already defined for the given column
                 self._delete_translator(f)
 
     def loadGeomCols(self, table):
-        #Load geometry columns based on the selected table
+        # Load geometry columns based on the selected table
         self.geomcols = table_column_names(table, True, True)
         self.geomClm.clear()
         self.geomClm.addItems(self.geomcols)
 
     def loadTables(self, type):
-        #Load textual or spatial tables
+        # Load textual or spatial tables
         self.lstDestTables.clear()
         tables = None
         if type == "textual":
@@ -390,14 +384,14 @@ class ImportData(QWizard, Ui_frmImport):
             tables = profile_spatial_tables(self.curr_profile)
         if tables is not None:
             for t in tables:
-                tabItem = QListWidgetItem(t,self.lstDestTables)
+                tabItem = QListWidgetItem(t, self.lstDestTables)
                 tabItem.setCheckState(Qt.Unchecked)
                 tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
                 self.lstDestTables.addItem(tabItem)
 
     def validateCurrentPage(self):
-        #Validate the current page before proceeding to the next one
-        validPage=True
+        # Validate the current page before proceeding to the next one
+        validPage = True
 
         if not QFile.exists(str(self.field("srcFile"))):
             self.ErrorInfoMessage("The specified source file does not exist.")
@@ -414,25 +408,25 @@ class ImportData(QWizard, Ui_frmImport):
                                       "is supported")
                 validPage = False
 
-        if self.currentId()==1:
+        if self.currentId() == 1:
             if self.destCheckedItem == None:
                 self.ErrorInfoMessage("Please select the destination table.")
                 validPage = False
 
-        if self.currentId()==2:
+        if self.currentId() == 2:
             validPage = self.execImport()
 
         return validPage
 
     def setSourceFile(self):
-        #Set the file path to the source file
+        # Set the file path to the source file
         imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)"
-        sourceFile = QFileDialog.getOpenFileName(self,"Select Source File",vectorFileDir(),imageFilters)
+        sourceFile = QFileDialog.getOpenFileName(self, "Select Source File", vectorFileDir(), imageFilters)
         if sourceFile != "":
             self.txtDataSource.setText(sourceFile)
 
     def getSrcDestPairs(self):
-        #Return the matched source and destination columns
+        # Return the matched source and destination columns
         srcDest = {}
         for l in range(self.lstTargetFields.count()):
             if l < self.lstSrcFields.count():
@@ -444,12 +438,12 @@ class ImportData(QWizard, Ui_frmImport):
         return srcDest
 
     def execImport(self):
-        #Initiate the import process
+        # Initiate the import process
         success = False
         matchCols = self.getSrcDestPairs()
 
-        #Specify geometry column
-        geom_column=None
+        # Specify geometry column
+        geom_column = None
 
         if self.field("typeSpatial"):
             geom_column = self.field("geomCol")
@@ -514,7 +508,7 @@ class ImportData(QWizard, Ui_frmImport):
                 self.InfoMessage(
                     "All features have been imported successfully!"
                 )
-                #Update directory info in the registry
+                # Update directory info in the registry
                 setVectorFileDir(self.field("srcFile"))
                 success = True
         except:
@@ -523,7 +517,7 @@ class ImportData(QWizard, Ui_frmImport):
         return success
 
     def _clear_dest_table_selections(self, exclude=None):
-        #Clears checked items in destination table list view
+        # Clears checked items in destination table list view
         if exclude is None:
             exclude = []
 
@@ -546,10 +540,10 @@ class ImportData(QWizard, Ui_frmImport):
         if item.checkState() == Qt.Checked:
             self.destCheckedItem = item
 
-            #Ensure other selected items have been cleared
+            # Ensure other selected items have been cleared
             self._clear_dest_table_selections(exclude=[item.text()])
 
-            #Load geometry columns if selection is a spatial table
+            # Load geometry columns if selection is a spatial table
             if self.field("typeSpatial"):
                 self.loadGeomCols(item.text())
 
@@ -562,61 +556,61 @@ class ImportData(QWizard, Ui_frmImport):
             destList.setCurrentRow(srcList.currentRow())
 
     def sourceRowChanged(self):
-        #Slot when the source list's current row changes
-        self.syncRowSelection(self.lstSrcFields,self.lstTargetFields)
+        # Slot when the source list's current row changes
+        self.syncRowSelection(self.lstSrcFields, self.lstTargetFields)
 
     def destRowChanged(self):
-        #Slot when the destination list's current row changes
+        # Slot when the destination list's current row changes
         self.syncRowSelection(self.lstTargetFields, self.lstSrcFields)
 
     def itemUp(self, listWidget):
-        #Moves the selected item in the list widget one level up
+        # Moves the selected item in the list widget one level up
         curIndex = listWidget.currentRow()
         curItem = listWidget.takeItem(curIndex)
         listWidget.insertItem(curIndex - 1, curItem)
         listWidget.setCurrentRow(curIndex - 1)
 
     def itemDown(self, listWidget):
-        #Moves the selected item in the list widget one level down
-        curIndex=listWidget.currentRow()
-        curItem=listWidget.takeItem(curIndex)
-        listWidget.insertItem(curIndex + 1,curItem)
+        # Moves the selected item in the list widget one level down
+        curIndex = listWidget.currentRow()
+        curItem = listWidget.takeItem(curIndex)
+        listWidget.insertItem(curIndex + 1, curItem)
         listWidget.setCurrentRow(curIndex + 1)
 
     def checkAllItems(self, listWidget, state):
-        #Checks all items in the list widget
+        # Checks all items in the list widget
         for l in range(listWidget.count()):
-            item=listWidget.item(l)
+            item = listWidget.item(l)
             if state:
                 item.setCheckState(Qt.Checked)
             else:
                 item.setCheckState(Qt.Unchecked)
 
     def checkSrcItems(self):
-        #Slot for checking all source table columns
+        # Slot for checking all source table columns
         self.checkAllItems(self.lstSrcFields, True)
 
     def uncheckSrcItems(self):
-        #Slot for unchecking all source table columns
+        # Slot for unchecking all source table columns
         self.checkAllItems(self.lstSrcFields, False)
 
     def srcItemUp(self):
-        #Slot for moving source list item up
+        # Slot for moving source list item up
         self.itemUp(self.lstSrcFields)
 
     def srcItemDown(self):
-        #Slot for moving source list item down
+        # Slot for moving source list item down
         self.itemDown(self.lstSrcFields)
 
     def targetItemUp(self):
-        #Slot for moving target item up
+        # Slot for moving target item up
         self.itemUp(self.lstTargetFields)
 
     def targetItemDown(self):
-        #Slot for moving target item down
+        # Slot for moving target item down
         self.itemDown(self.lstTargetFields)
 
-    def keyPressEvent(self,e):
+    def keyPressEvent(self, e):
         """
         Override method for preventing the dialog from
         closing itself when the escape key is hit
@@ -625,14 +619,14 @@ class ImportData(QWizard, Ui_frmImport):
             pass
 
     def InfoMessage(self, message):
-        #Information message box
+        # Information message box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(message)
         msg.exec_()
 
     def ErrorInfoMessage(self, message):
-        #Error Message Box
+        # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)

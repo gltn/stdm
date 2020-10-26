@@ -17,14 +17,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from stdm.settings import current_profile
 from collections import OrderedDict
+
+from stdm.settings import current_profile
 
 
 class GeoODKReader:
     """
     Class to read entity info from profile and return the entity data
     """
+
     def __init__(self, entity):
         """
         Iniatialize the class variables
@@ -34,7 +36,7 @@ class GeoODKReader:
         self.user_entity = entity
         self.entity_attributes = OrderedDict()
         self.lookup_attributes = OrderedDict()
-        self.lookup =[]
+        self.lookup = []
         self.profile()
 
     def profile(self):
@@ -63,7 +65,6 @@ class GeoODKReader:
         self.entity_name = self.profile().entity(ent_name).name
         self.user_entity_name()
         return self.entity_name
-
 
     def get_user_selected_entity(self):
         """
@@ -124,11 +125,11 @@ class GeoODKReader:
         self.user_entity
 
     def profile_name(self):
-       """
-        Return the profile name
-       :return:str
-       """
-       return current_profile().name
+        """
+         Return the profile name
+        :return:str
+        """
+        return current_profile().name
 
     def read_attributes(self):
         """
@@ -202,7 +203,7 @@ class GeoODKReader:
         :return:
         """
         lk_val = self.entity_attributes.get(item_col)
-        if lk_val == "LOOKUP" or lk_val =="MULTIPLE_SELECT":
+        if lk_val == "LOOKUP" or lk_val == "MULTIPLE_SELECT":
             return lk_val
 
     def column_info_multiselect(self, item_col):
@@ -216,7 +217,6 @@ class GeoODKReader:
         if mt_val == "MULTIPLE_SELECT":
             ismulti = True
         return ismulti
-
 
     def col_is_mandatory(self, item_col):
         """
@@ -306,7 +306,3 @@ class GeoODKReader:
             if col.TYPE_INFO == 'FOREIGN_KEY':
                 relations = col.entity_relation
                 return relations.show_in_parent
-
-
-
-

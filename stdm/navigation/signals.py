@@ -19,6 +19,7 @@ email                : gkahiu@gmail.com
 """
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 
+
 class STDMContentSignal(QObject):
     '''
     Name of the STDM content item

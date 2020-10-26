@@ -17,6 +17,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    Qt
+)
 from qgis.PyQt.QtGui import (
     QIcon,
     QStandardItem,
@@ -26,9 +29,6 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QListView
 )
-from qgis.PyQt.QtCore import (
-    Qt
-)
 
 
 class AbstractSTREnityListView(QListView):
@@ -36,6 +36,7 @@ class AbstractSTREnityListView(QListView):
     A widget for listing and selecting one or more STR entities.
     .. versionadded:: 1.7
     """
+
     def __init__(self, parent=None, **kwargs):
         super(AbstractSTREnityListView, self).__init__(parent)
 

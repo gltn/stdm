@@ -19,8 +19,6 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from stdm.ui.wizard.ui_varchar_property import Ui_VarcharProperty
-
 from qgis.PyQt.QtCore import QRegExp
 from qgis.PyQt.QtGui import QRegExpValidator
 from qgis.PyQt.QtWidgets import (
@@ -29,16 +27,14 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.data.configuration.value_list import (
-        ValueList,
-        CodeValue,
-        value_list_factory
-        )
+from stdm.ui.wizard.ui_varchar_property import Ui_VarcharProperty
+
 
 class VarcharProperty(QDialog, Ui_VarcharProperty):
     """
     Editor to create/edit varchar max len property
     """
+
     def __init__(self, parent, form_fields):
         """
         :param parent: Owner of the form
@@ -81,9 +77,9 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
         return self._max_len
 
     def accept(self):
-        if self.edtCharLen.text()=='':
+        if self.edtCharLen.text() == '':
             self.show_message(QApplication.translate("VarcharPropetyEditor",
-                "Please enter length for the column."))
+                                                     "Please enter length for the column."))
             return
 
         self.add_len()
@@ -95,6 +91,6 @@ class VarcharProperty(QDialog, Ui_VarcharProperty):
     def show_message(self, message, msg_icon=QMessageBox.Critical):
         msg = QMessageBox(self)
         msg.setIcon(msg_icon)
-        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard","STDM"))
-        msg.setText(QApplication.translate("STDM Configuration Wizard",message))
+        msg.setWindowTitle(QApplication.translate("STDM Configuration Wizard", "STDM"))
+        msg.setText(QApplication.translate("STDM Configuration Wizard", message))
         msg.exec_()

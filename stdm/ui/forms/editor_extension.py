@@ -27,7 +27,6 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.ui.forms import REG_EDITOR_CLS_EXTENSIONS
 
-
 LOGGER = logging.getLogger('stdm')
 
 
@@ -40,6 +39,7 @@ def data_context(profile, entity):
     :param entity: Entity name.
     :type entity: str
     """
+
     def register_ext(cls):
         if issubclass(cls, AbstractEditorExtension):
             REG_EDITOR_CLS_EXTENSIONS[(profile, entity)] = cls
@@ -98,11 +98,13 @@ class CascadingFieldContext(object):
     source combobox or if there are no matching code values specified for
     the target items.
     """
+
     class _TargetCodeIdx(object):
         """
         Container for an item including text, code value, original index and
         database primary key in the target combo.
         """
+
         def __init__(self, text, code_value, idx, db_idx):
             self.text = text
             self.cd = code_value
@@ -403,6 +405,7 @@ class CascadingFieldContextManager(object):
     Container for managing one or more cascading field contexts.
     Used internally by the AbstractEditorExtension.
     """
+
     def __init__(self, ext_editor):
         self._ext_editor = ext_editor
         self._cf_ctxts = {}
@@ -652,5 +655,3 @@ class AbstractEditorExtension(object):
         :type model: object
         """
         pass
-
-

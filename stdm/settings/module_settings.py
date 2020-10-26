@@ -20,6 +20,7 @@
 """
 from qgis.PyQt.QtWidgets import QApplication
 
+
 class ModuleSettings(object):
     def __init__(self):
         """
@@ -27,8 +28,8 @@ class ModuleSettings(object):
         :return:
         """
 
-    QApplication.translate("STDMQGISLoader","Party")
-    QApplication.translate("STDMQGISLoader","Supporting Document")
-    QApplication.translate("STDMQGISLoader","Household")
-    QApplication.translate("STDMQGISLoader","spatial Unit")
-    QApplication.translate("STDMQGISLoader","Social Tenure Relationship")
+    QApplication.translate("STDMQGISLoader", "Party")
+    QApplication.translate("STDMQGISLoader", "Supporting Document")
+    QApplication.translate("STDMQGISLoader", "Household")
+    QApplication.translate("STDMQGISLoader", "spatial Unit")
+    QApplication.translate("STDMQGISLoader", "Social Tenure Relationship")

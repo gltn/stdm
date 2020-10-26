@@ -23,22 +23,23 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
-from stdm.data.pg_utils import (
-   table_column_names
-)
 from stdm.data.importexport.value_translators import RelatedTableTranslator
-
-from stdm.ui.notification import NotificationBar
+from stdm.data.pg_utils import (
+    table_column_names
+)
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.importexport.ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
+from stdm.ui.notification import NotificationBar
 
 __all__ = ["RelatedTableDialog"]
+
 
 class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.
     """
+
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
@@ -48,14 +49,14 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
 
         self._set_source_table_headers()
 
-        #Set UI values
+        # Set UI values
         self.txt_table_name.setText(dest_table)
         self.txt_column_name.setText(dest_col)
 
-        #Load STDM tables exluding views
+        # Load STDM tables exluding views
         self._load_tables()
 
-        #Connect signals
+        # Connect signals
         self.cbo_source_tables.currentIndexChanged.connect(self._on_source_table_changed)
 
     def _load_tables(self):
@@ -76,7 +77,7 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         return rel_tab_translator
 
     def _set_source_table_headers(self):
-        labels = [QApplication.translate("RelatedTableDialog","Source Table"),
+        labels = [QApplication.translate("RelatedTableDialog", "Source Table"),
                   QApplication.translate("RelatedTableDialog",
                                          "Referenced Table")]
         self.tb_source_trans_cols.set_header_labels(labels)
@@ -90,9 +91,9 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
             ref_table_cols = table_column_names(source_table)
 
             self.tb_source_trans_cols.set_combo_selection([self._source_cols,
-            ref_table_cols])
+                                                           ref_table_cols])
 
-            #self.cbo_output_column.addItem("")
+            # self.cbo_output_column.addItem("")
             self.cbo_output_column.addItems(ref_table_cols)
 
         else:
@@ -112,7 +113,7 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         """
         if self.cbo_source_tables.currentText() == "":
             msg = QApplication.translate("RelatedTableDialog", "Please select "
-                    "the reference table name.")
+                                                               "the reference table name.")
             self._notif_bar.clear()
             self._notif_bar.insertWarningNotification(msg)
 
@@ -120,7 +121,7 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
 
         if self.cbo_output_column.currentText() == "":
             msg = QApplication.translate("RelatedTableDialog", "Please select "
-                    "the output column name.")
+                                                               "the output column name.")
             self._notif_bar.clear()
             self._notif_bar.insertWarningNotification(msg)
 
@@ -128,7 +129,7 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
 
         if len(self.column_pairings()) == 0:
             msg = QApplication.translate("RelatedTableDialog", "Please specify "
-                    "at least one column pairing.")
+                                                               "at least one column pairing.")
             self._notif_bar.clear()
             self._notif_bar.insertWarningNotification(msg)
 
@@ -142,4 +143,3 @@ class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDia
         """
         if self.validate():
             super(RelatedTableDialog, self).accept()
-

@@ -18,6 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    Qt
+)
 from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
@@ -26,18 +29,17 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QListView
 )
-from qgis.PyQt.QtCore import (
-    Qt
-)
 
-from stdm.data.configuration.columns import MultipleSelectColumn
 from stdm.data.configuration import entity_model
+from stdm.data.configuration.columns import MultipleSelectColumn
+
 
 class MultipleSelectTreeView(QListView):
     """
     Custom QListView implementation that displays checkable items from a
     multiple select column type.
     """
+
     def __init__(self, column, parent=None):
         """
         Class constructor.
@@ -48,7 +50,7 @@ class MultipleSelectTreeView(QListView):
         """
         QListView.__init__(self, parent)
 
-        #Disable editing of lookup values
+        # Disable editing of lookup values
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.column = column
@@ -57,7 +59,7 @@ class MultipleSelectTreeView(QListView):
 
         self._value_list = self.column.value_list
 
-        #Stores lookup objects based on primary keys
+        # Stores lookup objects based on primary keys
         self._lookup_cache = {}
 
         self._initialize()
@@ -67,8 +69,7 @@ class MultipleSelectTreeView(QListView):
         self._first_parent_col = self._association.first_reference_column.name
         self._second_parent_col = self._association.second_reference_column.name
 
-
-        #Association model
+        # Association model
         self._assoc_cls = entity_model(self._association)
 
     def reset_model(self):
@@ -122,13 +123,13 @@ class MultipleSelectTreeView(QListView):
         value_item.setCheckable(True)
         id_item = QStandardItem(str(id))
 
-        self._item_model.appendRow([value_item,id_item])
+        self._item_model.appendRow([value_item, id_item])
 
     def _initialize(self):
-        #Populate list with lookup items
+        # Populate list with lookup items
         self.reset_model()
 
-        #Add all lookup values in the value list table
+        # Add all lookup values in the value list table
         vl_cls = entity_model(self._value_list)
         if not vl_cls is None:
             vl_obj = vl_cls()
@@ -144,7 +145,7 @@ class MultipleSelectTreeView(QListView):
         Unchecks all items in the view.
         """
         for i in range(self._item_model.rowCount()):
-            value_item = self._item_model.item(i,0)
+            value_item = self._item_model.item(i, 0)
 
             if value_item.checkState() == Qt.Checked:
                 value_item.setCheckState(Qt.Unchecked)
@@ -166,7 +167,7 @@ class MultipleSelectTreeView(QListView):
                 id_item = self._item_model.item(i, 1)
                 id = int(id_item.text())
 
-                #Get item from the lookup cache and append to selection
+                # Get item from the lookup cache and append to selection
                 if id in self._lookup_cache:
                     lookup_rec = self._lookup_cache[id]
                     selection.append(lookup_rec)
@@ -183,10 +184,7 @@ class MultipleSelectTreeView(QListView):
             search_value = m.value
             v_items = self._item_model.findItems(search_value)
 
-            #Loop through result and check items
+            # Loop through result and check items
             for vi in v_items:
                 if vi.checkState() == Qt.Unchecked:
                     vi.setCheckState(Qt.Checked)
-
-
-

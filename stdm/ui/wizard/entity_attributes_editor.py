@@ -18,9 +18,9 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
+
 from qgis.PyQt.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QMessageBox
 )
 
@@ -34,6 +34,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
     """
     Dialog for editing an entity's attributes.
     """
+
     def __init__(
             self,
             profile,
@@ -95,8 +96,8 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         self.btnDeleteColumn.clicked.connect(self.on_delete_column)
 
         self._editable = editable
-        #if not editable:
-            #self._disable_editing()
+        # if not editable:
+        # self._disable_editing()
 
         # Update excluded columns
         self._update_excluded_columns()

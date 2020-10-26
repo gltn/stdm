@@ -3,18 +3,20 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.ui.admin_unit_manager import MANAGE,VIEW,SELECT
+from stdm.ui.admin_unit_manager import MANAGE, VIEW, SELECT
+
 
 class SupportsManageMixin(object):
     '''
     Mixin class for those dialogs that support data viewing and managing modes.
     It assumes that the dialog has SAVE,CLOSE, CANCEL buttons in the buttonbox.
     '''
+
     def __init__(self, mode=MANAGE):
         self._mode = mode
         self._onStateChanged()
 
-    def setManageMode(self,enableManage):
+    def setManageMode(self, enableManage):
         '''
         :param enableManage: True to set the selector to manage mode or false to disable i.e.
         for viewing purposes only.
@@ -45,18 +47,3 @@ class SupportsManageMixin(object):
             self.buttonBox.button(QDialogButtonBox.Save).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Cancel).setVisible(False)
             self.buttonBox.button(QDialogButtonBox.Close).setVisible(True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

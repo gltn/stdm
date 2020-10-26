@@ -28,10 +28,11 @@ from qgis.PyQt.QtCore import (
     QDir
 )
 
+from stdm.settings import current_profile
 from stdm.utils.util import (
     guess_extension
 )
-from stdm.settings import current_profile
+
 
 class NetworkFileManager(QObject):
     """
@@ -42,8 +43,8 @@ class NetworkFileManager(QObject):
     blockWritten = pyqtSignal(int)
     completed = pyqtSignal(str)
 
-    def __init__(self, network_repository ,parent = None):
-        QObject.__init__(self,parent)
+    def __init__(self, network_repository, parent=None):
+        QObject.__init__(self, parent)
         self.networkPath = network_repository
         self.fileID = None
         self.sourcePath = None
@@ -63,11 +64,11 @@ class NetworkFileManager(QObject):
         profile_name = self.curr_profile.name
         root_dir = QDir(self.networkPath)
         doc_dir = QDir(u'{}/{}/{}/{}'.format(
-                self.networkPath,
-                profile_name.lower(),
-                self._entity_source,
-                self._doc_type.lower().replace(' ', '_')
-            )
+            self.networkPath,
+            profile_name.lower(),
+            self._entity_source,
+            self._doc_type.lower().replace(' ', '_')
+        )
         )
         doc_path_str = u'{}/{}/{}/{}'.format(
             self.networkPath,
@@ -93,10 +94,10 @@ class NetworkFileManager(QObject):
             fileinfo.completeSuffix()
         )
 
-        srcFile = open(self.sourcePath,'rb')
-        destinationFile = open(self.destinationPath,'wb')
+        srcFile = open(self.sourcePath, 'rb')
+        destinationFile = open(self.destinationPath, 'wb')
 
-        #srcLen = self.sourceFile.bytesAvailable()
+        # srcLen = self.sourceFile.bytesAvailable()
         totalRead = 0
         while True:
             inbytes = srcFile.read(4096)
@@ -104,7 +105,7 @@ class NetworkFileManager(QObject):
                 break
             destinationFile.write(inbytes)
             totalRead += len(inbytes)
-            #Raise signal on each block written
+            # Raise signal on each block written
             self.blockWritten.emit(totalRead)
 
         self.completed.emit(self.fileID)
@@ -114,22 +115,22 @@ class NetworkFileManager(QObject):
 
         return self.fileID
 
-    def downloadDocument(self,documentid):
+    def downloadDocument(self, documentid):
         """
         Get the document from the central repository using its unique identifier.
         """
         pass
 
-    def file_exist(self, doc_model = None, doc_type=None):
+    def file_exist(self, doc_model=None, doc_type=None):
         """
         Check if a file exists before removing.
         """
         file_found = True
         if doc_model is not None:
-            #Build the path from the model variable values.
+            # Build the path from the model variable values.
             fileName, fileExt = guess_extension(doc_model.filename)
             profile_name = self.curr_profile.name
-            #Qt always expects the file separator be be "/" regardless of platform.
+            # Qt always expects the file separator be be "/" regardless of platform.
             absPath = u'{}/{}/{}/{}/{}{}'.format(
                 self.networkPath,
                 profile_name.lower(),
@@ -142,16 +143,15 @@ class NetworkFileManager(QObject):
             file_found = QFile.exists(absPath)
         return file_found
 
-
-    def deleteDocument(self, docmodel = None, doc_type=None):
+    def deleteDocument(self, docmodel=None, doc_type=None):
         """
         Delete the source document from the central repository.
         """
         if not docmodel is None:
-            #Build the path from the model variable values.
+            # Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
             profile_name = self.curr_profile.name
-            #Qt always expects the file separator be be "/" regardless of platform.
+            # Qt always expects the file separator be be "/" regardless of platform.
             absPath = u'{}/{}/{}/{}/{}{}'.format(
                 self.networkPath,
                 profile_name.lower(),
@@ -172,6 +172,7 @@ class NetworkFileManager(QObject):
         """
         return str(uuid4())
 
+
 class DocumentTransferWorker(QObject):
     """
     Worker thread for copying source documents to central repository.
@@ -181,7 +182,7 @@ class DocumentTransferWorker(QObject):
 
     def __init__(
             self, file_manager, file_info, entity_source='', doc_type='', parent=None):
-        QObject.__init__(self,parent)
+        QObject.__init__(self, parent)
         self._file_manager = file_manager
         self._file_info = file_info
         self._entity_source = entity_source
@@ -200,7 +201,7 @@ class DocumentTransferWorker(QObject):
         )
         self.file_uuid = self._file_manager.fileID
 
-    def onBlockWritten(self,size):
+    def onBlockWritten(self, size):
         """
         Propagate event.
         """

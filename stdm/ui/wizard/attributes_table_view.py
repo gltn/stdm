@@ -18,20 +18,17 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from collections import OrderedDict
-
-from qgis.PyQt.QtWidgets import (
-    QAbstractItemView,
-    QHeaderView,
-    QTableView
+from qgis.PyQt.QtCore import (
+    Qt
 )
 from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
 )
-from qgis.PyQt.QtCore import (
-    QModelIndex,
-    Qt
+from qgis.PyQt.QtWidgets import (
+    QAbstractItemView,
+    QHeaderView,
+    QTableView
 )
 
 
@@ -40,6 +37,7 @@ class AttributesTableView(QTableView):
     Table view for displaying a collection of column objects. Management of
     the entity's columns will be done by the calling class.
     """
+
     def __init__(self, parent=None, attributes=None):
         super(AttributesTableView, self).__init__(parent)
 

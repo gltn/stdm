@@ -20,11 +20,11 @@ email                : stdm@unhabitat.org
 """
 import logging
 
-from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.columns import (
     ForeignKeyColumn,
     VarCharColumn
 )
+from stdm.data.configuration.entity import Entity
 
 LOGGER = logging.getLogger('stdm')
 
@@ -37,7 +37,7 @@ class AdministrativeSpatialUnit(Entity):
 
     def __init__(self, profile):
         Entity.__init__(self, 'admin_spatial_unit_set', profile,
-                    is_global=True, is_proxy=True, supports_documents=False)
+                        is_global=True, is_proxy=True, supports_documents=False)
 
         self.user_editable = False
 
