@@ -99,7 +99,7 @@ class DeclareMapping(object):
         :param table:
         :return: reflected table : sqlalchemy table class
         """
-        # print prefix
+        # print(prefix)
         if table not in self._mapping:
             self.mapper_for_table(str(table))
         model_cls = self._mapping[str(table)]

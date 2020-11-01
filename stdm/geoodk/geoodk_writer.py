@@ -596,7 +596,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             group_node.appendChild(group_label)
         # label_txt = self.create_text_node(
         #     self.profile_entity + ": "+entity.replace("_", " ").title())
-        # print repeat_node
+        # print(repeat_node)
         return group_node, repeat_node
 
     def social_tenure_nodes(self):

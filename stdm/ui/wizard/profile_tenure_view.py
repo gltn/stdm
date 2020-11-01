@@ -994,7 +994,7 @@ class BaseTenureItem(QGraphicsItem):
             self.header,
             header_rect.width()
         )
-        # print elided_header
+        # print(elided_header)
         self.draw_text(painter, elided_header, self.header_font, header_rect)
 
         # Draw items header

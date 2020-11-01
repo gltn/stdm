@@ -613,7 +613,7 @@ def lookup_parent_entity(profile, col):
     """
     # for r in profile.relations.values():
     #     if r.child_column == col and 'check_' in r.parent.name:
-    #         print vars(r.parent)
+    #         print(vars(r.parent))
     parent_entity = [
         r.parent for r in profile.relations.values()
         if r.child_column == col and 'check_' in r.parent.name

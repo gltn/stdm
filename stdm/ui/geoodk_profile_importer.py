@@ -387,7 +387,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 for sp_tbl in sp_tbls:
                     self.relations[sp_tbl.name] = ['social_tenure_relationship',
                                                    sp_tbl.short_name.lower() + '_id']
-        # print self.relations
+        # print(self.relations)
 
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
@@ -568,7 +568,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self._notif_bar_str.clear()
         mobile_field_data = self.read_instance_data()
         self.has_foreign_keys_parent(entities)
-        # print self.relations
+        # print(self.relations)
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',

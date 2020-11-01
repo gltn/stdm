@@ -124,7 +124,7 @@ class CodeGenerator(object):
                 #
 
             if last_serial is None:
-                # print last_serial, 'last '
+                # print(last_serial, 'last ')
                 return None
 
             # convert to integer and add 1
