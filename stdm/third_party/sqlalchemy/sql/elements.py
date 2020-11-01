@@ -1,32 +1,54 @@
 # sql/elements.py
-# Copyright (C) 2005-2014 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2020 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-"""Core SQL expression elements, including :class:`.ClauseElement`,
-:class:`.ColumnElement`, and derived classes.
+"""Core SQL expression elements, including :class:`_expression.ClauseElement`,
+:class:`_expression.ColumnElement`, and derived classes.
 
 """
 
 from __future__ import unicode_literals
 
-from .. import util, exc, inspection
-from . import type_api
-from . import operators
-from .visitors import Visitable, cloned_traverse, traverse
-from .annotation import Annotated
 import itertools
-from .base import Executable, PARSE_AUTOCOMMIT, Immutable, NO_ARG
-from .base import _generative
-
-import re
+import numbers
 import operator
+import re
+
+from . import operators
+from . import type_api
+from .annotation import Annotated
+from .base import _generative
+from .base import Executable
+from .base import Immutable
+from .base import NO_ARG
+from .base import PARSE_AUTOCOMMIT
+from .visitors import cloned_traverse
+from .visitors import traverse
+from .visitors import Visitable
+from .. import exc
+from .. import inspection
+from .. import util
 
 
 def _clone(element, **kw):
     return element._clone()
+
+
+def _document_text_coercion(paramname, meth_rst, param_rst):
+    return util.add_parameter_text(
+        paramname,
+        (
+            ".. warning:: "
+            "The %s argument to %s can be passed as a Python string argument, "
+            "which will be treated "
+            "as **trusted SQL text** and rendered as given.  **DO NOT PASS "
+            "UNTRUSTED INPUT TO THIS PARAMETER**."
+        )
+        % (param_rst, meth_rst),
+    )
 
 
 def collate(expression, collation):
@@ -40,13 +62,18 @@ def collate(expression, collation):
 
         mycolumn COLLATE utf8_bin
 
+    The collation expression is also quoted if it is a case sensitive
+    identifier, e.g. contains uppercase characters.
+
+    .. versionchanged:: 1.2 quoting is automatically applied to COLLATE
+       expressions if they are case sensitive.
+
     """
 
     expr = _literal_as_binds(expression)
     return BinaryExpression(
-        expr,
-        _literal_as_text(collation),
-        operators.collate, type_=expr.type)
+        expr, CollationClause(collation), operators.collate, type_=expr.type
+    )
 
 
 def between(expr, lower_bound, upper_bound, symmetric=False):
@@ -62,14 +89,15 @@ def between(expr, lower_bound, upper_bound, symmetric=False):
         SELECT id, name FROM user WHERE id BETWEEN :id_1 AND :id_2
 
     The :func:`.between` function is a standalone version of the
-    :meth:`.ColumnElement.between` method available on all
+    :meth:`_expression.ColumnElement.between` method available on all
     SQL expressions, as in::
 
         stmt = select([users_table]).where(users_table.c.id.between(5, 7))
 
     All arguments passed to :func:`.between`, including the left side
     column expression, are coerced from Python scalar values if a
-    the value is not a :class:`.ColumnElement` subclass.   For example,
+    the value is not a :class:`_expression.ColumnElement` subclass.
+    For example,
     three fixed values can be compared as in::
 
         print(between(5, 3, 7))
@@ -78,7 +106,8 @@ def between(expr, lower_bound, upper_bound, symmetric=False):
 
         :param_1 BETWEEN :param_2 AND :param_3
 
-    :param expr: a column expression, typically a :class:`.ColumnElement`
+    :param expr: a column expression, typically a
+     :class:`_expression.ColumnElement`
      instance or alternatively a Python scalar expression to be coerced
      into a column expression, serving as the left side of the ``BETWEEN``
      expression.
@@ -96,7 +125,7 @@ def between(expr, lower_bound, upper_bound, symmetric=False):
 
     .. seealso::
 
-        :meth:`.ColumnElement.between`
+        :meth:`_expression.ColumnElement.between`
 
     """
     expr = _literal_as_binds(expr)
@@ -104,11 +133,13 @@ def between(expr, lower_bound, upper_bound, symmetric=False):
 
 
 def literal(value, type_=None):
-    """Return a literal clause, bound to a bind parameter.
+    r"""Return a literal clause, bound to a bind parameter.
 
     Literal clauses are created automatically when non-
-    :class:`.ClauseElement` objects (such as strings, ints, dates, etc.) are
-    used in a comparison operation with a :class:`.ColumnElement` subclass,
+    :class:`_expression.ClauseElement` objects (such as strings, ints, dates,
+    etc.) are
+    used in a comparison operation with a :class:`_expression.ColumnElement`
+    subclass,
     such as a :class:`~sqlalchemy.schema.Column` object.  Use this function
     to force the generation of a literal clause, which will be created as a
     :class:`BindParameter` with a bound value.
@@ -123,69 +154,6 @@ def literal(value, type_=None):
     return BindParameter(None, value, type_=type_, unique=True)
 
 
-def type_coerce(expression, type_):
-    """Associate a SQL expression with a particular type, without rendering
-    ``CAST``.
-
-    E.g.::
-
-        from sqlalchemy import type_coerce
-
-        stmt = select([type_coerce(log_table.date_string, StringDateTime())])
-
-    The above construct will produce SQL that is usually otherwise unaffected
-    by the :func:`.type_coerce` call::
-
-        SELECT date_string FROM log
-
-    However, when result rows are fetched, the ``StringDateTime`` type
-    will be applied to result rows on behalf of the ``date_string`` column.
-
-    A type that features bound-value handling will also have that behavior
-    take effect when literal values or :func:`.bindparam` constructs are
-    passed to :func:`.type_coerce` as targets.
-    For example, if a type implements the :meth:`.TypeEngine.bind_expression`
-    method or :meth:`.TypeEngine.bind_processor` method or equivalent,
-    these functions will take effect at statement compilation/execution time
-    when a literal value is passed, as in::
-
-        # bound-value handling of MyStringType will be applied to the
-        # literal value "some string"
-        stmt = select([type_coerce("some string", MyStringType)])
-
-    :func:`.type_coerce` is similar to the :func:`.cast` function,
-    except that it does not render the ``CAST`` expression in the resulting
-    statement.
-
-    :param expression: A SQL expression, such as a :class:`.ColumnElement`
-     expression or a Python string which will be coerced into a bound literal
-     value.
-
-    :param type_: A :class:`.TypeEngine` class or instance indicating
-     the type to which the expression is coerced.
-
-    .. seealso::
-
-        :func:`.cast`
-
-    """
-    type_ = type_api.to_instance(type_)
-
-    if hasattr(expression, '__clause_element__'):
-        return type_coerce(expression.__clause_element__(), type_)
-    elif isinstance(expression, BindParameter):
-        bp = expression._clone()
-        bp.type = type_
-        return bp
-    elif not isinstance(expression, Visitable):
-        if expression is None:
-            return Null()
-        else:
-            return literal(expression, type_=type_)
-    else:
-        return Label(None, expression, type_=type_)
-
-
 def outparam(key, type_=None):
     """Create an 'OUT' parameter for usage in functions (stored procedures),
     for databases which support them.
@@ -196,15 +164,14 @@ def outparam(key, type_=None):
     attribute, which returns a dictionary containing the values.
 
     """
-    return BindParameter(
-        key, None, type_=type_, unique=False, isoutparam=True)
+    return BindParameter(key, None, type_=type_, unique=False, isoutparam=True)
 
 
 def not_(clause):
     """Return a negation of the given clause, i.e. ``NOT(clause)``.
 
     The ``~`` operator is also overloaded on all
-    :class:`.ColumnElement` subclasses to produce the
+    :class:`_expression.ColumnElement` subclasses to produce the
     same result.
 
     """
@@ -217,7 +184,8 @@ class ClauseElement(Visitable):
     expression.
 
     """
-    __visit_name__ = 'clause'
+
+    __visit_name__ = "clause"
 
     _annotations = {}
     supports_execution = False
@@ -277,6 +245,12 @@ class ClauseElement(Visitable):
         """
         s = util.column_set()
         f = self
+
+        # note this creates a cycle, asserted in test_memusage. however,
+        # turning this into a plain @property adds tends of thousands of method
+        # calls to Core / ORM performance tests, so the small overhead
+        # introduced by the relatively small amount of short term cycles
+        # produced here is preferable
         while f is not None:
             s.add(f)
             f = f._is_clone_of
@@ -284,25 +258,26 @@ class ClauseElement(Visitable):
 
     def __getstate__(self):
         d = self.__dict__.copy()
-        d.pop('_is_clone_of', None)
+        d.pop("_is_clone_of", None)
         return d
 
     def _annotate(self, values):
-        """return a copy of this ClauseElement with annotations
+        """Return a copy of this ClauseElement with annotations
         updated by the given dictionary.
 
         """
         return Annotated(self, values)
 
     def _with_annotations(self, values):
-        """return a copy of this ClauseElement with annotations
+        """Return a copy of this ClauseElement with annotations
         replaced by the given dictionary.
 
         """
         return Annotated(self, values)
 
     def _deannotate(self, values=None, clone=False):
-        """return a copy of this :class:`.ClauseElement` with annotations
+        """Return a copy of this :class:`_expression.ClauseElement`
+        with annotations
         removed.
 
         :param values: optional tuple of individual values
@@ -319,12 +294,17 @@ class ClauseElement(Visitable):
             return self
 
     def _execute_on_connection(self, connection, multiparams, params):
-        return connection._execute_clauseelement(self, multiparams, params)
+        if self.supports_execution:
+            return connection._execute_clauseelement(self, multiparams, params)
+        else:
+            raise exc.ObjectNotExecutableError(self)
 
     def unique_params(self, *optionaldict, **kwargs):
-        """Return a copy with :func:`bindparam()` elements replaced.
+        """Return a copy with :func:`_expression.bindparam` elements
+        replaced.
 
-        Same functionality as ``params()``, except adds `unique=True`
+        Same functionality as :meth:`_expression.ClauseElement.params`,
+        except adds `unique=True`
         to affected bind parameters so that multiple statements can be
         used.
 
@@ -332,15 +312,17 @@ class ClauseElement(Visitable):
         return self._params(True, optionaldict, kwargs)
 
     def params(self, *optionaldict, **kwargs):
-        """Return a copy with :func:`bindparam()` elements replaced.
+        """Return a copy with :func:`_expression.bindparam` elements
+        replaced.
 
-        Returns a copy of this ClauseElement with :func:`bindparam()`
+        Returns a copy of this ClauseElement with
+        :func:`_expression.bindparam`
         elements replaced with values taken from the given dictionary::
 
           >>> clause = column('x') + bindparam('foo')
-          >>> print clause.compile().params
+          >>> print(clause.compile().params)
           {'foo':None}
-          >>> print clause.params({'foo':7}).compile().params
+          >>> print(clause.params({'foo':7}).compile().params)
           {'foo':7}
 
         """
@@ -351,7 +333,8 @@ class ClauseElement(Visitable):
             kwargs.update(optionaldict[0])
         elif len(optionaldict) > 1:
             raise exc.ArgumentError(
-                "params() takes zero or one positional dictionary argument")
+                "params() takes zero or one positional dictionary argument"
+            )
 
         def visit_bindparam(bind):
             if bind.key in kwargs:
@@ -359,17 +342,19 @@ class ClauseElement(Visitable):
                 bind.required = False
             if unique:
                 bind._convert_to_unique()
-        return cloned_traverse(self, {}, {'bindparam': visit_bindparam})
+
+        return cloned_traverse(self, {}, {"bindparam": visit_bindparam})
 
     def compare(self, other, **kw):
-        """Compare this ClauseElement to the given ClauseElement.
+        r"""Compare this :class:`_expression.ClauseElement` to
+        the given :class:`_expression.ClauseElement`.
 
         Subclasses should override the default behavior, which is a
         straight identity comparison.
 
-        \**kw are arguments consumed by subclass compare() methods and
-        may be used to modify the criteria for comparison.
-        (see :class:`.ColumnElement`)
+        \**kw are arguments consumed by subclass ``compare()`` methods and
+        may be used to modify the criteria for comparison
+        (see :class:`_expression.ColumnElement`).
 
         """
         return self is other
@@ -388,7 +373,8 @@ class ClauseElement(Visitable):
         pass
 
     def get_children(self, **kwargs):
-        """Return immediate child elements of this :class:`.ClauseElement`.
+        r"""Return immediate child elements of this
+        :class:`_expression.ClauseElement`.
 
         This is used for visit traversal.
 
@@ -402,17 +388,17 @@ class ClauseElement(Visitable):
         return []
 
     def self_group(self, against=None):
-        """Apply a 'grouping' to this :class:`.ClauseElement`.
+        """Apply a 'grouping' to this :class:`_expression.ClauseElement`.
 
-        This method is overridden by subclasses to return a
-        "grouping" construct, i.e. parenthesis.   In particular
-        it's used by "binary" expressions to provide a grouping
-        around themselves when placed into a larger expression,
-        as well as by :func:`.select` constructs when placed into
-        the FROM clause of another :func:`.select`.  (Note that
-        subqueries should be normally created using the
-        :meth:`.Select.alias` method, as many platforms require
-        nested SELECT statements to be named).
+        This method is overridden by subclasses to return a "grouping"
+        construct, i.e. parenthesis.   In particular it's used by "binary"
+        expressions to provide a grouping around themselves when placed into a
+        larger expression, as well as by :func:`_expression.select`
+        constructs when placed into the FROM clause of another
+        :func:`_expression.select`.  (Note that subqueries should be
+        normally created using the :meth:`_expression.Select.alias` method,
+        as many
+        platforms require nested SELECT statements to be named).
 
         As expressions are composed together, the application of
         :meth:`self_group` is automatic - end-user code should never
@@ -422,7 +408,8 @@ class ClauseElement(Visitable):
         an expression like ``x OR (y AND z)`` - AND takes precedence
         over OR.
 
-        The base :meth:`self_group` method of :class:`.ClauseElement`
+        The base :meth:`self_group` method of
+        :class:`_expression.ClauseElement`
         just returns self.
         """
         return self
@@ -440,7 +427,7 @@ class ClauseElement(Visitable):
 
         :param bind: An ``Engine`` or ``Connection`` from which a
             ``Compiled`` will be acquired. This argument takes precedence over
-            this :class:`.ClauseElement`'s bound engine, if any.
+            this :class:`_expression.ClauseElement`'s bound engine, if any.
 
         :param column_keys: Used for INSERT and UPDATE statements, a list of
             column names which should be present in the VALUES clause of the
@@ -449,7 +436,8 @@ class ClauseElement(Visitable):
 
         :param dialect: A ``Dialect`` instance from which a ``Compiled``
             will be acquired. This argument takes precedence over the `bind`
-            argument as well as this :class:`.ClauseElement`'s bound engine,
+            argument as well as this :class:`_expression.ClauseElement`
+            's bound engine,
             if any.
 
         :param inline: Used for INSERT statements, for a dialect which does
@@ -472,7 +460,7 @@ class ClauseElement(Visitable):
 
                 s = select([t]).where(t.c.x == 5)
 
-                print s.compile(compile_kwargs={"literal_binds": True})
+                print(s.compile(compile_kwargs={"literal_binds": True}))
 
             .. versionadded:: 0.9.0
 
@@ -489,7 +477,7 @@ class ClauseElement(Visitable):
                 dialect = self.bind.dialect
                 bind = self.bind
             else:
-                dialect = default.DefaultDialect()
+                dialect = default.StrCompileDialect()
         return self._compiler(dialect, bind=bind, **kw)
 
     def _compiler(self, dialect, **kw):
@@ -502,28 +490,36 @@ class ClauseElement(Visitable):
         if util.py3k:
             return str(self.compile())
         else:
-            return unicode(self.compile()).encode('ascii', 'backslashreplace')
+            return unicode(self.compile()).encode(  # noqa
+                "ascii", "backslashreplace"
+            )  # noqa
 
+    @util.deprecated(
+        "0.9",
+        "The :meth:`_expression.ClauseElement.__and__` "
+        "method is deprecated and will "
+        "be removed in a future release.   Conjunctions should only be "
+        "used from a :class:`_expression.ColumnElement` subclass, e.g. "
+        ":meth:`_expression.ColumnElement.__and__`.",
+    )
     def __and__(self, other):
-        """'and' at the ClauseElement level.
-
-        .. deprecated:: 0.9.5 - conjunctions are intended to be
-           at the :class:`.ColumnElement`. level
-
-        """
+        """'and' at the ClauseElement level."""
         return and_(self, other)
 
+    @util.deprecated(
+        "0.9",
+        "The :meth:`_expression.ClauseElement.__or__` "
+        "method is deprecated and will "
+        "be removed in a future release.   Conjunctions should only be "
+        "used from a :class:`_expression.ColumnElement` subclass, e.g. "
+        ":meth:`_expression.ColumnElement.__or__`.",
+    )
     def __or__(self, other):
-        """'or' at the ClauseElement level.
-
-        .. deprecated:: 0.9.5 - conjunctions are intended to be
-           at the :class:`.ColumnElement`. level
-
-        """
+        """'or' at the ClauseElement level."""
         return or_(self, other)
 
     def __invert__(self):
-        if hasattr(self, 'negation_clause'):
+        if hasattr(self, "negation_clause"):
             return self.negation_clause
         else:
             return self._negate()
@@ -532,7 +528,8 @@ class ClauseElement(Visitable):
         return UnaryExpression(
             self.self_group(against=operators.inv),
             operator=operators.inv,
-            negate=None)
+            negate=None,
+        )
 
     def __bool__(self):
         raise TypeError("Boolean value of this clause is not defined")
@@ -544,27 +541,35 @@ class ClauseElement(Visitable):
         if friendly is None:
             return object.__repr__(self)
         else:
-            return '<%s.%s at 0x%x; %s>' % (
-                self.__module__, self.__class__.__name__, id(self), friendly)
+            return "<%s.%s at 0x%x; %s>" % (
+                self.__module__,
+                self.__class__.__name__,
+                id(self),
+                friendly,
+            )
 
 
 class ColumnElement(operators.ColumnOperators, ClauseElement):
     """Represent a column-oriented SQL expression suitable for usage in the
     "columns" clause, WHERE clause etc. of a statement.
 
-    While the most familiar kind of :class:`.ColumnElement` is the
-    :class:`.Column` object, :class:`.ColumnElement` serves as the basis
+    While the most familiar kind of :class:`_expression.ColumnElement` is the
+    :class:`_schema.Column` object, :class:`_expression.ColumnElement`
+    serves as the basis
     for any unit that may be present in a SQL expression, including
     the expressions themselves, SQL functions, bound parameters,
     literal expressions, keywords such as ``NULL``, etc.
-    :class:`.ColumnElement` is the ultimate base class for all such elements.
+    :class:`_expression.ColumnElement`
+    is the ultimate base class for all such elements.
 
     A wide variety of SQLAlchemy Core functions work at the SQL expression
-    level, and are intended to accept instances of :class:`.ColumnElement` as
+    level, and are intended to accept instances of
+    :class:`_expression.ColumnElement` as
     arguments.  These functions will typically document that they accept a
     "SQL expression" as an argument.  What this means in terms of SQLAlchemy
     usually refers to an input which is either already in the form of a
-    :class:`.ColumnElement` object, or a value which can be **coerced** into
+    :class:`_expression.ColumnElement` object,
+    or a value which can be **coerced** into
     one.  The coercion rules followed by most, but not all, SQLAlchemy Core
     functions with regards to SQL expressions are as follows:
 
@@ -574,8 +579,9 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
           value".  This generally means that a :func:`.bindparam` will be
           produced featuring the given value embedded into the construct; the
           resulting :class:`.BindParameter` object is an instance of
-          :class:`.ColumnElement`.  The Python value will ultimately be sent
-          to the DBAPI at execution time as a paramterized argument to the
+          :class:`_expression.ColumnElement`.
+          The Python value will ultimately be sent
+          to the DBAPI at execution time as a parameterized argument to the
           ``execute()`` or ``executemany()`` methods, after SQLAlchemy
           type-specific converters (e.g. those provided by any associated
           :class:`.TypeEngine` objects) are applied to the value.
@@ -584,56 +590,130 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
           feature a method called ``__clause_element__()``.  The Core
           expression system looks for this method when an object of otherwise
           unknown type is passed to a function that is looking to coerce the
-          argument into a :class:`.ColumnElement` expression.  The
+          argument into a :class:`_expression.ColumnElement` expression.  The
           ``__clause_element__()`` method, if present, should return a
-          :class:`.ColumnElement` instance.  The primary use of
+          :class:`_expression.ColumnElement` instance.  The primary use of
           ``__clause_element__()`` within SQLAlchemy is that of class-bound
           attributes on ORM-mapped classes; a ``User`` class which contains a
           mapped attribute named ``.name`` will have a method
           ``User.name.__clause_element__()`` which when invoked returns the
-          :class:`.Column` called ``name`` associated with the mapped table.
+          :class:`_schema.Column`
+          called ``name`` associated with the mapped table.
 
         * The Python ``None`` value is typically interpreted as ``NULL``,
           which in SQLAlchemy Core produces an instance of :func:`.null`.
 
-    A :class:`.ColumnElement` provides the ability to generate new
-    :class:`.ColumnElement`
+    A :class:`_expression.ColumnElement` provides the ability to generate new
+    :class:`_expression.ColumnElement`
     objects using Python expressions.  This means that Python operators
     such as ``==``, ``!=`` and ``<`` are overloaded to mimic SQL operations,
-    and allow the instantiation of further :class:`.ColumnElement` instances
-    which are composed from other, more fundamental :class:`.ColumnElement`
+    and allow the instantiation of further :class:`_expression.ColumnElement`
+    instances
+    which are composed from other, more fundamental
+    :class:`_expression.ColumnElement`
     objects.  For example, two :class:`.ColumnClause` objects can be added
     together with the addition operator ``+`` to produce
     a :class:`.BinaryExpression`.
     Both :class:`.ColumnClause` and :class:`.BinaryExpression` are subclasses
-    of :class:`.ColumnElement`::
+    of :class:`_expression.ColumnElement`::
 
         >>> from sqlalchemy.sql import column
         >>> column('a') + column('b')
         <sqlalchemy.sql.expression.BinaryExpression object at 0x101029dd0>
-        >>> print column('a') + column('b')
+        >>> print(column('a') + column('b'))
         a + b
 
     .. seealso::
 
-        :class:`.Column`
+        :class:`_schema.Column`
 
-        :func:`.expression.column`
+        :func:`_expression.column`
 
     """
 
-    __visit_name__ = 'column'
+    __visit_name__ = "column_element"
     primary_key = False
     foreign_keys = []
+    _proxies = ()
+
     _label = None
-    _key_label = key = None
+    """The named label that can be used to target
+    this column in a result set.
+
+    This label is almost always the label used when
+    rendering <expr> AS <label> in a SELECT statement.  It also
+    refers to a name that this column expression can be located from
+    in a result set.
+
+    For a regular Column bound to a Table, this is typically the label
+    <tablename>_<columnname>.  For other constructs, different rules
+    may apply, such as anonymized labels and others.
+
+    """
+
+    key = None
+    """The 'key' that in some circumstances refers to this object in a
+    Python namespace.
+
+    This typically refers to the "key" of the column as present in the
+    ``.c`` collection of a selectable, e.g. ``sometable.c["somekey"]`` would
+    return a :class:`_schema.Column` with a ``.key`` of "somekey".
+
+    """
+
+    _key_label = None
+    """A label-based version of 'key' that in some circumstances refers
+    to this object in a Python namespace.
+
+
+    _key_label comes into play when a select() statement is constructed with
+    apply_labels(); in this case, all Column objects in the ``.c`` collection
+    are rendered as <tablename>_<columnname> in SQL; this is essentially the
+    value of ._label.  But to locate those columns in the ``.c`` collection,
+    the name is along the lines of <tablename>_<key>; that's the typical
+    value of .key_label.
+
+    """
+
+    _render_label_in_columns_clause = True
+    """A flag used by select._columns_plus_names that helps to determine
+    we are actually going to render in terms of "SELECT <col> AS <label>".
+    This flag can be returned as False for some Column objects that want
+    to be rendered as simple "SELECT <col>"; typically columns that don't have
+    any parent table and are named the same as what the label would be
+    in any case.
+
+    """
+
+    _resolve_label = None
+    """The name that should be used to identify this ColumnElement in a
+    select() object when "label resolution" logic is used; this refers
+    to using a string name in an expression like order_by() or group_by()
+    that wishes to target a labeled expression in the columns clause.
+
+    The name is distinct from that of .name or ._label to account for the case
+    where anonymizing logic may be used to change the name that's actually
+    rendered at compile time; this attribute should hold onto the original
+    name that was user-assigned when producing a .label() construct.
+
+    """
+
+    _allow_label_resolve = True
+    """A flag that can be flipped to prevent a column from being resolvable
+    by string label name."""
+
+    _is_implicitly_boolean = False
+
     _alt_names = ()
 
     def self_group(self, against=None):
-        if (against in (operators.and_, operators.or_, operators._asbool) and
-                self.type._type_affinity
-                is type_api.BOOLEANTYPE._type_affinity):
+        if (
+            against in (operators.and_, operators.or_, operators._asbool)
+            and self.type._type_affinity is type_api.BOOLEANTYPE._type_affinity
+        ):
             return AsBoolean(self, operators.istrue, operators.isfalse)
+        elif against in (operators.any_op, operators.all_op):
+            return Grouping(self)
         else:
             return self
 
@@ -649,17 +729,33 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
 
     @util.memoized_property
     def comparator(self):
-        return self.type.comparator_factory(self)
+        try:
+            comparator_factory = self.type.comparator_factory
+        except AttributeError as err:
+            util.raise_(
+                TypeError(
+                    "Object %r associated with '.type' attribute "
+                    "is not a TypeEngine class or object" % self.type
+                ),
+                replace_context=err,
+            )
+        else:
+            return comparator_factory(self)
 
     def __getattr__(self, key):
         try:
             return getattr(self.comparator, key)
-        except AttributeError:
-            raise AttributeError(
-                'Neither %r object nor %r object has an attribute %r' % (
-                    type(self).__name__,
-                    type(self.comparator).__name__,
-                    key)
+        except AttributeError as err:
+            util.raise_(
+                AttributeError(
+                    "Neither %r object nor %r object has an attribute %r"
+                    % (
+                        type(self).__name__,
+                        type(self.comparator).__name__,
+                        key,
+                    )
+                ),
+                replace_context=err,
             )
 
     def operate(self, op, *other, **kwargs):
@@ -668,10 +764,15 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
     def reverse_operate(self, op, other, **kwargs):
         return op(other, self.comparator, **kwargs)
 
-    def _bind_param(self, operator, obj):
-        return BindParameter(None, obj,
-                             _compared_to_operator=operator,
-                             _compared_to_type=self.type, unique=True)
+    def _bind_param(self, operator, obj, type_=None):
+        return BindParameter(
+            None,
+            obj,
+            _compared_to_operator=operator,
+            type_=type_,
+            _compared_to_type=self.type,
+            unique=True,
+        )
 
     @property
     def expression(self):
@@ -684,24 +785,34 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
 
     @property
     def _select_iterable(self):
-        return (self, )
+        return (self,)
 
     @util.memoized_property
     def base_columns(self):
-        return util.column_set(c for c in self.proxy_set
-                               if not hasattr(c, '_proxies'))
+        return util.column_set(c for c in self.proxy_set if not c._proxies)
 
     @util.memoized_property
     def proxy_set(self):
         s = util.column_set([self])
-        if hasattr(self, '_proxies'):
-            for c in self._proxies:
-                s.update(c.proxy_set)
+        for c in self._proxies:
+            s.update(c.proxy_set)
+        return s
+
+    def _uncached_proxy_set(self):
+        """An 'uncached' version of proxy set.
+
+        This is so that we can read annotations from the list of columns
+        without breaking the caching of the above proxy_set.
+
+        """
+        s = util.column_set([self])
+        for c in self._proxies:
+            s.update(c._uncached_proxy_set())
         return s
 
     def shares_lineage(self, othercolumn):
-        """Return True if the given :class:`.ColumnElement`
-        has a common ancestor to this :class:`.ColumnElement`."""
+        """Return True if the given :class:`_expression.ColumnElement`
+        has a common ancestor to this :class:`_expression.ColumnElement`."""
 
         return bool(self.proxy_set.intersection(othercolumn.proxy_set))
 
@@ -709,13 +820,18 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
         """Return True if the given column element compares to this one
         when targeting within a result row."""
 
-        return hasattr(other, 'name') and hasattr(self, 'name') and \
-            other.name == self.name
+        return (
+            hasattr(other, "name")
+            and hasattr(self, "name")
+            and other.name == self.name
+        )
 
     def _make_proxy(
-            self, selectable, name=None, name_is_truncatable=False, **kw):
-        """Create a new :class:`.ColumnElement` representing this
-        :class:`.ColumnElement` as it appears in the select list of a
+        self, selectable, name=None, name_is_truncatable=False, **kw
+    ):
+        """Create a new :class:`_expression.ColumnElement` representing this
+        :class:`_expression.ColumnElement`
+        as it appears in the select list of a
         descending selectable.
 
         """
@@ -731,15 +847,15 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
 
         else:
             key = name
+
         co = ColumnClause(
             _as_truncated(name) if name_is_truncatable else name,
-            type_=getattr(self, 'type', None),
-            _selectable=selectable
+            type_=getattr(self, "type", None),
+            _selectable=selectable,
         )
         co._proxies = [self]
         if selectable._is_clone_of is not None:
-            co._is_clone_of = \
-                selectable._is_clone_of.columns.get(key)
+            co._is_clone_of = selectable._is_clone_of.columns.get(key)
         selectable._columns[key] = co
         return co
 
@@ -754,12 +870,12 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
         :param equivalents: a dictionary of columns as keys mapped to sets
           of columns. If the given "other" column is present in this
           dictionary, if any of the columns in the corresponding set() pass
-          the comparison tests, the result is True. This is used to expand the
+          the comparison test, the result is True. This is used to expand the
           comparison to other columns that may be known to be equivalent to
           this one via foreign key or other criterion.
 
         """
-        to_compare = (other, )
+        to_compare = (other,)
         if equivalents and other in equivalents:
             to_compare = equivalents[other].union(to_compare)
 
@@ -771,44 +887,65 @@ class ColumnElement(operators.ColumnOperators, ClauseElement):
         else:
             return False
 
+    def cast(self, type_):
+        """Produce a type cast, i.e. ``CAST(<expression> AS <type>)``.
+
+        This is a shortcut to the :func:`_expression.cast` function.
+
+        .. seealso::
+
+            :ref:`coretutorial_casts`
+
+            :func:`_expression.cast`
+
+            :func:`_expression.type_coerce`
+
+        .. versionadded:: 1.0.7
+
+        """
+        return Cast(self, type_)
+
     def label(self, name):
         """Produce a column label, i.e. ``<columnname> AS <name>``.
 
-        This is a shortcut to the :func:`~.expression.label` function.
+        This is a shortcut to the :func:`_expression.label` function.
 
-        if 'name' is None, an anonymous label name will be generated.
+        If 'name' is ``None``, an anonymous label name will be generated.
 
         """
         return Label(name, self, self.type)
 
     @util.memoized_property
     def anon_label(self):
-        """provides a constant 'anonymous label' for this ColumnElement.
+        """Provides a constant 'anonymous label' for this ColumnElement.
 
         This is a label() expression which will be named at compile time.
-        The same label() is returned each time anon_label is called so
-        that expressions can reference anon_label multiple times, producing
-        the same label name at compile time.
+        The same label() is returned each time ``anon_label`` is called so
+        that expressions can reference ``anon_label`` multiple times,
+        producing the same label name at compile time.
 
-        the compiler uses this function automatically at compile time
+        The compiler uses this function automatically at compile time
         for expressions that are known to be 'unnamed' like binary
         expressions and function calls.
 
         """
+        while self._is_clone_of is not None:
+            self = self._is_clone_of
+
         return _anonymous_label(
-            '%%(%d %s)s' % (id(self), getattr(self, 'name', 'anon'))
+            "%%(%d %s)s" % (id(self), getattr(self, "name", "anon"))
         )
 
 
 class BindParameter(ColumnElement):
-    """Represent a "bound expression".
+    r"""Represent a "bound expression".
 
     :class:`.BindParameter` is invoked explicitly using the
     :func:`.bindparam` function, as in::
 
         from sqlalchemy import bindparam
 
-        stmt = select([users_table]).\\
+        stmt = select([users_table]).\
                     where(users_table.c.name == bindparam('username'))
 
     Detailed discussion of how :class:`.BindParameter` is used is
@@ -820,20 +957,30 @@ class BindParameter(ColumnElement):
 
     """
 
-    __visit_name__ = 'bindparam'
+    __visit_name__ = "bindparam"
 
     _is_crud = False
+    _expanding_in_types = ()
 
-    def __init__(self, key, value=NO_ARG, type_=None,
-                 unique=False, required=NO_ARG,
-                 quote=None, callable_=None,
-                 isoutparam=False,
-                 _compared_to_operator=None,
-                 _compared_to_type=None):
-        """Produce a "bound expression".
+    def __init__(
+        self,
+        key,
+        value=NO_ARG,
+        type_=None,
+        unique=False,
+        required=NO_ARG,
+        quote=None,
+        callable_=None,
+        expanding=False,
+        isoutparam=False,
+        _compared_to_operator=None,
+        _compared_to_type=None,
+    ):
+        r"""Produce a "bound expression".
 
         The return value is an instance of :class:`.BindParameter`; this
-        is a :class:`.ColumnElement` subclass which represents a so-called
+        is a :class:`_expression.ColumnElement`
+        subclass which represents a so-called
         "placeholder" value in a SQL expression, the value of which is
         supplied at the point at which the statement in executed against a
         database connection.
@@ -854,7 +1001,7 @@ class BindParameter(ColumnElement):
 
             from sqlalchemy import bindparam
 
-            stmt = select([users_table]).\\
+            stmt = select([users_table]).\
                         where(users_table.c.name == bindparam('username'))
 
         The above statement, when rendered, will produce SQL similar to::
@@ -863,7 +1010,7 @@ class BindParameter(ColumnElement):
 
         In order to populate the value of ``:username`` above, the value
         would typically be applied at execution time to a method
-        like :meth:`.Connection.execute`::
+        like :meth:`_engine.Connection.execute`::
 
             result = connection.execute(stmt, username='wendy')
 
@@ -892,7 +1039,7 @@ class BindParameter(ColumnElement):
             expr = users_table.c.name == 'Wendy'
 
         The above expression will produce a :class:`.BinaryExpression`
-        construct, where the left side is the :class:`.Column` object
+        construct, where the left side is the :class:`_schema.Column` object
         representing the ``name`` column, and the right side is a
         :class:`.BindParameter` representing the literal value::
 
@@ -920,13 +1067,13 @@ class BindParameter(ColumnElement):
 
         Above, we see that ``Wendy`` is passed as a parameter to the database,
         while the placeholder ``:name_1`` is rendered in the appropriate form
-        for the target database, in this case the Postgresql database.
+        for the target database, in this case the PostgreSQL database.
 
-        Similarly, :func:`.bindparam` is invoked automatically
-        when working with :term:`CRUD` statements as far as the "VALUES"
-        portion is concerned.   The :func:`.insert` construct produces an
-        ``INSERT`` expression which will, at statement execution time,
-        generate bound placeholders based on the arguments passed, as in::
+        Similarly, :func:`.bindparam` is invoked automatically when working
+        with :term:`CRUD` statements as far as the "VALUES" portion is
+        concerned.   The :func:`_expression.insert` construct produces an
+        ``INSERT`` expression which will, at statement execution time, generate
+        bound placeholders based on the arguments passed, as in::
 
             stmt = users_table.insert()
             result = connection.execute(stmt, name='Wendy')
@@ -936,10 +1083,10 @@ class BindParameter(ColumnElement):
             INSERT INTO "user" (name) VALUES (%(name)s)
             {'name': 'Wendy'}
 
-        The :class:`.Insert` construct, at compilation/execution time,
-        rendered a single :func:`.bindparam` mirroring the column
-        name ``name`` as a result of the single ``name`` parameter
-        we passed to the :meth:`.Connection.execute` method.
+        The :class:`_expression.Insert` construct, at
+        compilation/execution time, rendered a single :func:`.bindparam`
+        mirroring the column name ``name`` as a result of the single ``name``
+        parameter we passed to the :meth:`_engine.Connection.execute` method.
 
         :param key:
           the key (e.g. the name) for this bind param.
@@ -970,7 +1117,7 @@ class BindParameter(ColumnElement):
           value; for example, trivial Python types such as ``str``,
           ``int``, ``bool``
           may result in the :class:`.String`, :class:`.Integer` or
-          :class:`.Boolean` types being autoamtically selected.
+          :class:`.Boolean` types being automatically selected.
 
           The type of a :func:`.bindparam` is significant especially in that
           the type will apply pre-processing to the value before it is
@@ -996,11 +1143,6 @@ class BindParameter(ColumnElement):
           parameters are present, then :paramref:`.bindparam.required`
           defaults to ``False``.
 
-          .. versionchanged:: 0.8 If the ``required`` flag is not specified,
-             it will be set automatically to ``True`` or ``False`` depending
-             on whether or not the ``value`` or ``callable`` parameters
-             were specified.
-
         :param quote:
           True if this parameter name requires quoting and is not
           currently known as a SQLAlchemy reserved word; this currently
@@ -1012,6 +1154,30 @@ class BindParameter(ColumnElement):
           "OUT" parameter.  This applies to backends such as Oracle which
           support OUT parameters.
 
+        :param expanding:
+          if True, this parameter will be treated as an "expanding" parameter
+          at execution time; the parameter value is expected to be a sequence,
+          rather than a scalar value, and the string SQL statement will
+          be transformed on a per-execution basis to accommodate the sequence
+          with a variable number of parameter slots passed to the DBAPI.
+          This is to allow statement caching to be used in conjunction with
+          an IN clause.
+
+          .. seealso::
+
+            :meth:`.ColumnOperators.in_`
+
+            :ref:`baked_in` - with baked queries
+
+          .. note:: The "expanding" feature does not support "executemany"-
+             style parameter sets.
+
+          .. versionadded:: 1.2
+
+          .. versionchanged:: 1.3 the "expanding" bound parameter feature now
+             supports empty lists.
+
+
         .. seealso::
 
             :ref:`coretutorial_bind_param`
@@ -1021,11 +1187,12 @@ class BindParameter(ColumnElement):
             :func:`.outparam`
 
         """
+
         if isinstance(key, ColumnClause):
             type_ = key.type
-            key = key.name
+            key = key.key
         if required is NO_ARG:
-            required = (value is NO_ARG and callable_ is None)
+            required = value is NO_ARG and callable_ is None
         if value is NO_ARG:
             value = None
 
@@ -1033,11 +1200,17 @@ class BindParameter(ColumnElement):
             key = quoted_name(key, quote)
 
         if unique:
-            self.key = _anonymous_label('%%(%d %s)s' % (id(self), key
-                                                        or 'param'))
+            self.key = _anonymous_label(
+                "%%(%d %s)s"
+                % (
+                    id(self),
+                    re.sub(r"[%\(\) \$]+", "_", key).strip("_")
+                    if key is not None
+                    else "param",
+                )
+            )
         else:
-            self.key = key or _anonymous_label('%%(%d param)s'
-                                               % id(self))
+            self.key = key or _anonymous_label("%%(%d param)s" % id(self))
 
         # identifying key that won't change across
         # clones, used to identify the bind's logical
@@ -1046,37 +1219,47 @@ class BindParameter(ColumnElement):
 
         # key that was passed in the first place, used to
         # generate new keys
-        self._orig_key = key or 'param'
+        self._orig_key = key or "param"
 
         self.unique = unique
         self.value = value
         self.callable = callable_
         self.isoutparam = isoutparam
         self.required = required
+        self.expanding = expanding
+
         if type_ is None:
             if _compared_to_type is not None:
-                self.type = \
-                    _compared_to_type.coerce_compared_value(
-                        _compared_to_operator, value)
+                self.type = _compared_to_type.coerce_compared_value(
+                    _compared_to_operator, value
+                )
             else:
-                self.type = type_api._type_map.get(type(value),
-                                                   type_api.NULLTYPE)
+                self.type = type_api._resolve_value_to_type(value)
         elif isinstance(type_, type):
             self.type = type_()
         else:
             self.type = type_
 
+    def _with_expanding_in_types(self, types):
+        """Return a copy of this :class:`.BindParameter` in
+        the context of an expanding IN against a tuple.
+
+        """
+        cloned = self._clone()
+        cloned._expanding_in_types = types
+        return cloned
+
     def _with_value(self, value):
         """Return a copy of this :class:`.BindParameter` with the given value
         set.
+
         """
         cloned = self._clone()
         cloned.value = value
         cloned.callable = None
         cloned.required = False
         if cloned.type is type_api.NULLTYPE:
-            cloned.type = type_api._type_map.get(type(value),
-                                                 type_api.NULLTYPE)
+            cloned.type = type_api._resolve_value_to_type(value)
         return cloned
 
     @property
@@ -1097,38 +1280,55 @@ class BindParameter(ColumnElement):
     def _clone(self):
         c = ClauseElement._clone(self)
         if self.unique:
-            c.key = _anonymous_label('%%(%d %s)s' % (id(c), c._orig_key
-                                                     or 'param'))
+            c.key = _anonymous_label(
+                "%%(%d %s)s" % (id(c), c._orig_key or "param")
+            )
         return c
 
     def _convert_to_unique(self):
         if not self.unique:
             self.unique = True
             self.key = _anonymous_label(
-                '%%(%d %s)s' % (id(self), self._orig_key or 'param'))
+                "%%(%d %s)s" % (id(self), self._orig_key or "param")
+            )
 
     def compare(self, other, **kw):
         """Compare this :class:`BindParameter` to the given
-        clause."""
+        clause.
 
-        return isinstance(other, BindParameter) \
-            and self.type._compare_type_affinity(other.type) \
+        """
+
+        return (
+            isinstance(other, BindParameter)
+            and self.type._compare_type_affinity(other.type)
             and self.value == other.value
+            and self.callable == other.callable
+        )
 
     def __getstate__(self):
-        """execute a deferred value for serialization purposes."""
+        """Execute a deferred value for serialization purposes."""
 
         d = self.__dict__.copy()
         v = self.value
         if self.callable:
             v = self.callable()
-            d['callable'] = None
-        d['value'] = v
+            d["callable"] = None
+        d["value"] = v
         return d
 
+    def __setstate__(self, state):
+        if state.get("unique", False):
+            state["key"] = _anonymous_label(
+                "%%(%d %s)s" % (id(self), state.get("_orig_key", "param"))
+            )
+        self.__dict__.update(state)
+
     def __repr__(self):
-        return 'BindParameter(%r, %r, type_=%r)' % (self.key,
-                                                    self.value, self.type)
+        return "BindParameter(%r, %r, type_=%r)" % (
+            self.key,
+            self.value,
+            self.type,
+        )
 
 
 class TypeClause(ClauseElement):
@@ -1138,10 +1338,10 @@ class TypeClause(ClauseElement):
 
     """
 
-    __visit_name__ = 'typeclause'
+    __visit_name__ = "typeclause"
 
-    def __init__(self, type):
-        self.type = type
+    def __init__(self, type_):
+        self.type = type_
 
 
 class TextClause(Executable, ClauseElement):
@@ -1155,21 +1355,27 @@ class TextClause(Executable, ClauseElement):
         result = connection.execute(t)
 
 
-    The :class:`.Text` construct is produced using the :func:`.text`
+    The :class:`_expression.TextClause` construct is produced using the
+    :func:`_expression.text`
     function; see that function for full documentation.
 
     .. seealso::
 
-        :func:`.text`
+        :func:`_expression.text`
 
     """
 
-    __visit_name__ = 'textclause'
+    __visit_name__ = "textclause"
 
-    _bind_params_regex = re.compile(r'(?<![:\w\x5c]):(\w+)(?!:)', re.UNICODE)
-    _execution_options = \
-        Executable._execution_options.union(
-            {'autocommit': PARSE_AUTOCOMMIT})
+    _bind_params_regex = re.compile(r"(?<![:\w\x5c]):(\w+)(?!:)", re.UNICODE)
+    _execution_options = Executable._execution_options.union(
+        {"autocommit": PARSE_AUTOCOMMIT}
+    )
+    _is_implicitly_boolean = False
+
+    def __and__(self, other):
+        # support use in select.where(), query.filter()
+        return and_(self, other)
 
     @property
     def _select_iterable(self):
@@ -1177,39 +1383,71 @@ class TextClause(Executable, ClauseElement):
 
     @property
     def selectable(self):
+        # allows text() to be considered by
+        # _interpret_as_from
         return self
 
     _hide_froms = []
 
-    def __init__(
-            self,
-            text,
-            bind=None):
+    # help in those cases where text() is
+    # interpreted in a column expression situation
+    key = _label = _resolve_label = None
+
+    _allow_label_resolve = False
+
+    def __init__(self, text, bind=None):
         self._bind = bind
         self._bindparams = {}
 
         def repl(m):
             self._bindparams[m.group(1)] = BindParameter(m.group(1))
-            return ':%s' % m.group(1)
+            return ":%s" % m.group(1)
 
         # scan the string and search for bind parameter names, add them
         # to the list of bindparams
         self.text = self._bind_params_regex.sub(repl, text)
 
     @classmethod
-    def _create_text(self, text, bind=None, bindparams=None,
-                     typemap=None, autocommit=None):
-        """Construct a new :class:`.TextClause` clause, representing
+    @util.deprecated_params(
+        autocommit=(
+            "0.6",
+            "The :paramref:`_expression.text.autocommit` "
+            "parameter is deprecated and "
+            "will be removed in a future release.  Please use the "
+            ":paramref:`.Connection.execution_options.autocommit` parameter "
+            "in conjunction with the :meth:`.Executable.execution_options` "
+            "method.",
+        ),
+        bindparams=(
+            "0.9",
+            "The :paramref:`_expression.text.bindparams` parameter "
+            "is deprecated and will be removed in a future release.  Please "
+            "refer to the :meth:`_expression.TextClause.bindparams` method.",
+        ),
+        typemap=(
+            "0.9",
+            "The :paramref:`_expression.text.typemap` parameter is "
+            "deprecated and will be removed in a future release.  Please "
+            "refer to the :meth:`_expression.TextClause.columns` method.",
+        ),
+    )
+    @_document_text_coercion("text", ":func:`.text`", ":paramref:`.text.text`")
+    def _create_text(
+        self, text, bind=None, bindparams=None, typemap=None, autocommit=None
+    ):
+        r"""Construct a new :class:`_expression.TextClause` clause,
+        representing
         a textual SQL string directly.
 
         E.g.::
 
-            fom sqlalchemy import text
+            from sqlalchemy import text
 
             t = text("SELECT * FROM users")
             result = connection.execute(t)
 
-        The advantages :func:`.text` provides over a plain string are
+        The advantages :func:`_expression.text`
+        provides over a plain string are
         backend-neutral support for bind parameters, per-statement
         execution options, as well as
         bind parameter and result-column typing behavior, allowing
@@ -1227,107 +1465,88 @@ class TextClause(Executable, ClauseElement):
         For SQL statements where a colon is required verbatim, as within
         an inline string, use a backslash to escape::
 
-            t = text("SELECT * FROM users WHERE name='\\:username'")
+            t = text("SELECT * FROM users WHERE name='\:username'")
 
-        The :class:`.TextClause` construct includes methods which can
+        The :class:`_expression.TextClause`
+        construct includes methods which can
         provide information about the bound parameters as well as the column
         values which would be returned from the textual statement, assuming
         it's an executable SELECT type of statement.  The
-        :meth:`.TextClause.bindparams` method is used to provide bound
-        parameter detail, and :meth:`.TextClause.columns` method allows
+        :meth:`_expression.TextClause.bindparams`
+        method is used to provide bound
+        parameter detail, and :meth:`_expression.TextClause.columns`
+        method allows
         specification of return columns including names and types::
 
-            t = text("SELECT * FROM users WHERE id=:user_id").\\
-                    bindparams(user_id=7).\\
+            t = text("SELECT * FROM users WHERE id=:user_id").\
+                    bindparams(user_id=7).\
                     columns(id=Integer, name=String)
 
             for id, name in connection.execute(t):
                 print(id, name)
 
-        The :func:`.text` construct is used internally in cases when
-        a literal string is specified for part of a larger query, such as
-        when a string is specified to the :meth:`.Select.where` method of
-        :class:`.Select`.  In those cases, the same
-        bind parameter syntax is applied::
+        The :func:`_expression.text` construct is used in cases when
+        a literal string SQL fragment is specified as part of a larger query,
+        such as for the WHERE clause of a SELECT statement::
 
-            s = select([users.c.id, users.c.name]).where("id=:user_id")
+            s = select([users.c.id, users.c.name]).where(text("id=:user_id"))
             result = connection.execute(s, user_id=12)
 
-        Using :func:`.text` explicitly usually implies the construction
-        of a full, standalone statement.   As such, SQLAlchemy refers
+        :func:`_expression.text` is also used for the construction
+        of a full, standalone statement using plain text.
+        As such, SQLAlchemy refers
         to it as an :class:`.Executable` object, and it supports
         the :meth:`Executable.execution_options` method.  For example,
-        a :func:`.text` construct that should be subject to "autocommit"
+        a :func:`_expression.text`
+        construct that should be subject to "autocommit"
         can be set explicitly so using the
         :paramref:`.Connection.execution_options.autocommit` option::
 
-            t = text("EXEC my_procedural_thing()").\\
+            t = text("EXEC my_procedural_thing()").\
                     execution_options(autocommit=True)
 
         Note that SQLAlchemy's usual "autocommit" behavior applies to
-        :func:`.text` constructs implicitly - that is, statements which begin
+        :func:`_expression.text` constructs implicitly - that is,
+        statements which begin
         with a phrase such as ``INSERT``, ``UPDATE``, ``DELETE``,
         or a variety of other phrases specific to certain backends, will
         be eligible for autocommit if no transaction is in progress.
 
         :param text:
-          the text of the SQL statement to be created.  use ``:<param>``
+          the text of the SQL statement to be created.  Use ``:<param>``
           to specify bind parameters; they will be compiled to their
           engine-specific format.
 
-        :param autocommit:
-          Deprecated.  Use .execution_options(autocommit=<True|False>)
-          to set the autocommit option.
+        :param autocommit: whether or not to set the "autocommit" execution
+          option for this :class:`_expression.TextClause` object.
 
         :param bind:
           an optional connection or engine to be used for this text query.
 
         :param bindparams:
-          Deprecated.  A list of :func:`.bindparam` instances used to
+          A list of :func:`.bindparam` instances used to
           provide information about parameters embedded in the statement.
-          This argument now invokes the :meth:`.TextClause.bindparams`
-          method on the construct before returning it.  E.g.::
+
+          E.g.::
 
               stmt = text("SELECT * FROM table WHERE id=:id",
                         bindparams=[bindparam('id', value=5, type_=Integer)])
 
-          Is equivalent to::
-
-              stmt = text("SELECT * FROM table WHERE id=:id").\\
-                        bindparams(bindparam('id', value=5, type_=Integer))
-
-          .. deprecated:: 0.9.0 the :meth:`.TextClause.bindparams` method
-             supersedes the ``bindparams`` argument to :func:`.text`.
-
         :param typemap:
-          Deprecated.  A dictionary mapping the names of columns
-          represented in the columns clause of a ``SELECT`` statement
-          to type objects,
-          which will be used to perform post-processing on columns within
-          the result set.  This parameter now invokes the
-          :meth:`.TextClause.columns` method, which returns a
-          :class:`.TextAsFrom` construct that gains a ``.c`` collection and
-          can be embedded in other expressions.  E.g.::
+          A dictionary mapping the names of columns represented in the columns
+          clause of a ``SELECT`` statement to type objects.
+
+          E.g.::
 
               stmt = text("SELECT * FROM table",
                             typemap={'id': Integer, 'name': String},
                         )
 
-          Is equivalent to::
+        .. seealso::
 
-              stmt = text("SELECT * FROM table").columns(id=Integer,
-                                                         name=String)
+            :ref:`sqlexpression_text` - in the Core tutorial
 
-          Or alternatively::
-
-              from sqlalchemy.sql import column
-              stmt = text("SELECT * FROM table").columns(
-                                    column('id', Integer),
-                                    column('name', String)
-                                )
-
-          .. deprecated:: 0.9.0 the :meth:`.TextClause.columns` method
-             supersedes the ``typemap`` argument to :func:`.text`.
+            :ref:`orm_tutorial_literal_sql` - in the ORM tutorial
 
         """
         stmt = TextClause(text, bind=bind)
@@ -1336,8 +1555,6 @@ class TextClause(Executable, ClauseElement):
         if typemap:
             stmt = stmt.columns(**typemap)
         if autocommit is not None:
-            util.warn_deprecated('autocommit on text() is deprecated.  '
-                                 'Use .execution_options(autocommit=True)')
             stmt = stmt.execution_options(autocommit=autocommit)
 
         return stmt
@@ -1345,7 +1562,7 @@ class TextClause(Executable, ClauseElement):
     @_generative
     def bindparams(self, *binds, **names_to_values):
         """Establish the values and/or types of bound parameters within
-        this :class:`.TextClause` construct.
+        this :class:`_expression.TextClause` construct.
 
         Given a text construct such as::
 
@@ -1353,7 +1570,8 @@ class TextClause(Executable, ClauseElement):
             stmt = text("SELECT id, name FROM user WHERE name=:name "
                         "AND timestamp=:timestamp")
 
-        the :meth:`.TextClause.bindparams` method can be used to establish
+        the :meth:`_expression.TextClause.bindparams`
+        method can be used to establish
         the initial value of ``:name`` and ``:timestamp``,
         using simple keyword arguments::
 
@@ -1389,10 +1607,12 @@ class TextClause(Executable, ClauseElement):
             result = connection.execute(stmt,
                         timestamp=datetime.datetime(2012, 10, 8, 15, 12, 5))
 
-        The :meth:`.TextClause.bindparams` method can be called repeatedly,
+        The :meth:`_expression.TextClause.bindparams`
+        method can be called repeatedly,
         where it will re-use existing :class:`.BindParameter` objects to add
         new information.  For example, we can call
-        :meth:`.TextClause.bindparams` first with typing information, and a
+        :meth:`_expression.TextClause.bindparams`
+        first with typing information, and a
         second time with value information, and it will be combined::
 
             stmt = text("SELECT id, name FROM user WHERE name=:name "
@@ -1406,38 +1626,76 @@ class TextClause(Executable, ClauseElement):
                 timestamp=datetime.datetime(2012, 10, 8, 15, 12, 5)
             )
 
+        The :meth:`_expression.TextClause.bindparams`
+        method also supports the concept of
+        **unique** bound parameters.  These are parameters that are
+        "uniquified" on name at statement compilation time, so that  multiple
+        :func:`_expression.text`
+        constructs may be combined together without the names
+        conflicting.  To use this feature, specify the
+        :paramref:`.BindParameter.unique` flag on each :func:`.bindparam`
+        object::
 
-        .. versionadded:: 0.9.0 The :meth:`.TextClause.bindparams` method
-           supersedes the argument ``bindparams`` passed to
-           :func:`~.expression.text`.
+            stmt1 = text("select id from table where name=:name").bindparams(
+                bindparam("name", value='name1', unique=True)
+            )
+            stmt2 = text("select id from table where name=:name").bindparams(
+                bindparam("name", value='name2', unique=True)
+            )
 
+            union = union_all(
+                stmt1.columns(column("id")),
+                stmt2.columns(column("id"))
+            )
+
+        The above statement will render as::
+
+            select id from table where name=:name_1
+            UNION ALL select id from table where name=:name_2
+
+        .. versionadded:: 1.3.11  Added support for the
+           :paramref:`.BindParameter.unique` flag to work with
+           :func:`_expression.text`
+           constructs.
 
         """
         self._bindparams = new_params = self._bindparams.copy()
 
         for bind in binds:
             try:
-                existing = new_params[bind.key]
-            except KeyError:
-                raise exc.ArgumentError(
-                    "This text() construct doesn't define a "
-                    "bound parameter named %r" % bind.key)
+                # the regex used for text() currently will not match
+                # a unique/anonymous key in any case, so use the _orig_key
+                # so that a text() construct can support unique parameters
+                existing = new_params[bind._orig_key]
+            except KeyError as err:
+                util.raise_(
+                    exc.ArgumentError(
+                        "This text() construct doesn't define a "
+                        "bound parameter named %r" % bind._orig_key
+                    ),
+                    replace_context=err,
+                )
             else:
-                new_params[existing.key] = bind
+                new_params[existing._orig_key] = bind
 
         for key, value in names_to_values.items():
             try:
                 existing = new_params[key]
-            except KeyError:
-                raise exc.ArgumentError(
-                    "This text() construct doesn't define a "
-                    "bound parameter named %r" % key)
+            except KeyError as err:
+                util.raise_(
+                    exc.ArgumentError(
+                        "This text() construct doesn't define a "
+                        "bound parameter named %r" % key
+                    ),
+                    replace_context=err,
+                )
             else:
                 new_params[key] = existing._with_value(value)
 
-    @util.dependencies('sqlalchemy.sql.selectable')
+    @util.dependencies("sqlalchemy.sql.selectable")
     def columns(self, selectable, *cols, **types):
-        """Turn this :class:`.TextClause` object into a :class:`.TextAsFrom`
+        r"""Turn this :class:`_expression.TextClause` object into a
+        :class:`.TextAsFrom`
         object that can be embedded into another statement.
 
         This function essentially bridges the gap between an entirely
@@ -1449,14 +1707,24 @@ class TextClause(Executable, ClauseElement):
             stmt = text("SELECT id, name FROM some_table")
             stmt = stmt.columns(column('id'), column('name')).alias('st')
 
-            stmt = select([mytable]).\\
+            stmt = select([mytable]).\
                     select_from(
                         mytable.join(stmt, mytable.c.name == stmt.c.name)
                     ).where(stmt.c.id > 5)
 
-        Above, we used untyped :func:`.column` elements.  These can also have
-        types specified, which will impact how the column behaves in
-        expressions as well as determining result set behavior::
+        Above, we pass a series of :func:`_expression.column` elements to the
+        :meth:`_expression.TextClause.columns` method positionally.  These
+        :func:`_expression.column`
+        elements now become first class elements upon the :attr:`.TextAsFrom.c`
+        column collection, just like any other selectable.
+
+        The column expressions we pass to
+        :meth:`_expression.TextClause.columns` may
+        also be typed; when we do so, these :class:`.TypeEngine` objects become
+        the effective return type of the column, so that SQLAlchemy's
+        result-set-processing systems may be used on the return values.
+        This is often needed for types such as date or boolean types, as well
+        as for unicode processing on some dialect configurations::
 
             stmt = text("SELECT id, name, timestamp FROM some_table")
             stmt = stmt.columns(
@@ -1468,9 +1736,8 @@ class TextClause(Executable, ClauseElement):
             for id, name, timestamp in connection.execute(stmt):
                 print(id, name, timestamp)
 
-        Keyword arguments allow just the names and types of columns to be
-        specified, where the :func:`.column` elements will be generated
-        automatically::
+        As a shortcut to the above syntax, keyword arguments referring to
+        types alone may be used, if only type conversion is needed::
 
             stmt = text("SELECT id, name, timestamp FROM some_table")
             stmt = stmt.columns(
@@ -1482,28 +1749,66 @@ class TextClause(Executable, ClauseElement):
             for id, name, timestamp in connection.execute(stmt):
                 print(id, name, timestamp)
 
-        The :meth:`.TextClause.columns` method provides a direct
-        route to calling :meth:`.FromClause.alias` as well as
-        :meth:`.SelectBase.cte` against a textual SELECT statement::
+        The positional form of :meth:`_expression.TextClause.columns`
+        also provides the
+        unique feature of **positional column targeting**, which is
+        particularly useful when using the ORM with complex textual queries. If
+        we specify the columns from our model to
+        :meth:`_expression.TextClause.columns`,
+        the result set will match to those columns positionally, meaning the
+        name or origin of the column in the textual SQL doesn't matter::
+
+            stmt = text("SELECT users.id, addresses.id, users.id, "
+                 "users.name, addresses.email_address AS email "
+                 "FROM users JOIN addresses ON users.id=addresses.user_id "
+                 "WHERE users.id = 1").columns(
+                    User.id,
+                    Address.id,
+                    Address.user_id,
+                    User.name,
+                    Address.email_address
+                 )
+
+            query = session.query(User).from_statement(stmt).options(
+                contains_eager(User.addresses))
+
+        .. versionadded:: 1.1 the :meth:`_expression.TextClause.columns`
+           method now
+           offers positional column targeting in the result set when
+           the column expressions are passed purely positionally.
+
+        The :meth:`_expression.TextClause.columns` method provides a direct
+        route to calling :meth:`_expression.FromClause.alias` as well as
+        :meth:`_expression.SelectBase.cte`
+        against a textual SELECT statement::
 
             stmt = stmt.columns(id=Integer, name=String).cte('st')
 
             stmt = select([sometable]).where(sometable.c.id == stmt.c.id)
 
-        .. versionadded:: 0.9.0 :func:`.text` can now be converted into a
+        .. versionadded:: 0.9.0 :func:`_expression.text`
+           can now be converted into a
            fully featured "selectable" construct using the
-           :meth:`.TextClause.columns` method.  This method supersedes the
-           ``typemap`` argument to :func:`.text`.
+           :meth:`_expression.TextClause.columns` method.
+
 
         """
 
-        input_cols = [
+        positional_input_cols = [
             ColumnClause(col.key, types.pop(col.key))
             if col.key in types
             else col
             for col in cols
-        ] + [ColumnClause(key, type_) for key, type_ in types.items()]
-        return selectable.TextAsFrom(self, input_cols)
+        ]
+        keyed_input_cols = [
+            ColumnClause(key, type_) for key, type_ in types.items()
+        ]
+
+        return selectable.TextAsFrom(
+            self,
+            positional_input_cols + keyed_input_cols,
+            positional=bool(positional_input_cols) and not keyed_input_cols,
+        )
 
     @property
     def type(self):
@@ -1520,8 +1825,9 @@ class TextClause(Executable, ClauseElement):
             return self
 
     def _copy_internals(self, clone=_clone, **kw):
-        self._bindparams = dict((b.key, clone(b, **kw))
-                                for b in self._bindparams.values())
+        self._bindparams = dict(
+            (b.key, clone(b, **kw)) for b in self._bindparams.values()
+        )
 
     def get_children(self, **kwargs):
         return list(self._bindparams.values())
@@ -1538,17 +1844,17 @@ class Null(ColumnElement):
 
     """
 
-    __visit_name__ = 'null'
+    __visit_name__ = "null"
 
     @util.memoized_property
     def type(self):
         return type_api.NULLTYPE
 
     @classmethod
-    def _singleton(cls):
+    def _instance(cls):
         """Return a constant :class:`.Null` construct."""
 
-        return NULL
+        return Null()
 
     def compare(self, other):
         return isinstance(other, Null)
@@ -1562,39 +1868,39 @@ class False_(ColumnElement):
 
     """
 
-    __visit_name__ = 'false'
+    __visit_name__ = "false"
 
     @util.memoized_property
     def type(self):
         return type_api.BOOLEANTYPE
 
     def _negate(self):
-        return TRUE
+        return True_()
 
     @classmethod
-    def _singleton(cls):
-        """Return a constant :class:`.False_` construct.
+    def _instance(cls):
+        """Return a :class:`.False_` construct.
 
         E.g.::
 
             >>> from sqlalchemy import false
-            >>> print select([t.c.x]).where(false())
+            >>> print(select([t.c.x]).where(false()))
             SELECT x FROM t WHERE false
 
         A backend which does not support true/false constants will render as
         an expression against 1 or 0::
 
-            >>> print select([t.c.x]).where(false())
+            >>> print(select([t.c.x]).where(false()))
             SELECT x FROM t WHERE 0 = 1
 
         The :func:`.true` and :func:`.false` constants also feature
         "short circuit" operation within an :func:`.and_` or :func:`.or_`
         conjunction::
 
-            >>> print select([t.c.x]).where(or_(t.c.x > 5, true()))
+            >>> print(select([t.c.x]).where(or_(t.c.x > 5, true())))
             SELECT x FROM t WHERE true
 
-            >>> print select([t.c.x]).where(and_(t.c.x > 5, false()))
+            >>> print(select([t.c.x]).where(and_(t.c.x > 5, false())))
             SELECT x FROM t WHERE false
 
         .. versionchanged:: 0.9 :func:`.true` and :func:`.false` feature
@@ -1607,7 +1913,7 @@ class False_(ColumnElement):
 
         """
 
-        return FALSE
+        return False_()
 
     def compare(self, other):
         return isinstance(other, False_)
@@ -1621,46 +1927,46 @@ class True_(ColumnElement):
 
     """
 
-    __visit_name__ = 'true'
+    __visit_name__ = "true"
 
     @util.memoized_property
     def type(self):
         return type_api.BOOLEANTYPE
 
     def _negate(self):
-        return FALSE
+        return False_()
 
     @classmethod
     def _ifnone(cls, other):
         if other is None:
-            return cls._singleton()
+            return cls._instance()
         else:
             return other
 
     @classmethod
-    def _singleton(cls):
+    def _instance(cls):
         """Return a constant :class:`.True_` construct.
 
         E.g.::
 
             >>> from sqlalchemy import true
-            >>> print select([t.c.x]).where(true())
+            >>> print(select([t.c.x]).where(true()))
             SELECT x FROM t WHERE true
 
         A backend which does not support true/false constants will render as
         an expression against 1 or 0::
 
-            >>> print select([t.c.x]).where(true())
+            >>> print(select([t.c.x]).where(true()))
             SELECT x FROM t WHERE 1 = 1
 
         The :func:`.true` and :func:`.false` constants also feature
         "short circuit" operation within an :func:`.and_` or :func:`.or_`
         conjunction::
 
-            >>> print select([t.c.x]).where(or_(t.c.x > 5, true()))
+            >>> print(select([t.c.x]).where(or_(t.c.x > 5, true())))
             SELECT x FROM t WHERE true
 
-            >>> print select([t.c.x]).where(and_(t.c.x > 5, false()))
+            >>> print(select([t.c.x]).where(and_(t.c.x > 5, false())))
             SELECT x FROM t WHERE false
 
         .. versionchanged:: 0.9 :func:`.true` and :func:`.false` feature
@@ -1673,14 +1979,10 @@ class True_(ColumnElement):
 
         """
 
-        return TRUE
+        return True_()
 
     def compare(self, other):
         return isinstance(other, True_)
-
-NULL = Null()
-FALSE = False_()
-TRUE = True_()
 
 
 class ClauseList(ClauseElement):
@@ -1689,20 +1991,25 @@ class ClauseList(ClauseElement):
     By default, is comma-separated, such as a column listing.
 
     """
-    __visit_name__ = 'clauselist'
+
+    __visit_name__ = "clauselist"
 
     def __init__(self, *clauses, **kwargs):
-        self.operator = kwargs.pop('operator', operators.comma_op)
-        self.group = kwargs.pop('group', True)
-        self.group_contents = kwargs.pop('group_contents', True)
+        self.operator = kwargs.pop("operator", operators.comma_op)
+        self.group = kwargs.pop("group", True)
+        self.group_contents = kwargs.pop("group_contents", True)
+        self._tuple_values = kwargs.pop("_tuple_values", False)
+        text_converter = kwargs.pop(
+            "_literal_as_text", _expression_literal_as_text
+        )
         if self.group_contents:
             self.clauses = [
-                _literal_as_text(clause).self_group(against=self.operator)
-                for clause in clauses]
+                text_converter(clause).self_group(against=self.operator)
+                for clause in clauses
+            ]
         else:
-            self.clauses = [
-                _literal_as_text(clause)
-                for clause in clauses]
+            self.clauses = [text_converter(clause) for clause in clauses]
+        self._is_implicitly_boolean = operators.is_boolean(self.operator)
 
     def __iter__(self):
         return iter(self.clauses)
@@ -1716,8 +2023,9 @@ class ClauseList(ClauseElement):
 
     def append(self, clause):
         if self.group_contents:
-            self.clauses.append(_literal_as_text(clause).
-                                self_group(against=self.operator))
+            self.clauses.append(
+                _literal_as_text(clause).self_group(against=self.operator)
+            )
         else:
             self.clauses.append(_literal_as_text(clause))
 
@@ -1744,31 +2052,51 @@ class ClauseList(ClauseElement):
         """
         if not isinstance(other, ClauseList) and len(self.clauses) == 1:
             return self.clauses[0].compare(other, **kw)
-        elif isinstance(other, ClauseList) and \
-                len(self.clauses) == len(other.clauses):
-            for i in range(0, len(self.clauses)):
-                if not self.clauses[i].compare(other.clauses[i], **kw):
-                    return False
+        elif (
+            isinstance(other, ClauseList)
+            and len(self.clauses) == len(other.clauses)
+            and self.operator is other.operator
+        ):
+
+            if self.operator in (operators.and_, operators.or_):
+                completed = set()
+                for clause in self.clauses:
+                    for other_clause in set(other.clauses).difference(
+                        completed
+                    ):
+                        if clause.compare(other_clause, **kw):
+                            completed.add(other_clause)
+                            break
+                return len(completed) == len(other.clauses)
             else:
-                return self.operator == other.operator
+                for i in range(0, len(self.clauses)):
+                    if not self.clauses[i].compare(other.clauses[i], **kw):
+                        return False
+                else:
+                    return True
         else:
             return False
 
 
 class BooleanClauseList(ClauseList, ColumnElement):
-    __visit_name__ = 'clauselist'
+    __visit_name__ = "clauselist"
+
+    _tuple_values = False
 
     def __init__(self, *arg, **kw):
         raise NotImplementedError(
-            "BooleanClauseList has a private constructor")
+            "BooleanClauseList has a private constructor"
+        )
 
     @classmethod
     def _construct(cls, operator, continue_on, skip_on, *clauses, **kw):
         convert_clauses = []
 
-        clauses = util.coerce_generator_arg(clauses)
+        clauses = [
+            _expression_literal_as_text(clause)
+            for clause in util.coerce_generator_arg(clauses)
+        ]
         for clause in clauses:
-            clause = _literal_as_text(clause)
 
             if isinstance(clause, continue_on):
                 continue
@@ -1782,8 +2110,9 @@ class BooleanClauseList(ClauseList, ColumnElement):
         elif not convert_clauses and clauses:
             return clauses[0].self_group(against=operators._asbool)
 
-        convert_clauses = [c.self_group(against=operator)
-                           for c in convert_clauses]
+        convert_clauses = [
+            c.self_group(against=operator) for c in convert_clauses
+        ]
 
         self = cls.__new__(cls)
         self.clauses = convert_clauses
@@ -1791,11 +2120,12 @@ class BooleanClauseList(ClauseList, ColumnElement):
         self.operator = operator
         self.group_contents = True
         self.type = type_api.BOOLEANTYPE
+        self._is_implicitly_boolean = True
         return self
 
     @classmethod
     def and_(cls, *clauses):
-        """Produce a conjunction of expressions joined by ``AND``.
+        r"""Produce a conjunction of expressions joined by ``AND``.
 
         E.g.::
 
@@ -1819,13 +2149,14 @@ class BooleanClauseList(ClauseList, ColumnElement):
                         )
 
         The :func:`.and_` operation is also implicit in some cases;
-        the :meth:`.Select.where` method for example can be invoked multiple
+        the :meth:`_expression.Select.where`
+        method for example can be invoked multiple
         times against a statement, which will have the effect of each
         clause being combined using :func:`.and_`::
 
-            stmt = select([users_table]).\\
-                        where(users_table.c.name == 'wendy').\\
-                        where(users_table.c.enrolled == True)
+            stmt = select([users_table]).\
+                    where(users_table.c.name == 'wendy').\
+                    where(users_table.c.enrolled == True)
 
         .. seealso::
 
@@ -1868,7 +2199,7 @@ class BooleanClauseList(ClauseList, ColumnElement):
 
     @property
     def _select_iterable(self):
-        return (self, )
+        return (self,)
 
     def self_group(self, against=None):
         if not self.clauses:
@@ -1890,7 +2221,8 @@ class Tuple(ClauseList, ColumnElement):
     def __init__(self, *clauses, **kw):
         """Return a :class:`.Tuple`.
 
-        Main usage is to produce a composite IN construct::
+        Main usage is to produce a composite IN construct using
+        :meth:`.ColumnOperators.in_` ::
 
             from sqlalchemy import tuple_
 
@@ -1898,33 +2230,45 @@ class Tuple(ClauseList, ColumnElement):
                 [(1, 2), (5, 12), (10, 19)]
             )
 
+        .. versionchanged:: 1.3.6 Added support for SQLite IN tuples.
+
         .. warning::
 
-            The composite IN construct is not supported by all backends,
-            and is currently known to work on Postgresql and MySQL,
-            but not SQLite.   Unsupported backends will raise
-            a subclass of :class:`~sqlalchemy.exc.DBAPIError` when such
-            an expression is invoked.
+            The composite IN construct is not supported by all backends, and is
+            currently known to work on PostgreSQL, MySQL, and SQLite.
+            Unsupported backends will raise a subclass of
+            :class:`~sqlalchemy.exc.DBAPIError` when such an expression is
+            invoked.
 
         """
 
         clauses = [_literal_as_binds(c) for c in clauses]
         self._type_tuple = [arg.type for arg in clauses]
-        self.type = kw.pop('type_', self._type_tuple[0]
-                           if self._type_tuple else type_api.NULLTYPE)
+        self.type = kw.pop(
+            "type_",
+            self._type_tuple[0] if self._type_tuple else type_api.NULLTYPE,
+        )
 
         super(Tuple, self).__init__(*clauses, **kw)
 
     @property
     def _select_iterable(self):
-        return (self, )
+        return (self,)
 
-    def _bind_param(self, operator, obj):
-        return Tuple(*[
-            BindParameter(None, o, _compared_to_operator=operator,
-                          _compared_to_type=type_, unique=True)
-            for o, type_ in zip(obj, self._type_tuple)
-        ]).self_group()
+    def _bind_param(self, operator, obj, type_=None):
+        return Tuple(
+            *[
+                BindParameter(
+                    None,
+                    o,
+                    _compared_to_operator=operator,
+                    _compared_to_type=compared_to_type,
+                    unique=True,
+                    type_=type_,
+                )
+                for o, compared_to_type in zip(obj, self._type_tuple)
+            ]
+        ).self_group()
 
 
 class Case(ColumnElement):
@@ -1935,7 +2279,7 @@ class Case(ColumnElement):
 
         from sqlalchemy import case
 
-        stmt = select([users_table]).\\
+        stmt = select([users_table]).\
                     where(
                         case(
                             [
@@ -1954,10 +2298,10 @@ class Case(ColumnElement):
 
     """
 
-    __visit_name__ = 'case'
+    __visit_name__ = "case"
 
     def __init__(self, whens, value=None, else_=None):
-        """Produce a ``CASE`` expression.
+        r"""Produce a ``CASE`` expression.
 
         The ``CASE`` construct in SQL is a conditional object that
         acts somewhat analogously to an "if/then" construct in other
@@ -1968,7 +2312,7 @@ class Case(ColumnElement):
 
             from sqlalchemy import case
 
-            stmt = select([users_table]).\\
+            stmt = select([users_table]).\
                         where(
                             case(
                                 [
@@ -1997,7 +2341,7 @@ class Case(ColumnElement):
         compared against keyed to result expressions.  The statement below is
         equivalent to the preceding statement::
 
-            stmt = select([users_table]).\\
+            stmt = select([users_table]).\
                         where(
                             case(
                                 {"wendy": "W", "jack": "J"},
@@ -2009,9 +2353,11 @@ class Case(ColumnElement):
         The values which are accepted as result values in
         :paramref:`.case.whens` as well as with :paramref:`.case.else_` are
         coerced from Python literals into :func:`.bindparam` constructs.
-        SQL expressions, e.g. :class:`.ColumnElement` constructs, are accepted
+        SQL expressions, e.g. :class:`_expression.ColumnElement` constructs,
+        are accepted
         as well.  To coerce a literal string expression into a constant
-        expression rendered inline, use the :func:`.literal_column` construct,
+        expression rendered inline, use the :func:`_expression.literal_column`
+        construct,
         as in::
 
             from sqlalchemy import case, literal_column
@@ -2072,7 +2418,7 @@ class Case(ColumnElement):
           result of the ``CASE`` construct if all expressions within
           :paramref:`.case.whens` evaluate to false.  When omitted, most
           databases will produce a result of NULL if none of the "when"
-          expressions evaulate to true.
+          expressions evaluate to true.
 
 
         """
@@ -2084,13 +2430,13 @@ class Case(ColumnElement):
 
         if value is not None:
             whenlist = [
-                (_literal_as_binds(c).self_group(),
-                 _literal_as_binds(r)) for (c, r) in whens
+                (_literal_as_binds(c).self_group(), _literal_as_binds(r))
+                for (c, r) in whens
             ]
         else:
             whenlist = [
-                (_no_literals(c).self_group(),
-                 _literal_as_binds(r)) for (c, r) in whens
+                (_no_literals(c).self_group(), _literal_as_binds(r))
+                for (c, r) in whens
             ]
 
         if whenlist:
@@ -2113,8 +2459,7 @@ class Case(ColumnElement):
     def _copy_internals(self, clone=_clone, **kw):
         if self.value is not None:
             self.value = clone(self.value, **kw)
-        self.whens = [(clone(x, **kw), clone(y, **kw))
-                      for x, y in self.whens]
+        self.whens = [(clone(x, **kw), clone(y, **kw)) for x, y in self.whens]
         if self.else_ is not None:
             self.else_ = clone(self.else_, **kw)
 
@@ -2129,19 +2474,23 @@ class Case(ColumnElement):
 
     @property
     def _from_objects(self):
-        return list(itertools.chain(*[x._from_objects for x in
-                                      self.get_children()]))
+        return list(
+            itertools.chain(*[x._from_objects for x in self.get_children()])
+        )
 
 
 def literal_column(text, type_=None):
-    """Produce a :class:`.ColumnClause` object that has the
-    :paramref:`.column.is_literal` flag set to True.
+    r"""Produce a :class:`.ColumnClause` object that has the
+    :paramref:`_expression.column.is_literal` flag set to True.
 
-    :func:`.literal_column` is similar to :func:`.column`, except that
+    :func:`_expression.literal_column` is similar to
+    :func:`_expression.column`, except that
     it is more often used as a "standalone" column expression that renders
-    exactly as stated; while :func:`.column` stores a string name that
+    exactly as stated; while :func:`_expression.column`
+    stores a string name that
     will be assumed to be part of a table and may be quoted as such,
-    :func:`.literal_column` can be that, or any other arbitrary column-oriented
+    :func:`_expression.literal_column` can be that,
+    or any other arbitrary column-oriented
     expression.
 
     :param text: the text of the expression; can be any SQL expression.
@@ -2152,13 +2501,13 @@ def literal_column(text, type_=None):
     :param type\_: an optional :class:`~sqlalchemy.types.TypeEngine`
       object which will
       provide result-set translation and additional expression semantics for
-      this column. If left as None the type will be NullType.
+      this column. If left as ``None`` the type will be :class:`.NullType`.
 
     .. seealso::
 
-        :func:`.column`
+        :func:`_expression.column`
 
-        :func:`.text`
+        :func:`_expression.text`
 
         :ref:`sqlexpression_literal_column`
 
@@ -2182,14 +2531,20 @@ class Cast(ColumnElement):
 
     .. seealso::
 
+        :ref:`coretutorial_casts`
+
         :func:`.cast`
+
+        :func:`.type_coerce` - an alternative to CAST that coerces the type
+        on the Python side only, which is often sufficient to generate the
+        correct SQL and data coercion.
 
     """
 
-    __visit_name__ = 'cast'
+    __visit_name__ = "cast"
 
     def __init__(self, expression, type_):
-        """Produce a ``CAST`` expression.
+        r"""Produce a ``CAST`` expression.
 
         :func:`.cast` returns an instance of :class:`.Cast`.
 
@@ -2224,17 +2579,22 @@ class Cast(ColumnElement):
         with a specific type, but does not render the ``CAST`` expression
         in SQL.
 
-        :param expression: A SQL expression, such as a :class:`.ColumnElement`
+        :param expression: A SQL expression, such as a
+         :class:`_expression.ColumnElement`
          expression or a Python string which will be coerced into a bound
          literal value.
 
-        :param type_: A :class:`.TypeEngine` class or instance indicating
+        :param type\_: A :class:`.TypeEngine` class or instance indicating
          the type to which the ``CAST`` should apply.
 
         .. seealso::
 
-            :func:`.type_coerce` - Python-side type coercion without emitting
-            CAST.
+            :ref:`coretutorial_casts`
+
+            :func:`.type_coerce` - an alternative to CAST that coerces the type
+            on the Python side only, which is often sufficient to generate the
+            correct SQL and data coercion.
+
 
         """
         self.type = type_api.to_instance(type_)
@@ -2253,10 +2613,136 @@ class Cast(ColumnElement):
         return self.clause._from_objects
 
 
+class TypeCoerce(ColumnElement):
+    """Represent a Python-side type-coercion wrapper.
+
+    :class:`.TypeCoerce` supplies the :func:`_expression.type_coerce`
+    function; see that function for usage details.
+
+    .. versionchanged:: 1.1 The :func:`.type_coerce` function now produces
+       a persistent :class:`.TypeCoerce` wrapper object rather than
+       translating the given object in place.
+
+    .. seealso::
+
+        :func:`_expression.type_coerce`
+
+        :func:`.cast`
+
+    """
+
+    __visit_name__ = "type_coerce"
+
+    def __init__(self, expression, type_):
+        r"""Associate a SQL expression with a particular type, without rendering
+        ``CAST``.
+
+        E.g.::
+
+            from sqlalchemy import type_coerce
+
+            stmt = select([type_coerce(log_table.date_string, StringDateTime())])
+
+        The above construct will produce a :class:`.TypeCoerce` object, which
+        does not modify the rendering in any way on the SQL side, with the
+        possible exception of a generated label if used in a columns clause
+        context::
+
+            SELECT date_string AS anon_1 FROM log
+
+        When result rows are fetched, the ``StringDateTime`` type processor
+        will be applied to result rows on behalf of the ``date_string`` column.
+
+        .. note:: the :func:`.type_coerce` construct does not render any
+           SQL syntax of its own, including that it does not imply
+           parenthesization.   Please use :meth:`.TypeCoerce.self_group`
+           if explicit parenthesization is required.
+
+        In order to provide a named label for the expression, use
+        :meth:`_expression.ColumnElement.label`::
+
+            stmt = select([
+                type_coerce(log_table.date_string, StringDateTime()).label('date')
+            ])
+
+
+        A type that features bound-value handling will also have that behavior
+        take effect when literal values or :func:`.bindparam` constructs are
+        passed to :func:`.type_coerce` as targets.
+        For example, if a type implements the
+        :meth:`.TypeEngine.bind_expression`
+        method or :meth:`.TypeEngine.bind_processor` method or equivalent,
+        these functions will take effect at statement compilation/execution
+        time when a literal value is passed, as in::
+
+            # bound-value handling of MyStringType will be applied to the
+            # literal value "some string"
+            stmt = select([type_coerce("some string", MyStringType)])
+
+        When using :func:`.type_coerce` with composed expressions, note that
+        **parenthesis are not applied**.   If :func:`.type_coerce` is being
+        used in an operator context where the parenthesis normally present from
+        CAST are necessary, use the :meth:`.TypeCoerce.self_group` method::
+
+            >>> some_integer = column("someint", Integer)
+            >>> some_string = column("somestr", String)
+            >>> expr = type_coerce(some_integer + 5, String) + some_string
+            >>> print(expr)
+            someint + :someint_1 || somestr
+            >>> expr = type_coerce(some_integer + 5, String).self_group() + some_string
+            >>> print(expr)
+            (someint + :someint_1) || somestr
+
+        :param expression: A SQL expression, such as a
+         :class:`_expression.ColumnElement`
+         expression or a Python string which will be coerced into a bound
+         literal value.
+
+        :param type\_: A :class:`.TypeEngine` class or instance indicating
+         the type to which the expression is coerced.
+
+        .. seealso::
+
+            :ref:`coretutorial_casts`
+
+            :func:`.cast`
+
+        """  # noqa
+        self.type = type_api.to_instance(type_)
+        self.clause = _literal_as_binds(expression, type_=self.type)
+
+    def _copy_internals(self, clone=_clone, **kw):
+        self.clause = clone(self.clause, **kw)
+        self.__dict__.pop("typed_expression", None)
+
+    def get_children(self, **kwargs):
+        return (self.clause,)
+
+    @property
+    def _from_objects(self):
+        return self.clause._from_objects
+
+    @util.memoized_property
+    def typed_expression(self):
+        if isinstance(self.clause, BindParameter):
+            bp = self.clause._clone()
+            bp.type = self.type
+            return bp
+        else:
+            return self.clause
+
+    def self_group(self, against=None):
+        grouped = self.clause.self_group(against=against)
+        if grouped is not self.clause:
+            return TypeCoerce(grouped, self.type)
+        else:
+            return self
+
+
 class Extract(ColumnElement):
     """Represent a SQL EXTRACT clause, ``extract(field FROM expr)``."""
 
-    __visit_name__ = 'extract'
+    __visit_name__ = "extract"
 
     def __init__(self, field, expr, **kwargs):
         """Return a :class:`.Extract` construct.
@@ -2274,11 +2760,48 @@ class Extract(ColumnElement):
         self.expr = clone(self.expr, **kw)
 
     def get_children(self, **kwargs):
-        return self.expr,
+        return (self.expr,)
 
     @property
     def _from_objects(self):
         return self.expr._from_objects
+
+
+class _label_reference(ColumnElement):
+    """Wrap a column expression as it appears in a 'reference' context.
+
+    This expression is any that includes an _order_by_label_element,
+    which is a Label, or a DESC / ASC construct wrapping a Label.
+
+    The production of _label_reference() should occur when an expression
+    is added to this context; this includes the ORDER BY or GROUP BY of a
+    SELECT statement, as well as a few other places, such as the ORDER BY
+    within an OVER clause.
+
+    """
+
+    __visit_name__ = "label_reference"
+
+    def __init__(self, element):
+        self.element = element
+
+    def _copy_internals(self, clone=_clone, **kw):
+        self.element = clone(self.element, **kw)
+
+    @property
+    def _from_objects(self):
+        return ()
+
+
+class _textual_label_reference(ColumnElement):
+    __visit_name__ = "textual_label_reference"
+
+    def __init__(self, element):
+        self.element = element
+
+    @util.memoized_property
+    def _text_clause(self):
+        return TextClause._create_text(self.element)
 
 
 class UnaryExpression(ColumnElement):
@@ -2294,16 +2817,26 @@ class UnaryExpression(ColumnElement):
     :func:`.nullsfirst` and :func:`.nullslast`.
 
     """
-    __visit_name__ = 'unary'
 
-    def __init__(self, element, operator=None, modifier=None,
-                 type_=None, negate=None):
+    __visit_name__ = "unary"
+
+    def __init__(
+        self,
+        element,
+        operator=None,
+        modifier=None,
+        type_=None,
+        negate=None,
+        wraps_column_expression=False,
+    ):
         self.operator = operator
         self.modifier = modifier
         self.element = element.self_group(
-            against=self.operator or self.modifier)
+            against=self.operator or self.modifier
+        )
         self.type = type_api.to_instance(type_)
         self.negate = negate
+        self.wraps_column_expression = wraps_column_expression
 
     @classmethod
     def _create_nullsfirst(cls, column):
@@ -2316,8 +2849,8 @@ class UnaryExpression(ColumnElement):
 
             from sqlalchemy import desc, nullsfirst
 
-            stmt = select([users_table]).\\
-                        order_by(nullsfirst(desc(users_table.c.name)))
+            stmt = select([users_table]).order_by(
+                nullsfirst(desc(users_table.c.name)))
 
         The SQL expression from the above would resemble::
 
@@ -2325,12 +2858,12 @@ class UnaryExpression(ColumnElement):
 
         Like :func:`.asc` and :func:`.desc`, :func:`.nullsfirst` is typically
         invoked from the column expression itself using
-        :meth:`.ColumnElement.nullsfirst`, rather than as its standalone
+        :meth:`_expression.ColumnElement.nullsfirst`,
+        rather than as its standalone
         function version, as in::
 
-            stmt = (select([users_table]).
-                    order_by(users_table.c.name.desc().nullsfirst())
-                    )
+            stmt = select([users_table]).order_by(
+                users_table.c.name.desc().nullsfirst())
 
         .. seealso::
 
@@ -2340,11 +2873,14 @@ class UnaryExpression(ColumnElement):
 
             :func:`.nullslast`
 
-            :meth:`.Select.order_by`
+            :meth:`_expression.Select.order_by`
 
         """
         return UnaryExpression(
-            _literal_as_text(column), modifier=operators.nullsfirst_op)
+            _literal_as_label_reference(column),
+            modifier=operators.nullsfirst_op,
+            wraps_column_expression=False,
+        )
 
     @classmethod
     def _create_nullslast(cls, column):
@@ -2357,8 +2893,8 @@ class UnaryExpression(ColumnElement):
 
             from sqlalchemy import desc, nullslast
 
-            stmt = select([users_table]).\\
-                        order_by(nullslast(desc(users_table.c.name)))
+            stmt = select([users_table]).order_by(
+                nullslast(desc(users_table.c.name)))
 
         The SQL expression from the above would resemble::
 
@@ -2366,11 +2902,12 @@ class UnaryExpression(ColumnElement):
 
         Like :func:`.asc` and :func:`.desc`, :func:`.nullslast` is typically
         invoked from the column expression itself using
-        :meth:`.ColumnElement.nullslast`, rather than as its standalone
+        :meth:`_expression.ColumnElement.nullslast`,
+        rather than as its standalone
         function version, as in::
 
-            stmt = select([users_table]).\\
-                        order_by(users_table.c.name.desc().nullslast())
+            stmt = select([users_table]).order_by(
+                users_table.c.name.desc().nullslast())
 
         .. seealso::
 
@@ -2380,11 +2917,14 @@ class UnaryExpression(ColumnElement):
 
             :func:`.nullsfirst`
 
-            :meth:`.Select.order_by`
+            :meth:`_expression.Select.order_by`
 
         """
         return UnaryExpression(
-            _literal_as_text(column), modifier=operators.nullslast_op)
+            _literal_as_label_reference(column),
+            modifier=operators.nullslast_op,
+            wraps_column_expression=False,
+        )
 
     @classmethod
     def _create_desc(cls, column):
@@ -2401,13 +2941,15 @@ class UnaryExpression(ColumnElement):
             SELECT id, name FROM user ORDER BY name DESC
 
         The :func:`.desc` function is a standalone version of the
-        :meth:`.ColumnElement.desc` method available on all SQL expressions,
+        :meth:`_expression.ColumnElement.desc`
+        method available on all SQL expressions,
         e.g.::
 
 
             stmt = select([users_table]).order_by(users_table.c.name.desc())
 
-        :param column: A :class:`.ColumnElement` (e.g. scalar SQL expression)
+        :param column: A :class:`_expression.ColumnElement` (e.g.
+         scalar SQL expression)
          with which to apply the :func:`.desc` operation.
 
         .. seealso::
@@ -2418,11 +2960,14 @@ class UnaryExpression(ColumnElement):
 
             :func:`.nullslast`
 
-            :meth:`.Select.order_by`
+            :meth:`_expression.Select.order_by`
 
         """
         return UnaryExpression(
-            _literal_as_text(column), modifier=operators.desc_op)
+            _literal_as_label_reference(column),
+            modifier=operators.desc_op,
+            wraps_column_expression=False,
+        )
 
     @classmethod
     def _create_asc(cls, column):
@@ -2438,13 +2983,15 @@ class UnaryExpression(ColumnElement):
             SELECT id, name FROM user ORDER BY name ASC
 
         The :func:`.asc` function is a standalone version of the
-        :meth:`.ColumnElement.asc` method available on all SQL expressions,
+        :meth:`_expression.ColumnElement.asc`
+        method available on all SQL expressions,
         e.g.::
 
 
             stmt = select([users_table]).order_by(users_table.c.name.asc())
 
-        :param column: A :class:`.ColumnElement` (e.g. scalar SQL expression)
+        :param column: A :class:`_expression.ColumnElement` (e.g.
+         scalar SQL expression)
          with which to apply the :func:`.asc` operation.
 
         .. seealso::
@@ -2455,11 +3002,14 @@ class UnaryExpression(ColumnElement):
 
             :func:`.nullslast`
 
-            :meth:`.Select.order_by`
+            :meth:`_expression.Select.order_by`
 
         """
         return UnaryExpression(
-            _literal_as_text(column), modifier=operators.asc_op)
+            _literal_as_label_reference(column),
+            modifier=operators.asc_op,
+            wraps_column_expression=False,
+        )
 
     @classmethod
     def _create_distinct(cls, expr):
@@ -2477,12 +3027,13 @@ class UnaryExpression(ColumnElement):
             SELECT COUNT(DISTINCT name) FROM user
 
         The :func:`.distinct` function is also available as a column-level
-        method, e.g. :meth:`.ColumnElement.distinct`, as in::
+        method, e.g. :meth:`_expression.ColumnElement.distinct`, as in::
 
             stmt = select([func.count(users_table.c.name.distinct())])
 
         The :func:`.distinct` operator is different from the
-        :meth:`.Select.distinct` method of :class:`.Select`,
+        :meth:`_expression.Select.distinct` method of
+        :class:`_expression.Select`,
         which produces a ``SELECT`` statement
         with ``DISTINCT`` applied to the result set as a whole,
         e.g. a ``SELECT DISTINCT`` expression.  See that method for further
@@ -2490,18 +3041,22 @@ class UnaryExpression(ColumnElement):
 
         .. seealso::
 
-            :meth:`.ColumnElement.distinct`
+            :meth:`_expression.ColumnElement.distinct`
 
-            :meth:`.Select.distinct`
+            :meth:`_expression.Select.distinct`
 
             :data:`.func`
 
         """
         expr = _literal_as_binds(expr)
         return UnaryExpression(
-            expr, operator=operators.distinct_op, type_=expr.type)
+            expr,
+            operator=operators.distinct_op,
+            type_=expr.type,
+            wraps_column_expression=False,
+        )
 
-    @util.memoized_property
+    @property
     def _order_by_label_element(self):
         if self.modifier in (operators.desc_op, operators.asc_op):
             return self.element._order_by_label_element
@@ -2516,17 +3071,17 @@ class UnaryExpression(ColumnElement):
         self.element = clone(self.element, **kw)
 
     def get_children(self, **kwargs):
-        return self.element,
+        return (self.element,)
 
     def compare(self, other, **kw):
         """Compare this :class:`UnaryExpression` against the given
-        :class:`.ClauseElement`."""
+        :class:`_expression.ClauseElement`."""
 
         return (
-            isinstance(other, UnaryExpression) and
-            self.operator == other.operator and
-            self.modifier == other.modifier and
-            self.element.compare(other.element, **kw)
+            isinstance(other, UnaryExpression)
+            and self.operator == other.operator
+            and self.modifier == other.modifier
+            and self.element.compare(other.element, **kw)
         )
 
     def _negate(self):
@@ -2536,7 +3091,17 @@ class UnaryExpression(ColumnElement):
                 operator=self.negate,
                 negate=self.operator,
                 modifier=self.modifier,
-                type_=self.type)
+                type_=self.type,
+                wraps_column_expression=self.wraps_column_expression,
+            )
+        elif self.type._type_affinity is type_api.BOOLEANTYPE._type_affinity:
+            return UnaryExpression(
+                self.self_group(against=operators.inv),
+                operator=operators.inv,
+                type_=type_api.BOOLEANTYPE,
+                wraps_column_expression=self.wraps_column_expression,
+                negate=None,
+            )
         else:
             return ClauseElement._negate(self)
 
@@ -2547,20 +3112,118 @@ class UnaryExpression(ColumnElement):
             return self
 
 
-class AsBoolean(UnaryExpression):
+class CollectionAggregate(UnaryExpression):
+    """Forms the basis for right-hand collection operator modifiers
+    ANY and ALL.
 
+    The ANY and ALL keywords are available in different ways on different
+    backends.  On PostgreSQL, they only work for an ARRAY type.  On
+    MySQL, they only work for subqueries.
+
+    """
+
+    @classmethod
+    def _create_any(cls, expr):
+        """Produce an ANY expression.
+
+        This may apply to an array type for some dialects (e.g. postgresql),
+        or to a subquery for others (e.g. mysql).  e.g.::
+
+            # postgresql '5 = ANY (somearray)'
+            expr = 5 == any_(mytable.c.somearray)
+
+            # mysql '5 = ANY (SELECT value FROM table)'
+            expr = 5 == any_(select([table.c.value]))
+
+        .. versionadded:: 1.1
+
+        .. seealso::
+
+            :func:`_expression.all_`
+
+        """
+
+        expr = _literal_as_binds(expr)
+
+        if expr.is_selectable and hasattr(expr, "as_scalar"):
+            expr = expr.as_scalar()
+        expr = expr.self_group()
+        return CollectionAggregate(
+            expr,
+            operator=operators.any_op,
+            type_=type_api.NULLTYPE,
+            wraps_column_expression=False,
+        )
+
+    @classmethod
+    def _create_all(cls, expr):
+        """Produce an ALL expression.
+
+        This may apply to an array type for some dialects (e.g. postgresql),
+        or to a subquery for others (e.g. mysql).  e.g.::
+
+            # postgresql '5 = ALL (somearray)'
+            expr = 5 == all_(mytable.c.somearray)
+
+            # mysql '5 = ALL (SELECT value FROM table)'
+            expr = 5 == all_(select([table.c.value]))
+
+        .. versionadded:: 1.1
+
+        .. seealso::
+
+            :func:`_expression.any_`
+
+        """
+
+        expr = _literal_as_binds(expr)
+        if expr.is_selectable and hasattr(expr, "as_scalar"):
+            expr = expr.as_scalar()
+        expr = expr.self_group()
+        return CollectionAggregate(
+            expr,
+            operator=operators.all_op,
+            type_=type_api.NULLTYPE,
+            wraps_column_expression=False,
+        )
+
+    # operate and reverse_operate are hardwired to
+    # dispatch onto the type comparator directly, so that we can
+    # ensure "reversed" behavior.
+    def operate(self, op, *other, **kwargs):
+        if not operators.is_comparison(op):
+            raise exc.ArgumentError(
+                "Only comparison operators may be used with ANY/ALL"
+            )
+        kwargs["reverse"] = True
+        return self.comparator.operate(operators.mirror(op), *other, **kwargs)
+
+    def reverse_operate(self, op, other, **kwargs):
+        # comparison operators should never call reverse_operate
+        assert not operators.is_comparison(op)
+        raise exc.ArgumentError(
+            "Only comparison operators may be used with ANY/ALL"
+        )
+
+
+class AsBoolean(UnaryExpression):
     def __init__(self, element, operator, negate):
         self.element = element
         self.type = type_api.BOOLEANTYPE
         self.operator = operator
         self.negate = negate
         self.modifier = None
+        self.wraps_column_expression = True
+        self._is_implicitly_boolean = element._is_implicitly_boolean
 
     def self_group(self, against=None):
         return self
 
     def _negate(self):
-        return self.element._negate()
+        if isinstance(self.element, (True_, False_)):
+            return self.element._negate()
+        else:
+            return AsBoolean(self.element, self.negate, self.operator)
 
 
 class BinaryExpression(ColumnElement):
@@ -2572,15 +3235,22 @@ class BinaryExpression(ColumnElement):
         >>> from sqlalchemy.sql import column
         >>> column('a') + column('b')
         <sqlalchemy.sql.expression.BinaryExpression object at 0x101029dd0>
-        >>> print column('a') + column('b')
+        >>> print(column('a') + column('b'))
         a + b
 
     """
 
-    __visit_name__ = 'binary'
+    __visit_name__ = "binary"
 
-    def __init__(self, left, right, operator, type_=None,
-                 negate=None, modifiers=None):
+    _is_implicitly_boolean = True
+    """Indicates that any database will know this is a boolean expression
+    even if the database does not have an explicit boolean datatype.
+
+    """
+
+    def __init__(
+        self, left, right, operator, type_=None, negate=None, modifiers=None
+    ):
         # allow compatibility with libraries that
         # refer to BinaryExpression directly and pass strings
         if isinstance(operator, util.string_types):
@@ -2591,6 +3261,7 @@ class BinaryExpression(ColumnElement):
         self.operator = operator
         self.type = type_api.to_instance(type_)
         self.negate = negate
+        self._is_implicitly_boolean = operators.is_boolean(operator)
 
         if modifiers is None:
             self.modifiers = {}
@@ -2625,15 +3296,15 @@ class BinaryExpression(ColumnElement):
         given :class:`BinaryExpression`."""
 
         return (
-            isinstance(other, BinaryExpression) and
-            self.operator == other.operator and
-            (
-                self.left.compare(other.left, **kw) and
-                self.right.compare(other.right, **kw) or
-                (
-                        operators.is_commutative(self.operator) and
-                        self.left.compare(other.right, **kw) and
-                        self.right.compare(other.left, **kw)
+            isinstance(other, BinaryExpression)
+            and self.operator == other.operator
+            and (
+                self.left.compare(other.left, **kw)
+                and self.right.compare(other.right, **kw)
+                or (
+                    operators.is_commutative(self.operator)
+                    and self.left.compare(other.right, **kw)
+                    and self.right.compare(other.left, **kw)
                 )
             )
         )
@@ -2651,33 +3322,77 @@ class BinaryExpression(ColumnElement):
                 self.right,
                 self.negate,
                 negate=self.operator,
-                type_=type_api.BOOLEANTYPE,
-                modifiers=self.modifiers)
+                type_=self.type,
+                modifiers=self.modifiers,
+            )
         else:
             return super(BinaryExpression, self)._negate()
+
+
+class Slice(ColumnElement):
+    """Represent SQL for a Python array-slice object.
+
+    This is not a specific SQL construct at this level, but
+    may be interpreted by specific dialects, e.g. PostgreSQL.
+
+    """
+
+    __visit_name__ = "slice"
+
+    def __init__(self, start, stop, step):
+        self.start = start
+        self.stop = stop
+        self.step = step
+        self.type = type_api.NULLTYPE
+
+    def self_group(self, against=None):
+        assert against is operator.getitem
+        return self
+
+
+class IndexExpression(BinaryExpression):
+    """Represent the class of expressions that are like an "index"
+    operation."""
+
+    pass
 
 
 class Grouping(ColumnElement):
     """Represent a grouping within a column expression"""
 
-    __visit_name__ = 'grouping'
+    __visit_name__ = "grouping"
 
     def __init__(self, element):
         self.element = element
-        self.type = getattr(element, 'type', type_api.NULLTYPE)
+        self.type = getattr(element, "type", type_api.NULLTYPE)
 
     def self_group(self, against=None):
         return self
 
+    @util.memoized_property
+    def _is_implicitly_boolean(self):
+        return self.element._is_implicitly_boolean
+
+    @property
+    def _key_label(self):
+        return self._label
+
     @property
     def _label(self):
-        return getattr(self.element, '_label', None) or self.anon_label
+        return getattr(self.element, "_label", None) or self.anon_label
 
     def _copy_internals(self, clone=_clone, **kw):
         self.element = clone(self.element, **kw)
 
     def get_children(self, **kwargs):
-        return self.element,
+        return (self.element,)
+
+    @property
+    def _proxies(self):
+        if isinstance(self.element, ColumnElement):
+            return [self.element]
+        else:
+            return []
 
     @property
     def _from_objects(self):
@@ -2687,15 +3402,20 @@ class Grouping(ColumnElement):
         return getattr(self.element, attr)
 
     def __getstate__(self):
-        return {'element': self.element, 'type': self.type}
+        return {"element": self.element, "type": self.type}
 
     def __setstate__(self, state):
-        self.element = state['element']
-        self.type = state['type']
+        self.element = state["element"]
+        self.type = state["type"]
 
     def compare(self, other, **kw):
-        return isinstance(other, Grouping) and \
-            self.element.compare(other.element)
+        return isinstance(other, Grouping) and self.element.compare(
+            other.element
+        )
+
+
+RANGE_UNBOUNDED = util.symbol("RANGE_UNBOUNDED")
+RANGE_CURRENT = util.symbol("RANGE_CURRENT")
 
 
 class Over(ColumnElement):
@@ -2708,56 +3428,200 @@ class Over(ColumnElement):
     backends.
 
     """
-    __visit_name__ = 'over'
+
+    __visit_name__ = "over"
 
     order_by = None
     partition_by = None
 
-    def __init__(self, func, partition_by=None, order_by=None):
-        """Produce an :class:`.Over` object against a function.
+    element = None
+    """The underlying expression object to which this :class:`.Over`
+    object refers towards."""
+
+    def __init__(
+        self, element, partition_by=None, order_by=None, range_=None, rows=None
+    ):
+        r"""Produce an :class:`.Over` object against a function.
 
         Used against aggregate or so-called "window" functions,
         for database backends that support window functions.
 
-        E.g.::
+        :func:`_expression.over` is usually called using
+        the :meth:`.FunctionElement.over` method, e.g.::
 
-            from sqlalchemy import over
-            over(func.row_number(), order_by='x')
+            func.row_number().over(order_by=mytable.c.some_column)
 
-        Would produce "ROW_NUMBER() OVER(ORDER BY x)".
+        Would produce::
 
-        :param func: a :class:`.FunctionElement` construct, typically
-         generated by :data:`~.expression.func`.
+            ROW_NUMBER() OVER(ORDER BY some_column)
+
+        Ranges are also possible using the :paramref:`.expression.over.range_`
+        and :paramref:`.expression.over.rows` parameters.  These
+        mutually-exclusive parameters each accept a 2-tuple, which contains
+        a combination of integers and None::
+
+            func.row_number().over(
+                order_by=my_table.c.some_column, range_=(None, 0))
+
+        The above would produce::
+
+            ROW_NUMBER() OVER(ORDER BY some_column
+            RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+
+        A value of ``None`` indicates "unbounded", a
+        value of zero indicates "current row", and negative / positive
+        integers indicate "preceding" and "following":
+
+        * RANGE BETWEEN 5 PRECEDING AND 10 FOLLOWING::
+
+            func.row_number().over(order_by='x', range_=(-5, 10))
+
+        * ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW::
+
+            func.row_number().over(order_by='x', rows=(None, 0))
+
+        * RANGE BETWEEN 2 PRECEDING AND UNBOUNDED FOLLOWING::
+
+            func.row_number().over(order_by='x', range_=(-2, None))
+
+        * RANGE BETWEEN 1 FOLLOWING AND 3 FOLLOWING::
+
+            func.row_number().over(order_by='x', range_=(1, 3))
+
+        .. versionadded:: 1.1 support for RANGE / ROWS within a window
+
+
+        :param element: a :class:`.FunctionElement`, :class:`.WithinGroup`,
+         or other compatible construct.
         :param partition_by: a column element or string, or a list
          of such, that will be used as the PARTITION BY clause
          of the OVER construct.
         :param order_by: a column element or string, or a list
          of such, that will be used as the ORDER BY clause
          of the OVER construct.
+        :param range\_: optional range clause for the window.  This is a
+         tuple value which can contain integer values or ``None``,
+         and will render a RANGE BETWEEN PRECEDING / FOLLOWING clause.
+
+         .. versionadded:: 1.1
+
+        :param rows: optional rows clause for the window.  This is a tuple
+         value which can contain integer values or None, and will render
+         a ROWS BETWEEN PRECEDING / FOLLOWING clause.
+
+         .. versionadded:: 1.1
 
         This function is also available from the :data:`~.expression.func`
         construct itself via the :meth:`.FunctionElement.over` method.
 
-        .. versionadded:: 0.7
+        .. seealso::
+
+            :data:`.expression.func`
+
+            :func:`_expression.within_group`
 
         """
-        self.func = func
+        self.element = element
         if order_by is not None:
-            self.order_by = ClauseList(*util.to_list(order_by))
+            self.order_by = ClauseList(
+                *util.to_list(order_by),
+                _literal_as_text=_literal_as_label_reference
+            )
         if partition_by is not None:
-            self.partition_by = ClauseList(*util.to_list(partition_by))
+            self.partition_by = ClauseList(
+                *util.to_list(partition_by),
+                _literal_as_text=_literal_as_label_reference
+            )
+
+        if range_:
+            self.range_ = self._interpret_range(range_)
+            if rows:
+                raise exc.ArgumentError(
+                    "'range_' and 'rows' are mutually exclusive"
+                )
+            else:
+                self.rows = None
+        elif rows:
+            self.rows = self._interpret_range(rows)
+            self.range_ = None
+        else:
+            self.rows = self.range_ = None
+
+    def __reduce__(self):
+        return self.__class__, (
+            self.element,
+            self.partition_by,
+            self.order_by,
+            self.range_,
+            self.rows,
+        )
+
+    def _interpret_range(self, range_):
+        if not isinstance(range_, tuple) or len(range_) != 2:
+            raise exc.ArgumentError("2-tuple expected for range/rows")
+
+        if range_[0] is None:
+            lower = RANGE_UNBOUNDED
+        else:
+            try:
+                lower = int(range_[0])
+            except ValueError as err:
+                util.raise_(
+                    exc.ArgumentError(
+                        "Integer or None expected for range value"
+                    ),
+                    replace_context=err,
+                )
+            else:
+                if lower == 0:
+                    lower = RANGE_CURRENT
+
+        if range_[1] is None:
+            upper = RANGE_UNBOUNDED
+        else:
+            try:
+                upper = int(range_[1])
+            except ValueError as err:
+                util.raise_(
+                    exc.ArgumentError(
+                        "Integer or None expected for range value"
+                    ),
+                    replace_context=err,
+                )
+            else:
+                if upper == 0:
+                    upper = RANGE_CURRENT
+
+        return lower, upper
+
+    @property
+    @util.deprecated(
+        "1.1",
+        "the :attr:`.Over.func` member of the :class:`.Over` "
+        "class is deprecated and will be removed in a future release.  "
+        "Please refer to the :attr:`.Over.element` attribute.",
+    )
+    def func(self):
+        """the element referred to by this :class:`.Over`
+        clause.
+
+
+        """
+        return self.element
 
     @util.memoized_property
     def type(self):
-        return self.func.type
+        return self.element.type
 
     def get_children(self, **kwargs):
-        return [c for c in
-                (self.func, self.partition_by, self.order_by)
-                if c is not None]
+        return [
+            c
+            for c in (self.element, self.partition_by, self.order_by)
+            if c is not None
+        ]
 
     def _copy_internals(self, clone=_clone, **kw):
-        self.func = clone(self.func, **kw)
+        self.element = clone(self.element, **kw)
         if self.partition_by is not None:
             self.partition_by = clone(self.partition_by, **kw)
         if self.order_by is not None:
@@ -2765,11 +3629,254 @@ class Over(ColumnElement):
 
     @property
     def _from_objects(self):
-        return list(itertools.chain(
-            *[c._from_objects for c in
-                (self.func, self.partition_by, self.order_by)
-              if c is not None]
-        ))
+        return list(
+            itertools.chain(
+                *[
+                    c._from_objects
+                    for c in (self.element, self.partition_by, self.order_by)
+                    if c is not None
+                ]
+            )
+        )
+
+
+class WithinGroup(ColumnElement):
+    """Represent a WITHIN GROUP (ORDER BY) clause.
+
+    This is a special operator against so-called
+    "ordered set aggregate" and "hypothetical
+    set aggregate" functions, including ``percentile_cont()``,
+    ``rank()``, ``dense_rank()``, etc.
+
+    It's supported only by certain database backends, such as PostgreSQL,
+    Oracle and MS SQL Server.
+
+    The :class:`.WithinGroup` construct extracts its type from the
+    method :meth:`.FunctionElement.within_group_type`.  If this returns
+    ``None``, the function's ``.type`` is used.
+
+    """
+
+    __visit_name__ = "withingroup"
+
+    order_by = None
+
+    def __init__(self, element, *order_by):
+        r"""Produce a :class:`.WithinGroup` object against a function.
+
+        Used against so-called "ordered set aggregate" and "hypothetical
+        set aggregate" functions, including :class:`.percentile_cont`,
+        :class:`.rank`, :class:`.dense_rank`, etc.
+
+        :func:`_expression.within_group` is usually called using
+        the :meth:`.FunctionElement.within_group` method, e.g.::
+
+            from sqlalchemy import within_group
+            stmt = select([
+                department.c.id,
+                func.percentile_cont(0.5).within_group(
+                    department.c.salary.desc()
+                )
+            ])
+
+        The above statement would produce SQL similar to
+        ``SELECT department.id, percentile_cont(0.5)
+        WITHIN GROUP (ORDER BY department.salary DESC)``.
+
+        :param element: a :class:`.FunctionElement` construct, typically
+         generated by :data:`~.expression.func`.
+        :param \*order_by: one or more column elements that will be used
+         as the ORDER BY clause of the WITHIN GROUP construct.
+
+        .. versionadded:: 1.1
+
+        .. seealso::
+
+            :data:`.expression.func`
+
+            :func:`_expression.over`
+
+        """
+        self.element = element
+        if order_by is not None:
+            self.order_by = ClauseList(
+                *util.to_list(order_by),
+                _literal_as_text=_literal_as_label_reference
+            )
+
+    def over(self, partition_by=None, order_by=None, range_=None, rows=None):
+        """Produce an OVER clause against this :class:`.WithinGroup`
+        construct.
+
+        This function has the same signature as that of
+        :meth:`.FunctionElement.over`.
+
+        """
+        return Over(
+            self,
+            partition_by=partition_by,
+            order_by=order_by,
+            range_=range_,
+            rows=rows,
+        )
+
+    @util.memoized_property
+    def type(self):
+        wgt = self.element.within_group_type(self)
+        if wgt is not None:
+            return wgt
+        else:
+            return self.element.type
+
+    def get_children(self, **kwargs):
+        return [c for c in (self.element, self.order_by) if c is not None]
+
+    def _copy_internals(self, clone=_clone, **kw):
+        self.element = clone(self.element, **kw)
+        if self.order_by is not None:
+            self.order_by = clone(self.order_by, **kw)
+
+    @property
+    def _from_objects(self):
+        return list(
+            itertools.chain(
+                *[
+                    c._from_objects
+                    for c in (self.element, self.order_by)
+                    if c is not None
+                ]
+            )
+        )
+
+
+class FunctionFilter(ColumnElement):
+    """Represent a function FILTER clause.
+
+    This is a special operator against aggregate and window functions,
+    which controls which rows are passed to it.
+    It's supported only by certain database backends.
+
+    Invocation of :class:`.FunctionFilter` is via
+    :meth:`.FunctionElement.filter`::
+
+        func.count(1).filter(True)
+
+    .. versionadded:: 1.0.0
+
+    .. seealso::
+
+        :meth:`.FunctionElement.filter`
+
+    """
+
+    __visit_name__ = "funcfilter"
+
+    criterion = None
+
+    def __init__(self, func, *criterion):
+        """Produce a :class:`.FunctionFilter` object against a function.
+
+        Used against aggregate and window functions,
+        for database backends that support the "FILTER" clause.
+
+        E.g.::
+
+            from sqlalchemy import funcfilter
+            funcfilter(func.count(1), MyClass.name == 'some name')
+
+        Would produce "COUNT(1) FILTER (WHERE myclass.name = 'some name')".
+
+        This function is also available from the :data:`~.expression.func`
+        construct itself via the :meth:`.FunctionElement.filter` method.
+
+        .. versionadded:: 1.0.0
+
+        .. seealso::
+
+            :meth:`.FunctionElement.filter`
+
+
+        """
+        self.func = func
+        self.filter(*criterion)
+
+    def filter(self, *criterion):
+        """Produce an additional FILTER against the function.
+
+        This method adds additional criteria to the initial criteria
+        set up by :meth:`.FunctionElement.filter`.
+
+        Multiple criteria are joined together at SQL render time
+        via ``AND``.
+
+
+        """
+
+        for criterion in list(criterion):
+            criterion = _expression_literal_as_text(criterion)
+
+            if self.criterion is not None:
+                self.criterion = self.criterion & criterion
+            else:
+                self.criterion = criterion
+
+        return self
+
+    def over(self, partition_by=None, order_by=None, range_=None, rows=None):
+        """Produce an OVER clause against this filtered function.
+
+        Used against aggregate or so-called "window" functions,
+        for database backends that support window functions.
+
+        The expression::
+
+            func.rank().filter(MyClass.y > 5).over(order_by='x')
+
+        is shorthand for::
+
+            from sqlalchemy import over, funcfilter
+            over(funcfilter(func.rank(), MyClass.y > 5), order_by='x')
+
+        See :func:`_expression.over` for a full description.
+
+        """
+        return Over(
+            self,
+            partition_by=partition_by,
+            order_by=order_by,
+            range_=range_,
+            rows=rows,
+        )
+
+    def self_group(self, against=None):
+        if operators.is_precedent(operators.filter_op, against):
+            return Grouping(self)
+        else:
+            return self
+
+    @util.memoized_property
+    def type(self):
+        return self.func.type
+
+    def get_children(self, **kwargs):
+        return [c for c in (self.func, self.criterion) if c is not None]
+
+    def _copy_internals(self, clone=_clone, **kw):
+        self.func = clone(self.func, **kw)
+        if self.criterion is not None:
+            self.criterion = clone(self.criterion, **kw)
+
+    @property
+    def _from_objects(self):
+        return list(
+            itertools.chain(
+                *[
+                    c._from_objects
+                    for c in (self.func, self.criterion)
+                    if c is not None
+                ]
+            )
+        )
 
 
 class Label(ColumnElement):
@@ -2780,31 +3887,39 @@ class Label(ColumnElement):
 
     """
 
-    __visit_name__ = 'label'
+    __visit_name__ = "label"
 
     def __init__(self, name, element, type_=None):
         """Return a :class:`Label` object for the
-        given :class:`.ColumnElement`.
+        given :class:`_expression.ColumnElement`.
 
         A label changes the name of an element in the columns clause of a
         ``SELECT`` statement, typically via the ``AS`` SQL keyword.
 
         This functionality is more conveniently available via the
-        :meth:`.ColumnElement.label` method on :class:`.ColumnElement`.
+        :meth:`_expression.ColumnElement.label` method on
+        :class:`_expression.ColumnElement`.
 
         :param name: label name
 
-        :param obj: a :class:`.ColumnElement`.
+        :param obj: a :class:`_expression.ColumnElement`.
 
         """
+
+        if isinstance(element, Label):
+            self._resolve_label = element._label
+
         while isinstance(element, Label):
             element = element.element
+
         if name:
             self.name = name
+            self._resolve_label = self.name
         else:
             self.name = _anonymous_label(
-                '%%(%d %s)s' % (id(self), getattr(element, 'name', 'anon'))
+                "%%(%d %s)s" % (id(self), getattr(element, "name", "anon"))
             )
+
         self.key = self._label = self._key_label = self.name
         self._element = element
         self._type = type_
@@ -2814,13 +3929,21 @@ class Label(ColumnElement):
         return self.__class__, (self.name, self._element, self._type)
 
     @util.memoized_property
+    def _is_implicitly_boolean(self):
+        return self.element._is_implicitly_boolean
+
+    @util.memoized_property
+    def _allow_label_resolve(self):
+        return self.element._allow_label_resolve
+
+    @property
     def _order_by_label_element(self):
         return self
 
     @util.memoized_property
     def type(self):
         return type_api.to_instance(
-            self._type or getattr(self._element, 'type', None)
+            self._type or getattr(self._element, "type", None)
         )
 
     @util.memoized_property
@@ -2828,11 +3951,15 @@ class Label(ColumnElement):
         return self._element.self_group(against=operators.as_)
 
     def self_group(self, against=None):
-        sub_element = self._element.self_group(against=against)
+        return self._apply_to_inner(self._element.self_group, against=against)
+
+    def _negate(self):
+        return self._apply_to_inner(self._element._negate)
+
+    def _apply_to_inner(self, fn, *arg, **kw):
+        sub_element = fn(*arg, **kw)
         if sub_element is not self._element:
-            return Label(self.name,
-                         sub_element,
-                         type_=self._type)
+            return Label(self.name, sub_element, type_=self._type)
         else:
             return self
 
@@ -2845,18 +3972,29 @@ class Label(ColumnElement):
         return self.element.foreign_keys
 
     def get_children(self, **kwargs):
-        return self.element,
+        return (self.element,)
 
-    def _copy_internals(self, clone=_clone, **kw):
-        self.element = clone(self.element, **kw)
+    def _copy_internals(self, clone=_clone, anonymize_labels=False, **kw):
+        self._element = clone(self._element, **kw)
+        self.__dict__.pop("element", None)
+        self.__dict__.pop("_allow_label_resolve", None)
+        if anonymize_labels:
+            self.name = self._resolve_label = _anonymous_label(
+                "%%(%d %s)s"
+                % (id(self), getattr(self.element, "name", "anon"))
+            )
+            self.key = self._label = self._key_label = self.name
 
     @property
     def _from_objects(self):
         return self.element._from_objects
 
     def _make_proxy(self, selectable, name=None, **kw):
-        e = self.element._make_proxy(selectable,
-                                     name=name if name else self.name)
+        e = self.element._make_proxy(
+            selectable,
+            name=name if name else self.name,
+            disallow_is_literal=True,
+        )
         e._proxies.append(self)
         if self._type is not None:
             e.type = self._type
@@ -2867,10 +4005,10 @@ class ColumnClause(Immutable, ColumnElement):
     """Represents a column expression from any textual string.
 
     The :class:`.ColumnClause`, a lightweight analogue to the
-    :class:`.Column` class, is typically invoked using the
-    :func:`.column` function, as in::
+    :class:`_schema.Column` class, is typically invoked using the
+    :func:`_expression.column` function, as in::
 
-        from sqlalchemy.sql import column
+        from sqlalchemy import column
 
         id, name = column("id"), column("name")
         stmt = select([id, name]).select_from("user")
@@ -2880,26 +4018,32 @@ class ColumnClause(Immutable, ColumnElement):
         SELECT id, name FROM user
 
     :class:`.ColumnClause` is the immediate superclass of the schema-specific
-    :class:`.Column` object.  While the :class:`.Column` class has all the
+    :class:`_schema.Column` object.  While the :class:`_schema.Column`
+    class has all the
     same capabilities as :class:`.ColumnClause`, the :class:`.ColumnClause`
     class is usable by itself in those cases where behavioral requirements
     are limited to simple SQL expression generation.  The object has none of
     the associations with schema-level metadata or with execution-time
-    behavior that :class:`.Column` does, so in that sense is a "lightweight"
-    version of :class:`.Column`.
+    behavior that :class:`_schema.Column` does,
+    so in that sense is a "lightweight"
+    version of :class:`_schema.Column`.
 
-    Full details on :class:`.ColumnClause` usage is at :func:`.column`.
+    Full details on :class:`.ColumnClause` usage is at
+    :func:`_expression.column`.
 
     .. seealso::
 
-        :func:`.column`
+        :func:`_expression.column`
 
-        :class:`.Column`
+        :class:`_schema.Column`
 
     """
-    __visit_name__ = 'column'
+
+    __visit_name__ = "column"
 
     onupdate = default = server_default = server_onupdate = None
+
+    _is_multiparam_column = False
 
     _memoized_property = util.group_expirable_memoized_property()
 
@@ -2907,10 +4051,11 @@ class ColumnClause(Immutable, ColumnElement):
         """Produce a :class:`.ColumnClause` object.
 
         The :class:`.ColumnClause` is a lightweight analogue to the
-        :class:`.Column` class.  The :func:`.column` function can
+        :class:`_schema.Column` class.  The :func:`_expression.column`
+        function can
         be invoked with just a name alone, as in::
 
-            from sqlalchemy.sql import column
+            from sqlalchemy import column
 
             id, name = column("id"), column("name")
             stmt = select([id, name]).select_from("user")
@@ -2919,30 +4064,37 @@ class ColumnClause(Immutable, ColumnElement):
 
             SELECT id, name FROM user
 
-        Once constructed, :func:`.column` may be used like any other SQL
-        expression element such as within :func:`.select` constructs::
+        Once constructed, :func:`_expression.column`
+        may be used like any other SQL
+        expression element such as within :func:`_expression.select`
+        constructs::
 
             from sqlalchemy.sql import column
 
             id, name = column("id"), column("name")
             stmt = select([id, name]).select_from("user")
 
-        The text handled by :func:`.column` is assumed to be handled
+        The text handled by :func:`_expression.column`
+        is assumed to be handled
         like the name of a database column; if the string contains mixed case,
         special characters, or matches a known reserved word on the target
         backend, the column expression will render using the quoting
         behavior determined by the backend.  To produce a textual SQL
         expression that is rendered exactly without any quoting,
-        use :func:`.literal_column` instead, or pass ``True`` as the
-        value of :paramref:`.column.is_literal`.   Additionally, full SQL
-        statements are best handled using the :func:`.text` construct.
+        use :func:`_expression.literal_column` instead,
+        or pass ``True`` as the
+        value of :paramref:`_expression.column.is_literal`.   Additionally,
+        full SQL
+        statements are best handled using the :func:`_expression.text`
+        construct.
 
-        :func:`.column` can be used in a table-like
+        :func:`_expression.column` can be used in a table-like
         fashion by combining it with the :func:`.table` function
-        (which is the lightweight analogue to :class:`.Table`) to produce
+        (which is the lightweight analogue to :class:`_schema.Table`
+        ) to produce
         a working table construct with minimal boilerplate::
 
-            from sqlalchemy.sql import table, column
+            from sqlalchemy import table, column, select
 
             user = table("user",
                     column("id"),
@@ -2952,62 +4104,74 @@ class ColumnClause(Immutable, ColumnElement):
 
             stmt = select([user.c.description]).where(user.c.name == 'wendy')
 
-        A :func:`.column` / :func:`.table` construct like that illustrated
+        A :func:`_expression.column` / :func:`.table`
+        construct like that illustrated
         above can be created in an
         ad-hoc fashion and is not associated with any
-        :class:`.schema.MetaData`, DDL, or events, unlike its
-        :class:`.Table` counterpart.
+        :class:`_schema.MetaData`, DDL, or events, unlike its
+        :class:`_schema.Table` counterpart.
+
+        .. versionchanged:: 1.0.0 :func:`_expression.column` can now
+           be imported from the plain ``sqlalchemy`` namespace like any
+           other SQL element.
 
         :param text: the text of the element.
 
-        :param type: :class:`.types.TypeEngine` object which can associate
+        :param type: :class:`_types.TypeEngine` object which can associate
           this :class:`.ColumnClause` with a type.
 
         :param is_literal: if True, the :class:`.ColumnClause` is assumed to
           be an exact expression that will be delivered to the output with no
           quoting rules applied regardless of case sensitive settings. the
-          :func:`.literal_column()` function essentially invokes
-          :func:`.column` while passing ``is_literal=True``.
+          :func:`_expression.literal_column()` function essentially invokes
+          :func:`_expression.column` while passing ``is_literal=True``.
 
         .. seealso::
 
-            :class:`.Column`
+            :class:`_schema.Column`
 
-            :func:`.literal_column`
+            :func:`_expression.literal_column`
 
             :func:`.table`
 
-            :func:`.text`
+            :func:`_expression.text`
 
             :ref:`sqlexpression_literal_column`
 
         """
-
         self.key = self.name = text
         self.table = _selectable
         self.type = type_api.to_instance(type_)
         self.is_literal = is_literal
 
     def _compare_name_for_result(self, other):
-        if self.is_literal or \
-                self.table is None or self.table._textual or \
-                not hasattr(other, 'proxy_set') or (
-                    isinstance(other, ColumnClause) and
-                    (other.is_literal or
-                     other.table is None or
-                     other.table._textual)
-                ):
-            return (hasattr(other, 'name') and self.name == other.name) or \
-                (hasattr(other, '_label') and self._label == other._label)
+        if (
+            self.is_literal
+            or self.table is None
+            or self.table._textual
+            or not hasattr(other, "proxy_set")
+            or (
+                isinstance(other, ColumnClause)
+                and (
+                    other.is_literal
+                    or other.table is None
+                    or other.table._textual
+                )
+            )
+        ):
+            return (hasattr(other, "name") and self.name == other.name) or (
+                hasattr(other, "_label") and self._label == other._label
+            )
         else:
             return other.proxy_set.intersection(self.proxy_set)
 
     def _get_table(self):
-        return self.__dict__['table']
+        return self.__dict__["table"]
 
     def _set_table(self, table):
         self._memoized_property.expire_instance(self)
-        self.__dict__['table'] = table
+        self.__dict__["table"] = table
+
     table = property(_get_table, _set_table)
 
     @_memoized_property
@@ -3023,7 +4187,7 @@ class ColumnClause(Immutable, ColumnElement):
         if util.py3k:
             return self.name
         else:
-            return self.name.encode('ascii', 'backslashreplace')
+            return self.name.encode("ascii", "backslashreplace")
 
     @_memoized_property
     def _key_label(self):
@@ -3036,16 +4200,23 @@ class ColumnClause(Immutable, ColumnElement):
     def _label(self):
         return self._gen_label(self.name)
 
-    def _gen_label(self, name):
+    @_memoized_property
+    def _render_label_in_columns_clause(self):
+        return self.table is not None
+
+    @property
+    def _ddl_label(self):
+        return self._gen_label(self.name, dedupe_on_key=False)
+
+    def _gen_label(self, name, dedupe_on_key=True):
         t = self.table
 
         if self.is_literal:
             return None
 
         elif t is not None and t.named_with_column:
-            if getattr(t, 'schema', None):
-                label = t.schema.replace('.', '_') + "_" + \
-                    t.name + "_" + name
+            if getattr(t, "schema", None):
+                label = t.schema.replace(".", "_") + "_" + t.name + "_" + name
             else:
                 label = t.name + "_" + name
 
@@ -3061,75 +4232,113 @@ class ColumnClause(Immutable, ColumnElement):
                 assert not isinstance(label, quoted_name)
                 label = quoted_name(label, t.name.quote)
 
-            # ensure the label name doesn't conflict with that
-            # of an existing column
-            if label in t.c:
-                _label = label
-                counter = 1
-                while _label in t.c:
-                    _label = label + "_" + str(counter)
-                    counter += 1
-                label = _label
+            if dedupe_on_key:
+                # ensure the label name doesn't conflict with that of an
+                # existing column.   note that this implies that any Column
+                # must **not** set up its _label before its parent table has
+                # all of its other Column objects set up.  There are several
+                # tables in the test suite which will fail otherwise; example:
+                # table "owner" has columns "name" and "owner_name".  Therefore
+                # column owner.name cannot use the label "owner_name", it has
+                # to be "owner_name_1".
+                if label in t.c:
+                    _label = label
+                    counter = 1
+                    while _label in t.c:
+                        _label = label + "_" + str(counter)
+                        counter += 1
+                    label = _label
 
             return _as_truncated(label)
 
         else:
             return name
 
-    def _bind_param(self, operator, obj):
-        return BindParameter(self.name, obj,
-                             _compared_to_operator=operator,
-                             _compared_to_type=self.type,
-                             unique=True)
+    def _bind_param(self, operator, obj, type_=None):
+        return BindParameter(
+            self.key,
+            obj,
+            _compared_to_operator=operator,
+            _compared_to_type=self.type,
+            type_=type_,
+            unique=True,
+        )
 
-    def _make_proxy(self, selectable, name=None, attach=True,
-                    name_is_truncatable=False, **kw):
-        # propagate the "is_literal" flag only if we are keeping our name,
-        # otherwise its considered to be a label
-        is_literal = self.is_literal and (name is None or name == self.name)
+    def _make_proxy(
+        self,
+        selectable,
+        name=None,
+        attach=True,
+        name_is_truncatable=False,
+        disallow_is_literal=False,
+        **kw
+    ):
+        # the "is_literal" flag normally should never be propagated; a proxied
+        # column is always a SQL identifier and never the actual expression
+        # being evaluated. however, there is a case where the "is_literal" flag
+        # might be used to allow the given identifier to have a fixed quoting
+        # pattern already, so maintain the flag for the proxy unless a
+        # :class:`.Label` object is creating the proxy.  See [ticket:4730].
+        is_literal = (
+            not disallow_is_literal
+            and self.is_literal
+            and (
+                # note this does not accommodate for quoted_name differences
+                # right now
+                name is None
+                or name == self.name
+            )
+        )
         c = self._constructor(
-            _as_truncated(name or self.name) if
-            name_is_truncatable else
-            (name or self.name),
+            _as_truncated(name or self.name)
+            if name_is_truncatable
+            else (name or self.name),
             type_=self.type,
             _selectable=selectable,
-            is_literal=is_literal
+            is_literal=is_literal,
         )
         if name is None:
             c.key = self.key
         c._proxies = [self]
         if selectable._is_clone_of is not None:
-            c._is_clone_of = \
-                selectable._is_clone_of.columns.get(c.key)
+            c._is_clone_of = selectable._is_clone_of.columns.get(c.key)
 
         if attach:
             selectable._columns[c.key] = c
         return c
 
 
+class CollationClause(ColumnElement):
+    __visit_name__ = "collation"
+
+    def __init__(self, collation):
+        self.collation = collation
+
+
 class _IdentifiedClause(Executable, ClauseElement):
 
-    __visit_name__ = 'identified'
-    _execution_options = \
-        Executable._execution_options.union({'autocommit': False})
+    __visit_name__ = "identified"
+    _execution_options = Executable._execution_options.union(
+        {"autocommit": False}
+    )
 
     def __init__(self, ident):
         self.ident = ident
 
 
 class SavepointClause(_IdentifiedClause):
-    __visit_name__ = 'savepoint'
+    __visit_name__ = "savepoint"
 
 
 class RollbackToSavepointClause(_IdentifiedClause):
-    __visit_name__ = 'rollback_to_savepoint'
+    __visit_name__ = "rollback_to_savepoint"
 
 
 class ReleaseSavepointClause(_IdentifiedClause):
-    __visit_name__ = 'release_savepoint'
+    __visit_name__ = "release_savepoint"
 
 
-class quoted_name(util.text_type):
+class quoted_name(util.MemoizedSlots, util.text_type):
     """Represent a SQL identifier combined with quoting preferences.
 
     :class:`.quoted_name` is a Python unicode/str subclass which
@@ -3154,13 +4363,15 @@ class quoted_name(util.text_type):
 
     The :class:`.quoted_name` object is normally created automatically
     when specifying the name for key schema constructs such as
-    :class:`.Table`, :class:`.Column`, and others.  The class can also be
+    :class:`_schema.Table`, :class:`_schema.Column`, and others.
+    The class can also be
     passed explicitly as the name to any function that receives a name which
-    can be quoted.  Such as to use the :meth:`.Engine.has_table` method with
+    can be quoted.  Such as to use the :meth:`_engine.Engine.has_table`
+    method with
     an unconditionally quoted name::
 
-        from sqlaclchemy import create_engine
-        from sqlalchemy.sql.elements import quoted_name
+        from sqlalchemy import create_engine
+        from sqlalchemy.sql import quoted_name
 
         engine = create_engine("oracle+cx_oracle://some_dsn")
         engine.has_table(quoted_name("some_table", True))
@@ -3171,7 +4382,13 @@ class quoted_name(util.text_type):
 
     .. versionadded:: 0.9.0
 
+    .. versionchanged:: 1.2 The :class:`.quoted_name` construct is now
+       importable from ``sqlalchemy.sql``, in addition to the previous
+       location of ``sqlalchemy.sql.elements``.
+
     """
+
+    __slots__ = "quote", "lower", "upper"
 
     def __new__(cls, value, quote):
         if value is None:
@@ -3186,36 +4403,40 @@ class quoted_name(util.text_type):
         ):
             return value
         self = super(quoted_name, cls).__new__(cls, value)
+
         self.quote = quote
         return self
 
     def __reduce__(self):
         return quoted_name, (util.text_type(self), self.quote)
 
-    @util.memoized_instancemethod
-    def lower(self):
+    def _memoized_method_lower(self):
         if self.quote:
             return self
         else:
             return util.text_type(self).lower()
 
-    @util.memoized_instancemethod
-    def upper(self):
+    def _memoized_method_upper(self):
         if self.quote:
             return self
         else:
             return util.text_type(self).upper()
 
     def __repr__(self):
-        backslashed = self.encode('ascii', 'backslashreplace')
-        if not util.py2k:
-            backslashed = backslashed.decode('ascii')
-        return "'%s'" % backslashed
+        if util.py2k:
+            backslashed = self.encode("ascii", "backslashreplace")
+            if not util.py2k:
+                backslashed = backslashed.decode("ascii")
+            return "'%s'" % backslashed
+        else:
+            return str.__repr__(self)
 
 
 class _truncated_label(quoted_name):
     """A unicode subclass used to identify symbolic "
     "names that may require truncation."""
+
+    __slots__ = ()
 
     def __new__(cls, value, quote=None):
         quote = getattr(value, "quote", quote)
@@ -3252,7 +4473,7 @@ class conv(_truncated_label):
     In some situations, such as in migration scripts, we may be rendering
     the above :class:`.CheckConstraint` with a name that's already been
     converted.  In order to make sure the name isn't double-modified, the
-    new name is applied using the :func:`.schema.conv` marker.  We can
+    new name is applied using the :func:`_schema.conv` marker.  We can
     use this explicitly as follows::
 
 
@@ -3262,7 +4483,7 @@ class conv(_truncated_label):
         t = Table('t', m, Column('x', Integer),
                         CheckConstraint('x > 5', name=conv('ck_t_x5')))
 
-    Where above, the :func:`.schema.conv` marker indicates that the constraint
+    Where above, the :func:`_schema.conv` marker indicates that the constraint
     name here is final, and the name will render as ``"ck_t_x5"`` and not
     ``"ck_t_ck_t_x5"``
 
@@ -3274,12 +4495,17 @@ class conv(_truncated_label):
 
     """
 
+    __slots__ = ()
+
 
 class _defer_name(_truncated_label):
-    """mark a name as 'deferred' for the purposes of automated name
+    """Mark a name as 'deferred' for the purposes of automated name
     generation.
 
     """
+
+    __slots__ = ()
+
     def __new__(cls, value):
         if value is None:
             return _NONE_NAME
@@ -3293,7 +4519,10 @@ class _defer_name(_truncated_label):
 
 
 class _defer_none_name(_defer_name):
-    """indicate a 'deferred' name that was ultimately the value None."""
+    """Indicate a 'deferred' name that was ultimately the value None."""
+
+    __slots__ = ()
+
 
 _NONE_NAME = _defer_none_name("_unnamed_")
 
@@ -3308,18 +4537,20 @@ class _anonymous_label(_truncated_label):
     """A unicode subclass used to identify anonymously
     generated names."""
 
+    __slots__ = ()
+
     def __add__(self, other):
         return _anonymous_label(
             quoted_name(
-                util.text_type.__add__(self, util.text_type(other)),
-                self.quote)
+                util.text_type.__add__(self, util.text_type(other)), self.quote
+            )
         )
 
     def __radd__(self, other):
         return _anonymous_label(
             quoted_name(
-                util.text_type.__add__(util.text_type(other), self),
-                self.quote)
+                util.text_type.__add__(util.text_type(other), self), self.quote
+            )
         )
 
     def apply_map(self, map_):
@@ -3332,11 +4563,12 @@ class _anonymous_label(_truncated_label):
 
 
 def _as_truncated(value):
-    """coerce the given value to :class:`._truncated_label`.
+    """Coerce the given value to :class:`._truncated_label`.
 
     Existing :class:`._truncated_label` and
     :class:`._anonymous_label` objects are passed
     unchanged.
+
     """
 
     if isinstance(value, _truncated_label):
@@ -3351,12 +4583,12 @@ def _string_or_unprintable(element):
     else:
         try:
             return str(element)
-        except:
+        except Exception:
             return "unprintable element %r" % element
 
 
 def _expand_cloned(elements):
-    """expand the given set of ClauseElements to be the set of all 'cloned'
+    """Expand the given set of ClauseElements to be the set of all 'cloned'
     predecessors.
 
     """
@@ -3364,7 +4596,7 @@ def _expand_cloned(elements):
 
 
 def _select_iterables(elements):
-    """expand tables into individual columns in the
+    """Expand tables into individual columns in the
     given list of column expressions.
 
     """
@@ -3372,41 +4604,47 @@ def _select_iterables(elements):
 
 
 def _cloned_intersection(a, b):
-    """return the intersection of sets a and b, counting
+    """Return the intersection of sets a and b, counting
     any overlap between 'cloned' predecessors.
 
     The returned set is in terms of the entities present within 'a'.
 
     """
     all_overlap = set(_expand_cloned(a)).intersection(_expand_cloned(b))
-    return set(elem for elem in a
-               if all_overlap.intersection(elem._cloned_set))
+    return set(
+        elem for elem in a if all_overlap.intersection(elem._cloned_set)
+    )
 
 
 def _cloned_difference(a, b):
     all_overlap = set(_expand_cloned(a)).intersection(_expand_cloned(b))
-    return set(elem for elem in a
-               if not all_overlap.intersection(elem._cloned_set))
+    return set(
+        elem for elem in a if not all_overlap.intersection(elem._cloned_set)
+    )
 
 
-def _labeled(element):
-    if not hasattr(element, 'name'):
+@util.dependencies("sqlalchemy.sql.functions")
+def _labeled(functions, element):
+    if not hasattr(element, "name") or isinstance(
+        element, functions.FunctionElement
+    ):
         return element.label(None)
     else:
         return element
 
 
 def _is_column(col):
-    """True if ``col`` is an instance of :class:`.ColumnElement`."""
+    """True if ``col`` is an instance of
+    :class:`_expression.ColumnElement`."""
 
     return isinstance(col, ColumnElement)
 
 
 def _find_columns(clause):
-    """locate Column objects within the given expression."""
+    """Locate Column objects within the given expression."""
 
     cols = util.column_set()
-    traverse(clause, {}, {'column': cols.add})
+    traverse(clause, {}, {"column": cols.add})
     return cols
 
 
@@ -3424,7 +4662,7 @@ def _find_columns(clause):
 def _column_as_key(element):
     if isinstance(element, util.string_types):
         return element
-    if hasattr(element, '__clause_element__'):
+    if hasattr(element, "__clause_element__"):
         element = element.__clause_element__()
     try:
         return element.key
@@ -3433,42 +4671,120 @@ def _column_as_key(element):
 
 
 def _clause_element_as_expr(element):
-    if hasattr(element, '__clause_element__'):
+    if hasattr(element, "__clause_element__"):
         return element.__clause_element__()
     else:
         return element
 
 
-def _literal_as_text(element):
+def _literal_as_label_reference(element):
+    if isinstance(element, util.string_types):
+        return _textual_label_reference(element)
+
+    elif hasattr(element, "__clause_element__"):
+        element = element.__clause_element__()
+
+    return _literal_as_text(element)
+
+
+def _literal_and_labels_as_label_reference(element):
+    if isinstance(element, util.string_types):
+        return _textual_label_reference(element)
+
+    elif hasattr(element, "__clause_element__"):
+        element = element.__clause_element__()
+
+    if (
+        isinstance(element, ColumnElement)
+        and element._order_by_label_element is not None
+    ):
+        return _label_reference(element)
+    else:
+        return _literal_as_text(element)
+
+
+def _expression_literal_as_text(element):
+    return _literal_as_text(element)
+
+
+def _literal_as(element, text_fallback):
     if isinstance(element, Visitable):
         return element
-    elif hasattr(element, '__clause_element__'):
+    elif hasattr(element, "__clause_element__"):
         return element.__clause_element__()
     elif isinstance(element, util.string_types):
-        return TextClause(util.text_type(element))
+        return text_fallback(element)
     elif isinstance(element, (util.NoneType, bool)):
         return _const_expr(element)
     else:
         raise exc.ArgumentError(
-            "SQL expression object or string expected."
+            "SQL expression object expected, got object of type %r "
+            "instead" % type(element)
         )
 
 
+def _literal_as_text(element, allow_coercion_to_text=False):
+    if allow_coercion_to_text:
+        return _literal_as(element, TextClause)
+    else:
+        return _literal_as(element, _no_text_coercion)
+
+
+def _literal_as_column(element):
+    return _literal_as(element, ColumnClause)
+
+
+def _no_column_coercion(element):
+    element = str(element)
+    guess_is_literal = not _guess_straight_column.match(element)
+    raise exc.ArgumentError(
+        "Textual column expression %(column)r should be "
+        "explicitly declared with text(%(column)r), "
+        "or use %(literal_column)s(%(column)r) "
+        "for more specificity"
+        % {
+            "column": util.ellipses_string(element),
+            "literal_column": "literal_column"
+            if guess_is_literal
+            else "column",
+        }
+    )
+
+
+def _no_text_coercion(
+    element, exc_cls=exc.ArgumentError, extra=None, err=None
+):
+    util.raise_(
+        exc_cls(
+            "%(extra)sTextual SQL expression %(expr)r should be "
+            "explicitly declared as text(%(expr)r)"
+            % {
+                "expr": util.ellipses_string(element),
+                "extra": "%s " % extra if extra else "",
+            }
+        ),
+        replace_context=err,
+    )
+
+
 def _no_literals(element):
-    if hasattr(element, '__clause_element__'):
+    if hasattr(element, "__clause_element__"):
         return element.__clause_element__()
     elif not isinstance(element, Visitable):
-        raise exc.ArgumentError("Ambiguous literal: %r.  Use the 'text()' "
-                                "function to indicate a SQL expression "
-                                "literal, or 'literal()' to indicate a "
-                                "bound value." % element)
+        raise exc.ArgumentError(
+            "Ambiguous literal: %r.  Use the 'text()' "
+            "function to indicate a SQL expression "
+            "literal, or 'literal()' to indicate a "
+            "bound value." % (element,)
+        )
     else:
         return element
 
 
 def _is_literal(element):
-    return not isinstance(element, Visitable) and \
-        not hasattr(element, '__clause_element__')
+    return not isinstance(element, Visitable) and not hasattr(
+        element, "__clause_element__"
+    )
 
 
 def _only_column_elements_or_none(element, name):
@@ -3479,17 +4795,18 @@ def _only_column_elements_or_none(element, name):
 
 
 def _only_column_elements(element, name):
-    if hasattr(element, '__clause_element__'):
+    if hasattr(element, "__clause_element__"):
         element = element.__clause_element__()
     if not isinstance(element, ColumnElement):
         raise exc.ArgumentError(
             "Column-based expression object expected for argument "
-            "'%s'; got: '%s', type %s" % (name, element, type(element)))
+            "'%s'; got: '%s', type %s" % (name, element, type(element))
+        )
     return element
 
 
 def _literal_as_binds(element, name=None, type_=None):
-    if hasattr(element, '__clause_element__'):
+    if hasattr(element, "__clause_element__"):
         return element.__clause_element__()
     elif not isinstance(element, Visitable):
         if element is None:
@@ -3500,10 +4817,13 @@ def _literal_as_binds(element, name=None, type_=None):
         return element
 
 
+_guess_straight_column = re.compile(r"^\w\S*$", re.I)
+
+
 def _interpret_as_column_or_from(element):
     if isinstance(element, Visitable):
         return element
-    elif hasattr(element, '__clause_element__'):
+    elif hasattr(element, "__clause_element__"):
         return element.__clause_element__()
 
     insp = inspection.inspect(element, raiseerr=False)
@@ -3513,7 +4833,15 @@ def _interpret_as_column_or_from(element):
     elif hasattr(insp, "selectable"):
         return insp.selectable
 
-    return ColumnClause(str(element), is_literal=True)
+    # be forgiving as this is an extremely common
+    # and known expression
+    if element == "*":
+        guess_is_literal = True
+    elif isinstance(element, (numbers.Number)):
+        return ColumnClause(str(element), is_literal=True)
+    else:
+        _no_column_coercion(element)
+    return ColumnClause(element, is_literal=guess_is_literal)
 
 
 def _const_expr(element):
@@ -3526,9 +4854,7 @@ def _const_expr(element):
     elif element is True:
         return True_()
     else:
-        raise exc.ArgumentError(
-            "Expected None, False, or True"
-        )
+        raise exc.ArgumentError("Expected None, False, or True")
 
 
 def _type_from_args(args):
@@ -3539,18 +4865,15 @@ def _type_from_args(args):
         return type_api.NULLTYPE
 
 
-def _corresponding_column_or_error(fromclause, column,
-                                   require_embedded=False):
-    c = fromclause.corresponding_column(column,
-                                        require_embedded=require_embedded)
+def _corresponding_column_or_error(fromclause, column, require_embedded=False):
+    c = fromclause.corresponding_column(
+        column, require_embedded=require_embedded
+    )
     if c is None:
         raise exc.InvalidRequestError(
             "Given column '%s', attached to table '%s', "
             "failed to locate a corresponding column from table '%s'"
-            %
-            (column,
-             getattr(column, 'table', None),
-             fromclause.description)
+            % (column, getattr(column, "table", None), fromclause.description)
         )
     return c
 
@@ -3559,7 +4882,7 @@ class AnnotatedColumnElement(Annotated):
     def __init__(self, element, values):
         Annotated.__init__(self, element, values)
         ColumnElement.comparator._reset(self)
-        for attr in ('name', 'key', 'table'):
+        for attr in ("name", "key", "table"):
             if self.__dict__.get(attr, False) is None:
                 self.__dict__.pop(attr)
 
@@ -3570,17 +4893,17 @@ class AnnotatedColumnElement(Annotated):
 
     @util.memoized_property
     def name(self):
-        """pull 'name' from parent, if not present"""
+        """Pull 'name' from parent, if not present"""
         return self._Annotated__element.name
 
     @util.memoized_property
     def table(self):
-        """pull 'table' from parent, if not present"""
+        """Pull 'table' from parent, if not present"""
         return self._Annotated__element.table
 
     @util.memoized_property
     def key(self):
-        """pull 'key' from parent, if not present"""
+        """Pull 'key' from parent, if not present"""
         return self._Annotated__element.key
 
     @util.memoized_property
