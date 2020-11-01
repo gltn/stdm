@@ -5,8 +5,8 @@ LOCALES=$2
 
 for LOCALE in ${LOCALES}
 do
-    echo "Processing: ${LOCALE}.ts"
+    echo "Processing: stdm_${LOCALE}.ts"
     # Note we don't use pylupdate with qt .pro file approach as it is flakey
     # about what is made available.
-    $LRELEASE stdm/i18n/${LOCALE}.ts
+    $LRELEASE stdm/i18n/stdm_${LOCALE}.ts
 done
