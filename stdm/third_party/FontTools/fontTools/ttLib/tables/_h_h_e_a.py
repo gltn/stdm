@@ -1,11 +1,15 @@
-import DefaultTable
-import sstruct
+from fontTools.misc.py23 import *
+from fontTools.misc import sstruct
 from fontTools.misc.textTools import safeEval
+from fontTools.misc.fixedTools import (
+	ensureVersionIsLong as fi2ve, versionToFixed as ve2fi)
+from . import DefaultTable
+import math
 
 
 hheaFormat = """
 		>  # big endian
-		tableVersion:           16.16F
+		tableVersion:           L
 		ascent:                 h
 		descent:                h
 		lineGap:                h
@@ -26,54 +30,95 @@ hheaFormat = """
 
 
 class table__h_h_e_a(DefaultTable.DefaultTable):
-	
-	dependencies = ['hmtx', 'glyf']
-	
+
+	# Note: Keep in sync with table__v_h_e_a
+
+	dependencies = ['hmtx', 'glyf', 'CFF ', 'CFF2']
+
+	# OpenType spec renamed these, add aliases for compatibility
+	@property
+	def ascender(self): return self.ascent
+
+	@ascender.setter
+	def ascender(self,value): self.ascent = value
+
+	@property
+	def descender(self): return self.descent
+
+	@descender.setter
+	def descender(self,value): self.descent = value
+
 	def decompile(self, data, ttFont):
 		sstruct.unpack(hheaFormat, data, self)
-	
+
 	def compile(self, ttFont):
-		if ttFont.isLoaded('glyf') and ttFont.recalcBBoxes:
+		if ttFont.recalcBBoxes and (ttFont.isLoaded('glyf') or ttFont.isLoaded('CFF ') or ttFont.isLoaded('CFF2')):
 			self.recalc(ttFont)
+		self.tableVersion = fi2ve(self.tableVersion)
 		return sstruct.pack(hheaFormat, self)
-	
+
 	def recalc(self, ttFont):
-		hmtxTable = ttFont['hmtx']
-		if ttFont.has_key('glyf'):
+		if 'hmtx' in ttFont:
+			hmtxTable = ttFont['hmtx']
+			self.advanceWidthMax = max(adv for adv, _ in hmtxTable.metrics.values())
+
+		boundsWidthDict = {}
+		if 'glyf' in ttFont:
 			glyfTable = ttFont['glyf']
-			advanceWidthMax = -100000    # arbitrary big negative number
-			minLeftSideBearing = 100000  # arbitrary big number
-			minRightSideBearing = 100000 # arbitrary big number
-			xMaxExtent = -100000         # arbitrary big negative number
-			
 			for name in ttFont.getGlyphOrder():
-				width, lsb = hmtxTable[name]
 				g = glyfTable[name]
-				if g.numberOfContours <= 0:
+				if g.numberOfContours == 0:
 					continue
-				advanceWidthMax = max(advanceWidthMax, width)
+				if g.numberOfContours < 0 and not hasattr(g, "xMax"):
+					# Composite glyph without extents set.
+					# Calculate those.
+					g.recalcBounds(glyfTable)
+				boundsWidthDict[name] = g.xMax - g.xMin
+		elif 'CFF ' in ttFont or 'CFF2' in ttFont:
+			if 'CFF ' in ttFont:
+				topDict = ttFont['CFF '].cff.topDictIndex[0]
+			else:
+				topDict = ttFont['CFF2'].cff.topDictIndex[0]
+			charStrings = topDict.CharStrings
+			for name in ttFont.getGlyphOrder():
+				cs = charStrings[name]
+				bounds = cs.calcBounds(charStrings)
+				if bounds is not None:
+					boundsWidthDict[name] = int(
+						math.ceil(bounds[2]) - math.floor(bounds[0]))
+
+		if boundsWidthDict:
+			minLeftSideBearing = float('inf')
+			minRightSideBearing = float('inf')
+			xMaxExtent = -float('inf')
+			for name, boundsWidth in boundsWidthDict.items():
+				advanceWidth, lsb = hmtxTable[name]
+				rsb = advanceWidth - lsb - boundsWidth
+				extent = lsb + boundsWidth
 				minLeftSideBearing = min(minLeftSideBearing, lsb)
-				rsb = width - lsb - (g.xMax - g.xMin)
 				minRightSideBearing = min(minRightSideBearing, rsb)
-				extent = lsb + (g.xMax - g.xMin)
 				xMaxExtent = max(xMaxExtent, extent)
-			self.advanceWidthMax = advanceWidthMax
 			self.minLeftSideBearing = minLeftSideBearing
 			self.minRightSideBearing = minRightSideBearing
 			self.xMaxExtent = xMaxExtent
-		else:
-			# XXX CFF recalc...
-			pass
-	
+
+		else:  # No glyph has outlines.
+			self.minLeftSideBearing = 0
+			self.minRightSideBearing = 0
+			self.xMaxExtent = 0
+
 	def toXML(self, writer, ttFont):
 		formatstring, names, fixes = sstruct.getformat(hheaFormat)
 		for name in names:
 			value = getattr(self, name)
-			if type(value) == type(0L):
-				value = int(value)
+			if name == "tableVersion":
+				value = fi2ve(value)
+				value = "0x%08x" % value
 			writer.simpletag(name, value=value)
 			writer.newline()
-	
-	def fromXML(self, (name, attrs, content), ttFont):
-		setattr(self, name, safeEval(attrs["value"]))
 
+	def fromXML(self, name, attrs, content, ttFont):
+		if name == "tableVersion":
+			setattr(self, name, ve2fi(attrs["value"]))
+			return
+		setattr(self, name, safeEval(attrs["value"]))
