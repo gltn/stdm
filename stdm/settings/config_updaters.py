@@ -407,7 +407,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         sql_min = '1700-01-01'
         sql_max = '7999-12-31'
         # Add validity node and elements
-        for parent_node, str_element in social_tenure_elements.iteritems():
+        for parent_node, str_element in social_tenure_elements.items():
             self.update_layer_display(str_element)
 
             self._add_validity(

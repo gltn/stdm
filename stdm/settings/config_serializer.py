@@ -813,7 +813,7 @@ class SocialTenureSerializer(object):
         sp_unit_tenure_mapping_root_el = document.createElement(
             SocialTenureSerializer.SP_TENURE_MAPPINGS
         )
-        for sp, tvl in social_tenure.spatial_units_tenure.iteritems():
+        for sp, tvl in social_tenure.spatial_units_tenure.items():
             t_mapping_el = document.createElement(
                 SocialTenureSerializer.SP_TENURE_MAPPING
             )
@@ -833,7 +833,7 @@ class SocialTenureSerializer(object):
         custom_attrs_root_el = document.createElement(
             SocialTenureSerializer.T_TYPE_ATTRS
         )
-        for t, ent in social_tenure.custom_attribute_entities.iteritems():
+        for t, ent in social_tenure.custom_attribute_entities.items():
             t_ent_el = document.createElement(
                 SocialTenureSerializer.T_ATTRS_ENTITY
             )

@@ -171,7 +171,7 @@ class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
         profile_tables = self._current_profile.table_names()
 
         #Get templates for the current profile
-        for name, path in templates.iteritems():
+        for name, path in templates.items():
             doc_temp = _DocumentTemplate.build_from_path(name, path)
             if doc_temp.data_source is None:
                 continue

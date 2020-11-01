@@ -78,7 +78,7 @@ class SpatialFieldsConfiguration(object):
         spatialColumnsElement = dom_document.createElement("SpatialFields")
 
         #Get the configured composer style editors for spatial columns
-        for uuid,symbolEditor in composerWrapper.widgetMappings().iteritems():
+        for uuid,symbolEditor in composerWrapper.widgetMappings().items():
             composerItem = composerWrapper.composition().getComposerItemByUuid(uuid)
 
             if not composerItem is None:

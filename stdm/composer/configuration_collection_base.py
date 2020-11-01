@@ -433,7 +433,7 @@ class ConfigurationCollectionBase(object):
         collection_element = dom_document.createElement(cls.collection_root)
 
         # Get configuration items
-        for uuid,item_editor in composer_wrapper.widgetMappings().iteritems():
+        for uuid,item_editor in composer_wrapper.widgetMappings().items():
             composerItem = composer_wrapper.composition().getComposerItemByUuid(uuid)
 
             if not composerItem is None:

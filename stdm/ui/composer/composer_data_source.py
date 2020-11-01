@@ -174,7 +174,7 @@ class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
             self.cboDataSource.clear()
             self.cboDataSource.addItem('')
 
-            for key, value in self._tables.iteritems():
+            for key, value in self._tables.items():
                 if not self._contains_supporting_document(key):
                     self.cboDataSource.addItem(value.lower(), key)
 

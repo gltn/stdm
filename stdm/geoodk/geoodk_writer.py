@@ -413,7 +413,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         if hasattr(entity_values, "id"):
             entity_values.pop("id")
-        for key, val in entity_values.iteritems():
+        for key, val in entity_values.items():
             bind_node = self.create_node("bind")
             bind_node.setAttribute("nodeset",
                                    self.set_model_xpath(key, self.entity_read.default_entity()))
@@ -439,7 +439,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         if self.check_str_supports_multiple_entities():
             str_data['party'] = 'LOOKUP'
             str_data['spatial_unit'] = 'LOOKUP'
-        for str_node, str_data_type in str_data.iteritems():
+        for str_node, str_data_type in str_data.items():
             str_bind_node = self.create_node('bind')
             str_bind_node.setAttribute('nodeset', self.set_model_xpath(str_node,
                                                                        'social_tenure'))
@@ -847,7 +847,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :param value_list:dict
         :return: node
         """
-        for key, val in value_list.iteritems():
+        for key, val in value_list.items():
 
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")

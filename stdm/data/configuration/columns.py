@@ -162,7 +162,7 @@ class BaseColumn(ColumnItem):
         """
         col_types_disp = OrderedDict()
 
-        for ti, col_type in cls.registered_types.iteritems():
+        for ti, col_type in cls.registered_types.items():
             col_types_disp[col_type.display_name()] = col_type
 
         return col_types_disp

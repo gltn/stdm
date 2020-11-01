@@ -791,7 +791,7 @@ class ComposerWrapper(QObject):
         Configure symbol editor controls.
         """
         if not self.stdmDataSourceDock().widget() is None:
-            for item_id, spFieldsMappings in spatial_field_config.spatialFieldsMapping().iteritems():
+            for item_id, spFieldsMappings in spatial_field_config.spatialFieldsMapping().items():
                 mapItem = self.composition().getComposerItemById(item_id)
 
                 if not mapItem is None:
@@ -810,7 +810,7 @@ class ComposerWrapper(QObject):
         if self.stdmDataSourceDock().widget() is None:
             return
 
-        for item_id, photo_config in photo_config_collection.mapping().iteritems():
+        for item_id, photo_config in photo_config_collection.mapping().items():
             pic_item = self.composition().getComposerItemById(item_id)
 
             if not pic_item is None:
@@ -829,7 +829,7 @@ class ComposerWrapper(QObject):
         if self.stdmDataSourceDock().widget() is None:
             return
 
-        for item_id, chart_config in chart_config_collection.mapping().iteritems():
+        for item_id, chart_config in chart_config_collection.mapping().items():
             chart_item = self.composition().getComposerItemById(item_id)
 
             if not chart_item is None:
@@ -847,7 +847,7 @@ class ComposerWrapper(QObject):
         if self.stdmDataSourceDock().widget() is None:
             return
 
-        for item_id, table_config in table_config_collection.mapping().iteritems():
+        for item_id, table_config in table_config_collection.mapping().items():
             table_item = self.composition().getComposerItemById(item_id)
             if table_item is not None:
                 table_editor = ComposerTableDataSourceEditor(self, table_item, self.composerView())
@@ -869,7 +869,7 @@ class ComposerWrapper(QObject):
         if self.stdmDataSourceDock().widget() is None:
             return
 
-        for item_id, qrc_config in qr_code_config_collection.mapping().iteritems():
+        for item_id, qrc_config in qr_code_config_collection.mapping().items():
             qrc_item = self.composition().getComposerItemById(item_id)
 
             if not qrc_item is None:

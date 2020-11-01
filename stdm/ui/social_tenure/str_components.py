@@ -785,7 +785,7 @@ class SupportingDocuments(ComponentUtility):
         self.doc_tab_data()
         self.docs_tab = QTabWidget()
         self.docs_tab_index = OrderedDict()
-        for i, (id, doc) in enumerate(self.doc_types.iteritems()):
+        for i, (id, doc) in enumerate(self.doc_types.items()):
             self.docs_tab_index[doc] = i
             # the tab widget containing the document widget layout
             # and the child of the tab.

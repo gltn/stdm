@@ -525,7 +525,7 @@ class TemplateViewHandler:
         :return: Updated view definition
         :rtype: String
         """
-        for old, new in self.old_new_tables.iteritems():
+        for old, new in self.old_new_tables.items():
 
             text = text.replace(
                 '{}.'.format(old), '{}.'.format(new)
@@ -736,10 +736,10 @@ class TemplateFileUpdater(
         # loop through each attributes
         # in an element
 
-        for key, item in elem.attrib.iteritems():
+        for key, item in elem.attrib.items():
 
             # Replace old columns by new columns if different
-            for old_col, new_col in old_new_cols.iteritems():
+            for old_col, new_col in old_new_cols.items():
                 # if old column name is used,
                 # update to new col
                 if item == old_col:
@@ -750,7 +750,7 @@ class TemplateFileUpdater(
                         old_source, new_source
                     ).replace(old_col, new_col)
             # Replace old_tables by new_tables if different
-            for old_table, new_table in self.old_new_tables.iteritems():
+            for old_table, new_table in self.old_new_tables.items():
                 if old_table != new_table:
                     # if old_col column name is used,
                     # update to new_col col
@@ -904,7 +904,7 @@ class TemplateFileUpdater(
         child_item = self.children_generator(elem)
 
         for child in child_item:
-            for key, value in child.attrib.iteritems():
+            for key, value in child.attrib.items():
                 ref_old_new_cols = None
                 if key == 'table':
                     ref_old_new_cols = self.update_table(

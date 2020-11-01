@@ -716,7 +716,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                         self._tableModel
 
             # Add filter columns
-            for header, info in self._searchable_columns.iteritems():
+            for header, info in self._searchable_columns.items():
                 column_name, index = info['name'], info['header_index']
                 if column_name != 'id':
                     self.cboFilterColumn.addItem(header, info)

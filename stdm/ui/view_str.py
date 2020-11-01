@@ -724,7 +724,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
             self._notif_search_config.clear()
             self._notif_search_config.insertWarningNotification(empty_msg)
 
-        for i, (doc_type_id, doc_obj) in enumerate(source_docs.iteritems()):
+        for i, (doc_type_id, doc_obj) in enumerate(source_docs.items()):
 
             # add tabs, and container and widget for each tab
             tab_title = self._source_doc_manager.doc_type_mapping[doc_type_id]
@@ -962,7 +962,7 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         Apply configuration options.
         """
         # Set filter columns and remove id column
-        for col_name, display_name in self.config.filterColumns.iteritems():
+        for col_name, display_name in self.config.filterColumns.items():
             if col_name != "id":
                 self.cboFilterCol.addItem(
                     display_name, col_name

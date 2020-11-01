@@ -331,7 +331,7 @@ class DocumentGenerator(QObject):
                 use_fixed_scale = False
 
                 # Create memory layers for spatial features and add them to the map
-                for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().iteritems():
+                for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
 
                     map_item = composition.getComposerItemById(mapId)
 

@@ -588,7 +588,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.pgbar.setValue(0)
             self.importlogger.log_action("Import started ...\n")
 
-            for instance_obj, instance_obj_data in mobile_field_data.iteritems():
+            for instance_obj, instance_obj_data in mobile_field_data.items():
 
                 self.importlogger.log_action("File {} ...\n".format(instance_obj))
                 parents_info = []
@@ -599,7 +599,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
                     instance_obj_data[0])
 
-                for entity, entity_data in single_occuring.iteritems():
+                for entity, entity_data in single_occuring.items():
                     print(entity, entity_data)
                     import_status = False
                     if entity in self.relations.keys():
@@ -653,7 +653,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if repeated_entities:
                     # self.log_table_entry(" ========== starting import of repeated tables ============")
                     import_status = False
-                    for repeated_entity, entity_data in repeated_entities.iteritems():
+                    for repeated_entity, entity_data in repeated_entities.items():
                         """We are assuming that the number of repeat table cannot exceed 99"""
                         enum_index = repeated_entity[:2]
                         if enum_index.isdigit():
@@ -687,7 +687,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         entity_relation.process_social_tenure(single_str, self.parent_ids)
 
                     elif len(multiple_str) > 1:
-                        for repeated_entity, entity_data in multiple_str.iteritems():
+                        for repeated_entity, entity_data in multiple_str.items():
                             """We are assuming that the number of repeat str cannot exceed 10"""
                             entity_relation.process_social_tenure(entity_data, self.parent_ids)
 

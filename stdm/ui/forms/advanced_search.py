@@ -191,7 +191,7 @@ class AdvancedSearch(EntityEditorDialog):
     def search_db(self, search_data):
         ent_model_obj = self.ent_model()
         # query = ent_model_obj.queryObject()
-        for attr, value in search_data.iteritems():
+        for attr, value in search_data.items():
             ent_model_obj.queryObject().filter(
                 getattr(self.ent_model(), attr) == value)
 
@@ -206,7 +206,7 @@ class AdvancedSearch(EntityEditorDialog):
         param = []
         if len(search_data) == 0:
             return None
-        for attr, value in search_data.iteritems():
+        for attr, value in search_data.items():
             if isinstance(value, (int, float)):
                 param.append(u'{} = {}'.format(str(attr), str(value)))
             if isinstance(value, str):
@@ -237,7 +237,7 @@ class AdvancedSearch(EntityEditorDialog):
         columns = table_column_names(table_name)
         # Iterate entity column and assert if they exist
         row_id = 0
-        for c, column_widget in self.column_widgets.iteritems():
+        for c, column_widget in self.column_widgets.items():
             if c.name in self.exclude_columns:
                 continue
             if isinstance(c, MultipleSelectColumn):

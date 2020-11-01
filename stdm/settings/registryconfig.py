@@ -273,7 +273,7 @@ class RegistryConfig(object):
         stdmGroup = "/" + self.groupPath
         uSettings.beginGroup(stdmGroup)
 
-        for k, v in settings.iteritems():
+        for k, v in settings.items():
             uSettings.setValue(k, v)
 
         uSettings.endGroup()

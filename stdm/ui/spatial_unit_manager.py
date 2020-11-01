@@ -680,7 +680,7 @@ class SpatialUnitManagerDockWidget(
         :return:
         :rtype:
         """
-        for column, fk_field in fk_fields.iteritems():
+        for column, fk_field in fk_fields.items():
             header = entity.columns[column].header()
 
             f_index = layer.fieldNameIndex(

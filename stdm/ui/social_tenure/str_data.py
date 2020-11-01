@@ -126,7 +126,7 @@ class STRDBHandler():
         no_of_party = len(str_store.party)
         # custom_attr_objs = []
         for j, (party_id, str_type_id) in \
-                enumerate(str_store.str_type.iteritems()):
+                enumerate(str_store.str_type.items()):
             # get all doc model objects
             doc_objs = str_store.supporting_document
             # get the number of unique documents.

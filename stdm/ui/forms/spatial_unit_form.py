@@ -367,7 +367,7 @@ class STDMFieldWidget():
         """
         self.layer = layer
         for col, widget_id_name in \
-                self.widget_mapping.iteritems():
+                self.widget_mapping.items():
             self._set_widget_type(
                 layer, col, widget_id_name[0]
             )
@@ -393,7 +393,7 @@ class STDMFieldWidget():
         mapped_data = OrderedDict(zip(field_names, feature.attributes()))
         col_with_data = []
 
-        for col, value in mapped_data.iteritems():
+        for col, value in mapped_data.items():
             if col == 'id':
                 continue
             if value is None:

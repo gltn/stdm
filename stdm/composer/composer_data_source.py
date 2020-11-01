@@ -187,7 +187,7 @@ class ComposerDataSource(object):
         )
 
         #Get the configured field names
-        for uuid,fieldWidget in composerWrapper.widgetMappings().iteritems():
+        for uuid,fieldWidget in composerWrapper.widgetMappings().items():
             """
             Assert whether the item exists in the composition since the 'itemRemoved' signal cannot be used to 
             delete items from the collection as it only returns a QObject instead of a QgsComposerItem subclass.

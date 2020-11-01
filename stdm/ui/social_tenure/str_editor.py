@@ -318,14 +318,14 @@ class SyncSTREditorData(object):
 
         if len(data_store.custom_tenure) > 0:
             for i, (party_id, model) in \
-                    enumerate(data_store.custom_tenure.iteritems()):
+                    enumerate(data_store.custom_tenure.items()):
                 if party_id in data_store.party.keys():
                     self.editor.add_custom_tenure_info_data(
                         data_store.party[party_id], i, model
                     )
         else:
 
-            for i, (party_id, model) in enumerate(data_store.party.iteritems()):
+            for i, (party_id, model) in enumerate(data_store.party.items()):
                 # if party_id in data_store.party.keys():
                 self.editor.add_custom_tenure_info_data(
                     data_store.party[party_id], i
@@ -411,7 +411,7 @@ class SyncSTREditorData(object):
         self.editor.str_type_component.str_type_table.selectColumn(0)
 
         for i, (party_id, str_type_id) in \
-                enumerate(data_store.str_type.iteritems()):
+                enumerate(data_store.str_type.items()):
             if party_id in data_store.party.keys():
                 self.editor.str_type_component.add_str_type_data(
                     self.editor.spatial_unit,
@@ -897,7 +897,7 @@ class ValidateSTREditor(object):
         """
         stores = self.editor.data_store
         errors = []
-        for str_number, store in stores.iteritems():
+        for str_number, store in stores.items():
             spatial_unit = store.current_spatial_unit
             custom_attr_entity = self.editor.social_tenure.spu_custom_attribute_entity(
                 spatial_unit
@@ -907,7 +907,7 @@ class ValidateSTREditor(object):
 
             if len(custom_attr_entity.columns) < 4:
                 continue
-            for i, (party_id, custom_model) in enumerate(store.custom_tenure.iteritems()):
+            for i, (party_id, custom_model) in enumerate(store.custom_tenure.items()):
                 if custom_model is not None:
                     if (str_number, i) in \
                             self.editor.custom_tenure_info_component. \
@@ -1131,7 +1131,7 @@ class STREditor(QDialog, Ui_STREditor):
         children[self.supporting_doc_text] = 'document.png'
         children[self.validity_period_text] = 'period.png'
         children[self.custom_tenure_info_text] = 'custom_tenure.png'
-        for name, icon in children.iteritems():
+        for name, icon in children.items():
             item = self.child_item(str_root, name, icon)
             self.str_items['%s%s' % (name, self.str_number)] = item
 
@@ -2290,7 +2290,7 @@ class EditSTREditor(STREditor):
             if len(doc) < 1:
                 doc_item.setEnabled(True)
                 return
-            for doc_id, doc_objs in doc.iteritems():
+            for doc_id, doc_objs in doc.items():
 
                 index = self.doc_type_cbo.findData(doc_id)
                 doc_text = self.doc_type_cbo.itemText(index)

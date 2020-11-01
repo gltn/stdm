@@ -575,7 +575,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.upgradeButton.setEnabled(False)
 
     def populate_sort_order(self):
-        for k, v in self.sort_order.iteritems():
+        for k, v in self.sort_order.items():
             self.cbSortOrder.addItem(v, k)
 
     def set_current_sort_order(self, data):

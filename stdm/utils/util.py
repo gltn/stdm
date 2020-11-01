@@ -449,7 +449,7 @@ def model_obj_display_data(model, entity, profile):
     """
     model_display = OrderedDict()
     model_dic = model.__dict__
-    for key, value in model_dic.iteritems():
+    for key, value in model_dic.items():
         if key in entity_display_columns(entity) and key != 'id':
             value = lookup_id_to_value(profile, key, value)
             model_display[format_name(key)] = value
@@ -933,7 +933,7 @@ def enable_drag_sort(mv_widget):
             except Exception:
                 colCount = mv_widget.columnCount()
 
-            for src_row, tgt_row in sorted(row_mapping.iteritems()):
+            for src_row, tgt_row in sorted(row_mapping.items()):
                 for col in range(0, colCount):
                     try:
 
@@ -1029,7 +1029,7 @@ def enable_drag_sort_widgets(qt_widget):
             # except Exception:
             #     colCount = qt_widget.columnCount()
 
-            # for src_row, tgt_row in sorted(row_mapping.iteritems()):
+            # for src_row, tgt_row in sorted(row_mapping.items()):
             #     for col in range(0, colCount):
             #         try:
             #
@@ -1041,7 +1041,7 @@ def enable_drag_sort_widgets(qt_widget):
             #                 )
             #             )
             #         except Exception:
-            for src_row, tgt_row in sorted(row_mapping.iteritems()):
+            for src_row, tgt_row in sorted(row_mapping.items()):
                 tgt_widget_item = qt_widget.item(tgt_row)
                 tgt_widget = qt_widget.itemWidget(tgt_widget_item)
                 qt_widget.setItemWidget(tgt_widget_item, tgt_widget)
@@ -1160,7 +1160,7 @@ def profile_and_user_views(profile, check_party=False):
 
     social_tenure = profile.social_tenure
 
-    for view, entity in social_tenure.views.iteritems():
+    for view, entity in social_tenure.views.items():
 
         # For party views, if check party is true, add party views.
         # If multi-party is false. Otherwise, add all party views - this is not

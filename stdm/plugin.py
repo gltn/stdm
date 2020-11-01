@@ -862,7 +862,7 @@ class STDMQGISLoader(object):
 
                 profile_details = {}
                 # upgrade profile for each profiles
-                for profile, tables in profile_details_dict.iteritems():
+                for profile, tables in profile_details_dict.items():
                     profile_details[profile] = tables
                     upgrade_template = TemplateFileUpdater(
                         self.plugin_dir, profile_details, self.progress
@@ -1134,7 +1134,7 @@ class STDMQGISLoader(object):
         for attrs in self.user_entities():
             self._moduleItems[attrs[2]] = attrs[0]
 
-        for k, v in self._moduleItems.iteritems():
+        for k, v in self._moduleItems.items():
             moduleCntGroup = self._create_table_content_group(
                 k, username, 'table.png'
             )
@@ -1243,7 +1243,7 @@ class STDMQGISLoader(object):
         # Get templates for the current profile
         templates = documentTemplates()
         profile_tables = self.current_profile.table_names()
-        for name, path in templates.iteritems():
+        for name, path in templates.items():
             doc_temp = _DocumentTemplate.build_from_path(name, path)
             if doc_temp.data_source is None:
                 continue
