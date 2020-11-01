@@ -1,7 +1,7 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/pdfgen/pathobject.py
-__version__=''' $Id$ '''
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/pdfgen/pathobject.py
+__version__='3.3.0'
 __doc__="""
 PDFPathObject is an efficient way to draw paths on a Canvas. Do not
 instantiate directly, obtain one from the Canvas instead.
@@ -11,9 +11,8 @@ Progress Reports:
 
 """
 
-import string
 from reportlab.pdfgen import pdfgeom
-from reportlab.lib.utils import fp_str
+from reportlab.lib.rl_accel import fp_str
 
 
 class PDFPathObject:
@@ -42,7 +41,7 @@ class PDFPathObject:
 
     def getCode(self):
         "pack onto one line; used internally"
-        return string.join(self._code, ' ')
+        return ' '.join(self._code)
 
     def moveTo(self, x, y):
         self._code_append('%s m' % fp_str(x,y))

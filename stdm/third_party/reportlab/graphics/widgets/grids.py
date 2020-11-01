@@ -1,7 +1,7 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/graphics/widgets/grids.py
-__version__=''' $Id$ '''
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/graphics/widgets/grids.py
+__version__='3.3.0'
 
 from reportlab.lib import colors
 from reportlab.lib.validators import isNumber, isColorOrNone, isBoolean, isListOfNumbers, OneOf, isListOfColors, isNumberOrNone
@@ -374,7 +374,7 @@ class ShadedRect(Widget):
         numShades = self.numShades
         if self.cylinderMode:
             if not numShades%2: numShades = numShades+1
-            halfNumShades = (numShades-1)/2 + 1
+            halfNumShades = int((numShades-1)/2) + 1
         num = float(numShades) # must make it float!
         vertical = self.orientation == 'vertical'
         if vertical:
@@ -452,10 +452,10 @@ def rotatedEnclosingRect(P, angle, rect):
     def orthogonalAxisDist(xy,s=s,c=c,x0=x0,y0=y0):
         x,y = xy
         return (c*(y-y0)+s*(x-x0))
-    L = map(parallelAxisDist,P)
+    L = list(map(parallelAxisDist,P))
     L.sort()
     a0, a1 = L[0], L[-1]
-    L = map(orthogonalAxisDist,P)
+    L = list(map(orthogonalAxisDist,P))
     L.sort()
     b0, b1 = L[0], L[-1]
     rect.x, rect.width = a0, a1-a0
@@ -485,8 +485,8 @@ class ShadedPolygon(Widget,LineShape):
 
     def draw(self):
         P = self.points
-        P = map(lambda i, P=P:(P[i],P[i+1]),xrange(0,len(P),2))
-        path = definePath([('moveTo',)+P[0]]+map(lambda x: ('lineTo',)+x,P[1:])+['closePath'],
+        P = list(map(lambda i, P=P:(P[i],P[i+1]),range(0,len(P),2)))
+        path = definePath([('moveTo',)+P[0]]+[('lineTo',)+x for x in P[1:]]+['closePath'],
             fillColor=None, strokeColor=None)
         path.isClipPath = 1
         g = Group()

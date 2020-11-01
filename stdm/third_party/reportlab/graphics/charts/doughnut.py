@@ -1,9 +1,9 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/graphics/charts/doughnut.py
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/graphics/charts/doughnut.py
 # doughnut chart
 
-__version__=''' $Id$ '''
+__version__='3.3.0'
 __doc__="""Doughnut chart
 
 Produces a circular chart like the doughnut charts produced by Excel.
@@ -13,7 +13,6 @@ Can handle multiple series (which produce concentric 'rings' in the chart).
 
 import copy
 from math import sin, cos, pi
-from types import ListType, TupleType
 from reportlab.lib import colors
 from reportlab.lib.validators import isColor, isNumber, isListOfNumbersOrNone,\
                                     isListOfNumbers, isColorOrNone, isString,\
@@ -21,7 +20,8 @@ from reportlab.lib.validators import isColor, isNumber, isListOfNumbersOrNone,\
                                     isBoolean, isListOfColors,\
                                     isNoneOrListOfNoneOrStrings,\
                                     isNoneOrListOfNoneOrNumbers,\
-                                    isNumberOrNone
+                                    isNumberOrNone, isListOfNoneOrNumber,\
+                                    isListOfListOfNoneOrNumber, EitherOr
 from reportlab.lib.attrmap import *
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.graphics.shapes import Group, Drawing, Line, Rect, Polygon, Ellipse, \
@@ -30,6 +30,8 @@ from reportlab.graphics.widgetbase import Widget, TypedPropertyCollection, PropH
 from reportlab.graphics.charts.piecharts import AbstractPieChart, WedgeProperties, _addWedgeLabel, fixLabelOverlaps
 from reportlab.graphics.charts.textlabels import Label
 from reportlab.graphics.widgets.markers import Marker
+from functools import reduce
+from reportlab import xrange
 
 class SectorProperties(WedgeProperties):
     """This holds descriptive information about the sectors in a doughnut chart.
@@ -48,7 +50,7 @@ class Doughnut(AbstractPieChart):
         y = AttrMapValue(isNumber, desc='Y position of the chart within its container.'),
         width = AttrMapValue(isNumber, desc='width of doughnut bounding box. Need not be same as width.'),
         height = AttrMapValue(isNumber, desc='height of doughnut bounding box.  Need not be same as height.'),
-        data = AttrMapValue(None, desc='list of numbers defining sector sizes; need not sum to 1'),
+        data = AttrMapValue(EitherOr((isListOfNoneOrNumber,isListOfListOfNoneOrNumber)), desc='list of numbers defining sector sizes; need not sum to 1'),
         labels = AttrMapValue(isListOfStringsOrNone, desc="optional list of labels to use for each data point"),
         startAngle = AttrMapValue(isNumber, desc="angle of first slice; like the compass, 0 is due North"),
         direction = AttrMapValue(OneOf('clockwise', 'anticlockwise'), desc="'clockwise' or 'anticlockwise'"),
@@ -56,7 +58,9 @@ class Doughnut(AbstractPieChart):
         simpleLabels = AttrMapValue(isBoolean, desc="If true(default) use String not super duper WedgeLabel"),
         # advanced usage
         checkLabelOverlap = AttrMapValue(isBoolean, desc="If true check and attempt to fix\n standard label overlaps(default off)",advancedUsage=1),
-        sideLabels = AttrMapValue(isBoolean, desc="If true attempt to make chart with labels along side and pointers", advancedUsage=1)
+        sideLabels = AttrMapValue(isBoolean, desc="If true attempt to make chart with labels along side and pointers", advancedUsage=1),
+        innerRadiusFraction = AttrMapValue(isNumberOrNone,
+                desc='None or the fraction of the radius to be used as the inner hole.\nIf not a suitable default will be used.'),
         )
 
     def __init__(self):
@@ -71,6 +75,7 @@ class Doughnut(AbstractPieChart):
         self.simpleLabels = 1
         self.checkLabelOverlap = 0
         self.sideLabels = 0
+        self.innerRadiusFraction = None
 
         self.slices = TypedPropertyCollection(SectorProperties)
         self.slices[0].fillColor = colors.darkcyan
@@ -113,21 +118,23 @@ class Doughnut(AbstractPieChart):
     def normalizeData(self, data=None):
         from operator import add
         sum = float(reduce(add,data,0))
-        return abs(sum)>=1e-8 and map(lambda x,f=360./sum: f*x, data) or len(data)*[0]
+        return abs(sum)>=1e-8 and list(map(lambda x,f=360./sum: f*x, data)) or len(data)*[0]
 
     def makeSectors(self):
         # normalize slice data
-        if type(self.data) in (ListType, TupleType) and type(self.data[0]) in (ListType, TupleType):
+        data = self.data
+        multi = isListOfListOfNoneOrNumber(data)
+        if multi:
             #it's a nested list, more than one sequence
             normData = []
             n = []
-            for l in self.data:
+            for l in data:
                 t = self.normalizeData(l)
                 normData.append(t)
                 n.append(len(t))
             self._seriesCount = max(n)
         else:
-            normData = self.normalizeData(self.data)
+            normData = self.normalizeData(data)
             n = len(normData)
             self._seriesCount = n
         
@@ -136,18 +143,18 @@ class Doughnut(AbstractPieChart):
         L = []
         L_add = L.append
         
-        if self.labels is None:
+        labels = self.labels
+        if labels is None:
             labels = []
-            if type(n) not in (ListType,TupleType):
+            if not multi:
                 labels = [''] * n
             else:
                 for m in n:
                     labels = list(labels) + [''] * m
         else:
-            labels = self.labels
             #there's no point in raising errors for less than enough labels if
             #we silently create all for the extreme case of no labels.
-            if type(n) not in (ListType,TupleType):
+            if not multi:
                 i = n-len(labels)
                 if i>0:
                     labels = list(labels) + [''] * i
@@ -158,6 +165,7 @@ class Doughnut(AbstractPieChart):
                 i = tlab-len(labels)
                 if i>0:
                     labels = list(labels) + [''] * i
+        self.labels = labels
 
         xradius = self.width/2.0
         yradius = self.height/2.0
@@ -173,13 +181,24 @@ class Doughnut(AbstractPieChart):
         
         startAngle = self.startAngle #% 360
         styleCount = len(self.slices)
-        if type(self.data[0]) in (ListType, TupleType):
+        irf = self.innerRadiusFraction
+
+        if multi:
             #multi-series doughnut
-            iradius = (self.height/5.0)/len(self.data)
+            ndata = len(data)
+            if irf is None:
+                yir = (yradius/2.5)/ndata
+                xir = (xradius/2.5)/ndata
+            else:
+                yir = yradius*irf
+                xir = xradius*irf
+            ydr = (yradius-yir)/ndata
+            xdr = (xradius-xir)/ndata
             for sn,series in enumerate(normData):
                 for i,angle in enumerate(series):
                     endAngle = (startAngle + (angle * whichWay)) #% 360
-                    if abs(startAngle-endAngle)<1e-5:
+                    aa = abs(startAngle-endAngle)
+                    if aa<1e-5:
                         startAngle = endAngle
                         continue
                     if startAngle < endAngle:
@@ -192,7 +211,7 @@ class Doughnut(AbstractPieChart):
 
                     #if we didn't use %stylecount here we'd end up with the later sectors
                     #all having the default style
-                    sectorStyle = self.slices[i%styleCount]
+                    sectorStyle = self.slices[sn,i%styleCount]
 
                     # is it a popout?
                     cx, cy = centerx, centery
@@ -204,19 +223,52 @@ class Doughnut(AbstractPieChart):
                         cx = centerx + popdistance * cos(aveAngleRadians)
                         cy = centery + popdistance * sin(aveAngleRadians)
 
-                    if type(n) in (ListType,TupleType):
-                        theSector = Wedge(cx, cy, xradius+(sn*iradius)-iradius, a1, a2, yradius=yradius+(sn*iradius)-iradius, radius1=yradius+(sn*iradius)-(2*iradius))
+                    yr1 = yir+sn*ydr
+                    yr = yr1 + ydr
+                    xr1 = xir+sn*xdr
+                    xr = xr1 + xdr
+                    if len(series) > 1:
+                        theSector = Wedge(cx, cy, xr, a1, a2, yradius=yr, radius1=xr1, yradius1=yr1)
                     else:
-                        theSector = Wedge(cx, cy, xradius, a1, a2, yradius=yradius, radius1=iradius)
+                        theSector = Wedge(cx, cy, xr, a1, a2, yradius=yr, radius1=xr1, yradius1=yr1, annular=True)
 
                     theSector.fillColor = sectorStyle.fillColor
                     theSector.strokeColor = sectorStyle.strokeColor
                     theSector.strokeWidth = sectorStyle.strokeWidth
                     theSector.strokeDashArray = sectorStyle.strokeDashArray
 
+                    shader = sectorStyle.shadingKind
+                    if shader:
+                        nshades = aa / float(sectorStyle.shadingAngle)
+                        if nshades > 1:
+                            shader = colors.Whiter if shader=='lighten' else colors.Blacker
+                            nshades = 1+int(nshades)
+                            shadingAmount = 1-sectorStyle.shadingAmount
+                            if sectorStyle.shadingDirection=='normal':
+                                dsh = (1-shadingAmount)/float(nshades-1)
+                                shf1 = shadingAmount
+                            else:
+                                dsh = (shadingAmount-1)/float(nshades-1)
+                                shf1 = 1
+                            shda = (a2-a1)/float(nshades)
+                            shsc = sectorStyle.fillColor
+                            theSector.fillColor = None
+                            for ish in xrange(nshades):
+                                sha1 = a1 + ish*shda
+                                sha2 = a1 + (ish+1)*shda
+                                shc = shader(shsc,shf1 + dsh*ish)
+                                if len(series)>1:
+                                    shSector = Wedge(cx, cy, xr, sha1, sha2, yradius=yr, radius1=xr1, yradius1=yr1)
+                                else:
+                                    shSector = Wedge(cx, cy, xr, sha1, sha2, yradius=yr, radius1=xr1, yradius1=yr1, annular=True)
+                                shSector.fillColor = shc
+                                shSector.strokeColor = None
+                                shSector.strokeWidth = 0
+                                g.add(shSector)
+
                     g.add(theSector)
 
-                    if sn == 0:
+                    if sn == 0 and sectorStyle.visible and sectorStyle.label_visible:
                         text = self.getSeriesName(i,'')
                         if text:
                             averageAngle = (a1+a2)/2.0
@@ -236,10 +288,16 @@ class Doughnut(AbstractPieChart):
 
         else:
             #single series doughnut
-            iradius = self.height/5.0
+            if irf is None:
+                yir = yradius/2.5
+                xir = xradius/2.5
+            else:
+                yir = yradius*irf
+                xir = xradius*irf
             for i,angle in enumerate(normData):
                 endAngle = (startAngle + (angle * whichWay)) #% 360
-                if abs(startAngle-endAngle)<1e-5:
+                aa = abs(startAngle-endAngle)
+                if aa<1e-5:
                     startAngle = endAngle
                     continue
                 if startAngle < endAngle:
@@ -265,19 +323,48 @@ class Doughnut(AbstractPieChart):
                     cy = centery + popdistance * sin(aveAngleRadians)
 
                 if n > 1:
-                    theSector = Wedge(cx, cy, xradius, a1, a2, yradius=yradius, radius1=iradius)
+                    theSector = Wedge(cx, cy, xradius, a1, a2, yradius=yradius, radius1=xir, yradius1=yir)
                 elif n==1:
-                    theSector = Wedge(cx, cy, xradius, a1, a2, yradius=yradius, iradius=iradius)
+                    theSector = Wedge(cx, cy, xradius, a1, a2, yradius=yradius, radius1=xir, yradius1=yir, annular=True)
 
                 theSector.fillColor = sectorStyle.fillColor
                 theSector.strokeColor = sectorStyle.strokeColor
                 theSector.strokeWidth = sectorStyle.strokeWidth
                 theSector.strokeDashArray = sectorStyle.strokeDashArray
 
+                shader = sectorStyle.shadingKind
+                if shader:
+                    nshades = aa / float(sectorStyle.shadingAngle)
+                    if nshades > 1:
+                        shader = colors.Whiter if shader=='lighten' else colors.Blacker
+                        nshades = 1+int(nshades)
+                        shadingAmount = 1-sectorStyle.shadingAmount
+                        if sectorStyle.shadingDirection=='normal':
+                            dsh = (1-shadingAmount)/float(nshades-1)
+                            shf1 = shadingAmount
+                        else:
+                            dsh = (shadingAmount-1)/float(nshades-1)
+                            shf1 = 1
+                        shda = (a2-a1)/float(nshades)
+                        shsc = sectorStyle.fillColor
+                        theSector.fillColor = None
+                        for ish in xrange(nshades):
+                            sha1 = a1 + ish*shda
+                            sha2 = a1 + (ish+1)*shda
+                            shc = shader(shsc,shf1 + dsh*ish)
+                            if n > 1:
+                                shSector = Wedge(cx, cy, xradius, sha1, sha2, yradius=yradius, radius1=xir, yradius1=yir)
+                            elif n==1:
+                                shSector = Wedge(cx, cy, xradius, sha1, sha2, yradius=yradius, radius1=xir, yradius1=yir, annular=True)
+                            shSector.fillColor = shc
+                            shSector.strokeColor = None
+                            shSector.strokeWidth = 0
+                            g.add(shSector)
+
                 g.add(theSector)
 
                 # now draw a label
-                if labels[i] != "":
+                if labels[i] and sectorStyle.visible and sectorStyle.label_visible:
                     averageAngle = (a1+a2)/2.0
                     aveAngleRadians = averageAngle*pi/180.0
                     labelRadius = sectorStyle.labelRadius

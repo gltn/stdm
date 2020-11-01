@@ -1,6 +1,6 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2019
 #see license.txt for license details
-__version__=''' $Id$ '''
+__version__='3.4.22'
 
 #modification of users/robin/ttflist.py.
 __doc__="""This provides some general-purpose tools for finding fonts.
@@ -58,12 +58,24 @@ of non-Python applications.
 Future plans might include using this to auto-register fonts; and making it
 update itself smartly on repeated instantiation.
 """
-import sys, time, os, cPickle, tempfile
+import sys, os, tempfile
+from reportlab.lib.utils import pickle, asNative as _asNative
 from xml.sax.saxutils import quoteattr
+from reportlab.lib.utils import asBytes
+try:
+    from time import process_time as clock
+except ImportError:
+    from time import clock
 try:
     from hashlib import md5
 except ImportError:
     from md5 import md5
+
+def asNative(s):
+    try:
+        return _asNative(s)
+    except:
+        return _asNative(s,enc='latin-1')
 
 EXTENSIONS = ['.ttf','.ttc','.otf','.pfb','.pfa']
 
@@ -105,7 +117,7 @@ class FontDescriptor:
     def getTag(self):
         "Return an XML tag representation"
         attrs = []
-        for (k, v) in self.__dict__.items():
+        for k, v in self.__dict__.items():
             if k not in ['timeModified']:
                 if v:
                     attrs.append('%s=%s' % (k, quoteattr(str(v))))
@@ -113,11 +125,16 @@ class FontDescriptor:
 
 from reportlab.lib.utils import rl_isdir, rl_isfile, rl_listdir, rl_getmtime
 class FontFinder:
-    def __init__(self, dirs=[], useCache=True, validate=False):
+    def __init__(self, dirs=[], useCache=True, validate=False, recur=False, fsEncoding=None, verbose=0):
         self.useCache = useCache
         self.validate = validate
+        if fsEncoding is None:
+            fsEncoding = sys.getfilesystemencoding()
+        self._fsEncoding = fsEncoding or 'utf8'
 
-        self._dirs = set(dirs)
+        self._dirs = set()
+        self._recur = recur
+        self.addDirectories(dirs)
         self._fonts = []
 
         self._skippedFiles = [] #list of filenames we did not handle
@@ -126,29 +143,35 @@ class FontFinder:
         self._fontsByName = {}
         self._fontsByFamily = {}
         self._fontsByFamilyBoldItalic = {}   #indexed by bold, italic
+        self.verbose = verbose
 
-    def addDirectory(self, dirName):
+    def addDirectory(self, dirName, recur=None):
         #aesthetics - if there are 2 copies of a font, should the first or last
         #be picked up?  might need reversing
         if rl_isdir(dirName):
             self._dirs.add(dirName)
+            if recur if recur is not None else self._recur:
+                for r,D,F in os.walk(dirName):
+                    for d in D:
+                        self._dirs.add(os.path.join(r,d))
 
-    def addDirectories(self, dirNames):
+    def addDirectories(self, dirNames,recur=None):
         for dirName in dirNames:
-            self.addDirectory(dirName)
+            self.addDirectory(dirName,recur=recur)
 
     def getFamilyNames(self):
         "Returns a list of the distinct font families found"
-
         if not self._fontsByFamily:
             fonts = self._fonts
             for font in fonts:
                 fam = font.familyName
+                if fam is None: continue
                 if fam in self._fontsByFamily:
                     self._fontsByFamily[fam].append(font)
                 else:
                     self._fontsByFamily[fam] = [font]
-        names = self._fontsByFamily.keys()
+        fsEncoding = self._fsEncoding
+        names = list(asBytes(_,enc=fsEncoding) for _ in self._fontsByFamily.keys())
         names.sort()
         return names
 
@@ -163,10 +186,10 @@ class FontFinder:
         lines.append('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
         lines.append("<font_families>")
         for dirName in self._dirs:
-            lines.append("    <directory name=%s/>" % quoteattr(dirName))
+            lines.append("    <directory name=%s/>" % quoteattr(asNative(dirName)))
         for familyName in self.getFamilyNames():
             if familyName:  #skip null case
-                lines.append('    <family name=%s>' % quoteattr(familyName))
+                lines.append('    <family name=%s>' % quoteattr(asNative(familyName)))
                 for font in self.getFontsInFamily(familyName):
                     lines.append('        ' + font.getTag())
                 lines.append('    </family>')
@@ -178,7 +201,7 @@ class FontFinder:
         selected = []
         for font in self._fonts:
             OK = True
-            for (k, v) in kwds.items():
+            for k, v in kwds.items():
                 if getattr(font, k, None) != v:
                     OK = False
             if OK:
@@ -199,24 +222,26 @@ class FontFinder:
     def _getCacheFileName(self):
         """Base this on the directories...same set of directories
         should give same cache"""
-        hash = md5(''.join(self._dirs)).hexdigest()
+        fsEncoding = self._fsEncoding
+        hash = md5(b''.join(asBytes(_,enc=fsEncoding) for _ in sorted(self._dirs))).hexdigest()
         from reportlab.lib.utils import get_rl_tempfile
         fn = get_rl_tempfile('fonts_%s.dat' % hash)
         return fn
 
     def save(self, fileName):
-        f = open(fileName, 'w')
-        cPickle.dump(self, f)
+        f = open(fileName, 'wb')
+        pickle.dump(self, f)
         f.close()
 
     def load(self, fileName):
-        f = open(fileName, 'r')
-        finder2 = cPickle.load(f)
+        f = open(fileName, 'rb')
+        finder2 = pickle.load(f)
         f.close()
         self.__dict__.update(finder2.__dict__)
 
     def search(self):
-        started = time.clock()
+        if self.verbose:
+            started = clock()
         if not self._dirs:
             raise ValueError("Font search path is empty!  Please specify search directories using addDirectory or addDirectories")
 
@@ -225,21 +250,29 @@ class FontFinder:
             if rl_isfile(cfn):
                 try:
                     self.load(cfn)
-                    #print "loaded cached file with %d fonts (%s)" % (len(self._fonts), cfn)
+                    if self.verbose>=3:
+                        print("loaded cached file with %d fonts (%s)" % (len(self._fonts), cfn))
                     return
                 except:
                     pass  #pickle load failed.  Ho hum, maybe it's an old pickle.  Better rebuild it.
 
         from stat import ST_MTIME
         for dirName in self._dirs:
-            fileNames = rl_listdir(dirName)
+            try:
+                fileNames = rl_listdir(dirName)
+            except:
+                continue
             for fileName in fileNames:
                 root, ext = os.path.splitext(fileName)
                 if ext.lower() in EXTENSIONS:
                     #it's a font
                     f = FontDescriptor()
-                    f.fileName = os.path.normpath(os.path.join(dirName, fileName))
-                    f.timeModified = rl_getmtime(f.fileName)
+                    f.fileName = fileName = os.path.normpath(os.path.join(dirName, fileName))
+                    try:
+                        f.timeModified = rl_getmtime(fileName)
+                    except:
+                        self._skippedFiles.append(fileName)
+                        continue
 
                     ext = ext.lower()
                     if ext[0] == '.':
@@ -291,16 +324,17 @@ class FontFinder:
         if self.useCache:
             self.save(cfn)
 
-        finished = time.clock()
-##        print "found %d fonts; skipped %d; bad %d.  Took %0.2f seconds" % (
-##            len(self._fonts), len(self._skippedFiles), len(self._badFiles),
-##            finished - started
-##            )
+        if self.verbose:
+            finished = clock()
+            print("found %d fonts; skipped %d; bad %d.  Took %0.2f seconds" % (
+                len(self._fonts), len(self._skippedFiles), len(self._badFiles),
+                finished - started
+                ))
 
 def test():
-    #windows-centric tests maybe
+    #windows-centric test maybe
     from reportlab import rl_config
-    ff = FontFinder()
+    ff = FontFinder(verbose=rl_config.verbose)
     ff.useCache = True
     ff.validate = True
 
@@ -310,25 +344,25 @@ def test():
     ff.addDirectory(rlFontDir)
     ff.search()
 
-    print 'cache file name...'
-    print ff._getCacheFileName()
+    print('cache file name...')
+    print(ff._getCacheFileName())
 
-    print 'families...'
+    print('families...')
     for familyName in ff.getFamilyNames():
-        print '\t%s' % familyName
+        print('\t%s' % familyName)
 
-    print
-    print 'fonts called Vera:',
+    print()
+    outw = sys.stdout.write
+    outw('fonts called Vera:')
     for font in ff.getFontsInFamily('Bitstream Vera Sans'):
-        print '\t%s' % font.name
-
-    print
-    print 'Bold fonts\n\t'
+        outw(' %s' % font.name)
+    print()
+    outw('Bold fonts\n\t')
     for font in ff.getFontsWithAttributes(isBold=True, isItalic=False):
-        print font.fullName ,
-
-    print 'family report'
-    print ff.getFamilyXmlReport()
+        outw(font.fullName+' ')
+    print()
+    print('family report')
+    print(ff.getFamilyXmlReport())
 
 if __name__=='__main__':
     test()

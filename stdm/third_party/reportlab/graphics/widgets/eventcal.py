@@ -1,9 +1,9 @@
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/graphics/widgets/eventcal.py
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/graphics/widgets/eventcal.py
 # Event Calendar widget
 # author: Andy Robinson
 
-__version__=''' $Id$ '''
+__version__='3.3.0'
 __doc__="""This file is a
 """
 
@@ -298,7 +298,7 @@ def test():
     for format in ['pdf']:#,'gif','png']:
         out = d.asString(format)
         open('eventcal.%s' % format, 'wb').write(out)
-        print 'saved eventcal.%s' % format
+        print('saved eventcal.%s' % format)
 
 if __name__=='__main__':
     test()

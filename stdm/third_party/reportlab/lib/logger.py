@@ -1,8 +1,8 @@
 #!/bin/env python
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/lib/logger.py
-__version__=''' $Id$ '''
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/lib/logger.py
+__version__='3.3.0'
 __doc__="Logging and warning framework, predating Python's logging package"
 from sys import stderr
 class Logger:
@@ -16,7 +16,7 @@ class Logger:
 
     def add(self,fp):
         '''add the file/string fp to the destinations'''
-        if type(fp) is StringType:
+        if isinstance(fp,str):
             if fp in self._fns: return
             fp = open(fn,'wb')
             self._fns[fn] = fp
@@ -24,7 +24,7 @@ class Logger:
 
     def remove(self,fp):
         '''remove the file/string fp from the destinations'''
-        if type(fp) is StringType:
+        if isinstance(fp,str):
             if fp not in self._fns: return
             fn = fp
             fp = self._fns[fn]

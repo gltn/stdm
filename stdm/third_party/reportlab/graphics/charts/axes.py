@@ -1,6 +1,6 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-__version__=''' $Id$ '''
+__version__='3.3.0'
 __doc__="""Collection of axes for charts.
 
 The current collection comprises axes for charts using cartesian
@@ -31,32 +31,39 @@ at any absolute value (specified in points) or at some value of
 the former axes in its own coordinate system.
 """
 
+from math import log10 as math_log10
+from reportlab import xrange
 from reportlab.lib.validators import    isNumber, isNumberOrNone, isListOfStringsOrNone, isListOfNumbers, \
                                         isListOfNumbersOrNone, isColorOrNone, OneOf, isBoolean, SequenceOf, \
-                                        isString, EitherOr, Validator, _SequenceTypes, NoneOr, isInstanceOf, \
-                                        isNormalDate
+                                        isString, EitherOr, Validator, NoneOr, isInstanceOf, \
+                                        isNormalDate, isNoneOrCallable
 from reportlab.lib.attrmap import *
 from reportlab.lib import normalDate
 from reportlab.graphics.shapes import Drawing, Line, PolyLine, Rect, Group, STATE_DEFAULTS, _textBoxLimits, _rotatedBoxLimits
 from reportlab.graphics.widgetbase import Widget, TypedPropertyCollection
-from reportlab.graphics.charts.textlabels import Label, PMVLabel
+from reportlab.graphics.charts.textlabels import Label, PMVLabel, XLabel,  DirectDrawFlowable
 from reportlab.graphics.charts.utils import nextRoundNumber
 from reportlab.graphics.widgets.grids import ShadedRect
 from reportlab.lib.colors import Color
+from reportlab.lib.utils import isSeq
+from reportlab import xrange
 import copy
-
+try:
+    reduce  # Python 2.x
+except NameError:
+    from functools import reduce
 
 # Helpers.
 def _findMinMaxValue(V, x, default, func, special=None):
-    if isinstance(V[0][0],_SequenceTypes):
+    if isSeq(V[0][0]):
         if special:
             f=lambda T,x=x,special=special,func=func: special(T,x,func)
         else:
             f=lambda T,x=x: T[x]
-        V=map(lambda e,f=f: map(f,e),V)
-    V = filter(len,map(lambda x: filter(lambda x: x is not None,x),V))
+        V=list(map(lambda e,f=f: list(map(f,e)),V))
+    V = list(filter(len,[[x for x in x if x is not None] for x in V]))
     if len(V)==0: return default
-    return func(map(func,V))
+    return func(list(map(func,V)))
 
 def _findMin(V, x, default,special=None):
     '''find minimum over V[i][x]'''
@@ -74,6 +81,36 @@ def _allInt(values):
         except:
             return 0
     return 1
+
+class AxisLabelAnnotation:
+    '''Create a grid like line using the given user value to draw the line
+    v       value to use
+    kwds may contain
+    scaleValue  True/not given --> scale the value
+                otherwise use the absolute value
+    labelClass  the label class to use default Label
+    all Label keywords are acceptable (including say _text)
+    '''
+    def __init__(self,v,**kwds):
+        self._v = v
+        self._kwds = kwds
+
+    def __call__(self,axis):
+        kwds = self._kwds.copy()
+        labelClass = kwds.pop('labelClass',Label)
+        scaleValue = kwds.pop('scaleValue',True)
+        if not hasattr(axis,'_tickValues'):
+            axis._pseudo_configure()
+        sv = (axis.scale if scaleValue else lambda x: x)(self._v)
+        if axis.isYAxis:
+            x = axis._x
+            y = sv
+        else:
+            x = sv
+            y = axis._y
+        kwds['x'] = x
+        kwds['y'] = y
+        return labelClass(**kwds)
 
 class AxisLineAnnotation:
     '''Create a grid like line using the given user value to draw the line
@@ -96,7 +133,7 @@ class AxisLineAnnotation:
         kwds = self._kwds.copy()
         scaleValue = kwds.pop('scaleValue',True)
         endOffset = kwds.pop('endOffset',False)
-        startOffset = kwds.pop('endOffset',False)
+        startOffset = kwds.pop('startOffset',False)
         if axis.isYAxis:
             offs = axis._x
             d0 = axis._y
@@ -140,7 +177,7 @@ class AxisLineAnnotation:
                     d = hi
                 axis._get_line_pos = lambda x: d
             L = func(v)
-            for k,v in kwds.iteritems():
+            for k,v in kwds.items():
                 setattr(L,k,v)
         finally:
             axis._get_line_pos = oaglp
@@ -294,7 +331,7 @@ class _AxisG(Widget):
                 L.strokeLineCap = strokeLineCap
                 L.strokeMiterLimit = strokeMiterLimit
                 if t in specials:
-                    for a,v in specials[t].iteritems():
+                    for a,v in specials[t].items():
                         setattr(L,a,v)
                 g.add(L)
 
@@ -448,12 +485,15 @@ class CategoryAxis(_AxisG):
         style = AttrMapValue(OneOf('parallel','stacked','parallel_3d'),"How common category bars are plotted"),
         labelAxisMode = AttrMapValue(OneOf('high','low','axis', 'axispmv'), desc="Like joinAxisMode, but for the axis labels"),
         tickShift = AttrMapValue(isBoolean, desc='Tick shift typically'),
+        tickStrokeWidth = AttrMapValue(isNumberOrNone, desc='Width of ticks if specified.'),
+        tickStrokeColor = AttrMapValue(isColorOrNone, desc='Color of ticks if specified.'),
         loPad = AttrMapValue(isNumber, desc='extra inner space before start of the axis'),
         hiPad = AttrMapValue(isNumber, desc='extra inner space after end of the axis'),
         annotations = AttrMapValue(None,desc='list of annotations'),
         loLLen = AttrMapValue(isNumber, desc='extra line length before start of the axis'),
         hiLLen = AttrMapValue(isNumber, desc='extra line length after end of the axis'),
         skipGrid = AttrMapValue(OneOf('none','top','both','bottom'),"grid lines to skip top bottom both none"),
+        innerTickDraw = AttrMapValue(isNoneOrCallable, desc="Callable to replace _drawInnerTicks"),
         )
 
     def __init__(self):
@@ -517,7 +557,7 @@ class CategoryAxis(_AxisG):
         self._length = float(length)
 
     def configure(self, multiSeries,barWidth=None):
-        self._catCount = max(map(len,multiSeries))
+        self._catCount = max(list(map(len,multiSeries)))
         self._barWidth = barWidth or ((self._length-self.loPad-self.hiPad)/float(self._catCount or 1))
         self._calcTickmarkPositions()
         if self.labelAxisMode == 'axispmv':
@@ -529,13 +569,21 @@ class CategoryAxis(_AxisG):
             self._tickValues = [t+0.5 for t in xrange(n)]
         else:
             if self.reverseDirection:
-                self._tickValues = range(-1,n)
+                self._tickValues = list(xrange(-1,n))
             else:
-                self._tickValues = range(n+1)
+                self._tickValues = list(xrange(n+1))
 
     def _scale(self,idx):
         if self.reverseDirection: idx = self._catCount-idx-1
         return idx
+
+    def scale(self, idx):
+        "Returns the position and width in drawing units"
+        return (self.loScale(idx), self._barWidth)
+
+    def midScale(self, idx):
+        "Returns the bar mid position in drawing units"
+        return self.loScale(idx) + 0.5*self._barWidth
 
 def _assertYAxis(axis):
     assert axis.isYAxis, "Cannot connect to other axes (%s), but Y- ones." % axis.__class__.__name__
@@ -545,16 +593,27 @@ def _assertXAxis(axis):
 class _XTicks:
     _tickTweaks = 0 #try 0.25-0.5
 
+    @property
+    def actualTickStrokeWidth(self):
+        return getattr(self,'tickStrokeWidth',self.strokeWidth)
+
+    @property
+    def actualTickStrokeColor(self):
+        return getattr(self,'tickStrokeColor',self.strokeColor)
+
     def _drawTicksInner(self,tU,tD,g):
-        if tU or tD:
-            sW = self.strokeWidth
+        itd = getattr(self,'innerTickDraw',None)
+        if itd:
+            itd(self,tU,tD,g)
+        elif tU or tD:
+            sW = self.actualTickStrokeWidth
             tW = self._tickTweaks
             if tW:
                 if tU and not tD:
                     tD = tW*sW
                 elif tD and not tU:
                     tU = tW*sW
-            self._makeLines(g,tU,-tD,self.strokeColor,sW,self.strokeDashArray,self.strokeLineJoin,self.strokeLineCap,self.strokeMiterLimit)
+            self._makeLines(g,tU,-tD,self.actualTickStrokeColor,sW,self.strokeDashArray,self.strokeLineJoin,self.strokeLineCap,self.strokeMiterLimit)
 
     def _drawTicks(self,tU,tD,g=None):
         g = g or Group()
@@ -562,54 +621,14 @@ class _XTicks:
             self._drawTicksInner(tU,tD,g)
         return g
 
-    def _calcSubTicks(self):
-        if not hasattr(self,'_tickValues'):
-            self._pseudo_configure()
-        otv = self._tickValues
-        if not hasattr(self,'_subTickValues'):
-            acn = self.__class__.__name__
-            if acn[:11]=='NormalDateX':
-                iFuzz = 0
-                dCnv = int
-            else:
-                iFuzz = 1e-8
-                dCnv = lambda x:x
-
-            OTV = [tv for tv in otv if getattr(tv,'_doSubTicks',1)]
-            T = [].append
-            nst = int(self.subTickNum)
-            i = len(OTV)
-            if i<2:
-                self._subTickValues = []
-            else:
-                if i==2:
-                    dst = OTV[1]-OTV[0]
-                elif i==3:
-                    dst = max(OTV[1]-OTV[0],OTV[2]-OTV[1])
-                else:
-                    i >>= 1
-                    dst = OTV[i+1] - OTV[i]
-                fuzz = dst*iFuzz
-                vn = self._valueMin+fuzz
-                vx = self._valueMax-fuzz
-                if OTV[0]>vn: OTV.insert(0,OTV[0]-dst)
-                if OTV[-1]<vx: OTV.append(OTV[-1]+dst)
-                dst /= float(nst+1)
-                for i,x in enumerate(OTV[:-1]):
-                    for j in xrange(nst):
-                        t = x+dCnv((j+1)*dst)
-                        if t<=vn or t>=vx: continue
-                        T(t)
-                self._subTickValues = T.__self__
-        self._tickValues = self._subTickValues
-        return otv
-
     def _drawSubTicks(self,tU,tD,g):
         if getattr(self,'visibleSubTicks',0) and self.subTickNum>0:
             otv = self._calcSubTicks()
             try:
+                self._subTicking = 1
                 self._drawTicksInner(tU,tD,g)
             finally:
+                del self._subTicking
                 self._tickValues = otv
 
     def makeTicks(self):
@@ -712,9 +731,9 @@ class XCategoryAxis(_XTicks,CategoryAxis):
             elif jam in ('value', 'points'):
                 self.joinToAxis(ja, mode=jam, pos=self.joinAxisPos)
 
-    def scale(self, idx):
-        """returns the x position and width in drawing units of the slice"""
-        return (self._x + self.loPad + self._scale(idx)*self._barWidth, self._barWidth)
+    def loScale(self, idx):
+        """returns the x position in drawing units"""
+        return self._x + self.loPad + self._scale(idx)*self._barWidth
 
     def makeAxis(self):
         g = Group()
@@ -753,13 +772,15 @@ class XCategoryAxis(_XTicks,CategoryAxis):
                     label = self.labels[label]
                 else:
                     label = self.labels[i]
-                dy = label.dy
                 if pmv:
+                    _dy = label.dy
                     v = label._pmv = pmv[ic]
-                    if v<0: dy = -2*dy
+                    if v<0: _dy *= -2
+                else:
+                    _dy = 0
                 lpf = label.labelPosFrac
                 x = _x + (i+lpf) * barWidth
-                label.setOrigin(x, _y+dy)
+                label.setOrigin(x,_y+_dy)
                 label.setText(categoryNames[ic] or '')
                 g.add(label)
 
@@ -823,9 +844,9 @@ class YCategoryAxis(_YTicks,CategoryAxis):
             elif jam in ('value', 'points'):
                 self.joinToAxis(ja, mode=jam, pos=self.joinAxisPos)
 
-    def scale(self, idx):
-        "Returns the y position and width in drawing units of the slice."
-        return (self._y + self._scale(idx)*self._barWidth, self._barWidth)
+    def loScale(self, idx):
+        "Returns the y position in drawing units"
+        return self._y + self._scale(idx)*self._barWidth
 
     def makeAxis(self):
         g = Group()
@@ -867,11 +888,13 @@ class YCategoryAxis(_YTicks,CategoryAxis):
                     label = self.labels[i]
                 lpf = label.labelPosFrac
                 y = _y + (i+lpf) * barWidth
-                dx = label.dx
                 if pmv:
+                    _dx = label.dx
                     v = label._pmv = pmv[ic]
-                    if v<0: dx = -2*dx
-                label.setOrigin(_x+dx, y)
+                    if v<0: _dx *= -2
+                else:
+                    _dx = 0
+                label.setOrigin(_x+_dx, y)
                 label.setText(categoryNames[ic] or '')
                 g.add(label)
         return g
@@ -882,6 +905,9 @@ class TickLabeller:
     '''
     def __call__(self,axis,value):
         return 'Abstract class instance called'
+
+#this matches the old python str behaviour
+_defaultLabelFormatter = lambda x: '%.12g' % x
 
 # Value axes.
 class ValueAxis(_AxisG):
@@ -948,8 +974,14 @@ class ValueAxis(_AxisG):
         subGridStrokeMiterLimit = AttrMapValue(isNumber,desc="Grid miter limit control miter line joins"),
         subGridStart = AttrMapValue(isNumberOrNone, desc='Start of grid lines wrt axis origin'),
         subGridEnd = AttrMapValue(isNumberOrNone, desc='End of grid lines wrt axis origin'),
+        tickStrokeWidth = AttrMapValue(isNumber, desc='Width of ticks if specified.'),
+        subTickStrokeWidth = AttrMapValue(isNumber, desc='Width of sub ticks if specified.'),
+        subTickStrokeColor = AttrMapValue(isColorOrNone, desc='Color of sub ticks if specified.'),
+        tickStrokeColor = AttrMapValue(isColorOrNone, desc='Color of ticks if specified.'),
         keepTickLabelsInside = AttrMapValue(isBoolean, desc='Ensure tick labels do not project beyond bounds of axis if true'),
         skipGrid = AttrMapValue(OneOf('none','top','both','bottom'),"grid lines to skip top bottom both none"),
+        requiredRange = AttrMapValue(isNumberOrNone, desc='Minimum required value range.'),
+        innerTickDraw = AttrMapValue(isNoneOrCallable, desc="Callable to replace _drawInnerTicks"),
         )
 
     def __init__(self,**kw):
@@ -1035,6 +1067,7 @@ class ValueAxis(_AxisG):
                         reverseDirection=0,
                         loLLen=0,
                         hiLLen=0,
+                        requiredRange=0,
                         )
         self.labels.angle = 0
 
@@ -1076,6 +1109,26 @@ class ValueAxis(_AxisG):
             r = cache[K] = valueStep, T, valueStep*1e-8
         return r
 
+    def _preRangeAdjust(self,valueMin,valueMax):
+        rr = self.requiredRange
+        if rr>0:
+            r = valueMax - valueMin
+            if r<rr:
+                m = 0.5*(valueMax+valueMin)
+                rr *= 0.5
+                y1 = min(m-rr,valueMin)
+                y2 = max(m+rr,valueMax)
+                if valueMin>=100 and y1<100:
+                    y2 = y2 + 100 - y1
+                    y1 = 100
+                elif valueMin>=0 and y1<0:
+                    y2 = y2 - y1
+                    y1 = 0
+                valueMin = self._cValueMin = y1
+                valueMax = self._cValueMax = y2
+        return valueMin,valueMax
+
+
     def _setRange(self, dataSeries):
         """Set minimum and maximum axis values.
 
@@ -1087,7 +1140,6 @@ class ValueAxis(_AxisG):
 
         oMin = valueMin = self.valueMin
         oMax = valueMax = self.valueMax
-        rangeRound = self.rangeRound
         if valueMin is None: valueMin = self._cValueMin = _findMin(dataSeries,self._dataIndex,0)
         if valueMax is None: valueMax = self._cValueMax = _findMax(dataSeries,self._dataIndex,0)
         if valueMin == valueMax:
@@ -1132,6 +1184,10 @@ class ValueAxis(_AxisG):
             if oMin is None: valueMin = self._cValueMin = _findMin(dataSeries,self._dataIndex,0,special=special)
             if oMax is None: valueMax = self._cValueMax = _findMax(dataSeries,self._dataIndex,0,special=special)
 
+        valueMin, valueMax = self._preRangeAdjust(valueMin,valueMax)
+
+        rangeRound = self.rangeRound
+
         cMin = valueMin
         cMax = valueMax
         forceZero = self.forceZero
@@ -1145,12 +1201,12 @@ class ValueAxis(_AxisG):
         abf = self.avoidBoundFrac
         do_rr = not getattr(self,'valueSteps',None)
         do_abf = abf and do_rr
-        if not isinstance(abf,_SequenceTypes):
+        if not isSeq(abf):
             abf = abf, abf
         abfiz = getattr(self,'abf_ignore_zero', False)
-        if not isinstance(abfiz,_SequenceTypes):
+        if not isSeq(abfiz):
             abfiz = abfiz, abfiz
-        do_rr = rangeRound is not 'none' and do_rr
+        do_rr = rangeRound != 'none' and do_rr
         if do_rr:
             rrn = rangeRound in ['both','floor']
             rrx = rangeRound in ['both','ceiling']
@@ -1160,7 +1216,7 @@ class ValueAxis(_AxisG):
         abS = self.avoidBoundSpace
         do_abs = abS
         if do_abs:
-            if not isinstance(abS,_SequenceTypes):
+            if not isSeq(abS):
                 abS = abS, abS
         aL = float(self._length)
 
@@ -1238,6 +1294,7 @@ class ValueAxis(_AxisG):
     def _pseudo_configure(self):
         self._valueMin = self.valueMin
         self._valueMax = self.valueMax
+        if hasattr(self,'_subTickValues'): del self._subTickValues
         self._configure_end()
 
     def _rangeAdjust(self):
@@ -1289,6 +1346,48 @@ class ValueAxis(_AxisG):
     def _calcTickPositions(self):
         return self._calcStepAndTickPositions()[1]
 
+    def _calcSubTicks(self):
+        if not hasattr(self,'_tickValues'):
+            self._pseudo_configure()
+        otv = self._tickValues
+        if not hasattr(self,'_subTickValues'):
+            acn = self.__class__.__name__
+            if acn[:11]=='NormalDateX':
+                iFuzz = 0
+                dCnv = int
+            else:
+                iFuzz = 1e-8
+                dCnv = lambda x:x
+
+            OTV = [tv for tv in otv if getattr(tv,'_doSubTicks',1)]
+            T = [].append
+            nst = int(self.subTickNum)
+            i = len(OTV)
+            if i<2:
+                self._subTickValues = []
+            else:
+                if i==2:
+                    dst = OTV[1]-OTV[0]
+                elif i==3:
+                    dst = max(OTV[1]-OTV[0],OTV[2]-OTV[1])
+                else:
+                    i >>= 1
+                    dst = OTV[i+1] - OTV[i]
+                fuzz = dst*iFuzz
+                vn = self._valueMin+fuzz
+                vx = self._valueMax-fuzz
+                if OTV[0]>vn: OTV.insert(0,OTV[0]-dst)
+                if OTV[-1]<vx: OTV.append(OTV[-1]+dst)
+                dst /= float(nst+1)
+                for i,x in enumerate(OTV[:-1]):
+                    for j in xrange(nst):
+                        t = x+dCnv((j+1)*dst)
+                        if t<=vn or t>=vx: continue
+                        T(t)
+                self._subTickValues = T.__self__
+        self._tickValues = self._subTickValues
+        return otv
+
     def _calcTickmarkPositions(self):
         """Calculate a list of tick positions on the axis.  Returns a list of numbers."""
         self._tickValues = getattr(self,'valueSteps',None)
@@ -1315,7 +1414,7 @@ class ValueAxis(_AxisG):
 
         f = self._labelTextFormat       # perhaps someone already set it
         if f is None:
-            f = self.labelTextFormat or (self._allIntTicks() and '%.0f' or str)
+            f = self.labelTextFormat or (self._allIntTicks() and '%.0f' or _defaultLabelFormatter)
         elif f is str and self._allIntTicks(): f = '%.0f'
         elif hasattr(f,'calcPlaces'):
             f.calcPlaces(self._tickValues)
@@ -1359,8 +1458,8 @@ class ValueAxis(_AxisG):
                         t = tick*scl
                     else:
                         t = tick
-                    if type(f) is str: txt = f % t
-                    elif isinstance(f,_SequenceTypes):
+                    if isinstance(f, str): txt = f % t
+                    elif isSeq(f):
                         #it's a list, use as many items as we get
                         if i < len(f):
                             txt = f[i]
@@ -1372,7 +1471,7 @@ class ValueAxis(_AxisG):
                         else:
                             txt = f(t)
                     else:
-                        raise ValueError, 'Invalid labelTextFormat %s' % f
+                        raise ValueError('Invalid labelTextFormat %s' % f)
                     if post: txt = post % txt
                     pos[d] = v
                     label.setOrigin(*pos)
@@ -1517,7 +1616,7 @@ class _isListOfDaysAndMonths(Validator):
     for recurring dates.
     """
     def test(self,x):
-        if isinstance(x,_SequenceTypes):
+        if isSeq(x):
             answer = True
             for element in x:
                 try:
@@ -1534,6 +1633,7 @@ class _isListOfDaysAndMonths(Validator):
 
 isListOfDaysAndMonths = _isListOfDaysAndMonths()
 
+_NDINTM = 1,2,3,6,12,24,60,120,180,240,300,360,420,480,540,600,720,840,960,1080,1200,2400
 class NormalDateXValueAxis(XValueAxis):
     """An X axis applying additional rules.
 
@@ -1604,13 +1704,14 @@ class NormalDateXValueAxis(XValueAxis):
         Yes please says Andy :-(.  Modified on 19 June 2006 to attempt to allow
         a mode where one can specify recurring days and months.
         """
+        VC = self._valueClass
         axisLength = self._length
         formatter = self._dateFormatter
         if isinstance(formatter,TickLabeller):
             def formatter(tick):
                 return self._dateFormatter(self,tick)
-        firstDate = xVals[0]
-        endDate = xVals[-1]
+        firstDate = xVals[0] if not self.valueMin else VC(self.valueMin)
+        endDate = xVals[-1] if not self.valueMax else VC(self.valueMax)
         labels = self.labels
         fontName, fontSize, leading = labels.fontName, labels.fontSize, labels.leading
         textAnchor, boxAnchor, angle = labels.textAnchor, labels.boxAnchor, labels.angle
@@ -1619,16 +1720,14 @@ class NormalDateXValueAxis(XValueAxis):
         RBL = _rotatedBoxLimits(RBL[0],RBL[1],RBL[2],RBL[3], angle)
         xLabelW = RBL[1]-RBL[0]
         xLabelH = RBL[3]-RBL[2]
-        w = max(xLabelW,labels.width,self.minimumTickSpacing)
+        w = max(xLabelW,labels.width or 0,self.minimumTickSpacing)
 
         W = w+w*self.bottomAxisLabelSlack
-        n = len(xVals)
         ticks = []
         labels = []
         maximumTicks = self.maximumTicks
 
         if self.specifiedTickDates:
-            VC = self._valueClass
             ticks = [VC(x) for x in self.specifiedTickDates]
             labels = [formatter(d) for d in ticks]
             if self.forceFirstDate and firstDate==ticks[0] and (axisLength/float(ticks[-1]-ticks[0]))*(ticks[1]-ticks[0])<=W:
@@ -1643,15 +1742,11 @@ class NormalDateXValueAxis(XValueAxis):
                     del ticks[-2], labels[-2]
             return ticks, labels
 
-        def addTick(i, xVals=xVals, formatter=formatter, ticks=ticks, labels=labels):
-            ticks.insert(0,xVals[i])
-            labels.insert(0,formatter(xVals[i]))
-
         #AR 20060619 - first we try the approach where the user has explicitly
         #specified the days of year to be ticked.  Other explicit routes may
         #be added.
         if self.forceDatesEachYear:
-            forcedPartialDates = map(parseDayAndMonth, self.forceDatesEachYear)
+            forcedPartialDates = list(map(parseDayAndMonth, self.forceDatesEachYear))
             #generate the list of dates in the range.
             #print 'dates range from %s to %s' % (firstDate, endDate)
             firstYear = firstDate.year()
@@ -1690,9 +1785,14 @@ class NormalDateXValueAxis(XValueAxis):
             #print 'xVals found on forced dates =', ticks
             return ticks, labels
 
+        def addTick(i, xVals=xVals, formatter=formatter, ticks=ticks, labels=labels):
+            ticks.insert(0,xVals[i])
+            labels.insert(0,formatter(xVals[i]))
+
+        n = len(xVals)
         #otherwise, we apply the 'magic algorithm...' which looks for nice spacing
         #based on the size and separation of the labels.
-        for d in (1,2,3,6,12,24,60,120):
+        for d in _NDINTM:
             k = n/d
             if k<=maximumTicks and k*W <= axisLength:
                 i = n-1
@@ -1735,6 +1835,7 @@ class NormalDateXValueAxis(XValueAxis):
                     pass
 
                 return ticks, labels
+        raise ValueError('Problem selecting NormalDate value axis tick positions')
 
     def _convertXV(self,data):
         '''Convert all XValues to a standard normalDate type'''
@@ -1766,13 +1867,17 @@ class NormalDateXValueAxis(XValueAxis):
 
     def configure(self, data):
         self._convertXV(data)
-        from reportlab.lib.set_ops import union
-        xVals = reduce(union,map(lambda x: map(lambda dv: dv[0],x),data),[])
+        xVals = set()
+        for x in data:
+            for dv in x:
+                xVals.add(dv[0])
+        xVals = list(xVals)
         xVals.sort()
+        VC = self._valueClass
         steps,labels = self._getStepsAndLabels(xVals)
         valueMin, valueMax = self.valueMin, self.valueMax
-        if valueMin is None: valueMin = xVals[0]
-        if valueMax is None: valueMax = xVals[-1]
+        valueMin = xVals[0]  if valueMin is None else VC(valueMin)
+        valueMax = xVals[-1] if valueMax is None else VC(valueMax)
         self._valueMin, self._valueMax = valueMin, valueMax
         self._tickValues = steps
         self._labelTextFormat = labels
@@ -1856,6 +1961,77 @@ class YValueAxis(_YTicks,ValueAxis):
         g.add(axis)
         return g
 
+class TimeValueAxis:
+    _mc = 60
+    _hc = 60*_mc
+    _dc = 24*_hc
+
+    def __init__(self,*args,**kwds):
+        if not self.labelTextFormat:
+            self.labelTextFormat = self.timeLabelTextFormatter
+        self._saved_tickInfo = {}
+
+    def _calcValueStep(self):
+        '''Calculate _valueStep for the axis or get from valueStep.'''
+        if self.valueStep is None:
+            rawRange = self._valueMax - self._valueMin
+            rawInterval = rawRange / min(float(self.maximumTicks-1),(float(self._length)/self.minimumTickSpacing))
+            #here's where we try to choose the correct value for the unit
+            if rawInterval >= self._dc:
+                d = self._dc
+                self._unit = 'days'
+            elif rawInterval >= self._hc:
+                d = self._hc
+                self._unit = 'hours'
+            elif rawInterval >= self._mc:
+                d = self._mc
+                self._unit = 'minutes'
+            else:
+                d = 1
+                self._unit = 'seconds'
+            self._unitd = d
+            if d>1:
+                rawInterval = int(rawInterval/d)
+            self._valueStep = nextRoundNumber(rawInterval) * d
+        else:
+            self._valueStep = self.valueStep
+
+    def timeLabelTextFormatter(self,val):
+        u = self._unitd
+        k = (u,tuple(self._tickValues))
+        if k in self._saved_tickInfo:
+            fmt = self._saved_tickInfo[k]
+        else:
+            uf = float(u)
+            tv = [v/uf for v in self._tickValues]
+            s = self._unit[0]
+            if _allInt(tv):
+                fmt = lambda x, uf=uf, s=s: '%.0f%s' % (x/uf,s)
+            else:
+                stv = ['%.10f' % v for v in tv]
+                stvl = max((len(v.rstrip('0'))-v.index('.')-1) for v in stv)
+                if u==1:
+                    fmt = lambda x,uf=uf,fmt='%%.%dfs' % stvl: fmt % (x/uf)
+                else:
+                    #see if we can represent fractions
+                    fm = 24 if u==self._dc else 60
+                    fv = [(v - int(v))*fm for v in tv]
+                    if _allInt(fv):
+                        s1 = 'h' if u==self._dc else ('m' if u==self._mc else 's')
+                        fmt = lambda x,uf=uf,fm=fm, fmt='%%d%s%%d%%s' % (s,s1): fmt % (int(x/uf),int((x/uf - int(x/uf))*fm))
+                    else:
+                        fmt = lambda x,uf=uf,fmt='%%.%df%s' % (stvl,s): fmt % (x/uf)
+            self._saved_tickInfo[k] = fmt
+
+        return fmt(val)
+        
+
+
+class XTimeValueAxis(TimeValueAxis,XValueAxis):
+    def __init__(self,*args,**kwds):
+        XValueAxis.__init__(self,*args,**kwds)
+        TimeValueAxis.__init__(self,*args,**kwds)
+
 class AdjYValueAxis(YValueAxis):
     """A Y-axis applying additional rules.
 
@@ -1863,7 +2039,6 @@ class AdjYValueAxis(YValueAxis):
     may choose to adjust its range and origin.
     """
     _attrMap = AttrMap(BASE = YValueAxis,
-        requiredRange = AttrMapValue(isNumberOrNone, desc='Minimum required value range.'),
         leftAxisPercent = AttrMapValue(isBoolean, desc='When true add percent sign to label values.'),
         leftAxisOrigShiftIPC = AttrMapValue(isNumber, desc='Lowest label shift interval ratio.'),
         leftAxisOrigShiftMin = AttrMapValue(isNumber, desc='Minimum amount to shift.'),
@@ -1886,7 +2061,7 @@ class AdjYValueAxis(YValueAxis):
         from reportlab.graphics.charts.utils import find_good_grid, ticks
         y_min, y_max = self._valueMin, self._valueMax
         m = self.maximumTicks
-        n = filter(lambda x,m=m: x<=m,[4,5,6,7,8,9])
+        n = list(filter(lambda x,m=m: x<=m,[4,5,6,7,8,9]))
         if not n: n = [m]
 
         valueStep, requiredRange = self.valueStep, self.requiredRange
@@ -1908,7 +2083,7 @@ class AdjYValueAxis(YValueAxis):
         abf = self.avoidBoundFrac
         if abf:
             i1 = (T[1]-T[0])
-            if not isinstance(abf,_SequenceTypes):
+            if not isSeq(abf):
                 i0 = i1 = i1*abf
             else:
                 i0 = i1*abf[0]
@@ -1935,7 +2110,7 @@ class AdjYValueAxis(YValueAxis):
             self._valueMin = self._valueMin - m
 
         if self.leftAxisSkipLL0:
-            if isinstance(self.leftAxisSkipLL0,_SequenceTypes):
+            if isSeq(self.leftAxisSkipLL0):
                 for x in self.leftAxisSkipLL0:
                     try:
                         L[x] = ''
@@ -1943,353 +2118,181 @@ class AdjYValueAxis(YValueAxis):
                         pass
             L[0] = ''
 
-# Sample functions.
-def sample0a():
-    "Sample drawing with one xcat axis and two buckets."
+class LogValueAxis(ValueAxis):
 
-    drawing = Drawing(400, 200)
+    def _calcScaleFactor(self):
+        """Calculate the axis' scale factor.
+        This should be called only *after* the axis' range is set.
+        Returns a number.
+        """
+        self._scaleFactor = self._length / float(
+            math_log10(self._valueMax) - math_log10(self._valueMin))
+        return self._scaleFactor
 
-    data = [(10, 20)]
 
-    xAxis = XCategoryAxis()
-    xAxis.setPosition(75, 75, 300)
-    xAxis.configure(data)
-    xAxis.categoryNames = ['Ying', 'Yang']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    return drawing
+    def _setRange(self,dataSeries):
+        valueMin = self.valueMin
+        valueMax = self.valueMax
+        aMin = _findMin(dataSeries,self._dataIndex,0)
+        aMax = _findMax(dataSeries,self._dataIndex,0)
+        if valueMin is None: valueMin = aMin
+        if valueMax is None: valueMax = aMax
+        if valueMin>valueMax:
+            raise ValueError('%s: valueMin=%r should not be greater than valueMax=%r!' % (self.__class__.__name__valueMin, valueMax))
+        if valueMin<=0:
+            raise ValueError('%s: valueMin=%r negative values are not allowed!' % valueMin)
+        abS = self.avoidBoundSpace
+        if abS:
+            lMin = math_log10(aMin)
+            lMax = math_log10(aMax)
+            if not isSeq(abS): abS = abS, abS
+            a0 = abS[0] or 0
+            a1 = abS[1] or 0
+            L = self._length - (a0 + a1)
+            sf = (lMax-lMin)/float(L)
+            lMin -= a0*sf
+            lMax += a1*sf
+            valueMin = min(valueMin,10**lMin)
+            valueMax = max(valueMax,10**lMax)
+        self._valueMin = valueMin
+        self._valueMax = valueMax
 
-def sample0b():
-    "Sample drawing with one xcat axis and one bucket only."
+    def _calcTickPositions(self):
+        #self._calcValueStep()
+        valueMin = cMin = math_log10(self._valueMin)
+        valueMax = cMax = math_log10(self._valueMax)
+        rr = self.rangeRound
+        if rr:
+            if rr in ('both','ceiling'):
+                i = int(valueMax)
+                valueMax =  i + 1 if i<valueMax else i
+            if rr in ('both','floor'):
+                i = int(valueMin)
+                valueMin =  i - 1 if i>valueMin else i
+                
+        T = [].append
+        tv = int(valueMin)
+        if tv<valueMin: tv += 1
+        n = int(valueMax) - tv + 1
+        i = max(int(n/self.maximumTicks),1)
+        if i*n>self.maximumTicks: i += 1
+        self._powerInc = i
+        while True:
+            if tv>valueMax: break
+            if tv>=valueMin: T(10**tv)
+            tv += i
+        if valueMin!=cMin: self._valueMin = 10**valueMin
+        if valueMax!=cMax: self._valueMax = 10**valueMax
+        return T.__self__
 
-    drawing = Drawing(400, 200)
+    def _calcSubTicks(self):
+        if not hasattr(self,'_tickValues'):
+            self._pseudo_configure()
+        otv = self._tickValues
+        if not hasattr(self,'_subTickValues'):
+            T = [].append
+            valueMin = math_log10(self._valueMin)
+            valueMax = math_log10(self._valueMax)+1
+            tv = round(valueMin)
+            i = self._powerInc
+            if i==1:
+                fac = 10 / float(self.subTickNum)
+                start = 1
+                if self.subTickNum == 10: start = 2
+                while tv < valueMax:
+                    for j in xrange(start,self.subTickNum):
+                        v = fac*j*(10**tv)
+                        if v > self._valueMin and v < self._valueMax:
+                            T(v)
+                    tv += i
+            else:
+                ng = min(self.subTickNum+1,i-1)
+                while ng:
+                    if (i % ng)==0:
+                        i /= ng
+                        break
+                    ng -= 1
+                else:
+                    i = 1
+                tv = round(valueMin)
+                while True:
+                    v = 10**tv
+                    if v >= self._valueMax: break
+                    if v not in otv:
+                        T(v)
+                    tv += i
+            self._subTickValues = T.__self__
+        self._tickValues = self._subTickValues
+        return otv
 
-    data = [(10,)]
 
-    xAxis = XCategoryAxis()
-    xAxis.setPosition(75, 75, 300)
-    xAxis.configure(data)
-    xAxis.categoryNames = ['Ying']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    return drawing
+class LogAxisTickLabeller(TickLabeller):
+    def __call__(self,axis,value):
+        e = math_log10(value)
+        e = int(e-0.001 if e<0 else e+0.001)
+        if e==0: return '1'
+        if e==1: return '10'
+        return '10<sup>%s</sup>' % e
 
-def sample1():
-    "Sample drawing containing two unconnected axes."
-    from reportlab.graphics.shapes import _baseGFontNameB
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XCategoryAxis()
-    xAxis.setPosition(75, 75, 300)
-    xAxis.configure(data)
-    xAxis.categoryNames = ['Beer','Wine','Meat','Cannelloni']
-    xAxis.labels.boxAnchor = 'n'
-    xAxis.labels[3].dy = -15
-    xAxis.labels[3].angle = 30
-    xAxis.labels[3].fontName = _baseGFontNameB
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+class LogAxisLabellingSetup:
+    def __init__(self):
+        if DirectDrawFlowable is not None:
+            self.labels = TypedPropertyCollection(XLabel)
+            if self._dataIndex==1:
+                self.labels.boxAnchor = 'e'
+                self.labels.dx = -5
+                self.labels.dy = 0
+            else:
+                self.labels.boxAnchor = 'n'
+                self.labels.dx = 0
+                self.labels.dy = -5
+            self.labelTextFormat = LogAxisTickLabeller()
+        else:
+            self.labelTextFormat = "%.0e"
 
-def sample4a():
-    "Sample drawing, xvalue/yvalue axes, y connected at 100 pts to x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'points'
-    xAxis.joinAxisPos = 100
-    xAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+class LogXValueAxis(LogValueAxis,LogAxisLabellingSetup,XValueAxis):
+    _attrMap = AttrMap(BASE=XValueAxis)
 
-def sample4b():
-    "Sample drawing, xvalue/yvalue axes, y connected at value 35 of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'value'
-    xAxis.joinAxisPos = 35
-    xAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+    def __init__(self):
+        XValueAxis.__init__(self)
+        LogAxisLabellingSetup.__init__(self)
 
-def sample4c():
-    "Sample drawing, xvalue/yvalue axes, y connected to bottom of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'bottom'
-    xAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+    def scale(self, value):
+        """Converts a numeric value to a Y position.
 
-def sample4c1():
-    "xvalue/yvalue axes, without drawing axis lines/ticks."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    yAxis.visibleAxis = 0
-    yAxis.visibleTicks = 0
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'bottom'
-    xAxis.configure(data)
-    xAxis.visibleAxis = 0
-    xAxis.visibleTicks = 0
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+        The chart first configures the axis, then asks it to
+        work out the x value for each point when plotting
+        lines or bars.  You could override this to do
+        logarithmic axes.
+        """
 
-def sample4d():
-    "Sample drawing, xvalue/yvalue axes, y connected to top of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'top'
-    xAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+        msg = "Axis cannot scale numbers before it is configured"
+        assert self._configured, msg
+        if value is None:
+            value = 0
+        if value == 0.:
+            return self._x - self._scaleFactor * math_log10(self._valueMin)
+        return self._x + self._scaleFactor * (math_log10(value) - math_log10(self._valueMin))
 
-def sample5a():
-    "Sample drawing, xvalue/yvalue axes, y connected at 100 pts to x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis.setPosition(50, 50, 300)
-    xAxis.configure(data)
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'points'
-    yAxis.joinAxisPos = 100
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+class LogYValueAxis(LogValueAxis,LogAxisLabellingSetup,YValueAxis):
+    _attrMap = AttrMap(BASE=YValueAxis)
+    def __init__(self):
+        YValueAxis.__init__(self)
+        LogAxisLabellingSetup.__init__(self)
 
-def sample5b():
-    "Sample drawing, xvalue/yvalue axes, y connected at value 35 of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis.setPosition(50, 50, 300)
-    xAxis.configure(data)
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'value'
-    yAxis.joinAxisPos = 35
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+    def scale(self, value):
+        """Converts a numeric value to a Y position.
 
-def sample5c():
-    "Sample drawing, xvalue/yvalue axes, y connected at right of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis.setPosition(50, 50, 300)
-    xAxis.configure(data)
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'right'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+        The chart first configures the axis, then asks it to
+        work out the x value for each point when plotting
+        lines or bars.  You could override this to do
+        logarithmic axes.
+        """
 
-def sample5d():
-    "Sample drawing, xvalue/yvalue axes, y connected at left of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis.setPosition(50, 50, 300)
-    xAxis.configure(data)
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'left'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample6a():
-    "Sample drawing, xcat/yvalue axes, x connected at top of y."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XCategoryAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'top'
-    xAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample6b():
-    "Sample drawing, xcat/yvalue axes, x connected at bottom of y."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XCategoryAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'bottom'
-    xAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample6c():
-    "Sample drawing, xcat/yvalue axes, x connected at 100 pts to y."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XCategoryAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'points'
-    xAxis.joinAxisPos = 100
-    xAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample6d():
-    "Sample drawing, xcat/yvalue axes, x connected at value 20 of y."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    yAxis = YValueAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.configure(data)
-    xAxis = XCategoryAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    xAxis.joinAxis = yAxis
-    xAxis.joinAxisMode = 'value'
-    xAxis.joinAxisPos = 20
-    xAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    xAxis.labels.boxAnchor = 'n'
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample7a():
-    "Sample drawing, xvalue/ycat axes, y connected at right of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    yAxis = YCategoryAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'right'
-    yAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    yAxis.labels.boxAnchor = 'e'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample7b():
-    "Sample drawing, xvalue/ycat axes, y connected at left of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    yAxis = YCategoryAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'left'
-    yAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    yAxis.labels.boxAnchor = 'e'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample7c():
-    "Sample drawing, xvalue/ycat axes, y connected at value 30 of x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    yAxis = YCategoryAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'value'
-    yAxis.joinAxisPos = 30
-    yAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    yAxis.labels.boxAnchor = 'e'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
-
-def sample7d():
-    "Sample drawing, xvalue/ycat axes, y connected at 200 pts to x."
-    drawing = Drawing(400, 200)
-    data = [(10, 20, 30, 42)]
-    xAxis = XValueAxis()
-    xAxis._length = 300
-    xAxis.configure(data)
-    yAxis = YCategoryAxis()
-    yAxis.setPosition(50, 50, 125)
-    yAxis.joinAxis = xAxis
-    yAxis.joinAxisMode = 'points'
-    yAxis.joinAxisPos = 200
-    yAxis.categoryNames = ['Beer', 'Wine', 'Meat', 'Cannelloni']
-    yAxis.labels.boxAnchor = 'e'
-    yAxis.configure(data)
-    drawing.add(xAxis)
-    drawing.add(yAxis)
-    return drawing
+        msg = "Axis cannot scale numbers before it is configured"
+        assert self._configured, msg
+        if value is None:
+            value = 0
+        if value == 0.:
+            return self._y - self._scaleFactor * math_log10(self._valueMin)
+        return self._y + self._scaleFactor * (math_log10(value) - math_log10(self._valueMin))
