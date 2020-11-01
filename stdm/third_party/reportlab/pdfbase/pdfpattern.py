@@ -1,59 +1,94 @@
 __doc__="""helper for importing pdf structures into a ReportLab generated document
 """
-from reportlab.pdfbase.pdfdoc import format
+from reportlab.pdfbase.pdfdoc import format, PDFObject, pdfdocEnc
+from reportlab import ascii
+from reportlab.lib.utils import strTypes
 
-import string
+def _patternSequenceCheck(pattern_sequence):
+    allowedTypes = strTypes if isinstance(strTypes, tuple) else (strTypes,)
+    allowedTypes = allowedTypes + (PDFObject,PDFPatternIf)
+    for x in pattern_sequence:
+        if not isinstance(x,allowedTypes):
+            if len(x)!=1:
+                raise ValueError("sequence elts must be strings/bytes/PDFPatternIfs or singletons containing strings: "+ascii(x))
+            if not isinstance(x[0],strTypes):
+                raise ValueError("Singletons must contain strings/bytes or PDFObject instances only: "+ascii(x[0]))
 
-class PDFPattern:
-    __PDFObject__ = True
+class PDFPattern(PDFObject):
     __RefOnly__ = 1
     def __init__(self, pattern_sequence, **keywordargs):
         """
         Description of a kind of PDF object using a pattern.
 
-        Pattern sequence should contain strings or singletons of form [string].
+        Pattern sequence should contain strings, singletons of form [string] or
+        PDFPatternIf objects.
         Strings are literal strings to be used in the object.
         Singletons are names of keyword arguments to include.
+        PDFpatternIf objects allow some conditionality.
         Keyword arguments can be non-instances which are substituted directly in string conversion,
         or they can be object instances in which case they should be pdfdoc.* style
         objects with a x.format(doc) method.
         Keyword arguments may be set on initialization or subsequently using __setitem__, before format.
         "constant object" instances can also be inserted in the patterns.
         """
+        _patternSequenceCheck(pattern_sequence)
         self.pattern = pattern_sequence
         self.arguments = keywordargs
-        from types import StringType, InstanceType
-        toptypes = (StringType, InstanceType)
-        for x in pattern_sequence:
-            if type(x) not in toptypes:
-                if len(x)!=1:
-                    raise ValueError, "sequence elts must be strings or singletons containing strings: "+repr(x)
-                if type(x[0]) is not StringType:
-                    raise ValueError, "Singletons must contain strings or instances only: "+repr(x[0])
+
     def __setitem__(self, item, value):
         self.arguments[item] = value
+
     def __getitem__(self, item):
         return self.arguments[item]
-    def format(self, document):
-        L = []
+
+    def eval(self,L):
         arguments = self.arguments
-        from types import StringType, InstanceType
-        for x in self.pattern:
-            tx = type(x)
-            if tx is StringType:
-                L.append(x)
-            elif tx is InstanceType:
-                L.append( x.format(document) )
+        document = self.__document
+        for x in L:
+            if isinstance(x,strTypes):
+                yield pdfdocEnc(x)
+            elif isinstance(x,PDFObject):
+                yield x.format(document)
+            elif isinstance(x,PDFPatternIf):
+                result = list(self.eval(x.cond))
+                cond = result and result[0]
+                for z in self.eval(x.thenPart if cond else x.elsePart):
+                    yield z
             else:
                 name = x[0]
                 value = arguments.get(name, None)
                 if value is None:
-                    raise ValueError, "%s value not defined" % repr(name)
-                if type(value) is InstanceType:
-                    #L.append( value.format(document) )
-                    L.append(format(value, document))
+                    raise ValueError("%s value not defined" % ascii(name))
+                if isinstance(value,PDFObject):
+                    yield format(value,document)
+                elif isinstance(value,strTypes):
+                    yield pdfdocEnc(value)
                 else:
-                    L.append( str(value) )
-        return string.join(L, "")
+                    yield pdfdocEnc(str(value))
 
+    def format(self, document):
+        self.__document = document
+        try:
+            return b"".join(self.eval(self.pattern))
+        finally:
+            del self.__document
 
+    def clone(self):
+        c = object.__new__(self.__class__)
+        c.pattern = self.pattern
+        c.arguments = self.arguments
+        return c
+
+class PDFPatternIf(object):
+    '''cond will be evaluated as [cond] in PDFpattern eval.
+    It should evaluate to a list with value 0/1 etc etc.
+    thenPart is a list to be evaluated if the cond evaulates true,
+    elsePart is the false sequence.
+    '''
+    def __init__(self,cond,thenPart=[],elsePart=[]):
+        if not isinstance(cond,list): cond = [cond]
+        for x in cond, thenPart, elsePart:
+            _patternSequenceCheck(x)
+        self.cond = cond
+        self.thenPart = thenPart
+        self.elsePart = elsePart

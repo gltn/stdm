@@ -1,7 +1,7 @@
 #!/bin/env python
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/graphics/testshapes.py
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/graphics/testshapes.py
 
 # testshapes.py - draws shapes onto a PDF canvas.
 
@@ -15,10 +15,11 @@ but we will expand them to try and trip up any parser.
 Feel free to add more.
 '''
 
-import os, sys
+import os, sys, base64
 
 from reportlab.lib import colors
 from reportlab.lib.units import cm
+from reportlab.lib.utils import asNative, base64_decodebytes
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.platypus import Flowable
@@ -51,7 +52,7 @@ def _setup():
             ('Tahoma','TAHOMA.TTF'),
             ('VerdanaMS','VERDANA.TTF'),
             ]:
-            for D in ('c:\WINNT','c:\Windows'):
+            for D in (r'c:\WINNT',r'c:\Windows'):
                 fn = os.path.join(D,'Fonts',ttf)
                 if os.path.isfile(fn):
                     try:
@@ -112,7 +113,7 @@ def getDrawing01():
     D = Drawing(400, 200)
     D.add(Rect(50, 50, 300, 100, fillColor=colors.yellow))
     D.add(String(180,100, 'Hello World', fillColor=colors.red))
-    D.add(String(180,86, 'Special characters \xc2\xa2\xc2\xa9\xc2\xae\xc2\xa3\xce\xb1\xce\xb2', fillColor=colors.red))
+    D.add(String(180,86, b'Special characters \xc2\xa2\xc2\xa9\xc2\xae\xc2\xa3\xce\xb1\xce\xb2', fillColor=colors.red))
 
     return D
 
@@ -384,7 +385,7 @@ def getDrawing10():
 
     return D
 
-from widgets.signsandsymbols import SmileyFace
+from reportlab.graphics.widgets.signsandsymbols import SmileyFace
 def getDrawing11():
     '''test of anchoring'''
     def makeSmiley(x, y, size, color):
@@ -439,7 +440,7 @@ def getDrawing13():
         maxx = 0
         for fontName in F:
             y -= th
-            text = fontName+": I should be totally horizontal and enclosed in a box and end in alphabetagamma \xc2\xa2\xc2\xa9\xc2\xae\xc2\xa3\xca\xa5\xd0\x96\xd6\x83\xd7\x90\xd9\x82\xe0\xa6\x95\xce\xb1\xce\xb2\xce\xb3"
+            text = fontName+asNative(b': I should be totally horizontal and enclosed in a box and end in alphabetagamma \xc2\xa2\xc2\xa9\xc2\xae\xc2\xa3\xca\xa5\xd0\x96\xd6\x83\xd7\x90\xd9\x82\xe0\xa6\x95\xce\xb1\xce\xb2\xce\xb3')
             textWidth = stringWidth(text, fontName, fontSize)
             maxx = max(maxx,textWidth+20)
             D.add(
@@ -451,37 +452,32 @@ def getDrawing13():
     if maxx>400 or maxy>200: _,_,D = drawit(_FONTS,maxx,maxy)
     return D
 
-##def getDrawing14():
-##    """This tests inherited properties.  Each font should be as it says."""
-##    D = Drawing(400, 200)
-##    
-##    fontSize = 12
-##    D.fontName = 'Courier'
-##    
-##    g1 = Group(
-##            Rect(0, 0, 150, 20, fillColor=colors.yellow),
-##            String(5, 5, 'Inherited Courier', fontName=inherit, fontSize = fontSize)
-##            )
-##    D.add(g1)
-##
-##    g2 = Group(g1, transform = translate(25,25))
-##    D.add(g2)
-##
-##    g3 = Group(g2, transform = translate(25,25))
-##    D.add(g3)
-##
-##    g4 = Group(g3, transform = translate(25,25))
-##    D.add(g4)
-##
-##
-##    return D
+def smallArrow():
+    '''create a small PIL image'''
+    from reportlab.graphics.renderPM import _getImage
+    from reportlab.lib.utils import getBytesIO
+    b = base64_decodebytes(b'''R0lGODdhCgAHAIMAAP/////29v/d3f+ysv9/f/9VVf9MTP8iIv8ICP8AAAAAAAAAAAAAAAAAAAAA
+AAAAACwAAAAACgAHAAAIMwABCBxIsKABAQASFli4MAECAgEAJJhIceKBAQkyasx4YECBjx8TICAQ
+AIDJkwYEAFgZEAA7''')
+    return _getImage().open(getBytesIO(b))
+
+def getDrawing14():
+    '''test shapes.Image'''
+    from reportlab.graphics.shapes import Image
+    D = Drawing(400, 200)
+    im0 = smallArrow()
+    D.add(Image(x=0,y=0,width=None,height=None,path=im0))
+    im1 = smallArrow()
+    D.add(Image(x=400-20,y=200-14,width=20,height=14,path=im1))
+    return D
+
 def getAllFunctionDrawingNames(doTTF=1):
     "Get a list of drawing function names from somewhere."
 
     funcNames = []
 
     # Here we get the names from the global name space.
-    symbols = globals().keys()
+    symbols = list(globals().keys())
     symbols.sort()
     for funcName in symbols:
         if funcName[0:10] == 'getDrawing':
@@ -491,11 +487,14 @@ def getAllFunctionDrawingNames(doTTF=1):
     return funcNames
 
 def _evalFuncDrawing(name, D, l=None, g=None):
+    if g is None: g = globals()
+    if l is None: l = locals()
+    func = l.get(name,g.get(name,None))
     try:
-        d = eval(name + '()', g or globals(), l or locals())
+        d = func()
     except:
         d = getFailedDrawing(name)
-    D.append((d, eval(name + '.__doc__'), name[3:]))
+    D.append((d, getattr(func,'.__doc__',''), name[3:]))
 
 def getAllTestDrawings(doTTF=1):
     D = []
@@ -534,7 +533,7 @@ def writePDF(drawings):
         i = i + 1
 
     c.save()
-    print 'wrote %s ' % pdfPath
+    print('wrote %s ' % pdfPath)
 
 
 class ShapesTestCase(unittest.TestCase):

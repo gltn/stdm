@@ -1,24 +1,32 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-__version__='''$Id$'''
-__doc__="""Provides support for the tests suite.
+import reportlab
+reportlab._rl_testing=True
+del reportlab
+__version__='3.3.0'
+__doc__="""Provides support for the test suite.
 
-The tests suite as a whole, and individual tests, need to share
+The test suite as a whole, and individual tests, need to share
 certain support functions.  We have to put these in here so they
 can always be imported, and so that individual tests need to import
 nothing more than "reportlab.whatever..."
 """
 
-import sys, os, string, fnmatch, copy, re
-from ConfigParser import ConfigParser
+import sys, os, fnmatch, re
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser
 import unittest
+from reportlab.lib.utils import isCompactDistro, __rl_loader__, rl_isdir, asUnicode
+from reportlab import ascii
 
 # Helper functions.
 def isWritable(D):
     try:
         fn = '00DELETE.ME'
         f = open(fn, 'w')
-        f.write('tests of writability - can be deleted')
+        f.write('test of writability - can be deleted')
         f.close()
         if os.path.isfile(fn):
             os.remove(fn)
@@ -31,19 +39,24 @@ RL_HOME = None
 testsFolder = None
 def setOutDir(name):
     """Is it a writable file system distro being invoked within
-    tests directory?  If so, can write tests output here.  If not,
+    test directory?  If so, can write test output here.  If not,
     it had better go in a temp directory.  Only do this once per
     process"""
     global _OUTDIR, RL_HOME, testsFolder
     if _OUTDIR: return _OUTDIR
     D = [d[9:] for d in sys.argv if d.startswith('--outdir=')]
+    if not D:
+        D = os.environ.get('RL_TEST_OUTDIR','')
+        if D: D=[D]
     if D:
         _OUTDIR = D[-1]
         try:
             os.makedirs(_OUTDIR)
         except:
             pass
-        for d in D: sys.argv.remove(d)
+        for d in D:
+            if d in sys.argv:
+                sys.argv.remove(d)
     else:
         assert name=='__main__',"setOutDir should only be called in the main script"
         scriptDir=os.path.dirname(sys.argv[0])
@@ -72,7 +85,7 @@ def setOutDir(name):
     return _OUTDIR
 
 def outputfile(fn):
-    """This works out where to write tests output.  If running
+    """This works out where to write test output.  If running
     code in a locked down file system, this will be a
     temp directory; otherwise, the output of 'test_foo.py' will
     normally be a file called 'test_foo.pdf', next door.
@@ -85,10 +98,10 @@ def printLocation(depth=1):
     if sys._getframe(depth).f_locals.get('__name__')=='__main__':
         outDir = outputfile('')
         if outDir!=_OUTDIR:
-            print 'Logs and output files written to folder "%s"' % outDir
+            print('Logs and output files written to folder "%s"' % outDir)
 
 def makeSuiteForClasses(*classes):
-    "Return a tests suite with tests loaded from provided classes."
+    "Return a test suite with tests loaded from provided classes."
 
     suite = unittest.TestSuite()
     loader = unittest.TestLoader()
@@ -106,7 +119,6 @@ def getCVSEntries(folder, files=1, folders=0):
     """
 
     join = os.path.join
-    split = string.split
 
     # If CVS subfolder doesn't exist return empty list.
     try:
@@ -119,7 +131,7 @@ def getCVSEntries(folder, files=1, folders=0):
     for line in f.readlines():
         if folders and line[0] == 'D' \
            or files and line[0] != 'D':
-            entry = split(line, '/')[1]
+            entry = line.split('/')[1]
             if entry:
                 allEntries.append(join(folder, entry))
 
@@ -130,7 +142,7 @@ def getCVSEntries(folder, files=1, folders=0):
 class ExtConfigParser(ConfigParser):
     "A slightly extended version to return lists of strings."
 
-    pat = re.compile('\s*\[.*\]\s*')
+    pat = re.compile(r'\s*\[.*\]\s*')
 
     def getstringlist(self, section, option):
         "Coerce option to a list of strings or return unchanged if that fails."
@@ -139,10 +151,10 @@ class ExtConfigParser(ConfigParser):
 
         # This seems to allow for newlines inside values
         # of the config file, but be careful!!
-        val = string.replace(value, '\n', '')
+        val = value.replace('\n', '')
 
         if self.pat.match(val):
-            return eval(val)
+            return eval(val,{__builtins__:None})
         else:
             return value
 
@@ -161,13 +173,13 @@ class GlobDirectoryWalker:
             self.stack = [directory]
             self.files = []
         else:
-            from reportlab.lib.utils import isCompactDistro, __loader__, rl_isdir
-            if not isCompactDistro() or not __loader__ or not rl_isdir(directory):
+            if not isCompactDistro() or not __rl_loader__ or not rl_isdir(directory):
                 raise ValueError('"%s" is not a directory' % directory)
-            self.directory = directory[len(__loader__.archive)+len(os.sep):]
+            self.directory = directory[len(__rl_loader__.archive)+len(os.sep):]
             pfx = self.directory+os.sep
             n = len(pfx)
-            self.files = map(lambda x, n=n: x[n:],filter(lambda x,pfx=pfx: x.startswith(pfx),__loader__._files.keys()))
+            self.files = list(map(lambda x, n=n: x[n:],list(filter(lambda x,pfx=pfx: x.startswith(pfx),list(__rl_loader__._files.keys())))))
+            self.files.sort()
             self.stack = []
 
     def __getitem__(self, index):
@@ -204,22 +216,23 @@ class RestrictedGlobDirectoryWalker(GlobDirectoryWalker):
 
         if ignore == None:
             ignore = []
-        self.ignoredPatterns = []
-        if type(ignore) == type([]):
+        ip = [].append
+        if isinstance(ignore,(tuple,list)):
             for p in ignore:
-                self.ignoredPatterns.append(p)
-        elif type(ignore) == type(''):
-            self.ignoredPatterns.append(ignore)
-
+                ip(p)
+        elif isinstance(ignore,str):
+            ip(ignore)
+        self.ignorePatterns = ([_.replace('/',os.sep) for _ in ip.__self__] if os.sep != '/'
+                                else ip.__self__)
 
     def filterFiles(self, folder, files):
         "Filters all items from files matching patterns to ignore."
 
+        fnm = fnmatch.fnmatch
         indicesToDelete = []
-        for i in xrange(len(files)):
-            f = files[i]
-            for p in self.ignoredPatterns:
-                if fnmatch.fnmatch(f, p):
+        for i,f in enumerate(files):
+            for p in self.ignorePatterns:
+                if fnm(f, p) or fnm(os.path.join(folder,f),p):
                     indicesToDelete.append(i)
         indicesToDelete.reverse()
         for i in indicesToDelete:
@@ -243,7 +256,7 @@ class CVSGlobDirectoryWalker(GlobDirectoryWalker):
         cvsFiles = getCVSEntries(folder)
         if cvsFiles:
             indicesToDelete = []
-            for i in xrange(len(files)):
+            for i in range(len(files)):
                 f = files[i]
                 if join(folder, f) not in cvsFiles:
                     indicesToDelete.append(i)
@@ -259,8 +272,8 @@ class CVSGlobDirectoryWalker(GlobDirectoryWalker):
 class SecureTestCase(unittest.TestCase):
     """Secure testing base class with additional pre- and postconditions.
 
-    We try to ensure that each tests leaves the environment it has
-    found unchanged after the tests is performed, successful or not.
+    We try to ensure that each test leaves the environment it has
+    found unchanged after the test is performed, successful or not.
 
     Currently we restore sys.path and the working directory, but more
     of this could be added easily, like removing temporary files or
@@ -273,14 +286,11 @@ class SecureTestCase(unittest.TestCase):
 
     def setUp(self):
         "Remember sys.path and current working directory."
-
-        self._initialPath = copy.copy(sys.path)
+        self._initialPath = sys.path[:]
         self._initialWorkDir = os.getcwd()
-
 
     def tearDown(self):
         "Restore previous sys.path and working directory."
-
         sys.path = self._initialPath
         os.chdir(self._initialWorkDir)
 
@@ -324,10 +334,18 @@ class ScriptThatMakesFileTest(unittest.TestCase):
 
     def runTest(self):
         fmt = sys.platform=='win32' and '"%s" %s' or '%s %s'
-        p = os.popen(fmt % (sys.executable,self.scriptName),'r')
-        out = p.read()
+        import subprocess
+        out = subprocess.check_output((sys.executable,self.scriptName))
+        #p = os.popen(fmt % (sys.executable,self.scriptName),'r')
+        #out = p.read()
         if self.verbose:
-            print out
-        status = p.close()
+            print(out)
+        #status = p.close()
         assert os.path.isfile(self.outFileName), "File %s not created!" % self.outFileName
 
+def equalStrings(a,b,enc='utf8'):
+    return a==b if type(a)==type(b) else asUnicode(a,enc)==asUnicode(b,enc)
+
+def eqCheck(r,x):
+    if r!=x:
+        print('Strings unequal\nexp: %s\ngot: %s' % (ascii(x),ascii(r)))

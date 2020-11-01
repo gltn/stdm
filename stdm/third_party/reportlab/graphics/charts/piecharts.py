@@ -1,19 +1,19 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/graphics/charts/piecharts.py
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/graphics/charts/piecharts.py
 # experimental pie chart script.  Two types of pie - one is a monolithic
 #widget with all top-level properties, the other delegates most stuff to
 #a wedges collection whic lets you customize the group or every individual
 #wedge.
 
-__version__=''' $Id$ '''
+__version__='3.3.0'
 __doc__="""Basic Pie Chart class.
 
 This permits you to customize and pop out individual wedges;
 supports elliptical and circular pies.
 """
 
-import copy
+import copy, functools
 from math import sin, cos, pi
 
 from reportlab.lib import colors
@@ -23,7 +23,8 @@ from reportlab.lib.validators import isColor, isNumber, isListOfNumbersOrNone,\
                                     isBoolean, isListOfColors, isNumberOrNone,\
                                     isNoneOrListOfNoneOrStrings, isTextAnchor,\
                                     isNoneOrListOfNoneOrNumbers, isBoxAnchor,\
-                                    isStringOrNone, NoneOr
+                                    isStringOrNone, NoneOr, EitherOr,\
+                                    isNumberInRange
 from reportlab.graphics.widgets.markers import uSymbol2Symbol, isSymbol
 from reportlab.lib.attrmap import *
 from reportlab.pdfgen.canvas import Canvas
@@ -32,6 +33,7 @@ from reportlab.graphics.widgetbase import Widget, TypedPropertyCollection, PropH
 from reportlab.graphics.charts.areas import PlotArea
 from reportlab.graphics.charts.legends import _objStr
 from reportlab.graphics.charts.textlabels import Label
+from reportlab import xrange, ascii, cmp
 
 _ANGLE2BOXANCHOR={0:'w', 45:'sw', 90:'s', 135:'se', 180:'e', 225:'ne', 270:'n', 315: 'nw', -45: 'nw'}
 _ANGLE2RBOXANCHOR={0:'e', 45:'ne', 90:'n', 135:'nw', 180:'w', 225:'sw', 270:'s', 315: 'se', -45: 'se'}
@@ -103,6 +105,10 @@ class WedgeProperties(PropHolder):
         label_pointer_piePad = AttrMapValue(isNumber,desc='pad between pointer label and pie'),
         swatchMarker = AttrMapValue(NoneOr(isSymbol), desc="None or makeMarker('Diamond') ...",advancedUsage=1),
         visible = AttrMapValue(isBoolean,'Set to false to skip displaying'),
+        shadingAmount = AttrMapValue(isNumberOrNone,desc='amount by which to shade fillColor'),
+        shadingAngle = AttrMapValue(isNumber,desc='shading changes at multiple of this angle (in degrees)'),
+        shadingDirection = AttrMapValue(OneOf('normal','anti'),desc="Whether shading is at start or end of wedge/sector"),
+        shadingKind = AttrMapValue(OneOf(None,'lighten','darken'),desc="use colors.Whiter or Blacker"),
         )
 
     def __init__(self):
@@ -137,6 +143,10 @@ class WedgeProperties(PropHolder):
         self.label_pointer_edgePad = 2
         self.label_pointer_piePad = 3
         self.visible = 1
+        self.shadingKind = None
+        self.shadingAmount = 0.5
+        self.shadingAngle = 2.0137
+        self.shadingDirection = 'normal'    #or 'anti'
 
 def _addWedgeLabel(self,text,angle,labelX,labelY,wedgeStyle,labelClass=WedgeLabel):
     # now draw a label
@@ -261,14 +271,15 @@ def findOverlapRun(B,wrap=1):
             if len(R)>1: return R
     return None
 
-def fixLabelOverlaps(L, sideLabels=False):
+def fixLabelOverlaps(L, sideLabels=False, mult0=1.0):
     nL = len(L)
     if nL<2: return
     B = [l._origdata['bounds'] for l in L]
     OK = 1
     RP = []
     iter = 0
-    mult = 1.
+    mult0 = float(mult0 + 0)
+    mult = mult0
 
     if not sideLabels:
         while iter<30:
@@ -277,7 +288,7 @@ def fixLabelOverlaps(L, sideLabels=False):
             nR = len(R)
             if nR==nL: break
             if not [r for r in RP if r in R]:
-                mult = 1.0
+                mult = mult0
             da = 0
             r0 = R[0]
             rL = R[-1]
@@ -285,7 +296,7 @@ def fixLabelOverlaps(L, sideLabels=False):
             taa = aa = _360(L[r0]._pmv)
             for r in R[1:]:
                 b = B[r]
-                da = max(da,min(b[3]-bi[1],bi[3]-b[1]))
+                da = max(da,min(b[2]-bi[0],bi[2]-b[0]))
                 bi = b
                 aa += L[r]._pmv
             aa = aa/float(nR)
@@ -353,10 +364,14 @@ def _makeSideArcDefs(sa,direction):
             a = (1,sa,offs+90),(0,offs+90,offs+270),(1,offs+270,360+sa)
     return tuple([a for a in a if a[1]<a[2]])
 
+def _keyFLA(x,y):
+    return cmp(y[1]-y[0],x[1]-x[0])
+_keyFLA = functools.cmp_to_key(_keyFLA)
+
 def _findLargestArc(xArcs,side):
     a = [a[1] for a in xArcs if a[0]==side and a[1] is not None]
     if not a: return None
-    if len(a)>1: a.sort(lambda x,y: cmp(y[1]-y[0],x[1]-x[0]))
+    if len(a)>1: a.sort(key=_keyFLA)
     return a[0]
 
 def _fPLSide(l,width,side=None):
@@ -392,11 +407,13 @@ def _fPLSide(l,width,side=None):
     data['side'] = side
     return side,w
 
-def _fPLCF(a,b):
+#key functions
+def _fPLCF(a,b): 
     return cmp(b._origdata['smid'],a._origdata['smid'])
+_fPLCF = functools.cmp_to_key(_fPLCF)
 
-def _arcCF(a,b):
-    return cmp(a[1],b[1])
+def _arcCF(a):
+    return a[1]
 
 def _fixPointerLabels(n,L,x,y,width,height,side=None):
     LR = [],[]
@@ -418,7 +435,7 @@ def _fixPointerLabels(n,L,x,y,width,height,side=None):
             aB = B.append
             S = []
             aS = S.append
-            T.sort(_fPLCF)
+            T.sort(key=_fPLCF)
             p = 0
             yh = y+height
             for l in T:
@@ -481,7 +498,7 @@ def theta0(data, direction):
     vstar = len(data)*1e6
     rstar = 0
     delta = pi/36.0
-    for i in xrange(36):
+    for i in range(36):
         r = i*delta
         v = sum([abs(sin(r+a)) for a in hrads])
         if v < vstar:
@@ -509,7 +526,7 @@ class Pie(AbstractPieChart):
         slices = AttrMapValue(None, desc="Collection of wedge descriptor objects"),
         simpleLabels = AttrMapValue(isBoolean, desc="If true(default) use a simple String not an advanced WedgeLabel. A WedgeLabel is customisable using the properties prefixed label_ in the collection slices."),
         other_threshold = AttrMapValue(isNumber, desc='A value for doing threshholding, not used yet.',advancedUsage=1),
-        checkLabelOverlap = AttrMapValue(isBoolean, desc="If true check and attempt to fix\n standard label overlaps(default off)",advancedUsage=1),
+        checkLabelOverlap = AttrMapValue(EitherOr((isNumberInRange(0.05,1),isBoolean)), desc="If true check and attempt to fix\n standard label overlaps(default off)",advancedUsage=1),
         pointerLabelMode = AttrMapValue(OneOf(None,'LeftRight','LeftAndRight'), desc='',advancedUsage=1),
         sameRadii = AttrMapValue(isBoolean, desc="If true make x/y radii the same(default off)",advancedUsage=1),
         orderMode = AttrMapValue(OneOf('fixed','alternate'),advancedUsage=1),
@@ -658,10 +675,9 @@ class Pie(AbstractPieChart):
         return PL(centerx,centery,xradius,yradius,G,lu,ru)
 
     def normalizeData(self,keepData=False):
-        data = map(abs,self.data)
+        data = list(map(abs,self.data))
         s = self._sum = float(sum(data))
-        if s<=1e-8: s = 0
-        f = 360./s
+        f = 360./s if s!=0 else 1
         if keepData:
             return [AngleData(f*x,x) for x in data]
         else:
@@ -678,7 +694,7 @@ class Pie(AbstractPieChart):
         D = [a for a in enumerate(self.normalizeData(keepData=wr))]
         if self.orderMode=='alternate' and not self.sideLabels:
             W = [a for a in D if abs(a[1])>=1e-5]
-            W.sort(_arcCF)
+            W.sort(key=_arcCF)
             T = [[],[]]
             i = 0
             while W:
@@ -756,6 +772,7 @@ class Pie(AbstractPieChart):
 
         innerRadiusFraction = self.innerRadiusFraction
 
+
         for i,(a1,a2) in angles:
             if a2 is None: continue
             #if we didn't use %stylecount here we'd end up with the later wedges
@@ -794,8 +811,37 @@ class Pie(AbstractPieChart):
             theWedge.strokeLineJoin = wedgeStyle.strokeLineJoin
             theWedge.strokeLineCap = wedgeStyle.strokeLineCap
             theWedge.strokeMiterLimit = wedgeStyle.strokeMiterLimit
-            theWedge.strokeWidth = wedgeStyle.strokeWidth
             theWedge.strokeDashArray = wedgeStyle.strokeDashArray
+
+            shader = wedgeStyle.shadingKind
+            if shader:
+                nshades = aa / float(wedgeStyle.shadingAngle)
+                if nshades > 1:
+                    shader = colors.Whiter if shader=='lighten' else colors.Blacker
+                    nshades = 1+int(nshades)
+                    shadingAmount = 1-wedgeStyle.shadingAmount
+                    if wedgeStyle.shadingDirection=='normal':
+                        dsh = (1-shadingAmount)/float(nshades-1)
+                        shf1 = shadingAmount
+                    else:
+                        dsh = (shadingAmount-1)/float(nshades-1)
+                        shf1 = 1
+                    shda = (a2-a1)/float(nshades)
+                    shsc = wedgeStyle.fillColor
+                    theWedge.fillColor = None
+                    for ish in xrange(nshades):
+                        sha1 = a1 + ish*shda
+                        sha2 = a1 + (ish+1)*shda
+                        shc = shader(shsc,shf1 + dsh*ish)
+                        if innerRadiusFraction:
+                            shWedge = Wedge(cx, cy, xradius, sha1, sha2, yradius=yradius,
+                                    radius1=xradius*innerRadiusFraction,yradius1=yradius*innerRadiusFraction)
+                        else:
+                            shWedge = Wedge(cx, cy, xradius, sha1, sha2, yradius=yradius)
+                        shWedge.fillColor = shc
+                        shWedge.strokeColor = None
+                        shWedge.strokeWidth = 0
+                        g_add(shWedge)
 
             g_add(theWedge)
             if wr:
@@ -816,7 +862,7 @@ class Pie(AbstractPieChart):
                         if checkLabelOverlap:
                             l._origdata = { 'x': labelX, 'y':labelY, 'angle': averageAngle,
                                             'rx': rx, 'ry':ry, 'cx':cx, 'cy':cy,
-                                            'bounds': l.getBounds(),
+                                            'bounds': l.getBounds(), 'angles':(a1,a2),
                                             }
                     elif plMode and PL_data:
                         l = PL_data[i]
@@ -870,7 +916,7 @@ class Pie(AbstractPieChart):
                         x1,y1,x2,y2 = l.getBounds()
         
         if checkLabelOverlap and L:
-            fixLabelOverlaps(L, sideLabels)
+            fixLabelOverlaps(L, sideLabels, mult0=checkLabelOverlap)
         for l in L: g_add(l)
 
         if not plMode:
@@ -968,7 +1014,7 @@ class LegendedPie(Pie):
         self.legend1.columnMaximum = 7
         self.legend1.alignment = 'right'
         self.legend_names = ['AAA:','AA:','A:','BBB:','NR:']
-        for f in xrange(len(self.data)):
+        for f in range(len(self.data)):
             self.legend1.colorNamePairs.append((self.pieAndLegend_colors[f], self.legend_names[f]))
         self.legend1.fontName = "Helvetica-Bold"
         self.legend1.fontSize = 6
@@ -993,7 +1039,7 @@ class LegendedPie(Pie):
         if self.drawLegend:
             self.legend1.colorNamePairs = []
             self._legend2.colorNamePairs = []
-        for f in xrange(len(self.data)):
+        for f in range(len(self.data)):
             if self.legend_names == None:
                 self.slices[f].fillColor = self.pieAndLegend_colors[f]
                 self.legend1.colorNamePairs.append((self.pieAndLegend_colors[f], None))
@@ -1007,28 +1053,15 @@ class LegendedPie(Pie):
             if self.legend_data != None:
                 ldf = self.legend_data[f]
                 lNF = self.legendNumberFormat
-                from types import StringType
                 if ldf is None or lNF is None:
                     pass
-                elif type(lNF) is StringType:
+                elif isinstance(lNF,str):
                     ldf = lNF % ldf
                 elif hasattr(lNF,'__call__'):
                     ldf = lNF(ldf)
                 else:
-                    p = self.legend_names[f]
-                if self.legend_data != None:
-                    ldf = self.legend_data[f]
-                    lNF = self.legendNumberFormat
-                    if ldf is None or lNF is None:
-                        pass
-                    elif type(lNF) is StringType:
-                        ldf = lNF % ldf
-                    elif hasattr(lNF,'__call__'):
-                        ldf = lNF(ldf)
-                    else:
-                        msg = "Unknown formatter type %s, expected string or function" % self.legendNumberFormat
-                        raise Exception, msg
-                    self._legend2.colorNamePairs.append((None,ldf))
+                    raise ValueError("Unknown formatter type %s, expected string or function" % ascii(self.legendNumberFormat))
+                self._legend2.colorNamePairs.append((None,ldf))
         p = Pie.draw(self)
         if self.drawLegend:
             p.add(self.legend1)
@@ -1143,6 +1176,10 @@ class _SL3D:
     def __str__(self):
         return '_SL3D(%.2f,%.2f)' % (self.lo,self.hi)
 
+def _keyS3D(a,b):
+    return -cmp(a[0],b[0])
+_keyS3D = functools.cmp_to_key(_keyS3D)
+
 _270r = _2rad(270)
 class Pie3d(Pie):
     _attrMap = AttrMap(BASE=Pie,
@@ -1172,10 +1209,14 @@ class Pie3d(Pie):
 
     def __init__(self):
         Pie.__init__(self)
+        self.slices = TypedPropertyCollection(Wedge3dProperties)
+        self.slices[0].fillColor = colors.darkcyan
+        self.slices[1].fillColor = colors.blueviolet
+        self.slices[2].fillColor = colors.blue
+        self.slices[3].fillColor = colors.cyan
         self.slices[4].fillColor = colors.azure
         self.slices[5].fillColor = colors.crimson
         self.slices[6].fillColor = colors.darkviolet
-        self.slices = TypedPropertyCollection(Wedge3dProperties)
         self.xradius = self.yradius = None
         self.width = 300
         self.height = 200
@@ -1243,7 +1284,7 @@ class Pie3d(Pie):
     
         checkLabelOverlap = self.checkLabelOverlap
 
-        for i in xrange(n):
+        for i in range(n):
             style = slices[i]
             if not style.visible: continue
             sl = _sl3d[i]
@@ -1310,9 +1351,9 @@ class Pie3d(Pie):
                 self._radiusx = radiusx
                 self._radiusy = radiusy
 
-        S.sort(lambda a,b: -cmp(a[0],b[0]))
+        S.sort(key=_keyS3D)
         if checkLabelOverlap and L:
-            fixLabelOverlaps(L,sideLabels)
+            fixLabelOverlaps(L,self.sideLabels)
         for x in ([s[1] for s in S]+T+L):
             g.add(x)
         return g
@@ -1647,17 +1688,19 @@ def sample9():
 
     return d
 
-
-
 if __name__=='__main__':
     """Normally nobody will execute this
 
     It's helpful for reportlab developers to put a 'main' block in to execute
     the most recently edited feature.
     """
-    drawing = sample7()
+    import sys
     from reportlab.graphics import renderPDF
-    renderPDF.drawToFile(drawing, 'side_labelled_pie.pdf', 'Side Labelled Pie')
+    argv = sys.argv[1:] or ['7']
+    for a in argv:
+        name = a if a.startswith('sample') else 'sample%s' % a
+        drawing = globals()[name]()
+        renderPDF.drawToFile(drawing, '%s.pdf' % name)
 
     
 

@@ -1,8 +1,8 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/pdfbase/_cidfontdata.py
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/pdfbase/_cidfontdata.py
 #$Header $
-__version__=''' $Id$ '''
+__version__='3.3.0'
 __doc__="""
 This defines additional static data to support CID fonts.
 
@@ -473,12 +473,11 @@ message1 =  '\202\261\202\352\202\315\225\275\220\254\226\276\222\251\202\305\20
 message2 = '\202\261\202\352\202\315\225\275\220\254\212p\203S\203V\203b\203N\202\305\202\267\201B'
 
 ##def pswidths(text):
-##    import string
-##    words = string.split(text)
+##    words = text.split()
 ##    out = []
 ##    for word in words:
 ##        if word == '[':
 ##            out.append(word)
 ##        else:
 ##            out.append(word + ',')
-##    return eval(string.join(out, ''))
+##    return eval(''.join(out),{})

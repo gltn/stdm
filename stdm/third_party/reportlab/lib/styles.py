@@ -1,7 +1,7 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/lib/styles.py
-__version__=''' $Id$ '''
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/lib/styles.py
+__version__='3.3.0'
 __doc__='''Classes for ParagraphStyle and similar things.
 
 A style is a collection of attributes, but with some extra features
@@ -25,7 +25,19 @@ __all__=(
 from reportlab.lib.colors import white, black
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
 from reportlab.lib.fonts import tt2ps
-from reportlab.rl_config import canvas_basefontname as _baseFontName
+from reportlab.rl_config import canvas_basefontname as _baseFontName, \
+                                underlineWidth as _baseUnderlineWidth, \
+                                underlineOffset as _baseUnderlineOffset, \
+                                underlineGap as _baseUnderlineGap, \
+                                strikeWidth as _baseStrikeWidth, \
+                                strikeOffset as _baseStrikeOffset, \
+                                strikeGap as _baseStrikeGap, \
+                                spaceShrinkage as _spaceShrinkage, \
+                                platypus_link_underline as _platypus_link_underline, \
+                                hyphenationLang as _hyphenationLang, \
+                                hyphenationMinWordLength as _hyphenationMinWordLength, \
+                                uriWasteReduce as _uriWasteReduce, \
+                                embeddedHyphenation as _embeddedHyphenation
 _baseFontNameB = tt2ps(_baseFontName,1,0)
 _baseFontNameI = tt2ps(_baseFontName,0,1)
 _baseFontNameBI = tt2ps(_baseFontName,1,1)
@@ -62,7 +74,7 @@ class PropertySet:
 
     def _setKwds(self,**kw):
         #step three - copy keywords if any
-        for (key, value) in kw.items():
+        for key, value in kw.items():
              self.__dict__[key] = value
 
     def __repr__(self):
@@ -73,24 +85,25 @@ class PropertySet:
         use if you have been hacking the styles.  This is
         used by __init__"""
         if self.parent:
-            for (key, value) in self.parent.__dict__.items():
+            for key, value in self.parent.__dict__.items():
                 if (key not in ['name','parent']):
                     self.__dict__[key] = value
 
     def listAttrs(self, indent=''):
-        print indent + 'name =', self.name
-        print indent + 'parent =', self.parent
-        keylist = self.__dict__.keys()
+        print(indent + 'name =', self.name)
+        print(indent + 'parent =', self.parent)
+        keylist = list(self.__dict__.keys())
         keylist.sort()
         keylist.remove('name')
         keylist.remove('parent')
         for key in keylist:
             value = self.__dict__.get(key, None)
-            print indent + '%s = %s' % (key, value)
+            print(indent + '%s = %s' % (key, value))
 
     def clone(self, name, parent=None, **kwds):
         r = self.__class__(name,parent)
         r.__dict__ = self.__dict__.copy()
+        r.name = name
         r.parent = parent is None and self or parent
         r._setKwds(**kwds)
         return r
@@ -112,7 +125,10 @@ class ParagraphStyle(PropertySet):
         #'bulletColor':black,
         'textColor': black,
         'backColor':None,
-        'wordWrap':None,
+        'wordWrap':None,        #None means do nothing special
+                                #CJK use Chinese Line breaking
+                                #LTR RTL use left to right / right to left
+                                #with support from pyfribi2 if available
         'borderWidth': 0,
         'borderPadding': 0,
         'borderColor': None,
@@ -123,6 +139,24 @@ class ParagraphStyle(PropertySet):
         'endDots':None,         #dots on the last line of left/right justified paras
                                 #string or object with text and optional fontName, fontSize, textColor & backColor
                                 #dy
+        'splitLongWords':1,     #make best efforts to split long words
+        'underlineWidth': _baseUnderlineWidth,  #underline width
+        'bulletAnchor': 'start',    #where the bullet is anchored ie start, middle, end or numeric
+        'justifyLastLine': 0,   #n allow justification on the last line for more than n words 0 means don't bother
+        'justifyBreaks': 0,     #justify lines broken with <br/>
+        'spaceShrinkage': _spaceShrinkage,  #allow shrinkage of percentage of space to fit on line
+        'strikeWidth': _baseStrikeWidth,    #stroke width
+        'underlineOffset': _baseUnderlineOffset,    #fraction of fontsize to offset underlines
+        'underlineGap': _baseUnderlineGap,      #gap for double/triple underline
+        'strikeOffset': _baseStrikeOffset,  #fraction of fontsize to offset strikethrough
+        'strikeGap': _baseStrikeGap,        #gap for double/triple strike
+        'linkUnderline': _platypus_link_underline,
+        #'underlineColor':  None,
+        #'strikeColor': None,
+        'hyphenationLang': _hyphenationLang,
+        #'hyphenationMinWordLength': _hyphenationMinWordLength,
+        'embeddedHyphenation': _embeddedHyphenation,
+        'uriWasteReduce': _uriWasteReduce,
         }
 
 class LineStyle(PropertySet):
@@ -149,7 +183,7 @@ class ListStyle(PropertySet):
                 bulletDedent='auto',
                 bulletDir='ltr',
                 bulletFormat=None,
-                start=None,         #starting value for a list
+                start=None,         #starting value for a list; if a list then the start sequence
                 )
 
 _stylesheet1_undefined = object()
@@ -220,16 +254,16 @@ class StyleSheet1:
             self.byAlias[alias] = style
 
     def list(self):
-        styles = self.byName.items()
+        styles = list(self.byName.items())
         styles.sort()
         alii = {}
-        for (alias, style) in self.byAlias.items():
+        for (alias, style) in list(self.byAlias.items()):
             alii[style] = alias
         for (name, style) in styles:
             alias = alii.get(style, None)
-            print name, alias
+            print(name, alias)
             style.listAttrs('    ')
-            print
+            print()
 
 def testStyles():
     pNormal = ParagraphStyle('Normal',None)
@@ -238,7 +272,7 @@ def testStyles():
     pNormal.leading = 14.4
 
     pNormal.listAttrs()
-    print
+    print()
     pPre = ParagraphStyle('Literal', pNormal)
     pPre.fontName = 'Courier'
     pPre.listAttrs()
@@ -346,6 +380,42 @@ def getSampleStyleSheet():
                                   fontSize=8,
                                   leading=8.8,
                                   firstLineIndent=0,
-                                  leftIndent=36))
+                                  leftIndent=36,
+                                  hyphenationLang=''))
 
+    stylesheet.add(ListStyle(name='UnorderedList',
+                                parent=None,
+                                leftIndent=18,
+                                rightIndent=0,
+                                bulletAlign='left',
+                                bulletType='1',
+                                bulletColor=black,
+                                bulletFontName='Helvetica',
+                                bulletFontSize=12,
+                                bulletOffsetY=0,
+                                bulletDedent='auto',
+                                bulletDir='ltr',
+                                bulletFormat=None,
+                                #start='circle square blackstar sparkle disc diamond'.split(),
+                                start=None,
+                            ),
+                   alias='ul')
+
+    stylesheet.add(ListStyle(name='OrderedList',
+                                parent=None,
+                                leftIndent=18,
+                                rightIndent=0,
+                                bulletAlign='left',
+                                bulletType='1',
+                                bulletColor=black,
+                                bulletFontName='Helvetica',
+                                bulletFontSize=12,
+                                bulletOffsetY=0,
+                                bulletDedent='auto',
+                                bulletDir='ltr',
+                                bulletFormat=None,
+                                #start='1 a A i I'.split(),
+                                start=None,
+                            ),
+                   alias='ol')
     return stylesheet

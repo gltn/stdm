@@ -1,8 +1,8 @@
 #!/bin/env python
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
-#history http://www.reportlab.co.uk/cgi-bin/viewcvs.cgi/public/reportlab/trunk/reportlab/lib/units.py
-__version__=''' $Id$ '''
+#history https://hg.reportlab.com/hg-public/reportlab/log/tip/src/reportlab/lib/units.py
+__version__='3.3.0'
 __doc__='''Defines inch, cm, mm etc as multiples of a point
 
 You can now in user-friendly units by doing::
@@ -27,4 +27,4 @@ def toLength(s):
         if s[-4:]=='pica': return float(s[:-4])*pica
         return float(s)
     except:
-        raise ValueError, "Can't convert '%s' to length" % s
+        raise ValueError("Can't convert '%s' to length" % s)

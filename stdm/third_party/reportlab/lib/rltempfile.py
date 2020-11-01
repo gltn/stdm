@@ -1,13 +1,13 @@
-#Copyright ReportLab Europe Ltd. 2000-2012
+#Copyright ReportLab Europe Ltd. 2000-2017
 #see license.txt for license details
 # $URI:$
-__version__=''' $Id$ '''
-__doc__='''Helper for the tests suite - determines where to write output.
+__version__='3.3.0'
+__doc__='''Helper for the test suite - determines where to write output.
 
-When our tests suite runs as source, a script "test_foo.py" will typically
+When our test suite runs as source, a script "test_foo.py" will typically
 create "test_foo.pdf" alongside it.  But if you are testing a package of
 compiled code inside a zip archive, this won't work.  This determines
-where to write tests suite output, creating a subdirectory of /tmp/ or
+where to write test suite output, creating a subdirectory of /tmp/ or
 whatever if needed.
 
 '''
