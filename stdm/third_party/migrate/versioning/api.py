@@ -49,7 +49,7 @@ command_desc = {
     'downgrade': 'downgrade a database to an earlier version',
     'drop_version_control': 'removes version control from a database',
     'manage': 'creates a Python script that runs Migrate with a set of default values',
-    'tests': 'performs the upgrade and downgrade command on the given database',
+    'test': 'performs the upgrade and downgrade command on the given database',
     'compare_model_to_db': 'compare MetaData against the current database state',
     'create_model': 'dump the current database as a Python model to stdout',
     'make_update_script_for_model': 'create a script changing the old MetaData to the new (current) MetaData',
@@ -203,11 +203,11 @@ def downgrade(url, repository, version, **opts):
 
 @with_engine
 def test(url, repository, **opts):
-    """%prog tests URL REPOSITORY_PATH [VERSION]
+    """%prog test URL REPOSITORY_PATH [VERSION]
 
     Performs the upgrade and downgrade option on the given
-    database. This is not a real tests and may leave the database in a
-    bad state. You should therefore better run the tests on a copy of
+    database. This is not a real test and may leave the database in a
+    bad state. You should therefore better run the test on a copy of
     your database.
     """
     engine = opts.pop('engine')

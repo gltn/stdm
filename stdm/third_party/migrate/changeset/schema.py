@@ -3,7 +3,7 @@
 """
 import abc
 try:  # Python 3
-    from collections import MutableMapping as DictMixin
+    from collections.abc import MutableMapping as DictMixin
 except ImportError:  # Python 2
     from UserDict import DictMixin
 import warnings
@@ -138,7 +138,7 @@ def alter_column(*p, **k):
     delta = ColumnDelta(*p, **k)
 
     visitorcallable = get_engine_visitor(engine, 'schemachanger')
-    engine._run_visitor(visitorcallable, delta)
+    _run_visitor(engine, visitorcallable, delta)
 
     return delta
 
@@ -166,6 +166,20 @@ def _to_index(index, table=None, engine=None):
     ret.table = table
     return ret
 
+
+def _run_visitor(
+    connectable, visitorcallable, element, connection=None, **kwargs
+):
+    if connection is not None:
+        visitorcallable(
+            connection.dialect, connection, **kwargs).traverse_single(element)
+    else:
+        conn = connectable.connect()
+        try:
+            visitorcallable(
+                conn.dialect, conn, **kwargs).traverse_single(element)
+        finally:
+            conn.close()
 
 
 # Python3: if we just use:
@@ -353,8 +367,14 @@ class ColumnDelta(six.with_metaclass(MyMeta, DictMixin, sqlalchemy.schema.Schema
         self.process_column(self.result_column)
 
         # create an instance of class type if not yet
-        if 'type' in diffs and callable(self.result_column.type):
-            self.result_column.type = self.result_column.type()
+        if 'type' in diffs:
+            if callable(self.result_column.type):
+                self.result_column.type = self.result_column.type()
+            if self.result_column.autoincrement and \
+                    not issubclass(
+                        self.result_column.type._type_affinity,
+                        sqlalchemy.Integer):
+                self.result_column.autoincrement = False
 
         # add column to the table
         if self.table is not None and self.alter_metadata:
@@ -568,7 +588,7 @@ populated with defaults
         self.add_to_table(table)
         engine = self.table.bind
         visitorcallable = get_engine_visitor(engine, 'columngenerator')
-        engine._run_visitor(visitorcallable, self, connection, **kwargs)
+        _run_visitor(engine, visitorcallable, self, connection, **kwargs)
 
         # TODO: reuse existing connection
         if self.populate_default and self.default is not None:
@@ -589,7 +609,7 @@ populated with defaults
             self.table = table
         engine = self.table.bind
         visitorcallable = get_engine_visitor(engine, 'columndropper')
-        engine._run_visitor(visitorcallable, self, connection, **kwargs)
+        _run_visitor(engine, visitorcallable, self, connection, **kwargs)
         self.remove_from_table(self.table, unset_table=False)
         self.table = None
         return self
@@ -644,12 +664,10 @@ populated with defaults
     # TODO: this is fixed in 0.6
     def copy_fixed(self, **kw):
         """Create a copy of this ``Column``, with all attributes."""
-        q = util.safe_quote(self)
         return sqlalchemy.Column(self.name, self.type, self.default,
             key=self.key,
             primary_key=self.primary_key,
             nullable=self.nullable,
-            quote=q,
             index=self.index,
             unique=self.unique,
             onupdate=self.onupdate,
@@ -685,7 +703,7 @@ class ChangesetIndex(object):
         engine = self.table.bind
         self.new_name = name
         visitorcallable = get_engine_visitor(engine, 'schemachanger')
-        engine._run_visitor(visitorcallable, self, connection, **kwargs)
+        _run_visitor(engine, visitorcallable, self, connection, **kwargs)
         self.name = name
 
 
