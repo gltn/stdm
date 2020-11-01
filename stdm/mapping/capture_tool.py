@@ -283,8 +283,8 @@ class StdmMapToolCapture(StdmMapToolEdit):
         Removes the last vertex from mRubberBand and mCaptureList
         """
         if self._rubberBand is not None:
-            if len(self._captureList) is 0 or \
-                    self._rubberBand.numberOfVertices() is 0:
+            if len(self._captureList) == 0 or \
+                    self._rubberBand.numberOfVertices() == 0:
                 return
 
             self._rubberBand.removePoint(-1)
