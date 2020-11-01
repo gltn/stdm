@@ -78,7 +78,7 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
 
         # Populate attributes minus excluded columns
         self._tenure_custom_attrs = {}
-        for tt, custom_ent in self._tenure_custom_entities.iteritems():
+        for tt, custom_ent in self._tenure_custom_entities.items():
             attrs = custom_ent.columns.values()
             self._tenure_custom_attrs[tt] = [
                 a for a in attrs if a.name not in self._exclude_names

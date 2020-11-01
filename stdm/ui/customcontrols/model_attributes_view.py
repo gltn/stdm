@@ -109,7 +109,7 @@ class ModelAtrributesView(QListView):
         self._attrModel.clear()
         self._attrModel.setColumnCount(2)
 
-        for attrName, displayName in attrMapping.iteritems():
+        for attrName, displayName in attrMapping.items():
             # Exclude row ID in the list, other unique identifier attributes in the model can be used
             if attrName != "id":
                 displayNameItem = QStandardItem(displayName)

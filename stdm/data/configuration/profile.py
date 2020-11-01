@@ -654,7 +654,7 @@ class Profile(QObject):
             self.entities[name].row_index = index
 
     def sort_entities(self):
-        self.entities = OrderedDict(sorted(self.entities.iteritems(), key=lambda e: e[1].row_index))
+        self.entities = OrderedDict(sorted(self.entities.items(), key=lambda e: e[1].row_index))
 
     @property
     def str_table_exists(self):

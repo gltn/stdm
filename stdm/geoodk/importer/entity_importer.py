@@ -189,7 +189,7 @@ class Save2DB:
         """
         if instance_file:
             f_dir, file_name = os.path.split(instance_file)
-            for document, val in self.attributes.iteritems():
+            for document, val in self.attributes.items():
                 if str(document).endswith('supporting_document'):
                     if val != '':
                         doc = self.format_document_name_from_attribute(document)
@@ -306,7 +306,7 @@ class Save2DB:
         except:
             pass
 
-        for k, v in attributes.iteritems():
+        for k, v in attributes.items():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -326,7 +326,7 @@ class Save2DB:
         :return:
         """
         self.column_info()
-        for k, v in self.attributes.iteritems():
+        for k, v in self.attributes.items():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -344,7 +344,7 @@ class Save2DB:
         Get the table with foreign keys only
         :return:
         """
-        for col, type_info in self.column_info().iteritems():
+        for col, type_info in self.column_info().items():
             col_prop = self.entity.columns[col]
             var = self.attribute_formatter(type_info, col_prop, None)
             setattr(self.model, col, var)
@@ -486,7 +486,7 @@ class Save2DB:
 
         elif col_type == 'FOREIGN_KEY':
             ret_val = None
-            for code, val in self.parents_ids.iteritems():
+            for code, val in self.parents_ids.items():
                 if col_prop.parent.name == code:
                     ret_val = val[0]
                     break

@@ -11,7 +11,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
 
     All keys are expected to be strings. The structure remembers the
     case of the last key to be set, and ``iter(instance)``,
-    ``keys()``, ``items()``, ``iterkeys()``, and ``iteritems()``
+    ``keys()``, ``items()``, ``iterkeys()``
     will contain case-sensitive keys. However, querying and contains
     testing is case insensitive:
 
@@ -54,7 +54,7 @@ class CaseInsensitiveDict(collections.MutableMapping):
         return len(self._store)
 
     def lower_items(self):
-        """Like iteritems(), but with all lowercase keys."""
+        """Like items(), but with all lowercase keys."""
         return (
             (lowerkey, keyval[1])
             for (lowerkey, keyval)

@@ -402,7 +402,7 @@ class CodeProperty(QDialog, Ui_CodeProperty):
         Populate the separator combobox with separators.
         """
         combo.clear()
-        for separator, desc in self.separators.iteritems():
+        for separator, desc in self.separators.items():
             combo.addItem(desc, separator)
         combo.setCurrentIndex(0)
 

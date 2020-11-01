@@ -275,7 +275,7 @@ class GeoODKReader:
         :return:bool
         """
         is_lookup = False
-        for key, col in self.social_tenure_attributes().iteritems():
+        for key, col in self.social_tenure_attributes().items():
             if key == cur_col and col == 'LOOKUP':
                 is_lookup = True
         return is_lookup

@@ -157,7 +157,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         """
         disp_mapping = OrderedDict()
 
-        for c, header in display_cols.iteritems():
+        for c, header in display_cols.items():
             if c != "id" and c in filter_cols:
                 if hasattr(model, c):
                     if c == 'tenure_share':

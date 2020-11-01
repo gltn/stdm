@@ -812,7 +812,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         """
         self.cboDataType.clear()
 
-        for name, col in BaseColumn.types_by_display_name().iteritems():
+        for name, col in BaseColumn.types_by_display_name().items():
             # Specify columns to exclude
             if col.TYPE_INFO not in self._exclude_col_type_info:
                 self.cboDataType.addItem(name)

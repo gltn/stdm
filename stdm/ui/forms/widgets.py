@@ -803,7 +803,7 @@ class LookupWidgetFactory(ColumnWidgetRegistry):
         lookups = cls_obj.lookups()
         cbo.addItem('', None)
         # Populate combobox
-        for id, cd_val in lookups.iteritems():
+        for id, cd_val in lookups.items():
             cbo.addItem(cd_val[0], id)
 
         return cbo

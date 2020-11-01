@@ -77,7 +77,7 @@ class ComposerChartConfigEditor(QWidget, Ui_ChartPropertiesEditor):
         from stdm.stdm.composer import legend_positions
 
         self.cbo_legend_pos.clear()
-        for k,v in legend_positions.iteritems():
+        for k,v in legend_positions.items():
             self.cbo_legend_pos.addItem(k,v)
 
         #Select 'Automatic' option

@@ -82,7 +82,7 @@ class LookupValueSelector(QDialog, Ui_LookupValueSelector):
         """
         self.value_and_code = self.lookup_entity.values
 
-        for value, code in self.value_and_code.iteritems():
+        for value, code in self.value_and_code.items():
             u_value = str(value)
             code_value = self.lookup_entity.values[u_value]
 

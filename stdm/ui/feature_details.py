@@ -979,7 +979,7 @@ class DetailsTreeView(DetailsDBHandler):
             if roots is None:
                 return
 
-            for feature, root in roots.iteritems():
+            for feature, root in roots.items():
 
                 if isinstance(feature, QgsFeature):
                     id = feature.id()
@@ -1087,7 +1087,7 @@ class DetailsTreeView(DetailsDBHandler):
                 layer_icon,
                 format_name(str(self.layer.name()))
             )
-            for k, v, in feature_map.iteritems():
+            for k, v, in feature_map.items():
                 if isinstance(v, QDate):
                     v = v.toPyDate()
                 if isinstance(v, QDateTime):
@@ -1209,7 +1209,7 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.column_widget_registry(model, self.entity)
 
-        for i, (col, row) in enumerate(self._formatted_record.iteritems()):
+        for i, (col, row) in enumerate(self._formatted_record.items()):
             child = QStandardItem(u'{}: {}'.format(col, row))
 
             child.setSelectable(False)
@@ -1340,7 +1340,7 @@ class DetailsTreeView(DetailsDBHandler):
             # add STR children
             self.column_widget_registry(record, self.social_tenure)
 
-            for i, (col, row) in enumerate(self._formatted_record.iteritems()):
+            for i, (col, row) in enumerate(self._formatted_record.items()):
                 str_child = QStandardItem(
                     u'{}: {}'.format(col, row)
                 )
@@ -1461,7 +1461,7 @@ class DetailsTreeView(DetailsDBHandler):
         )
         # add STR children
         self.column_widget_registry(party_model, party_entity)
-        for col, row in self._formatted_record.iteritems():
+        for col, row in self._formatted_record.items():
             party_child = QStandardItem(u'{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
@@ -1487,7 +1487,7 @@ class DetailsTreeView(DetailsDBHandler):
         )
         # add STR children
         self.column_widget_registry(spatial_unit_model, spatial_entity)
-        for col, row in self._formatted_record.iteritems():
+        for col, row in self._formatted_record.items():
             party_child = QStandardItem(u'{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
@@ -1536,7 +1536,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         # add STR children
         self.column_widget_registry(custom_attr_model, custom_attr_entity)
-        for col, row in self._formatted_record.iteritems():
+        for col, row in self._formatted_record.items():
             custom_attr_child = QStandardItem(u'{}: {}'.format(col, row))
             custom_attr_child.setSelectable(False)
             custom_attr_root.appendRow([custom_attr_child])

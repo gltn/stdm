@@ -103,7 +103,7 @@ class ImportData(QWizard, Ui_frmImport):
         self._trans_widget_mgr = TranslatorWidgetManager(self)
         self._trans_signal_mapper = QSignalMapper(self)
 
-        for trans_name, config in ValueTranslatorConfig.translators.iteritems():
+        for trans_name, config in ValueTranslatorConfig.translators.items():
             trans_action = QAction(u'{}...'.format(trans_name),
                                    translator_menu
                                    )

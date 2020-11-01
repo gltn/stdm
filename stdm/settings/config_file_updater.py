@@ -748,10 +748,10 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                                  "supporting_document"}
         self.profiles_detail[profile] = template_dict
 
-        for key, value in values.iteritems():
+        for key, value in values.items():
             if key.endswith("lookup") and value:
                 value_lists = self.doc_old.createElement("ValueLists")
-                for lookup_key, lookup_value in value.iteritems():
+                for lookup_key, lookup_value in value.items():
                     value_list = self.doc_old.createElement("ValueList")
 
                     template_dict[lookup_key] = pref + "_" + lookup_key
@@ -764,7 +764,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                     value_list.setAttribute("name", lookup_key)
 
-                    for k, v in lookup_value.iteritems():
+                    for k, v in lookup_value.items():
                         code_value = self.doc_old.createElement("CodeValue")
                         code_value.setAttribute("code", k)
                         code_value.setAttribute("value", v)
@@ -785,7 +785,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 profile_element.appendChild(value_lists)
 
             if key.endswith("table") and value:
-                for entity_key, entity_value in value.iteritems():
+                for entity_key, entity_value in value.items():
                     if entity_key not in self.exclusions:
                         entity_name = pref + "_" + entity_key
                         template_dict[entity_key] = entity_name
@@ -816,7 +816,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                         columns = self.doc_old.createElement("Columns")
                         for i in column_properties:
                             column = self.doc_old.createElement("Column")
-                            for col_k, col_v in i.iteritems():
+                            for col_k, col_v in i.items():
                                 if col_k == "col_name":
                                     column.setAttribute("name", col_v)
                                     self.table_col_name = col_v
@@ -826,7 +826,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                     if isinstance(col_v, dict):
                                         for k, v in COLUMN_PROPERTY_DICT[
                                             'GEOMETRY']. \
-                                                iteritems():
+                                                items():
                                             column.setAttribute(k, v)
                                         column.setAttribute("TYPE_INFO",
                                                             "GEOMETRY")
@@ -841,12 +841,12 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                         column.setAttribute("TYPE_INFO", col_v)
                                         if COLUMN_PROPERTY_DICT[col_v]:
                                             for k, v in COLUMN_PROPERTY_DICT[
-                                                col_v].iteritems():
+                                                col_v].items():
                                                 column.setAttribute(k, v)
                                         else:
                                             for k, v in COLUMN_PROPERTY_DICT[
                                                 'DEFAULT']. \
-                                                    iteritems():
+                                                    items():
                                                 column.setAttribute(k, v)
 
                                 elif col_k == "lookup" and col_v is not None:
@@ -879,7 +879,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
             if key.endswith("relations"):
                 relationship = self.doc_old.createElement("Relations")
 
-                for relation_key, relation_values in value.iteritems():
+                for relation_key, relation_values in value.items():
 
                     if relation_key not in self.exclusions:
 
@@ -1117,7 +1117,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                 social_tenure.setAttribute(
                     "tenureTypeList", "check_tenure_type")
 
-                for relation_key, relation_values in value.iteritems():
+                for relation_key, relation_values in value.items():
 
                     if relation_key == "social_tenure_relationship":
                         sp_party_dict = self._set_sp_unit_part_tables(
@@ -1142,13 +1142,13 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         :param config:
         :return: QDocument Element
         """
-        for config_profile, values in config_profile_values_dict.iteritems():
+        for config_profile, values in config_profile_values_dict.items():
 
             # Empty list to hold values to confirm if profile is empty
             empty_list = []
 
             # Test if a profile content is empty
-            for k, v in values.iteritems():
+            for k, v in values.items():
                 if not v:
                     break
                 else:
@@ -1552,7 +1552,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
         for value in values:
             for lookup_value, fk in \
-                    lookup_data.iteritems():
+                    lookup_data.items():
                 try:
                     if int(value[lookup_col_index]) == fk:
                         value[lookup_col_index] = int(fk)
@@ -1602,9 +1602,9 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         :return:
         """
         for k, v in self.entities_lookup_relations.items():
-            for keys, values in v.iteritems():
+            for keys, values in v.items():
                 if keys.endswith("relations") and values:
-                    for relation_key, relation_values in values.iteritems():
+                    for relation_key, relation_values in values.items():
                         if relation_key == "social_tenure_relationship":
                             return keys, relation_values
 
@@ -1777,7 +1777,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                                 list_data = list(data)
                                 for tenure_name, tenure_fkey_value in \
                                         self.lookup_colum_name_values[
-                                            'tenure_type'].iteritems():
+                                            'tenure_type'].items():
                                     if tenure_name == list_data[1]:
                                         list_data[1] = tenure_fkey_value
                                         break

@@ -392,7 +392,7 @@ class BaseSTRNode(object):
         """
         name_values = []
 
-        for col_name_prop, attr_val in display_mapping.iteritems():
+        for col_name_prop, attr_val in display_mapping.items():
             prop, prop_display = col_name_prop[0], col_name_prop[1]
             if prop in formatter:
                 attr_val = formatter[prop](attr_val)
@@ -417,7 +417,7 @@ class BaseSTRNode(object):
         """
         attr_values = []
 
-        for prop, disp in display_mapping.iteritems():
+        for prop, disp in display_mapping.items():
             attr_val = getattr(model, prop)
 
             if prop in formatter:

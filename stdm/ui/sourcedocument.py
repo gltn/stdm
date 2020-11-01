@@ -119,7 +119,7 @@ class SourceDocumentManager(QObject):
 
         self.doc_type_mapping = OrderedDict()
 
-        for id, value in self.doc_types.iteritems():
+        for id, value in self.doc_types.items():
             self.doc_type_mapping[id] = value
 
     def reset(self):
@@ -135,7 +135,7 @@ class SourceDocumentManager(QObject):
         """
         Clears all document widgets from all containers.
         """
-        for cont_id, container in self.containers.iteritems():
+        for cont_id, container in self.containers.items():
             doc_widgets = container.parentWidget().findChildren(DocumentWidget)
             for doc_widget in doc_widgets:
                 doc_widget.deleteLater()
@@ -366,7 +366,7 @@ class SourceDocumentManager(QObject):
         """
         srcDocMapping = OrderedDict()
 
-        for k, v in self.containers.iteritems():
+        for k, v in self.containers.items():
 
             if not v is None:
                 docItems = OrderedDict()
@@ -398,7 +398,7 @@ class SourceDocumentManager(QObject):
         the file uploads contained in the document manager.
         """
         all_doc_objs = []
-        for doc_type_id, container in self.containers.iteritems():
+        for doc_type_id, container in self.containers.items():
             doc_widget_count = container.count()
             # loop through all document
             # widgets and get their objects.
@@ -419,7 +419,7 @@ class SourceDocumentManager(QObject):
         """
         delete_error_docs = []
 
-        for k, v in self.containers.iteritems():
+        for k, v in self.containers.items():
             layout_item = v.takeAt(0)
 
             while layout_item is not None:

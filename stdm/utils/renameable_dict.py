@@ -105,13 +105,13 @@ class RenameableKeyDict(MutableMapping):
         if ref_idx >= len(self._idx_map):
             return
 
-        for key, idx in self._idx_map.iteritems():
+        for key, idx in self._idx_map.items():
             if idx > ref_idx:
                 idx -= 1
                 self._idx_map[key] = idx
 
     def __iter__(self):
-        keys = self._sorted_keys()
+        keys = list(self._sorted_keys())
         idx = 0
         while idx < len(keys):
             yield keys[idx]
@@ -146,7 +146,7 @@ class RenameableKeyDict(MutableMapping):
         self._idx_map[new] = idx
 
         # Update item if specified
-        if not item is None:
+        if item is not None:
             old_item = self._values.pop(idx)
             self._values.insert(idx, item)
 

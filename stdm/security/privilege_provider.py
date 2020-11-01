@@ -171,7 +171,7 @@ class MultiPrivilegeProvider(PrivilegeProvider):
             self.roles[role].append(content[:content.index(' ')])
 
     def grant_revoke_privilege(self, operation):
-        for role, privileges in self.roles.iteritems():
+        for role, privileges in self.roles.items():
             for p in privileges:
                 privilege = PrivilegeProvider.Privileges[p]
                 temp_content = ''

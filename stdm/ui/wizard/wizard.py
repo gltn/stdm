@@ -794,7 +794,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         if custom_attr_editor.exec_() == QDialog.Accepted:
             # Append columns to the custom attribute entities
             t_attrs = custom_attr_editor.custom_tenure_attributes
-            for tt, attrs in t_attrs.iteritems():
+            for tt, attrs in t_attrs.items():
                 ent = self._custom_attr_entities[tt]
                 for attr in attrs:
                     ent.add_column(attr)
@@ -1054,11 +1054,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             self.dg_tenure.profile = c_profile
 
             # Set spatial unit tenure mapping
-            for sp, t in c_profile.social_tenure.spatial_units_tenure.iteritems():
+            for sp, t in c_profile.social_tenure.spatial_units_tenure.items():
                 self._sp_t_mapping[sp] = t.short_name
 
             # Set tenure custom attribute entities
-            for tt, ent in c_profile.social_tenure.custom_attribute_entities.iteritems():
+            for tt, ent in c_profile.social_tenure.custom_attribute_entities.items():
                 self._custom_attr_entities[tt] = ent
 
             # check if social tenure relationship has been setup
@@ -1241,11 +1241,11 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                     )
 
                 # Set spatial units' tenure types
-                for spu, tt in self._sp_t_mapping.iteritems():
+                for spu, tt in self._sp_t_mapping.items():
                     st.add_spatial_tenure_mapping(spu, tt)
 
                 # Set custom attributes entity
-                for tt, ent in self._custom_attr_entities.iteritems():
+                for tt, ent in self._custom_attr_entities.items():
                     # Check if the attributes entity exists in the profile
                     status = profile.has_entity(ent)
                     if not status:

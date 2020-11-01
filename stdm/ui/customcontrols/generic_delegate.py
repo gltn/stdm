@@ -123,7 +123,7 @@ class GenericDelegate(QItemDelegate):
                 return
             widget.insertItem(0, " ")
             # , len(self.str_type_set_data())
-            for id, text in self.data.iteritems():
+            for id, text in self.data.items():
                 widget.addItem(text, id)
 
             list_item_index = None

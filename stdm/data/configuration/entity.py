@@ -557,7 +557,7 @@ class Entity(QObject, TableItem):
             self.columns[name].row_index = index
 
     def sort_columns(self):
-        self.columns = RenameableKeyDict(sorted(self.columns.iteritems(), key=lambda e: e[1].row_index))
+        self.columns = RenameableKeyDict(sorted(self.columns.items(), key=lambda e: e[1].row_index))
 
 
 class EntitySupportingDocument(Entity):

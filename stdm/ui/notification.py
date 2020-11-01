@@ -152,7 +152,7 @@ class NotificationBar(QObject, object):
         Remove all notifications.
         '''
         if self.layout != None:
-            for code, lbl in self._notifications.iteritems():
+            for code, lbl in self._notifications.items():
                 self.layout.removeWidget(lbl)
                 lbl.setVisible(False)
                 lbl.deleteLater()

@@ -391,7 +391,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
         attr_mapping = OrderedDict()
 
-        for c, header in table_cols.iteritems():
+        for c, header in table_cols.items():
             attr_mapping[c] = header
 
         self.lstDocNaming.load_mapping(attr_mapping)

@@ -74,7 +74,7 @@ def view_updater(social_tenure, engine):
     views = social_tenure.views
 
     # Loop through view name, primary entity items
-    for v, pe in views.iteritems():
+    for v, pe in views.items():
         # Check if there is an existing one and omit delete if it exists
         LOGGER.debug('Checking if %s view exists...', v)
 

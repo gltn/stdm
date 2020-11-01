@@ -336,7 +336,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         :param col: The child column object
         :type col: Object
         """
-        for parent_col, parent_widget in parent.column_widgets.iteritems():
+        for parent_col, parent_widget in parent.column_widgets.items():
             if parent_col.name == col.name:
                 self.single_parent_value_setter(col, parent_widget)
                 break
@@ -453,7 +453,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if len(self.child_models) < 1:
             return
         children_obj = []
-        for row_entity, model in self.child_models.iteritems():
+        for row_entity, model in self.child_models.items():
             row_pos = row_entity[0]
             entity = row_entity[1]
             ent_model = entity_model(entity)
@@ -508,7 +508,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         columns = table_column_names(table_name)
         # Iterate entity column and assert if they exist
         row_id = 0
-        for c, column_widget in self.column_widgets.iteritems():
+        for c, column_widget in self.column_widgets.items():
             if c.name in self.exclude_columns:
                 continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
@@ -566,7 +566,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not self._disable_collections:
             ch_entities = self.children_entities()
 
-            for col, ch in ch_entities.iteritems():
+            for col, ch in ch_entities.items():
                 if hasattr(col.entity_relation, 'show_in_parent'):
                     if col.entity_relation.show_in_parent != '0':
                         self._add_fk_browser(ch, col)
