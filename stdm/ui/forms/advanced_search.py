@@ -196,8 +196,8 @@ class AdvancedSearch(EntityEditorDialog):
                 getattr(self.ent_model(), attr) == value)
 
         # now we can run the query
-        # print ent_model_obj.queryObject(), vars(ent_model_obj.queryObject())
-        # print str(ent_model_obj.queryObject())
+        # print(ent_model_obj.queryObject(), vars(ent_model_obj.queryObject()))
+        # print(str(ent_model_obj.queryObject()))
         results = ent_model_obj.queryObject().all()
 
     def search_db_raw(self, search_data):

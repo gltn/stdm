@@ -330,7 +330,7 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
-                # print "property{0}....  and type.{1}".format(col_prop, col_type)
+                # print("property{0}....  and type.{1}".format(col_prop, col_type))
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():

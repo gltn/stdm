@@ -33,16 +33,13 @@ def copy_startup():
                              if i in original_dest_lines]
 
             if matched_lines != original_source_lines:
-                print >> destination_file, ''
-                print >> destination_file, ''
-                print >> destination_file, ''
-                for line in source_lines:
-                    print >> destination_file, line
+                destination_file.writelines(['', '', ''])
+                destination_file.writelines(source_lines)
 
     except Exception as ex:
         log_config_path = '{}/.qgis2/python/log.txt'.format(home)
         file = open(log_config_path, "a+")
-        print >> file, 'Could not copy a file from the source due to an error:' \
-                       '\n {}'.format(ex)
-        print >> file, traceback.print_exc()
+        file.write('Could not copy a file from the source due to an error:' \
+                       '\n {}\n'.format(ex))
+        file.write(traceback.print_exc())
         file.close()

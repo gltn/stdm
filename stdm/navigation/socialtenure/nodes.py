@@ -668,7 +668,7 @@ class STRNode(EntityNode):
         """
         for model in model_obj_list:
             extension = model.filename[model.filename.rfind('.'):]
-            # print 'Generating thumbnail'
+            # print('Generating thumbnail')
             curr_profile = current_profile()
             doc_id = model.document_type
 
