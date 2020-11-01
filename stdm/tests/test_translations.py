@@ -38,7 +38,7 @@ class SafeTranslationsTest(unittest.TestCase):
         """Test that translations work."""
         parent_path = os.path.join(__file__, os.path.pardir, os.path.pardir)
         dir_path = os.path.abspath(parent_path)
-        file_path = os.path.join(dir_path, 'i18n', 'af.qm')
+        file_path = os.path.join(dir_path, 'i18n', 'stdm_fr.qm')
         self.assertTrue(
             os.path.isfile(file_path),
             "%s is not a valid translation file or it does not exist" %
@@ -47,8 +47,8 @@ class SafeTranslationsTest(unittest.TestCase):
         translator.load(file_path)
         QCoreApplication.installTranslator(translator)
 
-        expected_message = 'Goeie more'
-        real_message = QCoreApplication.translate("@default", 'Good morning')
+        expected_message = 'Texte de longueur variable'
+        real_message = QCoreApplication.translate("@default", 'Varying-length Text')
         self.assertEqual(real_message, expected_message)
 
 
