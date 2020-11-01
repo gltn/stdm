@@ -2,7 +2,7 @@ from stdm import data
 
 from sqlalchemy import create_engine
 
-from stdm import (
+from stdm.data.configuration.columns import (
     DateColumn,
     ForeignKeyColumn,
     GeometryColumn,
@@ -12,12 +12,12 @@ from stdm import (
     TextColumn,
     VarCharColumn
 )
-from stdm import entity_factory
-from stdm import value_list_factory
-from stdm import SocialTenure
+from stdm.data.configuration.entity import entity_factory
+from stdm.data.configuration.value_list import value_list_factory
+from stdm.data.configuration.social_tenure import SocialTenure
 
-from stdm import DatabaseConnection
-from stdm import User
+from stdm.data.connection import DatabaseConnection
+from stdm.security.user import User
 
 BASIC_PROFILE = 'Basic'
 PERSON_ENTITY = 'person'

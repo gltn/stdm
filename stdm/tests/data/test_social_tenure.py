@@ -6,9 +6,9 @@ from unittest import (
     TestCase
 )
 
-from stdm import StdmConfiguration
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
-from stdm import (
+from stdm.tests.data.utils import (
     populate_configuration,
     SPATIAL_UNIT_ENTITY_2
 )

@@ -3,10 +3,10 @@ from unittest import (
     TestCase
 )
 
-from stdm import ConfigurationSchemaUpdater
-from stdm import StdmConfiguration
+from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
-from stdm import (
+from stdm.tests.data.utils import (
     create_alchemy_engine,
     populate_configuration
 )

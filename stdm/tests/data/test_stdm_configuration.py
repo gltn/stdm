@@ -3,9 +3,9 @@ from unittest import (
     TestCase
 )
 
-from stdm import StdmConfiguration
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
-from .utils import (
+from stdm.tests.data.utils import (
     add_basic_profile,
     create_basic_profile
 )
