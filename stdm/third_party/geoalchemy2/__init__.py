@@ -10,7 +10,10 @@ from .elements import (  # NOQA
     RasterElement
     )
 
+from .exc import ArgumentError
+
 from . import functions  # NOQA
+from . import types  # NOQA
 
 from sqlalchemy import Table, event
 from sqlalchemy.sql import select, func, expression
@@ -55,12 +58,18 @@ def _setup_ddl_event_listeners():
             table.columns = column_collection
 
             if event == 'before-drop':
-                # Drop the managed Geometry columns with DropGeometryColumn()
-                table_schema = table.schema or 'public'
+                # Drop the managed Geometry columns
                 for c in gis_cols:
-                    stmt = select([
-                        func.DropGeometryColumn(
-                            table_schema, table.name, c.name)])
+                    if bind.dialect.name == 'sqlite':
+                        drop_func = 'DiscardGeometryColumn'
+                    elif bind.dialect.name == 'postgresql':
+                        drop_func = 'DropGeometryColumn'
+                    else:
+                        raise ArgumentError('dialect {} is not supported'.format(bind.dialect.name))
+                    args = [table.schema] if table.schema else []
+                    args.extend([table.name, c.name])
+
+                    stmt = select([getattr(func, drop_func)(*args)])
                     stmt = stmt.execution_options(autocommit=True)
                     bind.execute(stmt)
 
@@ -68,41 +77,73 @@ def _setup_ddl_event_listeners():
             # Restore original column list including managed Geometry columns
             table.columns = table.info.pop('_saved_columns')
 
-            table_schema = table.schema or 'public'
             for c in table.c:
                 # Add the managed Geometry columns with AddGeometryColumn()
                 if isinstance(c.type, Geometry) and c.type.management is True:
-                    stmt = select([
-                        func.AddGeometryColumn(
-                            table_schema,
-                            table.name,
-                            c.name,
-                            c.type.srid,
-                            c.type.geometry_type,
-                            c.type.dimension
-                        )])
+                    args = [table.schema] if table.schema else []
+                    args.extend([
+                        table.name,
+                        c.name,
+                        c.type.srid,
+                        c.type.geometry_type,
+                        c.type.dimension
+                    ])
+                    if c.type.use_typmod is not None:
+                        args.append(c.type.use_typmod)
+
+                    stmt = select([func.AddGeometryColumn(*args)])
                     stmt = stmt.execution_options(autocommit=True)
                     bind.execute(stmt)
 
                 # Add spatial indices for the Geometry and Geography columns
                 if isinstance(c.type, (Geometry, Geography)) and \
                         c.type.spatial_index is True:
-                    bind.execute('CREATE INDEX "idx_%s_%s" ON "%s"."%s" '
-                                 'USING GIST (%s)' %
-                                 (table.name, c.name, table_schema,
-                                  table.name, c.name))
+                    if bind.dialect.name == 'sqlite':
+                        stmt = select([func.CreateSpatialIndex(table.name, c.name)])
+                        stmt = stmt.execution_options(autocommit=True)
+                        bind.execute(stmt)
+                    elif bind.dialect.name == 'postgresql':
+                        if table.schema:
+                            bind.execute('CREATE INDEX "idx_%s_%s" ON "%s"."%s" '
+                                         'USING GIST ("%s")' %
+                                         (table.name, c.name, table.schema,
+                                          table.name, c.name))
+                        else:
+                            bind.execute('CREATE INDEX "idx_%s_%s" ON "%s" '
+                                         'USING GIST ("%s")' %
+                                         (table.name, c.name, table.name, c.name))
+                    else:
+                        raise ArgumentError('dialect {} is not supported'.format(bind.dialect.name))
 
                 # Add spatial indices for the Raster columns
                 #
                 # Note the use of ST_ConvexHull since most raster operators are
                 # based on the convex hull of the rasters.
                 if isinstance(c.type, Raster) and c.type.spatial_index is True:
-                    bind.execute('CREATE INDEX "idx_%s_%s" ON "%s"."%s" '
-                                 'USING GIST (ST_ConvexHull(%s))' %
-                                 (table.name, c.name, table_schema,
-                                  table.name, c.name))
+                    if table.schema:
+                        bind.execute('CREATE INDEX "idx_%s_%s" ON "%s"."%s" '
+                                     'USING GIST (ST_ConvexHull("%s"))' %
+                                     (table.name, c.name, table.schema,
+                                      table.name, c.name))
+                    else:
+                        bind.execute('CREATE INDEX "idx_%s_%s" ON "%s" '
+                                     'USING GIST (ST_ConvexHull("%s"))' %
+                                     (table.name, c.name, table.name, c.name))
 
         elif event == 'after-drop':
             # Restore original column list including managed Geometry columns
             table.columns = table.info.pop('_saved_columns')
+
+
 _setup_ddl_event_listeners()
+
+# Get version number
+__version__ = "UNKNOWN VERSION"
+try:
+    from pkg_resources import get_distribution, DistributionNotFound
+    try:
+        __version__ = get_distribution('GeoAlchemy2').version
+    except DistributionNotFound:  # pragma: no cover
+        pass  # pragma: no cover
+except ImportError:  # pragma: no cover
+    pass  # pragma: no cover
