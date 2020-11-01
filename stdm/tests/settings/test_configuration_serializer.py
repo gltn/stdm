@@ -3,10 +3,10 @@ from unittest import (
     TestCase
 )
 
-from stdm import StdmConfiguration
-from stdm import ConfigurationFileSerializer
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.settings.config_serializer import ConfigurationFileSerializer
 
-from stdm import (
+from stdm.tests.data.utils import (
     populate_configuration
 )
 

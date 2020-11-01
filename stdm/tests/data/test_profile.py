@@ -3,10 +3,10 @@ from unittest import (
     TestCase
 )
 
-from stdm import StdmConfiguration
-from stdm import AssociationEntity
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration.association_entity import AssociationEntity
 
-from stdm import (
+from stdm.tests.data.utils import (
     add_basic_profile,
     add_household_entity,
     add_person_entity,

@@ -4,11 +4,11 @@ from unittest import (
 )
 from datetime import datetime
 
-from stdm import StdmConfiguration
-from stdm import entity_model
-from stdm import ConfigurationFileSerializer
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration import entity_model
+from stdm.settings.config_serializer import ConfigurationFileSerializer
 
-from stdm import (
+from stdm.tests.data.utils import (
     create_alchemy_engine
 )
 
