@@ -1,33 +1,55 @@
+from fontTools.misc.py23 import *
 import sys
 try:
-	import MacOS
+	import xattr
 except ImportError:
-	MacOS = None
+	xattr = None
+
 
 def _reverseString(s):
 	s = list(s)
 	s.reverse()
-	return "".join(s)
+	return strjoin(s)
 
 
 def getMacCreatorAndType(path):
-	if MacOS is not None:
-		fileCreator, fileType = MacOS.GetCreatorAndType(path)
-		if sys.byteorder == "little":
-			# work around bug in MacOS.GetCreatorAndType() on intel:
-			# http://bugs.python.org/issue1594
-			fileCreator = _reverseString(fileCreator)
-			fileType = _reverseString(fileType)
-		return fileCreator, fileType
-	else:
-		return None, None
+	"""Returns file creator and file type codes for a path.
+
+	Args:
+		path (str): A file path.
+
+	Returns:
+		A tuple of two :py:class:`fontTools.py23.Tag` objects, the first
+		representing the file creator and the second representing the
+		file type.
+	"""
+	if xattr is not None:
+		try:
+			finderInfo = xattr.getxattr(path, 'com.apple.FinderInfo')
+		except (KeyError, IOError):
+			pass
+		else:
+			fileType = Tag(finderInfo[:4])
+			fileCreator = Tag(finderInfo[4:8])
+			return fileCreator, fileType
+	return None, None
 
 
 def setMacCreatorAndType(path, fileCreator, fileType):
-	if MacOS is not None:
-		if sys.byteorder == "little":
-			# work around bug in MacOS.SetCreatorAndType() on intel:
-			# http://bugs.python.org/issue1594
-			fileCreator = _reverseString(fileCreator)
-			fileType = _reverseString(fileType)
-		MacOS.SetCreatorAndType(path, fileCreator, fileType)
+	"""Set file creator and file type codes for a path.
+
+	Note that if the ``xattr`` module is not installed, no action is
+	taken but no error is raised.
+
+	Args:
+		path (str): A file path.
+		fileCreator: A four-character file creator tag.
+		fileType: A four-character file type tag.
+
+	"""
+	if xattr is not None:
+		from fontTools.misc.textTools import pad
+		if not all(len(s) == 4 for s in (fileCreator, fileType)):
+			raise TypeError('arg must be string of 4 chars')
+		finderInfo = pad(bytesjoin([fileType, fileCreator]), 32)
+		xattr.setxattr(path, 'com.apple.FinderInfo', finderInfo)

@@ -1,11 +1,9 @@
-import sys
-import DefaultTable
-import sstruct
-import array
-import numpy
-from types import StringType
+from fontTools.misc.py23 import *
+from fontTools.misc import sstruct
 from fontTools.misc.textTools import safeEval, readHex
-from fontTools import ttLib
+from . import DefaultTable
+import sys
+import array
 
 GPKGFormat = """
 		>	# big endian
@@ -14,20 +12,19 @@ GPKGFormat = """
 		numGMAPs:		H
 		numGlyplets:		H
 """
-# psFontName is a byte string which follows the record above. This is zero padded 
+# psFontName is a byte string which follows the record above. This is zero padded
 # to the beginning of the records array. The recordsOffsst is 32 bit aligned.
 
 
 class table_G_P_K_G_(DefaultTable.DefaultTable):
-	
+
 	def decompile(self, data, ttFont):
 		dummy, newData = sstruct.unpack2(GPKGFormat, data, self)
 
-		GMAPoffsets = array.array("L")
+		GMAPoffsets = array.array("I")
 		endPos = (self.numGMAPs+1) * 4
-		GMAPoffsets.fromstring(newData[:endPos])
-		if sys.byteorder <> "big":
-			GMAPoffsets.byteswap()
+		GMAPoffsets.frombytes(newData[:endPos])
+		if sys.byteorder != "big": GMAPoffsets.byteswap()
 		self.GMAPs = []
 		for i in range(self.numGMAPs):
 			start = GMAPoffsets[i]
@@ -35,16 +32,14 @@ class table_G_P_K_G_(DefaultTable.DefaultTable):
 			self.GMAPs.append(data[start:end])
 		pos = endPos
 		endPos = pos + (self.numGlyplets + 1)*4
-		glyphletOffsets = array.array("L")
-		glyphletOffsets.fromstring(newData[pos:endPos])
-		if sys.byteorder <> "big":
-			glyphletOffsets.byteswap()
+		glyphletOffsets = array.array("I")
+		glyphletOffsets.frombytes(newData[pos:endPos])
+		if sys.byteorder != "big": glyphletOffsets.byteswap()
 		self.glyphlets = []
 		for i in range(self.numGlyplets):
 			start = glyphletOffsets[i]
 			end = glyphletOffsets[i+1]
 			self.glyphlets.append(data[start:end])
-
 
 	def compile(self, ttFont):
 		self.numGMAPs = len(self.GMAPs)
@@ -59,24 +54,22 @@ class table_G_P_K_G_(DefaultTable.DefaultTable):
 		for i in range(1, self.numGMAPs +1):
 			pos += len(self.GMAPs[i-1])
 			GMAPoffsets[i] = pos
-		gmapArray = numpy.array(GMAPoffsets, numpy.uint32)
-		if sys.byteorder <> "big":
-			gmapArray = gmapArray.byteswap()
-		dataList.append(gmapArray.tostring())
+		gmapArray = array.array("I", GMAPoffsets)
+		if sys.byteorder != "big": gmapArray.byteswap()
+		dataList.append(gmapArray.tobytes())
 
 		glyphletOffsets[0] = pos
 		for i in range(1, self.numGlyplets +1):
 			pos += len(self.glyphlets[i-1])
 			glyphletOffsets[i] = pos
-		glyphletArray = numpy.array(glyphletOffsets, numpy.uint32)
-		if sys.byteorder <> "big":
-			glyphletArray = glyphletArray.byteswap()
-		dataList.append(glyphletArray.tostring())
+		glyphletArray = array.array("I", glyphletOffsets)
+		if sys.byteorder != "big": glyphletArray.byteswap()
+		dataList.append(glyphletArray.tobytes())
 		dataList += self.GMAPs
 		dataList += self.glyphlets
-		data = "".join(dataList)
+		data = bytesjoin(dataList)
 		return data
-	
+
 	def toXML(self, writer, ttFont):
 		writer.comment("Most of this table will be recalculated by the compiler")
 		writer.newline()
@@ -108,12 +101,12 @@ class table_G_P_K_G_(DefaultTable.DefaultTable):
 		writer.endtag("glyphlets")
 		writer.newline()
 
-	def fromXML(self, (name, attrs, content), ttFont):
+	def fromXML(self, name, attrs, content, ttFont):
 		if name == "GMAPs":
 			if not hasattr(self, "GMAPs"):
 				self.GMAPs = []
 			for element in content:
-				if isinstance(element, StringType):
+				if isinstance(element, basestring):
 					continue
 				itemName, itemAttrs, itemContent = element
 				if itemName == "hexdata":
@@ -122,15 +115,10 @@ class table_G_P_K_G_(DefaultTable.DefaultTable):
 			if not hasattr(self, "glyphlets"):
 				self.glyphlets = []
 			for element in content:
-				if isinstance(element, StringType):
+				if isinstance(element, basestring):
 					continue
 				itemName, itemAttrs, itemContent = element
 				if itemName == "hexdata":
 					self.glyphlets.append(readHex(itemContent))
-		else:	
-			value = attrs["value"]
-			try:
-				value = safeEval(value)
-			except OverflowError:
-				value = long(value)
-			setattr(self, name, value)
+		else:
+			setattr(self, name, safeEval(attrs["value"]))

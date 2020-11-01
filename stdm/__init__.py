@@ -38,7 +38,7 @@ from PyQt4.QtGui import (
 third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                "stdm/third_party"))
 font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "stdm/third_party/fontTools"))
+                                        "stdm/third_party/FontTools"))
 
 if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
