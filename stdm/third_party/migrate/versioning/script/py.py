@@ -141,8 +141,14 @@ class PythonScript(base.BaseScript):
         script_func = self._func(funcname)
 
         # check for old way of using engine
-        if not inspect.getargspec(script_func)[0]:
-            raise TypeError("upgrade/downgrade functions must accept engine"
+        arg_spec = None
+        if six.PY2:
+            arg_spec = inspect.getargspec(script_func)
+        else:
+            arg_spec = inspect.getfullargspec(script_func)
+        if not arg_spec[0]:
+            raise TypeError(
+                "upgrade/downgrade functions must accept engine"
                 " parameter (since version 0.5.4)")
 
         script_func(engine)

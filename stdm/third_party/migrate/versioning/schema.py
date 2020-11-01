@@ -182,7 +182,7 @@ class ControlledSchema(object):
         if not table.exists():
             table.create()
 
-        # tests for existing repository_id
+        # test for existing repository_id
         s = table.select(table.c.repository_id == bindparam("repository_id"))
         result = engine.execute(s, repository_id=repository.id)
         if result.fetchone():
