@@ -419,11 +419,11 @@ class DiffXml2Ddl:
     
     def insertRelation(self, strTableName, old, nIndex):
         strRelationName = getRelationName(old)
-        strFk = old.getAttribute('column')
+        strFk = old.getAttribute('fk')
         strOnDelete = old.getAttribute('ondelete')
         strOnUpdate = old.getAttribute('onupdate')
         strFkTable = old.getAttribute('table')
-        strColumn = old.getAttribute('fk')
+        strColumn = old.getAttribute('column')
         self.ddli.addRelation(strTableName, strRelationName, strColumn, strFkTable, strFk, strOnDelete, strOnUpdate, self.diffs)
 
     def dropRelation(self, strTableName, old):

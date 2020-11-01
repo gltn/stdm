@@ -36,16 +36,6 @@ def getRelationName(relation):
 
     return strConstraintName
 
-def getCheckName(check):
-    """ If the relation has a "name" use it. otherwise create a name using
-     fk_<fkcolumnname>
-    """
-    strConstraintName = check.getAttribute('name')
-    if len(strConstraintName) == 0:
-        strConstraintName = "enforce_%s" % (check.getAttribute('column'))
-
-    return strConstraintName
-
 def getIndexName(strTableName, index):
     """ If an index name is given, use it otherwise,
     use idx_<tablename>_<colNames>
