@@ -13,38 +13,31 @@ class DdlCommonInterface:
         self.dbmsType = strDbms
         self.params = {
             # Table
-            'add_table'       : ['CREATE TABLE %(table_name)s (\n\t%(col_defs)s%(primary_keys)s);%(extra)s'],
-            'drop_table'      : ['DROP TABLE %(table_name)s%(cascade)s;'],
-            'rename_table'    : ['ALTER TABLE %(table_name)s RENAME TO %(new_table_name)s;'],
-            'table_desc'      : ["COMMENT ON TABLE %(table)s IS %(desc)s;"],
+            'add_table'       : ['CREATE TABLE %(table_name)s (\n\t%(col_defs)s%(primary_keys)s)%(extra)s'],
+            'drop_table'      : ['DROP TABLE %(table_name)s%(cascade)s'],
+            'rename_table'    : ['ALTER TABLE %(table_name)s RENAME TO %(new_table_name)s'],
+            'table_desc'      : ["COMMENT ON TABLE %(table)s IS %(desc)s"],
             # Column
-            'add_column'      : ['ALTER TABLE %(table_name)s ADD %(column_name)s %(column_type)s;'],
-            'drop_column'     : ['ALTER TABLE %(table_name)s DROP %(column_name)s;'],
-            'rename_column'   : ['ALTER TABLE %(table_name)s RENAME %(old_col_name)s TO %(new_col_name)s;'],
-            'change_col_type' : ['ALTER TABLE %(table_name)s ALTER %(column_name)s TYPE %(column_type)s;'],
-            'column_desc'     : ["COMMENT ON COLUMN %(table)s.%(column)s IS %(desc)s;"],
+            'add_column'      : ['ALTER TABLE %(table_name)s ADD %(column_name)s %(column_type)s'],
+            'drop_column'     : ['ALTER TABLE %(table_name)s DROP %(column_name)s'],
+            'rename_column'   : ['ALTER TABLE %(table_name)s RENAME %(old_col_name)s TO %(new_col_name)s'],
+            'change_col_type' : ['ALTER TABLE %(table_name)s ALTER %(column_name)s TYPE %(column_type)s'],
+            'column_desc'     : ["COMMENT ON COLUMN %(table)s.%(column)s IS %(desc)s"],
             # Column Default
-            'drop_default'    : ['ALTER TABLE %(table_name)s ALTER %(column_name)s DROP DEFAULT;'],
-            'alter_default'   : ['ALTER TABLE %(table_name)s ALTER %(column_name)s SET DEFAULT %(new_default)s;'],
+            'drop_default'    : ['ALTER TABLE %(table_name)s ALTER %(column_name)s DROP DEFAULT'],
+            'alter_default'   : ['ALTER TABLE %(table_name)s ALTER %(column_name)s SET DEFAULT %(new_default)s'],
             # Relation
-            'add_relation'    : ['ALTER TABLE %(tablename)s ADD CONSTRAINT %(constraint)s FOREIGN KEY (%(thiscolumn)s) REFERENCES %(othertable)s(%(fk)s)%(ondelete)s%(onupdate)s;'],
-            'drop_relation'   : ['ALTER TABLE %(tablename)s DROP CONSTRAINT %(constraintname)s;'],
-            #Check Constraint
-            'check_relation'  : ['ALTER TABLE %(tablename)s ADD CONSTRAINT %(checkname)s CHECK (%(checktype)s(%(thiscolumn)s)=%(arguments)s);'],
-            'drop_check'      : ['ALTER TABLE %(tablename)s DROP CONSTRAINT IF EXISTS %(checkname)s;'],
+            'add_relation'    : ['ALTER TABLE %(tablename)s ADD CONSTRAINT %(constraint)s FOREIGN KEY (%(thiscolumn)s) REFERENCES %(othertable)s(%(fk)s)%(ondelete)s%(onupdate)s'],
+            'drop_relation'   : ['ALTER TABLE %(tablename)s DROP CONSTRAINT %(constraintname)s'],
             # View
-            #Geometry Column
-            'add_geometry'  : ["SELECT AddGeometryColumn('%(tablename)s', '%(geomname)s', '%(srid)s','%(geomtype)s',%(dimension)s);"],
-            'drop_geom'      : ['ALTER TABLE %(tablename)s DROP CONSTRAINT IF EXISTS %(checkname)s;'],
-           
-            'create_view'     : ['CREATE VIEW %(viewname)s AS %(contents)s;'],
-            'drop_view'       : ['DROP VIEW %(viewname)s;'],
+            'create_view'     : ['CREATE VIEW %(viewname)s AS %(contents)s'],
+            'drop_view'       : ['DROP VIEW %(viewname)s'],
             # Function
             'create_function' : ["CREATE FUNCTION %(functionname)s(%(arguments)s) RETURNS %(returns)s AS '\n%(contents)s'%(language)s"],
-            'drop_function'   : ['DROP FUNCTION %(functionname)s(%(params)s);'],
+            'drop_function'   : ['DROP FUNCTION %(functionname)s(%(params)s)'],
             # Key Constraint
-            'add_key_constraint'  : ['ALTER TABLE %(table_name)s ADD CONSTRAINT %(pk_constraint)s PRIMARY (%(keys)s);'],
-            'drop_key_constraint' : ['ALTER TABLE %(table_name)s DROP CONSTRAINT %(constraint_name)s;'],
+            'add_key_constraint'  : ['ALTER TABLE %(table_name)s ADD CONSTRAINT %(pk_constraint)s PRIMARY KEY (%(keys)s)'],
+            'drop_key_constraint' : ['ALTER TABLE %(table_name)s DROP CONSTRAINT %(constraint_name)s'],
             # Index
             'add_index'       : ['CREATE INDEX %(index_name)s ON %(table_name)s (%(col_names)s)'],
             'drop_index'      : ['DROP INDEX %(index_name)s'],
@@ -194,22 +187,7 @@ class DdlCommonInterface:
     def changeIndex(self, strTableName, strOldIndexName, strNewIndexName, cols, diffs):
         self.deleteIndex(strTableName, strOldIndexName, diffs)
         self.addIndex(strTableName, strNewIndexName, cols, diffs)
-    #Check constraint
-    def addCheck(self, strTableName, checkName, strColumn, checkType,argumentList, diffs):
-        info = {
-            'tablename' : (strTableName),
-            'geomname' : (checkName),
-            'srid' : (strColumn),
-            'geomtype'  : (checkType),
-            'dimension'  : argumentList,
-        }
-#        if len(checkName)>0:
-#            info['checkname'] = checkName
-#        else:
-#            info['checkname'] = info['thiscolumn']
 
-        for strDdl in self.params['add_geometry']:
-            diffs.append(('Add Geometry',  strDdl % info))
     # Relations
     def addRelation(self, strTableName, strRelationName, strColumn, strFkTable, strFk, strOnDelete, strOnUpdate, diffs):
         info = {
@@ -397,8 +375,6 @@ class DdlCommonInterface:
         for strDdl in self.params['create_function']:
             diffs.append(('Add function',  strDdl % info))
     
-  
-    
     def updateFunction(self, strNewFunctionName, argumentList, strReturn, strContents, attribs, diffs):
         self.dropFunction(strNewFunctionName, argumentList, diffs)
         self.addFunction(strNewFunctionName, argumentList, strReturn, strContents, attribs, diffs)
@@ -416,20 +392,15 @@ class DdlCommonInterface:
         elif self.dbmsType == 'mysql' and col.get('type') == 'timestamp':
             # MySQL silently sets the default to CURRENT_TIMESTAMP
             strRet += ' DEFAULT null'
-       
+
         strType = col.get('type', None)
         strSize = col.get('size', None)
-        strInt =col.get('type')
-        if strInt=="integer":
-            return strInt
         strPrec = col.get('precision', None)
         
         if strPrec:
             strRet = '%s(%s, %s)%s%s' % (strType, strSize, strPrec, strDefault, strNull)
         elif strSize:
-            strRet = '%s( %s)%s%s' % (strType, strSize, strDefault, strNull)
-        elif strInt:
-            strRet= '%s%s%s' % (strType, strDefault, strNull)
+            strRet = '%s(%s)%s%s' % (strType, strSize, strDefault, strNull)
         else:
             strRet = '%s%s%s' % (strType, strDefault, strNull)
 

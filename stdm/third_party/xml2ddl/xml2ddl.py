@@ -102,26 +102,11 @@ class Xml2Ddl:
         for relation in relations:
             self.ddlInterface.addRelation(strTableName, 
                 getRelationName(relation), 
-                relation.getAttribute('fk'),
+                relation.getAttribute('column'), 
                 relation.getAttribute('table'),
-                 relation.getAttribute('column'),   
+                relation.getAttribute('fk'),
                 relation.getAttribute('ondelete'),
                 relation.getAttribute('onupdate'),
-                self.ddls)
-            
-    def addChecks(self,doc):
-#        if not self.params['output_references']:
-#            return
-        checks=doc.getElementsByTagName('geometry')
-        #strTableName=getTableName(doc)
-        
-        for check in checks:
-            self.ddlInterface.addCheck(
-                check.getAttribute('table'),
-                check.getAttribute('column'),
-                check.getAttribute('srid'), 
-                check.getAttribute('type'),
-                check.getAttribute('arguments'),
                 self.ddls)
         
     def addIndexes(self, doc):
@@ -195,7 +180,6 @@ class Xml2Ddl:
             strTableStuff += " COMMENT=%s" % (self.ddlInterface.quoteString(doc.getAttribute('desc')))
         
         self.ddlInterface.addTable(rawTableName, colDefs, keys, strTableStuff, self.ddls)
-        
 
         self.ddls += strPostDdl
 
@@ -204,7 +188,7 @@ class Xml2Ddl:
             
         self.addColumnComments(doc)
         self.addIndexes(doc)
-        
+        self.addRelations(doc)
         self.addDataset(doc)
     
 
@@ -221,24 +205,15 @@ class Xml2Ddl:
         self.ddls = []
         
         # Should double check here that there is only one table.
-#         name=''
-
-        tableDict=['lookup', 'table']   
-        for name in tableDict:
-            tbls = xml.getElementsByTagName(name)
-            for tbl in tbls:
-                self.createTable(tbl)
-                print tbl.getAttribute('name')
-                
-            self.createRelations(tbls)
+        tbls = xml.getElementsByTagName('table')
+        
+        for tbl in tbls:
+            self.createTable(tbl)
+            
         xml.unlink()
         return self.ddls
 
-    def createRelations(self,tbls):
-        for tbl in tbls:
-            self.addChecks(tbl)
-            self.addRelations(tbl)
-            
+    
 def readDict(dictionaryNode):
     dict = {}
     for adict in dictionaryNode.getElementsByTagName('dict'):
@@ -347,19 +322,16 @@ def parseCommandLine():
     cd.setDbms(options.strDbms)
     cd.params['drop-tables'] = options.bDrop
     
-#    
-#    if len(args) == 0 or len(args[0]) == 0:
-#        parser.print_help()
-#        sys.exit(-1)
-    sourcePath="C:/test/stdmConfig.xml"
-    strFilename = sourcePath#args[0]
+    if len(args) == 0 or len(args[0]) == 0:
+        parser.print_help()
+        sys.exit(-1)
+        
+    strFilename = args[0]
     xml = readMergeDict(strFilename)
-    #results = cd.createTables(xml)
-    check=cd.addChecks(xml)
-    print check
-    #for result in check:
-        #print "%s;" % (result[0])
+    results = cd.createTables(xml)
+    for result in results:
+        print "%s;" % (result[1])
+    
 
 if __name__ == "__main__":
     parseCommandLine()
-    
