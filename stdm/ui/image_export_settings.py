@@ -130,7 +130,7 @@ class ImageExportSettings(QDialog, Ui_ImageExportSettings):
         # Slot raised to choose image path
         img_path = self.txt_path.text()
         title = self.tr('Specify image location')
-        sel_image_path = QFileDialog.getSaveFileName(
+        sel_image_path, _ = QFileDialog.getSaveFileName(
             self,
             title,
             img_path,

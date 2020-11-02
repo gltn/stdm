@@ -421,8 +421,8 @@ class ImportData(QWizard, Ui_frmImport):
     def setSourceFile(self):
         # Set the file path to the source file
         imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)"
-        sourceFile = QFileDialog.getOpenFileName(self, "Select Source File", vectorFileDir(), imageFilters)
-        if sourceFile != "":
+        sourceFile, _ = QFileDialog.getOpenFileName(self, "Select Source File", vectorFileDir(), imageFilters)
+        if sourceFile:
             self.txtDataSource.setText(sourceFile)
 
     def getSrcDestPairs(self):
