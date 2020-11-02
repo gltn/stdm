@@ -235,7 +235,7 @@ def moneyfmt(value, places=2, curr=CURRENCY_CODE, sep=',', dp='.',
     q = Decimal(10) ** -places
     sign, digits, exp = value.quantize(q).as_tuple()
     result = []
-    digits = map(str, digits)
+    digits = list(map(str, digits))
     build, next = result.append, digits.pop
     if sign:
         build(trailneg)
@@ -546,7 +546,7 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False):
         for view in pg_views():
             tables[view] = view
     if sort:
-        names = tables.keys()
+        names = list(tables.keys())
         names = sorted(names)
         sorted_table = OrderedDict()
         for name in names:
@@ -954,7 +954,7 @@ def enable_drag_sort(mv_widget):
                         )
 
             for row in reversed(
-                    sorted(row_mapping.iterkeys())
+                    sorted(row_mapping.keys())
             ):
                 mv_widget.model().removeRow(row)
 
@@ -1048,7 +1048,7 @@ def enable_drag_sort_widgets(qt_widget):
                 qt_widget.takeItem(src_row)
 
             for row in reversed(
-                    sorted(row_mapping.iterkeys())
+                    sorted(row_mapping.keys())
             ):
                 qt_widget.removeItemWidget(qt_widget.item(row))
 
@@ -1177,8 +1177,8 @@ def profile_and_user_views(profile, check_party=False):
 
     stdm_config = StdmConfiguration.instance()
     all_str_views = []
-    for prof in stdm_config.profiles.values():
-        all_str_views.extend(prof.social_tenure.views.keys())
+    for prof in list(stdm_config.profiles.values()):
+        all_str_views.extend(list(prof.social_tenure.views.keys()))
 
     for value in pg_views():
         # if value not in all_str_views:  #and value not in source_tables:
@@ -1203,8 +1203,8 @@ def user_non_profile_views():
     source_tables = []
     stdm_config = StdmConfiguration.instance()
     all_str_views = []
-    for prof in stdm_config.profiles.values():
-        all_str_views.extend(prof.social_tenure.views.keys())
+    for prof in list(stdm_config.profiles.values()):
+        all_str_views.extend(list(prof.social_tenure.views.keys()))
 
     for value in pg_views():
         if value not in all_str_views:

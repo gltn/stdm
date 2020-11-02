@@ -130,7 +130,7 @@ class _EntityDocumentViewerHandler(object):
                 'EntityBrowser',
                 'The root document directory does not exist'
             )
-            msg = u'{0}:\n{1}'.format(base_msg, self._network_doc_path)
+            msg = '{0}:\n{1}'.format(base_msg, self._network_doc_path)
             QMessageBox.critical(self._parent, self._title, msg)
 
             return
@@ -207,7 +207,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             'Document Viewer'
         )
 
-        self.doc_viewer_title = u'{0} {1}'.format(
+        self.doc_viewer_title = '{0} {1}'.format(
             entity.ui_display(),
             viewer_title
         )
@@ -373,7 +373,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         else:
             title = self._entity.ui_display()
 
-        return u'{} {}'.format(title, records)
+        return '{} {}'.format(title, records)
 
     def setCellFormatters(self, formattermapping):
         '''
@@ -452,7 +452,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             if numRecords == 1 \
             else QApplication.translate('EntityBrowser', 'rows')
         showing = QApplication.translate('EntityBrowser', 'Showing')
-        windowTitle = u"{0} - {1} {2} of {3} {4}".format(
+        windowTitle = "{0} - {1} {2} of {3} {4}".format(
             self.title(), showing, self.current_records, numRecords, rowStr
         )
 
@@ -519,10 +519,10 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         if len(missing_columns) > 0:
             msg = QApplication.translate(
                 'EntityBrowser',
-                u'The following columns have been defined in the '
-                u'configuration but are missing in corresponding '
-                u'database table, please re-run the configuration wizard '
-                u'to create them.\n{0}'.format(
+                'The following columns have been defined in the '
+                'configuration but are missing in corresponding '
+                'database table, please re-run the configuration wizard '
+                'to create them.\n{0}'.format(
                     '\n'.join(missing_columns)
                 )
             )
@@ -888,7 +888,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 'record(s) selected'
             )
 
-            msg = u'{0:d} {1}.'.format(len(selIDs), rec_selected)
+            msg = '{0:d} {1}.'.format(len(selIDs), rec_selected)
             self._notifBar.insertInformationNotification(msg)
 
     def addModelToView(self, model_obj):
@@ -1089,7 +1089,7 @@ class EntityBrowserWithEditor(EntityBrowser):
         :return: Returns True if there are other columns apart from id,
         otherwise False.
         """
-        columns = self._entity.columns.values()
+        columns = list(self._entity.columns.values())
 
         if len(columns) < 2:
             return False

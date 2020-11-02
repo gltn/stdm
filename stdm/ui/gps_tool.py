@@ -17,8 +17,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import gps_tool_data_source_utils as gpx_source
-import gps_tool_data_view_utils as gpx_view
+from . import gps_tool_data_source_utils as gpx_source
+from . import gps_tool_data_view_utils as gpx_view
 from qgis.PyQt.QtCore import (
     Qt
 )

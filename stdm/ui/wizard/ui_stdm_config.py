@@ -694,4 +694,4 @@ class Ui_STDMWizard(object):
 from stdm.ui.wizard.party_list_view import STRPartyListView
 from qgis.gui import QgsCollapsibleGroupBox
 from stdm.ui.wizard.profile_tenure_view import ProfileTenureDiagram
-from spatial_unit_list_view import STRSpatialUnitListView
+from .spatial_unit_list_view import STRSpatialUnitListView

@@ -112,7 +112,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
 
             state = name_validator.validate(text, text.index(last_character))[0]
             if state != QValidator.Acceptable:
-                self.show_notification(u'"{}" is not allowed at this position.'.
+                self.show_notification('"{}" is not allowed at this position.'.
                                        format(last_character)
                                        )
                 text = text[:-1]
@@ -199,11 +199,11 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         :type name: Unicode
         :rtype:boolean
         """
-        return self.profile.entities.has_key(name)
+        return name in self.profile.entities
 
     def edit_lookup(self, short_name):
         short_name = short_name.replace('check_', '')
-        self.lookup.short_name = u'{0}_{1}'.format('check', short_name)
+        self.lookup.short_name = '{0}_{1}'.format('check', short_name)
 
     def reject(self):
         self.done(0)

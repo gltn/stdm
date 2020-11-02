@@ -154,7 +154,7 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
         :type prj_code: int
         """
         self._overlay_layer = QgsVectorLayer(
-            u"{0}?crs=epsg:{1!s}&field=lbname:string(20)&index=yes".format(geom_type,
+            "{0}?crs=epsg:{1!s}&field=lbname:string(20)&index=yes".format(geom_type,
                                                                            prj_code),
             "view_str_spatial_unit",
             "memory")

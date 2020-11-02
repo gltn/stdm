@@ -155,7 +155,7 @@ class STRDBHandler():
 
             str_args = {
                 party_entity_id: party_id,
-                spatial_unit_entity_id: str_store.spatial_unit.keys()[0],
+                spatial_unit_entity_id: list(str_store.spatial_unit.keys())[0],
                 tenure_type: str_type_id,
                 'validity_start': start_date,
                 'validity_end': end_date,
@@ -268,10 +268,10 @@ class STRDBHandler():
         doc_objs = str_store.supporting_document
         paired_doc = self.pair_documents(str_type, doc_objs)
         share = str_store.share
-        party_keys = str_store.party.keys()
-        spatial_keys = str_store.spatial_unit.keys()
+        party_keys = list(str_store.party.keys())
+        spatial_keys = list(str_store.spatial_unit.keys())
         str_rec = {model.id: doc for model, doc in self.str_edit_node}
-        rows = self.str_model().queryObject().filter(self.str_model.id.in_(str_rec.keys())).all()
+        rows = self.str_model().queryObject().filter(self.str_model.id.in_(list(str_rec.keys()))).all()
         for idx, row in enumerate(rows):
             attr = {c.name: getattr(row, c.name) for c in row.__table__.columns}
             new_party = party_keys[idx]
@@ -280,11 +280,11 @@ class STRDBHandler():
             setattr(row, spatial_col, spatial_id if spatial_id in spatial_keys else spatial_keys[0])
             row.validity_start = start_date
             row.validity_end = end_date
-            row.tenure_type = str_type[party_id] if party_id in str_type.keys() else str_type[new_party]
-            row.tenure_share = share[party_id] if party_id in share.keys() else share[new_party]
+            row.tenure_type = str_type[party_id] if party_id in list(str_type.keys()) else str_type[new_party]
+            row.tenure_share = share[party_id] if party_id in list(share.keys()) else share[new_party]
 
             # Extract new supporting documents
-            str_doc_objs = [obj for obj in sum(str_rec[row.id].values(), [])]
+            str_doc_objs = [obj for obj in sum(list(str_rec[row.id].values()), [])]
             new_doc_objs = list(set(doc_objs) - set(str_doc_objs))
             if paired_doc:
                 new_doc_objs = [

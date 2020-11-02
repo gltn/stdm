@@ -94,10 +94,7 @@ class RenameableKeyDict(MutableMapping):
     def _sorted_keys(self):
         # Returns keys in the index map sorted by index value in
         # ascending order
-        return map(
-            lambda s: s[0],
-            sorted(self._idx_map.items(), key=lambda c: c[1])
-        )
+        return [s[0] for s in sorted(list(self._idx_map.items()), key=lambda c: c[1])]
 
     def _remap_indices(self, ref_idx):
         # Remap the index of items in the list as stored in the dict.

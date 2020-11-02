@@ -782,10 +782,7 @@ class BaseTenureItem(QGraphicsItem):
     def _elided_items(self, font, width):
         # Formats each item text to incorporate an elide if need be and
         # return the items in a list.
-        return map(
-            lambda item: self._elided_text(font, item, width),
-            self.items
-        )
+        return [self._elided_text(font, item, width) for item in self.items]
 
     def items_size(self, items):
         """
@@ -1045,7 +1042,7 @@ class BaseTenureItem(QGraphicsItem):
                 )
 
             # QTextLayout requires the unicode character of the line separator
-            multiline_items = u'\u2028'.join(multiline_items)
+            multiline_items = '\\u2028'.join(multiline_items)
             self.draw_text(
                 painter,
                 multiline_items,
@@ -1068,7 +1065,7 @@ class EntityItem(BaseTenureItem):
             'ProfileTenureView',
             'columns'
         )
-        self.items_title = u'<<{0}>>'.format(columns)
+        self.items_title = '<<{0}>>'.format(columns)
 
         # Use default renderer if none is specified
         if self.icon_renderer is None:
@@ -1080,7 +1077,7 @@ class EntityItem(BaseTenureItem):
     def _on_set_entity(self):
         if not self._entity is None:
             self.header = self.entity.short_name
-            self.items = self.entity.columns.keys()
+            self.items = list(self.entity.columns.keys())
             self.update()
 
 
@@ -1110,7 +1107,7 @@ class TenureRelationshipItem(BaseTenureItem):
             'ProfileTenureView',
             'tenure types'
         )
-        self.items_title = u'<<{0}>>'.format(tenure_types)
+        self.items_title = '<<{0}>>'.format(tenure_types)
         self.header = QApplication.translate(
             'ProfileTenureView',
             'Social Tenure'
@@ -1147,7 +1144,7 @@ class TenureDocumentItem(BaseTenureItem):
             'ProfileTenureView',
             'document types'
         )
-        self.items_title = u'<<{0}>>'.format(tenure_types)
+        self.items_title = '<<{0}>>'.format(tenure_types)
         self.header = QApplication.translate(
             'ProfileTenureView',
             'Documents'
@@ -1177,7 +1174,7 @@ class Annotation(QGraphicsTextItem):
     """Add major or minor annotation item to the view. The only difference
     between major and minor annotations is the font size and underline
     (for the former)."""
-    Minor, Major = range(2)
+    Minor, Major = list(range(2))
 
     lost_focus = pyqtSignal(QGraphicsTextItem)
 
@@ -1219,7 +1216,7 @@ class ProfileTenureScene(QGraphicsScene):
     """
     Custom scene for handling annotation items.
     """
-    InsertMajorAnnotation, InsertMinorAnnotation, MoveItem = range(3)
+    InsertMajorAnnotation, InsertMinorAnnotation, MoveItem = list(range(3))
 
     annotation_inserted = pyqtSignal(QGraphicsTextItem)
 
@@ -1280,7 +1277,7 @@ class ProfileTenureView(QGraphicsView):
     MAX_DPI = 600
 
     # Enums for add party policy
-    ADD_TO_EXISTING, REMOVE_PREVIOUS = range(2)
+    ADD_TO_EXISTING, REMOVE_PREVIOUS = list(range(2))
 
     def __init__(self, parent=None, profile=None):
         super(ProfileTenureView, self).__init__(parent)
@@ -1412,11 +1409,11 @@ class ProfileTenureView(QGraphicsView):
 
     def _highest_party_z_order(self):
         # Returns the highest z-order of party graphic items.
-        return self._highest_item_z_order(self._party_items.values())
+        return self._highest_item_z_order(list(self._party_items.values()))
 
     def _highest_sp_unit_z_order(self):
         # Returns the highest z-order of spatial unit graphic items.
-        return self._highest_item_z_order(self._sp_unit_items.values())
+        return self._highest_item_z_order(list(self._sp_unit_items.values()))
 
     def _highest_item_z_order(self, items):
         # Get the highest z-order of the graphic items in the list.

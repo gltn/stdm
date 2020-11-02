@@ -206,7 +206,7 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
         dir = QDir()
 
         if not dir.exists(source_doc_path):
-            msg = self.tr(u"'{0}' directory does not exist.".format(
+            msg = self.tr("'{0}' directory does not exist.".format(
                 source_doc_path))
             self._notif_bar.insertErrorNotification(msg)
 

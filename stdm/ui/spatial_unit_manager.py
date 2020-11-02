@@ -163,7 +163,7 @@ class SpatialUnitManagerDockWidget(
                 column.hidden = True
                 header = entity.columns[column.name].header()
 
-                joined_column_name = u'{} {}'.format(header, fk_fields[column.name])
+                joined_column_name = '{} {}'.format(header, fk_fields[column.name])
 
                 joined_column = self.get_column_config(config, joined_column_name)
 
@@ -200,7 +200,7 @@ class SpatialUnitManagerDockWidget(
         join.setJoinFieldNamesSubset([fk_field])
         join.targetFieldName = layer_field
         join.memoryCache = True
-        join.prefix = u'{} '.format(column_header)
+        join.prefix = '{} '.format(column_header)
         layer.addJoin(join)
 
     def column_to_fk_layer_join(self, column, layer, join_field):
@@ -311,7 +311,7 @@ class SpatialUnitManagerDockWidget(
 
                     display_name = gc.layer_display()
                     if i > 0:
-                        display_name = u'{}.{}'.format(display_name, gc.name)
+                        display_name = '{}.{}'.format(display_name, gc.name)
                     self._add_geometry_column_to_combo(
                         table_name,
                         column_name,
@@ -325,7 +325,7 @@ class SpatialUnitManagerDockWidget(
                 )
 
         # Append the corresponding(profile) view to the list of entity names
-        str_views = self._curr_profile.social_tenure.views.keys()
+        str_views = list(self._curr_profile.social_tenure.views.keys())
 
         for str_view in str_views:
             if str_view in self.sp_tables:
@@ -420,7 +420,7 @@ class SpatialUnitManagerDockWidget(
                 LOGGER.debug(str(ex))
 
     def _format_layer_display_name(self, col, table):
-        return u'{0}.{1}'.format(table, col)
+        return '{0}.{1}'.format(table, col)
 
     def _add_geometry_column_to_combo(
             self, table_name, column_name, display, item
@@ -536,13 +536,13 @@ class SpatialUnitManagerDockWidget(
 
         if isinstance(col, str):
 
-            spatial_layer_item = u'{}.{}'.format(table, col)
+            spatial_layer_item = '{}.{}'.format(table, col)
 
         elif isinstance(col, SocialTenure):
             spatial_layer_item = col.view_name
 
         elif col.layer_display_name == '':
-            spatial_layer_item = u'{0}'.format(col.entity.short_name)
+            spatial_layer_item = '{0}'.format(col.entity.short_name)
         # use the layer_display_name
         else:
             spatial_layer_item = col.layer_display_name
@@ -684,9 +684,9 @@ class SpatialUnitManagerDockWidget(
             header = entity.columns[column].header()
 
             f_index = layer.fieldNameIndex(
-                u'{} {}'.format(header, fk_field)
+                '{} {}'.format(header, fk_field)
             )
-            alias = u'{} Value'.format(header)
+            alias = '{} Value'.format(header)
 
             layer.addAttributeAlias(f_index, alias)
 
@@ -854,7 +854,7 @@ class SpatialUnitManagerDockWidget(
                 # Check if the table name is in the current profile
                 if table_name in self._profile_spatial_layers:
                     prompt = \
-                        u"Set the display name for '{0}' layer".format(
+                        "Set the display name for '{0}' layer".format(
                             layer.name()
                         )
                     display_name, ok = QInputDialog.getText(
@@ -892,11 +892,11 @@ class SpatialUnitManagerDockWidget(
                 else:
                     msg = QApplication.translate(
                         "Spatial Unit Manager",
-                        u"The layer does not "
-                        u"belong in the '{0}' "
-                        u"profile.\nThe display name "
-                        u"will not be set."
-                        u"".format(
+                        "The layer does not "
+                        "belong in the '{0}' "
+                        "profile.\nThe display name "
+                        "will not be set."
+                        "".format(
                             self._curr_profile.name
                         )
                     )

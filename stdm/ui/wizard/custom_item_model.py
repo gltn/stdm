@@ -70,7 +70,7 @@ class EntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-        return self._entities.values()[id]
+        return list(self._entities.values())[id]
 
     def entities(self):
         return self._entities
@@ -228,7 +228,7 @@ class ColumnEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-        return self._entities.values()[id]
+        return list(self._entities.values())[id]
 
     def entities(self):
         return self._entities
@@ -329,7 +329,7 @@ class LookupEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-        return self._entities.values()[id]
+        return list(self._entities.values())[id]
 
     def entities(self):
         return self._entities
@@ -412,7 +412,7 @@ class STRColumnEntitiesModel(QStandardItemModel):
         return None
 
     def entity_byId(self, id):
-        return self._entities.values()[id]
+        return list(self._entities.values())[id]
 
     def entities(self):
         return self._entities

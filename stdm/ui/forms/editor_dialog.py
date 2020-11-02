@@ -175,7 +175,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         else:
             title_str = format_name(self._entity.short_name)
 
-        self.title = u'{0} {1}'.format(title_str, editor_trans)
+        self.title = '{0} {1}'.format(title_str, editor_trans)
 
         self.setWindowTitle(self.title)
 
@@ -520,7 +520,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
                 # Format label text if it is a mandatory field
                 if c.mandatory:
-                    header = u'{0} *'.format(c.ui_display())
+                    header = '{0} *'.format(c.ui_display())
                     # Highlight asterisk
                     header = self._highlight_asterisk(header)
 
@@ -622,7 +622,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
             ContentGroupEntityBrowser
         )
 
-        attr = u'{0}_collection'.format(child_entity.name)
+        attr = '{0}_collection'.format(child_entity.name)
 
         # Return if the attribute does not exist
         if not hasattr(self._model, attr):
@@ -661,7 +661,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
 
         self.entity_tab_widget.addTab(
             entity_browser,
-            u'{0}'.format(
+            '{0}'.format(
                 column_label
             )
         )
@@ -740,7 +740,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         asterisk_highlight = '<span style=\" color:#ff0000;\">*</span>'
         text = text.replace(c, asterisk_highlight)
 
-        return u'<html><head/><body><p>{0}</p></body></html>'.format(text)
+        return '<html><head/><body><p>{0}</p></body></html>'.format(text)
 
     def _custom_validate(self):
         """

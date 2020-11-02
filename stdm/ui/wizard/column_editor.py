@@ -94,7 +94,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
         QDialog.__init__(self, self.form_parent)
 
-        self.FK_EXCLUDE = [u'supporting_document', u'admin_spatial_unit_set']
+        self.FK_EXCLUDE = ['supporting_document', 'admin_spatial_unit_set']
 
         self.EX_TYPE_INFO = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
                              'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
@@ -234,7 +234,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         # if locale == 'en':
         state = name_validator.validate(text, text.index(last_character))[0]
         if state != QValidator.Acceptable:
-            self.show_notification(u'"{}" is not allowed at this position.'.
+            self.show_notification('"{}" is not allowed at this position.'.
                                    format(last_character)
                                    )
             text = text[:-1]
@@ -837,7 +837,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
 
             return
 
-        self.btnColProp.setEnabled(self.type_attribs[ti].has_key('property'))
+        self.btnColProp.setEnabled('property' in self.type_attribs[ti])
         self.type_info = ti
         opts = self.type_attribs[ti]
         self.set_optionals(opts)
@@ -914,7 +914,7 @@ class ColumnEditor(QDialog, Ui_ColumnEditor):
         # check for STDM reserved keywords
         if col_name in RESERVED_KEYWORDS:
             self.show_message(
-                self.tr(u"'{0}' is a reserved keyword used internally by STDM.\n" \
+                self.tr("'{0}' is a reserved keyword used internally by STDM.\n" \
                         "Please choose another column name.".format(col_name)))
             return False
 

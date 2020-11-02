@@ -106,8 +106,8 @@ class ImageExportSettings(QDialog, Ui_ImageExportSettings):
         height = int(210 * res_mm)
 
         units = 'px'
-        width_display = u'{0} {1}'.format(width, units)
-        height_display = u'{0} {1}'.format(height, units)
+        width_display = '{0} {1}'.format(width, units)
+        height_display = '{0} {1}'.format(height, units)
         self.lbl_width.setText(width_display)
         self.lbl_height.setText(height_display)
 
@@ -117,7 +117,7 @@ class ImageExportSettings(QDialog, Ui_ImageExportSettings):
 
         for f in QImageWriter.supportedImageFormats():
             f_type = f.data()
-            filter_format = u'{0} {1} (*.{2})'.format(
+            filter_format = '{0} {1} (*.{2})'.format(
                 f_type.upper(),
                 self._image_tr,
                 f_type

@@ -161,7 +161,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         spFieldMappings = []
 
-        editors = self._editorMappings.values()
+        editors = list(self._editorMappings.values())
         for ed in editors:
             spFieldMapping = ed.spatialFieldMapping()
             spFieldMappings.append(spFieldMapping)
@@ -218,7 +218,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         Add a styling widget to the field tab widget.
         """
-        if isinstance(sp_field_mapping, (str, unicode)):
+        if isinstance(sp_field_mapping, str):
             sp_column_name = sp_field_mapping
             apply_mapping = False
         else:
@@ -258,7 +258,7 @@ class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
         """
         Build symbol widget based on geometry type.
         """
-        if isinstance(sp_field_mapping, (str, unicode)):
+        if isinstance(sp_field_mapping, str):
             sp_column_name = sp_field_mapping
             sym_layer = None
         else:

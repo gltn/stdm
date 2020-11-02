@@ -80,7 +80,7 @@ def cascading_field_ctx(src_lk, target_lk, src_values, target_values):
     :rtype: CascadingFieldContext
     """
     cf_ctx = CascadingFieldContext(src_lk, target_lk)
-    idx_clc = zip(src_values, target_values)
+    idx_clc = list(zip(src_values, target_values))
     for i in idx_clc:
         cf_ctx.add_mapping(i[0], i[1])
 
@@ -460,7 +460,7 @@ class CascadingFieldContextManager(object):
         :return: Returns a list of contexts in the context manager.
         :rtype: list
         """
-        return self._cf_ctxts.values()
+        return list(self._cf_ctxts.values())
 
     def connect(self):
         """
@@ -478,13 +478,12 @@ class CascadingFieldContextManager(object):
             ctx.disconnect()
 
 
-class AbstractEditorExtension(object):
+class AbstractEditorExtension(object, metaclass=ABCMeta):
     """
     Abstract class that provides a basis for implementing extension classes.
     It provides functions for accessing various functionality of an entity
     editor form.
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, entity_dialog):
         self._entity_dlg = entity_dialog

@@ -196,7 +196,7 @@ class SupportingDocumentsWidget(QWidget):
         registered document types.
         :rtype: list
         """
-        return self.source_document_manager.containers.values()
+        return list(self.source_document_manager.containers.values())
 
     def document_type_widget(self, name):
         """
@@ -248,13 +248,13 @@ class SupportingDocumentsWidget(QWidget):
 
         select = self.tr('Select')
         supporting_docs_str = 'Supporting Documents'
-        title = u'{0} {1} {2}'.format(
+        title = '{0} {1} {2}'.format(
             select,
             self.current_document_type(),
             supporting_docs_str
         )
 
-        filter_str = u'{0} (*.jpg *.jpeg *.png *.bmp *.tiff *.svg *.pdf)'.format(
+        filter_str = '{0} (*.jpg *.jpeg *.png *.bmp *.tiff *.svg *.pdf)'.format(
             supporting_docs_str
         )
 

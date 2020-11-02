@@ -130,7 +130,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Return a list of all profiles
         :rtype: list
         """
-        return self.load_config().values()
+        return list(self.load_config().values())
 
     def change_check_state(self, state):
         """
@@ -391,7 +391,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
-            cols = table_object.columns.values()
+            cols = list(table_object.columns.values())
             for col in cols:
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     parent_object = table_object.columns[col.name]
@@ -579,7 +579,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                        QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
                 return
 
-        if not len(mobile_field_data) > 0 and not len(mobile_field_data.values()) > 0:
+        if not len(mobile_field_data) > 0 and not len(list(mobile_field_data.values())) > 0:
             self.feedback_message('Not matching data in mobile files')
             return
         counter = 0
@@ -776,7 +776,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 # dir_path, file_name = os.path.split(instance)
                 # if log_data.has_key(instance) or log_data.has_key(file_name):
                 try:
-                    if log_data.has_key(os.path.split(instance)[1]):
+                    if os.path.split(instance)[1] in log_data:
                         # del_list. append(instance)
                         print(instance)
                         self.instance_list.remove(instance)

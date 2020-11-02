@@ -95,11 +95,11 @@ class TranslatorDialogBase(object):
         """
         curr_profile = current_profile()
 
-        tables = profile_user_tables(
+        tables = list(profile_user_tables(
             self._current_profile,
             False,
             True
-        ).keys()
+        ).keys())
 
         return tables
 

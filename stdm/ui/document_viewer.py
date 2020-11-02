@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import division
+
 
 import logging
 import os

@@ -71,7 +71,7 @@ class AdvancedSearch(EntityEditorDialog):
         else:
             title_str = format_name(self._entity.short_name)
 
-        title = u'{0} {1}'.format(title_str, search_trans)
+        title = '{0} {1}'.format(title_str, search_trans)
         self.do_not_check_dirty = True
         self.setWindowTitle(title)
         # if self.has_mandatory:
@@ -201,17 +201,17 @@ class AdvancedSearch(EntityEditorDialog):
         results = ent_model_obj.queryObject().all()
 
     def search_db_raw(self, search_data):
-        sql = u"SELECT * FROM {} WHERE ".format(self._entity.name)
+        sql = "SELECT * FROM {} WHERE ".format(self._entity.name)
         # query = ent_model_obj.queryObject()
         param = []
         if len(search_data) == 0:
             return None
         for attr, value in search_data.items():
             if isinstance(value, (int, float)):
-                param.append(u'{} = {}'.format(str(attr), str(value)))
+                param.append('{} = {}'.format(str(attr), str(value)))
             if isinstance(value, str):
-                param.append(u"{} = '{}'".format(str(attr), str(value)))
-        final_sql = u'{} {}'.format(sql, ' AND '.join(param))
+                param.append("{} = '{}'".format(str(attr), str(value)))
+        final_sql = '{} {}'.format(sql, ' AND '.join(param))
         # sql_text = text(final_sql)
         results = fetch_with_filter(final_sql)
         # now we can run the query

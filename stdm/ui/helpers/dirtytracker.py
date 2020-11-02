@@ -71,7 +71,7 @@ class ControlDirtyTracker(object):
         for the specified control.
         '''
         # Define default list of supported control names
-        supportedControls = ControlValueHandler.handlers.keys()
+        supportedControls = list(ControlValueHandler.handlers.keys())
         ctlName = str(ctl.metaObject().className())
 
         handler = None

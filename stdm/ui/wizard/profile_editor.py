@@ -93,7 +93,7 @@ class ProfileEditor(QDialog, Ui_Profile):
             last_character = text[-1:]
             state = name_validator.validate(text, text.index(last_character))[0]
             if state != QValidator.Acceptable:
-                msg = u'\'{0}\' is not allowed at this position.'.format(
+                msg = '\'{0}\' is not allowed at this position.'.format(
                     last_character
                 )
                 self.show_notification(msg)
