@@ -583,7 +583,7 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
                 fileInfo = QFileInfo(self._outputFilePath)
                 docDir = fileInfo.dir().path()
 
-            self._outputFilePath = QFileDialog.getSaveFileName(self,
+            self._outputFilePath, _ = QFileDialog.getSaveFileName(self,
                                                                QApplication.translate("DocumentGeneratorDialog",
                                                                                       "Save Document"),
                                                                docDir,

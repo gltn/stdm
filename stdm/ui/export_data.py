@@ -202,11 +202,11 @@ class ExportData(QWizard, Ui_frmExportWizard):
         elif self.rbDXF.isChecked():
             ogrFilter = "DXF (*.dxf)"
 
-        destFile = QFileDialog.getSaveFileName(
+        destFile, _ = QFileDialog.getSaveFileName(
             self, "Select Output File", vectorFileDir(), ogrFilter
         )
 
-        if destFile != "":
+        if destFile:
             self.txtExportPath.setText(destFile)
 
     def srcSelectChanged(self):

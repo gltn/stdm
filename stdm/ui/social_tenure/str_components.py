@@ -1009,7 +1009,7 @@ class SupportingDocuments(ComponentUtility):
         if last_path is None:
             last_path = '/home'
 
-        files = QFileDialog.getOpenFileNames(
+        files, _ = QFileDialog.getOpenFileNames(
             iface.mainWindow(),
             title,
             last_path,

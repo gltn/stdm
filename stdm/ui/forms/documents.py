@@ -268,7 +268,7 @@ class SupportingDocumentsWidget(QWidget):
             if not dir.exists():
                 last_path = '/home'
 
-        source_docs = QFileDialog.getOpenFileNames(
+        source_docs, _ = QFileDialog.getOpenFileNames(
             self, title, last_path, filter_str
         )
 
