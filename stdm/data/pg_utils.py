@@ -424,8 +424,8 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     Select unique row values in the specified column.
     Specify the data types of row values which need to be quoted. Default is varchar.
     """
-    # tableName = unicode(tableName)
-    # columnName = unicode(columnName)
+    # tableName = str(tableName)
+    # columnName = str(columnName)
     dataType = columnType(tableName, columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     if "'" in columnName and '"' not in columnName:

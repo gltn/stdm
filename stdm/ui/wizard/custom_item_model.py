@@ -100,7 +100,7 @@ class EntitiesModel(QStandardItemModel):
     def _add_row(self, entity):
         '''
         name_item = QStandardItem(entity.name())
-        mandatory_item = QStandardItem(unicode(entity.mandatory()))
+        mandatory_item = QStandardItem(str(entity.mandatory()))
         self.appendRow([name_item, mandatory_item])
         '''
         entity_item = EntityModelItem(entity)
@@ -437,7 +437,7 @@ class STRColumnEntitiesModel(QStandardItemModel):
     def _add_row(self, entity):
         '''
         name_item = QStandardItem(entity.name())
-        mandatory_item = QStandardItem(unicode(entity.mandatory()))
+        mandatory_item = QStandardItem(str(entity.mandatory()))
         self.appendRow([name_item, mandatory_item])
         '''
         entity_item = STREntityModelItem(entity)
