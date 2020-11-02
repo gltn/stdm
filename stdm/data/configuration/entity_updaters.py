@@ -70,7 +70,7 @@ def entity_updater(entity, engine, metadata):
 
     elif entity.action == DbItem.ALTER:
         LOGGER.debug('Altering %s entity...', entity.name)
-        update_entity_columns(entity, table, entity.updated_columns.values())
+        update_entity_columns(entity, table, list(entity.updated_columns.values()))
 
     elif entity.action == DbItem.DROP:
         LOGGER.debug('Deleting %s entity...', entity.name)
@@ -84,7 +84,7 @@ def create_entity(entity, table, engine):
     """
     # Create table
     table.create(engine, checkfirst=True)
-    update_entity_columns(entity, table, entity.columns.values())
+    update_entity_columns(entity, table, list(entity.columns.values()))
 
 
 def drop_entity(entity, table, engine):
@@ -127,7 +127,7 @@ def _table_column_names(table):
 
 def _remove_dropped_columns(entity, table):
     # Drop removed columns
-    updated_cols = entity.updated_columns.values()
+    updated_cols = list(entity.updated_columns.values())
     col_names = _table_column_names(entity.name)
 
     for c in updated_cols:

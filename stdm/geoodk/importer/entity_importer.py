@@ -254,18 +254,18 @@ class Save2DB:
         party_ref_column = ''
         spatial_ref_column = ''
         if self.parents_ids is not None:
-            print(self.parents_ids)
-            if self.attributes.has_key('party'):
+            print((self.parents_ids))
+            if 'party' in self.attributes:
                 full_party_ref_column = self.attributes.get('party')
 
                 party_ref_column = full_party_ref_column + '_id'
-                print('party{}.'.format(party_ref_column))
+                print(('party{}.'.format(party_ref_column)))
                 setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
-            if self.attributes.has_key('spatial_unit'):
+            if 'spatial_unit' in self.attributes:
                 full_spatial_ref_column = self.attributes.get('spatial_unit')
                 spatial_ref_column = full_spatial_ref_column + '_id'
-                print('sp.{}.'.format(spatial_ref_column))
+                print(('sp.{}.'.format(spatial_ref_column)))
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
             return party_ref_column, spatial_ref_column
 
@@ -281,7 +281,7 @@ class Save2DB:
                 # try:
 
                 prefix = current_profile().prefix + '_'
-                if self.attributes.has_key('party'):
+                if 'party' in self.attributes:
                     full_party_ref_column = self.attributes.get('party')
                     party_ref_column = full_party_ref_column + '_id'
                     self.attributes.pop('party')
@@ -291,7 +291,7 @@ class Save2DB:
 
                 setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
-                if self.attributes.has_key('spatial_unit'):
+                if 'spatial_unit' in self.attributes:
                     full_spatial_ref_column = self.attributes.get('spatial_unit')
                     spatial_ref_column = full_spatial_ref_column + '_id'
                     self.attributes.pop('spatial_unit')
@@ -357,7 +357,7 @@ class Save2DB:
         :return:
         """
         self.entity_mapping = {}
-        cols = self.entity.columns.values()
+        cols = list(self.entity.columns.values())
         for c in cols:
             self.entity_mapping[c.name] = c.TYPE_INFO
 
@@ -451,12 +451,12 @@ class Save2DB:
                 pass
 
         elif col_type == 'MULTIPLE_SELECT':
-            print('multiple select {}'.format(var))
+            print(('multiple select {}'.format(var)))
             if var == '' or var is None:
                 return None
             else:
                 col_parent = col_prop.association.first_parent
-                lk_val_list = col_parent.values.values()
+                lk_val_list = list(col_parent.values.values())
                 choices_list = []
                 for code in lk_val_list:
                     choices_list.append(entity_attr_to_id(

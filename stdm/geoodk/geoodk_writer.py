@@ -359,7 +359,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
 
         group_node = self.create_node('social_tenure')
-        str_entities = self.entity_read.social_tenure_attributes().keys()
+        str_entities = list(self.entity_read.social_tenure_attributes().keys())
         if self.check_str_supports_multiple_entities():
             str_entities.append('party')
             str_entities.append('spatial_unit')

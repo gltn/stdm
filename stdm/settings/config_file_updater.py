@@ -289,7 +289,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
             status, msg, line, col = doc.setContent(config_file_path)
             if not status:
-                error_message = u'Configuration file cannot be loaded: {0}'. \
+                error_message = 'Configuration file cannot be loaded: {0}'. \
                     format(msg)
                 self.append_log(str(error_message))
 
@@ -476,7 +476,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
                         if len(lookup_no_list) < 1:
                             self.lookup_dict[lookup_val] = {"G": "General"}
                             self.lookup_colum_name_values[lookup_val.lstrip(
-                                "check_")] = OrderedDict([(u'General', 1)])
+                                "check_")] = OrderedDict([('General', 1)])
                         column_dict["lookup"] = str(
                             column_node.attribute('lookup'))
                         column_dict["col_type"] = COLUMN_TYPE_DICT['lookup']
@@ -1662,7 +1662,7 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
 
                     data = export_data(social_tenure_entity[0])
 
-                    columns = data.keys()
+                    columns = list(data.keys())
 
                     # Remove geom columns of line, point and
                     # polygon and replace with one column geom to fit new

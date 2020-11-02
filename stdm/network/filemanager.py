@@ -63,14 +63,14 @@ class NetworkFileManager(QObject):
         self.sourcePath = str(fileinfo.filePath())
         profile_name = self.curr_profile.name
         root_dir = QDir(self.networkPath)
-        doc_dir = QDir(u'{}/{}/{}/{}'.format(
+        doc_dir = QDir('{}/{}/{}/{}'.format(
             self.networkPath,
             profile_name.lower(),
             self._entity_source,
             self._doc_type.lower().replace(' ', '_')
         )
         )
-        doc_path_str = u'{}/{}/{}/{}'.format(
+        doc_path_str = '{}/{}/{}/{}'.format(
             self.networkPath,
             profile_name.lower(),
             self._entity_source,
@@ -88,7 +88,7 @@ class NetworkFileManager(QObject):
         else:
             root_doc_type_path = doc_path_str
 
-        self.destinationPath = u'{}/{}.{}'.format(
+        self.destinationPath = '{}/{}.{}'.format(
             root_doc_type_path,
             self.fileID,
             fileinfo.completeSuffix()
@@ -131,7 +131,7 @@ class NetworkFileManager(QObject):
             fileName, fileExt = guess_extension(doc_model.filename)
             profile_name = self.curr_profile.name
             # Qt always expects the file separator be be "/" regardless of platform.
-            absPath = u'{}/{}/{}/{}/{}{}'.format(
+            absPath = '{}/{}/{}/{}/{}{}'.format(
                 self.networkPath,
                 profile_name.lower(),
                 doc_model.source_entity,
@@ -152,7 +152,7 @@ class NetworkFileManager(QObject):
             fileName, fileExt = guess_extension(docmodel.filename)
             profile_name = self.curr_profile.name
             # Qt always expects the file separator be be "/" regardless of platform.
-            absPath = u'{}/{}/{}/{}/{}{}'.format(
+            absPath = '{}/{}/{}/{}/{}{}'.format(
                 self.networkPath,
                 profile_name.lower(),
                 docmodel.source_entity,

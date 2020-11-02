@@ -169,7 +169,7 @@ class DatabaseVersionUpdater(QObject):
         :rtype:
         """
         if len(DatabaseVersionUpdater.UPDATERS) > 0:
-            updaters = DatabaseVersionUpdater.UPDATERS.values()
+            updaters = list(DatabaseVersionUpdater.UPDATERS.values())
             previous_updater = updaters[len(updaters) - 1]
             previous_updater.NEXT_UPDATER = cls
 

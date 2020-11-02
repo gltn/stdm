@@ -46,7 +46,7 @@ class AssociationEntity(Entity):
     between two entities.
     """
     TYPE_INFO = 'ASSOCIATION_ENTITY'
-    FIRST_PARENT, SECOND_PARENT = range(0, 2)
+    FIRST_PARENT, SECOND_PARENT = list(range(0, 2))
 
     def __init__(self, name, profile, **kwargs):
         Entity.__init__(self, name, profile, supports_documents=False)
@@ -114,7 +114,7 @@ class AssociationEntity(Entity):
             raise AttributeError(err)
 
         # Set foreign key reference
-        fk_name = u'{0}_{1}'.format(parent_entity.name, 'id')
+        fk_name = '{0}_{1}'.format(parent_entity.name, 'id')
         foreign_key_reference = ForeignKeyColumn(fk_name, self)
 
         # Set parent attributes

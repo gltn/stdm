@@ -58,7 +58,7 @@ class STRNodeFormatter(object):
         self._config = config
         self.curr_profile = current_profile()
 
-        headers = self._config.displayColumns.values()
+        headers = list(self._config.displayColumns.values())
 
         idx = getIndex(headers, "Id")
         if idx != -1:
@@ -134,7 +134,7 @@ class EntityNodeFormatter(STRNodeFormatter):
                 e.entity_relation.parent_column
             )
             for e in
-            self.curr_profile.social_tenure.columns.values()
+            list(self.curr_profile.social_tenure.columns.values())
             if e.TYPE_INFO == 'FOREIGN_KEY'
         ]
 
@@ -147,7 +147,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         self._numeric_char_cols = entity_display_columns(
             self.curr_profile.entity_by_name(config.data_source_name)
         )
-        self._spatial_data_sources = profile_spatial_tables(self.curr_profile).keys()
+        self._spatial_data_sources = list(profile_spatial_tables(self.curr_profile).keys())
 
     def _format_display_mapping(self, model, display_cols, filter_cols):
         """
@@ -324,7 +324,7 @@ class EntityNodeFormatter(STRNodeFormatter):
                 for r in r_entities:
                     dm = self._format_display_mapping(r,
                                                       col_name_header,
-                                                      col_name_header.keys())
+                                                      list(col_name_header.keys()))
 
                     node = self._spatial_textual_node(mod_table)
 

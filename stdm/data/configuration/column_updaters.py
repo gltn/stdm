@@ -67,7 +67,7 @@ def _base_col_attrs(col):
 
 def _quote_value(value):
     # Encloses value in single quotes
-    return u'\'{0}\''.format(value)
+    return '\'{0}\''.format(value)
 
 
 def check_constraint(column, sa_column, table):
@@ -97,8 +97,8 @@ def check_constraint(column, sa_column, table):
         max_value = _quote_value(max_value)
 
     # Create SQL statements
-    min_sql = u'{0} >= {1}'.format(column.name, min_value)
-    max_sql = u'{0} <= {1}'.format(column.name, max_value)
+    min_sql = '{0} >= {1}'.format(column.name, min_value)
+    max_sql = '{0} <= {1}'.format(column.name, max_value)
 
     if column.minimum > column.SQL_MIN and column.maximum == column.SQL_MAX:
         return CheckConstraint(min_sql, columns=[col_attr])
@@ -107,7 +107,7 @@ def check_constraint(column, sa_column, table):
         return CheckConstraint(max_sql, columns=[col_attr])
 
     if column.minimum > column.SQL_MIN and column.maximum < column.SQL_MAX:
-        min_max_sql = u'{0} AND {1}'.format(min_sql, max_sql)
+        min_max_sql = '{0} AND {1}'.format(min_sql, max_sql)
 
         return CheckConstraint(min_max_sql, columns=[col_attr])
 
@@ -130,10 +130,10 @@ def _update_col(column, table, data_type, columns):
 
     idx_name = None
     if column.index:
-        idx_name = u'idx_{0}_{1}'.format(column.entity.name, column.name)
+        idx_name = 'idx_{0}_{1}'.format(column.entity.name, column.name)
     unique_name = None
     if column.unique:
-        unique_name = u'unq_{0}_{1}'.format(column.entity.name, column.name)
+        unique_name = 'unq_{0}_{1}'.format(column.entity.name, column.name)
 
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown

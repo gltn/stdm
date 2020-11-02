@@ -96,7 +96,7 @@ class ConfigurationUtils():
 
             status, msg, line, col = self.document.setContent(config_file_path)
             if not status:
-                error_message = u'Configuration file cannot be loaded: {0}'. \
+                error_message = 'Configuration file cannot be loaded: {0}'. \
                     format(msg)
                 self.append_log(str(error_message))
 

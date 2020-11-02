@@ -25,9 +25,9 @@ def copy_startup():
         source_file = open(source, 'a+')
         destination_file = open(destination, 'a+')
         original_source_lines = source_file.readlines()
-        source_lines = map(str.rstrip, original_source_lines)
+        source_lines = list(map(str.rstrip, original_source_lines))
         original_dest_lines = destination_file.readlines()
-        dest_lines = map(str.rstrip, original_dest_lines)
+        dest_lines = list(map(str.rstrip, original_dest_lines))
         if source_lines != dest_lines:
             matched_lines = [i for i in original_source_lines
                              if i in original_dest_lines]

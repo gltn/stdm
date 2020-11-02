@@ -267,7 +267,7 @@ class SettingsWidgetMapper(object):
             if s.is_mandatory() and s.valueHandler().supportsMandatory():
                 if s.valueHandler().value() == s.valueHandler().default():
                     # Notify user
-                    msg = WARNING, u"{0} is a required setting.".format(s.setting_key())
+                    msg = WARNING, "{0} is a required setting.".format(s.setting_key())
                     self.notified.emit([msg])
 
                     break

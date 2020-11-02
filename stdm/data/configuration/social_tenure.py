@@ -147,7 +147,7 @@ class SocialTenure(Entity):
 
     def _custom_attributes_entity_name(self, t_type_s_name):
         # Build entity name using tenure type short name
-        return u'{0}_{1}_{2}'.format(
+        return '{0}_{1}_{2}'.format(
             t_type_s_name,
             'str',
             self.CUSTOM_ATTRS_ENTITY
@@ -407,7 +407,7 @@ class SocialTenure(Entity):
     def _view_name_from_entity(self, entity):
         # Construct view name from entity name
         if entity is not None:
-            return u'{0}_{1}'.format(
+            return '{0}_{1}'.format(
                 entity.name,
                 SocialTenure.BASE_STR_VIEW
             )
@@ -699,7 +699,7 @@ class SocialTenure(Entity):
     def _foreign_key_column_name(self, entity):
         # Appends 'id' suffix to the entity's short name.
 
-        fk_col_name = u'{0}_id'.format(entity.short_name.lower()).replace(
+        fk_col_name = '{0}_id'.format(entity.short_name.lower()).replace(
             ' ', '_'
         )
 

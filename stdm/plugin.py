@@ -503,7 +503,7 @@ class STDMQGISLoader(object):
         if not pg_table_exists(entity.name):
             message = QApplication.translate(
                 "STDMQGISLoader",
-                u'The system has detected that '
+                'The system has detected that '
                 'a required database table - \n'
                 '{} is missing. \n'
                 'Do you want to re-run the '
@@ -528,7 +528,7 @@ class STDMQGISLoader(object):
             return True
         message = QApplication.translate(
             "STDMQGISLoader",
-            u'The system has detected that '
+            'The system has detected that '
             'a required database table - \n'
             '{} is missing. \n'
             'Do you want to re-run the '
@@ -560,7 +560,7 @@ class STDMQGISLoader(object):
         host = self.reg_config.read([HOST])
         host_val = host[HOST]
 
-        if host_val not in [u'localhost', u'127.0.0.1']:
+        if host_val not in ['localhost', '127.0.0.1']:
             return
 
         wizard_key = self.reg_config.read([WIZARD_RUN])
@@ -623,7 +623,7 @@ class STDMQGISLoader(object):
                 'Default Profile Error'
             )
             if len(profiles) > 0:
-                profile_name = profiles.keys()[0]
+                profile_name = list(profiles.keys())[0]
                 save_current_profile(profile_name)
                 self.reload_plugin(profile_name)
 
@@ -883,7 +883,7 @@ class STDMQGISLoader(object):
                     )
                 )
                 # Upgrade from options behavior
-                first_profile = profile_details_dict.keys()[0]
+                first_profile = list(profile_details_dict.keys())[0]
                 if manual:
                     parent.upgradeButton.setEnabled(True)
                     parent.close()
@@ -1354,7 +1354,7 @@ class STDMQGISLoader(object):
         if self.current_profile is None:
             return
 
-        profile_names = self.stdm_config.profiles.keys()
+        profile_names = list(self.stdm_config.profiles.keys())
 
         self.profiles_combobox.clear()
 
@@ -1719,7 +1719,7 @@ class STDMQGISLoader(object):
         admin_spatial_unit = [
             e
             for e in
-            self.current_profile.entities.values()
+            list(self.current_profile.entities.values())
             if e.TYPE_INFO == 'ADMINISTRATIVE_SPATIAL_UNIT'
         ]
         db_status = self.entity_table_checker(
@@ -1863,7 +1863,7 @@ class STDMQGISLoader(object):
 
     def widgetLoader(self, QAction):
         # Method to load custom forms
-        tbList = self._moduleItems.values()
+        tbList = list(self._moduleItems.values())
 
         dispName = QAction.text()
         if dispName == QApplication.translate(
@@ -1899,7 +1899,7 @@ class STDMQGISLoader(object):
             try:
                 if table_name in tbList and database_status:
                     cnt_idx = getIndex(
-                        self._reportModules.keys(), dispName
+                        list(self._reportModules.keys()), dispName
                     )
 
                     table_content = TableContentGroup(self.current_user.UserName, dispName)
@@ -2000,7 +2000,7 @@ class STDMQGISLoader(object):
         """
         Remove all STDM layers from the map registry.
         """
-        mapLayers = QgsProject.instance().mapLayers().values()
+        mapLayers = list(QgsProject.instance().mapLayers().values())
 
         for layer in mapLayers:
             if self.isSTDMLayer(layer):
@@ -2074,7 +2074,7 @@ class STDMQGISLoader(object):
             entities = [
                 (e.name, e.short_name, e.ui_display())
                 for e in
-                self.current_profile.entities.values()
+                list(self.current_profile.entities.values())
                 if (e.TYPE_INFO == 'ENTITY') and (e.user_editable)
             ]
         return entities
@@ -2083,7 +2083,7 @@ class STDMQGISLoader(object):
         """
         Load and open documentation manual
         """
-        help_manual = u'{0}/stdm.chm'.format(self.plugin_dir)
+        help_manual = '{0}/stdm.chm'.format(self.plugin_dir)
         try:
             os.startfile(
                 help_manual, 'open'

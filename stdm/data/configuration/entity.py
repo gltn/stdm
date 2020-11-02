@@ -151,11 +151,11 @@ class Entity(QObject, TableItem):
 
         # Ensure prefix is not duplicated in the names
         prfx = self.profile.prefix
-        prefix_idx = name.find(u'{}_'.format(prfx), 0, len(prfx) + 1)
+        prefix_idx = name.find('{}_'.format(prfx), 0, len(prfx) + 1)
 
         # If there is no prefix then append
         if prefix_idx == -1 and not self.is_global:
-            name = u'{0}_{1}'.format(self.profile.prefix, name)
+            name = '{0}_{1}'.format(self.profile.prefix, name)
 
         return name
 
@@ -481,7 +481,7 @@ class Entity(QObject, TableItem):
             raise AttributeError('Supporting documents are not enabled for '
                                  'this entity.')
 
-        return self.supporting_doc.document_types().keys()
+        return list(self.supporting_doc.document_types().keys())
 
     def document_types_non_hex(self):
         """
@@ -557,7 +557,7 @@ class Entity(QObject, TableItem):
             self.columns[name].row_index = index
 
     def sort_columns(self):
-        self.columns = RenameableKeyDict(sorted(self.columns.items(), key=lambda e: e[1].row_index))
+        self.columns = RenameableKeyDict(sorted(list(self.columns.items()), key=lambda e: e[1].row_index))
 
 
 class EntitySupportingDocument(Entity):
@@ -584,7 +584,7 @@ class EntitySupportingDocument(Entity):
         ).lower()
 
         # Entity reference column
-        entity_ref_name = u'{0}_{1}'.format(normalize_name, 'id')
+        entity_ref_name = '{0}_{1}'.format(normalize_name, 'id')
         self.entity_reference = ForeignKeyColumn(entity_ref_name, self)
 
         # Document types
@@ -619,12 +619,12 @@ class EntitySupportingDocument(Entity):
         LOGGER.debug('%s entity successfully initialized', self.name)
 
     def _entity_short_name(self, parent_entity_name):
-        name = u'{0}_{1}'.format(parent_entity_name,
+        name = '{0}_{1}'.format(parent_entity_name,
                                  'supporting_document')
         return name
 
     def _doc_type_name(self, normalize_name):
-        vl_name = u'check_{0}_document_type'.format(normalize_name)
+        vl_name = 'check_{0}_document_type'.format(normalize_name)
 
         return vl_name
 
@@ -747,7 +747,7 @@ class EntitySupportingDocument(Entity):
         the root path to locate documents for this particular entity.
         :rtype: str
         """
-        return u'{0}/{1}'.format(self.profile.key, self.parent_entity.name)
+        return '{0}/{1}'.format(self.profile.key, self.parent_entity.name)
 
     @property
     def document_type_entity(self):

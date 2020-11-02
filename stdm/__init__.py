@@ -49,7 +49,7 @@ USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation
                   + '/.stdm'
 
 # Setup logging
-LOG_DIR = u'{0}/logs'.format(USER_PLUGIN_DIR)
+LOG_DIR = '{0}/logs'.format(USER_PLUGIN_DIR)
 LOG_FILE_PATH = LOG_DIR + '/stdm_log'
 
 
@@ -109,7 +109,7 @@ def copy_core_configuration():
         #         return
 
         # File name of previous configuration
-        v1_1_config_path = u'{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
+        v1_1_config_path = '{0}/stdmConfig.xml'.format(USER_PLUGIN_DIR)
 
         # Only copy the new one if there is no copy of the previous version
         # since the version updater will automatically handle the upgrade.
@@ -120,7 +120,7 @@ def copy_core_configuration():
         # Copy config assuming that the plugin user folder has no previous
         # configuration.
         conf_file = QFile(core_config_path)
-        conf_dest = u'{0}/configuration.stc'.format(USER_PLUGIN_DIR)
+        conf_dest = '{0}/configuration.stc'.format(USER_PLUGIN_DIR)
 
         copy_status = conf_file.copy(conf_dest)
 

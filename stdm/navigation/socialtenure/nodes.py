@@ -475,7 +475,7 @@ class EntityNode(SupportsDocumentsNode):
 
         if not is_child:
             super(EntityNode, self).__init__(
-                self._colname_display_value.values(),
+                list(self._colname_display_value.values()),
                 **kwargs
             )
 
@@ -576,7 +576,7 @@ class STRNode(EntityNode):
                 if hasattr(model, col_name):
                     col_value = getattr(model, col_name)
 
-                    node_value = u"{0}{1} {2}".format(display_name, self.separator, col_value)
+                    node_value = "{0}{1} {2}".format(display_name, self.separator, col_value)
 
                     view_model.setData(idx, node_value, Qt.DisplayRole)
 

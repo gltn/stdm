@@ -22,9 +22,9 @@ email                : stdm@unhabitat.org
 import os
 import sys
 import os.path
-import cStringIO
+import io
 # Memory file
-mem_file = cStringIO.StringIO()
+mem_file = io.StringIO()
 
 def translate_in_file(file_path):
     """
@@ -71,9 +71,9 @@ def format_file(file_path):
     # as backward slash is not needed there.
     for position, line1 in enumerate(mem_file_lines):
         if position in last_line_indexes:
-            print >> file, line1.replace(' \\', '')
+            print(line1.replace(' \\', ''), file=file)
         else:
-            print >> file, line1
+            print(line1, file=file)
     file.close()
     mem_file.close()
 
@@ -89,7 +89,7 @@ def create_pro_file(dir):
 
     file = mem_file
     # Print into file.
-    print >> file, 'SOURCES = \\'
+    print('SOURCES = \\', file=file)
     space_length = len('SOURCES = ')
 
     space = ' '
@@ -112,12 +112,12 @@ def create_pro_file(dir):
                     file_path = os.path.join(dirpath, filename)
 
                     if translate_in_file(file_path):
-                        print >> file, '{}{} \\'.format(
+                        print('{}{} \\'.format(
                             indentation,
                             file_path[len(dir)+1:]
-                        )
-    print >> file, ''
-    print >> file, 'FORMS =	\\'
+                        ), file=file)
+    print('', file=file)
+    print('FORMS =	\\', file=file)
     space_length = len('FORMS = ')
     # Set indentation based on the length on the heading.
     indentation = space_length * space
@@ -130,22 +130,22 @@ def create_pro_file(dir):
         for j, filename in enumerate(ui_files):
             file_path = os.path.join(dirpath, filename)
 
-            print >> file, '{}{} \\'.format(
+            print('{}{} \\'.format(
                 indentation,
                 file_path[len(dir) + 1:]
-            )
-    print >> file, ''
-    print >> file, 'TRANSLATIONS    = i18n/stdm_fr.ts \\'
-    print >> file, '                  i18n/stdm_pt.ts \\'
-    print >> file, '                  i18n/stdm_de.ts \\'
-    print >> file, '                  i18n/stdm_sw.ts \\'
-    print >> file, '                  i18n/stdm_fi.ts \\'
-    print >> file, '                  i18n/stdm_ar.ts \\'
-    print >> file, '                  i18n/stdm_es.ts'
-    print >> file, ''
-    print >> file, 'CODECFORTR      = UTF-8'
-    print >> file, ''
-    print >> file, 'CODECFORSRC     = UTF-8'
+            ), file=file)
+    print('', file=file)
+    print('TRANSLATIONS    = i18n/stdm_fr.ts \\', file=file)
+    print('                  i18n/stdm_pt.ts \\', file=file)
+    print('                  i18n/stdm_de.ts \\', file=file)
+    print('                  i18n/stdm_sw.ts \\', file=file)
+    print('                  i18n/stdm_fi.ts \\', file=file)
+    print('                  i18n/stdm_ar.ts \\', file=file)
+    print('                  i18n/stdm_es.ts', file=file)
+    print('', file=file)
+    print('CODECFORTR      = UTF-8', file=file)
+    print('', file=file)
+    print('CODECFORSRC     = UTF-8', file=file)
 
     #file.close()
     format_file(dir+'\stdm.pro')

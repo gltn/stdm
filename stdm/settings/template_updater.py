@@ -277,9 +277,9 @@ class TemplateViewHandler:
         if len(old_new_tables) < 1:
             return
 
-        self.profile_name = old_new_tables.keys()[0].lower()
+        self.profile_name = list(old_new_tables.keys())[0].lower()
         self.prefix = self.profile_name[:2]
-        self.old_new_tables = old_new_tables.values()[0]
+        self.old_new_tables = list(old_new_tables.values())[0]
 
         self.documents_path = source_documents_path()
 
@@ -289,7 +289,7 @@ class TemplateViewHandler:
         }
         config = StdmConfiguration.instance()
         self.updater = ConfigurationFileUpdater(iface)
-        self.all_profiles = config.profiles.keys()
+        self.all_profiles = list(config.profiles.keys())
 
     def view_details(self, view):
         """
@@ -943,7 +943,7 @@ class TemplateFileUpdater(
             new_view, False, True
         )
         old_new_cols = dict(
-            zip(old_columns, new_columns)
+            list(zip(old_columns, new_columns))
         )
 
         old_new_cols.update(

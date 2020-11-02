@@ -212,9 +212,9 @@ class DocumentGenerator(QObject):
 
         if not self.data_source_exists(composer_ds):
             msg = QApplication.translate("DocumentGenerator",
-                                             u"'{0}' data source does not exist in the database."
-                                             u"\nPlease contact your database "
-                                             u"administrator.".format(composer_ds.name()))
+                                             "'{0}' data source does not exist in the database."
+                                             "\nPlease contact your database "
+                                             "administrator.".format(composer_ds.name()))
 
             return None, msg
 
@@ -262,9 +262,9 @@ class DocumentGenerator(QObject):
             #Check if data source exists and return if it doesn't
             if not self.data_source_exists(composerDS):
                 msg = QApplication.translate("DocumentGenerator",
-                                             u"'{0}' data source does not exist in the database."
-                                             u"\nPlease contact your database "
-                                             u"administrator.".format(composerDS.name()))
+                                             "'{0}' data source does not exist in the database."
+                                             "\nPlease contact your database "
+                                             "administrator.".format(composerDS.name()))
                 return False, msg
 
             #Set file name value formatter
@@ -325,7 +325,7 @@ class DocumentGenerator(QObject):
 
                 # Refresh non-custom map composer items
                 self._refresh_composer_maps(composition,
-                                            spatialFieldsConfig.spatialFieldsMapping().keys())
+                                            list(spatialFieldsConfig.spatialFieldsMapping().keys()))
 
                 # Set use fixed scale to false i.e. relative zoom
                 use_fixed_scale = False
@@ -445,7 +445,7 @@ class DocumentGenerator(QObject):
                         return (False, QApplication.translate("DocumentGenerator",
                                 "Output directory does not exist"))
 
-                    absDocPath = u"{0}/{1}".format(outputDir, docFileName)
+                    absDocPath = "{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
 
             return True, "Success"
@@ -459,7 +459,7 @@ class DocumentGenerator(QObject):
             return 'id'
 
     def _random_feature_layer_name(self, sp_field):
-        return u"{0}-{1}".format(sp_field, str(uuid.uuid4())[0:8])
+        return "{0}-{1}".format(sp_field, str(uuid.uuid4())[0:8])
 
     def _refresh_map_item(self, map_item, use__fixed_scale=False):
         """
@@ -538,8 +538,8 @@ class DocumentGenerator(QObject):
         """
         Builds a memory vector layer based on the spatial field mapping properties.
         """
-        vl_geom_config = u"{0}?crs=epsg:{1:d}&field=name:string(20)&" \
-                         u"index=yes".format(geom_type, srid)
+        vl_geom_config = "{0}?crs=epsg:{1:d}&field=name:string(20)&" \
+                         "index=yes".format(geom_type, srid)
 
         ref_layer = QgsVectorLayer(vl_geom_config, str(layer_name), "memory")
         return ref_layer
@@ -555,7 +555,7 @@ class DocumentGenerator(QObject):
         the template file.
         :type config_collection: TableConfigurationCollection
         """
-        table_configs = config_collection.items().values()
+        table_configs = list(config_collection.items()).values()
 
         v_layers = []
 
@@ -590,7 +590,7 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
-        table_configs = config_collection.items().values()
+        table_configs = list(config_collection.items()).values()
 
         for conf in table_configs:
             table_handler = conf.create_handler(composition, self._exec_query)
@@ -609,7 +609,7 @@ class DocumentGenerator(QObject):
         :type record: object
         """
 
-        chart_configs = config_collection.items().values()
+        chart_configs = list(config_collection.items()).values()
 
         for cc in chart_configs:
             chart_handler = cc.create_handler(composition, self._exec_query)
@@ -628,7 +628,7 @@ class DocumentGenerator(QObject):
         :type record: object
         """
 
-        qrc_configs = config_collection.items().values()
+        qrc_configs = list(config_collection.items()).values()
 
         for qrc in qrc_configs:
             qrc_handler = qrc.create_handler(composition, self._exec_query)
@@ -646,7 +646,7 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
-        ph_configs = config_collection.items().values()
+        ph_configs = list(config_collection.items()).values()
 
         for conf in ph_configs:
             photo_tb = conf.linked_table()
@@ -739,7 +739,7 @@ class DocumentGenerator(QObject):
 
         img_extension = extensions[1]
         profile_name = self._current_profile.name.replace(' ', '_').lower()
-        abs_path = u'{0}/{1}/{2}/{3}/{4}.{5}'.format(
+        abs_path = '{0}/{1}/{2}/{3}/{4}.{5}'.format(
             network_ph_path,
             profile_name,
             document_parent_table,
@@ -791,8 +791,8 @@ class DocumentGenerator(QObject):
 
             if img.isNull():
                 msg = QApplication.translate("DocumentGenerator",
-                                        u"Memory allocation error. Please try "
-                                        u"a lower resolution or a smaller paper size.")
+                                        "Memory allocation error. Please try "
+                                        "a lower resolution or a smaller paper size.")
                 raise Exception(msg)
 
             if p == 0:
@@ -800,14 +800,14 @@ class DocumentGenerator(QObject):
 
             else:
                 fi = QFileInfo(file_path)
-                file_path = u"{0}/{1}_{2}.{3}".format(fi.absolutePath(),
+                file_path = "{0}/{1}_{2}.{3}".format(fi.absolutePath(),
                                                              fi.baseName(),
                     (p+1), fi.suffix())
                 state = img.save(file_path)
 
             if not state:
                 msg = QApplication.translate("DocumentGenerator",
-                                        u"Error creating {0}.".format(file_path))
+                                        "Error creating {0}.".format(file_path))
                 raise Exception(msg)
 
     def _export_composition_as_pdf(self, composition, file_path):
@@ -817,7 +817,7 @@ class DocumentGenerator(QObject):
         status = composition.exportAsPDF(file_path)
         if not status:
             msg = QApplication.translate("DocumentGenerator",
-                                        u"Error creating {0}".format(file_path))
+                                        "Error creating {0}".format(file_path))
 
             raise Exception(msg)
 
@@ -863,7 +863,7 @@ class DocumentGenerator(QObject):
 
             else:
                 if isinstance(queryValue, str):
-                    queryValue = u"'{0}'".format(queryValue)
+                    queryValue = "'{0}'".format(queryValue)
                 sql = "{0} = :qvalue".format(queryField)
                 results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
 
@@ -914,7 +914,7 @@ class DocumentGenerator(QObject):
 
             if value is None:
                 data_text = label_text[label_text.find('[')+1:label_text.find(']')]
-                composer_item.setText(label_text.replace(u'[{}]'.format(data_text), ''))
+                composer_item.setText(label_text.replace('[{}]'.format(data_text), ''))
                 return
 
             else:
@@ -925,11 +925,11 @@ class DocumentGenerator(QObject):
                 if isinstance(value, bool):
                     if value:
                         value = QApplication.translate(
-                            'DocumentGenerator', u'Yes'
+                            'DocumentGenerator', 'Yes'
                         )
                     else:
                         value = QApplication.translate(
-                            'DocumentGenerator', u'No'
+                            'DocumentGenerator', 'No'
                         )
                 if isinstance(value, date):
                     value = str(value)
@@ -938,7 +938,7 @@ class DocumentGenerator(QObject):
                     value = str(value)
 
                 composer_item.setText(
-                    label_text.replace(u'[{}]'.format(data_text), value)
+                    label_text.replace('[{}]'.format(data_text), value)
                 )
                 return
 

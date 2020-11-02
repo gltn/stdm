@@ -238,14 +238,14 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
         cols = []
         spited_cols = columns.split(',')
         for col in spited_cols:
-            col = u'{}'.format(col)
+            col = '{}'.format(col)
             cols.append(col)
         columns = ','.join(cols)
 
-    sql = u"SELECT {0} FROM {1}".format(columns, tableName)
+    sql = "SELECT {0} FROM {1}".format(columns, tableName)
 
     if whereStr != "":
-        sql += u" WHERE {0} ".format(whereStr)
+        sql += " WHERE {0} ".format(whereStr)
 
     if sortStmnt != "":
         sql += sortStmnt
@@ -256,7 +256,7 @@ def process_report_filter(tableName, columns, whereStr="", sortStmnt=""):
 
 
 def export_data(table_name):
-    sql = u"SELECT * FROM {0} ".format(str(table_name))
+    sql = "SELECT * FROM {0} ".format(str(table_name))
 
     t = text(sql)
 
@@ -281,7 +281,7 @@ def fetch_from_table(table_name, limit):
     :return:
     :rtype:
     """
-    sql = u"SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
+    sql = "SELECT * FROM {0} ORDER BY id DESC LIMIT {1} ".format(
         str(table_name), str(limit)
     )
 
@@ -291,7 +291,7 @@ def fetch_from_table(table_name, limit):
 
 
 def export_data_from_columns(columns, table_name):
-    sql = u"SELECT {0} FROM {1}".format(str(columns), str(table_name))
+    sql = "SELECT {0} FROM {1}".format(str(columns), str(table_name))
 
     t = text(sql)
 
@@ -307,7 +307,7 @@ def fix_sequence(table_name):
     :type table_name: String
     """
     sql_sequence_fix = text(
-        u"SELECT setval(u'{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
+        "SELECT setval(u'{0}_id_seq', (SELECT MAX(id) FROM {0}));".format(
             table_name
         )
     )
@@ -316,7 +316,7 @@ def fix_sequence(table_name):
 
 
 def import_data(table_name, columns_names, data, **kwargs):
-    sql = u"INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
+    sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
                                                      columns_names, str(data))
 
     t = text(sql)
@@ -345,14 +345,14 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
     table or view.
     """
     if spatialColumns:
-        sql = u"select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
+        sql = "select f_geometry_column from geometry_columns where f_table_name = :tbname ORDER BY f_geometry_column ASC"
         columnName = "f_geometry_column"
     else:
         if not creation_order:
-            sql = u"select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
+            sql = "select column_name from information_schema.columns where table_name = :tbname ORDER BY column_name ASC"
             columnName = "column_name"
         else:
-            sql = u"select column_name from information_schema.columns where table_name = :tbname"
+            sql = "select column_name from information_schema.columns where table_name = :tbname"
             columnName = "column_name"
 
     t = text(sql)
@@ -373,7 +373,7 @@ def non_spatial_table_columns(table):
     """
     all_columns = table_column_names(table)
 
-    excluded_columns = [u'id']
+    excluded_columns = ['id']
 
     spatial_columns = table_column_names(table, True) + excluded_columns
 
@@ -402,7 +402,7 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
     Returns a tuple of geometry type and EPSG code of the given column name in
     the table within the given schema.
     """
-    sql = u"select type,srid from geometry_columns where f_table_name = :tbname " \
+    sql = "select type,srid from geometry_columns where f_table_name = :tbname " \
           "and f_geometry_column = :spcolumn and f_table_schema = :tbschema"
     t = text(sql)
 
@@ -429,11 +429,11 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     dataType = columnType(tableName, columnName)
     quoteRequired = getIndex(quoteDataTypes, dataType)
     if "'" in columnName and '"' not in columnName:
-        sql = u'SELECT DISTINCT "{0}" FROM {1}'.format(str(columnName),
+        sql = 'SELECT DISTINCT "{0}" FROM {1}'.format(str(columnName),
                                                        tableName)
     else:
 
-        sql = u"SELECT DISTINCT {0} FROM {1}".format(str(columnName), tableName)
+        sql = "SELECT DISTINCT {0} FROM {1}".format(str(columnName), tableName)
     t = text(sql)
     result = _execute(t)
 
@@ -443,15 +443,15 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
 
         if r[str(columnName)] == None:
             if quoteRequired == -1:
-                uniqueVals.append(u"NULL")
+                uniqueVals.append("NULL")
             else:
-                uniqueVals.append(u"''")
+                uniqueVals.append("''")
 
         else:
             if quoteRequired == -1:
                 uniqueVals.append(str(r[columnName]))
             else:
-                uniqueVals.append(u"'{0}'".format(r[columnName]))
+                uniqueVals.append("'{0}'".format(r[columnName]))
 
     return uniqueVals
 
@@ -462,17 +462,17 @@ def columnType(tableName, columnName):
     """
     view = tableName in pg_views()
     if not view:
-        sql = u"SELECT data_type FROM information_schema.columns where table_name='{}' AND column_name='{}'". \
+        sql = "SELECT data_type FROM information_schema.columns where table_name='{}' AND column_name='{}'". \
             format(tableName, columnName)
     else:
         # if ' ' in columnName:
         #     columnName = u'"{}"'.format(columnName)
         if '"' in columnName:
-            sql = u'SELECT pg_typeof({}) from {} limit 1;'.format(
+            sql = 'SELECT pg_typeof({}) from {} limit 1;'.format(
                 columnName, tableName
             )
         else:
-            sql = u'SELECT pg_typeof("{}") from {} limit 1;'.format(
+            sql = 'SELECT pg_typeof("{}") from {} limit 1;'.format(
                 columnName, tableName
             )
 
@@ -598,9 +598,9 @@ def delete_table_keys(table):
     capabilities = ["Create", "Select", "Update", "Delete"]
     for action in capabilities:
         init_key = action + " " + str(table).title()
-        sql = u"DELETE FROM content_roles WHERE content_base_id IN" \
+        sql = "DELETE FROM content_roles WHERE content_base_id IN" \
               " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
-        sql2 = u"DELETE FROM content_base WHERE content_base.id IN" \
+        sql2 = "DELETE FROM content_base WHERE content_base.id IN" \
                " (SELECT id FROM content_base WHERE name = '{0}');".format(init_key)
         r = text(sql)
         r2 = text(sql2)
@@ -702,8 +702,8 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         search_table = "foreign_table_name"
 
     # Fetch foreign key references
-    sql = u"SELECT column_name,{0},foreign_column_name, constraint_name FROM " \
-          u"foreign_key_references where {1} =:tb_name".format(ref_table,
+    sql = "SELECT column_name,{0},foreign_column_name, constraint_name FROM " \
+          "foreign_key_references where {1} =:tb_name".format(ref_table,
                                                                search_table)
 
     t = text(sql)
@@ -793,7 +793,7 @@ def drop_cascade_table(table_name):
     :return: Returns True if the operation succeeded. otherwise False.
     :rtype: bool
     """
-    del_com = u'DROP TABLE IF EXISTS {0} CASCADE;'.format(table_name)
+    del_com = 'DROP TABLE IF EXISTS {0} CASCADE;'.format(table_name)
     t = text(del_com)
 
     try:
@@ -816,7 +816,7 @@ def drop_cascade_column(table_name, column):
     :return: Returns True if the operation succeeded. otherwise False.
     :rtype: bool
     """
-    del_com = u'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
+    del_com = 'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
         table_name,
         column
     )
@@ -990,14 +990,14 @@ def set_child_dependencies_null_on_delete(table):
         local_col, fk_table, fk_col, fk_name = d[0], d[1], d[2], d[3]
 
         # Drop the constraint
-        sql = u'ALTER TABLE {0} DROP CONSTRAINT IF EXISTS {1};'.format(
+        sql = 'ALTER TABLE {0} DROP CONSTRAINT IF EXISTS {1};'.format(
             fk_table, fk_name
         )
         _execute(sql)
 
         # Recreate constraint
-        sql = u'ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) ' \
-              u'REFERENCES {3}({4}) ON DELETE SET NULL;'.format(
+        sql = 'ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY ({2}) ' \
+              'REFERENCES {3}({4}) ON DELETE SET NULL;'.format(
             fk_table,
             fk_name,
             fk_col,
