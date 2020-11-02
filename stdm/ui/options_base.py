@@ -78,7 +78,7 @@ def pg_profile_names():
 
     pg_connections = q_config.group_children()
 
-    profiles = [(conn_name, u"{0}/{1}".format(pg_connection_path, conn_name))
+    profiles = [(conn_name, "{0}/{1}".format(pg_connection_path, conn_name))
                 for conn_name in pg_connections]
 
     return profiles
@@ -177,7 +177,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         """
         Load existing profiles into the combobox.
         """
-        profile_names = self._config.profiles.keys()
+        profile_names = list(self._config.profiles.keys())
 
         self.cbo_profiles.clear()
         self.cbo_profiles.addItem('')
@@ -337,7 +337,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         res = login_dlg.exec_()
         if res == QDialog.Accepted:
-            msg = self.tr(u"Connection to '{0}' database was "
+            msg = self.tr("Connection to '{0}' database was "
                           "successful.".format(db_conn.Database))
             QMessageBox.information(self, self.tr('Database Connection'), msg)
 
@@ -454,7 +454,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         dir = QDir()
 
         if not dir.exists(path):
-            msg = self.tr(u"'{0}' directory does not exist.".format(path))
+            msg = self.tr("'{0}' directory does not exist.".format(path))
             self.notif_bar.insertErrorNotification(msg)
 
             # Highlight textbox control

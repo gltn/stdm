@@ -28,7 +28,7 @@ class ReverseDict(dict):
 
     def __init__(self, *args, **kw):
         dict.__init__(self, *args, **kw)
-        self.reverse = dict((reversed(list(i)) for i in self.items()))
+        self.reverse = dict((reversed(list(i)) for i in list(self.items())))
 
     def __setitem__(self, key, value):
         dict.__setitem__(self, key, value)

@@ -180,7 +180,7 @@ class MirrorMap(QWidget):
         """
         for ly in self.iface.legendInterface().layers():
             layer_id = self._layerId(ly)
-            if not self.layerId2canvasLayer.has_key(layer_id):
+            if layer_id not in self.layerId2canvasLayer:
                 self.addLayer(layer_id)
         # QCoreApplication.processEvents(QEventLoop.ExcludeSocketNotifiers|QEventLoop.ExcludeUserInputEvents)
 
@@ -232,7 +232,7 @@ class MirrorMap(QWidget):
         self.delLayerBtn.setEnabled(isLayerSelected and hasLayer)
 
     def getLayerSet(self):
-        return map(lambda x: self._layerId(x.layer()), self.canvasLayers)
+        return [self._layerId(x.layer()) for x in self.canvasLayers]
 
     def setLayerSet(self, layerIds=None):
         prevFlag = self.canvas.renderFlag()
@@ -268,7 +268,7 @@ class MirrorMap(QWidget):
         id2cl_dict = {}
         for l in self.iface.legendInterface().layers():
             lid = self._layerId(l)
-            if self.layerId2canvasLayer.has_key(lid):  # previously added
+            if lid in self.layerId2canvasLayer:  # previously added
                 cl = self.layerId2canvasLayer[lid]
             elif l == layer:  # Selected layer
                 cl = QgsMapCanvasLayer(layer)
@@ -293,7 +293,7 @@ class MirrorMap(QWidget):
             layerId = self._layerId(layer)
 
         # remove the layer from the map canvas layer set
-        if not self.layerId2canvasLayer.has_key(layerId):
+        if layerId not in self.layerId2canvasLayer:
             return
 
         prevFlag = self.canvas.renderFlag()

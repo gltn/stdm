@@ -238,8 +238,8 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
-            draft = self.tr(u' - [ DRAFT ]')
-            self.setWindowTitle(u'{}{}'.format(self.tmp_title, draft))
+            draft = self.tr(' - [ DRAFT ]')
+            self.setWindowTitle('{}{}'.format(self.tmp_title, draft))
         else:
             self.setWindowTitle(self.tmp_title)
 
@@ -1062,7 +1062,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
                 self._custom_attr_entities[tt] = ent
 
             # check if social tenure relationship has been setup
-            str_table = u'{}_social_tenure_relationship'.format(c_profile.prefix)
+            str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
             self.set_str_controls(str_table)
 
             # Set validity date ranges
@@ -1136,13 +1136,13 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         error_msg = "Please enter {0} !"
         if self.empty_text(self.edtDocPath.text()):
-            return False, self.tr(error_msg.format(u"'supporting documents path'"))
+            return False, self.tr(error_msg.format("'supporting documents path'"))
 
         if self.empty_text(self.edtOutputPath.text()):
-            return False, self.tr(error_msg.format(u"'documents output path'"))
+            return False, self.tr(error_msg.format("'documents output path'"))
 
         if self.empty_text(self.edtTemplatePath.text()):
-            return False, self.tr(error_msg.format(u"'documents template path'"))
+            return False, self.tr(error_msg.format("'documents template path'"))
 
         return True, "Ok."
 
@@ -1703,7 +1703,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         profile_name = str(self.cboProfile.currentText())
 
         if self.cboProfile.count() == 1:
-            msg = self.tr(u'{0} profile cannot be deleted. At least one '
+            msg = self.tr('{0} profile cannot be deleted. At least one '
                           'profile is required to exist in the '
                           'STDM configuration. ').format(profile_name)
 
@@ -2145,7 +2145,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             entity = view_model.entity(ent_name)
             if entity is None:
                 return
-            columns = view_model.entity(ent_name).columns.values()
+            columns = list(view_model.entity(ent_name).columns.values())
             self.addColumns(self.col_view_model, columns)
 
             self.tbvColumns.setModel(self.col_view_model)
@@ -2158,7 +2158,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         cbo_model = self.cboSPUnit.model()
         try:
-            columns = cbo_model.entity_byId(row_id).columns.values()
+            columns = list(cbo_model.entity_byId(row_id).columns.values())
             self.spunit_item_model.clear()
             self.spunit_item_model = STRColumnEntitiesModel()
             self.addColumns(self.spunit_item_model, columns)
@@ -2349,7 +2349,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_item, entity, row_id = self.get_model_entity(view)
         entity_item = None
         if model_item:
-            entity_item = model_item.entities().values()[row_id]
+            entity_item = list(model_item.entities().values())[row_id]
         return row_id, entity_item
 
     def _get_model(self, view):
@@ -2357,7 +2357,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_item, entity, row_id = self.get_model_entity(view)
         column = None
         if model_item:
-            column = model_item.entities().values()[row_id]
+            column = list(model_item.entities().values())[row_id]
         return row_id, column, model_item
 
     def _get_entity(self, view):
@@ -2499,7 +2499,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         # the current profile
         dependencies = self.all_column_dependencies(profile)
         if self.find_lookup(lookup.name, dependencies):
-            self.show_message(self.tr(u"Cannot delete '{0}' lookup!\n "
+            self.show_message(self.tr("Cannot delete '{0}' lookup!\n "
                                       "Lookup is been used by existing columns."
                                       "".format(lookup.name, lookup.name)))
             return
@@ -2608,7 +2608,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
             value_editor = ValueEditor(self, lookup)
             result = value_editor.exec_()
             if result == 1:
-                self.add_values(value_editor.lookup.values.values())
+                self.add_values(list(value_editor.lookup.values.values()))
                 self.lvLookupValues.setModel(self.lookup_value_view_model)
 
     def edit_lookup_value(self):
@@ -2662,7 +2662,7 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         model_index = self.lvLookupValues.selectedIndexes()[0]
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
         lookup.remove_value(str(value_text))
-        self.add_values(lookup.values.values())
+        self.add_values(list(lookup.values.values()))
 
     def show_message(self, message, msg_icon=QMessageBox.Critical):
         """
@@ -2779,7 +2779,7 @@ class ConfigurationDomDocument(QDomDocument):
         file_handle = QFile(self.dom_file_name)
         status, msg, line, col = self.setContent(file_handle)
         if not status:
-            error_message = u'Configuration file cannot be loaded: {0}'. \
+            error_message = 'Configuration file cannot be loaded: {0}'. \
                 format(msg)
             raise ConfigurationException(error_message)
 

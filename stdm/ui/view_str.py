@@ -175,7 +175,7 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
         count = pg_table_count(self.curr_profile.social_tenure.name)
         self.setWindowTitle(
-            self.tr(u'{}{}'.format(
+            self.tr('{}{}'.format(
                 self.windowTitle(), '- ' + str(count) + ' rows'
             ))
         )

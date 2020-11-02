@@ -141,5 +141,5 @@ class Dialog(QDialog):
         self.combo.set_values(list)
 
     def joined(self):
-        listed = self.combo.values()
+        listed = list(self.combo.values())
         QMessageBox.information(None, "Value", str(listed))

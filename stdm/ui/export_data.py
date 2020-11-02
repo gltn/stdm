@@ -130,7 +130,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
             if len(self.lstSrcTab.selectedItems()) == 0:
                 msg = QApplication.translate(
                     'ExportData',
-                    u"Please select a table whose contents are to be exported.")
+                    "Please select a table whose contents are to be exported.")
 
                 self.ErrorInfoMessage(msg)
                 validPage = False
@@ -139,8 +139,8 @@ class ExportData(QWizard, Ui_frmExportWizard):
                 if len(self.selectedColumns()) == 0:
                     msg = QApplication.translate(
                         'ExportData',
-                        u"Please select at least one textual column "
-                        u"whose values are to be exported.")
+                        "Please select at least one textual column "
+                        "whose values are to be exported.")
 
                     self.ErrorInfoMessage(msg)
                     validPage = False
@@ -240,7 +240,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
 
         for col in self.allCols:
             if ' ' in col:
-                col = u'"{}"'.format(col)
+                col = '"{}"'.format(col)
 
             tabItem = QListWidgetItem(col, self.lstSrcCols_2)
             tabItem.setCheckState(Qt.Unchecked)
@@ -277,7 +277,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
 
         if resultSet.rowcount == 0:
             msg = QApplication.translate(
-                'ExportData', u"There are no records to export.")
+                'ExportData', "There are no records to export.")
 
             self.ErrorInfoMessage(msg)
             return succeed
@@ -291,7 +291,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
             ft = QApplication.translate('ExportData', 'Features in ')
             succ = QApplication.translate(
                 'ExportData', 'have been successfully exported!')
-            self.InfoMessage(u'{}{} {}'.format(ft, self.srcTab, succ))
+            self.InfoMessage('{}{} {}'.format(ft, self.srcTab, succ))
 
             # Update directory info in the registry
             setVectorFileDir(targetFile)
@@ -312,7 +312,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
         self._format_stmnt()  # Format WHERE clause expression
         if len(self.txtWhereQuery.toPlainText()) == 0:
             msg = QApplication.translate(
-                'ExportData', u"No filter has been defined.")
+                'ExportData', "No filter has been defined.")
 
             self.ErrorInfoMessage(msg)
 
@@ -322,8 +322,8 @@ class ExportData(QWizard, Ui_frmExportWizard):
             if results != None:
                 rLen = results.rowcount
                 msg1 = QApplication.translate(
-                    'ExportData', u"The SQL statement was successfully verified.\n")
-                msg2 = QApplication.translate('ExportData', u"record(s) returned.")
+                    'ExportData', "The SQL statement was successfully verified.\n")
+                msg2 = QApplication.translate('ExportData', "record(s) returned.")
 
                 msg = '{} {} {}'.format(msg1, rLen, msg2)
                 self.InfoMessage(msg)
@@ -337,7 +337,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
         if where_stmnt:
             import re
             sql_opr = ["=", "<>", "LIKE", ">", ">=", "AND", "<", "<=", "OR"]
-            exp = map(lambda s: '\\s*{}\\s*'.format(s), sql_opr)
+            exp = ['\\s*{}\\s*'.format(s) for s in sql_opr]
             exp = re.split(r'(' + "|".join(exp) + ')', where_stmnt)
             where_stmnt = ""
             for i in exp:
@@ -355,10 +355,10 @@ class ExportData(QWizard, Ui_frmExportWizard):
         queryCols = self.selectedColumns()
 
         if self.geomColumn != "":
-            queryCols.append(u"ST_AsText(%s)" % (self.geomColumn))
+            queryCols.append("ST_AsText(%s)" % (self.geomColumn))
         # remove quote from each column
 
-        columnList = u",".join(queryCols)
+        columnList = ",".join(queryCols)
 
         whereStmnt = self.txtWhereQuery.toPlainText()
 
@@ -370,7 +370,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
 
         except sqlalchemy.exc.DataError:
             msg = QApplication.translate(
-                'ExportData', u"The SQL statement is invalid!")
+                'ExportData', "The SQL statement is invalid!")
 
             self.ErrorInfoMessage(msg)
 
@@ -383,7 +383,7 @@ class ExportData(QWizard, Ui_frmExportWizard):
         '''
         field = lstItem.text()
         if "'" in field and '"' not in field:
-            field = u'{}'.format(field)
+            field = '{}'.format(field)
         self.txtWhereQuery.insertPlainText(field)
 
     def filter_insertEq(self):

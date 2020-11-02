@@ -80,7 +80,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         self.edtTable.setEnabled(not self.in_db)
 
     def supporting_document_exists(self):
-        sd_name = u'{0}_{1}_{2}'.format(self.profile.prefix,
+        sd_name = '{0}_{1}_{2}'.format(self.profile.prefix,
                                         self.entity.short_name.lower(), 'supporting_document')
         return pg_table_exists(sd_name)
 
@@ -119,7 +119,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         )
 
         if state != QValidator.Acceptable:
-            self.show_notification(u'"{}" {}'.format(last_character, msg))
+            self.show_notification('"{}" {}'.format(last_character, msg))
             text = text[:-1]
 
         # remove space and underscore at the beginning of the text
@@ -206,7 +206,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
         :param name: entity short_name
         :type name: str
         """
-        return self.profile.entities.has_key(name)
+        return name in self.profile.entities
 
     def support_doc(self):
         """
@@ -233,7 +233,7 @@ class EntityEditor(QDialog, Ui_dlgEntity):
 
         # If there is no prefix then append
         if prefix_idx == -1:
-            name = u'{0}_{1}'.format(self.profile.prefix, name)
+            name = '{0}_{1}'.format(self.profile.prefix, name)
 
         return name
 

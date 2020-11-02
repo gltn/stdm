@@ -534,7 +534,7 @@ class MultipleChoiceComboBox(ControlValueHandler):
     controlType = MultipleChoiceCombo
 
     def value(self):
-        ctlValue = self.control.values()
+        ctlValue = list(self.control.values())
         return ctlValue
 
     def setValue(self, value):

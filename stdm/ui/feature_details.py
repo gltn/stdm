@@ -431,7 +431,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         )
         model_obj = str_model()
         party_name = party_entity.name
-        party_entity_id = u'{}_id'.format(
+        party_entity_id = '{}_id'.format(
             party_name.split(self.current_profile.prefix)[1]).lstrip('_')
 
         party_col_obj = getattr(str_model, party_entity_id)
@@ -772,7 +772,7 @@ class DetailsTreeView(DetailsDBHandler):
             config_done = False
             msg = QApplication.translate(
                 "DetailsTreeView",
-                u'The system has detected that '
+                'The system has detected that '
                 'the required database tables are missing. \n'
                 'Please run the configuration wizard to configure the database ')
             QMessageBox.critical(
@@ -1041,7 +1041,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.add_root_children(db_model, root, str_records)
 
         self.layer.selectByIds(
-            self.feature_models.keys()
+            list(self.feature_models.keys())
         )
         # self.zoom_to_selected(self.layer)
 
@@ -1093,7 +1093,7 @@ class DetailsTreeView(DetailsDBHandler):
                 if isinstance(v, QDateTime):
                     v = v.toPyDateTime()
                 if k != 'id':
-                    child = QStandardItem(u'{}: {}'.format(
+                    child = QStandardItem('{}: {}'.format(
                         format_name(k, False), v)
                     )
                     child.setSelectable(False)
@@ -1120,13 +1120,13 @@ class DetailsTreeView(DetailsDBHandler):
             if feature_id != -1:
                 if elem.id() == feature_id:
                     feature_map = OrderedDict(
-                        zip(field_names, elem.attributes())
+                        list(zip(field_names, elem.attributes()))
                     )
                     feature_data.append(feature_map)
                     break
             else:
                 feature_map = OrderedDict(
-                    zip(field_names, elem.attributes())
+                    list(zip(field_names, elem.attributes()))
                 )
                 feature_data.append(feature_map)
         return feature_data
@@ -1147,13 +1147,13 @@ class DetailsTreeView(DetailsDBHandler):
             if not party_id is None:
                 if elem.id() == party_id:
                     feature_map = OrderedDict(
-                        zip(field_names, elem.attributes())
+                        list(zip(field_names, elem.attributes()))
                     )
                     feature_data.append(feature_map)
                     break
             else:
                 feature_map = OrderedDict(
-                    zip(field_names, elem.attributes())
+                    list(zip(field_names, elem.attributes()))
                 )
                 feature_data.append(feature_map)
         return feature_data
@@ -1210,7 +1210,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.column_widget_registry(model, self.entity)
 
         for i, (col, row) in enumerate(self._formatted_record.items()):
-            child = QStandardItem(u'{}: {}'.format(col, row))
+            child = QStandardItem('{}: {}'.format(col, row))
 
             child.setSelectable(False)
             try:
@@ -1342,7 +1342,7 @@ class DetailsTreeView(DetailsDBHandler):
 
             for i, (col, row) in enumerate(self._formatted_record.items()):
                 str_child = QStandardItem(
-                    u'{}: {}'.format(col, row)
+                    '{}: {}'.format(col, row)
                 )
                 str_child.setSelectable(False)
                 try:
@@ -1394,7 +1394,7 @@ class DetailsTreeView(DetailsDBHandler):
                         )
                         self.spatial_unit_items[spu_root] = spatial_unit
 
-        self.feature_str_model[feature_id] = self.str_models.keys()
+        self.feature_str_model[feature_id] = list(self.str_models.keys())
 
     def add_party_node(self, parent, party_entity, party_id):
         """
@@ -1462,7 +1462,7 @@ class DetailsTreeView(DetailsDBHandler):
         # add STR children
         self.column_widget_registry(party_model, party_entity)
         for col, row in self._formatted_record.items():
-            party_child = QStandardItem(u'{}: {}'.format(col, row))
+            party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
         return party_root
@@ -1488,7 +1488,7 @@ class DetailsTreeView(DetailsDBHandler):
         # add STR children
         self.column_widget_registry(spatial_unit_model, spatial_entity)
         for col, row in self._formatted_record.items():
-            party_child = QStandardItem(u'{}: {}'.format(col, row))
+            party_child = QStandardItem('{}: {}'.format(col, row))
             party_child.setSelectable(False)
             party_root.appendRow([party_child])
         return party_root
@@ -1537,7 +1537,7 @@ class DetailsTreeView(DetailsDBHandler):
         # add STR children
         self.column_widget_registry(custom_attr_model, custom_attr_entity)
         for col, row in self._formatted_record.items():
-            custom_attr_child = QStandardItem(u'{}: {}'.format(col, row))
+            custom_attr_child = QStandardItem('{}: {}'.format(col, row))
             custom_attr_child.setSelectable(False)
             custom_attr_root.appendRow([custom_attr_child])
         return custom_attr_root
@@ -1912,7 +1912,7 @@ class DetailsTreeView(DetailsDBHandler):
         # remove rows before adding the updated ones.
         if self.plugin is not None:
             self.layer.selectByIds(
-                self.feature_models.keys()
+                list(self.feature_models.keys())
             )
         root = self.find_root(entity, feature_id)
         if root is None:
@@ -1958,7 +1958,7 @@ class DetailsTreeView(DetailsDBHandler):
         if not str_edit:
             if len(self.feature_models) > 1:
                 self.refresh_layers()
-            feature_ids = self.feature_models.keys()
+            feature_ids = list(self.feature_models.keys())
             self.layer.selectByIds(
                 feature_ids
             )

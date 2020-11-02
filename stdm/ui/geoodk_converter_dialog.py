@@ -121,7 +121,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Get all profiles
         :return:
         """
-        return self.load_config().values()
+        return list(self.load_config().values())
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():

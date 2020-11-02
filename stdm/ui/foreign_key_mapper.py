@@ -344,10 +344,10 @@ class ForeignKeyMapper(QWidget):
         if len(missing_columns) > 0:
             msg = QApplication.translate(
                 'ForeignKeyMapper',
-                u'The following columns have been defined in the '
-                u'configuration but are missing in corresponding '
-                u'database table, please re-run the configuration wizard '
-                u'to create them.\n{0}'.format(
+                'The following columns have been defined in the '
+                'configuration but are missing in corresponding '
+                'database table, please re-run the configuration wizard '
+                'to create them.\n{0}'.format(
                     '\n'.join(missing_columns)
                 )
             )
@@ -463,7 +463,7 @@ class ForeignKeyMapper(QWidget):
         If 'replace' is True then the existing row will be replaced
         with one with the new value; else, the new row will not be added to the list.
         '''
-        headers = self._dbmodel.displayMapping().values()
+        headers = list(self._dbmodel.displayMapping().values())
         colIndex = getIndex(headers, colName)
 
         if colIndex != -1:
@@ -679,8 +679,8 @@ class ForeignKeyMapper(QWidget):
         for existing row values that should be unique based on
         the configuration of unique columns.
         """
-        for colIndex, replace in self._uniqueValueColIndices.items():
-            attrName = self._dbmodel.displayMapping().keys()[colIndex]
+        for colIndex, replace in list(self._uniqueValueColIndices.items()):
+            attrName = list(self._dbmodel.displayMapping().keys())[colIndex]
             attrValue = getattr(model, attrName)
 
             # Check to see if there are cell formatters so
@@ -814,7 +814,7 @@ class ForeignKeyMapper(QWidget):
 
         if not filter_layer.isValid():
             trans_msg = QApplication.translate("ForeignKeyMapper",
-                                               u"The vector layer for '{0}' table is invalid.")
+                                               "The vector layer for '{0}' table is invalid.")
             msg = trans_msg.format(self._entity.name)
 
             return None, msg

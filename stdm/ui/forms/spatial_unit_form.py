@@ -321,13 +321,13 @@ class STDMFieldWidget():
                 self.widget_mapping[c] = ['TextEdit', None]
             else:
                 stdm = QApplication.translate(
-                    'STDMFieldWidget', u'STDM'
+                    'STDMFieldWidget', 'STDM'
                 )
                 self.widget_mapping[c] = [
-                    u'stdm_{}'.format(
+                    'stdm_{}'.format(
                         c.TYPE_INFO.lower()
                     ),
-                    u'{} {}'.format(
+                    '{} {}'.format(
                         stdm, c.display_name()
                     )
                 ]
@@ -390,7 +390,7 @@ class STDMFieldWidget():
         attribute = feature.attributes()
         if isinstance(attribute[0], QgsField):
             return None, 0
-        mapped_data = OrderedDict(zip(field_names, feature.attributes()))
+        mapped_data = OrderedDict(list(zip(field_names, feature.attributes())))
         col_with_data = []
 
         for col, value in mapped_data.items():
@@ -453,13 +453,13 @@ class STDMFieldWidget():
         if geom_wkt is None:
             title = QApplication.translate(
                 'STDMFieldWidget',
-                u'Spatial Entity Form Error',
+                'Spatial Entity Form Error',
                 None,
                 QCoreApplication.UnicodeUTF8
             )
             msg = QApplication.translate(
                 'STDMFieldWidget',
-                u'The feature you have added is invalid. \n'
+                'The feature you have added is invalid. \n'
                 'To fix this issue, check if the feature '
                 'is digitized correctly.  \n'
                 'Make sure you have added a base layer to digitize on.',
@@ -586,7 +586,7 @@ class STDMFieldWidget():
         ent_model = entity_model(self.entity)
         entity_obj = ent_model()
         entity_obj.saveMany(
-            self.feature_models.values()
+            list(self.feature_models.values())
         )
         for model in self.feature_models.values():
             STDMDb.instance().session.flush()

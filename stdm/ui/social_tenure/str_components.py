@@ -794,13 +794,13 @@ class SupportingDocuments(ComponentUtility):
             # The layout of the tab widget
             cont_layout = QVBoxLayout(tab_widget)
             cont_layout.setObjectName(
-                u'widget_layout_{}'.format(doc)
+                'widget_layout_{}'.format(doc)
             )
             # the scroll area widget inside the tab widget.
             scroll_area = QScrollArea(tab_widget)
             scroll_area.setFrameShape(QFrame.NoFrame)
             scroll_area.setObjectName(
-                u'tab_scroll_area_{}'.format(doc)
+                'tab_scroll_area_{}'.format(doc)
             )
 
             layout_widget = QWidget()
@@ -808,18 +808,18 @@ class SupportingDocuments(ComponentUtility):
             # the widget containing the document widget layout
             # This widget is hidden and shown based on the STR number
             layout_widget.setObjectName(
-                u'widget_{}'.format(doc)
+                'widget_{}'.format(doc)
             )
 
             doc_widget_layout = QVBoxLayout(layout_widget)
             doc_widget_layout.setObjectName(
-                u'doc_widget_layout_{}'.format(
+                'doc_widget_layout_{}'.format(
                     doc
                 )
             )
             doc_widget = QWidget()
             doc_widget.setObjectName(
-                u'doc_widget_{}_{}'.format(doc, self.str_number)
+                'doc_widget_{}_{}'.format(doc, self.str_number)
             )
 
             doc_widget_layout.addWidget(doc_widget)
@@ -829,7 +829,7 @@ class SupportingDocuments(ComponentUtility):
             # supporting documents widgets into.
             tab_layout = QVBoxLayout(doc_widget)
             tab_layout.setObjectName(
-                u'layout_{}_{}'.format(doc, self.str_number)
+                'layout_{}_{}'.format(doc, self.str_number)
             )
 
             scroll_area.setWidgetResizable(True)
@@ -899,12 +899,12 @@ class SupportingDocuments(ComponentUtility):
         cbo_index = self.doc_type_cbo.currentIndex()
         doc_id = self.doc_type_cbo.itemData(cbo_index)
         scroll_area = self.docs_tab.findChild(
-            QScrollArea, u'tab_scroll_area_{}'.format(
+            QScrollArea, 'tab_scroll_area_{}'.format(
                 doc_text, str_number
             )
         )
         doc_widget = scroll_area.findChild(
-            QWidget, u'doc_widget_{}_{}'.format(
+            QWidget, 'doc_widget_{}_{}'.format(
                 doc_text, str_number
             )
         )
@@ -916,19 +916,19 @@ class SupportingDocuments(ComponentUtility):
             # But all doc_widgets for each STR instance and
             # document types will be added here.
             doc_widget_layout = scroll_area.findChild(
-                QVBoxLayout, u'doc_widget_layout_{}'.format(doc_text)
+                QVBoxLayout, 'doc_widget_layout_{}'.format(doc_text)
             )
 
             doc_widget = QWidget()
             doc_widget.setObjectName(
-                u'doc_widget_{}_{}'.format(doc_text, str_number)
+                'doc_widget_{}_{}'.format(doc_text, str_number)
             )
             self.hide_all_other_widget(doc_text, str_number)
             doc_widget_layout.addWidget(doc_widget)
             # Create the layout so that layouts are registered in
             # which uploaded document widgets are added.
             layout = QVBoxLayout(doc_widget)
-            layout.setObjectName(u'layout_{}_{}'.format(
+            layout.setObjectName('layout_{}_{}'.format(
                 doc_text, str_number
             )
             )
@@ -941,7 +941,7 @@ class SupportingDocuments(ComponentUtility):
             # the document widgets for the current tab.
             self.hide_doc_widgets(doc_widget, False)
             layout = doc_widget.findChild(
-                QVBoxLayout, u'layout_{}_{}'.format(
+                QVBoxLayout, 'layout_{}_{}'.format(
                     doc_text, str_number
                 )
             )
@@ -959,10 +959,10 @@ class SupportingDocuments(ComponentUtility):
         :param str_number: The STR node number
         :type str_number: Integer
         """
-        expression = QRegExp(u'doc_widget*')
+        expression = QRegExp('doc_widget*')
         # hide all existing widgets in all layouts
         for widget in self.docs_tab.findChildren(QWidget, expression):
-            if widget.objectName() != u'doc_widget_{}_{}'.format(
+            if widget.objectName() != 'doc_widget_{}_{}'.format(
                     doc_text, str_number):
                 self.hide_doc_widgets(widget, True)
 

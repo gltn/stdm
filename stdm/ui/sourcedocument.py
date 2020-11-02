@@ -189,7 +189,7 @@ class SourceDocumentManager(QObject):
         '''
         Returns a list of registered Ids.
         '''
-        return self.containers.keys()
+        return list(self.containers.keys())
 
     def insertDocumentFromFile(self, path, doc_type_id, entity, record_count=1):
         """
@@ -228,10 +228,10 @@ class SourceDocumentManager(QObject):
                     if not doc_dir.exists():
                         msg = QApplication.translate(
                             "sourceDocumentManager",
-                            u"The root document "
-                            u"repository '{0}' does "
-                            u"not exist.\nPlease "
-                            u"check the path settings."
+                            "The root document "
+                            "repository '{0}' does "
+                            "not exist.\nPlease "
+                            "check the path settings."
                         )
                         parent = self.parent()
                         if not isinstance(parent, QWidget):
@@ -792,7 +792,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         extension = self._displayName[self._displayName.rfind('.'):]
 
         QApplication.processEvents()
-        doc_path = u'{}/{}/{}/{}/{}{}'.format(
+        doc_path = '{}/{}/{}/{}/{}{}'.format(
             source_document_location(),
             str(self.curr_profile.name),
             str(self._source_entity),
@@ -825,7 +825,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         else:
             display_doc_size = '0'
 
-        html = u'<html>' \
+        html = '<html>' \
                '<head/>' \
                '<body>' \
                '<p>' \
