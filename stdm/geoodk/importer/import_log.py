@@ -64,7 +64,7 @@ class ImportLogger:
             else:
                 return os.path.normpath(LOGGER_HOME + '/' + file_n)
         except IOError as ex:
-            raise (unicode(ex.message))
+            raise (str(ex.message))
 
     def enable_logger_document(self):
         """

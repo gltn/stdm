@@ -1994,7 +1994,7 @@ class STDMQGISLoader(object):
             self.loginAct.setEnabled(True)
             self._user_logged_in = False
         except Exception as ex:
-            LOGGER.debug(unicode(ex))
+            LOGGER.debug(str(ex))
 
     def removeSTDMLayers(self):
         """
