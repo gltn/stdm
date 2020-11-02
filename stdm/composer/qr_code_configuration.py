@@ -140,9 +140,9 @@ class QRCodeConfigValueHandler(ItemConfigValueHandler):
             return
 
         # Convert numeric types to string
-        if isinstance(field_value, (int, float, long)):
+        if isinstance(field_value, (int, float)):
             field_value = str(field_value)
-        elif isinstance(field_value, basestring):
+        elif isinstance(field_value, str):
             # Test if ASCII. PyQRCode only allows ASCII characters
             if not is_ascii(field_value):
                 return

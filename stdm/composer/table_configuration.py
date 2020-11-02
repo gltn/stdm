@@ -142,13 +142,13 @@ class TableItemValueHandler(ItemConfigValueHandler):
         if not source_col_value:
             return
 
-        if isinstance(source_col_value, str) or isinstance(source_col_value, unicode):
-            source_col_value = u"'{0}'".format(source_col_value)
+        if isinstance(source_col_value, str) or isinstance(source_col_value, str):
+            source_col_value = "'{0}'".format(source_col_value)
 
         linked_field = self._config_item.linked_field()
         if not linked_field:
             return
 
-        exp = u"{0} = {1}".format(linked_field, source_col_value)
+        exp = "{0} = {1}".format(linked_field, source_col_value)
         table_item.setFeatureFilter(exp)
 

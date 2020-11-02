@@ -100,7 +100,7 @@ def load_table_layers(config_collection):
     registry.
     :rtype: list
     """
-    table_configs = config_collection.items().values()
+    table_configs = list(config_collection.items()).values()
 
     v_layers = []
 
@@ -562,7 +562,7 @@ class ComposerWrapper(QObject):
                     template_name = composer_el.attribute("_title", "")
 
                 if template_name:
-                    win_title = u"{0} - {1}".format(title, template_name)
+                    win_title = "{0} - {1}".format(title, template_name)
                     self.mainWindow().setWindowTitle(template_name)
 
             self._configure_data_controls(composerDS)
@@ -649,7 +649,7 @@ class ComposerWrapper(QObject):
                     result = QMessageBox.warning(self.composerView(),
                             QApplication.translate("ComposerWrapper",
                                                    "Existing Template"),
-                                            u"'{0}' {1}.\nDo you want to replace the "
+                                            "'{0}' {1}.\nDo you want to replace the "
                                             "existing template?".format(docName,
                                             QApplication.translate("ComposerWrapper",
                                                                    "already exists")),
@@ -886,8 +886,8 @@ class ComposerWrapper(QObject):
         document contains a matching pair of ID and UUID for each composer
         item.
         """
-        items = self._widgetMappings.keys()
-        for item_uuid in self._widgetMappings.keys():
+        items = list(self._widgetMappings.keys())
+        for item_uuid in list(self._widgetMappings.keys()):
             item = self.composition().getComposerItemByUuid(item_uuid)
             if not item is None:
                 item.setId(item_uuid)

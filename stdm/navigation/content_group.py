@@ -227,7 +227,7 @@ class TableContentGroup(ContentGroup):
         Appends group name to the database operation
         `Create Person`
         """
-        return u"{0} {1}".format(db_operation, self._groupName)
+        return "{0} {1}".format(db_operation, self._groupName)
 
     def createContentItem(self):
         """

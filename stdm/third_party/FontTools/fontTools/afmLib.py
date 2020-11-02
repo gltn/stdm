@@ -116,7 +116,7 @@ class AFM:
 				continue
 			m = identifierRE.match(line)
 			if m is None:
-				raise error, "syntax error in AFM file: " + `line`
+				raise error("syntax error in AFM file: " + repr(line))
 			
 			pos = m.regs[1][1]
 			word = line[:pos]
@@ -135,19 +135,19 @@ class AFM:
 	def parsechar(self, rest):
 		m = charRE.match(rest)
 		if m is None:
-			raise error, "syntax error in AFM file: " + `rest`
+			raise error("syntax error in AFM file: " + repr(rest))
 		things = []
 		for fr, to in m.regs[1:]:
 			things.append(rest[fr:to])
 		charname = things[2]
 		del things[2]
-		charnum, width, l, b, r, t = map(string.atoi, things)
+		charnum, width, l, b, r, t = list(map(string.atoi, things))
 		self._chars[charname] = charnum, width, (l, b, r, t)
 	
 	def parsekernpair(self, rest):
 		m = kernRE.match(rest)
 		if m is None:
-			raise error, "syntax error in AFM file: " + `rest`
+			raise error("syntax error in AFM file: " + repr(rest))
 		things = []
 		for fr, to in m.regs[1:]:
 			things.append(rest[fr:to])
@@ -157,7 +157,7 @@ class AFM:
 	
 	def parseattr(self, word, rest):
 		if word == "FontBBox":
-			l, b, r, t = map(string.atoi, string.split(rest))
+			l, b, r, t = list(map(string.atoi, string.split(rest)))
 			self._attrs[word] = l, b, r, t
 		elif word == "Comment":
 			self._comments.append(rest)
@@ -172,7 +172,7 @@ class AFM:
 	def parsecomposite(self, rest):
 		m = compositeRE.match(rest)
 		if m is None:
-			raise error, "syntax error in AFM file: " + `rest`
+			raise error("syntax error in AFM file: " + repr(rest))
 		charname = m.group(1)
 		ncomponents = int(m.group(2))
 		rest = rest[m.regs[0][1]:]
@@ -180,7 +180,7 @@ class AFM:
 		while 1:
 			m = componentRE.match(rest)
 			if m is None:
-				raise error, "syntax error in AFM file: " + `rest`
+				raise error("syntax error in AFM file: " + repr(rest))
 			basechar = m.group(1)
 			xoffset = int(m.group(2))
 			yoffset = int(m.group(3))
@@ -208,14 +208,14 @@ class AFM:
 		# a preferred order
 		attrs = self._attrs
 		for attr in preferredAttributeOrder:
-			if attrs.has_key(attr):
+			if attr in attrs:
 				value = attrs[attr]
 				if attr == "FontBBox":
 					value = "%s %s %s %s" % value
 				lines.append(attr + " " + str(value))
 		# then write the attributes we don't know about,
 		# in alphabetical order
-		items = attrs.items()
+		items = list(attrs.items())
 		items.sort()
 		for attr, value in items:
 			if attr in preferredAttributeOrder:
@@ -223,10 +223,8 @@ class AFM:
 			lines.append(attr + " " + str(value))
 		
 		# write char metrics
-		lines.append("StartCharMetrics " + `len(self._chars)`)
-		items = map(lambda (charname, (charnum, width, box)):
-			(charnum, (charname, width, box)),
-			self._chars.items())
+		lines.append("StartCharMetrics " + repr(len(self._chars)))
+		items = [(charname_charnum_width_box[1][0], (charname_charnum_width_box[0], charname_charnum_width_box[1][1], charname_charnum_width_box[1][2])) for charname_charnum_width_box in list(self._chars.items())]
 		
 		def myCmp(a, b):
 			"""Custom compare function to make sure unencoded chars (-1) 
@@ -245,8 +243,8 @@ class AFM:
 		
 		# write kerning info
 		lines.append("StartKernData")
-		lines.append("StartKernPairs " + `len(self._kerning)`)
-		items = self._kerning.items()
+		lines.append("StartKernPairs " + repr(len(self._kerning)))
+		items = list(self._kerning.items())
 		items.sort()		# XXX is order important?
 		for (leftchar, rightchar), value in items:
 			lines.append("KPX %s %s %d" % (leftchar, rightchar, value))
@@ -254,7 +252,7 @@ class AFM:
 		lines.append("EndKernData")
 		
 		if self._composites:
-			composites = self._composites.items()
+			composites = list(self._composites.items())
 			composites.sort()
 			lines.append("StartComposites %s" % len(self._composites))
 			for charname, components in composites:
@@ -269,16 +267,16 @@ class AFM:
 		writelines(path, lines, sep)
 	
 	def has_kernpair(self, pair):
-		return self._kerning.has_key(pair)
+		return pair in self._kerning
 	
 	def kernpairs(self):
-		return self._kerning.keys()
+		return list(self._kerning.keys())
 	
 	def has_char(self, char):
-		return self._chars.has_key(char)
+		return char in self._chars
 	
 	def chars(self):
-		return self._chars.keys()
+		return list(self._chars.keys())
 	
 	def comments(self):
 		return self._comments
@@ -290,10 +288,10 @@ class AFM:
 		self._composites[glyphName] = components
 	
 	def __getattr__(self, attr):
-		if self._attrs.has_key(attr):
+		if attr in self._attrs:
 			return self._attrs[attr]
 		else:
-			raise AttributeError, attr
+			raise AttributeError(attr)
 	
 	def __setattr__(self, attr, value):
 		# all attrs *not* starting with "_" are consider to be AFM keywords
@@ -308,15 +306,15 @@ class AFM:
 			try:
 				del self.__dict__[attr]
 			except KeyError:
-				raise AttributeError, attr
+				raise AttributeError(attr)
 		else:
 			try:
 				del self._attrs[attr]
 			except KeyError:
-				raise AttributeError, attr
+				raise AttributeError(attr)
 	
 	def __getitem__(self, key):
-		if type(key) == types.TupleType:
+		if type(key) == tuple:
 			# key is a tuple, return the kernpair
 			return self._kerning[key]
 		else:
@@ -324,7 +322,7 @@ class AFM:
 			return self._chars[key]
 	
 	def __setitem__(self, key, value):
-		if type(key) == types.TupleType:
+		if type(key) == tuple:
 			# key is a tuple, set kernpair
 			self._kerning[key] = value
 		else:
@@ -332,7 +330,7 @@ class AFM:
 			self._chars[key] = value
 	
 	def __delitem__(self, key):
-		if type(key) == types.TupleType:
+		if type(key) == tuple:
 			# key is a tuple, del kernpair
 			del self._kerning[key]
 		else:
@@ -373,16 +371,16 @@ if __name__ == "__main__":
 		afm = AFM(path)
 		char = 'A'
 		if afm.has_char(char):
-			print afm[char]	# print charnum, width and boundingbox
+			print(afm[char])	# print charnum, width and boundingbox
 		pair = ('A', 'V')
 		if afm.has_kernpair(pair):
-			print afm[pair]	# print kerning value for pair
-		print afm.Version	# various other afm entries have become attributes
-		print afm.Weight
+			print(afm[pair])	# print kerning value for pair
+		print(afm.Version)	# various other afm entries have become attributes
+		print(afm.Weight)
 		# afm.comments() returns a list of all Comment lines found in the AFM
-		print afm.comments()
+		print(afm.comments())
 		#print afm.chars()
 		#print afm.kernpairs()
-		print afm
+		print(afm)
 		afm.write(path + ".muck")
 

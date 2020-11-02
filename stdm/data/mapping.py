@@ -416,7 +416,7 @@ class MapperMixin(object):
             if result is not None:
                 msg = QApplication.translate("MappedDialog",
                                              "field value should be unique.")
-                error = u'{} {}'.format(field, msg)
+                error = '{} {}'.format(field, msg)
 
         if column.mandatory:
             if attrMapper.valueHandler().value() == \
@@ -424,7 +424,7 @@ class MapperMixin(object):
                 # Notify user
                 msg = QApplication.translate("MappedDialog",
                                              "is a required field.")
-                error = u'{} {}'.format(field, msg)
+                error = '{} {}'.format(field, msg)
 
         return error
 
@@ -523,7 +523,7 @@ class MapperMixin(object):
                 control = attrMapper.valueHandler().control
                 if isinstance(control, ExpressionLineEdit):
                     value = control.on_expression_triggered()
-                    print(attrMapper._attrName, value)
+                    print((attrMapper._attrName, value))
                     setattr(self.model(), attrMapper._attrName, value)
             self._model.update()
             # STDMDb.instance().session.flush()
@@ -537,8 +537,8 @@ class MapperMixin(object):
                 ),
                 QApplication.translate(
                     "MappedDialog",
-                    u'The data could not be saved due to '
-                    u'the error: \n{}'.format(ex.args[0])
+                    'The data could not be saved due to '
+                    'the error: \n{}'.format(ex.args[0])
                 )
             )
             self.is_valid = False

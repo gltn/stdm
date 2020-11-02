@@ -95,11 +95,11 @@ class EntityRelation(object):
         rel_name = ''
 
         if self.parent is not None:
-            rel_name += u'fk_{0}_{1}'.format(self.parent.name,
+            rel_name += 'fk_{0}_{1}'.format(self.parent.name,
                                              self.parent_column)
 
         if self.child is not None:
-            rel_name += u'_{0}_{1}'.format(self.child.name, self.child_column)
+            rel_name += '_{0}_{1}'.format(self.child.name, self.child_column)
 
         return rel_name
 
@@ -144,7 +144,7 @@ class EntityRelation(object):
         if not valid:
             return ''
 
-        return u'{0}_{1}_fkey'.format(self.child.name, self.child_column)[:63]
+        return '{0}_{1}_fkey'.format(self.child.name, self.child_column)[:63]
 
     def create_foreign_key_constraint(self):
         """

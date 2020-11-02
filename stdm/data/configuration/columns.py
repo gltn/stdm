@@ -215,7 +215,7 @@ class BaseColumn(ColumnItem):
         for k, v in self.__dict__:
             if not k in exclude:
                 attr = k.replace('_', ' ').capitalize()
-                disp.append(u'{0}: {1}'.format(attr, v))
+                disp.append('{0}: {1}'.format(attr, v))
 
         return ','.join(disp)
 
@@ -484,8 +484,8 @@ class IntegerColumn(BoundsColumn):
     Corresponds to int SQL type.
     """
     TYPE_INFO = 'INT'
-    SQL_MIN = -sys.maxint - 1
-    SQL_MAX = sys.maxint
+    SQL_MIN = -sys.maxsize - 1
+    SQL_MAX = sys.maxsize
     sql_updater = integer_updater
 
     @classmethod
@@ -648,7 +648,7 @@ class GeometryColumn(BaseColumn):
         if self.layer_display_name:
             return self.layer_display_name
 
-        return u'{0}'.format(self.entity.short_name)
+        return '{0}'.format(self.entity.short_name)
 
     def geometry_type(self):
         """
@@ -1007,7 +1007,7 @@ class MultipleSelectColumn(VirtualColumn):
         an SQLALchemy model object.
         :rtype: str
         """
-        return u'{0}_collection'.format(self.value_list.name)
+        return '{0}_collection'.format(self.value_list.name)
 
     @classmethod
     def display_name(cls):

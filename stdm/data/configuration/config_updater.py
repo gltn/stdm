@@ -125,7 +125,7 @@ class ConfigurationSchemaUpdater(QObject):
         :param profile: Profile whose entities are to be deleted.
         :type profile: Profile
         """
-        trans_msg = u'Attempting to delete {0} profile...'.format(
+        trans_msg = 'Attempting to delete {0} profile...'.format(
             profile.name)
         msg = self.tr(trans_msg)
 
@@ -160,13 +160,13 @@ class ConfigurationSchemaUpdater(QObject):
                 status = er.drop_foreign_key_constraint()
 
                 if not status:
-                    msg = self.tr(u'Error in removing {0} foreign key '
+                    msg = self.tr('Error in removing {0} foreign key '
                                   'constraint.'.format(er.autoname))
 
                 else:
                     del profile.relations[er.name]
 
-                    msg = self.tr(u'{0} foreign key constraint successfully '
+                    msg = self.tr('{0} foreign key constraint successfully '
                                   'removed.'.format(er.autoname))
 
                 QgsApplication.processEvents()
@@ -184,7 +184,7 @@ class ConfigurationSchemaUpdater(QObject):
         :param profile: Profile instance.
         :type profile: Profile
         """
-        trans_msg = u'Scanning for changes in {0} profile...'.format(
+        trans_msg = 'Scanning for changes in {0} profile...'.format(
             profile.name)
 
         msg = self.tr(trans_msg)
@@ -199,7 +199,7 @@ class ConfigurationSchemaUpdater(QObject):
         self._update_entities(profile.removed_entities)
 
         # Now iterate through new or updated entities
-        self._update_entities(profile.entities.values())
+        self._update_entities(list(profile.entities.values()))
 
         # Update entity relations by creating foreign key references
         self.update_entity_relations(profile)
@@ -224,7 +224,7 @@ class ConfigurationSchemaUpdater(QObject):
             if action != DbItem.NONE:
                 action_txt = str(self._action_text(action))
                 entity_text = self.tr('entity')
-                trans_msg = u'{0} {1} {2}...'.format(
+                trans_msg = '{0} {1} {2}...'.format(
                     action_txt.capitalize(), e.short_name, entity_text)
 
                 msg = trans_msg
@@ -257,11 +257,11 @@ class ConfigurationSchemaUpdater(QObject):
 
                 status = er.create_foreign_key_constraint()
                 if not status:
-                    msg = self.tr(u'Error in creating {0} foreign key '
+                    msg = self.tr('Error in creating {0} foreign key '
                                   'constraint.'.format(er.name))
 
                 else:
-                    msg = self.tr(u'{0} foreign key constraint successfully '
+                    msg = self.tr('{0} foreign key constraint successfully '
                                   'created.'.format(er.name))
 
                 LOGGER.debug(msg)

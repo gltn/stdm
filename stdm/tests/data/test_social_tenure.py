@@ -21,7 +21,7 @@ class TestConfigurationSchemaUpdater(TestCase):
 
     def test_spatial_unit_tenure_lookup_column(self):
         # See spatial unit-tenure list mapping defn. in populate_configuration
-        social_tenure = self.config.profiles.values()[0].social_tenure
+        social_tenure = list(self.config.profiles.values())[0].social_tenure
 
         # Get tenure value list
         sec_tenure_vl = social_tenure.spatial_unit_tenure_lookup(

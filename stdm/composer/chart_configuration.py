@@ -451,8 +451,8 @@ class ChartItemValueHandler(LinkedTableValueHandler):
         Places a legend item in the axes using the items in the legend items
         collection.If there are no items then no legend will be inserted.
         """
-        labels = self._legend_items.keys()
-        artists = self._legend_items.values()
+        labels = list(self._legend_items.keys())
+        artists = list(self._legend_items.values())
 
         if len(labels) > 0:
             self._ax.legend(tuple(artists), tuple(labels),
@@ -654,7 +654,7 @@ class VerticalBarConfiguration(ChartConfiguration):
         the object.
         :rtype: list
         """
-        return self._value_cfgs.values()
+        return list(self._value_cfgs.values())
 
     def value_fields(self):
         """
@@ -662,7 +662,7 @@ class VerticalBarConfiguration(ChartConfiguration):
         database value fields.
         :rtype: list
         """
-        return self._value_cfgs.keys()
+        return list(self._value_cfgs.keys())
 
     def add_value_configuration(self, value_cfg):
         """

@@ -200,7 +200,7 @@ class SourceValueTranslator(object):
         :return: List containing names of the mapped source table columns.
         :rtype: list
         """
-        return self._input_referenced_columns.keys()
+        return list(self._input_referenced_columns.keys())
 
     def set_parent(self, parent):
         """
@@ -444,14 +444,14 @@ class LookupValueTranslator(RelatedTableTranslator):
         if len(field_values) == 0:
             return IgnoreType
 
-        source_column = field_values.keys()[0]
+        source_column = list(field_values.keys())[0]
 
         # Check if the source column is in the field_values
         if not source_column in field_values:
             return IgnoreType
 
         # Assume the source column is the first (and only) one in field_values
-        source_column = field_values.keys()[0]
+        source_column = list(field_values.keys())[0]
         lookup_value = field_values.get(source_column)
 
         # Create lookup table object
@@ -523,7 +523,7 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
 
         num_cols = len(self._input_referenced_columns)
         cols_iter = itertools.islice(
-            self._input_referenced_columns.items(),
+            list(self._input_referenced_columns.items()),
             num_cols
         )
 
@@ -621,7 +621,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         if self.source_directory is None:
             msg = QApplication.translate(
                 'SourceDocumentTranslator',
-                u'Source directory for {0} has not been set.'.format(
+                'Source directory for {0} has not been set.'.format(
                     self.document_type
                 )
             )
@@ -631,7 +631,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         if not source_dir.exists(self.source_directory):
             msg = QApplication.translate(
                 'SourceDocumentTranslator',
-                u'Source directory for {0} does not exist.'.format(
+                'Source directory for {0} does not exist.'.format(
                     self.document_type
                 )
             )
@@ -640,7 +640,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         if len(field_values) == 0:
             return IgnoreType
 
-        source_column = field_values.keys()[0]
+        source_column = list(field_values.keys())[0]
 
         # Check if the source column is in the field_values
         if not source_column in field_values:
@@ -672,12 +672,12 @@ class SourceDocumentTranslator(SourceValueTranslator):
             d_name = d.replace('\\', '/').strip()
 
             # Build absolute document path
-            abs_doc_path = u'{0}/{1}'.format(self.source_directory, d_name)
+            abs_doc_path = '{0}/{1}'.format(self.source_directory, d_name)
 
             if not QFile.exists(abs_doc_path):
                 msg = QApplication.translate(
                     'SourceDocumentTranslator',
-                    u'Supporting document {0} does not exist.'.format(
+                    'Supporting document {0} does not exist.'.format(
                         abs_doc_path
                     )
                 )

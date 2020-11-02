@@ -93,7 +93,7 @@ class ValueList(Entity):
         if idx != -1:
             return name
 
-        return u'{0}_{1}'.format(self.PREFIX, name)
+        return '{0}_{1}'.format(self.PREFIX, name)
 
     def rename_entity(self, short_name):
         """

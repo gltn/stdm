@@ -58,7 +58,7 @@ class StdmConfiguration(QObject):
         for p in self.profiles.values():
             for e in p.entities.values():
                 if e.TYPE_INFO == 'VALUE_LIST':
-                    count += len(e.values.values())
+                    count += len(list(e.values.values()))
                 count += len(e.columns)
             count += len(p.entities)
         count += len(self.profiles)

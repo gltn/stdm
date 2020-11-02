@@ -111,11 +111,11 @@ class ComposerDataSource(object):
         Returns a sql select statement based on the data source and fields specified,as
         well as the spatial fields.
         """
-        dataFields = self._dataFieldmappings.keys()
+        dataFields = list(self._dataFieldmappings.keys())
 
         #Get spatial fields and embed into the dataFields list
         if self._spatialFieldsConfig != None:
-            spatialFieldsCollection = self._spatialFieldsConfig.spatialFieldsMapping().values()
+            spatialFieldsCollection = list(self._spatialFieldsConfig.spatialFieldsMapping().values())
 
             for spfEntry in spatialFieldsCollection:
                 spFields = [spm.spatialField() for spm in spfEntry]

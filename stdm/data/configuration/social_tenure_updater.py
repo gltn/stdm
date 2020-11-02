@@ -55,7 +55,7 @@ def view_deleter(social_tenure, engine):
     :param engine: SQLAlchemy connectable object.
     :type engine: Engine
     """
-    views = social_tenure.views.keys()
+    views = list(social_tenure.views.keys())
 
     for v in views:
         LOGGER.debug('Attempting to delete %s view...', v)
@@ -105,7 +105,7 @@ def _create_primary_entity_view(
     omit_view_columns = []
     omit_join_statement_columns = []
 
-    party_col_names = deepcopy(social_tenure.party_columns.keys())
+    party_col_names = deepcopy(list(social_tenure.party_columns.keys()))
 
     # Flag to check if primary entity is a spatial unit entity
     pe_is_spatial = False
@@ -115,7 +115,7 @@ def _create_primary_entity_view(
         pe_is_spatial = True
 
     else:
-        p_fk_col_name = u'{0}_id'.format(primary_entity.short_name.lower())
+        p_fk_col_name = '{0}_id'.format(primary_entity.short_name.lower())
         # Exclude other parties from the join statement
         if p_fk_col_name in party_col_names:
             party_col_names.remove(p_fk_col_name)
@@ -146,7 +146,7 @@ def _create_primary_entity_view(
 
         # Set removal of all spatial unit columns apart from the id column
         for spatial_unit in social_tenure.spatial_units:
-            omit_view_columns = deepcopy(spatial_unit.columns.keys())
+            omit_view_columns = deepcopy(list(spatial_unit.columns.keys()))
             if 'id' in omit_view_columns:
                 omit_view_columns.remove('id')
 
@@ -165,7 +165,7 @@ def _create_primary_entity_view(
             return
 
             # Create SQL statement
-        create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
+        create_view_sql = 'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
             view_name, ','.join(view_columns), social_tenure.name,
             ' '.join(join_statement))
 
@@ -225,7 +225,7 @@ def _create_primary_entity_view(
             return
 
         # Create SQL statement
-        create_view_sql = u'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
+        create_view_sql = 'CREATE VIEW {0} AS SELECT {1} FROM {2} {3}'.format(
             view_name, ','.join(view_columns), social_tenure.name,
             ' '.join(join_statement))
 
@@ -246,8 +246,8 @@ def _entity_select_column(
 ):
     # Check if the entity exists in the database
     if not pg_table_exists(entity.name):
-        msg = u'{0} table does not exist, social tenure view will not be ' \
-              u'created.'.format(entity.name)
+        msg = '{0} table does not exist, social tenure view will not be ' \
+              'created.'.format(entity.name)
         LOGGER.debug(msg)
 
         raise ConfigurationException(msg)
@@ -260,7 +260,7 @@ def _entity_select_column(
 
     column_names = []
     join_statements = []
-    columns = entity.columns.values()
+    columns = list(entity.columns.values())
 
     # Create foreign key parent collection if none is specified
     if foreign_key_parents is None:
@@ -279,18 +279,18 @@ def _entity_select_column(
         if c.TYPE_INFO not in _exclude_view_column_types:
             normalized_entity_sname = entity.short_name.replace(' ', '_').lower()
 
-            pseudo_column_name = u'{0}_{1}'.format(normalized_entity_sname,
+            pseudo_column_name = '{0}_{1}'.format(normalized_entity_sname,
                                                    c.name)
             # use sudo name for custom tenure entity
             if custom_tenure:
-                col_select_name = u'{0}_1.{1}'.format(
+                col_select_name = '{0}_1.{1}'.format(
                     entity.name, c.name
                 )
             else:
-                col_select_name = u'{0}.{1}'.format(entity.name, c.name)
+                col_select_name = '{0}.{1}'.format(entity.name, c.name)
             # Get pseudoname to use
 
-            select_column_name = u'{0} AS {1}'.format(col_select_name,
+            select_column_name = '{0} AS {1}'.format(col_select_name,
                                                       pseudo_column_name)
 
             if is_primary and c.name == 'id':
@@ -305,14 +305,14 @@ def _entity_select_column(
 
                     else:
                         # add spatial unit id as the id.
-                        col_spatial_unit_id = u'{0}.{1} AS {1}'.format(
+                        col_spatial_unit_id = '{0}.{1} AS {1}'.format(
                             entity.name, c.name
                         )
                         select_column_name = col_spatial_unit_id
 
                 else:
                     # add party id or spatial unit as id
-                    entity_id = u'{0}.{1} AS {1}'.format(
+                    entity_id = '{0}.{1} AS {1}'.format(
                         entity.name, c.name
                     )
 
@@ -337,7 +337,7 @@ def _entity_select_column(
 
                 pseudo_names = foreign_key_parents.get(parent_table)
                 # Get pseudoname to use
-                table_pseudo_name = u'{0}_{1}'.format(
+                table_pseudo_name = '{0}_{1}'.format(
                     parent_table, (len(pseudo_names) + 1)
                 )
 
@@ -351,14 +351,14 @@ def _entity_select_column(
                         lookup_model.code != '').filter(
                         lookup_model.code is not None).all()
                     if len(result) == 0:
-                        select_column_name = u'{0}.value AS {1}'.format(
+                        select_column_name = '{0}.value AS {1}'.format(
                             table_pseudo_name,
                             pseudo_column_name
                         )
                     else:
-                        value = u'{0}.value'.format(table_pseudo_name)
-                        code = u'{0}.code'.format(table_pseudo_name)
-                        select_column_name = u"concat({0}, ' (', {1}, ')') AS {2}". \
+                        value = '{0}.value'.format(table_pseudo_name)
+                        code = '{0}.code'.format(table_pseudo_name)
+                        select_column_name = "concat({0}, ' (', {1}, ')') AS {2}". \
                             format(value, code, pseudo_column_name)
 
                     use_custom_join = True
@@ -368,7 +368,7 @@ def _entity_select_column(
                         use_inner_join = False
 
                 elif c.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
-                    select_column_name = u'{0}.name AS {1}'.format(
+                    select_column_name = '{0}.name AS {1}'.format(
                         table_pseudo_name, pseudo_column_name)
                     use_custom_join = True
                     use_inner_join = False
@@ -381,16 +381,16 @@ def _entity_select_column(
                         if len(c.entity_relation.display_cols) > 0:
                             display_col_names = []
                             for display_col in c.entity_relation.display_cols:
-                                name = u'{0}.{1}'.format(table_pseudo_name, display_col)
+                                name = '{0}.{1}'.format(table_pseudo_name, display_col)
                                 display_col_names.append(name)
-                            select_column_name = u"concat_ws(' '::text, {0}) AS {1}".format(
+                            select_column_name = "concat_ws(' '::text, {0}) AS {1}".format(
                                 ', '.join(display_col_names),
                                 pseudo_column_name
                             )
 
                         else:
                             if not custom_tenure:
-                                select_column_name = u'{0}.id AS {1}'.format(
+                                select_column_name = '{0}.id AS {1}'.format(
                                     table_pseudo_name,
                                     pseudo_column_name
                                 )
@@ -416,14 +416,14 @@ def _entity_select_column(
                         if c.name == 'social_tenure_relationship_id':
                             i = i + 1
                             # pseudo_names = foreign_key_parents.get(parent_table)
-                            col_select_name = u'{0}_{1}.{2}'.format(
+                            col_select_name = '{0}_{1}.{2}'.format(
                                 entity.name, str(i), c.name
                             )
                             # Get pseudoname to use
-                            table_pseudo_name = u'{0}_{1}'.format(
+                            table_pseudo_name = '{0}_{1}'.format(
                                 entity.name, str(i)
                             )
-                            join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                            join_statement = '{0} {1} {2} ON {3} = {2}.{4}'.format(
                                 join_type, entity.name, table_pseudo_name,
                                 col_select_name,
                                 c.entity_relation.parent_column
@@ -431,7 +431,7 @@ def _entity_select_column(
                             join_statements = [join_statement] + join_statements
 
                         else:
-                            join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                            join_statement = '{0} {1} {2} ON {3} = {2}.{4}'.format(
                                 join_type, parent_table, table_pseudo_name,
                                 col_select_name,
                                 c.entity_relation.parent_column
@@ -440,7 +440,7 @@ def _entity_select_column(
 
                     else:
 
-                        join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                        join_statement = '{0} {1} {2} ON {3} = {2}.{4}'.format(
                             join_type, parent_table, table_pseudo_name,
                             col_select_name, c.entity_relation.parent_column
                         )
@@ -458,12 +458,12 @@ def _entity_select_column(
                     # This fix needs to be tested more ...
                     if parent_table in foreign_key_parents and 'relationship' not in entity.name:
                         parent_table_alias = foreign_key_parents[parent_table][0]
-                        join_statement = u'{0} {1} {2} ON {3} = {2}.{4}'.format(
+                        join_statement = '{0} {1} {2} ON {3} = {2}.{4}'.format(
                             join_type, parent_table, parent_table_alias, col_select_name,
                             c.entity_relation.parent_column
                         )
                     else:
-                        join_statement = u'{0} {1} ON {2} = {1}.{3}'.format(
+                        join_statement = '{0} {1} ON {2} = {1}.{3}'.format(
                             join_type, parent_table, col_select_name,
                             c.entity_relation.parent_column
                         )

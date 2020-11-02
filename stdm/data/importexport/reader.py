@@ -477,7 +477,7 @@ class OGRReader(object):
                         col_obj = destination_entity.column(dest_column)
                         if col_obj.TYPE_INFO == 'MULTIPLE_SELECT':
                             lk_name = col_obj.value_list.name
-                            dest_column = u'{0}_collection'.format(lk_name)
+                            dest_column = '{0}_collection'.format(lk_name)
 
                         column_value_mapping[dest_column] = field_value
 

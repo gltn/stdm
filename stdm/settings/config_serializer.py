@@ -98,14 +98,14 @@ class ConfigurationFileSerializer(QObject):
         # Check if the suffix is in the file name
         # TODO: Remove str function
         if not str(save_file_info.suffix()).lower != 'stc':
-            self.path = u'{0}.{1}'.format(self.path, 'stc')
+            self.path = '{0}.{1}'.format(self.path, 'stc')
             save_file_info = QFileInfo(self.path)
 
         # Test if the file is writeable
         save_file = QFile(self.path)
         if not save_file.open(QIODevice.WriteOnly):
-            raise IOError(u'The file cannot be saved in '
-                          u'{0}'.format(self.path))
+            raise IOError('The file cannot be saved in '
+                          '{0}'.format(self.path))
 
         # Create DOM document and populate it with STDM config properties
         config_document = QDomDocument()
@@ -136,8 +136,8 @@ class ConfigurationFileSerializer(QObject):
         instance object.
         """
         if not QFile.exists(self.path):
-            raise IOError(u'{0} does not exist. Configuration file cannot be '
-                          u'loaded.'.format(self.path))
+            raise IOError('{0} does not exist. Configuration file cannot be '
+                          'loaded.'.format(self.path))
 
         config_file = QFile(self.path)
 
@@ -149,8 +149,8 @@ class ConfigurationFileSerializer(QObject):
 
         status, msg, line, col = config_doc.setContent(config_file)
         if not status:
-            raise ConfigurationException(u'Configuration file cannot be '
-                                         u'loaded: {0}'.format(msg))
+            raise ConfigurationException('Configuration file cannot be '
+                                         'loaded: {0}'.format(msg))
 
         # Load configuration items
         self.read_xml(config_doc)

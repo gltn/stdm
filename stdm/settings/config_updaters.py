@@ -220,7 +220,7 @@ class ConfigurationVersionUpdater(QObject):
         :type cls: Class
         """
         if len(ConfigurationVersionUpdater.UPDATERS) > 0:
-            updaters = ConfigurationVersionUpdater.UPDATERS.values()
+            updaters = list(ConfigurationVersionUpdater.UPDATERS.values())
             previous_updater = updaters[len(updaters) - 1]
             previous_updater.NEXT_UPDATER = cls
 

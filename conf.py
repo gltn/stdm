@@ -46,8 +46,8 @@ source_suffix = '.txt'
 master_doc = 'index'
 
 # General information about the project.
-project = u'stdm'
-copyright = u'2015, Erick Omwandho'
+project = 'stdm'
+copyright = '2015, Erick Omwandho'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -199,8 +199,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'stdm.tex', u'stdm Documentation',
-   u'Erick Omwandho', 'manual'),
+  ('index', 'stdm.tex', 'stdm Documentation',
+   'Erick Omwandho', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -229,8 +229,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'stdm', u'stdm Documentation',
-     [u'Erick Omwandho'], 1)
+    ('index', 'stdm', 'stdm Documentation',
+     ['Erick Omwandho'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -243,8 +243,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'stdm', u'stdm Documentation',
-   u'Erick Omwandho', 'stdm', 'One line description of project.',
+  ('index', 'stdm', 'stdm Documentation',
+   'Erick Omwandho', 'stdm', 'One line description of project.',
    'Miscellaneous'),
 ]
 
