@@ -354,8 +354,10 @@ class ExportData(QWizard,Ui_frmExportWizard):
         # remove quote from each column
 
         columnList = u",".join(queryCols)
-       
-        whereStmnt = self.txtWhereQuery.toPlainText()
+      
+        whereStmnt = ''
+        if self.gpQBuilder.isChecked():
+            whereStmnt = self.txtWhereQuery.toPlainText()
 
         sortStmnt = ''
         results=None 

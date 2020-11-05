@@ -157,13 +157,13 @@ class OGRReader(object):
             if isinstance(value, str):
                 if not bool(value.strip()) or value.strip().lower() == 'null':
                     value = None
-            if '%' in value:
-                value = value.replace('%', '')
-            try:
-                if value is not None:
-                    value = float(value)
 
-            except ValueError:
+            try:
+                if '%' in value:
+                    value = value.replace('%', '')
+                #if value is not None:
+                value = float(value)
+            except:
                 value = None
 
         return value
@@ -192,16 +192,15 @@ class OGRReader(object):
                 if isinstance(value, str):
                     if not bool(value.strip()) or value.strip().lower() == 'null':
                         value = None
+
                 if entity.columns[col_name].TYPE_INFO in float_type:
                     try:
-                        if value is not None:
-                            value = float(value)
-
-                    except ValueError:
-                        value = None
+                        #if value is not None:
+                        value = float(value)
+                    except:
+                        value = 0
 
                 elif entity.columns[col_name].TYPE_INFO in int_type:
-
                     try:
                         if value is not None:
                             value = int(value)
@@ -252,10 +251,14 @@ class OGRReader(object):
         :return: Converted value
         :rtype: Any
         """
+
+
         entity = self._data_source_entity(target_table)
         yes_no_types = ['BOOL']
        
         if entity.columns[col_name].TYPE_INFO in yes_no_types:
+            if type(value) == int:
+                return True
             if not bool(value.strip()) or value.strip().lower() == 'null':
                 value = None
             elif value.strip().lower() == 'yes':
