@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QUrl
 )
@@ -30,11 +31,14 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.ui.ui_about_stdm import Ui_frmAbout
+
 from stdm.utils.util import version_from_metadata
+from stdm.ui.gui_utils import GuiUtils
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_about_stdm.ui'))
 
-class AboutSTDMDialog(QDialog, Ui_frmAbout):
+class AboutSTDMDialog(WIDGET, BASE):
     def __init__(self, parent=None, metadata=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
