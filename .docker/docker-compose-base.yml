@@ -1,0 +1,28 @@
+
+version: '2'
+
+networks:
+  qgis_plugin_network:
+
+services:
+  db:
+    image: kartoza/postgis:10.0-2.4  # Despite the tag, it's a 10.6 version
+    hostname: db
+    container_name: postgis
+    networks:
+      qgis_plugin_network:
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - POSTGRES_DBNAME=gis
+      # Uncomment to expose the postgis database on the network
+      # - ALLOW_IP_RANGE= 0.0.0.0/0
+    volumes:
+      - ../${PLUGIN_NAME}:/tests_directory/${PLUGIN_NAME}
+    # Uncomment to use the postgis database from outside the docker network
+    ports:
+      - "35432:5432"
+    # Only supported in version 3
+    # But we need version 2 for extends
+    #healthcheck:
+    #  test: "exit 0"
