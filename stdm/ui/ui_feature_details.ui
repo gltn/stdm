@@ -34,10 +34,6 @@
         <property name="text">
          <string>...</string>
         </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
-        </property>
         <property name="iconSize">
          <size>
           <width>16</width>
@@ -59,10 +55,6 @@
         </property>
         <property name="text">
          <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -91,10 +83,6 @@
         </property>
         <property name="text">
          <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/document.png</normaloff>:/plugins/stdm/images/icons/document.png</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -155,8 +143,5 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

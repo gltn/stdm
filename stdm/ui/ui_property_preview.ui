@@ -26,10 +26,6 @@
    <number>0</number>
   </property>
   <widget class="QWidget" name="local">
-   <attribute name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/plugins/stdm/images/icons/local.png</normaloff>:/plugins/stdm/images/icons/local.png</iconset>
-   </attribute>
    <attribute name="title">
     <string>Local</string>
    </attribute>
@@ -40,10 +36,6 @@
    </layout>
   </widget>
   <widget class="QWidget" name="web">
-   <attribute name="icon">
-    <iconset resource="../resources.qrc">
-     <normaloff>:/plugins/stdm/images/icons/web.png</normaloff>:/plugins/stdm/images/icons/web.png</iconset>
-   </attribute>
    <attribute name="title">
     <string>Web</string>
    </attribute>
@@ -215,12 +207,9 @@
   <customwidget>
    <class>MirrorMap</class>
    <extends>QWidget</extends>
-   <header>mirror_map</header>
+   <header>stdm.ui.mirror_map</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

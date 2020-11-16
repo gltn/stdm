@@ -20,6 +20,8 @@ email                : gkahiu@gmail.com
 """
 import re
 
+from qgis.PyQt import uic
+
 from qgis.PyQt.QtWidgets import (
     QTabWidget,
     QApplication,
@@ -51,11 +53,14 @@ from stdm.settings.registryconfig import (
 from stdm.ui.notification import (
     ERROR
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
-from stdm.ui.ui_property_preview import Ui_frmPropertyPreview
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_property_preview.ui'))
 
 
-class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
+class SpatialPreview(WIDGET, BASE):
     """
     Widget for previewing spatial unit on either local map or web source.
     """
@@ -63,6 +68,9 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
     def __init__(self, parent=None, iface=None):
         QTabWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self.local.setIcon(GuiUtils.get_icon('local.png'))
+        self.web.setIcon(GuiUtils.get_icon('web.png'))
 
         self._notif_bar = None
         self._ol_loaded = False
