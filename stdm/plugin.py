@@ -29,13 +29,10 @@ from qgis.PyQt.QtCore import (
     QTranslator,
     QCoreApplication,
     Qt,
-    QFile,
     QStandardPaths
 )
 from qgis.PyQt.QtGui import (
-    QIcon,
-    QKeySequence,
-    QDesktopServices
+    QKeySequence
 )
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -48,17 +45,11 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 from qgis.core import (
-    QgsApplication,
     QgsProject
 )
 from sqlalchemy.exc import SQLAlchemyError
 
 from stdm import data
-
-# TODO!
-#from stdm.composer.composer_data_source import composer_data_source
-#from stdm.composer.composer_wrapper import ComposerWrapper
-
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.column_updaters import varchar_updater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -114,6 +105,7 @@ from stdm.ui.feature_details import (
 )
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
 from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.import_data import ImportData
 from stdm.ui.license_agreement import LicenseAgreement
 from stdm.ui.login_dlg import loginDlg
@@ -135,7 +127,10 @@ from stdm.utils.util import (
     user_non_profile_views
 )
 from stdm.utils.util import simple_dialog
-from stdm.ui.gui_utils import GuiUtils
+
+# TODO!
+# from stdm.composer.composer_data_source import composer_data_source
+# from stdm.composer.composer_wrapper import ComposerWrapper
 
 LOGGER = logging.getLogger('stdm')
 
