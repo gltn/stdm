@@ -43,6 +43,8 @@ class AboutSTDMDialog(WIDGET, BASE):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
+        self.txtAbout.setHtml(self.txtAbout.toHtml().replace(':/plugins/stdm/images/icons/stdm_2.png', GuiUtils.get_icon_svg('stdm_2.png')))
+
         self._metadata = metadata
 
         # Connect signals
