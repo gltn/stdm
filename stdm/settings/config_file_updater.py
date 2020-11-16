@@ -27,6 +27,7 @@ import time
 from collections import OrderedDict
 from distutils import file_util
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QFile,
     QIODevice,
@@ -65,7 +66,8 @@ from stdm.settings.registryconfig import (
     COMPOSER_TEMPLATE
 )
 from stdm.ui.notification import NotificationBar
-from stdm.ui.ui_upgrade_paths import Ui_UpgradePaths
+from stdm.ui.gui_utils import GuiUtils
+
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -160,8 +162,11 @@ STR_TABLES = OrderedDict([
      )
 ])
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_upgrade_paths.ui'))
 
-class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
+
+class ConfigurationFileUpdater(WIDGET, BASE):
     """
     Updates configuration file to new format and migrates data
     """
@@ -171,6 +176,11 @@ class ConfigurationFileUpdater(QDialog, Ui_UpgradePaths):
         QDialog.__init__(self, iface.mainWindow())
         self.iface = iface
         self.setupUi(self)
+
+        self.btn_supporting_docs.setIcon(GuiUtils.get_icon_svg('open_file.png'))
+        self.btn_template.setIcon(GuiUtils.get_icon_svg('open_file.png'))
+        self.btn_output.setIcon(GuiUtils.get_icon_svg('open_file.png'))
+
         self.file_handler = FilePaths()
         self.version = '1.2'
         self.config_profiles = []
