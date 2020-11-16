@@ -17,33 +17,38 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox,
     QPushButton,
     QWidget
 )
-from PyQt4.QtCore import Qt
+from qgis.PyQt.QtCore import Qt
 
 from qgis.core import (
     QgsVectorLayer,
-    QgsSimpleFillSymbolLayerV2,
-    QgsSimpleMarkerSymbolLayerV2
+    QgsSimpleFillSymbolLayer,
+    QgsSimpleMarkerSymbolLayer
 )
 from qgis.gui import (
-    QgsSimpleMarkerSymbolLayerV2Widget,
-    QgsSimpleLineSymbolLayerV2Widget,
-    QgsSimpleFillSymbolLayerV2Widget
+    QgsSimpleMarkerSymbolLayerWidget,
+    QgsSimpleLineSymbolLayerWidget,
+    QgsSimpleFillSymbolLayerWidget
 )
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
    table_column_names,
    geometryType
 )
-from stdm.stdm.utils import setComboCurrentIndexWithText
+from stdm.utils.util import setComboCurrentIndexWithText
 
-from .ui_composer_symbol_editor import Ui_frmComposerSymbolEditor
-from .composer_spcolumn_styler import ComposerSpatialColumnEditor
+from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.composer.composer_spcolumn_styler import ComposerSpatialColumnEditor
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_symbol_editor.ui'))
+
 
 class _SymbolLayerProxyWidgetMixin(object):
     """
@@ -55,18 +60,18 @@ class _SymbolLayerProxyWidgetMixin(object):
         if not btn_data_prop is None:
             btn_data_prop.setVisible(False)
 
-class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerV2Widget,
+class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerWidget,
                                           _SymbolLayerProxyWidgetMixin):
     """
     Use this proxy so that we can manually create a marker symbol layer.
     """
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
-        QgsSimpleMarkerSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
+        QgsSimpleMarkerSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
         #Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
-            self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
+            self._sym_layer = QgsSimpleMarkerSymbolLayer()
             self._sym_layer.setBorderColor(Qt.red)
             self._sym_layer.setFillColor(Qt.yellow)
 
@@ -74,25 +79,25 @@ class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerV2Widget,
 
         self.remove_data_defined_properties_button()
 
-class _SimpleLineSymbolLayerProxyWidget(QgsSimpleLineSymbolLayerV2Widget,
+class _SimpleLineSymbolLayerProxyWidget(QgsSimpleLineSymbolLayerWidget,
                                         _SymbolLayerProxyWidgetMixin):
     """
     Use this proxy so that we can manually create a line symbol layer.
     """
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
-        QgsSimpleLineSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
+        QgsSimpleLineSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
         #Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
-            self._sym_layer = QgsSimpleMarkerSymbolLayerV2()
+            self._sym_layer = QgsSimpleMarkerSymbolLayer()
             self._sym_layer.setColor(Qt.red)
 
         self.setSymbolLayer(self._sym_layer)
 
         self.remove_data_defined_properties_button()
 
-class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget,
+class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
                                         _SymbolLayerProxyWidgetMixin):
     """
     We are using this proxy since on changing the fill color, the system crashes.
@@ -100,7 +105,7 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget,
     reconnects using the 'colorChanged' signal to load color selection dialog.
     """
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
-        QgsSimpleFillSymbolLayerV2Widget.__init__(self, vectorLayer, parent)
+        QgsSimpleFillSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
         #Set symbol layer for the widget
         self._sym_layer = symbol_layer
@@ -121,13 +126,16 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerV2Widget,
     def onSetFillColor(self,color):
         self.symbolLayer().setFillColor(color)
 
-class ComposerSymbolEditor(QWidget,Ui_frmComposerSymbolEditor):
+class ComposerSymbolEditor(WIDGET, BASE):
     """
     Widget for defining symbology properties for the selected spatial field.
     """
     def __init__(self, composerWrapper, parent=None):
         QWidget.__init__(self,parent)
         self.setupUi(self)
+
+        self.btnAddField.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnClear.setIcon(GuiUtils.get_icon('reset.png'))
 
         self._composerWrapper = composerWrapper
         self._editorMappings = {}

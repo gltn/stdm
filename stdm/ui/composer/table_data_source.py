@@ -18,27 +18,33 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QWidget
 )
 
 from qgis.core import (
-        QgsMapLayerRegistry,
-        QgsComposerFrame,
+        QgsProject,
+        QgsLayoutFrame,
         )
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     vector_layer
 )
 
-from ..notification import (
+from stdm.ui.notification import (
     NotificationBar
 )
-from .referenced_table_editor import LinkedTableProps
-from .ui_composer_table_source import Ui_TableDataSourceEditor
+from stdm.ui.composer.referenced_table_editor import LinkedTableProps
+from stdm.ui.gui_utils import GuiUtils
 
-class ComposerTableDataSourceEditor(QWidget, Ui_TableDataSourceEditor):
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_table_source.ui'))
+
+
+class ComposerTableDataSourceEditor(WIDGET, BASE):
     def __init__(self, composer_wrapper, frame_item, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)

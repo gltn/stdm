@@ -19,11 +19,11 @@ email                : gkahiu@gmail.com
 from collections import OrderedDict
 
 from qgis.core import (
-    QgsSymbolLayerV2Registry,
-    QgsSymbolLayerV2Utils
+    QgsApplication,
+    QgsSymbolLayerUtils
 )
 
-from stdm import (
+from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
 
@@ -133,8 +133,8 @@ class SpatialFieldsConfiguration(object):
             symbolElement = spatialFieldMappingElement.firstChildElement("Symbol")
             if not symbolElement is None:
                 layerType = symbolElement.attribute("layerType")
-                layerProps = QgsSymbolLayerV2Utils.parseProperties(symbolElement)
-                symbolLayer =  QgsSymbolLayerV2Registry.instance().createSymbolLayer(layerType,layerProps)
+                layerProps = QgsSymbolLayerUtils.parseProperties(symbolElement)
+                symbolLayer =  QgsApplication.symbolLayerRegistry().createSymbolLayer(layerType,layerProps)
                 spFieldMapping.setSymbolLayer(symbolLayer)
 
             spFieldsConfig.addSpatialFieldMapping(spFieldMapping)

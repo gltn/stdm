@@ -17,23 +17,24 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QPushButton,
     QWidget
 )
-from PyQt4.QtCore import Qt
 
 from qgis.core import (
-    QgsSimpleFillSymbolLayerV2,
-    QgsSymbolLayerV2Utils
+    QgsSimpleFillSymbolLayer,
+    QgsSymbolLayerUtils
 )
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     table_column_names
 )
 
-from .ui_composer_spcolumn_styler import Ui_frmComposerSpatialColumnEditor
+from stdm.ui.gui_utils import GuiUtils
+
 
 class SpatialFieldMapping(object):
     """
@@ -176,14 +177,18 @@ class SpatialFieldMapping(object):
         # Append symbol properties element
         if not self._symbol is None:
             prop = self._symbol.properties()
-            QgsSymbolLayerV2Utils.saveProperties(prop,domDocument,symbolElement)
+            QgsSymbolLayerUtils.saveProperties(prop,domDocument,symbolElement)
             symbolElement.setAttribute("layerType",self._layerType)
 
         spColumnElement.appendChild(symbolElement)
 
         return spColumnElement
 
-class ComposerSpatialColumnEditor(QWidget,Ui_frmComposerSpatialColumnEditor):
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_spcolumn_styler.ui'))
+
+class ComposerSpatialColumnEditor(WIDGET, BASE):
     """
     Widget for defining symbology and labeling properties for the selected spatial field.
     """

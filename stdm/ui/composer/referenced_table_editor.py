@@ -20,7 +20,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QComboBox,
     QGridLayout,
@@ -28,14 +28,14 @@ from PyQt4.QtGui import (
     QMessageBox,
     QWidget
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QMetaObject,
     QSize,
     pyqtSignal,
     pyqtSlot
 )
 
-from stdm.stdm.data.pg_utils import (
+from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     pg_views,
@@ -45,7 +45,7 @@ from stdm.stdm.data.pg_utils import (
 from stdm.settings import (
     current_profile
 )
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     setComboCurrentIndexWithText,
     profile_and_user_views
 )

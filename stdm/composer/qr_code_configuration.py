@@ -18,21 +18,21 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomElement
 )
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QTemporaryFile
 )
 
 import pyqrcode
 
-from stdm import (
+from stdm.utils.util import (
     is_ascii
 )
 
-from .configuration_collection_base import (
+from stdm.composer.configuration_collection_base import (
     ConfigurationCollectionBase,
     ItemConfigBase,
     ItemConfigValueHandler
@@ -160,7 +160,7 @@ class QRCodeConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing multiple instances of QRCodeConfiguration objects.
     """
-    from stdm import ComposerQREditor
+    from stdm.ui.composer.qr_code import ComposerQREditor
 
     collection_root = "QRCodes"
     editor_type = ComposerQREditor
