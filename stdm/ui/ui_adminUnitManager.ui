@@ -31,10 +31,6 @@
      <property name="text">
       <string>Delete Selection</string>
      </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
-     </property>
     </widget>
    </item>
    <item row="2" column="1">
@@ -47,10 +43,6 @@
      </property>
      <property name="text">
       <string>Clear Selection</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/plugins/stdm/images/icons/reset.png</normaloff>:/plugins/stdm/images/icons/reset.png</iconset>
      </property>
     </widget>
    </item>
@@ -120,10 +112,6 @@
         <property name="text">
          <string/>
         </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-        </property>
        </widget>
       </item>
      </layout>
@@ -135,11 +123,8 @@
   <customwidget>
    <class>ValidatingLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>customcontrols</header>
+   <header>stdm.ui.customcontrols.validating_line_edit</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>
