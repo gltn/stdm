@@ -34,7 +34,8 @@ from qgis.PyQt.QtGui import (
     QFont,
     QFontMetrics,
     QImage,
-    QPainter
+    QPainter,
+    QPixmap
 )
 
 
@@ -73,6 +74,25 @@ class GuiUtils:
             return ''
 
         return path
+
+    @staticmethod
+    def get_icon_pixmap(icon: str) -> QPixmap:
+        """
+        Returns a plugin icon's PNG file path
+        :param icon: icon name (png file name)
+        :return: icon png path
+        """
+        path = os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'images',
+            'icons',
+            icon)
+        if not os.path.exists(path):
+            return QPixmap()
+
+        im = QImage(path)
+        return QPixmap.fromImage(im)
 
     @staticmethod
     def get_ui_file_path(file: str) -> str:

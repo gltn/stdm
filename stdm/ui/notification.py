@@ -20,6 +20,7 @@ email                : gkahiu@gmail.com
 """
 from uuid import uuid4
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QObject,
     pyqtSignal,
@@ -34,7 +35,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
-from stdm.ui.ui_notif_item import Ui_frmNotificationItem
+from stdm.ui.gui_utils import GuiUtils
 
 # Enums for type of notification to be displayed
 ERROR = 2005
@@ -169,14 +170,19 @@ class NotificationBar(QObject, object):
             del self._notifications[strCode]
             self.userClosed.emit()
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_notif_item.ui'))
 
-class NotificationItem(QWidget, Ui_frmNotificationItem):
+
+class NotificationItem(BASE, WIDGET):
     # Close signal
     messageClosed = pyqtSignal(str)
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self.lblClose.setPixmap(GuiUtils.get_icon_pixmap('close_msg.png'))
 
         # Unique identifier for the message
         self.code = str(uuid4())
