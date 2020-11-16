@@ -44,6 +44,7 @@ from stdm.settings.registryconfig import (
     set_last_document_path
 )
 from stdm.ui.sourcedocument import SourceDocumentManager
+from stdm.ui.gui_utils import GuiUtils
 
 
 class _DocumentTypeContainer(QWidget):
@@ -127,7 +128,7 @@ class SupportingDocumentsWidget(QWidget):
         self._cbo_doc_type = QComboBox(self)
         self._gl.addWidget(self._cbo_doc_type, 0, 1, 1, 1)
         self._btn_add_document = QPushButton(self)
-        doc_ico = QIcon(':/plugins/stdm/images/icons/document.png')
+        doc_ico = GuiUtils.get_icon_pixmap('document.png')
         self._btn_add_document.setIcon(doc_ico)
         self._btn_add_document.setText(self.tr('Add document...'))
         self._btn_add_document.setMaximumWidth(200)

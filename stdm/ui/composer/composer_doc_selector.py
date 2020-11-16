@@ -138,11 +138,11 @@ class TemplateDocumentSelector(WIDGET, BASE):
         #Configure manage buttons
         btnEdit = self.manageButtonBox.button(QDialogButtonBox.Ok)
         btnEdit.setText(QApplication.translate("TemplateDocumentSelector","Edit..."))
-        btnEdit.setIcon(QIcon(":/plugins/stdm/images/icons/edit.png"))
+        btnEdit.setIcon(GuiUtils.get_icon("edit.png"))
 
         btnDelete = self.manageButtonBox.button(QDialogButtonBox.Save)
         btnDelete.setText(QApplication.translate("TemplateDocumentSelector","Delete"))
-        btnDelete.setIcon(QIcon(":/plugins/stdm/images/icons/delete.png"))
+        btnDelete.setIcon(GuiUtils.get_icon("delete.png"))
 
         #Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
@@ -233,8 +233,8 @@ class TemplateDocumentSelector(WIDGET, BASE):
         #Set icon
         icon = QIcon()
         icon.addPixmap(
-            QPixmap(
-                ":/plugins/stdm/images/icons/document.png"
+            GuiUtils.get_icon_pixmap(
+                "document.png"
             ),
             QIcon.Normal,
             QIcon.Off

@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QListView
 )
+from stdm.ui.gui_utils import GuiUtils
 
 
 class AbstractSTREnityListView(QListView):
@@ -117,7 +118,7 @@ class AbstractSTREnityListView(QListView):
     def _add_entity(self, entity):
         # Add entity item to view
         item = QStandardItem(
-            QIcon(':/plugins/stdm/images/icons/table.png'),
+            GuiUtils.get_icon('table.png'),
             entity.short_name
         )
         item.setCheckable(True)

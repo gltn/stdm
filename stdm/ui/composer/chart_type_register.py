@@ -27,6 +27,8 @@ from qgis.PyQt.QtWidgets import (
 from stdm.ui.composer.chart_type_editors import (
     VerticalBarGraphEditor
 )
+from stdm.ui.gui_utils import GuiUtils
+
 
 class ChartTypeUISettings(object):
     registry = []
@@ -74,7 +76,7 @@ class ChartTypeUISettings(object):
 
 class VerticalBarChartSettings(ChartTypeUISettings):
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/chart_bar.png")
+        return GuiUtils.get_icon("chart_bar.png")
 
     def title(self):
         return QApplication.translate("VerticalBarGraph", "Vertical Bar")

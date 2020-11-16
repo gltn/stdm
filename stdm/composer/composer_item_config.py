@@ -33,7 +33,7 @@ from stdm.ui.composer.composer_doc_selector import (
     TemplateDocumentSelector
 )
 
-from .item_formatter import (
+from stdm.composer.item_formatter import (
     ChartFormatter,
     DataLabelFormatter,
     LineFormatter,
@@ -42,6 +42,8 @@ from .item_formatter import (
     QRCodeFormatter,
     TableFormatter
  )
+from stdm.ui.gui_utils import GuiUtils
+
 
 class ComposerItemConfig(QObject):
     """
@@ -157,7 +159,7 @@ class LineItemConfig(ComposerItemConfig):
         self._itemFormatter = LineFormatter()
 
     def action(self):
-        lineAct = QAction(QIcon(":/plugins/stdm/images/icons/line.png"), \
+        lineAct = QAction(GuiUtils.get_icon("line.png"),
         QApplication.translate("LineItemConfig","Add line"), self.composerView())
 
         return lineAct
@@ -195,7 +197,7 @@ class DataLabelConfig(ComposerItemConfig):
         self._itemFormatter = DataLabelFormatter()
 
     def action(self):
-        dataLabelAct = QAction(QIcon(":/plugins/stdm/images/icons/db_field.png"), \
+        dataLabelAct = QAction(GuiUtils.get_icon("db_field.png"),
         QApplication.translate("DataLabelConfig","Add data label"), self.composerView())
 
         return dataLabelAct
@@ -233,7 +235,7 @@ class TableConfig(ComposerItemConfig):
         self._itemFormatter = TableFormatter()
 
     def action(self):
-        tb_act = QAction(QIcon(":/plugins/stdm/images/icons/composer_table.png"), \
+        tb_act = QAction(GuiUtils.get_icon("composer_table.png"),
         QApplication.translate("TableConfig","Add attribute table"), self.composerView())
 
         return tb_act
@@ -272,7 +274,7 @@ class MapConfig(ComposerItemConfig):
         self._itemFormatter = MapFormatter()
 
     def action(self):
-        mapAct = QAction(QIcon(":/plugins/stdm/images/icons/add_map.png"), \
+        mapAct = QAction(GuiUtils.get_icon("add_map.png"),
         QApplication.translate("MapConfig","Add map"), self.composerView())
 
         return mapAct
@@ -310,7 +312,7 @@ class PhotoConfig(ComposerItemConfig):
         self._itemFormatter = PhotoFormatter()
 
     def action(self):
-        ph_act = QAction(QIcon(":/plugins/stdm/images/icons/photo_24.png"), \
+        ph_act = QAction(GuiUtils.get_icon("photo_24.png"),
         QApplication.translate("PhotoConfig","Add photo"), self.composerView())
 
         return ph_act
@@ -350,7 +352,7 @@ class ChartConfig(ComposerItemConfig):
         self._itemFormatter = ChartFormatter()
 
     def action(self):
-        chart_act = QAction(QIcon(":/plugins/stdm/images/icons/chart.png"), \
+        chart_act = QAction(GuiUtils.get_icon("chart.png"),
         QApplication.translate("ChartConfig","Add chart"), self.composerView())
 
         return chart_act
@@ -388,7 +390,7 @@ class QRCodeConfig(PhotoConfig):
         self._itemFormatter = QRCodeFormatter()
 
     def action(self):
-        qrcode_act = QAction(QIcon(":/plugins/stdm/images/icons/qrcode.png"), \
+        qrcode_act = QAction(GuiUtils.get_icon("qrcode.png"),
         QApplication.translate("QRCodeConfig","Add QR Code"), self.composerView())
 
         return qrcode_act
@@ -424,7 +426,7 @@ class SaveTemplateConfig(ComposerItemConfig):
         self.itemAction.setCheckable(False)
 
     def action(self):
-        saveTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/save_tb.png"), \
+        saveTemplateAct = QAction(GuiUtils.get_icon("save_tb.png"),
         QApplication.translate("SaveTemplateConfig","Save document template"), self.composerView())
 
         return saveTemplateAct
@@ -445,7 +447,7 @@ class OpenTemplateConfig(SaveTemplateConfig):
     Opens user templates.
     """
     def action(self):
-        openTemplateAct = QAction(QIcon(":/plugins/stdm/images/icons/open_file.png"), \
+        openTemplateAct = QAction(GuiUtils.get_icon("open_file.png"),
         QApplication.translate("OpenTemplateConfig","Open document template"), self.composerView())
 
         return openTemplateAct
@@ -472,7 +474,7 @@ class ManageTemplatesConfig(ComposerItemConfig):
         self.itemAction.setCheckable(False)
 
     def action(self):
-        manageTemplatesAct = QAction(QIcon(":/plugins/stdm/images/icons/manage_templates.png"), \
+        manageTemplatesAct = QAction(GuiUtils.get_icon("manage_templates.png"),
         QApplication.translate("ManageTemplatesConfig","Manage document templates"), self.composerView())
 
         return manageTemplatesAct

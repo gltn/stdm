@@ -67,6 +67,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.ui.image_export_settings import ImageExportSettings
+from stdm.ui.gui_utils import GuiUtils
 
 
 class Arrow(QGraphicsLineItem):
@@ -1842,7 +1843,7 @@ class ProfileTenureDiagram(QWidget):
         self.minor_annotation.setMaximumSize(QSize(24, 24))
         minor_icon = QIcon()
         minor_icon.addPixmap(
-            QPixmap(':/plugins/stdm/images/icons/minor_annotation.png')
+            GuiUtils.get_icon_pixmap('minor_annotation.png')
         )
         self.minor_annotation.setIcon(minor_icon)
         self.minor_annotation.setCheckable(True)
@@ -1854,7 +1855,7 @@ class ProfileTenureDiagram(QWidget):
         self.major_annotation.setMinimumSize(QSize(24, 24))
         major_icon = QIcon()
         major_icon.addPixmap(
-            QPixmap(':/plugins/stdm/images/icons/major_annotation.png')
+            GuiUtils.get_icon_pixmap('major_annotation.png')
         )
         self.major_annotation.setIcon(major_icon)
         self.major_annotation.setCheckable(True)
@@ -1866,7 +1867,7 @@ class ProfileTenureDiagram(QWidget):
         self.export_image.setMinimumSize(QSize(24, 24))
         export_image_icon = QIcon()
         export_image_icon.addPixmap(
-            QPixmap(':/plugins/stdm/images/icons/save_image.png')
+            GuiUtils.get_icon_pixmap('save_image.png')
         )
         self.export_image.setIcon(export_image_icon)
         self.export_image.setToolTip(self.tr('Save Image...'))

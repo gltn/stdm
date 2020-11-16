@@ -60,6 +60,7 @@ from stdm.ui.forms.widgets import (
     WidgetException
 )
 from stdm.utils.util import getIndex
+from stdm.ui.gui_utils import GuiUtils
 
 __all__ = ["ForeignKeyMapper", "ForeignKeyMapperExpressionDialog"]
 
@@ -171,7 +172,7 @@ class ForeignKeyMapper(QWidget):
         self._add_entity_btn.setToolTip(
             QApplication.translate("ForeignKeyMapper", "Add"))
         self._add_entity_btn.setIcon(
-            QIcon(":/plugins/stdm/images/icons/add.png"))
+            GuiUtils.get_icon("add.png"))
         self._add_entity_btn.clicked.connect(self.onAddEntity)
 
         self._edit_entity_btn = QToolButton(self)
@@ -179,21 +180,21 @@ class ForeignKeyMapper(QWidget):
         self._edit_entity_btn.setToolTip(
             QApplication.translate("ForeignKeyMapper", "Edit"))
         self._edit_entity_btn.setIcon(
-            QIcon(":/plugins/stdm/images/icons/edit.png"))
+            GuiUtils.get_icon("edit.png"))
 
         self._filter_entity_btn = QToolButton(self)
         self._filter_entity_btn.setVisible(False)
         self._filter_entity_btn.setToolTip(
             QApplication.translate("ForeignKeyMapper", "Select by expression"))
         self._filter_entity_btn.setIcon(
-            QIcon(":/plugins/stdm/images/icons/filter.png"))
+            GuiUtils.get_icon("filter.png"))
         self._filter_entity_btn.clicked.connect(self.onFilterEntity)
 
         self._delete_entity_btn = QToolButton(self)
         self._delete_entity_btn.setToolTip(
             QApplication.translate("ForeignKeyMapper", "Remove"))
         self._delete_entity_btn.setIcon(
-            QIcon(":/plugins/stdm/images/icons/remove.png"))
+            GuiUtils.get_icon("remove.png"))
         self._delete_entity_btn.clicked.connect(self.onRemoveEntity)
 
         layout = QVBoxLayout(self)

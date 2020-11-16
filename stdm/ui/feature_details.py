@@ -978,7 +978,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.reset_tree_view(self._selected_features)
             self.disable_buttons(True)
             return
-        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
+        layer_icon = GuiUtils.get_icon('layer.gif')
         ### add non entity layer for views.
         if not self.entity is None:
             self.reset_tree_view(self._selected_features)
@@ -1027,7 +1027,7 @@ class DetailsTreeView(DetailsDBHandler):
         Shows the treeview.
         """
         self.reset_tree_view()
-        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
+        layer_icon = GuiUtils.get_icon('layer.gif')
         ### add non entity layer for views.
 
         # self.reset_tree_view(selected_features)
@@ -1060,7 +1060,7 @@ class DetailsTreeView(DetailsDBHandler):
         Shows the treeview.
         """
         self.reset_tree_view()
-        table_icon = QIcon(':/plugins/stdm/images/icons/table.png')
+        table_icon = GuiUtils.get_icon('table.png')
         ### add non entity layer for views.
 
         for spu_id in party_ids:
@@ -1249,8 +1249,8 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The STR root item
         :rtype: QStandardItem
         """
-        str_icon = QIcon(
-            ':/plugins/stdm/images/icons/social_tenure.png'
+        str_icon = GuiUtils.get_icon(
+            'social_tenure.png'
         )
 
         str_root = QStandardItem(str_icon, self.str_text)
@@ -1268,8 +1268,8 @@ class DetailsTreeView(DetailsDBHandler):
         :param parent: The root node.
         :type parent: QStandardItem
         """
-        no_str_icon = QIcon(
-            ':/plugins/stdm/images/icons/remove.png'
+        no_str_icon = GuiUtils.get_icon(
+            'remove.png'
         )
         title = 'No STR Defined'
         no_str_root = QStandardItem(no_str_icon, str(title))
@@ -1418,8 +1418,8 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The party root item
         :rtype: QStandardItem
         """
-        party_icon = QIcon(
-            ':/plugins/stdm/images/icons/table.png'
+        party_icon = GuiUtils.get_icon(
+            'table.png'
         )
         title = format_name(party_entity.short_name)
         party_root = QStandardItem(party_icon, str(title))
@@ -1442,7 +1442,7 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The party root item
         :rtype: QStandardItem
         """
-        layer_icon = QIcon(':/plugins/stdm/images/icons/layer.gif')
+        layer_icon = GuiUtils.get_icon('layer.gif')
         title = format_name(spatial_unit_entity.short_name)
         party_root = QStandardItem(layer_icon, str(title))
         party_root.setData(spatial_unit_id)
@@ -1515,7 +1515,7 @@ class DetailsTreeView(DetailsDBHandler):
         :return: The party root item
         :rtype: QStandardItem
         """
-        custom_attr_icon = QIcon(':/plugins/stdm/images/icons/custom_tenure.png')
+        custom_attr_icon = GuiUtils.get_icon('custom_tenure.png')
 
         title = QApplication.translate('DetailsTreeView',
                                        'Custom Tenure Information')
@@ -1978,8 +1978,8 @@ class DetailsTreeView(DetailsDBHandler):
             # show No STR Defined
             if remaining_str == 0:
                 item.setText('No STR Defined')
-                no_str_icon = QIcon(
-                    ':/plugins/stdm/images/icons/remove.png'
+                no_str_icon = GuiUtils.get_icon(
+                    'remove.png'
                 )
                 item.setIcon(no_str_icon)
             else:

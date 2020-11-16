@@ -343,7 +343,7 @@ class manageAccountsDlg(WIDGET, BASE):
         '''
         # Set icon
         icon = QIcon()
-        icon.addPixmap(QPixmap(":/plugins/stdm/images/icons/user.png"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(GuiUtils.get_icon_pixmap("user.png"), QIcon.Normal, QIcon.Off)
 
         userItem = QStandardItem(icon, username)
         userItem.setCheckable(True)

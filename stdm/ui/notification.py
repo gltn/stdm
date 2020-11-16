@@ -215,13 +215,13 @@ class NotificationItem(BASE, WIDGET):
         # Background color
         if notificationType == ERROR:
             # Set icon resource and frame background color
-            notifPixMap = QPixmap(":/plugins/stdm/images/icons/remove.png")
+            notifPixMap = GuiUtils.get_icon_pixmap("remove.png")
         elif notificationType == SUCCESS:
-            notifPixMap = QPixmap(":/plugins/stdm/images/icons/success.png")
+            notifPixMap = GuiUtils.get_icon_pixmap("success.png")
         elif notificationType == INFORMATION:
-            notifPixMap = QPixmap(":/plugins/stdm/images/icons/info_small.png")
+            notifPixMap = GuiUtils.get_icon_pixmap("info_small.png")
         elif notificationType == WARNING:
-            notifPixMap = QPixmap(":/plugins/stdm/images/icons/warning.png")
+            notifPixMap = GuiUtils.get_icon_pixmap("warning.png")
 
         self.lblNotifIcon.setPixmap(notifPixMap)
         self.lblNotifMessage.setText(message)

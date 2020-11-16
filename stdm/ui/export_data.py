@@ -191,7 +191,7 @@ class ExportData(WIDGET, BASE):
         )
         for t in tables.keys():
             tabItem = QListWidgetItem(t, self.lstSrcTab)
-            tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
+            tabItem.setIcon(GuiUtils.get_icon("table.png"))
             self.lstSrcTab.addItem(tabItem)
 
     def setDestFile(self):
@@ -249,7 +249,7 @@ class ExportData(WIDGET, BASE):
 
             tabItem = QListWidgetItem(col, self.lstSrcCols_2)
             tabItem.setCheckState(Qt.Unchecked)
-            tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
+            tabItem.setIcon(GuiUtils.get_icon("column.png"))
             self.lstSrcCols_2.addItem(tabItem)
 
         if len(spColumns) > 0:

@@ -308,7 +308,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             'View Documents'
         )
         self._view_docs_act = QAction(
-            QIcon(':/plugins/stdm/images/icons/document.png'),
+            GuiUtils.get_icon('document.png'),
             view_docs_str,
             self
         )
@@ -959,12 +959,12 @@ class EntityBrowserWithEditor(EntityBrowser):
             edit = QApplication.translate("EntityBrowserWithEditor", "Edit")
             remove = QApplication.translate("EntityBrowserWithEditor", "Remove")
 
-            self._newEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/add.png"),
+            self._newEntityAction = QAction(GuiUtils.get_icon("add.png"),
                                             add, self)
 
             self._newEntityAction.triggered.connect(self.onNewEntity)
 
-            self._editEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/edit.png"),
+            self._editEntityAction = QAction(GuiUtils.get_icon("edit.png"),
                                              edit, self)
             self._editEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "edit_tool")
@@ -972,7 +972,7 @@ class EntityBrowserWithEditor(EntityBrowser):
 
             self._editEntityAction.triggered.connect(self.onEditEntity)
 
-            self._removeEntityAction = QAction(QIcon(":/plugins/stdm/images/icons/remove.png"),
+            self._removeEntityAction = QAction(GuiUtils.get_icon("remove.png"),
                                                remove, self)
             self._removeEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "remove_tool")

@@ -21,6 +21,7 @@ from qgis.PyQt.QtWidgets import (
     QTreeWidgetItem,
     QHeaderView
 )
+from stdm.ui.gui_utils import GuiUtils
 
 
 class TreeSummaryLoader(object):
@@ -35,7 +36,7 @@ class TreeSummaryLoader(object):
         self.items = []
         self.title = rootTitle
         self.separator = ": "
-        self.rootResource = ":/plugins/stdm/images/icons/information.png"
+        self.rootResource = GuiUtils.get_icon_svg('information.png')
 
     def setRootResource(self, resourcepath):
         '''

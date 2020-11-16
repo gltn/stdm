@@ -230,20 +230,20 @@ class ViewSTRWidget(WIDGET, BASE):
         tool_buttons.setObjectName('form_toolbar')
         tool_buttons.setIconSize(QSize(16, 16))
 
-        self.addSTR = QAction(QIcon(
-            ':/plugins/stdm/images/icons/add.png'),
+        self.addSTR = QAction(GuiUtils.get_icon(
+            'add.png'),
             QApplication.translate('ViewSTRWidget', 'Add'),
             self
         )
 
         self.editSTR = QAction(
-            QIcon(':/plugins/stdm/images/icons/edit.png'),
+            GuiUtils.get_icon('edit.png'),
             QApplication.translate('ViewSTRWidget', 'Edit'),
             self
         )
 
         self.deleteSTR = QAction(
-            QIcon(':/plugins/stdm/images/icons/remove.png'),
+            GuiUtils.get_icon('remove.png'),
             QApplication.translate('ViewSTRWidget', 'Remove'),
             self
         )

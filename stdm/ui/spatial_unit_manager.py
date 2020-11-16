@@ -478,30 +478,30 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         icon = None
 
         if geometry_typ == 'POLYGON':
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/layer_polygon.png'
+            icon = GuiUtils.get_icon(
+                'layer_polygon.png'
             )
 
         elif geometry_typ == 'LINESTRING':
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/layer_line.png'
+            icon = GuiUtils.get_icon(
+                'layer_line.png'
             )
 
         elif geometry_typ == 'POINT':
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/layer_point.png'
+            icon = GuiUtils.get_icon(
+                'layer_point.png'
             )
         elif geometry_typ == 'MULTIPOLYGON':
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/layer_polygon.png'
+            icon = GuiUtils.get_icon(
+                'layer_polygon.png'
             )
         elif geometry_typ == 'MULTILINESTRING':
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/layer_line.png'
+            icon = GuiUtils.get_icon(
+                'layer_line.png'
             )
         else:
-            icon = QIcon(
-                ':/plugins/stdm/images/icons/table.png'
+            icon = GuiUtils.get_icon(
+                'table.png'
             )
 
         return icon

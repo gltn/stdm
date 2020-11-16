@@ -89,7 +89,7 @@ class MirrorMap(QWidget):
         self.addLayerBtn = QToolButton(self)
         # self.addLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
         # self.addLayerBtn.setText("Add current layer")
-        self.addLayerBtn.setIcon(QIcon(":/plugins/stdm/images/icons/add.png"))
+        self.addLayerBtn.setIcon(GuiUtils.get_icon("add.png"))
 
         self.addLayerBtn.clicked.connect(self.tool_add_layer)
         gridLayout.addWidget(self.addLayerBtn, 1, 0, 1, 1)
@@ -97,7 +97,7 @@ class MirrorMap(QWidget):
         self.delLayerBtn = QToolButton(self)
         # self.delLayerBtn.setToolButtonStyle( Qt.ToolButtonTextBesideIcon )
         # self.delLayerBtn.setText("Remove current layer")
-        self.delLayerBtn.setIcon(QIcon(":/plugins/stdm/images/icons/remove.png"))
+        self.delLayerBtn.setIcon(GuiUtils.get_icon("remove.png"))
         self.delLayerBtn.clicked.connect(self.tool_remove_layer)
         gridLayout.addWidget(self.delLayerBtn, 1, 1, 1, 1)
 
