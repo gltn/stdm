@@ -9,9 +9,9 @@ from qgis.core import QgsApplication
 def copy_startup():
     home = expanduser("~")
     qgs_path = QgsApplication.prefixPath().rstrip('.')
-    source = '{}/.qgis2/python/plugins/stdm/settings/startup.py'.format(home)
+    source = '{}/python/plugins/stdm/settings/startup.py'.format(QgsApplication.qgisSettingsDirPath())
     source_2 = '{}/python/plugins/stdm/settings/startup.py'.format(qgs_path)
-    destination = '{}/.qgis2/python/startup.py'.format(home)
+    destination = '{}/python/startup.py'.format(QgsApplication.qgisSettingsDirPath())
     # Don't copy startup.py if the file exist. To fix file merging issue.
     if os.path.exists(destination):
         return
@@ -37,7 +37,7 @@ def copy_startup():
                 destination_file.writelines(source_lines)
 
     except Exception as ex:
-        log_config_path = '{}/.qgis2/python/log.txt'.format(home)
+        log_config_path = '{}/python/log.txt'.format(QgsApplication.qgisSettingsDirPath())
         file = open(log_config_path, "a+")
         file.write('Could not copy a file from the source due to an error:' \
                        '\n {}\n'.format(ex))
