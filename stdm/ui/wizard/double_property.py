@@ -24,6 +24,7 @@ from decimal import (
     InvalidOperation
 )
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtGui import QDoubleValidator
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -31,10 +32,13 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.ui.wizard.ui_double_property import Ui_DoubleProperty
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_double_property.ui'))
 
 
-class DoubleProperty(QDialog, Ui_DoubleProperty):
+class DoubleProperty(WIDGET, BASE):
     """
     Editor to create/edit Double column property
     """

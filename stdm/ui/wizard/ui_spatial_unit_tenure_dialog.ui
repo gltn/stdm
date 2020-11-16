@@ -40,7 +40,7 @@
   <customwidget>
    <class>ListPairTableView</class>
    <extends>QTableView</extends>
-   <header>..customcontrols</header>
+   <header>stdm.ui.customcontrols.list_pair_table_view</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QSettings,
     QRegExp
@@ -32,10 +33,14 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox)
 
 from stdm.ui.notification import NotificationBar
-from stdm.ui.wizard.ui_profile import Ui_Profile
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_profile.ui'))
 
 
-class ProfileEditor(QDialog, Ui_Profile):
+class ProfileEditor(WIDGET, BASE):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
 

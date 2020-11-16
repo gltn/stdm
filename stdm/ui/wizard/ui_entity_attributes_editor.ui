@@ -61,10 +61,6 @@
           <property name="text">
            <string/>
           </property>
-          <property name="icon">
-           <iconset resource="../../resources.qrc">
-            <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-          </property>
           <property name="iconSize">
            <size>
             <width>20</width>
@@ -89,10 +85,6 @@
           </property>
           <property name="text">
            <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources.qrc">
-            <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -124,10 +116,6 @@
           </property>
           <property name="text">
            <string/>
-          </property>
-          <property name="icon">
-           <iconset resource="../../resources.qrc">
-            <normaloff>:/plugins/stdm/images/icons/delete.png</normaloff>:/plugins/stdm/images/icons/delete.png</iconset>
           </property>
          </widget>
         </item>
@@ -171,9 +159,6 @@
    <header>stdm.ui.wizard.attributes_table_view</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QDir,
@@ -61,7 +62,7 @@ from stdm.settings.registryconfig import (
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
-from stdm.ui.ui_options import Ui_DlgOptions
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
 
 MAX_LIMIT = 500  # Maximum records in a entity browser
@@ -83,8 +84,11 @@ def pg_profile_names():
 
     return profiles
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_options.ui'))
 
-class OptionsDialog(QDialog, Ui_DlgOptions):
+
+class OptionsDialog(WIDGET, BASE):
     """
     Dialog for editing STDM settings.
     """
@@ -92,6 +96,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+
+        self.btn_composer_out_folder.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btn_template_folder.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btn_supporting_docs.setIcon(GuiUtils.get_icon('open_file.png'))
+
         self.iface = iface
 
         self.notif_bar = NotificationBar(self.vlNotification, 6000)

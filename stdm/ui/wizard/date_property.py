@@ -18,15 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QDate
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
-from stdm.ui.wizard.ui_date_property import Ui_DateProperty
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_date_property.ui'))
 
 
-class DateProperty(QDialog, Ui_DateProperty):
+class DateProperty(WIDGET, BASE):
     """
     Editor to create/edit date column property
     """

@@ -22,6 +22,8 @@ import logging
 from collections import OrderedDict
 from datetime import date
 
+from qgis.PyQt import uic
+
 from qgis.PyQt.QtCore import (
     QTimer,
     Qt,
@@ -82,19 +84,23 @@ from stdm.ui.sourcedocument import (
     DocumentWidget
 )
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
-from stdm.ui.ui_str_view_entity import Ui_frmSTRViewEntity
-from stdm.ui.ui_view_str import Ui_frmManageSTR
 from stdm.utils.util import (
     entity_searchable_columns,
     entity_display_columns,
     format_name,
     lookup_parent_entity
 )
+from stdm.ui.gui_utils import GuiUtils
+
 
 LOGGER = logging.getLogger('stdm')
 
 
-class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_view_str.ui'))
+
+
+class ViewSTRWidget(WIDGET, BASE):
     """
     Search and browse the social tenure relationship
     of all participating entities.
@@ -103,6 +109,9 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
     def __init__(self, plugin):
         QMainWindow.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
+
+        self.btnSearch.setIcon(GuiUtils.get_icon('search.png'))
+        self.btnClearSearch.setIcon(GuiUtils.get_icon('reset.png'))
 
         self._plugin = plugin
 
@@ -885,7 +894,11 @@ class EntitySearchItem(QObject):
         pass
 
 
-class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
+WIDGET2, BASE2 = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_str_view_entity.ui'))
+
+
+class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
     """
     A widget that represents options for searching through an entity.
     """
@@ -896,6 +909,10 @@ class STRViewEntityWidget(QWidget, Ui_frmSTRViewEntity, EntitySearchItem):
         QWidget.__init__(self, parent)
         EntitySearchItem.__init__(self, formatter)
         self.setupUi(self)
+
+        self.filter.setIcon(GuiUtils.get_icon('filter.png'))
+        self.validity.setIcon(GuiUtils.get_icon('period_blue.png'))
+
         self.config = config
         self.setConfigOptions()
         self.curr_profile = current_profile()

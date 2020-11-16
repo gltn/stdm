@@ -22,6 +22,7 @@ email                : stdm@unhabitat.org
 import datetime
 import logging
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QRegExp,
@@ -52,8 +53,13 @@ from stdm.ui.wizard.fk_property import FKProperty
 from stdm.ui.wizard.geometry_property import GeometryProperty
 from stdm.ui.wizard.lookup_property import LookupProperty
 from stdm.ui.wizard.multi_select_property import MultiSelectProperty
-from stdm.ui.wizard.ui_column_editor import Ui_ColumnEditor
 from stdm.ui.wizard.varchar_property import VarcharProperty
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_column_editor.ui'))
+
 
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)
@@ -65,7 +71,7 @@ RESERVED_KEYWORDS = [
 ]
 
 
-class ColumnEditor(QDialog, Ui_ColumnEditor):
+class ColumnEditor(WIDGET, BASE):
     """
     Dialog to add/edit entity columns
     """

@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QSettings,
     Qt,
@@ -36,10 +37,13 @@ from qgis.PyQt.QtWidgets import (
 from stdm.data.configuration.entity import entity_factory
 from stdm.data.pg_utils import pg_table_exists
 from stdm.ui.notification import NotificationBar
-from stdm.ui.wizard.ui_entity import Ui_dlgEntity
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_entity.ui'))
 
 
-class EntityEditor(QDialog, Ui_dlgEntity):
+class EntityEditor(WIDGET, BASE):
     """
     Dialog to add and edit entities
     """

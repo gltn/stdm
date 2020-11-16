@@ -18,15 +18,19 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
 from stdm.ui.wizard.create_lookup import LookupEditor
-from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
 
+from stdm.ui.gui_utils import GuiUtils
 
-class MultiSelectProperty(QDialog, Ui_LookupProperty):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_lookup_property.ui'))
+
+class MultiSelectProperty(WIDGET, BASE):
     """
     Editor to create/edit MultiSelect column property
     """

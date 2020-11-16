@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -33,14 +34,17 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.ui.customcontrols.generic_delegate import GenericDelegate
-from stdm.ui.wizard.ui_code_property import Ui_CodeProperty
 from stdm.utils.util import (
     code_columns,
     string_to_boolean
 )
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_code_property.ui'))
 
 
-class CodeProperty(QDialog, Ui_CodeProperty):
+class CodeProperty(WIDGET, BASE):
     """
     Editor to create/edit Lookup column property
     """

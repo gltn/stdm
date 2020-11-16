@@ -16,6 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -37,11 +38,14 @@ from stdm.security.membership import Membership
 from stdm.security.roleprovider import RoleProvider
 from stdm.ui.new_role_dlg import newRoleDlg
 from stdm.ui.new_user_dlg import newUserDlg
-from stdm.ui.ui_user_role_manage import Ui_frmSysManageAccounts
 from stdm.utils.util import getIndex
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_user_role_manage.ui'))
 
 
-class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
+class manageAccountsDlg(WIDGET, BASE):
     '''
     User- and Role-management dialog class
     '''
@@ -49,6 +53,10 @@ class manageAccountsDlg(QDialog, Ui_frmSysManageAccounts):
     def __init__(self, plugin):
         QDialog.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
+
+        self.tab.setIcon(GuiUtils.get_icon('user.png'))
+        self.tab_2.setIcon(GuiUtils.get_icon('roles.png'))
+        self.tab_3.setIcon(GuiUtils.get_icon('user_mapping.png'))
 
         # Initialize the dialog
         self.initGui()

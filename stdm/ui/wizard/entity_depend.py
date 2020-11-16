@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtGui import (
     QFont
 )
@@ -27,13 +28,18 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.ui.wizard.ui_entity_depend import Ui_dlgEntityDepend
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_entity_depend.ui'))
 
 
-class EntityDepend(QDialog, Ui_dlgEntityDepend):
+class EntityDepend(WIDGET, BASE):
     def __init__(self, parent, entity=None, dependencies=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+        self.label.setPixmap(GuiUtils.get_icon_pixmap('warning_large.png'))
+
         self.entity = entity
         self.dependencies = dependencies
 

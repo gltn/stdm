@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QRegExp
 from qgis.PyQt.QtGui import QRegExpValidator
 from qgis.PyQt.QtWidgets import (
@@ -27,10 +27,13 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.ui.wizard.ui_varchar_property import Ui_VarcharProperty
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_varchar_property.ui'))
 
 
-class VarcharProperty(QDialog, Ui_VarcharProperty):
+class VarcharProperty(WIDGET, BASE):
     """
     Editor to create/edit varchar max len property
     """

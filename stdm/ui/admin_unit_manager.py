@@ -129,9 +129,9 @@ class AdminUnitManager(WIDGET, BASE):
         QWidget.__init__(self, parent)
         self.setupUi(self)
 
-        self.btnRemove.setIcon(GuiUtils.get_icon_svg('remove.png'))
-        self.btnClear.setIcon(GuiUtils.get_icon_svg('reset.png'))
-        self.btnAdd.setIcon(GuiUtils.get_icon_svg('add.png'))
+        self.btnRemove.setIcon(GuiUtils.get_icon('remove.png'))
+        self.btnClear.setIcon(GuiUtils.get_icon('reset.png'))
+        self.btnAdd.setIcon(GuiUtils.get_icon('add.png'))
 
         self._defaultEditTriggers = self.tvAdminUnits.editTriggers()
 

@@ -36,9 +36,6 @@
        <property name="text">
         <string/>
        </property>
-       <property name="pixmap">
-        <pixmap resource="../../resources.qrc">:/plugins/stdm/images/icons/warning_large.png</pixmap>
-       </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
@@ -124,8 +121,5 @@ Click 'Delete column' to proceed.</string>
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

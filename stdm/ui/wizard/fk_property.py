@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -30,10 +31,14 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.ui.wizard.ui_fk_property import Ui_FKProperty
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_fk_property.ui'))
 
 
-class FKProperty(QDialog, Ui_FKProperty):
+class FKProperty(WIDGET, BASE):
     """
     Editor to create/edit ForeignKey column property
     """
