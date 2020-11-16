@@ -8,8 +8,8 @@ XXX Currently two copies of exactly the same font
     because of this, but it's not ideal.
 """
 from ttfquery import describe, findsystem
-import cPickle, time, traceback, os, sys
-import logging 
+import pickle, time, traceback, os, sys
+import logging
 log =logging.getLogger( __name__ )
 
 FILENAME, MODIFIERS, SPECIFICNAME, FONTNAME, FAMILY = range(5)
@@ -88,8 +88,10 @@ class Registry(object):
         font = describe.openFont(filename)
         try:
             modifiers = describe.modifiers( font )
-        except (KeyError,AttributeError), err:
-            modifiers = (None,None)
+        except KeyError:
+            modifiers = (None, None)
+        except AttributeError:
+            modifiers = (None, None)
         specificName, fontName = describe.shortName( font )
         specifier = describe.family(font)
         return (
@@ -240,7 +242,7 @@ class Registry(object):
             raise TypeError( """Attempted to save %r to default file, no default file specified"""% (self,))
         if not hasattr( file, 'write'):
             file = open( file, 'wb' )
-        cPickle.dump( self.specificFonts.values(), file, 1 )
+        pickle.dump( self.specificFonts.values(), file, 1 )
         return len(self.specificFonts)
     def load( self, file, clearFirst=1 ):
         """Attempt to load the font metadata from a pickled file
@@ -254,7 +256,7 @@ class Registry(object):
         if not hasattr( file, 'read'):
             self.filename = file
             file = open( file, 'rb' )
-        table = cPickle.load( file )
+        table = pickle.load( file )
         for filename, modifiers, specificName, fontName, familySpecifier in table:
             ## Minimal sanity check...
             if os.path.isfile( filename ):
@@ -269,7 +271,7 @@ class Registry(object):
         for filename in findsystem.findFonts(paths):
             try:
                 self.register( filename, force = force )
-            except Exception, err:
+            except Exception:
                 log.info( 'Failure scanning %s', filename )
                 if printErrors:
                     log.warn( "%s", traceback.format_exc())

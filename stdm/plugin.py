@@ -54,8 +54,11 @@ from qgis.core import (
 from sqlalchemy.exc import SQLAlchemyError
 
 from stdm import data
-from stdm.composer.composer_data_source import composer_data_source
-from stdm.composer.composer_wrapper import ComposerWrapper
+
+# TODO!
+#from stdm.composer.composer_data_source import composer_data_source
+#from stdm.composer.composer_wrapper import ComposerWrapper
+
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.column_updaters import varchar_updater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater

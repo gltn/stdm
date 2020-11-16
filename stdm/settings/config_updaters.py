@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 from datetime import datetime
 
-from PyQt4.QtXml import QDomDocument
+from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.PyQt.QtWidgets import QApplication
 
