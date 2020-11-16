@@ -18,6 +18,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
+
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -39,11 +41,15 @@ from stdm.data.qtmodels import UsersRolesModel
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 from stdm.settings import current_profile
-from stdm.ui.ui_content_auth import Ui_frmContentAuth
 from stdm.utils.util import getIndex
+from stdm.ui.gui_utils import GuiUtils
 
 
-class contentAuthDlg(QDialog, Ui_frmContentAuth):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_content_auth.ui'))
+
+
+class contentAuthDlg(WIDGET, BASE):
     '''
     Content authorization dialog
     '''
