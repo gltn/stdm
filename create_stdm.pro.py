@@ -19,12 +19,14 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-import os
-import sys
-import os.path
 import io
+import os
+import os.path
+import sys
+
 # Memory file
 mem_file = io.StringIO()
+
 
 def translate_in_file(file_path):
     """
@@ -48,6 +50,7 @@ def translate_in_file(file_path):
     else:
         return False
 
+
 def format_file(file_path):
     """
     Removes forward slash at the end of a block of lines.
@@ -63,7 +66,7 @@ def format_file(file_path):
     for position, line1 in enumerate(mem_file_lines):
         # Get the index of the lines before empty line
         if line1 == '':
-            last_line_indexes.append(position-1)
+            last_line_indexes.append(position - 1)
 
     file = open(file_path, "w+")
     # add lines of the memory file to actual file
@@ -99,7 +102,7 @@ def create_pro_file(dir):
     # loop through dir recursively except third party
     #  folder to get py files
     for dirpath, dirnames, filenames in os.walk(dir):
-       # print dirpath, filenames
+        # print dirpath, filenames
         if 'third_party' not in dirpath:
             # List of py files
             py_files = [f for f in filenames if f.endswith('.py')]
@@ -107,14 +110,14 @@ def create_pro_file(dir):
             # print last_loop
             for i, filename in enumerate(py_files):
                 # exclude init files
-                if '__init__' not in filename and  \
+                if '__init__' not in filename and \
                         not current_file_name in filename and 'ui_' not in filename:
                     file_path = os.path.join(dirpath, filename)
 
                     if translate_in_file(file_path):
                         print('{}{} \\'.format(
                             indentation,
-                            file_path[len(dir)+1:]
+                            file_path[len(dir) + 1:]
                         ), file=file)
     print('', file=file)
     print('FORMS =	\\', file=file)
@@ -147,7 +150,8 @@ def create_pro_file(dir):
     print('', file=file)
     print('CODECFORSRC     = UTF-8', file=file)
 
-    #file.close()
-    format_file(dir+'\stdm.pro')
+    # file.close()
+    format_file(dir + '\stdm.pro')
+
 
 create_pro_file('.')

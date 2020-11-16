@@ -21,7 +21,7 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
-ignore=stdm/third_party
+ignore-patterns=**/third_party/**/*.py
 
 
 [MESSAGES CONTROL]
