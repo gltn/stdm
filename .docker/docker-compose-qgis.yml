@@ -1,0 +1,22 @@
+version: '2'
+
+networks:
+  qgis_plugin_network:
+
+services:
+  db:
+    extends:
+      file: docker-compose-base.yml
+      service: db
+
+  qgis:
+    image: qgis/qgis:release-3_10
+    container_name: qgis
+    networks:
+      qgis_plugin_network:
+    volumes:
+      # - /tmp/.X11-unix:/tmp/.X11-unix
+      - ../${PLUGIN_NAME}:/tests_directory/${PLUGIN_NAME}
+    environment:
+      # - DISPLAY=unix$DISPLAY
+      - DISPLAY=:99
