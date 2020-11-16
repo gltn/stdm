@@ -23,6 +23,7 @@ import subprocess
 import sys
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QFileInfo,
@@ -54,7 +55,8 @@ from stdm.ui.composer import TemplateDocumentSelector
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.notification import NotificationBar
 from stdm.ui.sourcedocument import source_document_location
-from stdm.ui.ui_doc_generator import Ui_DocumentGeneratorDialog
+from stdm.ui.gui_utils import GuiUtils
+
 from stdm.utils.util import (
     format_name,
     entity_display_columns,
@@ -230,7 +232,11 @@ class DocumentGeneratorDialogWrapper(object):
         return self._doc_gen_dlg.exec_()
 
 
-class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_doc_generator.ui'))
+
+
+class DocumentGeneratorDialog(WIDGET, BASE):
     """
     Dialog that enables a user to generate documents by using configuration
     information for different entities.
@@ -239,6 +245,8 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
     def __init__(self, iface, access_templates, parent=None, plugin=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        self.btnSelectTemplate.setIcon(GuiUtils.get_icon('document.png'))
 
         self._iface = iface
         self.plugin = plugin
