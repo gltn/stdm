@@ -17,8 +17,10 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from . import gps_tool_data_source_utils as gpx_source
-from . import gps_tool_data_view_utils as gpx_view
+from stdm.ui import gps_tool_data_source_utils as gpx_source
+from stdm.ui import gps_tool_data_view_utils as gpx_view
+
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -36,11 +38,15 @@ from stdm.settings.registryconfig import (
     selection_color
 )
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
-from stdm.ui.ui_gps_tool import Ui_Dialog
 from stdm.utils.util import openDialog
+from stdm.ui.gui_utils import GuiUtils
 
 
-class GPSToolDialog(QDialog, Ui_Dialog):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_gps_tool.ui'))
+
+
+class GPSToolDialog(WIDGET, BASE):
     def __init__(self, iface, entity, sp_table, sp_col,
                  model=None, reload=True, row_number=None, entity_browser=None):
         QDialog.__init__(self, iface.mainWindow())

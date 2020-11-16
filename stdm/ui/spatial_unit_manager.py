@@ -25,6 +25,7 @@ import logging
 import re
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     Qt,
@@ -64,17 +65,19 @@ from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
 from stdm.ui.gps_tool import GPSToolDialog
-from stdm.ui.ui_spatial_unit_manager import Ui_SpatialUnitManagerWidget
 from stdm.utils.util import (
     profile_and_user_views
 )
+from stdm.ui.gui_utils import GuiUtils
+
 
 LOGGER = logging.getLogger('stdm')
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_spatial_unit_manager.ui'))
 
-class SpatialUnitManagerDockWidget(
-    QDockWidget, Ui_SpatialUnitManagerWidget
-):
+
+class SpatialUnitManagerDockWidget(WIDGET, BASE):
     onLayerAdded = pyqtSignal(str, object)
 
     def __init__(self, iface, plugin=None):
