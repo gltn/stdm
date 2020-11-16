@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QUrl,
     Qt
@@ -27,8 +28,8 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
-from stdm.ui.ui_change_log import Ui_ChangeLog
 from stdm.utils.util import file_text
+from stdm.ui.gui_utils import GuiUtils
 
 
 # from stdm.settings.registryconfig import (
@@ -39,8 +40,11 @@ from stdm.utils.util import file_text
 #
 # from notification import NotificationBar, ERROR
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_change_log.ui'))
 
-class ChangeLog(QDialog, Ui_ChangeLog):
+
+class ChangeLog(WIDGET, BASE):
     def __init__(self, parent=None):
         """
         This class shows the change log.
