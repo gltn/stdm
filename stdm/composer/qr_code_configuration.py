@@ -18,24 +18,22 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtXml import (
-    QDomDocument,
-    QDomElement
-)
+import pyqrcode
 from qgis.PyQt.QtCore import (
     QTemporaryFile
 )
-
-import pyqrcode
-
-from stdm.utils.util import (
-    is_ascii
+from qgis.PyQt.QtXml import (
+    QDomDocument,
+    QDomElement
 )
 
 from stdm.composer.configuration_collection_base import (
     ConfigurationCollectionBase,
     ItemConfigBase,
     ItemConfigValueHandler
+)
+from stdm.utils.util import (
+    is_ascii
 )
 
 
