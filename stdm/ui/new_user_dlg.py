@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
 """
 from datetime import date
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QRegExp,
     Qt,
@@ -36,10 +37,13 @@ from qgis.PyQt.QtWidgets import (
 from stdm.security.exception import SecurityException
 from stdm.security.membership import Membership
 from stdm.security.user import User
-from stdm.ui.ui_new_user import Ui_frmNewUser
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_new_user.ui'))
 
 
-class newUserDlg(QDialog, Ui_frmNewUser):
+class newUserDlg(WIDGET, BASE):
     '''
     Create New User Dialog
     '''

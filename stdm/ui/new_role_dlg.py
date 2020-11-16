@@ -19,6 +19,8 @@ email                : gkahiu@gmail.com
 import string
 
 import sqlalchemy
+
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QRegExp
 )
@@ -35,10 +37,13 @@ from qgis.PyQt.QtWidgets import (
 from stdm.security.exception import SecurityException
 from stdm.security.roleprovider import Role
 from stdm.security.roleprovider import RoleProvider
-from stdm.ui.ui_new_role import Ui_frmNewRole
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_new_role.ui'))
 
 
-class newRoleDlg(QDialog, Ui_frmNewRole):
+class newRoleDlg(WIDGET, BASE):
     '''
     Create New Role Dialog
     '''

@@ -20,6 +20,7 @@ email                : gkahiu@gmail.com
 
 import sys
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QFile,
@@ -55,18 +56,30 @@ from stdm.ui.importexport.translator_config import (
 from stdm.ui.importexport.translator_widget_base import (
     TranslatorWidgetManager
 )
-from stdm.ui.ui_import_data import Ui_frmImport
 from stdm.utils.util import getIndex
 from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
 )
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_import_data.ui'))
 
 
-class ImportData(QWizard, Ui_frmImport):
+class ImportData(WIDGET, BASE):
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
         self.setupUi(self)
+
+        self.btnSrcUp.setIcon(GuiUtils.get_icon('up.png'))
+        self.btnSrcDown.setIcon(GuiUtils.get_icon('down.png'))
+        self.btn_add_translator.setIcon(GuiUtils.get_icon('add.png'))
+        self.btn_edit_translator.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btn_delete_translator.setIcon(GuiUtils.get_icon('remove.png'))
+        self.btnDestUp.setIcon(GuiUtils.get_icon('up.png'))
+        self.btnDestDown.setIcon(GuiUtils.get_icon('down.png'))
+
         self.curr_profile = current_profile()
 
         # Connect signals

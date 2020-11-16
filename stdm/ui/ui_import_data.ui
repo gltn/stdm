@@ -412,10 +412,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset resource="../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/up.png</normaloff>:/plugins/stdm/images/icons/up.png</iconset>
-           </property>
           </widget>
          </item>
          <item>
@@ -428,10 +424,6 @@
            </property>
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/down.png</normaloff>:/plugins/stdm/images/icons/down.png</iconset>
            </property>
           </widget>
          </item>
@@ -611,10 +603,6 @@
              <property name="text">
               <string/>
              </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-             </property>
              <property name="popupMode">
               <enum>QToolButton::InstantPopup</enum>
              </property>
@@ -634,10 +622,6 @@
              <property name="text">
               <string/>
              </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/edit.png</normaloff>:/plugins/stdm/images/icons/edit.png</iconset>
-             </property>
              <property name="popupMode">
               <enum>QToolButton::InstantPopup</enum>
              </property>
@@ -656,10 +640,6 @@
              </property>
              <property name="text">
               <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
              </property>
              <property name="popupMode">
               <enum>QToolButton::InstantPopup</enum>
@@ -683,10 +663,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset resource="../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/up.png</normaloff>:/plugins/stdm/images/icons/up.png</iconset>
-           </property>
           </widget>
          </item>
          <item>
@@ -699,10 +675,6 @@
            </property>
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/down.png</normaloff>:/plugins/stdm/images/icons/down.png</iconset>
            </property>
           </widget>
          </item>
@@ -727,8 +699,5 @@
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

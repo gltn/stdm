@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
@@ -30,12 +31,14 @@ from stdm.security.user import User
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.db_conn_dlg import dbconnDlg
 from stdm.ui.notification import NotificationBar
-from stdm.ui.ui_login import Ui_frmLogin
+from stdm.ui.gui_utils import GuiUtils
 
 SUPERUSER = 'postgres'
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_login.ui'))
 
-class loginDlg(QDialog, Ui_frmLogin):
+class loginDlg(WIDGET, BASE):
     '''
     This class handles user authentication for accessing STDM resources
     '''
@@ -43,6 +46,8 @@ class loginDlg(QDialog, Ui_frmLogin):
     def __init__(self, parent=None, test_connect_mode=False):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        self.btn_db_settings.setIcon(GuiUtils.get_icon('db_server_settings.png'))
 
         # If dialog is used in the context of testing database connections
         self._test_connect_mode = test_connect_mode

@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication
@@ -29,10 +30,12 @@ from stdm.settings.registryconfig import (
     SHOW_LICENSE
 )
 from stdm.ui.notification import NotificationBar, ERROR
-from stdm.ui.ui_license_agreement import Ui_LicenseAgreement
+from stdm.ui.gui_utils import GuiUtils
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_license_agreement.ui'))
 
-class LicenseAgreement(QDialog, Ui_LicenseAgreement):
+class LicenseAgreement(WIDGET, BASE):
     def __init__(self, parent=None):
         """
         This class checks if the user has accepted the

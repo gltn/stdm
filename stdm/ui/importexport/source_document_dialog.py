@@ -18,6 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
+
 from qgis.PyQt.QtCore import (
     QDir
 )
@@ -33,13 +35,14 @@ from stdm.settings.registryconfig import (
     last_document_path
 )
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
-from stdm.ui.importexport.ui_source_document_dialog import (
-    Ui_SourceDocumentTranslatorDialog
-)
 from stdm.ui.notification import NotificationBar
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('importexport/ui_source_document_dialog.ui'))
 
 
-class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
+class SourceDocumentTranslatorDialog(WIDGET, BASE,
                                      TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the
@@ -49,6 +52,9 @@ class SourceDocumentTranslatorDialog(QDialog, Ui_SourceDocumentTranslatorDialog,
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        self.btn_source_doc_folder.setIcon(GuiUtils.get_icon('open_file.png'))
+
         TranslatorDialogBase.__init__(
             self,
             source_cols,

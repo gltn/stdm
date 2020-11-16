@@ -41,10 +41,6 @@
      <property name="text">
       <string/>
      </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/plugins/stdm/images/icons/db_server_settings.png</normaloff>:/plugins/stdm/images/icons/db_server_settings.png</iconset>
-     </property>
      <property name="iconSize">
       <size>
        <width>16</width>
@@ -116,9 +112,6 @@
   <tabstop>txtPassword</tabstop>
   <tabstop>btnBox</tabstop>
  </tabstops>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>btnBox</sender>

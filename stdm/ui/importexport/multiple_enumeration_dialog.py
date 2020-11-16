@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
@@ -27,13 +28,17 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.data.importexport.value_translators import MultipleEnumerationTranslator
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
-from stdm.ui.importexport.ui_multiple_enumeration_dialog import Ui_EnumerationTranslatorDialog
 from stdm.ui.notification import NotificationBar
+from stdm.ui.gui_utils import GuiUtils
+
 
 __all__ = ["MultipleEnumerationDialog"]
 
 
-class MultipleEnumerationDialog(QDialog, Ui_EnumerationTranslatorDialog, TranslatorDialogBase):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('importexport/ui_multiple_enumeration_dialog.ui'))
+
+class MultipleEnumerationDialog(WIDGET, BASE, TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the MultipleEnumerationTranslator
     class implementation.

@@ -55,7 +55,7 @@ from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
-from stdm.third_party import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 

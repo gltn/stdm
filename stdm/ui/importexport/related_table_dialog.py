@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
@@ -28,13 +29,17 @@ from stdm.data.pg_utils import (
     table_column_names
 )
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
-from stdm.ui.importexport.ui_related_table_dialog import Ui_RelatedTableTranslatorDialog
 from stdm.ui.notification import NotificationBar
+from stdm.ui.gui_utils import GuiUtils
+
 
 __all__ = ["RelatedTableDialog"]
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('importexport/ui_related_table_dialog.ui'))
 
-class RelatedTableDialog(QDialog, Ui_RelatedTableTranslatorDialog, TranslatorDialogBase):
+
+class RelatedTableDialog(WIDGET, BASE, TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.
