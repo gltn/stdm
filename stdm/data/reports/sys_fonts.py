@@ -5,7 +5,7 @@
 
 from qgis.PyQt.QtCore import QFile
 
-from stdm import ttffiles
+from stdm.third_party.ttfquery import ttffiles
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import getIndex
 

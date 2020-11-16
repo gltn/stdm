@@ -34,7 +34,7 @@ def win32InstalledFonts( fontDirectory = None ):
                 _winreg.HKEY_LOCAL_MACHINE,
                 keyName
             )
-        except OSError, err:
+        except OSError:
             pass
     if not k:
         # couldn't open either WinNT or Win98 key???
@@ -51,11 +51,11 @@ def win32InstalledFonts( fontDirectory = None ):
         return items.keys()
     finally:
         _winreg.CloseKey( k )
-    
+
 
 def linuxFontDirectories( ):
     """Get system font directories on Linux/Unix
-    
+
     Uses /usr/sbin/chkfontpath to get the list
     of system-font directories, note that many
     of these will *not* be truetype font directories.
@@ -91,7 +91,7 @@ def linuxFontDirectories( ):
             "/System/Library/Fonts/",
             "System Folder:Fonts:",
         ]
-        
+
         set = []
         def add( arg, directory, files):
             set.append( directory )
@@ -124,7 +124,7 @@ def findFonts(paths = None):
                 files[f] = 1
         else:
             paths = linuxFontDirectories()
-    elif isinstance( paths, (str, unicode)):
+    elif isinstance( paths, str):
         paths = [paths]
     for path in paths:
         for file in glob.glob( os.path.join(path, '*.ttf')):
@@ -132,5 +132,5 @@ def findFonts(paths = None):
     return files.keys()
 
 if __name__ == "__main__":
-    print 'linux font directories', linuxFontDirectories()
-    print 'font names', findFonts()
+    print('linux font directories', linuxFontDirectories())
+    print('font names', findFonts())

@@ -10,5 +10,5 @@ import pkg_resources
 from migrate.versioning import *
 from migrate.changeset import *
 
-__version__ = pkg_resources.get_provider(
-    pkg_resources.Requirement.parse('sqlalchemy-migrate')).version
+#__version__ = pkg_resources.get_provider(
+#    pkg_resources.Requirement.parse('sqlalchemy-migrate')).version
