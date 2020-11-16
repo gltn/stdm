@@ -20,6 +20,8 @@ email                : gkahiu@gmail.com
 """
 
 import sqlalchemy
+
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -47,14 +49,17 @@ from stdm.data.pg_utils import (
 )
 from stdm.settings import current_profile
 from stdm.ui.reports.highlighter import SqlHighlighter
-from stdm.ui.ui_export_data import Ui_frmExportWizard
 from stdm.utils.util import (
     getIndex,
     profile_user_tables
 )
+from stdm.ui.gui_utils import GuiUtils
 
 
-class ExportData(QWizard, Ui_frmExportWizard):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_export_data.ui'))
+
+class ExportData(WIDGET, BASE):
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
         self.setupUi(self)

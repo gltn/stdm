@@ -38,7 +38,8 @@ from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
     QgsEditorWidgetFactory,
-    QgsEditorWidgetRegistry
+    QgsEditorWidgetRegistry,
+    QgsGui
 )
 from qgis.utils import (
     iface
@@ -206,7 +207,7 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
 
 class STDMFieldWidget():
     # Instantiate the singleton QgsEditorWidgetRegistry
-    widgetRegistry = QgsEditorWidgetRegistry.instance()
+    widgetRegistry = QgsGui.editorWidgetRegistry()
 
     def __init__(self, plugin):
         self.entity = None

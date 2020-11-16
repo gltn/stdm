@@ -64,7 +64,7 @@
              </widget>
             </item>
             <item alignment="Qt::AlignVCenter">
-             <widget class="QgsFileDropEdit" name="file_le"/>
+             <widget class="QLineEdit" name="file_le"/>
             </item>
             <item alignment="Qt::AlignVCenter">
              <widget class="QPushButton" name="file_select_bt">
@@ -246,7 +246,7 @@
   <customwidget>
    <class>QgsFileDropEdit</class>
    <extends>QLineEdit</extends>
-   <header>qgsfiledropedit.h</header>
+   <header>qgis.gui</header>
   </customwidget>
  </customwidgets>
  <tabstops>

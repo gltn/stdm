@@ -21,6 +21,7 @@ email                : stdm@unhabitat.org
 import cProfile
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QDir,
@@ -77,6 +78,8 @@ from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.gps_tool import GPSToolDialog
 from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
 from stdm.ui.notification import NotificationBar
+from stdm.ui.gui_utils import GuiUtils
+
 # from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.sourcedocument import (
     DocumentWidget,
@@ -86,7 +89,6 @@ from stdm.ui.sourcedocument import (
 from stdm.ui.spatial_unit_manager import (
     SpatialUnitManagerDockWidget
 )
-from stdm.ui.ui_entity_browser import Ui_EntityBrowser
 from stdm.utils.util import (
     entity_id_to_attr
 )
@@ -177,7 +179,11 @@ class _EntityDocumentViewerHandler(object):
         return dir.exists()
 
 
-class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_entity_browser.ui'))
+
+class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
     """
     Dialog for browsing entity records in a table view.
     """

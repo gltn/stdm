@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     QTimer,
@@ -65,7 +66,7 @@ from stdm.ui.social_tenure.str_data import (
     STRDataStore,
     STRDBHandler
 )
-from stdm.ui.social_tenure.ui_str_editor import Ui_STREditor
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     format_name,
     entity_attr_to_model
@@ -935,7 +936,10 @@ class ValidateSTREditor(object):
         return True
 
 
-class STREditor(QDialog, Ui_STREditor):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('social_tenure/ui_str_editor.ui'))
+
+class STREditor(WIDGET, BASE):
     """
     Wrapper class for STR Editor for new STR record editor user interface.
     """
