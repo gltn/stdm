@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
@@ -26,11 +27,14 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.data.importexport.value_translators import LookupValueTranslator
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
-from stdm.ui.importexport.ui_lookup_dialog import Ui_LookupTranslatorDialog
 from stdm.ui.notification import NotificationBar
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('importexport/ui_lookup_dialog.ui'))
 
 
-class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
+class LookupDialog(WIDGET, BASE, TranslatorDialogBase):
     """
     Dialog for defining configuration settings for the lookup translation
     implementation.

@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtGui import (
     QIntValidator
 )
@@ -29,10 +30,13 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.data.config import DatabaseConfig
 from stdm.data.connection import DatabaseConnection
-from stdm.ui.ui_dbconn import Ui_frmDbConn
+from stdm.ui.gui_utils import GuiUtils
 
 
-class dbconnDlg(QDialog, Ui_frmDbConn):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_dbconn.ui'))
+
+class dbconnDlg(WIDGET, BASE):
     '''
     This dialog captures the database connection properties
     '''
