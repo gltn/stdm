@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QSettings,
     QRegExp
@@ -38,10 +39,13 @@ from stdm.data.configuration.value_list import (
     value_list_factory
 )
 from stdm.ui.notification import NotificationBar
-from stdm.ui.wizard.ui_lookup_entity import Ui_dlgLookup
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_lookup_entity.ui'))
 
 
-class LookupEditor(QDialog, Ui_dlgLookup):
+class LookupEditor(WIDGET, BASE):
     """
     Form to add/edit lookup entities.
     """

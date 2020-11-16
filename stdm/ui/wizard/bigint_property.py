@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
+from qgis.PyQt import uic
 from qgis.PyQt.QtGui import QIntValidator
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -26,10 +26,13 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.ui.wizard.ui_bigint_property import Ui_BigintProperty
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_bigint_property.ui'))
 
 
-class BigintProperty(QDialog, Ui_BigintProperty):
+class BigintProperty(WIDGET, BASE):
     """
     Editor to create/edit integer column property
     """

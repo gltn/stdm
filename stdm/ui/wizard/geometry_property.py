@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QApplication,
@@ -25,13 +26,18 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.gui import QgsProjectionSelectionDialog
 
-from stdm.ui.wizard.ui_geom_property import Ui_GeometryProperty
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_geom_property.ui'))
+
 
 geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
               'MULTIPOLYGON']
 
 
-class GeometryProperty(QDialog, Ui_GeometryProperty):
+class GeometryProperty(WIDGET, BASE):
     """
     Geometry column property editor
     """

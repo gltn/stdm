@@ -87,10 +87,6 @@
              <property name="text">
               <string>Search</string>
              </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/search.png</normaloff>:/plugins/stdm/images/icons/search.png</iconset>
-             </property>
             </widget>
            </item>
            <item row="1" column="1">
@@ -103,10 +99,6 @@
              </property>
              <property name="text">
               <string>Clear Results</string>
-             </property>
-             <property name="icon">
-              <iconset resource="../resources.qrc">
-               <normaloff>:/plugins/stdm/images/icons/reset.png</normaloff>:/plugins/stdm/images/icons/reset.png</iconset>
              </property>
             </widget>
            </item>
@@ -293,13 +285,10 @@
   <customwidget>
    <class>SpatialPreview</class>
    <extends>QTabWidget</extends>
-   <header>.property_preview</header>
+   <header>stdm.ui.property_preview</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

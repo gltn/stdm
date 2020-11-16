@@ -30,10 +30,6 @@
       <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
-      <attribute name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/user.png</normaloff>:/plugins/stdm/images/icons/user.png</iconset>
-      </attribute>
       <attribute name="title">
        <string>Users</string>
       </attribute>
@@ -67,10 +63,6 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
-      <attribute name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/roles.png</normaloff>:/plugins/stdm/images/icons/roles.png</iconset>
-      </attribute>
       <attribute name="title">
        <string>Roles</string>
       </attribute>
@@ -132,10 +124,6 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
-      <attribute name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/user_mapping.png</normaloff>:/plugins/stdm/images/icons/user_mapping.png</iconset>
-      </attribute>
       <attribute name="title">
        <string>Mappings</string>
       </attribute>
@@ -182,9 +170,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

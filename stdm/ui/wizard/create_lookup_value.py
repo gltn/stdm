@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QSettings,
     QRegExp
@@ -37,10 +38,14 @@ from stdm.data.configuration.value_list import (
     CodeValue
 )
 from stdm.ui.notification import NotificationBar
-from stdm.ui.wizard.ui_lookup_value import Ui_LookupValue
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_lookup_value.ui'))
 
 
-class ValueEditor(QDialog, Ui_LookupValue):
+class ValueEditor(WIDGET, BASE):
     """
     Form to add/edit values added to a lookup. Values are objects of type
     CodeValue

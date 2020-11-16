@@ -177,9 +177,9 @@ class ConfigurationFileUpdater(WIDGET, BASE):
         self.iface = iface
         self.setupUi(self)
 
-        self.btn_supporting_docs.setIcon(GuiUtils.get_icon_svg('open_file.png'))
-        self.btn_template.setIcon(GuiUtils.get_icon_svg('open_file.png'))
-        self.btn_output.setIcon(GuiUtils.get_icon_svg('open_file.png'))
+        self.btn_supporting_docs.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btn_template.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btn_output.setIcon(GuiUtils.get_icon('open_file.png'))
 
         self.file_handler = FilePaths()
         self.version = '1.2'

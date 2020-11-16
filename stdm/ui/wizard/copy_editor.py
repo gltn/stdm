@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QSettings,
     QRegExp
@@ -32,10 +33,13 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.ui.wizard.ui_copy_profile import Ui_dlgCopyProfile
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_copy_profile.ui'))
 
 
-class CopyProfileEditor(QDialog, Ui_dlgCopyProfile):
+class CopyProfileEditor(WIDGET, BASE):
     def __init__(self, parent, orig_name, orig_desc, profile_names):
         QDialog.__init__(self, parent)
 

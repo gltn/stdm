@@ -17,17 +17,20 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHeaderView
 )
 
-from stdm.ui.wizard.ui_spatial_unit_tenure_dialog import Ui_SpatialUnitTenureDialog
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_spatial_unit_tenure_dialog.ui'))
 
 
-class SpatialUnitTenureTypeDialog(QDialog, Ui_SpatialUnitTenureDialog):
+class SpatialUnitTenureTypeDialog(WIDGET, BASE):
     """
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.

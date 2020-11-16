@@ -18,18 +18,22 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
 from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.ui.wizard.create_lookup import LookupEditor
-from stdm.ui.wizard.ui_lookup_property import Ui_LookupProperty
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_lookup_property.ui'))
 
 EX_VALUE_LIST = []
 
 
-class LookupProperty(QDialog, Ui_LookupProperty):
+class LookupProperty(WIDGET, BASE):
     """
     Editor to create/edit Lookup column property
     """

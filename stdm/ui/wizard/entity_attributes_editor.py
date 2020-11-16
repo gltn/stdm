@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
 """
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QMessageBox
@@ -27,10 +28,14 @@ from qgis.PyQt.QtWidgets import (
 from stdm.data.configuration.entity import Entity
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.column_editor import ColumnEditor
-from stdm.ui.wizard.ui_entity_attributes_editor import Ui_EntityAttributesEditor
+
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_entity_attributes_editor.ui'))
 
 
-class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
+class TenureCustomAttributesEditor(WIDGET, BASE):
     """
     Dialog for editing an entity's attributes.
     """
@@ -64,6 +69,10 @@ class TenureCustomAttributesEditor(QDialog, Ui_EntityAttributesEditor):
         """
         super(TenureCustomAttributesEditor, self).__init__(parent)
         self.setupUi(self)
+
+        self.btnAddColumn.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnEditColumn.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btnDeleteColumn.setIcon(GuiUtils.get_icon('delete.png'))
 
         self._notifBar = NotificationBar(self.vlNotification)
 

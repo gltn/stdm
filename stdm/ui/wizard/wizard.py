@@ -23,6 +23,7 @@ import os
 from datetime import date
 from datetime import datetime
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QDir,
@@ -100,8 +101,9 @@ from stdm.ui.wizard.profile_editor import ProfileEditor
 from stdm.ui.wizard.spatial_tenure_types_dialog import (
     SpatialUnitTenureTypeDialog
 )
-from stdm.ui.wizard.ui_stdm_config import Ui_STDMWizard
 from stdm.utils.util import enable_drag_sort
+from stdm.ui.gui_utils import GuiUtils
+
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -119,8 +121,10 @@ EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
                  'ADMINISTRATIVE_SPATIAL_UNIT', 'ENTITY_SUPPORTING_DOCUMENT',
                  'VALUE_LIST', 'ASSOCIATION_ENTITY']
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('wizard/ui_stdm_config.ui'))
 
-class ConfigWizard(QWizard, Ui_STDMWizard):
+class ConfigWizard(WIDGET, BASE):
     """
     STDM configuration wizard editor
     """
@@ -129,6 +133,28 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
     def __init__(self, parent):
         QWizard.__init__(self, parent)
         self.setupUi(self)
+
+        self.btnTemplates.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btnDocOutput.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btnDocPath.setIcon(GuiUtils.get_icon('open_file.png'))
+        self.btnCopy.setIcon(GuiUtils.get_icon('composer_table.png'))
+        self.btnPDelete.setIcon(GuiUtils.get_icon('remove.png'))
+        self.btnNewP.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnNewEntity.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnEditEntity.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btnDeleteEntity.setIcon(GuiUtils.get_icon('delete.png'))
+        self.btnAddColumn.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnEditColumn.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btnDeleteColumn.setIcon(GuiUtils.get_icon('delete.png'))
+        self.btnAddLookup.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnEditLookup.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btnDeleteLookup.setIcon(GuiUtils.get_icon('delete.png'))
+        self.btnAddLkupValue.setIcon(GuiUtils.get_icon('add.png'))
+        self.btnEditLkupValue.setIcon(GuiUtils.get_icon('edit.png'))
+        self.btnDeleteLkupValue.setIcon(GuiUtils.get_icon('delete.png'))
+        self.btn_sp_units_tenure.setIcon(GuiUtils.get_icon('social_tenure.png'))
+        self.btn_custom_attrs.setIcon(GuiUtils.get_icon('column.png'))
+
         self.register_fields()
 
         # Add maximize buttons

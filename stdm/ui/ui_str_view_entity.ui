@@ -32,10 +32,6 @@
       <bool>false</bool>
      </property>
      <widget class="QWidget" name="filter">
-      <attribute name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/filter.png</normaloff>:/plugins/stdm/images/icons/filter.png</iconset>
-      </attribute>
       <attribute name="title">
        <string>Filter</string>
       </attribute>
@@ -76,10 +72,6 @@
       </layout>
      </widget>
      <widget class="QWidget" name="validity">
-      <attribute name="icon">
-       <iconset resource="../resources.qrc">
-        <normaloff>:/plugins/stdm/images/icons/period_blue.png</normaloff>:/plugins/stdm/images/icons/period_blue.png</iconset>
-      </attribute>
       <attribute name="title">
        <string>Validity Period</string>
       </attribute>
@@ -126,8 +118,5 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

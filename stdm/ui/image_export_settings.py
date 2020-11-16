@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
@@ -30,15 +31,20 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.ui.notification import NotificationBar
-from stdm.ui.ui_image_export_settings import Ui_ImageExportSettings
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_image_export_settings.ui'))
 
 
-class ImageExportSettings(QDialog, Ui_ImageExportSettings):
+class ImageExportSettings(WIDGET, BASE):
     """A dialog for settings options for exporting an image."""
 
     def __init__(self, parent=None, **kwargs):
         super(ImageExportSettings, self).__init__(parent)
         self.setupUi(self)
+
+        self.btn_path.setIcon(GuiUtils.get_icon('open_file.png'))
 
         self._image_tr = self.tr('Image')
 
