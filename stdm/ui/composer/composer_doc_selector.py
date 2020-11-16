@@ -17,33 +17,35 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
-     QDialog,
-     QDialogButtonBox,
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import (
      QStandardItemModel,
      QStandardItem,
      QPixmap,
-     QApplication,
      QIcon,
+ )
+from qgis.PyQt.QtWidgets import (
+     QDialog,
+     QDialogButtonBox,
+     QApplication,
      QInputDialog,
      QMessageBox
  )
-
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QFile,
     QIODevice
 )
+from qgis.PyQt.QtXml import QDomDocument
 
-from PyQt4.QtXml import QDomDocument
-
-from stdm.stdm.utils import documentTemplates, user_non_profile_views
-from stdm.stdm.composer.composer_data_source import composer_data_source
+from stdm.utils.util import documentTemplates, user_non_profile_views
+from stdm.composer.composer_data_source import composer_data_source
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.notification import (
      NotificationBar
 )
 from stdm.settings import current_profile
-from stdm.stdm.ui.composer.ui_composer_doc_selector import Ui_frmDocumentSelector
+from stdm.ui.gui_utils import GuiUtils
+
 
 class _DocumentTemplate(object):
     """
@@ -88,7 +90,11 @@ class _DocumentTemplate(object):
         return _DocumentTemplate(**kwargs)
 
 
-class TemplateDocumentSelector(QDialog, Ui_frmDocumentSelector):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_doc_selector.ui'))
+
+
+class TemplateDocumentSelector(WIDGET, BASE):
     """
     Dialog for selecting a document template from the saved list.
     """

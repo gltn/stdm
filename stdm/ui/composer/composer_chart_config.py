@@ -19,25 +19,31 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QWidget
 )
 
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     setComboCurrentIndexWithText
 )
 
-from ..notification import (
+from stdm.ui.notification import (
     NotificationBar
 )
 
-from .chart_type_register import ChartTypeUISettings
-from .chart_type_editors import DataSourceNotifier
-from .ui_composer_chart_config import Ui_ChartPropertiesEditor
+from stdm.ui.composer.chart_type_register import ChartTypeUISettings
+from stdm.ui.composer.chart_type_editors import DataSourceNotifier
+from stdm.ui.gui_utils import GuiUtils
 
-class ComposerChartConfigEditor(QWidget, Ui_ChartPropertiesEditor):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_chart_config.ui'))
+
+
+
+class ComposerChartConfigEditor(WIDGET, BASE):
     def __init__(self, composer_wrapper, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
@@ -74,7 +80,7 @@ class ComposerChartConfigEditor(QWidget, Ui_ChartPropertiesEditor):
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
 
     def _load_legend_positions(self):
-        from stdm.stdm.composer import legend_positions
+        from stdm.composer import legend_positions
 
         self.cbo_legend_pos.clear()
         for k,v in legend_positions.items():

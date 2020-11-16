@@ -17,22 +17,27 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QWidget,
     QComboBox
 )
 
 from stdm.settings import current_profile
-from stdm.stdm.utils import (
+from stdm.utils.util import (
     profile_user_tables,
     setComboCurrentIndexWithText,
     setComboCurrentIndexWithItemData,
     profile_entities,
     profile_and_user_views
 )
-from .ui_composer_data_source import Ui_frmComposerDataSource
+from stdm.ui.gui_utils import GuiUtils
 
-class ComposerDataSourceSelector(QWidget,Ui_frmComposerDataSource):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_data_source.ui'))
+
+
+class ComposerDataSourceSelector(WIDGET, BASE):
     """
     Widget for selecting a database table or view.
     """

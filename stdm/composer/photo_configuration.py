@@ -18,12 +18,12 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomElement
 )
 
-from .configuration_collection_base import (
+from stdm.composer.configuration_collection_base import (
     ConfigurationCollectionBase,
     LinkedTableItemConfiguration
 )
@@ -85,7 +85,7 @@ class PhotoConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing multiple instances of PhotoConfiguration objects.
     """
-    from stdm import ComposerPhotoDataSourceEditor
+    from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 
     collection_root = "Photos"
     editor_type = ComposerPhotoDataSourceEditor

@@ -16,8 +16,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QRegExp
-from PyQt4.QtGui import (
+from qgis.PyQt.QtCore import QRegExp, QFile
+from qgis.PyQt.QtWidgets import (
     QApplication,
     QComboBox,
     QGroupBox,
@@ -31,29 +31,27 @@ from PyQt4.QtGui import (
     QScrollArea,
     QToolButton
 )
-from PyQt4.QtCore import QFile
 
 from qgis.gui import (
     QgsCollapsibleGroupBoxBasic
 )
 from qgis.core import (
-    QgsComposerFrame,
-    QgsComposerTableColumn,
-    QgsComposerLabel,
-    QgsComposerMap,
-    QgsComposerPicture,
-    QGis
+    QgsLayoutFrame,
+    QgsLayoutTableColumn,
+    QgsLayoutItemLabel,
+    QgsLayoutItemMap,
+    QgsLayoutItemPicture,
+    Qgis
 )
 
-from stdm import (
-    ComposerChartConfigEditor,
-    ComposerFieldSelector,
-    ComposerPhotoDataSourceEditor,
-    ComposerQREditor,
-    ComposerSymbolEditor,
-    ComposerTableDataSourceEditor
-)
-from stdm import PLUGIN_DIR
+from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
+from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
+from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
+from stdm.ui.composer.qr_code import ComposerQREditor
+from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
+from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
+
+from stdm.utils.util import PLUGIN_DIR
 
 
 class BaseComposerItemFormatter(object):

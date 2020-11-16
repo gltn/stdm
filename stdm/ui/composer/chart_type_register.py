@@ -18,13 +18,13 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import (
     QWidget,
-    QIcon,
     QApplication
 )
 
-from .chart_type_editors import (
+from stdm.ui.composer.chart_type_editors import (
     VerticalBarGraphEditor
 )
 

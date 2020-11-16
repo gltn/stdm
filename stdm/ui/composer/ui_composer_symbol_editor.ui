@@ -51,10 +51,6 @@
      <property name="text">
       <string/>
      </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-     </property>
     </widget>
    </item>
    <item row="0" column="3">
@@ -71,10 +67,6 @@
      <property name="text">
       <string/>
      </property>
-     <property name="icon">
-      <iconset resource="../resources.qrc">
-       <normaloff>:/plugins/stdm/images/icons/reset.png</normaloff>:/plugins/stdm/images/icons/reset.png</iconset>
-     </property>
     </widget>
    </item>
    <item row="1" column="0" colspan="4">
@@ -89,8 +81,5 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections/>
 </ui>

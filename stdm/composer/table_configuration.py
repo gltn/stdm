@@ -18,21 +18,21 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtXml import (
+from qgis.PyQt.QtXml import (
     QDomElement
 )
 
-from .configuration_collection_base import (
+from stdm.composer.configuration_collection_base import (
     ConfigurationCollectionBase,
     ItemConfigValueHandler
 )
 from qgis.core import (
-    QgsMapLayerRegistry,
+    QgsProject,
     QgsVectorLayer,
-    QgsComposerFrame
+    QgsLayoutFrame
 )
 
-from .photo_configuration import PhotoConfiguration
+from stdm.composer.photo_configuration import PhotoConfiguration
 
 
 class TableConfiguration(PhotoConfiguration):
@@ -43,7 +43,7 @@ class TableConfiguration(PhotoConfiguration):
         the linked table name.
         :rtype: QgsVectorLayer
         """
-        layers = QgsMapLayerRegistry.instance().mapLayersByName(self.linked_table())
+        layers = QgsProject.instance().mapLayersByName(self.linked_table())
 
         #Return first matching layer
         if len(layers) > 0:
@@ -85,7 +85,7 @@ class TableConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing multiple instances of TableConfiguration objects.
     """
-    from stdm import ComposerTableDataSourceEditor
+    from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
 
     collection_root = "Tables"
     editor_type = ComposerTableDataSourceEditor
@@ -107,7 +107,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
             cols = table_item.multiFrame().columns()
         if table_item is None:
             return
-        if isinstance(table_item, QgsComposerFrame):
+        if isinstance(table_item, QgsLayoutFrame):
             table_item = table_item.multiFrame()
 
         '''

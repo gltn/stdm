@@ -18,24 +18,29 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
 from stdm.data.configuration import entity_model
 from stdm.data.supporting_documents import supporting_doc_tables_regexp
-from stdm.stdm.utils import setComboCurrentIndexWithText
+from stdm.utils.util import setComboCurrentIndexWithText
 
-from ..notification import (
+from stdm.ui.notification import (
      NotificationBar
 )
 from stdm.settings import (
     current_profile
 )
-from .referenced_table_editor import LinkedTableProps
-from .ui_composer_photo_data_source import Ui_PhotoDataSourceEditor
+from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.composer.referenced_table_editor import LinkedTableProps
 
-class ComposerPhotoDataSourceEditor(QWidget, Ui_PhotoDataSourceEditor):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_photo_data_source.ui'))
+
+
+class ComposerPhotoDataSourceEditor(WIDGET, BASE):
     def __init__(self, composer_wrapper, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)

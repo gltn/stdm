@@ -17,17 +17,21 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtGui import (
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import (
      QWidget,
      QMessageBox
 )
 
-from stdm.stdm.data.pg_utils import table_column_names
+from stdm.data.pg_utils import table_column_names
 
-from .ui_composer_data_field import Ui_frmComposerFieldEditor
+from stdm.ui.gui_utils import GuiUtils
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_composer_data_field.ui'))
 
 
-class BaseComposerFieldSelector(QWidget, Ui_frmComposerFieldEditor):
+class BaseComposerFieldSelector(WIDGET, BASE):
     """
     Base widget for enabling the selection of a field from a database table
     or view.

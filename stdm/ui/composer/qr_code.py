@@ -19,7 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from stdm.stdm.ui.composer import BaseComposerFieldSelector
+from stdm.ui.composer.composer_field_selector import BaseComposerFieldSelector
 
 
 class ComposerQREditor(BaseComposerFieldSelector):
@@ -29,7 +29,7 @@ class ComposerQREditor(BaseComposerFieldSelector):
         super(ComposerQREditor, self).__init__(*args, **kwargs)
 
     def configuration(self):
-        from stdm.stdm.composer import QRCodeConfiguration
+        from stdm.composer.qr_code_configuration import QRCodeConfiguration
 
         # Assert field name has been selected
         if not self.fieldName():

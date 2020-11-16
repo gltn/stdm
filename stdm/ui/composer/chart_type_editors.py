@@ -21,9 +21,12 @@ from collections import (
     OrderedDict
 )
 
-from PyQt4.QtGui import (
-    QApplication,
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import (
     QColor,
+)
+from qgis.PyQt.QtWidgets import (
+    QApplication,
     QGridLayout,
     QLabel,
     QLineEdit,
@@ -31,18 +34,19 @@ from PyQt4.QtGui import (
 )
 
 from qgis.gui import (
-    QgsColorButtonV2
+    QgsColorButton
 )
 
-from stdm import (
+from stdm.data.pg_utils import (
     numeric_columns,
     table_column_names
 )
-from stdm import (
+from stdm.utils.util import (
     setComboCurrentIndexWithText
 )
 
-from .ui_chart_vertical_bar import Ui_VerticalBarGraphSettings
+from stdm.ui.gui_utils import GuiUtils
+
 
 class DataSourceNotifier(object):
     """
@@ -122,12 +126,20 @@ class BarValueConfigWidget(QWidget):
     def set_configuration(self, config):
         pass
 
-class VerticalBarGraphEditor(QWidget, DataSourceNotifier,
-                             Ui_VerticalBarGraphSettings):
+
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('composer/ui_chart_vertical_bar.ui'))
+
+
+class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
+                             BASE):
     def __init__(self, parent=None):
         QWidget.__init__(self,parent)
 
         self.setupUi(self)
+
+        self.btn_add_value_field.setIcon(GuiUtils.get_icon('add.png'))
+        self.btn_reset_value_fields.setIcon(GuiUtils.get_icon('reset.png'))
 
         self._value_config_widgets = OrderedDict()
 
