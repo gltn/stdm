@@ -123,10 +123,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset resource="../../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/add.png</normaloff>:/plugins/stdm/images/icons/add.png</iconset>
-           </property>
           </widget>
          </item>
          <item>
@@ -136,10 +132,6 @@
            </property>
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset resource="../../resources.qrc">
-             <normaloff>:/plugins/stdm/images/icons/remove.png</normaloff>:/plugins/stdm/images/icons/remove.png</iconset>
            </property>
           </widget>
          </item>
@@ -407,10 +399,6 @@
             <property name="text">
              <string>Add Supporting Document</string>
             </property>
-            <property name="icon">
-             <iconset resource="../../resources.qrc">
-              <normaloff>:/plugins/stdm/images/icons/document.png</normaloff>:/plugins/stdm/images/icons/document.png</iconset>
-            </property>
            </widget>
           </item>
           <item row="0" column="0">
@@ -606,9 +594,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

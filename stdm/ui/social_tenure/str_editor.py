@@ -960,6 +960,10 @@ class STREditor(WIDGET, BASE):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
 
+        self.add_str_btn.setIcon(GuiUtils.get_icon('add.png'))
+        self.remove_str_btn.setIcon(GuiUtils.get_icon('remove.png'))
+        self.add_documents_btn.setIcon(GuiUtils.get_icon('document.png'))
+
         self._init_tree_view()
 
         self.iface = iface

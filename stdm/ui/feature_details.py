@@ -22,6 +22,7 @@ email                : stdm@unhabitat.org
 import re
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QDateTime,
@@ -70,7 +71,8 @@ from stdm.settings.registryconfig import (
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.social_tenure.str_editor import EditSTREditor
-from stdm.ui.ui_feature_details import Ui_DetailsDock
+from stdm.ui.gui_utils import GuiUtils
+
 from stdm.utils.util import (
     format_name,
     entity_attr_to_model
@@ -515,8 +517,11 @@ class DetailsDBHandler(LayerSelectionHandler):
             model_obj.id
         )
 
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_feature_details.ui'))
 
-class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
+
+class DetailsDockWidget(WIDGET, BASE):
     """
     The logic for the spatial entity details dock widget.
     """
@@ -532,6 +537,11 @@ class DetailsDockWidget(QDockWidget, Ui_DetailsDock):
         QDockWidget.__init__(self, iface.mainWindow())
 
         self.setupUi(self)
+
+        self.edit_btn.setIcon(GuiUtils.get_icon('edit.png'))
+        self.delete_btn.setIcon(GuiUtils.get_icon('remove.png'))
+        self.view_document_btn.setIcon(GuiUtils.get_icon('document.png'))
+
         self.plugin = plugin
         self.iface = iface
 
