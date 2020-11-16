@@ -26,13 +26,13 @@ from qgis.PyQt.QtWidgets import (
 )
 
 
-class STDMContent(object):
+class STDMContent:
     """
     Abstract class for welding custom attributes to
     a navigation item.
     """
 
-    def __init__(self, code):
+    def __init__(self, code = ""):
         self.Name = ""
         self.Group = ""
         self.Code = code
