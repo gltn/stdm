@@ -21,6 +21,8 @@ from collections import OrderedDict
 from datetime import datetime
 
 import sqlalchemy
+
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QFile,
     QFileInfo,
@@ -55,7 +57,7 @@ from stdm.settings.registryconfig import (
     LOCAL_SOURCE_DOC
 )
 from stdm.ui.document_viewer import DocumentViewManager
-from stdm.ui.ui_doc_item import Ui_frmDocumentItem
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.filesize import size
 from stdm.utils.util import (
     entity_id_to_attr
@@ -508,7 +510,11 @@ class SourceDocumentManager(QObject):
         widget.referencesRemoved.connect(self.onDocumentRemoved)
 
 
-class DocumentWidget(QWidget, Ui_frmDocumentItem):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_doc_item.ui'))
+
+
+class DocumentWidget(WIDGET, BASE):
     """
     Widget for displaying source document details
     """
@@ -528,6 +534,9 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
     ):
         QWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self.lblClose.setPixmap(GuiUtils.get_icon_pixmap('close.png'))
+
         self.initGui()
         self.fileInfo = None
         self.fileUUID = None
