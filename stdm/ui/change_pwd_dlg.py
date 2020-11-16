@@ -17,6 +17,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -27,10 +28,14 @@ from qgis.PyQt.QtWidgets import (
 from stdm.data.globals import app_dbconn
 from stdm.security.exception import SecurityException
 from stdm.security.membership import Membership
-from stdm.ui.ui_changepwd import Ui_frmChangePwd
+from stdm.ui.gui_utils import GuiUtils
 
 
-class changePwdDlg(QDialog, Ui_frmChangePwd):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_changepwd.ui'))
+
+
+class changePwdDlg(WIDGET, BASE):
 
     def __init__(self, plugin):
         QDialog.__init__(self, plugin.iface.mainWindow())
