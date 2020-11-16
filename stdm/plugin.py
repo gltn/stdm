@@ -135,6 +135,7 @@ from stdm.utils.util import (
     user_non_profile_views
 )
 from stdm.utils.util import simple_dialog
+from stdm.ui.gui_utils import GuiUtils
 
 LOGGER = logging.getLogger('stdm')
 
@@ -239,27 +240,30 @@ class STDMQGISLoader(object):
     def initGui(self):
         # Initial actions on starting up the application
         self._menu_items()
-        self.loginAct = STDMAction(QIcon(":/plugins/stdm/images/icons/login.png"),
+        self.loginAct = STDMAction(GuiUtils.get_icon('login.png'),
                                    QApplication.translate("LoginToolbarAction",
                                                           "Login"),
                                    self.iface.mainWindow(),
                                    "CAA4F0D9-727F-4745-A1FC-C2173101F711")
         self.loginAct.setShortcut(QKeySequence(Qt.Key_F2))
 
-        self.aboutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/info.png"),
-                                   QApplication.translate("AboutToolbarAction", "About"), self.iface.mainWindow(),
+        self.aboutAct = STDMAction(GuiUtils.get_icon('info.png'),
+                                   QApplication.translate("AboutToolbarAction", "About"),
+                                   self.iface.mainWindow(),
                                    "137FFB1B-90CD-4A6D-B49E-0E99CD46F784")
         # Define actions that are available to all logged in users
-        self.logoutAct = STDMAction(QIcon(":/plugins/stdm/images/icons/logout.png"), \
-                                    QApplication.translate("LogoutToolbarAction", "Logout"), self.iface.mainWindow(),
+        self.logoutAct = STDMAction(GuiUtils.get_icon('logout.png'),
+                                    QApplication.translate("LogoutToolbarAction", "Logout"),
+                                    self.iface.mainWindow(),
                                     "EF3D96AF-F127-4C31-8D9F-381C07E855DD")
 
-        self.changePasswordAct = STDMAction(QIcon(":/plugins/stdm/images/icons/change_password.png"), \
+        self.changePasswordAct = STDMAction(GuiUtils.get_icon('change_password.png'),
                                             QApplication.translate("ChangePasswordToolbarAction", "Change Password"),
                                             self.iface.mainWindow(),
                                             "8C425E0E-3761-43F5-B0B2-FB8A9C3C8E4B")
-        self.helpAct = STDMAction(QIcon(":/plugins/stdm/images/icons/help-content.png"), \
-                                  QApplication.translate("STDMQGISLoader", "Help Contents"), self.iface.mainWindow(),
+        self.helpAct = STDMAction(GuiUtils.get_icon("help-content.png"),
+                                  QApplication.translate("STDMQGISLoader", "Help Contents"),
+                                  self.iface.mainWindow(),
                                   "7A61CEA9-2A64-45F6-A40F-D83987D416EB")
         self.helpAct.setShortcut(Qt.Key_F10)
 
@@ -296,20 +300,6 @@ class STDMQGISLoader(object):
                 "STDM plugin menu"
             )
         )
-
-    def getThemeIcon(self, theName):
-        # get the icon from the best available theme
-        myCurThemePath = QgsApplication.activeThemePath() + "/plugins/" + theName
-        myDefThemePath = QgsApplication.defaultThemePath() + "/plugins/" + theName
-        myQrcPath = ":/plugins/stdm/" + theName
-        if QFile.exists(myCurThemePath):
-            return QIcon(myCurThemePath)
-        elif QFile.exists(myDefThemePath):
-            return QIcon(myDefThemePath)
-        elif QFile.exists(myQrcPath):
-            return QIcon(myQrcPath)
-        else:
-            return QIcon()
 
     def initToolbar(self):
         # Load initial STDM toolbar
@@ -934,7 +924,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         adminBtn.setObjectName(adminObjName)
         adminBtn.setToolTip(adminObjName)
-        adminBtn.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        adminBtn.setIcon(GuiUtils.get_icon("settings.png"))
         adminBtn.setPopupMode(QToolButton.InstantPopup)
 
         adminMenu = QMenu(adminBtn)
@@ -942,7 +932,7 @@ class STDMQGISLoader(object):
 
         # Settings menu container in STDM's QGIS menu
         stdmAdminMenu = QMenu(self.stdmMenu)
-        stdmAdminMenu.setIcon(QIcon(":/plugins/stdm/images/icons/settings.png"))
+        stdmAdminMenu.setIcon(GuiUtils.get_icon("settings.png"))
         stdmAdminMenu.setObjectName("STDMAdminSettings")
         stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings", "Admin Settings"))
 
@@ -953,7 +943,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         contentBtn.setObjectName(contentObjName)
         contentBtn.setToolTip(contentObjName)
-        contentBtn.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        contentBtn.setIcon(GuiUtils.get_icon("entity_management.png"))
         contentBtn.setPopupMode(QToolButton.InstantPopup)
 
         contentMenu = QMenu(contentBtn)
@@ -961,14 +951,14 @@ class STDMQGISLoader(object):
 
         stdmEntityMenu = QMenu(self.stdmMenu)
         stdmEntityMenu.setObjectName("STDMEntityMenu")
-        stdmEntityMenu.setIcon(QIcon(":/plugins/stdm/images/icons/entity_management.png"))
+        stdmEntityMenu.setIcon(GuiUtils.get_icon("entity_management.png"))
         stdmEntityMenu.setTitle(QApplication.translate("STDMEntityMenu", "Entities"))
 
         # Mobile menu container
         # Mobile content menu container
         geoodk_mobile_dataMenu = QMenu(self.stdmMenu)
         geoodk_mobile_dataMenu.setObjectName("MobileMenu")
-        geoodk_mobile_dataMenu.setIcon(QIcon(":/plugins/stdm/images/icons/mobile_data_management.png"))
+        geoodk_mobile_dataMenu.setIcon(GuiUtils.get_icon("mobile_data_management.png"))
         geoodk_mobile_dataMenu.setTitle(QApplication.translate("GeoODKMobileSettings", "Mobile Data Forms"))
 
         geoodkBtn = QToolButton()
@@ -976,7 +966,7 @@ class STDMQGISLoader(object):
         # Required by module loader for those widgets that need to be inserted into the container
         geoodkBtn.setObjectName(adminObjName)
         geoodkBtn.setToolTip(adminObjName)
-        geoodkBtn.setIcon(QIcon(":/plugins/stdm/images/icons/mobile_data_management.png"))
+        geoodkBtn.setIcon(GuiUtils.get_icon("mobile_data_management.png"))
         geoodkBtn.setPopupMode(QToolButton.InstantPopup)
 
         geoodkMenu = QMenu(geoodkBtn)
@@ -984,7 +974,7 @@ class STDMQGISLoader(object):
         # Define actions
 
         self.contentAuthAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/content_auth.png"),
+            GuiUtils.get_icon("content_auth.png"),
             QApplication.translate(
                 "ContentAuthorizationToolbarAction",
                 "Content Authorization"
@@ -992,16 +982,16 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
 
-        self.usersAct = QAction(QIcon(":/plugins/stdm/images/icons/users_manage.png"), \
+        self.usersAct = QAction(GuiUtils.get_icon("users_manage.png"),
                                 QApplication.translate("ManageUsersToolbarAction", "Manage Users-Roles"),
                                 self.iface.mainWindow())
 
-        self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
+        self.options_act = QAction(GuiUtils.get_icon("options.png"),
                                    QApplication.translate("OptionsToolbarAction", "Options"),
                                    self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
-            QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"),
+            GuiUtils.get_icon("manage_admin_units.png"),
             QApplication.translate(
                 "ManageAdminUnitsToolbarAction",
                 "Manage Administrative Units"
@@ -1009,46 +999,46 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
 
-        self.importAct = QAction(QIcon(":/plugins/stdm/images/icons/import.png"), \
+        self.importAct = QAction(GuiUtils.get_icon("import.png"),
                                  QApplication.translate("ImportAction", "Import Data"), self.iface.mainWindow())
 
-        self.exportAct = QAction(QIcon(":/plugins/stdm/images/icons/export.png"), \
+        self.exportAct = QAction(GuiUtils.get_icon("export.png"),
                                  QApplication.translate("ReportBuilderAction", "Export Data"), self.iface.mainWindow())
 
-        self.docDesignerAct = QAction(QIcon(":/plugins/stdm/images/icons/cert_designer.png"), \
+        self.docDesignerAct = QAction(GuiUtils.get_icon("cert_designer.png"),
                                       QApplication.translate("DocumentDesignerAction", "Document Designer"),
                                       self.iface.mainWindow())
 
-        self.docGeneratorAct = QAction(QIcon(":/plugins/stdm/images/icons/generate_document.png"), \
+        self.docGeneratorAct = QAction(GuiUtils.get_icon("generate_document.png"),
                                        QApplication.translate("DocumentGeneratorAction", "Document Generator"),
                                        self.iface.mainWindow())
 
         # Spatial Layer Manager
-        self.spatialLayerManager = QAction(QIcon(":/plugins/stdm/images/icons/spatial_unit_manager.png"), \
+        self.spatialLayerManager = QAction(GuiUtils.get_icon("spatial_unit_manager.png"),
                                            QApplication.translate("SpatialEditorAction", "Spatial Unit Manager"),
                                            self.iface.mainWindow())
         self.spatialLayerManager.setCheckable(True)
 
         # Spatial Layer Manager
-        self.feature_details_act = QAction(QIcon(":/plugins/stdm/images/icons/feature_details.png"), \
+        self.feature_details_act = QAction(GuiUtils.get_icon("feature_details.png"),
                                            QApplication.translate("SpatialEditorAction", "Spatial Entity Details"),
                                            self.iface.mainWindow())
         self.feature_details_act.setCheckable(True)
 
-        self.viewSTRAct = QAction(QIcon(":/plugins/stdm/images/icons/view_str.png"), \
+        self.viewSTRAct = QAction(GuiUtils.get_icon("view_str.png"),
                                   QApplication.translate("ViewSTRToolbarAction", "View Social Tenure Relationship"),
                                   self.iface.mainWindow())
 
-        self.wzdAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"), \
+        self.wzdAct = QAction(GuiUtils.get_icon("table_designer.png"),
                               QApplication.translate("ConfigWizard", "Configuration Wizard"), self.iface.mainWindow())
         self.wzdAct.setShortcut(Qt.Key_F7)
-        self.ModuleAct = QAction(QIcon(":/plugins/stdm/images/icons/table_designer.png"), \
+        self.ModuleAct = QAction(GuiUtils.get_icon("table_designer.png"),
                                  QApplication.translate("WorkspaceConfig", "Entities"), self.iface.mainWindow())
 
-        self.mobile_form_act = QAction(QIcon(":/plugins/stdm/images/icons/mobile_collect.png"), \
+        self.mobile_form_act = QAction(GuiUtils.get_icon("mobile_collect.png"),
                                        QApplication.translate("MobileFormGenerator", "Generate Mobile Form"),
                                        self.iface.mainWindow())
-        self.mobile_form_import = QAction(QIcon(":/plugins/stdm/images/icons/mobile_import.png"), \
+        self.mobile_form_import = QAction(GuiUtils.get_icon("mobile_import.png"),
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
@@ -1364,36 +1354,36 @@ class STDMQGISLoader(object):
         self.profiles_combobox.addItems(profile_names)
 
         self.profiles_combobox.setStyleSheet(
-            """
-        QComboBox {
+            f"""
+        QComboBox {{
                 border: 2px solid #4b85ca;
                 border-radius: 0px;
                 padding: 1px 3px 1px 3px;
                 min-width: 6em;
-            }
-         QComboBox:editable {
+            }}
+         QComboBox:editable {{
              background: white;
-         }
+         }}
 
-         QComboBox:!editable, QComboBox::drop-down:editable {
+         QComboBox:!editable, QComboBox::drop-down:editable {{
                  background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                             stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
                                           stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
-         }
+         }}
 
          /* QComboBox gets the "on" state when the popup is open */
-         QComboBox:!editable:on, QComboBox::drop-down:editable:on {
+         QComboBox:!editable:on, QComboBox::drop-down:editable:on {{
                      background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                                     stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
                                                     stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
-         }
+         }}
 
-         QComboBox:on { /* shift the text when the popup opens */
+         QComboBox:on {{ /* shift the text when the popup opens */
              padding-top: 3px;
              padding-left: 4px;
-         }
+         }}
 
-         QComboBox::drop-down {
+         QComboBox::drop-down {{
              subcontrol-origin: padding;
              subcontrol-position: top right;
              width: 15px;
@@ -1403,16 +1393,16 @@ class STDMQGISLoader(object):
              border-left-style: solid; /* just a single line */
              border-top-right-radius: 3px; /* same radius as the QComboBox */
              border-bottom-right-radius: 3px;
-         }
+         }}
 
-         QComboBox::down-arrow {
-             image: url(:/plugins/stdm/images/icons/down_arrow.png);
-         }
+         QComboBox::down-arrow {{
+             image: url({GuiUtils.get_icon_svg('down_arrow.png')});
+         }}
 
-         QComboBox::down-arrow:on { /* shift the arrow when popup is open */
+         QComboBox::down-arrow:on {{ /* shift the arrow when popup is open */
              top: 1px;
              left: 1px;
-         }
+         }}
             """
         )
         setComboCurrentIndexWithText(
@@ -1424,7 +1414,7 @@ class STDMQGISLoader(object):
 
     def _create_table_content_group(self, k, username, icon):
         content_action = QAction(
-            QIcon(":/plugins/stdm/images/icons/{}".format(icon)),
+            GuiUtils.get_icon(icon),
             k,
             self.iface.mainWindow()
         )

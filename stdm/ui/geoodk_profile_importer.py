@@ -58,6 +58,7 @@ from stdm.settings.projectionSelector import ProjectionSelector
 from sqlalchemy.exc import SQLAlchemyError
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.custom_item_model import EntitiesModel
+from stdm.ui.gui_utils import GuiUtils
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_import.ui'))
@@ -96,8 +97,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.chk_all.setCheckState(Qt.Checked)
         self.entity_model = EntitiesModel()
         self.uuid_extractor = InstanceUUIDExtractor(self.path)
-        self.btn_chang_dir.setIcon(QIcon(":/plugins/stdm/images/icons/open_file.png"))
-        self.btn_refresh.setIcon(QIcon(":/plugins/stdm/images/icons/update.png"))
+        self.btn_chang_dir.setIcon(GuiUtils.get_icon("open_file.png"))
+        self.btn_refresh.setIcon(GuiUtils.get_icon("update.png"))
 
         self.chk_all.stateChanged.connect(self.change_check_state)
         # self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)

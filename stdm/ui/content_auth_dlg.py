@@ -140,7 +140,7 @@ class contentAuthDlg(WIDGET, BASE):
         '''
         # Set icon
         icon = QIcon()
-        icon.addPixmap(QPixmap(":/plugins/stdm/images/icons/roles.png"), QIcon.Normal, QIcon.Off)
+        icon.addPixmap(GuiUtils.get_icon_pixmap("roles.png"), QIcon.Normal, QIcon.Off)
 
         roleItem = QStandardItem(icon, rolename)
         roleItem.setCheckable(True)

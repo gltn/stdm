@@ -38,10 +38,12 @@ from stdm.utils.util import (
     gen_random_string,
     entity_id_to_attr
 )
+from stdm.ui.gui_utils import GuiUtils
 
-EDIT_ICON = QIcon(":/plugins/stdm/images/icons/edit.png")
-DELETE_ICON = QIcon(":/plugins/stdm/images/icons/delete.png")
-NO_ACTION_ICON = QIcon(":/plugins/stdm/images/icons/no_action.png")
+
+EDIT_ICON = GuiUtils.get_icon("edit.png")
+DELETE_ICON = GuiUtils.get_icon("delete.png")
+NO_ACTION_ICON = GuiUtils.get_icon("no_action.png")
 
 
 class BaseSTRNode(object):
@@ -484,7 +486,7 @@ class EntityNode(SupportsDocumentsNode):
             self._set_children()
 
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/table.png")
+        return GuiUtils.get_icon("table.png")
 
     def typeInfo(self):
         return "ENTITY_NODE"
@@ -513,7 +515,7 @@ class NoSTRNode(BaseSTRNode):
         super(NoSTRNode, self).__init__([noSTRText], parent)
 
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/remove.png")
+        return GuiUtils.get_icon("remove.png")
 
     def typeInfo(self):
         return "NO_STR_NODE"
@@ -531,7 +533,7 @@ class InvalidSTRNode(BaseSTRNode):
         super(InvalidSTRNode, self).__init__([invalid_str_text], parent)
 
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/period_blue.png")
+        return GuiUtils.get_icon("period_blue.png")
 
     def typeInfo(self):
         return "INVALID_STR_NODE"
@@ -543,7 +545,7 @@ class STRNode(EntityNode):
     """
 
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/social_tenure.png")
+        return GuiUtils.get_icon("social_tenure.png")
 
     def typeInfo(self):
         return "STR_NODE"
@@ -720,7 +722,7 @@ class SpatialUnitNode(EntityNode):
     """
 
     def icon(self):
-        return QIcon(":/plugins/stdm/images/icons/layer.gif")
+        return GuiUtils.get_icon("layer.gif")
 
     def typeInfo(self):
         return "SPATIAL_UNIT_NODE"

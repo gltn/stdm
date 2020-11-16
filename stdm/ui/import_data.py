@@ -307,7 +307,7 @@ class ImportData(WIDGET, BASE):
         for c in srcCols:
             srcItem = QListWidgetItem(c, self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
-            srcItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
+            srcItem.setIcon(GuiUtils.get_icon("column.png"))
             self.lstSrcFields.addItem(srcItem)
 
         # Destination Columns
@@ -399,7 +399,7 @@ class ImportData(WIDGET, BASE):
             for t in tables:
                 tabItem = QListWidgetItem(t, self.lstDestTables)
                 tabItem.setCheckState(Qt.Unchecked)
-                tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
+                tabItem.setIcon(GuiUtils.get_icon("table.png"))
                 self.lstDestTables.addItem(tabItem)
 
     def validateCurrentPage(self):

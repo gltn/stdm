@@ -18,8 +18,9 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from qgis.PyQt.QtGui import QIcon
+from stdm.ui.gui_utils import GuiUtils
 
-dataIcon = QIcon(":/plugins/stdm/images/icons/column.png")
-pbIcon = QIcon(":/plugins/stdm/images/icons/search.png")
-tableIcon = QIcon(":/plugins/stdm/images/icons/table.png")
-fk_icon = QIcon(":/plugins/stdm/images/icons/fk_icon.png")
+dataIcon = GuiUtils.get_icon("column.png")
+pbIcon = GuiUtils.get_icon("search.png")
+tableIcon = GuiUtils.get_icon("table.png")
+fk_icon = GuiUtils.get_icon("fk_icon.png")

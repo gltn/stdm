@@ -63,6 +63,7 @@ from stdm.settings import current_profile
 from stdm.utils.util import (
     guess_extension
 )
+from stdm.ui.gui_utils import GuiUtils
 
 LOGGER = logging.getLogger('stdm')
 
@@ -275,7 +276,7 @@ class DocumentViewer(QMdiSubWindow):
 
     def __init__(self, parent=None, file_identifier=""):
         QMdiSubWindow.__init__(self, parent)
-        self.setWindowIcon(QIcon(":/plugins/stdm/images/icons/photo.png"))
+        self.setWindowIcon(GuiUtils.get_icon("photo.png"))
         self._file_identifier = file_identifier
         self._view_widget = None
         self.mdi_area = parent

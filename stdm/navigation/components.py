@@ -27,10 +27,10 @@ from qgis.PyQt.QtWidgets import (
 
 
 class STDMContent(object):
-    '''
+    """
     Abstract class for welding custom attributes to
     a navigation item.
-    '''
+    """
 
     def __init__(self, code):
         self.Name = ""
@@ -39,12 +39,12 @@ class STDMContent(object):
 
 
 class STDMAction(QAction, STDMContent):
-    '''
+    """
     Custom STDM Actions for inclusion in toolbars and/or menus
-    '''
+    """
 
     def __init__(self, icon, text, parent, code):
-        if icon == None:
+        if icon is None:
             QAction.__init__(self, text, parent)
         else:
             QAction.__init__(self, icon, text, parent)
@@ -53,11 +53,11 @@ class STDMAction(QAction, STDMContent):
 
 
 class STDMListWidgetItem(QListWidgetItem, STDMContent):
-    '''
+    """
     Custom list widget items which attaches a 'Name' attribute
     that is subsequently used for registering the item as a
     content type
-    '''
+    """
 
     def __init__(self, text, name, icon, parent, code):
         QListWidgetItem.__init__(self, icon, text, parent)

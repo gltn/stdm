@@ -1106,8 +1106,8 @@ class STREditor(WIDGET, BASE):
         """
         Creates the STR node with its children.
         """
-        str_icon = QIcon(
-            ':/plugins/stdm/images/icons/new_str.png'
+        str_icon = GuiUtils.get_icon(
+            'new_str.png'
         )
         str_label = QApplication.translate(
             'STRTreeView', 'Social Tenure Relationship'
@@ -1160,7 +1160,7 @@ class STREditor(WIDGET, BASE):
         :return: The child item
         :rtype: QStandardItem
         """
-        q_icon = QIcon(':/plugins/stdm/images/icons/{}'.format(icon))
+        q_icon = GuiUtils.get_icon(icon)
 
         item = QStandardItem(q_icon, name)
 
