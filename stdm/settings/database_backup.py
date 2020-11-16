@@ -22,13 +22,11 @@ import csv
 import os
 import stat
 
-from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtCore import QStandardPaths
 
 from stdm.data.pg_utils import _execute, pg_tables
 
-home = QDesktopServices.storageLocation(
-    QDesktopServices.HomeLocation
-)
+home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
 
 
 def db_to_csv():

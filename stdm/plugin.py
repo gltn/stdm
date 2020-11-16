@@ -29,7 +29,8 @@ from qgis.PyQt.QtCore import (
     QTranslator,
     QCoreApplication,
     Qt,
-    QFile
+    QFile,
+    QStandardPaths
 )
 from qgis.PyQt.QtGui import (
     QIcon,
@@ -226,8 +227,7 @@ class STDMQGISLoader(object):
         LOGGER.debug('STDM plugin has been initialized.')
         self.entity_browser = None
         # Load configuration file
-        self.config_path = QDesktopServices.storageLocation(
-            QDesktopServices.HomeLocation) \
+        self.config_path = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0] \
                            + '/.stdm/configuration.stc'
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
@@ -325,7 +325,7 @@ class STDMQGISLoader(object):
 
     def active_branch_name(self):
         try:
-            home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
+            home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
             branch_file = '{}/.stdm/.branch'.format(home)
             name = '(' + [line.strip() for line in open(branch_file)][0] + ')'
         except:
@@ -824,7 +824,7 @@ class STDMQGISLoader(object):
         self.progress = STDMProgressDialog(parent)
         self.progress.overall_progress('Upgrading STDM Configuration...')
 
-        home = QDesktopServices.storageLocation(QDesktopServices.HomeLocation)
+        home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
 
         config_path = '{}/.stdm/configuration.stc'.format(home)
 

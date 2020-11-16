@@ -22,30 +22,26 @@ import os
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
-from PyQt4.QtCore import (
+from qgis.PyQt.QtCore import (
     QDir,
     QFile,
     QTextStream,
-    QIODevice
+    QIODevice,
+    QStandardPaths
 )
-from PyQt4.QtGui import (
-    QDesktopServices
-)
-
-# Import qgis.core so that the correct SIP versions are loaded in tests
 
 # Load third party libraries
 third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               "stdm/third_party"))
+                                               "third_party"))
 font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "stdm/third_party/FontTools"))
+                                        "third_party/FontTools"))
 
 if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)
 
 # Root to the path plugin directory
-USER_PLUGIN_DIR = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+USER_PLUGIN_DIR = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0] \
                   + '/.stdm'
 
 # Setup logging
