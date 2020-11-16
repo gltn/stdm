@@ -179,10 +179,6 @@
         <property name="text">
          <string>Select document template</string>
         </property>
-        <property name="icon">
-         <iconset resource="../resources.qrc">
-          <normaloff>:/plugins/stdm/images/icons/document.png</normaloff>:/plugins/stdm/images/icons/document.png</iconset>
-        </property>
        </widget>
       </item>
       <item row="0" column="2" colspan="2">
@@ -250,12 +246,9 @@
   <customwidget>
    <class>ModelAtrributesView</class>
    <extends>QListView</extends>
-   <header>customcontrols</header>
+   <header>stdm.ui.customcontrols.model_attributes_view</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../resources.qrc"/>
- </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
