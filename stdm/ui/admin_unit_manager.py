@@ -19,6 +19,7 @@ email                : gkahiu@gmail.com
 """
 from collections import OrderedDict
 
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -36,7 +37,7 @@ from stdm.navigation.socialtenure.formatters import (
     BaseSTRNode
 )
 from stdm.ui.notification import NotificationBar
-from stdm.ui.ui_adminUnitManager import Ui_frmAdminUnitManager
+from stdm.ui.gui_utils import GuiUtils
 
 
 class _AdminSpatialUnitConfiguration(object):
@@ -113,7 +114,11 @@ MANAGE = 2302
 SELECT = 2303  # When widget is used to select one or more records from the table list
 
 
-class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
+WIDGET, BASE = uic.loadUiType(
+    GuiUtils.get_ui_file_path('ui_adminUnitManager.ui'))
+
+
+class AdminUnitManager(WIDGET, BASE):
     '''
     Administrative Unit Manager Widget
     '''
@@ -123,6 +128,10 @@ class AdminUnitManager(QWidget, Ui_frmAdminUnitManager):
     def __init__(self, parent=None, State=VIEW):
         QWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self.btnRemove.setIcon(GuiUtils.get_icon_svg('remove.png'))
+        self.btnClear.setIcon(GuiUtils.get_icon_svg('reset.png'))
+        self.btnAdd.setIcon(GuiUtils.get_icon_svg('add.png'))
 
         self._defaultEditTriggers = self.tvAdminUnits.editTriggers()
 
