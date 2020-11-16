@@ -1,4 +1,4 @@
-from qgis.PyQt.QtGui import QDesktopServices
+from qgis.PyQt.QtCore import QStandardPaths
 
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.registryconfig import (
@@ -49,7 +49,7 @@ def save_configuration():
     A util method for saving the configuration instance to the default
     file location.
     """
-    config_path = QDesktopServices.storageLocation(QDesktopServices.HomeLocation) \
+    config_path = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0] \
                   + '/.stdm/configuration.stc'
     conf_serializer = ConfigurationFileSerializer(config_path)
     conf_serializer.save()
