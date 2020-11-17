@@ -38,7 +38,6 @@ from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
     QgsEditorWidgetFactory,
-    QgsEditorWidgetRegistry,
     QgsGui
 )
 from qgis.utils import (

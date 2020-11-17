@@ -21,7 +21,6 @@ from qgis.PyQt.QtCore import (
     Qt
 )
 from qgis.PyQt.QtGui import (
-    QIcon,
     QStandardItem,
     QStandardItemModel
 )
@@ -29,6 +28,7 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QListView
 )
+
 from stdm.ui.gui_utils import GuiUtils
 
 

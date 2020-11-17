@@ -19,12 +19,10 @@ email                : gkahiu@gmail.com
 """
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
-     QWidget,
-     QMessageBox
+    QWidget
 )
 
 from stdm.data.pg_utils import table_column_names
-
 from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
@@ -36,6 +34,7 @@ class BaseComposerFieldSelector(WIDGET, BASE):
     Base widget for enabling the selection of a field from a database table
     or view.
     """
+
     def __init__(self, composerWrapper, label, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
@@ -101,6 +100,7 @@ class ComposerFieldSelector(BaseComposerFieldSelector):
     """
     Widget for selecting the field from a database table or view.
     """
+
     def onFieldNameChanged(self, fieldName):
         """
         Slot raised when the field selection changes.
@@ -113,7 +113,7 @@ class ComposerFieldSelector(BaseComposerFieldSelector):
             data_text = label_text[
                         label_text.find('[') + 1:label_text.find(']')]
             data_source = self._composerWrapper.selectedDataSource() + "." + \
-                                self.fieldName()
+                          self.fieldName()
 
             self._label.setText(
                 self._label.text().replace(data_text, data_source)

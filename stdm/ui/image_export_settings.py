@@ -26,12 +26,11 @@ from qgis.PyQt.QtGui import (
     QImageWriter
 )
 from qgis.PyQt.QtWidgets import (
-    QDialog,
     QFileDialog
 )
 
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_image_export_settings.ui'))

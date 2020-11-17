@@ -27,9 +27,6 @@ from qgis.PyQt.QtCore import (
     QTimer,
     QEvent
 )
-from qgis.PyQt.QtGui import (
-    QPixmap
-)
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget

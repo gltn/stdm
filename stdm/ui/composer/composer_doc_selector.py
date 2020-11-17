@@ -18,39 +18,39 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.PyQt import uic
-from qgis.PyQt.QtGui import (
-     QStandardItemModel,
-     QStandardItem,
-     QPixmap,
-     QIcon,
- )
-from qgis.PyQt.QtWidgets import (
-     QDialog,
-     QDialogButtonBox,
-     QApplication,
-     QInputDialog,
-     QMessageBox
- )
 from qgis.PyQt.QtCore import (
     QFile,
     QIODevice
 )
+from qgis.PyQt.QtGui import (
+    QStandardItemModel,
+    QStandardItem,
+    QIcon,
+)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QApplication,
+    QInputDialog,
+    QMessageBox
+)
 from qgis.PyQt.QtXml import QDomDocument
 
-from stdm.utils.util import documentTemplates, user_non_profile_views
 from stdm.composer.composer_data_source import composer_data_source
-from stdm.settings.registryconfig import RegistryConfig
-from stdm.ui.notification import (
-     NotificationBar
-)
 from stdm.settings import current_profile
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import (
+    NotificationBar
+)
+from stdm.utils.util import documentTemplates, user_non_profile_views
 
 
 class _DocumentTemplate(object):
     """
     Contains basic information about a document template.
     """
+
     def __init__(self, **kwargs):
         self.name = kwargs.get('name', '')
         self.path = kwargs.get('path', '')
@@ -98,32 +98,33 @@ class TemplateDocumentSelector(WIDGET, BASE):
     """
     Dialog for selecting a document template from the saved list.
     """
+
     def __init__(self, parent=None, selectMode=True, filter_data_source='', access_templates=[]):
-        QDialog.__init__(self,parent)
+        QDialog.__init__(self, parent)
         self.setupUi(self)
 
         self.notifBar = NotificationBar(self.vlNotification)
 
         self._mode = selectMode
 
-        #Filter templates by the specified table name
+        # Filter templates by the specified table name
         self._filter_data_source = filter_data_source
 
-        #Document templates in current profile
+        # Document templates in current profile
         self._profile_templates = []
 
         self._current_profile = current_profile()
 
-        #Load current profile templates
+        # Load current profile templates
         self._load_current_profile_templates()
 
-        self.access_templates=access_templates
+        self.access_templates = access_templates
 
         if selectMode:
             self.buttonBox.setVisible(True)
             self.manageButtonBox.setVisible(False)
             currHeight = self.size().height()
-            self.resize(200,currHeight)
+            self.resize(200, currHeight)
 
         else:
             self.buttonBox.setVisible(False)
@@ -135,33 +136,33 @@ class TemplateDocumentSelector(WIDGET, BASE):
                 )
             )
 
-        #Configure manage buttons
+        # Configure manage buttons
         btnEdit = self.manageButtonBox.button(QDialogButtonBox.Ok)
-        btnEdit.setText(QApplication.translate("TemplateDocumentSelector","Edit..."))
+        btnEdit.setText(QApplication.translate("TemplateDocumentSelector", "Edit..."))
         btnEdit.setIcon(GuiUtils.get_icon("edit.png"))
 
         btnDelete = self.manageButtonBox.button(QDialogButtonBox.Save)
-        btnDelete.setText(QApplication.translate("TemplateDocumentSelector","Delete"))
+        btnDelete.setText(QApplication.translate("TemplateDocumentSelector", "Delete"))
         btnDelete.setIcon(GuiUtils.get_icon("delete.png"))
 
-        #Connect signals
+        # Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         btnEdit.clicked.connect(self.onEditTemplate)
         btnDelete.clicked.connect(self.onDeleteTemplate)
 
-        #Get saved document templates then add to the model
+        # Get saved document templates then add to the model
         templates = documentTemplates()
 
         self._docItemModel = QStandardItemModel(parent)
         self._docItemModel.setColumnCount(2)
 
-        #Append current profile templates to the model.
+        # Append current profile templates to the model.
         for dt in self._profile_templates:
 
-            if self._template_contains_filter_table(dt): #and dt.name in self.access_templates:
+            if self._template_contains_filter_table(dt):  # and dt.name in self.access_templates:
                 doc_name_item = self._createDocNameItem(dt.name)
                 file_path_item = QStandardItem(dt.path)
-                self._docItemModel.appendRow([doc_name_item,file_path_item])
+                self._docItemModel.appendRow([doc_name_item, file_path_item])
 
         self.lstDocs.setModel(self._docItemModel)
 
@@ -171,25 +172,25 @@ class TemplateDocumentSelector(WIDGET, BASE):
         if self._current_profile is None:
             return
 
-        #Get saved document templates then add to the model
+        # Get saved document templates then add to the model
         templates = documentTemplates()
 
         profile_tables = self._current_profile.table_names()
 
-        #Get templates for the current profile
+        # Get templates for the current profile
         for name, path in templates.items():
             doc_temp = _DocumentTemplate.build_from_path(name, path)
             if doc_temp.data_source is None:
                 continue
 
-            #Assert data source is in the current profile
+            # Assert data source is in the current profile
             if doc_temp.data_source.referenced_table_name in profile_tables:
                 self._add_doc_temp(doc_temp)
-                #self._profile_templates.append(doc_temp)
+                # self._profile_templates.append(doc_temp)
 
             if doc_temp.data_source._dataSourceName in user_non_profile_views():
                 self._add_doc_temp(doc_temp)
-                #self._profile_templates.append(doc_temp)
+                # self._profile_templates.append(doc_temp)
 
     def _add_doc_temp(self, doc_temp):
         found = False
@@ -201,9 +202,9 @@ class TemplateDocumentSelector(WIDGET, BASE):
             self._profile_templates.append(doc_temp)
 
     def _template_contains_filter_table(self, document_template):
-        #Returns true if the template refers to the filter data source
+        # Returns true if the template refers to the filter data source
 
-        #If no filter data source defined then always return True
+        # If no filter data source defined then always return True
 
         if document_template.data_source._dataSourceName in user_non_profile_views():
             return True
@@ -226,11 +227,11 @@ class TemplateDocumentSelector(WIDGET, BASE):
     def filter_data_source(self):
         return self._filter_data_source
 
-    def _createDocNameItem(self,docName):
+    def _createDocNameItem(self, docName):
         """
         Create a template document standard item.
         """
-        #Set icon
+        # Set icon
         icon = QIcon()
         icon.addPixmap(
             GuiUtils.get_icon_pixmap(
@@ -240,7 +241,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
             QIcon.Off
         )
 
-        dnItem = QStandardItem(icon,docName)
+        dnItem = QStandardItem(icon, docName)
 
         return dnItem
 
@@ -255,12 +256,13 @@ class TemplateDocumentSelector(WIDGET, BASE):
                                                                          "Please select a document template to edit"))
             return
 
-        templateName,filePath = self.documentMapping()
+        templateName, filePath = self.documentMapping()
 
-        docName,ok = QInputDialog.getText(self, \
-                                              QApplication.translate("TemplateDocumentSelector","Edit Template"), \
-                                              QApplication.translate("TemplateDocumentSelector","Please enter the new template name below"), \
-                                              text = templateName)
+        docName, ok = QInputDialog.getText(self, \
+                                           QApplication.translate("TemplateDocumentSelector", "Edit Template"), \
+                                           QApplication.translate("TemplateDocumentSelector",
+                                                                  "Please enter the new template name below"), \
+                                           text=templateName)
         if ok and docName == "":
             self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "Template name cannot be empty"))
@@ -270,10 +272,10 @@ class TemplateDocumentSelector(WIDGET, BASE):
             return
 
         elif ok and docName != "":
-            result,newTemplatePath = self._editTemplate(filePath, docName)
+            result, newTemplatePath = self._editTemplate(filePath, docName)
 
             if result:
-                #Update view
+                # Update view
                 mIndices = self._selectedMappings()
 
                 docNameItem = self._docItemModel.itemFromIndex(mIndices[0])
@@ -283,11 +285,13 @@ class TemplateDocumentSelector(WIDGET, BASE):
                 filePathItem.setText(newTemplatePath)
 
                 self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'{0}' template has been successfully updated".format(docName)))
+                                                                               "'{0}' template has been successfully updated".format(
+                                                                                   docName)))
 
             else:
                 self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '{0}' template could not be updated".format(templateName)))
+                                                                             "Error: '{0}' template could not be updated".format(
+                                                                                 templateName)))
 
     def onDeleteTemplate(self):
         """
@@ -300,15 +304,15 @@ class TemplateDocumentSelector(WIDGET, BASE):
                                                                          "Please select a document template to delete"))
             return
 
-        templateName,filePath = self.documentMapping()
+        templateName, filePath = self.documentMapping()
 
         result = QMessageBox.warning(self, QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Confirm delete"),
+                                                                  "Confirm delete"),
                                      QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Are you sure you want to delete '{0}' template?" \
-                                                                         "This action cannot be undone.\nClick Yes to proceed " \
-                                                                         "or No to cancel.".format(templateName)),
-                                     QMessageBox.Yes|QMessageBox.No)
+                                                            "Are you sure you want to delete '{0}' template?" \
+                                                            "This action cannot be undone.\nClick Yes to proceed " \
+                                                            "or No to cancel.".format(templateName)),
+                                     QMessageBox.Yes | QMessageBox.No)
 
         if result == QMessageBox.No:
             return
@@ -316,16 +320,18 @@ class TemplateDocumentSelector(WIDGET, BASE):
         status = self._deleteDocument(filePath)
 
         if status:
-            #Remove item from list using model index row number
+            # Remove item from list using model index row number
             selectedDocNameIndices = self.lstDocs.selectionModel().selectedRows(0)
             row = selectedDocNameIndices[0].row()
             self._docItemModel.removeRow(row)
             self.notifBar.insertSuccessNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "'{0}' template has been successfully removed".format(templateName)))
+                                                                           "'{0}' template has been successfully removed".format(
+                                                                               templateName)))
 
         else:
             self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
-                                                                         "Error: '{0}' template could not be removed".format(templateName)))
+                                                                         "Error: '{0}' template could not be removed".format(
+                                                                             templateName)))
 
     def onAccept(self):
         """
@@ -353,7 +359,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
         docNameIndex = selectedDocNameIndices[0]
         filePathIndex = selectedFilePathIndices[0]
 
-        return (docNameIndex,filePathIndex)
+        return (docNameIndex, filePathIndex)
 
     def documentMapping(self):
         """
@@ -367,20 +373,21 @@ class TemplateDocumentSelector(WIDGET, BASE):
         docNameItem = self._docItemModel.itemFromIndex(mIndices[0])
         filePathItem = self._docItemModel.itemFromIndex(mIndices[1])
 
-        return (docNameItem.text(),filePathItem.text())
+        return (docNameItem.text(), filePathItem.text())
 
-    def _editTemplate(self,templatePath,newName):
+    def _editTemplate(self, templatePath, newName):
         """
         Updates the template document to use the new name.
         """
         templateFile = QFile(templatePath)
 
         if not templateFile.open(QIODevice.ReadOnly):
-            QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector","Open Operation Error"), \
-                                            "{0}\n{1}".format(QApplication.translate("TemplateDocumentSelector","Cannot read template file."), \
-                                                      templateFile.errorString()
-                                                      ))
-            return (False,"")
+            QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector", "Open Operation Error"), \
+                                 "{0}\n{1}".format(
+                                     QApplication.translate("TemplateDocumentSelector", "Cannot read template file."), \
+                                     templateFile.errorString()
+                                     ))
+            return (False, "")
 
         templateDoc = QDomDocument()
 
@@ -390,33 +397,35 @@ class TemplateDocumentSelector(WIDGET, BASE):
             if not titleAttr.isNull():
                 titleAttr.setValue(newName)
 
-            #Try remove file
+            # Try remove file
             status = templateFile.remove()
 
             if not status:
-                return (False,"")
+                return (False, "")
 
-            #Create new file
+            # Create new file
             newTemplatePath = self._composerTemplatesPath() + "/" + newName + ".sdt"
             newTemplateFile = QFile(newTemplatePath)
 
             if not newTemplateFile.open(QIODevice.WriteOnly):
-                QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector","Save Operation Error"), \
-                                                "{0}\n{1}".format(QApplication.translate("TemplateDocumentSelector","Could not save template file."), \
-                                                          newTemplateFile.errorString()
-                                                          ))
-                return (False,"")
+                QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector", "Save Operation Error"), \
+                                     "{0}\n{1}".format(QApplication.translate("TemplateDocumentSelector",
+                                                                              "Could not save template file."), \
+                                                       newTemplateFile.errorString()
+                                                       ))
+                return (False, "")
 
             if newTemplateFile.write(templateDoc.toByteArray()) == -1:
-                QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector","Save Error"), \
-                                                QApplication.translate("TemplateDocumentSelector","Could not save template file."))
-                return (False,"")
+                QMessageBox.critical(self, QApplication.translate("TemplateDocumentSelector", "Save Error"), \
+                                     QApplication.translate("TemplateDocumentSelector",
+                                                            "Could not save template file."))
+                return (False, "")
 
             newTemplateFile.close()
 
-            return (True,newTemplatePath)
+            return (True, newTemplatePath)
 
-    def _deleteDocument(self,templatePath):
+    def _deleteDocument(self, templatePath):
         """
         Delete the document template from the file system.
         """

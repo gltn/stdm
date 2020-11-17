@@ -23,12 +23,12 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
-from stdm.ui.wizard.create_lookup import LookupEditor
-
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.wizard.create_lookup import LookupEditor
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_lookup_property.ui'))
+
 
 class MultiSelectProperty(WIDGET, BASE):
     """

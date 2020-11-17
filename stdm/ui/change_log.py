@@ -28,9 +28,8 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
-from stdm.utils.util import file_text
 from stdm.ui.gui_utils import GuiUtils
-
+from stdm.utils.util import file_text
 
 # from stdm.settings.registryconfig import (
 #     RegistryConfig,

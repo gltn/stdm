@@ -20,14 +20,12 @@ email                : gkahiu@gmail.com
 """
 
 import sqlalchemy
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt
 )
 from qgis.PyQt.QtGui import (
-    QTextOption,
-    QIcon
+    QTextOption
 )
 from qgis.PyQt.QtWidgets import (
     QWizard,
@@ -48,16 +46,16 @@ from stdm.data.pg_utils import (
     unique_column_values
 )
 from stdm.settings import current_profile
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.reports.highlighter import SqlHighlighter
 from stdm.utils.util import (
     getIndex,
     profile_user_tables
 )
-from stdm.ui.gui_utils import GuiUtils
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_export_data.ui'))
+
 
 class ExportData(WIDGET, BASE):
     def __init__(self, parent=None):

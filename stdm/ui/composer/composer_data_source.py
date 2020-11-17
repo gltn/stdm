@@ -24,6 +24,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.settings import current_profile
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     profile_user_tables,
     setComboCurrentIndexWithText,
@@ -31,7 +32,6 @@ from stdm.utils.util import (
     profile_entities,
     profile_and_user_views
 )
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_data_source.ui'))
@@ -41,8 +41,9 @@ class ComposerDataSourceSelector(WIDGET, BASE):
     """
     Widget for selecting a database table or view.
     """
-    def __init__(self,parent = None):
-        QWidget.__init__(self,parent)
+
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.cboDataSource.setInsertPolicy(QComboBox.InsertAlphabetically)
@@ -60,16 +61,16 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         self._tables = profile_user_tables(
             self.curr_profile, False
         )
-        #Populate referenced tables
+        # Populate referenced tables
         self._populate_referenced_tables()
 
-        #Flag for synchronizing data source item change to referenced table
+        # Flag for synchronizing data source item change to referenced table
         self._sync_data_source = False
 
-        #Force views to be loaded
+        # Force views to be loaded
         self.rbViews.toggle()
 
-        #Connect signal
+        # Connect signal
         self.cboDataSource.currentIndexChanged[str].connect(self.onDataSourceSelected)
 
         self.cboReferencedTable.setEnabled(False)
@@ -78,7 +79,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         """
         Slot raised upon selecting a data source from the items.
         """
-        #Enable/disable referenced table combo only if an item is selected
+        # Enable/disable referenced table combo only if an item is selected
         if self.category() == 'View':
             if not dataSource:
                 self.cboReferencedTable.setEnabled(False)
@@ -89,16 +90,16 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             setComboCurrentIndexWithText(self.cboReferencedTable, dataSource)
 
     def _populate_referenced_tables(self):
-        #Populate combo box with the list of tables names
+        # Populate combo box with the list of tables names
         self.cboReferencedTable.addItem('')
         for entity in self._ref_tables:
-            #Check if there is supporting document
+            # Check if there is supporting document
             self.cboReferencedTable.addItem(
                 entity.short_name.lower(), entity.name
             )
 
     def _contains_supporting_document(self, table):
-        #Returns true if the table contains 'supporting_document' text
+        # Returns true if the table contains 'supporting_document' text
         res = table.find('supporting_document')
         if res == -1:
             return False
@@ -115,7 +116,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         elif self.rbViews.isChecked():
             return "View"
 
-    def setCategory(self,categoryName):
+    def setCategory(self, categoryName):
         """
         Set selected radio button.
         """
@@ -125,7 +126,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         elif categoryName == "View":
             self.rbViews.toggle()
 
-    def setSelectedSource(self,dataSourceName):
+    def setSelectedSource(self, dataSourceName):
         """
         Set the data source name if it exists in the list.
         """
@@ -157,7 +158,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         )
 
     def _reset_referenced_table_combo(self):
-        #Resets the referenced table combobox based on the category.
+        # Resets the referenced table combobox based on the category.
         if self.cboReferencedTable.count() > 0:
             self.cboReferencedTable.setCurrentIndex(0)
 
@@ -169,7 +170,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             self.cboReferencedTable.setEnabled(True)
             self._sync_data_source = False
 
-    def onShowTables(self,state):
+    def onShowTables(self, state):
         """
         Slot raised to show STDM database tables.
         """
@@ -183,7 +184,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
                 if not self._contains_supporting_document(key):
                     self.cboDataSource.addItem(value.lower(), key)
 
-    def onShowViews(self,state):
+    def onShowViews(self, state):
         """
         Slot raised to show STDM database views.
         """

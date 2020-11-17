@@ -19,20 +19,15 @@ email                : gkahiu@gmail.com
 """
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
-    QMessageBox,
-    QPushButton,
     QWidget
 )
-
 from qgis.core import (
-    QgsSimpleFillSymbolLayer,
     QgsSymbolLayerUtils
 )
 
 from stdm.data.pg_utils import (
     table_column_names
 )
-
 from stdm.ui.gui_utils import GuiUtils
 
 
@@ -40,7 +35,8 @@ class SpatialFieldMapping(object):
     """
     Symbol and labeling configuration for an individual spatial field.
     """
-    def __init__(self,spatialField="",labelField=""):
+
+    def __init__(self, spatialField="", labelField=""):
         self._spatialField = spatialField
         self._labelField = labelField
         self._symbol = None
@@ -59,7 +55,7 @@ class SpatialFieldMapping(object):
     def zoom_type(self, zm_type):
         self._zoom_type = zm_type
 
-    def setSpatialField(self,spatialField):
+    def setSpatialField(self, spatialField):
         """
         Set the name of the spatial field.
         """
@@ -71,7 +67,7 @@ class SpatialFieldMapping(object):
         """
         return self._spatialField
 
-    def setLabelField(self,labelField):
+    def setLabelField(self, labelField):
         """
         Set the name of the field that will be used to label the feature.
         """
@@ -99,7 +95,7 @@ class SpatialFieldMapping(object):
         """
         return self._symbol
 
-    def setItemId(self,itemId):
+    def setItemId(self, itemId):
         """
         Returns the composer item id (QgsComposerMap uuid) associated with the spatial field.
         """
@@ -123,7 +119,7 @@ class SpatialFieldMapping(object):
         """
         return self._srid
 
-    def setSRID(self,srid):
+    def setSRID(self, srid):
         """
         Set the SRID of the spatial column.
         """
@@ -135,7 +131,7 @@ class SpatialFieldMapping(object):
         """
         return self._geomType
 
-    def setGeometryType(self,geomType):
+    def setGeometryType(self, geomType):
         """
         Set the geometry type of the spatial column.
         """
@@ -148,7 +144,7 @@ class SpatialFieldMapping(object):
         """
         return self._zoom_level
 
-    def setZoomLevel(self,zoomLevel):
+    def setZoomLevel(self, zoomLevel):
         """
         Set zoom out scale factor.
         """
@@ -158,27 +154,27 @@ class SpatialFieldMapping(object):
         """
         Returns a QgsVectorLayer URI using the geometry type and SRID information.
         """
-        return  "{0}?crs=epsg:{1!s}".format(self._geomType,self._srid)
+        return "{0}?crs=epsg:{1!s}".format(self._geomType, self._srid)
 
     def toDomElement(self, domDocument):
         """
         Returns a QDomElement with the object instance settings
         """
         spColumnElement = domDocument.createElement("SpatialField")
-        spColumnElement.setAttribute("name",self._spatialField)
-        spColumnElement.setAttribute("labelField",self._labelField)
-        spColumnElement.setAttribute("itemid",self._itemId)
-        spColumnElement.setAttribute("srid",self._srid)
-        spColumnElement.setAttribute("geomType",self._geomType)
+        spColumnElement.setAttribute("name", self._spatialField)
+        spColumnElement.setAttribute("labelField", self._labelField)
+        spColumnElement.setAttribute("itemid", self._itemId)
+        spColumnElement.setAttribute("srid", self._srid)
+        spColumnElement.setAttribute("geomType", self._geomType)
         spColumnElement.setAttribute('zoomType', self._zoom_type)
-        spColumnElement.setAttribute("zoom",str(self._zoom_level))
+        spColumnElement.setAttribute("zoom", str(self._zoom_level))
         symbolElement = domDocument.createElement("Symbol")
 
         # Append symbol properties element
         if not self._symbol is None:
             prop = self._symbol.properties()
-            QgsSymbolLayerUtils.saveProperties(prop,domDocument,symbolElement)
-            symbolElement.setAttribute("layerType",self._layerType)
+            QgsSymbolLayerUtils.saveProperties(prop, domDocument, symbolElement)
+            symbolElement.setAttribute("layerType", self._layerType)
 
         spColumnElement.appendChild(symbolElement)
 
@@ -188,10 +184,12 @@ class SpatialFieldMapping(object):
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_spcolumn_styler.ui'))
 
+
 class ComposerSpatialColumnEditor(WIDGET, BASE):
     """
     Widget for defining symbology and labeling properties for the selected spatial field.
     """
+
     def __init__(self, spColumnName, composerWrapper, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
@@ -214,11 +212,11 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
 
         self._geomType = ""
 
-        #Load fields if the data source has been specified
+        # Load fields if the data source has been specified
         self._dsName = self._composerWrapper.selectedDataSource()
         self._loadFields()
 
-        #Connect signals
+        # Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
         self.sb_fixed_zoom.valueChanged.connect(self.on_zoom_fixed_scale_changed)
@@ -266,7 +264,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         """
         return self._symbol_editor.symbolLayer()
 
-    def setGeomType(self,geomType):
+    def setGeomType(self, geomType):
         """
         Set the geometry type of the specified spatial unit.
         """
@@ -278,7 +276,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         """
         return self._geomType
 
-    def setSrid(self,srid):
+    def setSrid(self, srid):
         """
         Set the SRID of the specified spatial unit.
         """
@@ -315,7 +313,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         """
         Configures the widget to use the specified spatial field mapping.
         """
-        #Configure widget based on the mapping
+        # Configure widget based on the mapping
         self._spColumnName = spatialFieldMapping.spatialField()
         self.setLabelField(spatialFieldMapping.labelField())
         self._srid = spatialFieldMapping.srid()
@@ -329,7 +327,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
             self.rb_fixed_scale.setChecked(True)
             self.sb_fixed_zoom.setValue(zoom_level)
 
-    def setLabelField(self,labelField):
+    def setLabelField(self, labelField):
         """
         Select field label item.
         """
@@ -355,7 +353,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
             return
 
         cols = table_column_names(self._dsName)
-        spatialCols = table_column_names(self._dsName,True)
+        spatialCols = table_column_names(self._dsName, True)
 
         spSet = set(spatialCols)
         nonSpatialCols = [c for c in cols if c not in spSet]

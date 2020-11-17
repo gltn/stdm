@@ -1,133 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>frmLogin</class>
- <widget class="QDialog" name="frmLogin">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>320</width>
-    <height>152</height>
-   </rect>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>320</width>
-    <height>152</height>
-   </size>
-  </property>
-  <property name="windowTitle">
-   <string>STDM Login</string>
-  </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="3" column="1">
-    <widget class="QDialogButtonBox" name="btnBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
+    <class>frmLogin</class>
+    <widget class="QDialog" name="frmLogin">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>320</width>
+                <height>152</height>
+            </rect>
+        </property>
+        <property name="maximumSize">
+            <size>
+                <width>320</width>
+                <height>152</height>
+            </size>
+        </property>
+        <property name="windowTitle">
+            <string>STDM Login</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_2">
+            <item row="3" column="1">
+                <widget class="QDialogButtonBox" name="btnBox">
+                    <property name="standardButtons">
+                        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+                    </property>
+                </widget>
+            </item>
+            <item row="3" column="0">
+                <widget class="QToolButton" name="btn_db_settings">
+                    <property name="toolTip">
+                        <string>Edit database server settings</string>
+                    </property>
+                    <property name="statusTip">
+                        <string>Edit database server settings</string>
+                    </property>
+                    <property name="whatsThis">
+                        <string>Edit database server settings</string>
+                    </property>
+                    <property name="text">
+                        <string/>
+                    </property>
+                    <property name="iconSize">
+                        <size>
+                            <width>16</width>
+                            <height>16</height>
+                        </size>
+                    </property>
+                    <property name="checkable">
+                        <bool>false</bool>
+                    </property>
+                    <property name="autoRaise">
+                        <bool>false</bool>
+                    </property>
+                </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+                <layout class="QGridLayout" name="gridLayout">
+                    <item row="0" column="1">
+                        <widget class="QLineEdit" name="txtUserName">
+                            <property name="minimumSize">
+                                <size>
+                                    <width>0</width>
+                                    <height>30</height>
+                                </size>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="0" column="0">
+                        <widget class="QLabel" name="label">
+                            <property name="minimumSize">
+                                <size>
+                                    <width>70</width>
+                                    <height>0</height>
+                                </size>
+                            </property>
+                            <property name="text">
+                                <string>Username</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="1" column="0">
+                        <widget class="QLabel" name="label_2">
+                            <property name="text">
+                                <string>Password</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item row="1" column="1">
+                        <widget class="QLineEdit" name="txtPassword">
+                            <property name="minimumSize">
+                                <size>
+                                    <width>0</width>
+                                    <height>30</height>
+                                </size>
+                            </property>
+                            <property name="echoMode">
+                                <enum>QLineEdit::Password</enum>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
+            </item>
+            <item row="0" column="0" colspan="2">
+                <layout class="QVBoxLayout" name="vlNotification"/>
+            </item>
+        </layout>
     </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QToolButton" name="btn_db_settings">
-     <property name="toolTip">
-      <string>Edit database server settings</string>
-     </property>
-     <property name="statusTip">
-      <string>Edit database server settings</string>
-     </property>
-     <property name="whatsThis">
-      <string>Edit database server settings</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-     <property name="checkable">
-      <bool>false</bool>
-     </property>
-     <property name="autoRaise">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="txtUserName">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="minimumSize">
-        <size>
-         <width>70</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Username</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Password</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="txtPassword">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="echoMode">
-        <enum>QLineEdit::Password</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <layout class="QVBoxLayout" name="vlNotification"/>
-   </item>
-  </layout>
- </widget>
- <tabstops>
-  <tabstop>txtUserName</tabstop>
-  <tabstop>txtPassword</tabstop>
-  <tabstop>btnBox</tabstop>
- </tabstops>
- <connections>
-  <connection>
-   <sender>btnBox</sender>
-   <signal>rejected()</signal>
-   <receiver>frmLogin</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>159</x>
-     <y>187</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>159</x>
-     <y>103</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+    <tabstops>
+        <tabstop>txtUserName</tabstop>
+        <tabstop>txtPassword</tabstop>
+        <tabstop>btnBox</tabstop>
+    </tabstops>
+    <connections>
+        <connection>
+            <sender>btnBox</sender>
+            <signal>rejected()</signal>
+            <receiver>frmLogin</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>159</x>
+                    <y>187</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>159</x>
+                    <y>103</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
 </ui>

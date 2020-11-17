@@ -31,19 +31,20 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-
-from stdm.utils.util import version_from_metadata
 from stdm.ui.gui_utils import GuiUtils
+from stdm.utils.util import version_from_metadata
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_about_stdm.ui'))
+
 
 class AboutSTDMDialog(WIDGET, BASE):
     def __init__(self, parent=None, metadata=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
-        self.txtAbout.setHtml(self.txtAbout.toHtml().replace(':/plugins/stdm/images/icons/stdm_2.png', GuiUtils.get_icon_svg('stdm_2.png')))
+        self.txtAbout.setHtml(self.txtAbout.toHtml().replace(':/plugins/stdm/images/icons/stdm_2.png',
+                                                             GuiUtils.get_icon_svg('stdm_2.png')))
 
         self._metadata = metadata
 

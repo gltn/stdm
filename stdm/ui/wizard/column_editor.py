@@ -42,6 +42,7 @@ from qgis.PyQt.QtWidgets import (
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.data.pg_utils import vector_layer
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.bigint_property import BigintProperty
 from stdm.ui.wizard.code_property import CodeProperty
@@ -55,11 +56,8 @@ from stdm.ui.wizard.lookup_property import LookupProperty
 from stdm.ui.wizard.multi_select_property import MultiSelectProperty
 from stdm.ui.wizard.varchar_property import VarcharProperty
 
-from stdm.ui.gui_utils import GuiUtils
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_column_editor.ui'))
-
 
 LOGGER = logging.getLogger('stdm')
 LOGGER.setLevel(logging.DEBUG)

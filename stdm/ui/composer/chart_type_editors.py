@@ -33,19 +33,14 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
-from qgis.gui import (
-    QgsColorButton
-)
-
 from stdm.data.pg_utils import (
     numeric_columns,
     table_column_names
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     setComboCurrentIndexWithText
 )
-
-from stdm.ui.gui_utils import GuiUtils
 
 
 class DataSourceNotifier(object):
@@ -53,25 +48,28 @@ class DataSourceNotifier(object):
     Base class that enables subclasses to receive changes when the data source
     changes.
     """
+
     def on_table_name_changed(self, table):
         raise NotImplementedError("Implement notifier in subclass")
+
 
 class BarValueConfigWidget(QWidget):
     """
     Widget for editing y-value configurations.
     """
+
     def __init__(self, parent=None, value_field='', def_color='#2564e1',
                  legend_name=''):
         QWidget.__init__(self, parent)
 
         self._value_field = value_field
 
-        #Insert controls for editing fill color and legend names
+        # Insert controls for editing fill color and legend names
         self.lbl_fill_color = QLabel(self)
         self.lbl_fill_color.setText(QApplication.translate("ValueConfigWidget",
-                                                      "Fill color"))
-        self.fill_color_btn = QgsColorButtonV2(self,QApplication.translate("ValueConfigWidget",
-                                                      "Select bar fill color"))
+                                                           "Fill color"))
+        self.fill_color_btn = QgsColorButtonV2(self, QApplication.translate("ValueConfigWidget",
+                                                                            "Select bar fill color"))
         self.fill_color_btn.setMaximumHeight(30)
         self.fill_color_btn.setMinimumHeight(30)
         self.fill_color_btn.setMinimumWidth(100)
@@ -81,7 +79,7 @@ class BarValueConfigWidget(QWidget):
 
         self.lbl_legend_name = QLabel(self)
         self.lbl_legend_name.setText(QApplication.translate("ValueConfigWidget",
-                                                      "Legend name"))
+                                                            "Legend name"))
         self.txt_legend_name = QLineEdit(self)
         self.txt_legend_name.setMaxLength(50)
         self.txt_legend_name.setMinimumHeight(30)
@@ -134,7 +132,7 @@ WIDGET, BASE = uic.loadUiType(
 class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
                              BASE):
     def __init__(self, parent=None):
-        QWidget.__init__(self,parent)
+        QWidget.__init__(self, parent)
 
         self.setupUi(self)
 
@@ -143,7 +141,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
 
         self._value_config_widgets = OrderedDict()
 
-        #Connect signals
+        # Connect signals
         self.btn_add_value_field.clicked.connect(self.on_add_value_config_widget)
         self.tb_value_config.tabCloseRequested.connect(self._on_tab_close_requested)
         self.btn_reset_value_fields.clicked.connect(self.clear)
@@ -176,7 +174,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         vbar_config.set_x_field(self.cbo_x_field.currentText())
         vbar_config.set_y_label(self.txt_y_label.text())
 
-        #Set bar value configurations
+        # Set bar value configurations
         for cfg in self.bar_value_configurations():
             vbar_config.add_value_configuration(cfg)
 
@@ -187,7 +185,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         self.txt_x_label.setText(configuration.x_label())
         self.txt_y_label.setText(configuration.y_label())
 
-        #Set barvalue configurations
+        # Set barvalue configurations
         for bar_cfg in configuration.value_configurations():
             self.add_value_configuration(bar_cfg)
 
@@ -234,7 +232,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         :type idx: int
         """
         status = self.remove_config_widget(idx)
-        #QMessageBox.information(self,"Info",str(status))
+        # QMessageBox.information(self,"Info",str(status))
 
     def remove_config_widget(self, idx):
         """

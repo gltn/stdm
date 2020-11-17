@@ -27,8 +27,7 @@ from qgis.PyQt.QtCore import (
     QSignalMapper
 )
 from qgis.PyQt.QtGui import (
-    QColor,
-    QIcon
+    QColor
 )
 from qgis.PyQt.QtWidgets import (
     QWizard,
@@ -50,6 +49,7 @@ from stdm.data.pg_utils import (
     table_column_names
 )
 from stdm.settings import current_profile
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.importexport.translator_config import (
     ValueTranslatorConfig
 )
@@ -61,7 +61,6 @@ from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
 )
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_import_data.ui'))

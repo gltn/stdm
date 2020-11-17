@@ -60,9 +60,9 @@ from stdm.settings.registryconfig import (
     CONFIG_UPDATED
 )
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
-from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
 
 MAX_LIMIT = 500  # Maximum records in a entity browser

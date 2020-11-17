@@ -26,10 +26,9 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.data.configuration.entity import Entity
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.column_editor import ColumnEditor
-
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_entity_attributes_editor.ui'))

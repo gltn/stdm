@@ -20,7 +20,6 @@ email                : stdm@unhabitat.org
 
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
-    QWidget,
     QApplication
 )
 
@@ -33,7 +32,7 @@ from stdm.ui.gui_utils import GuiUtils
 class ChartTypeUISettings(object):
     registry = []
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         self._parent_editor = parent
 
     @classmethod
@@ -89,4 +88,3 @@ class VerticalBarChartSettings(ChartTypeUISettings):
 
 
 VerticalBarChartSettings.register()
-

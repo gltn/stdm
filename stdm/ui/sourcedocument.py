@@ -21,7 +21,6 @@ from collections import OrderedDict
 from datetime import datetime
 
 import sqlalchemy
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QFile,

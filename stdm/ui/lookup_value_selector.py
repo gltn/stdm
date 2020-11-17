@@ -31,9 +31,8 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.settings import current_profile
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
-
+from stdm.ui.notification import NotificationBar
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_lookup_value_selector.ui'))

@@ -49,9 +49,9 @@ from stdm.data.pg_utils import vector_layer
 from stdm.settings import current_profile
 from stdm.ui.admin_unit_manager import SELECT
 from stdm.ui.admin_unit_selector import AdminUnitSelector
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.lookup_value_selector import LookupValueSelector
 from stdm.utils.util import entity_id_to_attr, code_columns
-from stdm.ui.gui_utils import GuiUtils
 
 
 class ForeignKeyLineEdit(QLineEdit):

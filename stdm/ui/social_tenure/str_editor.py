@@ -28,7 +28,6 @@ from qgis.PyQt.QtCore import (
     QItemSelectionModel,
 )
 from qgis.PyQt.QtGui import (
-    QIcon,
     QStandardItemModel,
     QStandardItem,
 )
@@ -53,6 +52,7 @@ from sqlalchemy import (
 from stdm.data.pg_utils import pg_table_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.social_tenure.str_components import (
     Party,
@@ -66,7 +66,6 @@ from stdm.ui.social_tenure.str_data import (
     STRDataStore,
     STRDBHandler
 )
-from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     format_name,
     entity_attr_to_model
@@ -938,6 +937,7 @@ class ValidateSTREditor(object):
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('social_tenure/ui_str_editor.ui'))
+
 
 class STREditor(WIDGET, BASE):
     """

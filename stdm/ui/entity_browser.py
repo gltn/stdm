@@ -31,9 +31,6 @@ from qgis.PyQt.QtCore import (
     QItemSelectionModel,
     QRegExp
 )
-from qgis.PyQt.QtGui import (
-    QIcon
-)
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox,
@@ -76,10 +73,9 @@ from stdm.ui.document_viewer import DocumentViewManager
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.gps_tool import GPSToolDialog
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
 from stdm.ui.notification import NotificationBar
-from stdm.ui.gui_utils import GuiUtils
-
 # from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.sourcedocument import (
     DocumentWidget,

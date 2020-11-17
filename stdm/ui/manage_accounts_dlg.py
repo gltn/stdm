@@ -23,8 +23,7 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
-    QIcon,
-    QPixmap
+    QIcon
 )
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -36,10 +35,10 @@ from qgis.PyQt.QtWidgets import (
 from stdm.data.qtmodels import UsersRolesModel
 from stdm.security.membership import Membership
 from stdm.security.roleprovider import RoleProvider
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.new_role_dlg import newRoleDlg
 from stdm.ui.new_user_dlg import newUserDlg
 from stdm.utils.util import getIndex
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_user_role_manage.ui'))
