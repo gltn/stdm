@@ -31,16 +31,26 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea,
     QToolButton
 )
+
 from qgis.gui import (
     QgsCollapsibleGroupBoxBasic
+)
+from qgis.core import (
+    QgsLayoutFrame,
+    QgsLayoutTableColumn,
+    QgsLayoutItemLabel,
+    QgsLayoutItemMap,
+    QgsLayoutItemPicture,
+    Qgis
 )
 
 from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
-from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 from stdm.ui.composer.qr_code import ComposerQREditor
+from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
+
 from stdm.utils.util import PLUGIN_DIR
 
 

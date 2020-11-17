@@ -22,7 +22,7 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtXml import (
     QDomDocument
 )
-
+from stdm.utils.util import getIndex
 from stdm.utils.reverse_dict import ReverseDict
 
 __all__ = ["ComposerDataSource"]

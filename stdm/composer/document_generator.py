@@ -16,11 +16,14 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import logging
 import uuid
+import logging
 from datetime import date, datetime
 from numbers import Number
 
+from qgis.PyQt.QtWidgets import (
+    QApplication
+)
 from qgis.PyQt.QtCore import (
     QObject,
     QIODevice,
@@ -28,10 +31,8 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QDir
 )
-from qgis.PyQt.QtWidgets import (
-    QApplication
-)
 from qgis.PyQt.QtXml import QDomDocument
+
 from qgis.core import (
     QgsLayoutItemLabel,
     QgsLayoutItemMap,
@@ -39,38 +40,42 @@ from qgis.core import (
     QgsPrintLayout,
     QgsFeature,
     QgsGeometry,
+    Qgis,
     QgsProject,
     QgsVectorLayer,
     QgsWkbTypes
 )
+
 from sqlalchemy.exc import SQLAlchemyError
+
 from sqlalchemy.schema import (
     Table,
     MetaData
 )
 
-from stdm.composer.chart_configuration import ChartConfigurationCollection
-from stdm.composer.composer_data_source import ComposerDataSource
-from stdm.composer.composer_wrapper import load_table_layers
-from stdm.composer.photo_configuration import PhotoConfigurationCollection
-from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
-from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
-from stdm.composer.table_configuration import TableConfigurationCollection
-from stdm.data.database import STDMDb
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.pg_utils import (
     geometryType,
     pg_table_exists,
     vector_layer
 )
+from stdm.data.database import STDMDb
 from stdm.settings import (
     current_profile
 )
-from stdm.settings.registryconfig import RegistryConfig
-from stdm.ui.forms.widgets import EntityValueFormatter
 from stdm.ui.sourcedocument import (
     network_document_path
 )
 from stdm.utils.util import PLUGIN_DIR
+from stdm.ui.forms.widgets import EntityValueFormatter
+
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.composer_wrapper import load_table_layers
+from stdm.composer.chart_configuration import ChartConfigurationCollection
+from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
+from stdm.composer.photo_configuration import PhotoConfigurationCollection
+from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
+from stdm.composer.table_configuration import TableConfigurationCollection
 
 LOGGER = logging.getLogger('stdm')
 
