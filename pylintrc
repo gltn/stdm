@@ -40,7 +40,7 @@ ignore=stdm.third_party
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 # see http://stackoverflow.com/questions/21487025/pylint-locally-defined-disables-still-give-warnings-how-to-suppress-them
-disable=locally-disabled,C0103,no-name-in-module,duplicate-code,import-error,line-too-long,too-many-arguments,too-many-instance-attributes,no-self-use,too-few-public-methods,bad-option-value,fixme
+disable=E800,locally-disabled,C0103,no-name-in-module,duplicate-code,import-error,line-too-long,too-many-arguments,too-many-instance-attributes,no-self-use,too-few-public-methods,bad-option-value,fixme
 
 
 [REPORTS]
