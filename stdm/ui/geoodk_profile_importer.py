@@ -33,9 +33,6 @@ from qgis.PyQt.QtCore import (
     Qt,
     QCoreApplication
 )
-from qgis.PyQt.QtGui import (
-    QIcon
-)
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QMessageBox,
@@ -44,6 +41,7 @@ from qgis.PyQt.QtWidgets import (
     QDialogButtonBox,
     QApplication
 )
+from sqlalchemy.exc import SQLAlchemyError
 
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
@@ -55,10 +53,9 @@ from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
-from sqlalchemy.exc import SQLAlchemyError
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.custom_item_model import EntitiesModel
-from stdm.ui.gui_utils import GuiUtils
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_import.ui'))

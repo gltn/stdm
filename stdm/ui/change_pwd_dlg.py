@@ -30,7 +30,6 @@ from stdm.security.exception import SecurityException
 from stdm.security.membership import Membership
 from stdm.ui.gui_utils import GuiUtils
 
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_changepwd.ui'))
 

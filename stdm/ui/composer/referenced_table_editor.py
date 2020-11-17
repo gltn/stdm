@@ -20,25 +20,23 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QComboBox,
-    QGridLayout,
-    QLabel,
-    QMessageBox,
-    QWidget
-)
 from qgis.PyQt.QtCore import (
     QMetaObject,
     QSize,
     pyqtSignal,
     pyqtSlot
 )
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QGridLayout,
+    QLabel,
+    QWidget
+)
 
 from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
-    pg_views,
     TABLES,
     VIEWS
 )
@@ -52,10 +50,12 @@ from stdm.utils.util import (
 
 __all__ = ["LinkedTableProps", "ReferencedTableEditor"]
 
+
 class LinkedTableProps(object):
     """
     Container for user selections in the ReferencedTableEditor widget.
     """
+
     def __init__(self, **kwargs):
         self._linked_table = kwargs.pop("linked_table", "")
         self._source_field = kwargs.pop("source_field", "")
@@ -85,6 +85,7 @@ class LinkedTableProps(object):
     def set_linked_field(self, field):
         self._linked_field = field
 
+
 class ReferencedTableEditor(QWidget):
     referenced_table_changed = pyqtSignal(str)
 
@@ -96,7 +97,7 @@ class ReferencedTableEditor(QWidget):
 
         self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
 
-        #Tables that will be omitted from the referenced table list
+        # Tables that will be omitted from the referenced table list
         self._omit_ref_tables = []
 
     def add_omit_table(self, table):
@@ -168,12 +169,12 @@ class ReferencedTableEditor(QWidget):
         if self._current_profile is not None:
             self._current_profile_tables = self._current_profile.table_names()
 
-        #Connect signals
+        # Connect signals
         QMetaObject.connectSlotsByName(self)
         self.cbo_ref_table.currentIndexChanged[str].connect(self._load_source_table_fields)
 
     @pyqtSlot(str)
-    def on_data_source_changed(self,data_source_name):
+    def on_data_source_changed(self, data_source_name):
         """
         Loads data source fields for the given data source name.
         """
@@ -198,8 +199,8 @@ class ReferencedTableEditor(QWidget):
         l_field = self.cbo_referencing_col.currentText()
 
         return LinkedTableProps(linked_table=l_table,
-                                              source_field=s_field,
-                                              linked_field=l_field)
+                                source_field=s_field,
+                                linked_field=l_field)
 
     def set_properties(self, table_props):
         """
@@ -245,22 +246,22 @@ class ReferencedTableEditor(QWidget):
     def reset_referenced_table(self):
         self._reset_combo_index(self.cbo_ref_table)
 
-    def load_link_tables(self, reg_exp=None, source=TABLES|VIEWS):
+    def load_link_tables(self, reg_exp=None, source=TABLES | VIEWS):
         self.cbo_ref_table.clear()
         self.cbo_ref_table.addItem("")
 
         ref_tables = []
         source_tables = []
-        #Table source
+        # Table source
         if (TABLES & source) == TABLES:
             ref_tables.extend(pg_tables(exclude_lookups=True))
 
             for t in ref_tables:
-                #Ensure we are dealing with tables in the current profile
+                # Ensure we are dealing with tables in the current profile
                 if not t in self._current_profile_tables:
                     continue
 
-                #Assert if the table is in the list of omitted tables
+                # Assert if the table is in the list of omitted tables
                 if t in self._omit_ref_tables:
                     continue
 

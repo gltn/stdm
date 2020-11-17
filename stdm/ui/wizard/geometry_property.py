@@ -26,12 +26,10 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.gui import QgsProjectionSelectionDialog
 
-
 from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_geom_property.ui'))
-
 
 geom_types = ['POINT', 'LINE', 'POLYGON', 'MULTIPOINT', 'MULTILINE',
               'MULTIPOLYGON']

@@ -19,7 +19,6 @@ email                : stdm@unhabitat.org
 """
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
-    QDialog,
     QDialogButtonBox,
     QHeaderView
 )

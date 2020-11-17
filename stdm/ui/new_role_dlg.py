@@ -19,7 +19,6 @@ email                : gkahiu@gmail.com
 import string
 
 import sqlalchemy
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QRegExp

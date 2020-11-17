@@ -70,9 +70,8 @@ from stdm.settings.registryconfig import (
 )
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
-from stdm.ui.social_tenure.str_editor import EditSTREditor
 from stdm.ui.gui_utils import GuiUtils
-
+from stdm.ui.social_tenure.str_editor import EditSTREditor
 from stdm.utils.util import (
     format_name,
     entity_attr_to_model

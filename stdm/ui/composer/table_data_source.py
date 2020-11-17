@@ -24,21 +24,14 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
-from qgis.core import (
-        QgsProject,
-        QgsLayoutFrame,
-        )
-
 from stdm.data.pg_utils import (
     vector_layer
 )
-
+from stdm.ui.composer.referenced_table_editor import LinkedTableProps
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
 )
-from stdm.ui.composer.referenced_table_editor import LinkedTableProps
-from stdm.ui.gui_utils import GuiUtils
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_table_source.ui'))
@@ -57,16 +50,16 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
-        #Load fields if the data source has been specified
+        # Load fields if the data source has been specified
         ds_name = self._composer_wrapper.selectedDataSource()
         self.ref_table.load_data_source_fields(ds_name)
 
-        #Load source tables
+        # Load source tables
         self.ref_table.load_link_tables()
 
-        #Connect signals
+        # Connect signals
         self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)
-        #self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(self.set_table_vector_layer)
+        # self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(self.set_table_vector_layer)
 
     def composer_item(self):
         return self._composer_table_item
@@ -98,13 +91,12 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
             return
 
-        #No need to add the layer in the legend
+        # No need to add the layer in the legend
         QgsMapLayerRegistry.instance().addMapLayer(v_layer, False)
 
         if len(self.composer_item().columns()) > 0:
             self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
         self._composer_table_item.update()
-
 
     def configuration(self):
         from stdm.stdm.composer import TableConfiguration
@@ -119,9 +111,9 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
         return table_config
 
     def set_configuration(self, configuration):
-        #Load referenced table editor with item configuration settings.
+        # Load referenced table editor with item configuration settings.
         table_props = LinkedTableProps(linked_table=configuration.linked_table(),
-                                source_field=configuration.source_field(),
-                                linked_field=configuration.linked_field())
+                                       source_field=configuration.source_field(),
+                                       linked_field=configuration.linked_field())
 
         self.ref_table.set_properties(table_props)

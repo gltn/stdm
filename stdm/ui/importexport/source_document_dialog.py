@@ -19,7 +19,6 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtCore import (
     QDir
 )
@@ -34,9 +33,9 @@ from stdm.data.importexport.value_translators import SourceDocumentTranslator
 from stdm.settings.registryconfig import (
     last_document_path
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.notification import NotificationBar
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('importexport/ui_source_document_dialog.ui'))

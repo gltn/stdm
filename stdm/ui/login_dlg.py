@@ -30,13 +30,14 @@ from stdm.data.connection import DatabaseConnection
 from stdm.security.user import User
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.db_conn_dlg import dbconnDlg
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar
 
 SUPERUSER = 'postgres'
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_login.ui'))
+
 
 class loginDlg(WIDGET, BASE):
     '''

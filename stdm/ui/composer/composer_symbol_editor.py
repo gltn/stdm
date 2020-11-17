@@ -18,17 +18,15 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox,
     QPushButton,
     QWidget
 )
-from qgis.PyQt.QtCore import Qt
-
 from qgis.core import (
     QgsVectorLayer,
-    QgsSimpleFillSymbolLayer,
     QgsSimpleMarkerSymbolLayer
 )
 from qgis.gui import (
@@ -38,13 +36,12 @@ from qgis.gui import (
 )
 
 from stdm.data.pg_utils import (
-   table_column_names,
-   geometryType
+    table_column_names,
+    geometryType
 )
-from stdm.utils.util import setComboCurrentIndexWithText
-
-from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.composer.composer_spcolumn_styler import ComposerSpatialColumnEditor
+from stdm.ui.gui_utils import GuiUtils
+from stdm.utils.util import setComboCurrentIndexWithText
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_symbol_editor.ui'))
@@ -55,20 +52,23 @@ class _SymbolLayerProxyWidgetMixin(object):
     Removes data-defined properties button plus any additional
     customizations common across the symbol layer widgets.
     """
+
     def remove_data_defined_properties_button(self):
-        btn_data_prop = self.findChild(QPushButton,"mDataDefinedPropertiesButton")
+        btn_data_prop = self.findChild(QPushButton, "mDataDefinedPropertiesButton")
         if not btn_data_prop is None:
             btn_data_prop.setVisible(False)
+
 
 class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerWidget,
                                           _SymbolLayerProxyWidgetMixin):
     """
     Use this proxy so that we can manually create a marker symbol layer.
     """
+
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleMarkerSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
-        #Set symbol layer for the widget
+        # Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
             self._sym_layer = QgsSimpleMarkerSymbolLayer()
@@ -79,15 +79,17 @@ class _SimpleMarkerSymbolLayerProxyWidget(QgsSimpleMarkerSymbolLayerWidget,
 
         self.remove_data_defined_properties_button()
 
+
 class _SimpleLineSymbolLayerProxyWidget(QgsSimpleLineSymbolLayerWidget,
                                         _SymbolLayerProxyWidgetMixin):
     """
     Use this proxy so that we can manually create a line symbol layer.
     """
+
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleLineSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
-        #Set symbol layer for the widget
+        # Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
             self._sym_layer = QgsSimpleMarkerSymbolLayer()
@@ -97,6 +99,7 @@ class _SimpleLineSymbolLayerProxyWidget(QgsSimpleLineSymbolLayerWidget,
 
         self.remove_data_defined_properties_button()
 
+
 class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
                                         _SymbolLayerProxyWidgetMixin):
     """
@@ -104,10 +107,11 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
     This workaround disconnects all signals associated with the fill color button and manually
     reconnects using the 'colorChanged' signal to load color selection dialog.
     """
+
     def __init__(self, vectorLayer, parent=None, symbol_layer=None):
         QgsSimpleFillSymbolLayerWidget.__init__(self, vectorLayer, parent)
 
-        #Set symbol layer for the widget
+        # Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
             self._sym_layer = QgsSimpleFillSymbolLayerV2()
@@ -118,20 +122,22 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
 
         self.remove_data_defined_properties_button()
 
-        self._btnFillColor = self.findChild(QPushButton,"btnChangeColor")
+        self._btnFillColor = self.findChild(QPushButton, "btnChangeColor")
         if not self._btnFillColor is None:
             self._btnFillColor.colorChanged.disconnect()
             self._btnFillColor.colorChanged.connect(self.onSetFillColor)
 
-    def onSetFillColor(self,color):
+    def onSetFillColor(self, color):
         self.symbolLayer().setFillColor(color)
+
 
 class ComposerSymbolEditor(WIDGET, BASE):
     """
     Widget for defining symbology properties for the selected spatial field.
     """
+
     def __init__(self, composerWrapper, parent=None):
-        QWidget.__init__(self,parent)
+        QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.btnAddField.setIcon(GuiUtils.get_icon('add.png'))
@@ -140,11 +146,11 @@ class ComposerSymbolEditor(WIDGET, BASE):
         self._composerWrapper = composerWrapper
         self._editorMappings = {}
 
-        #Load fields if the data source has been specified
+        # Load fields if the data source has been specified
         self._ds_name = self._composerWrapper.selectedDataSource()
         self._load_fields()
 
-        #Connect signals
+        # Connect signals
         self._composerWrapper.dataSourceSelected.connect(self.on_data_source_changed)
         self.btnAddField.clicked.connect(self.on_add_column_styler_widget)
         self.btnClear.clicked.connect(self.on_clear_tabs)
@@ -214,13 +220,13 @@ class ComposerSymbolEditor(WIDGET, BASE):
 
         if style_editor is None:
             QMessageBox.critical(self,
-                                QApplication.translate("ComposerSymbolEditor",
-                                                       "Symbol Editor"),
-                                QApplication.translate("ComposerSymbolEditor",
-                                                       "The symbol editor could "
-                                                       "not be created.\nPlease"
-                                                       " check the geometry type"
-                                                       " of the spatial column."))
+                                 QApplication.translate("ComposerSymbolEditor",
+                                                        "Symbol Editor"),
+                                 QApplication.translate("ComposerSymbolEditor",
+                                                        "The symbol editor could "
+                                                        "not be created.\nPlease"
+                                                        " check the geometry type"
+                                                        " of the spatial column."))
 
     def add_styling_widget(self, sp_field_mapping):
         """
@@ -233,7 +239,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
             sp_column_name = sp_field_mapping.spatialField()
             apply_mapping = True
         if not self._build_symbol_widget(sp_field_mapping) is None:
-            symbolEditor,geomType,srid = self._build_symbol_widget(
+            symbolEditor, geomType, srid = self._build_symbol_widget(
                 sp_field_mapping
             )
 
@@ -248,16 +254,16 @@ class ComposerSymbolEditor(WIDGET, BASE):
             styleEditor.setGeomType(geomType)
             styleEditor.setSrid(srid)
 
-            #Apply spatial field mapping
+            # Apply spatial field mapping
             if apply_mapping:
                 styleEditor.applyMapping(sp_field_mapping)
 
             self.tbFieldProperties.addTab(styleEditor, sp_column_name)
 
-            #Add column name and corresponding widget to the collection
+            # Add column name and corresponding widget to the collection
             self._editorMappings[sp_column_name] = styleEditor
 
-            #Set current spatial field in the combobox
+            # Set current spatial field in the combobox
             self.set_current_spatial_field(sp_column_name)
 
             return styleEditor
@@ -273,7 +279,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
             sp_column_name = sp_field_mapping.spatialField()
             sym_layer = sp_field_mapping.symbolLayer()
 
-        geom_type,srid = geometryType(self._ds_name, sp_column_name)
+        geom_type, srid = geometryType(self._ds_name, sp_column_name)
 
         if not geom_type:
             return None

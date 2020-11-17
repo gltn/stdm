@@ -23,7 +23,6 @@ from collections import OrderedDict
 from datetime import date
 
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtCore import (
     QTimer,
     Qt,
@@ -34,9 +33,6 @@ from qgis.PyQt.QtCore import (
     QRegExp,
     QSortFilterProxyModel,
     pyqtSlot
-)
-from qgis.PyQt.QtGui import (
-    QIcon,
 )
 from qgis.PyQt.QtWidgets import (
     QMainWindow,
@@ -75,6 +71,7 @@ from stdm.security.authorization import Authorizer
 from stdm.settings import current_profile
 from stdm.ui.feature_details import DetailsTreeView, SelectedItem
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
 )
@@ -90,11 +87,8 @@ from stdm.utils.util import (
     format_name,
     lookup_parent_entity
 )
-from stdm.ui.gui_utils import GuiUtils
-
 
 LOGGER = logging.getLogger('stdm')
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_view_str.ui'))

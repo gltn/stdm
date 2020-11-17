@@ -26,9 +26,6 @@ from qgis.PyQt.QtCore import (
     QSortFilterProxyModel,
     QVariant
 )
-from qgis.PyQt.QtGui import (
-    QIcon
-)
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialogButtonBox,
@@ -59,8 +56,8 @@ from stdm.ui.forms.widgets import (
     ColumnWidgetRegistry,
     WidgetException
 )
-from stdm.utils.util import getIndex
 from stdm.ui.gui_utils import GuiUtils
+from stdm.utils.util import getIndex
 
 __all__ = ["ForeignKeyMapper", "ForeignKeyMapperExpressionDialog"]
 

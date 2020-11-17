@@ -28,10 +28,9 @@ from stdm.data.importexport.value_translators import RelatedTableTranslator
 from stdm.data.pg_utils import (
     table_column_names
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.notification import NotificationBar
-from stdm.ui.gui_utils import GuiUtils
-
 
 __all__ = ["RelatedTableDialog"]
 

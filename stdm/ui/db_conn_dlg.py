@@ -32,9 +32,9 @@ from stdm.data.config import DatabaseConfig
 from stdm.data.connection import DatabaseConnection
 from stdm.ui.gui_utils import GuiUtils
 
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_dbconn.ui'))
+
 
 class dbconnDlg(WIDGET, BASE):
     '''

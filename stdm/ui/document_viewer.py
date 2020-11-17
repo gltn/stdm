@@ -35,7 +35,6 @@ from qgis.PyQt.QtGui import (
     QImage,
     QPixmap,
     QPalette,
-    QIcon,
     QPainter,
     QWheelEvent,
     QResizeEvent,
@@ -60,10 +59,10 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.settings import current_profile
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     guess_extension
 )
-from stdm.ui.gui_utils import GuiUtils
 
 LOGGER = logging.getLogger('stdm')
 

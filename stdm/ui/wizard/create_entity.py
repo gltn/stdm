@@ -36,8 +36,8 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.data.configuration.entity import entity_factory
 from stdm.data.pg_utils import pg_table_exists
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_entity.ui'))
@@ -85,7 +85,7 @@ class EntityEditor(WIDGET, BASE):
 
     def supporting_document_exists(self):
         sd_name = '{0}_{1}_{2}'.format(self.profile.prefix,
-                                        self.entity.short_name.lower(), 'supporting_document')
+                                       self.entity.short_name.lower(), 'supporting_document')
         return pg_table_exists(sd_name)
 
     def show_notification(self, message):

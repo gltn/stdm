@@ -31,7 +31,6 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.data.configuration.entity_relation import EntityRelation
-
 from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(

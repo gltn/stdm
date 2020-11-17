@@ -37,9 +37,8 @@ from stdm.data.configuration.value_list import (
     ValueList,
     CodeValue
 )
-from stdm.ui.notification import NotificationBar
-
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_lookup_value.ui'))

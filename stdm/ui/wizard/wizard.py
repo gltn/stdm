@@ -58,7 +58,6 @@ from stdm.data.configuration.columns import (
 )
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
-from stdm.data.configuration.exception import ConfigurationException
 from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
@@ -80,6 +79,7 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.column_depend import ColumnDepend
 from stdm.ui.wizard.column_editor import ColumnEditor
@@ -102,8 +102,6 @@ from stdm.ui.wizard.spatial_tenure_types_dialog import (
     SpatialUnitTenureTypeDialog
 )
 from stdm.utils.util import enable_drag_sort
-from stdm.ui.gui_utils import GuiUtils
-
 
 # create logger
 LOGGER = logging.getLogger('stdm')
@@ -123,6 +121,7 @@ EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_stdm_config.ui'))
+
 
 class ConfigWizard(WIDGET, BASE):
     """

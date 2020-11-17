@@ -29,8 +29,8 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     SHOW_LICENSE
 )
-from stdm.ui.notification import NotificationBar, ERROR
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar, ERROR
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_license_agreement.ui'))

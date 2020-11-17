@@ -36,8 +36,8 @@ from stdm.navigation.socialtenure.formatters import (
     STRNodeFormatter,
     BaseSTRNode
 )
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import NotificationBar
 
 
 class _AdminSpatialUnitConfiguration(object):

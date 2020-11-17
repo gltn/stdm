@@ -21,7 +21,6 @@ from qgis.PyQt.QtCore import (
     QDir,
     QFileInfo
 )
-from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QPushButton,
     QComboBox,
@@ -43,8 +42,8 @@ from stdm.settings.registryconfig import (
     last_document_path,
     set_last_document_path
 )
-from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.sourcedocument import SourceDocumentManager
 
 
 class _DocumentTypeContainer(QWidget):

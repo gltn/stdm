@@ -21,7 +21,6 @@ email                : gkahiu@gmail.com
 import re
 
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtWidgets import (
     QTabWidget,
     QApplication,
@@ -50,10 +49,10 @@ from stdm.navigation.web_spatial_loader import (
 from stdm.settings.registryconfig import (
     selection_color
 )
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     ERROR
 )
-from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 
 WIDGET, BASE = uic.loadUiType(

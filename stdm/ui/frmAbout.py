@@ -19,7 +19,6 @@ email                : gkahiu@gmail.com
 import os
 
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtWidgets import (
     QDialog
 )
@@ -28,6 +27,7 @@ from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_about_stdm.ui'))
+
 
 class AboutDialog(WIDGET, BASE):
 

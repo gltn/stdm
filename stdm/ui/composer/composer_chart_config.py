@@ -25,22 +25,19 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
+from stdm.ui.composer.chart_type_editors import DataSourceNotifier
+from stdm.ui.composer.chart_type_register import ChartTypeUISettings
+from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.notification import (
+    NotificationBar
+)
 from stdm.utils.util import (
     setComboCurrentIndexWithItemData,
     setComboCurrentIndexWithText
 )
 
-from stdm.ui.notification import (
-    NotificationBar
-)
-
-from stdm.ui.composer.chart_type_register import ChartTypeUISettings
-from stdm.ui.composer.chart_type_editors import DataSourceNotifier
-from stdm.ui.gui_utils import GuiUtils
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_chart_config.ui'))
-
 
 
 class ComposerChartConfigEditor(WIDGET, BASE):
@@ -59,23 +56,23 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         '''
         self._short_name_idx = {}
 
-        #Add registered chart types
+        # Add registered chart types
         self._load_chart_type_settings()
 
-        #Load legend positions
+        # Load legend positions
         self._load_legend_positions()
 
         self.groupBox_2.setCollapsed(True)
         self.groupBox_2.collapsedStateChanged.connect(self._on_series_properties_collapsed)
 
-        #Load fields if the data source has been specified
+        # Load fields if the data source has been specified
         ds_name = self._composer_wrapper.selectedDataSource()
         self.ref_table.load_data_source_fields(ds_name)
 
-        #Load referenced table list
+        # Load referenced table list
         self.ref_table.load_link_tables()
 
-        #Connect signals
+        # Connect signals
         self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
 
@@ -83,12 +80,12 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         from stdm.composer import legend_positions
 
         self.cbo_legend_pos.clear()
-        for k,v in legend_positions.items():
-            self.cbo_legend_pos.addItem(k,v)
+        for k, v in legend_positions.items():
+            self.cbo_legend_pos.addItem(k, v)
 
-        #Select 'Automatic' option
+        # Select 'Automatic' option
         setComboCurrentIndexWithText(self.cbo_legend_pos,
-            QApplication.translate("ChartConfiguration", "Automatic"))
+                                     QApplication.translate("ChartConfiguration", "Automatic"))
 
     def _load_chart_type_settings(self):
         for cts in ChartTypeUISettings.registry:
@@ -108,7 +105,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         self.cbo_chart_type.insertItem(widget_idx, cts_obj.icon(),
                                        cts_obj.title())
 
-        #Register short_name index
+        # Register short_name index
         if cts_obj.short_name():
             self._short_name_idx[cts_obj.short_name()] = widget_idx
 
@@ -150,7 +147,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                 curr_editor.on_table_name_changed(table)
 
     def configuration(self):
-        #Return chart configuration settings
+        # Return chart configuration settings
         config = None
 
         curr_editor = self.series_type_container.currentWidget()
@@ -159,12 +156,12 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                 config = curr_editor.configuration()
             except AttributeError:
                 raise AttributeError(QApplication.translate("ComposerChartConfigEditor",
-                                         "Series editor does not contain a method for "
-                                         "returning a ChartConfigurationSettings object."))
+                                                            "Series editor does not contain a method for "
+                                                            "returning a ChartConfigurationSettings object."))
 
         else:
             raise Exception(QApplication.translate("ComposerChartConfigEditor",
-                                         "No series editor found."))
+                                                   "No series editor found."))
 
         if not config is None:
             ref_table_config = self.ref_table.properties()
@@ -180,14 +177,14 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         return self._picture_item
 
     def _set_graph_properties(self, config):
-        #Set the general graph properties from the config object
+        # Set the general graph properties from the config object
         self.txt_plot_title.setText(config.title())
         self.gb_legend.setChecked(config.insert_legend())
         setComboCurrentIndexWithItemData(self.cbo_legend_pos,
                                          config.legend_position())
 
     def set_configuration(self, configuration):
-        #Load configuration settings
+        # Load configuration settings
         short_name = configuration.plot_type
 
         if short_name:
@@ -195,10 +192,10 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                 plot_type_idx = self._short_name_idx[short_name]
                 self.cbo_chart_type.setCurrentIndex(plot_type_idx)
 
-                #Set linked table properties
+                # Set linked table properties
                 self.ref_table.set_properties(configuration.linked_table_props())
 
-                #Set series editor properties
+                # Set series editor properties
                 curr_editor = self.series_type_container.currentWidget()
                 if not curr_editor is None:
                     try:
@@ -207,12 +204,12 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
                     except AttributeError:
                         msg = QApplication.translate("ComposerChartConfigEditor",
-                        "Configuration could not be set for series editor.")
+                                                     "Configuration could not be set for series editor.")
                         self._notif_bar.clear()
                         self._notif_bar.insertErrorNotification(msg)
 
         else:
             msg = QApplication.translate("ComposerChartConfigEditor",
-                        "Configuration failed to load. Plot type cannot be determined.")
+                                         "Configuration failed to load. Plot type cannot be determined.")
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(msg)

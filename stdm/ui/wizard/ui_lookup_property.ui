@@ -1,95 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LookupProperty</class>
- <widget class="QDialog" name="LookupProperty">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>337</width>
-    <height>86</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Lookup property</string>
-  </property>
-  <layout class="QFormLayout" name="formLayout">
-   <property name="verticalSpacing">
-    <number>18</number>
-   </property>
-   <item row="0" column="0" colspan="2">
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QLabel" name="label">
-      <property name="maximumSize">
-       <size>
-        <width>200</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="text">
-       <string>Lookup</string>
-      </property>
-     </widget>
-     <widget class="QComboBox" name="cboPrimaryEntity">
-      <property name="insertPolicy">
-       <enum>QComboBox::InsertAtTop</enum>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnNewlookup">
-      <property name="text">
-       <string>New lookup ...</string>
-      </property>
-     </widget>
+    <class>LookupProperty</class>
+    <widget class="QDialog" name="LookupProperty">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>337</width>
+                <height>86</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Lookup property</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+            <property name="verticalSpacing">
+                <number>18</number>
+            </property>
+            <item row="0" column="0" colspan="2">
+                <widget class="QSplitter" name="splitter">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <widget class="QLabel" name="label">
+                        <property name="maximumSize">
+                            <size>
+                                <width>200</width>
+                                <height>16777215</height>
+                            </size>
+                        </property>
+                        <property name="text">
+                            <string>Lookup</string>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" name="cboPrimaryEntity">
+                        <property name="insertPolicy">
+                            <enum>QComboBox::InsertAtTop</enum>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" name="btnNewlookup">
+                        <property name="text">
+                            <string>New lookup ...</string>
+                        </property>
+                    </widget>
+                </widget>
+            </item>
+            <item row="1" column="1">
+                <widget class="QDialogButtonBox" name="buttonBox">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="standardButtons">
+                        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+                    </property>
+                </widget>
+            </item>
+        </layout>
     </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>LookupProperty</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>LookupProperty</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+    <resources/>
+    <connections>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>accepted()</signal>
+            <receiver>LookupProperty</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>248</x>
+                    <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>157</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>rejected()</signal>
+            <receiver>LookupProperty</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>316</x>
+                    <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>286</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
 </ui>

@@ -13,22 +13,14 @@ __copyright__ = 'Copyright 2018, North Road'
 # This will get replaced with a git SHA1 when you do a git archive
 __revision__ = '$Format:%H$'
 
-import os
 import math
+import os
 from typing import Optional
-
-from qgis.core import (
-    Qgis,
-    QgsExpressionContext,
-    QgsRenderContext,
-    QgsSymbol
-)
 
 from qgis.PyQt.QtCore import (
     QSize,
     QPointF
 )
-
 from qgis.PyQt.QtGui import (
     QIcon,
     QFont,
@@ -36,6 +28,12 @@ from qgis.PyQt.QtGui import (
     QImage,
     QPainter,
     QPixmap
+)
+from qgis.core import (
+    Qgis,
+    QgsExpressionContext,
+    QgsRenderContext,
+    QgsSymbol
 )
 
 

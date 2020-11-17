@@ -44,7 +44,6 @@ from qgis.PyQt.QtGui import (
     QPainter,
     QPainterPath,
     QPen,
-    QPixmap,
     QPolygonF,
     QTextLayout
 )
@@ -66,8 +65,8 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
-from stdm.ui.image_export_settings import ImageExportSettings
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.image_export_settings import ImageExportSettings
 
 
 class Arrow(QGraphicsLineItem):

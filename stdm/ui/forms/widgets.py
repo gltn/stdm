@@ -75,7 +75,6 @@ from stdm.ui.customcontrols.relation_line_edit import (
 from stdm.ui.gui_utils import GuiUtils
 
 
-
 class WidgetException(Exception):
     """General exceptions thrown when creating form widgets."""
     pass

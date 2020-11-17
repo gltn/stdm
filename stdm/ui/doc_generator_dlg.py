@@ -53,10 +53,9 @@ from stdm.settings.registryconfig import (
 )
 from stdm.ui.composer import TemplateDocumentSelector
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.sourcedocument import source_document_location
-from stdm.ui.gui_utils import GuiUtils
-
 from stdm.utils.util import (
     format_name,
     entity_display_columns,

@@ -32,7 +32,6 @@ from qgis.PyQt.QtCore import (
     QTimer
 )
 from qgis.PyQt.QtGui import (
-    QIcon,
     QFontMetrics
 )
 from qgis.PyQt.QtWidgets import (
@@ -65,11 +64,10 @@ from stdm.ui.forms.spatial_unit_form import (
     STDMFieldWidget
 )
 from stdm.ui.gps_tool import GPSToolDialog
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     profile_and_user_views
 )
-from stdm.ui.gui_utils import GuiUtils
-
 
 LOGGER = logging.getLogger('stdm')
 

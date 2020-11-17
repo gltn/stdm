@@ -34,11 +34,11 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.ui.customcontrols.generic_delegate import GenericDelegate
+from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     code_columns,
     string_to_boolean
 )
-from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_code_property.ui'))
