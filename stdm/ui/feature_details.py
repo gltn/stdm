@@ -516,6 +516,7 @@ class DetailsDBHandler(LayerSelectionHandler):
             model_obj.id
         )
 
+
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_feature_details.ui'))
 

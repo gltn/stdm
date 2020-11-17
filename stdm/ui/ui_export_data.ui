@@ -1,354 +1,354 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>frmExportWizard</class>
- <widget class="QWizard" name="frmExportWizard">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>606</width>
-    <height>498</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Export STDM Data...</string>
-  </property>
-  <property name="wizardStyle">
-   <enum>QWizard::ModernStyle</enum>
-  </property>
-  <widget class="QWizardPage" name="pgDestination">
-   <property name="title">
-    <string>Destination Options</string>
-   </property>
-   <property name="subTitle">
-    <string>Select destination file name and format.</string>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_2">
-    <item>
-     <widget class="QGroupBox" name="groupBox_3">
-      <property name="title">
-       <string>Destination Format:</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QRadioButton" name="rbShp">
-         <property name="text">
-          <string>ESRI Shapefile</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbCSV">
-         <property name="text">
-          <string>Textual - CSV format</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbMapInfo">
-         <property name="text">
-          <string>MapInfo File</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbGPX">
-         <property name="text">
-          <string>GPX</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbDXF">
-         <property name="text">
-          <string>DXF</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_4">
-      <property name="title">
-       <string>Destination File:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QLineEdit" name="txtExportPath">
-         <property name="maxLength">
-          <number>200</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="btnDestFile">
-         <property name="maximumSize">
-          <size>
-           <width>30</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWizardPage" name="pgSrcTab">
-   <property name="title">
-    <string>Export Table</string>
-   </property>
-   <property name="subTitle">
-    <string>Select the table or view from the STDM database whose contents are to be exported.</string>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0" rowspan="2">
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Source Table:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QListWidget" name="lstSrcTab">
-         <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="title">
-       <string>Textual Columns:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <item row="0" column="0">
-        <widget class="QToolButton" name="select_all">
-         <property name="text">
-          <string>Select All</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QToolButton" name="select_none">
-         <property name="text">
-          <string>Select None</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="QListWidget" name="lstSrcCols_2"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QGroupBox" name="groupBox_8">
-      <property name="title">
-       <string>Spatial Columns:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="0" column="0">
-        <widget class="QComboBox" name="cboSpatialCols_2"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWizardPage" name="pgFilter">
-   <property name="title">
-    <string>Filter Data</string>
-   </property>
-   <property name="subTitle">
-    <string>Specify a custom query to filter out the resulting dataset.</string>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout_6">
-    <item>
-     <widget class="QGroupBox" name="gpQBuilder">
-      <property name="title">
-       <string>Query Builder:</string>
-      </property>
-      <property name="checkable">
-       <bool>true</bool>
-      </property>
-      <property name="checked">
-       <bool>false</bool>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QGroupBox" name="groupBox_5">
-           <property name="title">
-            <string/>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="2" column="1">
-             <widget class="QPushButton" name="btnUniqueVals">
-              <property name="text">
-               <string>Get Unique Values</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" rowspan="2">
-             <widget class="QListWidget" name="lstQueryCols">
-              <property name="selectionBehavior">
-               <enum>QAbstractItemView::SelectRows</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QListWidget" name="lstUniqueVals"/>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Unique Values:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Columns:</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QGroupBox" name="groupBox_6">
-             <property name="maximumSize">
-              <size>
-               <width>221</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="title">
-              <string>Operators:</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_5">
-              <item row="0" column="0">
-               <widget class="QPushButton" name="btnOpEq">
-                <property name="maximumSize">
-                 <size>
-                  <width>100</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>=</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QPushButton" name="btnOpNotEq">
-                <property name="text">
-                 <string>&lt;&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QPushButton" name="btnOpLike">
-                <property name="text">
-                 <string>LIKE</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="btnOpGreater">
-                <property name="text">
-                 <string>&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="btnOpGreaterEq">
-                <property name="text">
-                 <string>&gt;=</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <widget class="QPushButton" name="btnOpAnd">
-                <property name="text">
-                 <string>AND</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QPushButton" name="btnOpLess">
-                <property name="text">
-                 <string>&lt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QPushButton" name="btnOpLessEq">
-                <property name="text">
-                 <string>&lt;=</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QPushButton" name="btnOpOr">
-                <property name="text">
-                 <string>OR</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QTextEdit" name="txtWhereQuery"/>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="horizontalLayout">
-               <item>
-                <widget class="QPushButton" name="btnClearQuery">
-                 <property name="text">
-                  <string>Clear</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="btnQueryVerify">
-                 <property name="text">
-                  <string>Verify</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
+    <class>frmExportWizard</class>
+    <widget class="QWizard" name="frmExportWizard">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>606</width>
+                <height>498</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Export STDM Data...</string>
+        </property>
+        <property name="wizardStyle">
+            <enum>QWizard::ModernStyle</enum>
+        </property>
+        <widget class="QWizardPage" name="pgDestination">
+            <property name="title">
+                <string>Destination Options</string>
+            </property>
+            <property name="subTitle">
+                <string>Select destination file name and format.</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+                <item>
+                    <widget class="QGroupBox" name="groupBox_3">
+                        <property name="title">
+                            <string>Destination Format:</string>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout">
+                            <item>
+                                <widget class="QRadioButton" name="rbShp">
+                                    <property name="text">
+                                        <string>ESRI Shapefile</string>
+                                    </property>
+                                    <property name="checked">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbCSV">
+                                    <property name="text">
+                                        <string>Textual - CSV format</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbMapInfo">
+                                    <property name="text">
+                                        <string>MapInfo File</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbGPX">
+                                    <property name="text">
+                                        <string>GPX</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbDXF">
+                                    <property name="text">
+                                        <string>DXF</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item>
+                    <widget class="QGroupBox" name="groupBox_4">
+                        <property name="title">
+                            <string>Destination File:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout">
+                            <item row="0" column="0">
+                                <widget class="QLineEdit" name="txtExportPath">
+                                    <property name="maxLength">
+                                        <number>200</number>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="1">
+                                <widget class="QPushButton" name="btnDestFile">
+                                    <property name="maximumSize">
+                                        <size>
+                                            <width>30</width>
+                                            <height>16777215</height>
+                                        </size>
+                                    </property>
+                                    <property name="text">
+                                        <string>...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
             </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
- </widget>
- <resources/>
- <connections/>
+        </widget>
+        <widget class="QWizardPage" name="pgSrcTab">
+            <property name="title">
+                <string>Export Table</string>
+            </property>
+            <property name="subTitle">
+                <string>Select the table or view from the STDM database whose contents are to be exported.</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0" rowspan="2">
+                    <widget class="QGroupBox" name="groupBox_2">
+                        <property name="title">
+                            <string>Source Table:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_2">
+                            <item row="0" column="0">
+                                <widget class="QListWidget" name="lstSrcTab">
+                                    <property name="selectionBehavior">
+                                        <enum>QAbstractItemView::SelectRows</enum>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item row="0" column="1">
+                    <widget class="QGroupBox" name="groupBox_7">
+                        <property name="title">
+                            <string>Textual Columns:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_6">
+                            <item row="0" column="0">
+                                <widget class="QToolButton" name="select_all">
+                                    <property name="text">
+                                        <string>Select All</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="1">
+                                <widget class="QToolButton" name="select_none">
+                                    <property name="text">
+                                        <string>Select None</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="0" colspan="3">
+                                <widget class="QListWidget" name="lstSrcCols_2"/>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item row="1" column="1">
+                    <widget class="QGroupBox" name="groupBox_8">
+                        <property name="title">
+                            <string>Spatial Columns:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_7">
+                            <item row="0" column="0">
+                                <widget class="QComboBox" name="cboSpatialCols_2"/>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+            </layout>
+        </widget>
+        <widget class="QWizardPage" name="pgFilter">
+            <property name="title">
+                <string>Filter Data</string>
+            </property>
+            <property name="subTitle">
+                <string>Specify a custom query to filter out the resulting dataset.</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                    <widget class="QGroupBox" name="gpQBuilder">
+                        <property name="title">
+                            <string>Query Builder:</string>
+                        </property>
+                        <property name="checkable">
+                            <bool>true</bool>
+                        </property>
+                        <property name="checked">
+                            <bool>false</bool>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout_5">
+                            <item>
+                                <layout class="QVBoxLayout" name="verticalLayout_4">
+                                    <item>
+                                        <widget class="QGroupBox" name="groupBox_5">
+                                            <property name="title">
+                                                <string/>
+                                            </property>
+                                            <layout class="QGridLayout" name="gridLayout_4">
+                                                <item row="2" column="1">
+                                                    <widget class="QPushButton" name="btnUniqueVals">
+                                                        <property name="text">
+                                                            <string>Get Unique Values</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item row="1" column="0" rowspan="2">
+                                                    <widget class="QListWidget" name="lstQueryCols">
+                                                        <property name="selectionBehavior">
+                                                            <enum>QAbstractItemView::SelectRows</enum>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item row="1" column="1">
+                                                    <widget class="QListWidget" name="lstUniqueVals"/>
+                                                </item>
+                                                <item row="0" column="1">
+                                                    <widget class="QLabel" name="label_2">
+                                                        <property name="text">
+                                                            <string>Unique Values:</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item row="0" column="0">
+                                                    <widget class="QLabel" name="label">
+                                                        <property name="text">
+                                                            <string>Columns:</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                            </layout>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <layout class="QHBoxLayout" name="horizontalLayout_2">
+                                            <item>
+                                                <widget class="QGroupBox" name="groupBox_6">
+                                                    <property name="maximumSize">
+                                                        <size>
+                                                            <width>221</width>
+                                                            <height>16777215</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="title">
+                                                        <string>Operators:</string>
+                                                    </property>
+                                                    <layout class="QGridLayout" name="gridLayout_5">
+                                                        <item row="0" column="0">
+                                                            <widget class="QPushButton" name="btnOpEq">
+                                                                <property name="maximumSize">
+                                                                    <size>
+                                                                        <width>100</width>
+                                                                        <height>16777215</height>
+                                                                    </size>
+                                                                </property>
+                                                                <property name="text">
+                                                                    <string>=</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="0" column="1">
+                                                            <widget class="QPushButton" name="btnOpNotEq">
+                                                                <property name="text">
+                                                                    <string>&lt;&gt;</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="0" column="2">
+                                                            <widget class="QPushButton" name="btnOpLike">
+                                                                <property name="text">
+                                                                    <string>LIKE</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="1" column="0">
+                                                            <widget class="QPushButton" name="btnOpGreater">
+                                                                <property name="text">
+                                                                    <string>&gt;</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="1" column="1">
+                                                            <widget class="QPushButton" name="btnOpGreaterEq">
+                                                                <property name="text">
+                                                                    <string>&gt;=</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="1" column="2">
+                                                            <widget class="QPushButton" name="btnOpAnd">
+                                                                <property name="text">
+                                                                    <string>AND</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="2" column="0">
+                                                            <widget class="QPushButton" name="btnOpLess">
+                                                                <property name="text">
+                                                                    <string>&lt;</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="2" column="1">
+                                                            <widget class="QPushButton" name="btnOpLessEq">
+                                                                <property name="text">
+                                                                    <string>&lt;=</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                        <item row="2" column="2">
+                                                            <widget class="QPushButton" name="btnOpOr">
+                                                                <property name="text">
+                                                                    <string>OR</string>
+                                                                </property>
+                                                            </widget>
+                                                        </item>
+                                                    </layout>
+                                                </widget>
+                                            </item>
+                                            <item>
+                                                <layout class="QVBoxLayout" name="verticalLayout_3">
+                                                    <item>
+                                                        <widget class="QTextEdit" name="txtWhereQuery"/>
+                                                    </item>
+                                                    <item>
+                                                        <layout class="QHBoxLayout" name="horizontalLayout">
+                                                            <item>
+                                                                <widget class="QPushButton" name="btnClearQuery">
+                                                                    <property name="text">
+                                                                        <string>Clear</string>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                            <item>
+                                                                <widget class="QPushButton" name="btnQueryVerify">
+                                                                    <property name="text">
+                                                                        <string>Verify</string>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                        </layout>
+                                                    </item>
+                                                </layout>
+                                            </item>
+                                        </layout>
+                                    </item>
+                                </layout>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+            </layout>
+        </widget>
+    </widget>
+    <resources/>
+    <connections/>
 </ui>

@@ -1,130 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>frmAdminUnitManager</class>
- <widget class="QWidget" name="frmAdminUnitManager">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>464</width>
-    <height>462</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Administrative Unit Manager</string>
-  </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="2">
-    <layout class="QVBoxLayout" name="vlNotification"/>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QTreeView" name="tvAdminUnits"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QPushButton" name="btnRemove">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Delete Selection</string>
-     </property>
+    <class>frmAdminUnitManager</class>
+    <widget class="QWidget" name="frmAdminUnitManager">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>464</width>
+                <height>462</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Administrative Unit Manager</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0" colspan="2">
+                <layout class="QVBoxLayout" name="vlNotification"/>
+            </item>
+            <item row="1" column="0" colspan="2">
+                <widget class="QTreeView" name="tvAdminUnits"/>
+            </item>
+            <item row="2" column="0">
+                <widget class="QPushButton" name="btnRemove">
+                    <property name="minimumSize">
+                        <size>
+                            <width>0</width>
+                            <height>30</height>
+                        </size>
+                    </property>
+                    <property name="text">
+                        <string>Delete Selection</string>
+                    </property>
+                </widget>
+            </item>
+            <item row="2" column="1">
+                <widget class="QPushButton" name="btnClear">
+                    <property name="minimumSize">
+                        <size>
+                            <width>0</width>
+                            <height>30</height>
+                        </size>
+                    </property>
+                    <property name="text">
+                        <string>Clear Selection</string>
+                    </property>
+                </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+                <widget class="QGroupBox" name="gbManage">
+                    <property name="title">
+                        <string>New Administrative Unit:</string>
+                    </property>
+                    <property name="flat">
+                        <bool>false</bool>
+                    </property>
+                    <layout class="QHBoxLayout" name="horizontalLayout">
+                        <item>
+                            <widget class="QLabel" name="label">
+                                <property name="text">
+                                    <string>Unit Name</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="ValidatingLineEdit" name="txtUnitName">
+                                <property name="minimumSize">
+                                    <size>
+                                        <width>0</width>
+                                        <height>30</height>
+                                    </size>
+                                </property>
+                                <property name="maxLength">
+                                    <number>50</number>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QLabel" name="label_2">
+                                <property name="text">
+                                    <string>Code</string>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QLineEdit" name="txtUnitCode">
+                                <property name="minimumSize">
+                                    <size>
+                                        <width>0</width>
+                                        <height>30</height>
+                                    </size>
+                                </property>
+                                <property name="maximumSize">
+                                    <size>
+                                        <width>50</width>
+                                        <height>16777215</height>
+                                    </size>
+                                </property>
+                                <property name="maxLength">
+                                    <number>10</number>
+                                </property>
+                            </widget>
+                        </item>
+                        <item>
+                            <widget class="QPushButton" name="btnAdd">
+                                <property name="minimumSize">
+                                    <size>
+                                        <width>30</width>
+                                        <height>30</height>
+                                    </size>
+                                </property>
+                                <property name="text">
+                                    <string/>
+                                </property>
+                            </widget>
+                        </item>
+                    </layout>
+                </widget>
+            </item>
+        </layout>
     </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="btnClear">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Clear Selection</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="QGroupBox" name="gbManage">
-     <property name="title">
-      <string>New Administrative Unit:</string>
-     </property>
-     <property name="flat">
-      <bool>false</bool>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Unit Name</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="ValidatingLineEdit" name="txtUnitName">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="maxLength">
-         <number>50</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Code</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="txtUnitCode">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>50</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="maxLength">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnAdd">
-        <property name="minimumSize">
-         <size>
-          <width>30</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <customwidgets>
-  <customwidget>
-   <class>ValidatingLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>stdm.ui.customcontrols.validating_line_edit</header>
-  </customwidget>
- </customwidgets>
- <connections/>
+    <customwidgets>
+        <customwidget>
+            <class>ValidatingLineEdit</class>
+            <extends>QLineEdit</extends>
+            <header>stdm.ui.customcontrols.validating_line_edit</header>
+        </customwidget>
+    </customwidgets>
+    <connections/>
 </ui>

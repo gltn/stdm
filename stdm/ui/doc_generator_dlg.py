@@ -591,13 +591,13 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                 docDir = fileInfo.dir().path()
 
             self._outputFilePath, _ = QFileDialog.getSaveFileName(self,
-                                                               QApplication.translate("DocumentGeneratorDialog",
-                                                                                      "Save Document"),
-                                                               docDir,
-                                                               "{0} (*.{1})".format(
-                                                                   QApplication.translate("DocumentGeneratorDialog",
-                                                                                          saveAsText),
-                                                                   fileExtension))
+                                                                  QApplication.translate("DocumentGeneratorDialog",
+                                                                                         "Save Document"),
+                                                                  docDir,
+                                                                  "{0} (*.{1})".format(
+                                                                      QApplication.translate("DocumentGeneratorDialog",
+                                                                                             saveAsText),
+                                                                      fileExtension))
 
             if not self._outputFilePath:
                 self._notif_bar.insertErrorNotification(

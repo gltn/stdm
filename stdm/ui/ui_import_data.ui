@@ -1,703 +1,707 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>frmImport</class>
- <widget class="QWizard" name="frmImport">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>693</width>
-    <height>576</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Import to STDM</string>
-  </property>
-  <property name="wizardStyle">
-   <enum>QWizard::ModernStyle</enum>
-  </property>
-  <property name="options">
-   <set>QWizard::HelpButtonOnRight</set>
-  </property>
-  <widget class="QWizardPage" name="pgSource">
-   <property name="title">
-    <string>Source Data</string>
-   </property>
-   <property name="subTitle">
-    <string>Specify the location of the source file and representative data type.</string>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Source:</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Dataset</string>
-         </property>
+    <class>frmImport</class>
+    <widget class="QWizard" name="frmImport">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>693</width>
+                <height>576</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Import to STDM</string>
+        </property>
+        <property name="wizardStyle">
+            <enum>QWizard::ModernStyle</enum>
+        </property>
+        <property name="options">
+            <set>QWizard::HelpButtonOnRight</set>
+        </property>
+        <widget class="QWizardPage" name="pgSource">
+            <property name="title">
+                <string>Source Data</string>
+            </property>
+            <property name="subTitle">
+                <string>Specify the location of the source file and representative data type.</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout">
+                <item>
+                    <widget class="QGroupBox" name="groupBox">
+                        <property name="title">
+                            <string>Source:</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_2">
+                            <item>
+                                <widget class="QLabel" name="label">
+                                    <property name="text">
+                                        <string>Dataset</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QLineEdit" name="txtDataSource">
+                                    <property name="maxLength">
+                                        <number>200</number>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QPushButton" name="btnBrowseSource">
+                                    <property name="text">
+                                        <string>Browse</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item>
+                    <widget class="QGroupBox" name="groupBox_2">
+                        <property name="title">
+                            <string>Destination Repository Type:</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout">
+                            <item>
+                                <widget class="QRadioButton" name="rbTextType">
+                                    <property name="text">
+                                        <string>Textual Data</string>
+                                    </property>
+                                    <property name="checked">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbSpType">
+                                    <property name="text">
+                                        <string>Spatial Data</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QRadioButton" name="rbKoboMedia">
+                                    <property name="text">
+                                        <string>Kobo Images</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item>
+                    <widget class="QGroupBox" name="groupBox_7">
+                        <property name="title">
+                            <string>Kobo Settings</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_4">
+                            <item row="0" column="0">
+                                <widget class="QLabel" name="label_4">
+                                    <property name="text">
+                                        <string>Media URL:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="0">
+                                <widget class="QLabel" name="label_5">
+                                    <property name="text">
+                                        <string>Kobo Username:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="1">
+                                <widget class="QLineEdit" name="edtKoboUsername">
+                                    <property name="readOnly">
+                                        <bool>false</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="1">
+                                <widget class="QLineEdit" name="edtKoboPassword">
+                                    <property name="echoMode">
+                                        <enum>QLineEdit::Password</enum>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="1">
+                                <widget class="QLineEdit" name="edtMediaUrl">
+                                    <property name="readOnly">
+                                        <bool>false</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="0">
+                                <widget class="QLabel" name="label_6">
+                                    <property name="text">
+                                        <string>Kobo Password:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item>
+                    <widget class="QGroupBox" name="groupBox_8">
+                        <property name="title">
+                            <string>Local Media Folders:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_6">
+                            <item row="1" column="0">
+                                <widget class="QLabel" name="label_8">
+                                    <property name="text">
+                                        <string>Signatures:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="1">
+                                <widget class="QLineEdit" name="edtSignFolder"/>
+                            </item>
+                            <item row="0" column="1">
+                                <widget class="QLineEdit" name="edtFamilyFolder"/>
+                            </item>
+                            <item row="0" column="0">
+                                <widget class="QLabel" name="label_7">
+                                    <property name="text">
+                                        <string>Family Photos:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="0">
+                                <widget class="QLabel" name="label_9">
+                                    <property name="text">
+                                        <string>House Photo</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="3">
+                                <widget class="QToolButton" name="tbSignFolder">
+                                    <property name="text">
+                                        <string>...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="3">
+                                <widget class="QToolButton" name="tbHouseFolder">
+                                    <property name="text">
+                                        <string>...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="1">
+                                <widget class="QLineEdit" name="edtHouseFolder"/>
+                            </item>
+                            <item row="0" column="3">
+                                <widget class="QToolButton" name="tbFamilyFolder">
+                                    <property name="text">
+                                        <string>...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="4">
+                                <widget class="QPushButton" name="btnFamilyBrowse">
+                                    <property name="text">
+                                        <string>Browse ...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="4">
+                                <widget class="QPushButton" name="btnSignFolder">
+                                    <property name="text">
+                                        <string>Browse ...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="4">
+                                <widget class="QPushButton" name="btnHouseFolder">
+                                    <property name="text">
+                                        <string>Browse ...</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="2">
+                                <widget class="QCheckBox" name="cbFamilyPhoto">
+                                    <property name="text">
+                                        <string>Download</string>
+                                    </property>
+                                    <property name="checkable">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="2">
+                                <widget class="QCheckBox" name="cbSign">
+                                    <property name="text">
+                                        <string>Download</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="2">
+                                <widget class="QCheckBox" name="cbHousePhoto">
+                                    <property name="text">
+                                        <string>Download</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item>
+                    <widget class="QGroupBox" name="groupBox_9">
+                        <property name="title">
+                            <string>Download:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_7">
+                            <item row="0" column="2">
+                                <widget class="QLabel" name="lblCurrRecord">
+                                    <property name="text">
+                                        <string>0</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="0">
+                                <widget class="QPushButton" name="btnDownload">
+                                    <property name="text">
+                                        <string>Download</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="1">
+                                <widget class="QLabel" name="labelrecord">
+                                    <property name="text">
+                                        <string>Current Record:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="1">
+                                <widget class="QLabel" name="label_10">
+                                    <property name="text">
+                                        <string>Current File:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="2">
+                                <widget class="QLabel" name="lblCurrFile">
+                                    <property name="text">
+                                        <string>0</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="0">
+                                <widget class="QLabel" name="lblMsg">
+                                    <property name="text">
+                                        <string>Ready.</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+            </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="txtDataSource">
-         <property name="maxLength">
-          <number>200</number>
-         </property>
+        <widget class="QWizardPage" name="destTable">
+            <property name="title">
+                <string>Copy Table</string>
+            </property>
+            <property name="subTitle">
+                <string>Destination table and import options.</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+                <item row="0" column="0">
+                    <widget class="QGroupBox" name="groupBox_3">
+                        <property name="title">
+                            <string>Select Destination Table:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout">
+                            <item row="0" column="0">
+                                <widget class="QListWidget" name="lstDestTables"/>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item row="0" column="1">
+                    <widget class="QGroupBox" name="groupBox_4">
+                        <property name="title">
+                            <string>Options:</string>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_5">
+                            <item row="4" column="1">
+                                <widget class="QComboBox" name="geomClm">
+                                    <property name="enabled">
+                                        <bool>false</bool>
+                                    </property>
+                                    <property name="minimumSize">
+                                        <size>
+                                            <width>100</width>
+                                            <height>0</height>
+                                        </size>
+                                    </property>
+                                    <property name="maximumSize">
+                                        <size>
+                                            <width>100</width>
+                                            <height>16777215</height>
+                                        </size>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="4" column="0">
+                                <widget class="QLabel" name="label_2">
+                                    <property name="maximumSize">
+                                        <size>
+                                            <width>16777215</width>
+                                            <height>20</height>
+                                        </size>
+                                    </property>
+                                    <property name="text">
+                                        <string>Geometry Column:</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="1" column="0">
+                                <widget class="QRadioButton" name="rbAppend">
+                                    <property name="text">
+                                        <string>A&amp;ppend Data</string>
+                                    </property>
+                                    <property name="checked">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="2" column="0" colspan="2">
+                                <widget class="QRadioButton" name="rbOverwrite">
+                                    <property name="text">
+                                        <string>&amp;Overwrite Existing</string>
+                                    </property>
+                                </widget>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+            </layout>
         </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnBrowseSource">
-         <property name="text">
-          <string>Browse</string>
-         </property>
+        <widget class="QWizardPage" name="assignColumns">
+            <property name="title">
+                <string>Assign Columns</string>
+            </property>
+            <property name="subTitle">
+                <string>Match source and destination table columns.</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+                <item row="0" column="0">
+                    <widget class="QGroupBox" name="groupBox_5">
+                        <property name="title">
+                            <string>Source Table:</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_4">
+                            <item>
+                                <layout class="QVBoxLayout" name="verticalLayout_2">
+                                    <item>
+                                        <widget class="QPushButton" name="btnSrcUp">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>0</height>
+                                                </size>
+                                            </property>
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>33</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <widget class="QPushButton" name="btnSrcDown">
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>33</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <spacer name="verticalSpacer">
+                                            <property name="orientation">
+                                                <enum>Qt::Vertical</enum>
+                                            </property>
+                                            <property name="sizeHint" stdset="0">
+                                                <size>
+                                                    <width>20</width>
+                                                    <height>40</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                    </item>
+                                </layout>
+                            </item>
+                            <item>
+                                <layout class="QVBoxLayout" name="verticalLayout_3">
+                                    <item>
+                                        <widget class="QListWidget" name="lstSrcFields">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>250</height>
+                                                </size>
+                                            </property>
+                                            <property name="showDropIndicator" stdset="0">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragEnabled">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragDropOverwriteMode">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragDropMode">
+                                                <enum>QAbstractItemView::DragDrop</enum>
+                                            </property>
+                                            <property name="defaultDropAction">
+                                                <enum>Qt::MoveAction</enum>
+                                            </property>
+                                            <property name="alternatingRowColors">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="selectionMode">
+                                                <enum>QAbstractItemView::SingleSelection</enum>
+                                            </property>
+                                            <property name="selectionBehavior">
+                                                <enum>QAbstractItemView::SelectRows</enum>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <layout class="QHBoxLayout" name="horizontalLayout_3">
+                                            <item>
+                                                <widget class="QPushButton" name="btnSrcAll">
+                                                    <property name="sizePolicy">
+                                                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                                                            <horstretch>0</horstretch>
+                                                            <verstretch>0</verstretch>
+                                                        </sizepolicy>
+                                                    </property>
+                                                    <property name="maximumSize">
+                                                        <size>
+                                                            <width>16777215</width>
+                                                            <height>16777215</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string>Select All</string>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                            <item>
+                                                <widget class="QPushButton" name="btnSrcNone">
+                                                    <property name="sizePolicy">
+                                                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                                                            <horstretch>0</horstretch>
+                                                            <verstretch>0</verstretch>
+                                                        </sizepolicy>
+                                                    </property>
+                                                    <property name="maximumSize">
+                                                        <size>
+                                                            <width>16777215</width>
+                                                            <height>16777215</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string>Unsellect All</string>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                        </layout>
+                                    </item>
+                                </layout>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+                <item row="0" column="1">
+                    <widget class="QGroupBox" name="groupBox_6">
+                        <property name="title">
+                            <string>Destination Table:</string>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_6">
+                            <item>
+                                <layout class="QVBoxLayout" name="verticalLayout_5">
+                                    <item>
+                                        <widget class="QListWidget" name="lstTargetFields">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>250</height>
+                                                </size>
+                                            </property>
+                                            <property name="showDropIndicator" stdset="0">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragEnabled">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragDropOverwriteMode">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="dragDropMode">
+                                                <enum>QAbstractItemView::DragDrop</enum>
+                                            </property>
+                                            <property name="defaultDropAction">
+                                                <enum>Qt::MoveAction</enum>
+                                            </property>
+                                            <property name="alternatingRowColors">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="selectionMode">
+                                                <enum>QAbstractItemView::SingleSelection</enum>
+                                            </property>
+                                            <property name="selectionBehavior">
+                                                <enum>QAbstractItemView::SelectRows</enum>
+                                            </property>
+                                            <property name="sortingEnabled">
+                                                <bool>false</bool>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <widget class="QCheckBox" name="chk_virtual">
+                                            <property name="text">
+                                                <string>Show virtual columns</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <layout class="QHBoxLayout" name="horizontalLayout_5">
+                                            <item>
+                                                <widget class="QLabel" name="label_3">
+                                                    <property name="text">
+                                                        <string>Value translators:</string>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                            <item>
+                                                <widget class="QToolButton" name="btn_add_translator">
+                                                    <property name="minimumSize">
+                                                        <size>
+                                                            <width>0</width>
+                                                            <height>0</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="toolTip">
+                                                        <string>Add value translator</string>
+                                                    </property>
+                                                    <property name="whatsThis">
+                                                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use value
+                                                            translators to transform the value from the corresponding
+                                                            source table column in order to adopt it to a format that
+                                                            adaptible to the destination column.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+                                                        </string>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string/>
+                                                    </property>
+                                                    <property name="popupMode">
+                                                        <enum>QToolButton::InstantPopup</enum>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                            <item>
+                                                <widget class="QToolButton" name="btn_edit_translator">
+                                                    <property name="minimumSize">
+                                                        <size>
+                                                            <width>0</width>
+                                                            <height>0</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="toolTip">
+                                                        <string>Edit value translator</string>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string/>
+                                                    </property>
+                                                    <property name="popupMode">
+                                                        <enum>QToolButton::InstantPopup</enum>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                            <item>
+                                                <widget class="QToolButton" name="btn_delete_translator">
+                                                    <property name="minimumSize">
+                                                        <size>
+                                                            <width>0</width>
+                                                            <height>0</height>
+                                                        </size>
+                                                    </property>
+                                                    <property name="toolTip">
+                                                        <string>Delete value translator</string>
+                                                    </property>
+                                                    <property name="text">
+                                                        <string/>
+                                                    </property>
+                                                    <property name="popupMode">
+                                                        <enum>QToolButton::InstantPopup</enum>
+                                                    </property>
+                                                </widget>
+                                            </item>
+                                        </layout>
+                                    </item>
+                                </layout>
+                            </item>
+                            <item>
+                                <layout class="QVBoxLayout" name="verticalLayout_4">
+                                    <item>
+                                        <widget class="QPushButton" name="btnDestUp">
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>50</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <widget class="QPushButton" name="btnDestDown">
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>50</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="text">
+                                                <string/>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item>
+                                        <spacer name="verticalSpacer_2">
+                                            <property name="orientation">
+                                                <enum>Qt::Vertical</enum>
+                                            </property>
+                                            <property name="sizeHint" stdset="0">
+                                                <size>
+                                                    <width>20</width>
+                                                    <height>40</height>
+                                                </size>
+                                            </property>
+                                        </spacer>
+                                    </item>
+                                </layout>
+                            </item>
+                        </layout>
+                    </widget>
+                </item>
+            </layout>
         </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Destination Repository Type:</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QRadioButton" name="rbTextType">
-         <property name="text">
-          <string>Textual Data</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbSpType">
-         <property name="text">
-          <string>Spatial Data</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rbKoboMedia">
-         <property name="text">
-          <string>Kobo Images</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_7">
-      <property name="title">
-       <string>Kobo Settings</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Media URL:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Kobo Username:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="edtKoboUsername">
-         <property name="readOnly">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="edtKoboPassword">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="edtMediaUrl">
-         <property name="readOnly">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Kobo Password:</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_8">
-      <property name="title">
-       <string>Local Media Folders:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>Signatures:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="edtSignFolder"/>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="edtFamilyFolder"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>Family Photos:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>House Photo</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QToolButton" name="tbSignFolder">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QToolButton" name="tbHouseFolder">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="edtHouseFolder"/>
-       </item>
-       <item row="0" column="3">
-        <widget class="QToolButton" name="tbFamilyFolder">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QPushButton" name="btnFamilyBrowse">
-         <property name="text">
-          <string>Browse ...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QPushButton" name="btnSignFolder">
-         <property name="text">
-          <string>Browse ...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="4">
-        <widget class="QPushButton" name="btnHouseFolder">
-         <property name="text">
-          <string>Browse ...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QCheckBox" name="cbFamilyPhoto">
-         <property name="text">
-          <string>Download</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QCheckBox" name="cbSign">
-         <property name="text">
-          <string>Download</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
-        <widget class="QCheckBox" name="cbHousePhoto">
-         <property name="text">
-          <string>Download</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_9">
-      <property name="title">
-       <string>Download:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <item row="0" column="2">
-        <widget class="QLabel" name="lblCurrRecord">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="btnDownload">
-         <property name="text">
-          <string>Download</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="labelrecord">
-         <property name="text">
-          <string>Current Record:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Current File:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="lblCurrFile">
-         <property name="text">
-          <string>0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lblMsg">
-         <property name="text">
-          <string>Ready.</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWizardPage" name="destTable">
-   <property name="title">
-    <string>Copy Table</string>
-   </property>
-   <property name="subTitle">
-    <string>Destination table and import options.</string>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox_3">
-      <property name="title">
-       <string>Select Destination Table:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QListWidget" name="lstDestTables"/>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QGroupBox" name="groupBox_4">
-      <property name="title">
-       <string>Options:</string>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_5">
-       <item row="4" column="1">
-        <widget class="QComboBox" name="geomClm">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>100</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>100</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>20</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Geometry Column:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QRadioButton" name="rbAppend">
-         <property name="text">
-          <string>A&amp;ppend Data</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QRadioButton" name="rbOverwrite">
-         <property name="text">
-          <string>&amp;Overwrite Existing</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWizardPage" name="assignColumns">
-   <property name="title">
-    <string>Assign Columns</string>
-   </property>
-   <property name="subTitle">
-    <string>Match source and destination table columns.</string>
-   </property>
-   <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0">
-     <widget class="QGroupBox" name="groupBox_5">
-      <property name="title">
-       <string>Source Table:</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QPushButton" name="btnSrcUp">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>33</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSrcDown">
-           <property name="maximumSize">
-            <size>
-             <width>33</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QListWidget" name="lstSrcFields">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>250</height>
-            </size>
-           </property>
-           <property name="showDropIndicator" stdset="0">
-            <bool>true</bool>
-           </property>
-           <property name="dragEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="dragDropOverwriteMode">
-            <bool>true</bool>
-           </property>
-           <property name="dragDropMode">
-            <enum>QAbstractItemView::DragDrop</enum>
-           </property>
-           <property name="defaultDropAction">
-            <enum>Qt::MoveAction</enum>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QPushButton" name="btnSrcAll">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Select All</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnSrcNone">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Unsellect All</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QGroupBox" name="groupBox_6">
-      <property name="title">
-       <string>Destination Table:</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <item>
-          <widget class="QListWidget" name="lstTargetFields">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>250</height>
-            </size>
-           </property>
-           <property name="showDropIndicator" stdset="0">
-            <bool>true</bool>
-           </property>
-           <property name="dragEnabled">
-            <bool>true</bool>
-           </property>
-           <property name="dragDropOverwriteMode">
-            <bool>true</bool>
-           </property>
-           <property name="dragDropMode">
-            <enum>QAbstractItemView::DragDrop</enum>
-           </property>
-           <property name="defaultDropAction">
-            <enum>Qt::MoveAction</enum>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-           <property name="sortingEnabled">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="chk_virtual">
-           <property name="text">
-            <string>Show virtual columns</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
-           <item>
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Value translators:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="btn_add_translator">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Add value translator</string>
-             </property>
-             <property name="whatsThis">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use value translators to transform the value from the corresponding source table column in order to adopt it to a format that adaptible to the destination column.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::InstantPopup</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="btn_edit_translator">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Edit value translator</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::InstantPopup</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="btn_delete_translator">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="toolTip">
-              <string>Delete value translator</string>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="popupMode">
-              <enum>QToolButton::InstantPopup</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <widget class="QPushButton" name="btnDestUp">
-           <property name="maximumSize">
-            <size>
-             <width>50</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnDestDown">
-           <property name="maximumSize">
-            <size>
-             <width>50</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
- </widget>
- <connections/>
+    </widget>
+    <connections/>
 </ui>

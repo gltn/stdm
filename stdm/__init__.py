@@ -36,6 +36,7 @@ third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
 font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                         "third_party/FontTools"))
 
+
 if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
     sys.path.append(font_dir)

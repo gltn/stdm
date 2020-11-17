@@ -17,11 +17,14 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_frmComposerDataSource(object):
     def setupUi(self, frmComposerDataSource):
@@ -72,7 +75,8 @@ class Ui_frmComposerDataSource(object):
     def retranslateUi(self, frmComposerDataSource):
         frmComposerDataSource.setWindowTitle(_translate("frmComposerDataSource", "Data Source", None))
         self.label.setText(_translate("frmComposerDataSource", "Data Source", None))
-        self.label_2.setText(_translate("frmComposerDataSource", "<html><head/><body><p>Please select the name of the source table or view from the options below</p></body></html>", None))
+        self.label_2.setText(_translate("frmComposerDataSource",
+                                        "<html><head/><body><p>Please select the name of the source table or view from the options below</p></body></html>",
+                                        None))
         self.rbTables.setText(_translate("frmComposerDataSource", "Show tables only", None))
         self.rbViews.setText(_translate("frmComposerDataSource", "Show views only", None))
-

@@ -113,7 +113,6 @@ VIEW = 2301
 MANAGE = 2302
 SELECT = 2303  # When widget is used to select one or more records from the table list
 
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_adminUnitManager.ui'))
 

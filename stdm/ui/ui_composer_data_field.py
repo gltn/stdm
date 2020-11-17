@@ -17,11 +17,14 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_frmComposerFieldEditor(object):
     def setupUi(self, frmComposerFieldEditor):
@@ -45,7 +48,7 @@ class Ui_frmComposerFieldEditor(object):
         self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
         self.label = QtGui.QLabel(frmComposerFieldEditor)
         self.label.setStyleSheet(_fromUtf8("padding: 2px; font-weight: bold; background-color: rgb(200, 200, 200);"))
-        self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label.setAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.label.setObjectName(_fromUtf8("label"))
         self.gridLayout.addWidget(self.label, 0, 0, 1, 2)
 
@@ -56,4 +59,3 @@ class Ui_frmComposerFieldEditor(object):
         frmComposerFieldEditor.setWindowTitle(_translate("frmComposerFieldEditor", "Table Column Editor", None))
         self.label_2.setText(_translate("frmComposerFieldEditor", "Data Field", None))
         self.label.setText(_translate("frmComposerFieldEditor", "Field", None))
-
