@@ -5,10 +5,7 @@
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook=
-    sys.path.append(os.getcwd());
-    from pylint_ignore import PylintIgnorePaths;
-    PylintIgnorePaths('stdm/third_party')
+#init-hook=
 
 # Profiled execution.
 profile=no
@@ -24,6 +21,7 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
+ignore=stdm.third_party
 
 [MESSAGES CONTROL]
 

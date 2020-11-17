@@ -21,8 +21,10 @@ email                : stdm@unhabitat.org
 from collections import (
     OrderedDict
 )
-
-import matplotlib
+from qgis.PyQt.QtXml import (
+    QDomDocument,
+    QDomElement
+)
 from qgis.PyQt.QtCore import (
     QTemporaryFile
 )
@@ -30,11 +32,8 @@ from qgis.PyQt.QtGui import (
     QColor
 )
 from qgis.PyQt.QtWidgets import QApplication
-from qgis.PyQt.QtXml import (
-    QDomDocument,
-    QDomElement
-)
 
+import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np

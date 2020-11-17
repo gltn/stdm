@@ -21,16 +21,17 @@ email                : stdm@unhabitat.org
 from qgis.PyQt.QtXml import (
     QDomElement
 )
+
+from stdm.composer.configuration_collection_base import (
+    ConfigurationCollectionBase,
+    ItemConfigValueHandler
+)
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
     QgsLayoutFrame
 )
 
-from stdm.composer.configuration_collection_base import (
-    ConfigurationCollectionBase,
-    ItemConfigValueHandler
-)
 from stdm.composer.photo_configuration import PhotoConfiguration
 
 

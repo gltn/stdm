@@ -17,6 +17,13 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
+from qgis.PyQt.QtWidgets import (
+    QToolBar,
+    QDockWidget,
+    QApplication,
+    QMessageBox,
+    QInputDialog
+)
 from qgis.PyQt.QtCore import (
     Qt,
     QObject,
@@ -25,14 +32,8 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QIODevice
 )
-from qgis.PyQt.QtWidgets import (
-    QToolBar,
-    QDockWidget,
-    QApplication,
-    QMessageBox,
-    QInputDialog
-)
 from qgis.PyQt.QtXml import QDomDocument
+
 from qgis.core import (
     QgsLayoutItemPolyline,
     QgsLayoutItemAttributeTable,
@@ -44,22 +45,6 @@ from qgis.core import (
     QgsLayoutItemPage
 )
 
-from stdm.composer.chart_configuration import ChartConfigurationCollection
-from stdm.composer.composer_data_source import ComposerDataSource
-from stdm.composer.composer_item_config import ComposerItemConfig
-from stdm.composer.item_formatter import (
-    ChartFormatter,
-    DataLabelFormatter,
-    LineFormatter,
-    MapFormatter,
-    PhotoFormatter,
-    QRCodeFormatter,
-    TableFormatter
-)
-from stdm.composer.photo_configuration import PhotoConfigurationCollection
-from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
-from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
-from stdm.composer.table_configuration import TableConfigurationCollection
 from stdm.data.pg_utils import (
     vector_layer
 )
@@ -75,15 +60,31 @@ from stdm.ui.composer.composer_field_selector import (
 from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
-from stdm.ui.composer.photo_data_source import (
-    ComposerPhotoDataSourceEditor,
-)
 from stdm.ui.composer.table_data_source import (
     ComposerTableDataSourceEditor
 )
-from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
+from stdm.ui.composer.photo_data_source import (
+    ComposerPhotoDataSourceEditor,
+)
 from stdm.utils.util import documentTemplates
+from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 
+from stdm.composer.chart_configuration import ChartConfigurationCollection
+from stdm.composer.composer_item_config import ComposerItemConfig
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.photo_configuration import PhotoConfigurationCollection
+from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
+from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
+from stdm.composer.table_configuration import TableConfigurationCollection
+from stdm.composer.item_formatter import (
+    ChartFormatter,
+    DataLabelFormatter,
+    LineFormatter,
+    MapFormatter,
+    PhotoFormatter,
+    QRCodeFormatter,
+    TableFormatter
+)
 
 def load_table_layers(config_collection):
     """

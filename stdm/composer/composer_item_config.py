@@ -18,10 +18,19 @@ email                : gkahiu@gmail.com
 from qgis.PyQt.QtCore import (
     QObject
 )
+from qgis.PyQt.QtGui import (
+    QIcon
+)
 from qgis.PyQt.QtWidgets import (
     QAction,
     QApplication,
     QDialog
+)
+
+from qgis.gui import QgsLayoutView
+
+from stdm.ui.composer.composer_doc_selector import (
+    TemplateDocumentSelector
 )
 
 from stdm.composer.item_formatter import (
@@ -32,10 +41,7 @@ from stdm.composer.item_formatter import (
     PhotoFormatter,
     QRCodeFormatter,
     TableFormatter
-)
-from stdm.ui.composer.composer_doc_selector import (
-    TemplateDocumentSelector
-)
+ )
 from stdm.ui.gui_utils import GuiUtils
 
 
