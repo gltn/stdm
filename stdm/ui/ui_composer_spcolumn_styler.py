@@ -17,11 +17,14 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_frmComposerSpatialColumnEditor(object):
     def setupUi(self, frmComposerSpatialColumnEditor):
@@ -74,8 +77,12 @@ class Ui_frmComposerSpatialColumnEditor(object):
         QtCore.QMetaObject.connectSlotsByName(frmComposerSpatialColumnEditor)
 
     def retranslateUi(self, frmComposerSpatialColumnEditor):
-        frmComposerSpatialColumnEditor.setWindowTitle(_translate("frmComposerSpatialColumnEditor", "Spatial Column Style Editor", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.style), _translate("frmComposerSpatialColumnEditor", "Style", None))
-        self.label_2.setText(_translate("frmComposerSpatialColumnEditor", "<html><head/><body><p>Select the field whose value will be used to label the feature</p></body></html>", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.label), _translate("frmComposerSpatialColumnEditor", "Label", None))
-
+        frmComposerSpatialColumnEditor.setWindowTitle(
+            _translate("frmComposerSpatialColumnEditor", "Spatial Column Style Editor", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.style),
+                                  _translate("frmComposerSpatialColumnEditor", "Style", None))
+        self.label_2.setText(_translate("frmComposerSpatialColumnEditor",
+                                        "<html><head/><body><p>Select the field whose value will be used to label the feature</p></body></html>",
+                                        None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.label),
+                                  _translate("frmComposerSpatialColumnEditor", "Label", None))

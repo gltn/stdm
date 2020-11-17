@@ -1,281 +1,281 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>457</width>
-    <height>665</height>
-   </rect>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>16777215</width>
-    <height>700</height>
-   </size>
-  </property>
-  <property name="windowTitle">
-   <string>Import Mobile Data into STDM</string>
-  </property>
-  <property name="layoutDirection">
-   <enum>Qt::LeftToRight</enum>
-  </property>
-  <layout class="QGridLayout" name="gridLayout_3">
-   <item row="0" column="0">
-    <widget class="QTabWidget" name="tab_widget">
-     <property name="minimumSize">
-      <size>
-       <width>150</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>From Directory</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="11" column="0">
-        <widget class="QProgressBar" name="pgbar">
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Click Import button to continue....</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>STDM entities that can be imported in the current forms</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <layout class="QGridLayout" name="gridLayout_12"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QCheckBox" name="chk_all">
-         <property name="text">
-          <string>Import all</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="lbl_feedback">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QListWidget" name="lst_widget">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>150</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QTextEdit" name="txt_feedback">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <layout class="QVBoxLayout" name="vlnotification"/>
-       </item>
-       <item row="1" column="0">
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="2" column="10">
-          <widget class="QPushButton" name="btn_refresh">
-           <property name="minimumSize">
+    <class>Dialog</class>
+    <widget class="QDialog" name="Dialog">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>457</width>
+                <height>665</height>
+            </rect>
+        </property>
+        <property name="maximumSize">
             <size>
-             <width>0</width>
-             <height>30</height>
+                <width>16777215</width>
+                <height>700</height>
             </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>100</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Update</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_14">
-           <property name="text">
-            <string>Custom text (optional)</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Directory</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1" colspan="5">
-          <widget class="QLineEdit" name="txt_filter">
-           <property name="minimumSize">
-            <size>
-             <width>30</width>
-             <height>30</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="9">
-          <widget class="QLineEdit" name="txt_count">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>30</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="maxLength">
-            <number>25</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="6" colspan="3">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Records Found:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="10">
-          <widget class="QPushButton" name="btn_chang_dir">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>80</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="layoutDirection">
+        </property>
+        <property name="windowTitle">
+            <string>Import Mobile Data into STDM</string>
+        </property>
+        <property name="layoutDirection">
             <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="text">
-            <string>Change</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1" colspan="9">
-          <widget class="QLineEdit" name="txt_directory">
-           <property name="minimumSize">
-            <size>
-             <width>200</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>1000007</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-           <property name="placeholderText">
-            <string>Path to the collected data</string>
-           </property>
-          </widget>
-         </item>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+                <widget class="QTabWidget" name="tab_widget">
+                    <property name="minimumSize">
+                        <size>
+                            <width>150</width>
+                            <height>0</height>
+                        </size>
+                    </property>
+                    <property name="currentIndex">
+                        <number>0</number>
+                    </property>
+                    <widget class="QWidget" name="tab">
+                        <attribute name="title">
+                            <string>From Directory</string>
+                        </attribute>
+                        <layout class="QGridLayout" name="gridLayout">
+                            <item row="11" column="0">
+                                <widget class="QProgressBar" name="pgbar">
+                                    <property name="value">
+                                        <number>0</number>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="8" column="0">
+                                <widget class="QLabel" name="label_3">
+                                    <property name="text">
+                                        <string>Click Import button to continue....</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="4" column="0">
+                                <widget class="QLabel" name="label_4">
+                                    <property name="text">
+                                        <string>STDM entities that can be imported in the current forms</string>
+                                    </property>
+                                    <property name="alignment">
+                                        <set>Qt::AlignCenter</set>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="7" column="0">
+                                <layout class="QGridLayout" name="gridLayout_12"/>
+                            </item>
+                            <item row="3" column="0">
+                                <widget class="Line" name="line">
+                                    <property name="orientation">
+                                        <enum>Qt::Horizontal</enum>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="5" column="0">
+                                <widget class="QCheckBox" name="chk_all">
+                                    <property name="text">
+                                        <string>Import all</string>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="9" column="0">
+                                <widget class="QLabel" name="lbl_feedback">
+                                    <property name="text">
+                                        <string/>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="6" column="0">
+                                <widget class="QListWidget" name="lst_widget">
+                                    <property name="maximumSize">
+                                        <size>
+                                            <width>16777215</width>
+                                            <height>150</height>
+                                        </size>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="10" column="0">
+                                <widget class="QTextEdit" name="txt_feedback">
+                                    <property name="readOnly">
+                                        <bool>true</bool>
+                                    </property>
+                                </widget>
+                            </item>
+                            <item row="0" column="0">
+                                <layout class="QVBoxLayout" name="vlnotification"/>
+                            </item>
+                            <item row="1" column="0">
+                                <layout class="QGridLayout" name="gridLayout_2">
+                                    <item row="2" column="10">
+                                        <widget class="QPushButton" name="btn_refresh">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>30</height>
+                                                </size>
+                                            </property>
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>100</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="text">
+                                                <string>Update</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="0">
+                                        <widget class="QLabel" name="label_14">
+                                            <property name="text">
+                                                <string>Custom text (optional)</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="0" column="0">
+                                        <widget class="QLabel" name="label_2">
+                                            <property name="text">
+                                                <string>Directory</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="1" colspan="5">
+                                        <widget class="QLineEdit" name="txt_filter">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>30</width>
+                                                    <height>30</height>
+                                                </size>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="9">
+                                        <widget class="QLineEdit" name="txt_count">
+                                            <property name="enabled">
+                                                <bool>false</bool>
+                                            </property>
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>30</height>
+                                                </size>
+                                            </property>
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>30</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="maxLength">
+                                                <number>25</number>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="2" column="6" colspan="3">
+                                        <widget class="QLabel" name="label">
+                                            <property name="text">
+                                                <string>Records Found:</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="0" column="10">
+                                        <widget class="QPushButton" name="btn_chang_dir">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>0</width>
+                                                    <height>30</height>
+                                                </size>
+                                            </property>
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>80</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="layoutDirection">
+                                                <enum>Qt::LeftToRight</enum>
+                                            </property>
+                                            <property name="text">
+                                                <string>Change</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                    <item row="0" column="1" colspan="9">
+                                        <widget class="QLineEdit" name="txt_directory">
+                                            <property name="minimumSize">
+                                                <size>
+                                                    <width>200</width>
+                                                    <height>30</height>
+                                                </size>
+                                            </property>
+                                            <property name="maximumSize">
+                                                <size>
+                                                    <width>1000007</width>
+                                                    <height>16777215</height>
+                                                </size>
+                                            </property>
+                                            <property name="readOnly">
+                                                <bool>true</bool>
+                                            </property>
+                                            <property name="placeholderText">
+                                                <string>Path to the collected data</string>
+                                            </property>
+                                        </widget>
+                                    </item>
+                                </layout>
+                            </item>
+                        </layout>
+                    </widget>
+                </widget>
+            </item>
+            <item row="1" column="0">
+                <widget class="QDialogButtonBox" name="buttonBox">
+                    <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="standardButtons">
+                        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
+                    </property>
+                </widget>
+            </item>
         </layout>
-       </item>
-      </layout>
-     </widget>
     </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
-     </property>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+    <resources/>
+    <connections>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>rejected()</signal>
+            <receiver>Dialog</receiver>
+            <slot>reject()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>316</x>
+                    <y>260</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>286</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+        <connection>
+            <sender>buttonBox</sender>
+            <signal>accepted()</signal>
+            <receiver>Dialog</receiver>
+            <slot>accept()</slot>
+            <hints>
+                <hint type="sourcelabel">
+                    <x>248</x>
+                    <y>254</y>
+                </hint>
+                <hint type="destinationlabel">
+                    <x>157</x>
+                    <y>274</y>
+                </hint>
+            </hints>
+        </connection>
+    </connections>
 </ui>

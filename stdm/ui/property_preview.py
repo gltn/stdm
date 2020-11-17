@@ -162,7 +162,7 @@ class SpatialPreview(WIDGET, BASE):
         """
         self._overlay_layer = QgsVectorLayer(
             "{0}?crs=epsg:{1!s}&field=lbname:string(20)&index=yes".format(geom_type,
-                                                                           prj_code),
+                                                                          prj_code),
             "view_str_spatial_unit",
             "memory")
 

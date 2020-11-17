@@ -175,9 +175,9 @@ class _EntityDocumentViewerHandler(object):
         return dir.exists()
 
 
-
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_entity_browser.ui'))
+
 
 class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
     """

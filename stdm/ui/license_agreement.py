@@ -35,6 +35,7 @@ from stdm.ui.notification import NotificationBar, ERROR
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_license_agreement.ui'))
 
+
 class LicenseAgreement(WIDGET, BASE):
     def __init__(self, parent=None):
         """

@@ -17,11 +17,14 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -55,7 +58,7 @@ class Ui_Dialog(object):
         self.verticalLayout.addWidget(self.ck_social_tenure)
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Close | QtGui.QDialogButtonBox.Save)
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout.addWidget(self.buttonBox)
@@ -67,8 +70,8 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "GeoODK Form Generator", None))
-        self.label_3.setText(_translate("Dialog", "Select entities that will be exported to generated GeoODK form", None))
+        self.label_3.setText(
+            _translate("Dialog", "Select entities that will be exported to generated GeoODK form", None))
         self.chk_all.setText(_translate("Dialog", "Check all", None))
         self.btnShowOutputFolder.setText(_translate("Dialog", "Output folder ...", None))
         self.ck_social_tenure.setText(_translate("Dialog", "Enable definition of social tenure relationship...", None))
-

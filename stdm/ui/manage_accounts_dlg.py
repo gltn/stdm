@@ -204,7 +204,7 @@ class manageAccountsDlg(WIDGET, BASE):
 
         msg = QApplication.translate("manageAccountsDlg",
                                      "Are you sure you want to delete '%s'?\nOnce deleted, this user account cannot be recovered." % (
-                                     username,))
+                                         username,))
         result = QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Delete User"), msg,
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
@@ -291,7 +291,7 @@ class manageAccountsDlg(WIDGET, BASE):
 
         msg = QApplication.translate("manageAccountsDlg",
                                      "Are you sure you want to delete '%s'?\nOnce deleted, this role cannot be recovered." % (
-                                     rolename,))
+                                         rolename,))
         result = QMessageBox.warning(self, QApplication.translate("manageAccountsDlg", "Delete Role"), msg,
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 

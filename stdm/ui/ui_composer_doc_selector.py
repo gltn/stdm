@@ -17,11 +17,14 @@ except AttributeError:
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
+
+
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
+
 
 class Ui_frmDocumentSelector(object):
     def setupUi(self, frmDocumentSelector):
@@ -39,12 +42,13 @@ class Ui_frmDocumentSelector(object):
         self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
         self.manageButtonBox = QtGui.QDialogButtonBox(frmDocumentSelector)
         self.manageButtonBox.setOrientation(QtCore.Qt.Vertical)
-        self.manageButtonBox.setStandardButtons(QtGui.QDialogButtonBox.Close|QtGui.QDialogButtonBox.Ok|QtGui.QDialogButtonBox.Save)
+        self.manageButtonBox.setStandardButtons(
+            QtGui.QDialogButtonBox.Close | QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Save)
         self.manageButtonBox.setObjectName(_fromUtf8("manageButtonBox"))
         self.gridLayout.addWidget(self.manageButtonBox, 2, 1, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(frmDocumentSelector)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(True)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout.addWidget(self.buttonBox, 3, 0, 1, 2)
@@ -60,4 +64,3 @@ class Ui_frmDocumentSelector(object):
     def retranslateUi(self, frmDocumentSelector):
         frmDocumentSelector.setWindowTitle(_translate("frmDocumentSelector", "Template Selector", None))
         self.label.setText(_translate("frmDocumentSelector", "Select a document template from the list below", None))
-

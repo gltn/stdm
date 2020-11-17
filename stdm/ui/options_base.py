@@ -84,6 +84,7 @@ def pg_profile_names():
 
     return profiles
 
+
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_options.ui'))
 

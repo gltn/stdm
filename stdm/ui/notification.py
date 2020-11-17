@@ -167,6 +167,7 @@ class NotificationBar(QObject, object):
             del self._notifications[strCode]
             self.userClosed.emit()
 
+
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_notif_item.ui'))
 
