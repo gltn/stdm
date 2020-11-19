@@ -28,7 +28,7 @@ class DbItem:
     ALTER, CREATE, DROP, NONE = range(0, 4)
     sql_updater = None
 
-    def __init__(self, name, action=1):
+    def __init__(self, name='', action=1):
         self.name = name
         self.action = action
 

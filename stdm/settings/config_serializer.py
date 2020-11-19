@@ -1078,7 +1078,7 @@ class EntitySerializer(EntitySerializerCollection):
             )
             if row_index:
                 row_index = str(row_index)
-                ent.row_index = row_index
+                ent.row_index = int(row_index)
 
             # Label
             label = str(child_element.attribute(
