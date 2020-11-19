@@ -223,7 +223,7 @@ class STDMGeometry(GeometryProvider):
                 poly_as_text = poly.exportToWkt()
                 return 'SRID={};{}'.format(self.srid, poly_as_text)
             except Exception as ex:
-                return ex.message
+                return str(ex)
 
     def point_to_Wkt(self):
         """

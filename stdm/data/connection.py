@@ -66,7 +66,7 @@ class DatabaseConnection:
             conn.close()
             isValid = True
         except sqlalchemy.exc.OperationalError as oe:
-            errMsg = oe.message
+            errMsg = str(oe)
         except Exception as e:
             errMsg = str(e)
 

@@ -377,7 +377,7 @@ class STRDBHandler():
                 return updated_str_obj
 
         except exc.OperationalError as oe:
-            errMsg = oe.message
+            errMsg = str(oe)
             QMessageBox.critical(
                 iface.mainWindow(),
                 QApplication.translate(
@@ -391,7 +391,7 @@ class STRDBHandler():
             LOGGER.debug(str(oe))
 
         except exc.IntegrityError as ie:
-            errMsg = ie.message
+            errMsg = str(ie)
             QMessageBox.critical(
                 iface.mainWindow(),
                 QApplication.translate(

@@ -75,7 +75,7 @@ class ForeignKeyMapperDialog(QWidget):
             else:
                 return self.personFKMapper.global_id.baseid()
         except Exception as ex:
-            raise ex.message
+            raise str(ex)
 
     def model_display_value(self):
         try:
@@ -84,4 +84,4 @@ class ForeignKeyMapperDialog(QWidget):
             else:
                 return self.personFKMapper.global_id.display_value()
         except Exception as ex:
-            raise ex.message
+            raise str(message)

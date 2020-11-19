@@ -621,11 +621,10 @@ class STRNode(EntityNode):
                                 self.parentWidget().btnSearch.click()
 
         except Exception as ex:
-            msg = ex.message
             QMessageBox.critical(self._parentWidget,
                                  QApplication.translate("STRNode",
                                                         "Updating STR Model"),
-                                 msg)
+                                 str(ex))
 
     def onDelete(self, index):
         """
