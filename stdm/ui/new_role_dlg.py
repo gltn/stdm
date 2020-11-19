@@ -124,5 +124,5 @@ class newRoleDlg(WIDGET, BASE):
 
             except sqlalchemy.exc.ProgrammingError as pe:
                 QMessageBox.critical(self,
-                                     QApplication.translate("newUserDlg", "Create New User Error"), str(pe.message))
+                                     QApplication.translate("newUserDlg", "Create New User Error"), str(pe))
                 self.user = None

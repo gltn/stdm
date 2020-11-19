@@ -409,7 +409,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 QApplication.translate(
                     'EntityBrowser', 'showEvent method'
                 ),
-                str(ex.message))
+                str(ex))
             return
 
         self._data_initialized = True
@@ -704,7 +704,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                             QApplication.translate(
                                 'EntityBrowser', 'Loading Records'
                             ),
-                            str(ex.message))
+                            str(ex))
                         return
 
                     entity_records_collection.append(entity_row_info)

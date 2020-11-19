@@ -104,6 +104,6 @@ class dbconnDlg(WIDGET, BASE):
                 dbconfig.write(self.dbconn)
             except Exception as ex:
                 QMessageBox.critical(self, QApplication.translate("DbConnectionDialog", "Error saving settings"),
-                                     QApplication.translate("DbConnectionDialog", str(ex.message)))
+                                     QApplication.translate("DbConnectionDialog", str(ex)))
 
             self.accept()

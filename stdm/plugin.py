@@ -1918,7 +1918,7 @@ class STDMQGISLoader:
                         "STDMPlugin",
                         "Unable to load the entity in the browser. "
                         "Check if the entity is configured correctly. "
-                        "Error: %s") % str(ex.message))
+                        "Error: %s") % str(ex))
             finally:
                 STDMDb.instance().session.rollback()
 

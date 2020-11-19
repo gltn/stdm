@@ -282,7 +282,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                 shutil.move(os.path.dirname(file), instance_path)
         except Exception as ex:
-            return str(ex.message)
+            return str(ex)
 
     def populate_entities_widget(self):
         """
@@ -420,7 +420,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         silent_list.append(table)
                 return silent_list
         except Exception as ex:
-            self._notif_bar_str.insertErrorNotification(ex.message)
+            self._notif_bar_str.insertErrorNotification(str(ex))
 
     def archive_this_import_file(self, counter, instance):
         """
@@ -432,7 +432,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             file_info = 'File instance ' + str(counter) + ' : \n' + instance
             self.importlogger.log_action(file_info)
         except IOError as io:
-            self._notif_bar_str.insertErrorNotification(MSG + ": " + io.message)
+            self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
             pass
 
     def log_table_entry(self, instance):
@@ -446,8 +446,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             log_entry = instance + ' ' + str(import_time.toPyDateTime())
             self.importlogger.log_action(log_entry)
         except IOError as io:
-            self._notif_bar_str.insertErrorNotification(MSG + ": " + io.message)
-            raise NameError(io.message)
+            self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
+            raise NameError(str(io))
 
     def check_previous_import(self):
         """
@@ -467,7 +467,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                       'not enumerated'
                 self._notif_bar_str.insertErrorNotification(msg)
         except IOError as io:
-            self._notif_bar_str.insertErrorNotification(MSG + ": " + io.message)
+            self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
             pass
 
     def available_records(self):
@@ -699,14 +699,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
         except Exception as ex:
-            self.feedback_message(str(ex.message))
+            self.feedback_message(str(ex))
         except SQLAlchemyError as ae:
             QCoreApplication.processEvents()
             QApplication.restoreOverrideCursor()
-            self.feedback_message(str(ae.message))
+            self.feedback_message(str(ae))
             self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
-            self.txt_feedback.append(str(ae.message))
-            self.log_table_entry(str(ae.message))
+            self.txt_feedback.append(str(ae))
+            self.log_table_entry(str(ae))
             return
 
     def count_import_file_step(self, count=None, table=None):
@@ -752,8 +752,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.buttonBox.setEnabled(True)
                 QApplication.restoreOverrideCursor()
         except Exception as ex:
-            self.feedback_message(ex.message)
-            self.log_table_entry(str(ex.message))
+            self.feedback_message(str(ex))
+            self.log_table_entry(str(ex))
             self.buttonBox.setEnabled(True)
             self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
             QApplication.restoreOverrideCursor()

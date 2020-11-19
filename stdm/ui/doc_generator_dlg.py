@@ -190,7 +190,7 @@ class DocumentGeneratorDialogWrapper(object):
             self._doc_gen_dlg.progress.hide()
         except Exception as pe:
             self._notif_bar.clear()
-            self._notif_bar.insertErrorNotification(pe.message)
+            self._notif_bar.insertErrorNotification(str(pe))
 
     def _entity_config_from_profile(self, table_name, short_name):
         """
