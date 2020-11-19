@@ -42,6 +42,7 @@ from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
+from stdm.data import globals
 
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
 _postGISViews = ["geometry_columns", "raster_columns", "geography_columns",
@@ -628,7 +629,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
     if not table_name:
         return None
 
-    conn = stdm.data.app_dbconn
+    conn = globals.APP_DBCONN
     if conn is None:
         return None
 

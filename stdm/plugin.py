@@ -127,6 +127,7 @@ from stdm.utils.util import (
     user_non_profile_views
 )
 from stdm.utils.util import simple_dialog
+from stdm.data import globals
 
 # TODO!
 # from stdm.composer.composer_data_source import composer_data_source
@@ -341,7 +342,7 @@ class STDMQGISLoader:
 
         if retstatus == QDialog.Accepted:
             # Assign the connection object
-            data.app_dbconn = frmLogin.dbConn
+            globals.APP_DBCONN = frmLogin.dbConn
 
             self.current_user = frmLogin.dbConn.User
 
@@ -1109,7 +1110,7 @@ class STDMQGISLoader:
         mobileFormImportCnt = ContentGroup.contentItemFromQAction(self.mobile_form_import)
         mobileFormImportCnt.code = "1394547d-fb6c-4f6e-80d2-53407cf7b7d4"
 
-        username = data.app_dbconn.User.UserName
+        username = globals.APP_DBCONN.User.UserName
 
         if username == 'postgres':
             self.grant_privilege_base_tables(username)
@@ -2022,11 +2023,11 @@ class STDMQGISLoader:
                 self.profiles_combobox.deleteLater()
                 self.profiles_combobox = None
                 # Clear singleton ref for SQLAlchemy connections
-                if not data.app_dbconn is None:
+                if globals.APP_DBCONN is not None:
                     STDMDb.cleanUp()
                     DeclareMapping.cleanUp()
                 # Remove database reference
-                data.app_dbconn = None
+                globals.APP_DBCONN = None
             else:
                 self.profile_status_label.setText('')
 
