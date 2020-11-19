@@ -36,6 +36,7 @@ from stdm.data.database import (
 )
 from stdm.navigation.content_group import ContentGroup
 from stdm.utils.util import getIndex
+from stdm.data import globals
 
 
 class QtContainerLoader(QObject):
@@ -60,9 +61,8 @@ class QtContainerLoader(QObject):
         self._contentGroups = OrderedDict()
         self._widgets = []
 
-        from stdm.data.globals import app_dbconn
-        self._userName = app_dbconn.User.UserName
-        self._authorizer = Authorizer(app_dbconn.User.UserName)
+        self._userName = globals.APP_DBCONN.User.UserName
+        self._authorizer = Authorizer(globals.APP_DBCONN.User.UserName)
         self._iter = 0
         self._separatorAction = None
 

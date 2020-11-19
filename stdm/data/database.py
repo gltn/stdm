@@ -50,7 +50,7 @@ from sqlalchemy.orm import (
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import text
 
-from stdm.data.globals import app_dbconn
+from stdm.data import globals
 
 metadata = MetaData()
 
@@ -117,7 +117,7 @@ class STDMDb:
 
     def __init__(self):
         # Initialize database engine
-        self.engine = create_engine(app_dbconn.toAlchemyConnection(), echo=False)
+        self.engine = create_engine(globals.APP_DBCONN.toAlchemyConnection(), echo=False)
 
         # Check for PostGIS extension
         self.postgis_state = self._check_spatial_extension()

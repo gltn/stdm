@@ -25,7 +25,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.data.globals import app_dbconn
+from stdm.data import globals
 from stdm.security.exception import SecurityException
 from stdm.security.membership import Membership
 from stdm.ui.gui_utils import GuiUtils
@@ -83,7 +83,7 @@ class changePwdDlg(WIDGET, BASE):
 
             try:
                 # Set new password
-                member.setPassword(app_dbconn.User.UserName, newPwd)
+                member.setPassword(globals.APP_DBCONN.User.UserName, newPwd)
                 QMessageBox.information(self, QApplication.translate("ChangePasswordDialog", "Change Password"),
                                         QApplication.translate("ChangePasswordDialog",
                                                                "Your password has successfully been changed"))

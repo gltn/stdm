@@ -61,6 +61,7 @@ from sqlalchemy import (
 )
 
 import stdm.data
+from stdm.data import globals
 from stdm.data.configuration import entity_model
 from stdm.data.database import Content
 from stdm.data.pg_utils import pg_table_count
@@ -806,7 +807,7 @@ class ViewSTRWidget(WIDGET, BASE):
         they can also edit STR records.
         """
         canEdit = False
-        userName = stdm.data.app_dbconn.User.UserName
+        userName = globals.APP_DBCONN.User.UserName
         authorizer = Authorizer(userName)
         newSTRCode = "9576A88D-C434-40A6-A318-F830216CA15A"
 
