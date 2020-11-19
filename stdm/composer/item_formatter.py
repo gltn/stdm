@@ -54,7 +54,7 @@ from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
 from stdm.utils.util import PLUGIN_DIR
 
 
-class BaseComposerItemFormatter(object):
+class BaseComposerItemFormatter:
     """
     Defines the abstract interface for implementation by subclasses.
     """

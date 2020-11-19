@@ -50,7 +50,7 @@ __all__ = ["SourceValueTranslator", "ValueTranslatorManager",
            "RelatedTableTranslator", "IgnoreType"]
 
 
-class IgnoreType(object):
+class IgnoreType:
     """
     Placeholder object that instructs the reader to ignore inserting any
     value if this type is returned by a calling function such as value
@@ -59,7 +59,7 @@ class IgnoreType(object):
     pass
 
 
-class SourceValueTranslator(object):
+class SourceValueTranslator:
     """
     Abstract class for translating values from one or more columns in the
     source table to a single value in the destination database table.
@@ -290,7 +290,7 @@ class SourceValueTranslator(object):
         return Table(name, meta, autoload=True)
 
 
-class ValueTranslatorManager(object):
+class ValueTranslatorManager:
     """
     This class manages multiple instances of source value translators.
     """

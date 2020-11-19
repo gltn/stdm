@@ -202,7 +202,7 @@ def selection_color():
     return rgba
 
 
-class RegistryConfig(object):
+class RegistryConfig:
     """
     Utility class for reading and writing STDM user settings in Windows Registry
     """

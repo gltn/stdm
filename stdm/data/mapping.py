@@ -48,7 +48,7 @@ SAVE = 2200
 UPDATE = 2201
 
 
-class _AttributeMapper(object):
+class _AttributeMapper:
     '''
     Manages a single instance of the mapping between a database model's attribute
     and the corresponding UI widget.
@@ -175,7 +175,7 @@ class _AttributeMapper(object):
             setattr(self.model(), self._attrName, controlValue)
 
 
-class MapperMixin(object):
+class MapperMixin:
     '''
     Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''

@@ -135,7 +135,7 @@ from stdm.utils.util import simple_dialog
 LOGGER = logging.getLogger('stdm')
 
 
-class _DocumentTemplate(object):
+class _DocumentTemplate:
     """
     Contains basic information about a document template.
     """
@@ -179,7 +179,7 @@ class _DocumentTemplate(object):
         return _DocumentTemplate(**kwargs)
 
 
-class STDMQGISLoader(object):
+class STDMQGISLoader:
     viewSTRWin = None
 
     def __init__(self, iface):

@@ -59,7 +59,7 @@ legend_positions = OrderedDict({
     QApplication.translate("ChartConfiguration", "Center"): "center"
 })
 
-class BarValueConfiguration(object):
+class BarValueConfiguration:
     tag_name = "Value"
 
     def __init__(self, **kwargs):

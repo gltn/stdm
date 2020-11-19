@@ -22,7 +22,7 @@ from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 
 
-class CodeGenerator(object):
+class CodeGenerator:
     """
     Generate unique code for a column using prefix, separator and leading zero
     parameters.

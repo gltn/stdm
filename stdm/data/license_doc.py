@@ -25,7 +25,7 @@ from qgis.PyQt.QtGui import QFont
 from stdm.data.configfile_paths import FilePaths
 
 
-class LicenseDocument(object):
+class LicenseDocument:
     def __init__(self):
         self.file = None
         self.filehandler = FilePaths()

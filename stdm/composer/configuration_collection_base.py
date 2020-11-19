@@ -32,7 +32,7 @@ __all__ = ['ItemConfigBase', 'ConfigurationCollectionBase',
            'LinkedTableItemConfiguration']
 
 
-class ItemConfigBase(object):
+class ItemConfigBase:
     """
     Base class for composer item configuration.
     """
@@ -226,7 +226,7 @@ class LinkedTableItemConfiguration(ItemConfigBase):
                                               linked_field=linked_field)
 
 
-class ItemConfigValueHandler(object):
+class ItemConfigValueHandler:
     """
     Base class for setting the value of composer items based on the
     settings in the configuration item and data source value. This offloads
@@ -327,7 +327,7 @@ def col_values(cols, results):
         return col_values
 
 
-class ConfigurationCollectionBase(object):
+class ConfigurationCollectionBase:
     # Name of the root node of the collection element.
     collection_root = ""
     # Editor widget type to match against when creating Dom elements.

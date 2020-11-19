@@ -44,7 +44,7 @@ def value_list_factory(name, profile, **kwargs):
     return ValueList(name, profile)
 
 
-class CodeValue(object):
+class CodeValue:
     """
     Represents a code and corresponding value for use in a ValueList object.
     """

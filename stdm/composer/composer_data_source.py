@@ -27,7 +27,7 @@ from stdm.utils.reverse_dict import ReverseDict
 
 __all__ = ["ComposerDataSource"]
 
-class ComposerDataSource(object):
+class ComposerDataSource:
     """
     Container for data source settings.
     """

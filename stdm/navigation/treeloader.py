@@ -24,7 +24,7 @@ from qgis.PyQt.QtWidgets import (
 from stdm.ui.gui_utils import GuiUtils
 
 
-class TreeSummaryLoader(object):
+class TreeSummaryLoader:
     '''
     Load summary information in a dictionary into a tree widget.
     The class will iterate through the items and if the child items are of

@@ -353,7 +353,7 @@ def _populate_collections_from_element(element, tag_name, collection):
                 collection[name] = er_el
 
 
-class ProfileSerializer(object):
+class ProfileSerializer:
     """
     (De)serialize profile information.
     """
@@ -539,7 +539,7 @@ class ProfileSerializer(object):
         parent_node.appendChild(profile_element)
 
 
-class SocialTenureSerializer(object):
+class SocialTenureSerializer:
     """
     (De)serializes social tenure information.
     """
@@ -901,7 +901,7 @@ class SocialTenureSerializer(object):
             end_el.setAttribute(min_max, str(value))
 
 
-class EntitySerializerCollection(object):
+class EntitySerializerCollection:
     """
     Container for entity-based serializers which are registered using the
     type info of the Entity subclass.
@@ -1492,7 +1492,7 @@ class ValueListSerializer(EntitySerializerCollection):
 ValueListSerializer.register()
 
 
-class EntityRelationSerializer(object):
+class EntityRelationSerializer:
     """
     (De)serializes EntityRelation information.
     """
@@ -1592,7 +1592,7 @@ class EntityRelationSerializer(object):
         parent_node.appendChild(er_element)
 
 
-class ColumnSerializerCollection(object):
+class ColumnSerializerCollection:
     """
     Container for column-based serializers which are registered using the
     type info of the column subclass.

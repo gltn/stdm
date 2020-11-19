@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
 """
 
 
-class User(object):
+class User:
     """
     Container for basic user account settings.
     'Validity' is of PyDate type
