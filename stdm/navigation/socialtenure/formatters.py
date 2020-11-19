@@ -49,7 +49,7 @@ from stdm.utils.util import (
 )
 
 
-class STRNodeFormatter(object):
+class STRNodeFormatter:
     """
     Base class for all STR formatters.
     """

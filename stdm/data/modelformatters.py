@@ -54,7 +54,7 @@ def dateFromQType(dateitem):
     return pydate
 
 
-class LookupFormatter(object):
+class LookupFormatter:
     """
     Formatter for displaying user-friendly information about a checkup model
     """
@@ -160,7 +160,7 @@ def foodCropCategoryFormatter(foodCropId):
     return lkFormatter.setDisplay(foodCropId)
 
 
-class DoBFormatter(object):
+class DoBFormatter:
     '''
     Formatter for displaying the current age (in years) calculated from the date of birth
     '''
@@ -180,7 +180,7 @@ class DoBFormatter(object):
         return int(years)
 
 
-class LocalityFormatter(object):
+class LocalityFormatter:
     '''
     Formatter for displaying user-friendly information about a locality
     '''

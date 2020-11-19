@@ -21,7 +21,7 @@
 from qgis.PyQt.QtWidgets import QApplication
 
 
-class ModuleSettings(object):
+class ModuleSettings:
     def __init__(self):
         """
         class to provide translation for configuration file text

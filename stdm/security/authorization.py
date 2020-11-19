@@ -22,11 +22,11 @@ from stdm.security.roleprovider import RoleProvider
 from stdm.utils.util import getIndex
 
 
-class RoleMapper(object):
+class RoleMapper:
     pass
 
 
-class Authorizer(object):
+class Authorizer:
     '''
     This class has the responsibility of asserting whether an account with
     the given user name has permissions to access a particular content item

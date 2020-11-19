@@ -51,7 +51,7 @@ from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
 
 
-class OGRReader(object):
+class OGRReader:
     def __init__(self, source_file):
         self._ds = ogr.Open(source_file)
         self._targetGeomColSRID = -1

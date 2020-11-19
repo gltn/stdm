@@ -19,7 +19,7 @@ email                : stdm@unhabitat.org
 """
 
 
-class DbItem(object):
+class DbItem:
     """
     Represents the main objects
     that are managed in the database. Constraints

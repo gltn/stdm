@@ -22,7 +22,7 @@ from stdm.data.connection import DatabaseConnection
 from stdm.settings.registryconfig import RegistryConfig
 
 
-class DatabaseConfig(object):
+class DatabaseConfig:
     """
     Reads and writes database settings in the registry.
     """

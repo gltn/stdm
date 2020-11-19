@@ -25,7 +25,7 @@ from stdm.security.exception import SecurityException
 from stdm.security.user import User
 
 
-class Membership(object):
+class Membership:
     '''
     Provides generic user management functionality
     '''

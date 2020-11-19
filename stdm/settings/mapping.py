@@ -31,7 +31,7 @@ from stdm.ui.notification import (
 from .registryconfig import RegistryConfig
 
 
-class SettingMapper(object):
+class SettingMapper:
     """
     Represents a single mapping of an STDM setting and corresponding UI widget.
     """
@@ -201,7 +201,7 @@ class RegistrySettingMapper(SettingMapper):
         self._reg_config.write({self._key: conf_value})
 
 
-class SettingsWidgetMapper(object):
+class SettingsWidgetMapper:
     """
     Mixin class that enables settings' widgets/dialogs to conveniently read/write
     application settings using a standard approach.

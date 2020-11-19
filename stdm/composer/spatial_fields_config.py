@@ -29,7 +29,7 @@ from stdm.ui.composer.composer_symbol_editor import (
 
 __all__ = ["SpatialFieldsConfiguration"]
 
-class SpatialFieldsConfiguration(object):
+class SpatialFieldsConfiguration:
     """
     Styling and labeling configuration for spatial data fields.
     """

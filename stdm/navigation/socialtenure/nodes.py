@@ -46,7 +46,7 @@ DELETE_ICON = GuiUtils.get_icon("delete.png")
 NO_ACTION_ICON = GuiUtils.get_icon("no_action.png")
 
 
-class BaseSTRNode(object):
+class BaseSTRNode:
     """
     Base class for all STR nodes.
     """

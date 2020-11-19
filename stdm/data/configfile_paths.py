@@ -44,7 +44,7 @@ from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.reports.sys_fonts import SysFonts
 
 
-class FilePaths(object):
+class FilePaths:
     def __init__(self, path=None):
         self._file = PLUGIN_DIR
         self.baseDir = None

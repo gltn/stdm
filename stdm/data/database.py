@@ -69,7 +69,7 @@ def mapper(cls, table=None, *args, **kwargs):
 Base = declarative_base(metadata=metadata)
 
 
-class Singleton(object):
+class Singleton:
     """
     Singleton class
     """
@@ -107,7 +107,7 @@ class NoPostGISError(Exception):
 
 
 @Singleton
-class STDMDb(object):
+class STDMDb:
     """
     This class will exist only once hence the reason it has a singleton attribute.
     It will contain the session for managing the unit of work for each class.
@@ -219,7 +219,7 @@ def alchemy_table_relationships(table_name):
     return relationship_names
 
 
-class Model(object):
+class Model:
     '''
     Base class that handles all basic database operations.
     All STDM entities that need to be persisted in the database

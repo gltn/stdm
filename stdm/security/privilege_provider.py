@@ -6,7 +6,7 @@ from stdm.data.pg_utils import (
 )
 
 
-class PrivilegeProvider(object):
+class PrivilegeProvider:
     Privileges = {'Create': 'INSERT', 'Select': 'SELECT', 'Update': 'UPDATE', 'Delete': 'DELETE'}
 
     def __init__(self, content_name, profile=None):

@@ -27,7 +27,7 @@ from stdm.settings import current_profile
 from stdm.utils.util import getIndex
 
 
-class RoleProvider(object):
+class RoleProvider:
     '''
     Provides full role management functionality by implementing the
     underlying PostgreSQL role-based security model

@@ -50,7 +50,7 @@ GMAP_SATELLITE = 2010
 OSM = 2011
 
 
-class OLStyle(object):
+class OLStyle:
     """
     Wrapper for defining the style to be used for
     rendering the property overlay in OpenLayers.

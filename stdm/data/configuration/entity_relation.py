@@ -41,7 +41,7 @@ def tr(text):
     return QCoreApplication.translate('EntityRelation', text)
 
 
-class EntityRelation(object):
+class EntityRelation:
     """
     Set functions for creating and dropping foreign key constraints
     respectively in the database.
