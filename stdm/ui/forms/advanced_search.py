@@ -237,7 +237,9 @@ class AdvancedSearch(EntityEditorDialog):
         columns = table_column_names(table_name)
         # Iterate entity column and assert if they exist
         row_id = 0
-        for c, column_widget in self.column_widgets.items():
+        for column_name, column_widget in self.column_widgets.items():
+            c = self.columns[column_name]
+
             if c.name in self.exclude_columns:
                 continue
             if isinstance(c, MultipleSelectColumn):

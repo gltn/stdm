@@ -117,6 +117,7 @@ class EntityEditorDialog(MapperMixin):
         self._entity = entity
         self.edit_model = model
         self.column_widgets = OrderedDict()
+        self.columns = {}
         self._parent = parent
         self.exclude_columns = exclude_columns
         self.entity_tab_widget = None
@@ -353,7 +354,7 @@ class EntityEditorDialog(MapperMixin):
         :param col: The child column object
         :type col: Object
         """
-        local_widget = self.column_widgets[col]
+        local_widget = self.column_widgets[col.name]
         local_widget.show_clear_button()
         self.filter_val = parent_widget.text()
         local_widget.setText(self.filter_val)
@@ -487,7 +488,8 @@ class EntityEditorDialog(MapperMixin):
                 self.scroll_widget_contents,
                 host=self
             )
-            self.column_widgets[c] = column_widget
+            self.columns[c.name] = c
+            self.column_widgets[c.name] = column_widget
 
     def _setup_columns_content_area(self):
         # Only use this if entity supports documents
@@ -508,7 +510,8 @@ class EntityEditorDialog(MapperMixin):
         columns = table_column_names(table_name)
         # Iterate entity column and assert if they exist
         row_id = 0
-        for c, column_widget in self.column_widgets.items():
+        for column_name, column_widget in self.column_widgets.items():
+            c = self.columns[column_name]
             if c.name in self.exclude_columns:
                 continue
             if not c.name in columns and not isinstance(c, VirtualColumn):
