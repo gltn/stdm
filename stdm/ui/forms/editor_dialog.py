@@ -341,7 +341,8 @@ class EntityEditorDialog(MapperMixin):
         :param col: The child column object
         :type col: Object
         """
-        for parent_col, parent_widget in parent.column_widgets.items():
+        for parent_col_name, parent_widget in parent.column_widgets.items():
+            parent_col = parent.columns[parent_col_name]
             if parent_col.name == col.name:
                 self.single_parent_value_setter(col, parent_widget)
                 break
@@ -436,7 +437,7 @@ class EntityEditorDialog(MapperMixin):
 
         insert_pos = self._parent.tbEntity.model().rowCount() + 1
         # Save to parent editor so that it is persistent.
-        self._parent._parent.child_models[insert_pos, self._entity] = \
+        self._parent._parent.child_models[insert_pos, self._entity.name] = \
             self.model()
         self.addedModel.emit(self.model())
         if not save_and_new:
@@ -573,7 +574,7 @@ class EntityEditorDialog(MapperMixin):
         if not self._disable_collections:
             ch_entities = self.children_entities()
 
-            for col, ch in ch_entities.items():
+            for col, ch in ch_entities:
                 if hasattr(col.entity_relation, 'show_in_parent'):
                     if col.entity_relation.show_in_parent != '0':
                         self._add_fk_browser(ch, col)
@@ -701,18 +702,18 @@ class EntityEditorDialog(MapperMixin):
 
     def children_entities(self):
         """
-        :return: Returns a list of children entities
+        :return: Returns a list of children entities (by name)
         that refer to the main entity as the parent.
         :rtype: OrderedDict
         """
-        child_columns = OrderedDict()
+        child_columns = []
         for ch in self._entity.children():
             if ch.TYPE_INFO == Entity.TYPE_INFO:
                 for col in ch.columns.values():
                     if hasattr(col, 'entity_relation'):
 
                         if col.parent.name == self._entity.name:
-                            child_columns[col] = ch
+                            child_columns.append((col, ch))
         return child_columns
 
     def document_widget(self):

@@ -1286,7 +1286,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             idx = row_number + 1
             if idx in self.child_model:
                 del self.child_model[idx]
-                del self._parent.child_models[idx, self.entity]
+                del self._parent.child_models[idx, self.entity.name]
 
             self._tableModel.removeRows(row_number, 1)
             # Update number of records
