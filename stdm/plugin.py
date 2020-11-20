@@ -200,7 +200,7 @@ class STDMQGISLoader:
         # Setup locale
         self.plugin_dir = os.path.dirname(__file__)
         localePath = ""
-        locale = QSettings().value("locale/userLocale")[0:2]
+        locale = (QSettings().value("locale/userLocale") or 'en-US')[0:2]
         if QFileInfo(self.plugin_dir).exists():
             # Replace forward slash with backslash
             self.plugin_dir = self.plugin_dir.replace("\\", "/")
