@@ -92,8 +92,8 @@ class GeometryProperty(WIDGET, BASE):
 
         if projection_selector.exec_() == QDialog.Accepted:
             # Remove 'EPSG:' part
-            self._srid = projection_selector.selectedAuthId()[5:]
-            self.btnCoord.setText(projection_selector.selectedAuthId())
+            self._srid = projection_selector.crs().authid()[5:]
+            self.btnCoord.setText(projection_selector.crs().authid())
 
     def add_values(self):
         """

@@ -28,5 +28,5 @@ class ProjectionSelector(QDialog):
         coordSys = ""
         crsDlg = QgsProjectionSelectionDialog(self.parent)
         if crsDlg.exec_() == QDialog.Accepted:
-            coordSys = str(crsDlg.selectedAuthId())
+            coordSys = str(crsDlg.crs().authid())
         return coordSys
