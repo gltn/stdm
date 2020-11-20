@@ -35,6 +35,8 @@ from qgis.PyQt.QtWidgets import (
     QFileDialog,
     QMessageBox)
 
+from qgis.gui import QgsGui
+
 from stdm.data.config import DatabaseConfig
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.connection import DatabaseConnection
@@ -97,6 +99,8 @@ class OptionsDialog(WIDGET, BASE):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         self.btn_composer_out_folder.setIcon(GuiUtils.get_icon('open_file.png'))
         self.btn_template_folder.setIcon(GuiUtils.get_icon('open_file.png'))

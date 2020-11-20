@@ -31,6 +31,8 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
+from qgis.gui import QgsGui
+
 from stdm.data.database import (
     Content,
     Role
@@ -54,6 +56,8 @@ class contentAuthDlg(WIDGET, BASE):
     def __init__(self, plugin):
         QDialog.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         # Initialize the dialog
         self.initGui()

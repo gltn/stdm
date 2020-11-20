@@ -32,6 +32,8 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from qgis.gui import QgsGui
+
 from stdm.data.qtmodels import UsersRolesModel
 from stdm.security.membership import Membership
 from stdm.security.roleprovider import RoleProvider
@@ -52,6 +54,8 @@ class manageAccountsDlg(WIDGET, BASE):
     def __init__(self, plugin):
         QDialog.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         self.tbUserRole.setTabIcon(0, GuiUtils.get_icon('user.png'))
         self.tbUserRole.setTabIcon(1, GuiUtils.get_icon('roles.png'))
