@@ -1418,7 +1418,6 @@ class EntityBrowserWithEditor(EntityBrowser):
                     bounding_box = layers[0].boundingBoxOfSelected()
 
                     layers[0].blockSignals(False)
-                    canvas.setCrsTransformEnabled(True)
 
                     canvas.zoomToSelected(layers[0])
 
