@@ -291,7 +291,7 @@ class STDMFieldWidget():
         """
         idx = layer.fields().indexFromName(column.name)
         # Set Alias/ Display names for the column names
-        layer.addAttributeAlias(
+        layer.setFieldAlias(
             idx,
             column.header()
         )
@@ -386,7 +386,7 @@ class STDMFieldWidget():
         iterator = self.layer.getFeatures(
             QgsFeatureRequest().setFilterFid(feature_id))
         feature = next(iterator)
-        field_names = [field.name() for field in self.layer.pendingFields()]
+        field_names = [field.name() for field in self.layer.fields()]
         attribute = feature.attributes()
         if isinstance(attribute[0], QgsField):
             return None, 0

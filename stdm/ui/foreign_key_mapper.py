@@ -99,7 +99,7 @@ class ForeignKeyMapperExpressionDialog(QgsExpressionBuilderDialog):
         if exp.hasParserError():
             raise Exception(exp.parserErrorString())
 
-        exp.prepare(self._ref_layer.pendingFields())
+        exp.prepare(self._ref_layer.fields())
 
         for f in self._ref_layer.getFeatures():
             value = exp.evaluate(f)

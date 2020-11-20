@@ -689,7 +689,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             )
             alias = '{} Value'.format(header)
 
-            layer.addAttributeAlias(f_index, alias)
+            layer.setFieldAlias(f_index, alias)
 
     def zoom_to_layer(self):
         """
@@ -953,7 +953,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
                 # get all fields excluding the geometry.
                 layer_fields = [
                     field.name()
-                    for field in layer.pendingFields()
+                    for field in layer.fields()
                 ]
                 # get the currently being used geometry column
                 active_sp_cols = [
