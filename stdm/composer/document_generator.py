@@ -530,7 +530,7 @@ class DocumentGenerator(QObject):
         :return: None
         :rtype: NoneType
         """
-        self._iface.legendInterface().setLayerVisible(
+        self._iface.layerTreeView().setLayerVisible(
             layer, False
         )
 

@@ -236,12 +236,12 @@ class MirrorMap(QWidget):
         # add the layer to the map canvas layer set
         self.canvasLayers = []
         id2cl_dict = {}
-        for l in self.iface.legendInterface().layers():
+        for l in self.iface.mapCanvas().layers():
             lid = self._layerId(l)
             if lid in self.layerId2canvasLayer:  # previously added
                 cl = self.layerId2canvasLayer[lid]
             elif l == layer:  # Selected layer
-                cl = QgsMapCanvasLayer(layer)
+                cl = layer
             else:
                 continue
 
@@ -273,7 +273,6 @@ class MirrorMap(QWidget):
         del self.layerId2canvasLayer[layerId]
         self.canvasLayers.remove(cl)
         self.canvas.setLayers(self.canvasLayers)
-        del cl
 
         self.refreshLayerButtons()
         self.onExtentsChanged()

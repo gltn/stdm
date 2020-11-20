@@ -59,7 +59,7 @@ class StdmMapToolCapture(StdmMapToolEdit):
         StdmMapToolEdit.__init__(self, self.iface)
 
         # Connect signals
-        self.iface.legendInterface().currentLayerChanged.connect(
+        self.iface.currentLayerChanged.connect(
             self.onCurrentLayerChanged)
 
         # Instance variables

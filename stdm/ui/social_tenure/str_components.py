@@ -49,6 +49,7 @@ from qgis.PyQt.QtWidgets import (
     QSpacerItem,
     QDoubleSpinBox
 )
+from qgis.core import QgsProject
 from qgis.utils import iface
 
 from stdm.data.configuration import entity_model
@@ -417,7 +418,7 @@ class SpatialUnit(ComponentUtility):
         visualizing the spatial units. If there are no base layers
         then insert warning message.
         """
-        num_layers = len(iface.legendInterface().layers())
+        num_layers = len(QgsProject.instance().mapLayers())
         if num_layers == 0:
             msg = QApplication.translate(
                 'SpatialUnit',
