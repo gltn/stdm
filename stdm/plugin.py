@@ -338,6 +338,8 @@ class STDMQGISLoader:
         self.stdmMenu.deleteLater()
         del self.stdmMenu
 
+        self.remove_spatial_unit_mgr()
+
         if self.profile_status_label is not None:
             self.profile_status_label.deleteLater()
             self.profile_status_label = None
