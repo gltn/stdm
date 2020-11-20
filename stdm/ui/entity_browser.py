@@ -973,7 +973,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._removeEntityAction.setObjectName(
                 QApplication.translate("EntityBrowserWithEditor", "remove_tool")
             )
-            self._removeEntityAction.triggered.connected(self.onRemoveEntity)
+            self._removeEntityAction.triggered.connect(self.onRemoveEntity)
 
             # Manage position of the actions based on whether the entity
             # supports documents.
