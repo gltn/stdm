@@ -438,7 +438,7 @@ class EntityEditorDialog(MapperMixin):
         insert_pos = self._parent.tbEntity.model().rowCount() + 1
         # Save to parent editor so that it is persistent.
         self._parent._parent.child_models[insert_pos, self._entity.name] = \
-            self.model()
+            (self._entity, self.model())
         self.addedModel.emit(self.model())
         if not save_and_new:
             self.accept()
@@ -459,9 +459,9 @@ class EntityEditorDialog(MapperMixin):
         if len(self.child_models) < 1:
             return
         children_obj = []
-        for row_entity, model in self.child_models.items():
-            row_pos = row_entity[0]
-            entity = row_entity[1]
+        for row_entity, row_value in self.child_models.items():
+            entity, model = row_value
+
             ent_model = entity_model(entity)
             entity_obj = ent_model()
             for col in entity.columns.values():
