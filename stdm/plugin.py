@@ -901,7 +901,10 @@ class STDMQGISLoader:
                 parent.manage_upgrade()
             self.configuration_file_updater. \
                 _copy_config_file_from_template()
+
             result = self.load_configuration_to_serializer()
+            self.progress.hide()
+            self.progress.cancel()
             return result
 
     def loadModules(self):
