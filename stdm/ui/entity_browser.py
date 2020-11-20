@@ -741,7 +741,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             # First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
 
-            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+            self.tbEntity.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
 
             self.tbEntity.resizeColumnsToContents()
 

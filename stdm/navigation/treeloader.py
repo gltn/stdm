@@ -102,7 +102,7 @@ class TreeSummaryLoader:
             rootItem.setExpanded(True)
 
         # Force the horizontal scrollbar to show
-        self.tree.header().setResizeMode(QHeaderView.ResizeToContents)
+        self.tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
 
     def _combine(self, column, value):
         '''

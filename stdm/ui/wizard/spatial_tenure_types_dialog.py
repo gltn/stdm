@@ -48,7 +48,7 @@ class SpatialUnitTenureTypeDialog(WIDGET, BASE):
         self.setupUi(self)
 
         hv = self.sp_tenure_view.horizontalHeader()
-        hv.setResizeMode(QHeaderView.Interactive)
+        hv.setSectionResizeMode(QHeaderView.Interactive)
         hv.setStretchLastSection(True)
 
         self._add_headers()
