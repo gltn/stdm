@@ -134,7 +134,7 @@ class Membership:
             # Get the date component only - first ten characters
             valDate = result["valuntil"]
             if valDate is not None:
-                valDate = valDate[:10]
+                valDate = valDate.strftime("%Y%m%d")
 
             user.Validity = valDate
 

@@ -95,7 +95,7 @@ class newRoleDlg(WIDGET, BASE):
         if self.role == None:
             self.role = Role()
             self.role.name = roleName
-            self.role.description = string.strip(roleDescription)
+            self.role.description = roleDescription.strip()
 
     def acceptdlg(self):
         '''

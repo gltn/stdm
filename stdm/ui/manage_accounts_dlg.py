@@ -53,9 +53,9 @@ class manageAccountsDlg(WIDGET, BASE):
         QDialog.__init__(self, plugin.iface.mainWindow())
         self.setupUi(self)
 
-        self.tab.setIcon(GuiUtils.get_icon('user.png'))
-        self.tab_2.setIcon(GuiUtils.get_icon('roles.png'))
-        self.tab_3.setIcon(GuiUtils.get_icon('user_mapping.png'))
+        self.tbUserRole.setTabIcon(0, GuiUtils.get_icon('user.png'))
+        self.tbUserRole.setTabIcon(1, GuiUtils.get_icon('roles.png'))
+        self.tbUserRole.setTabIcon(2, GuiUtils.get_icon('user_mapping.png'))
 
         # Initialize the dialog
         self.initGui()

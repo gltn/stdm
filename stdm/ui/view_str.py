@@ -905,8 +905,8 @@ class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
         EntitySearchItem.__init__(self, formatter)
         self.setupUi(self)
 
-        self.filter.setIcon(GuiUtils.get_icon('filter.png'))
-        self.validity.setIcon(GuiUtils.get_icon('period_blue.png'))
+        self.tbSTRViewEntity.setTabIcon(0, GuiUtils.get_icon('filter.png'))
+        self.tbSTRViewEntity.setTabIcon(1, GuiUtils.get_icon('period_blue.png'))
 
         self.config = config
         self.setConfigOptions()
