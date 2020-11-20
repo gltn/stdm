@@ -39,6 +39,8 @@ from qgis.PyQt.QtWidgets import (
     QMainWindow
 )
 
+from qgis.gui import QgsGui
+
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
@@ -101,6 +103,8 @@ class EntityEditorDialog(MapperMixin):
         :return: If collect_model, returns SQLAlchemy Model
         """
         super().__init__(parent=parent, model=model, entity=entity)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         self.entity_table_model = {}
 
