@@ -25,6 +25,8 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from qgis.gui import QgsGui
+
 from stdm.data.config import DatabaseConfig
 from stdm.data.connection import DatabaseConnection
 from stdm.security.user import User
@@ -47,6 +49,8 @@ class loginDlg(WIDGET, BASE):
     def __init__(self, parent=None, test_connect_mode=False):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         self.btn_db_settings.setIcon(GuiUtils.get_icon('db_server_settings.png'))
 
