@@ -113,7 +113,7 @@ class LayerSelectionHandler(object):
             features = []
             field_names = [
                 field.name()
-                for field in self.layer.pendingFields()]
+                for field in self.layer.fields()]
             for feature in selected_features:
                 if 'id' in field_names:
                     features.append(feature)
@@ -1123,7 +1123,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         selected_features = self.layer.selectedFeatures()
 
-        field_names = [field.name() for field in self.layer.pendingFields()]
+        field_names = [field.name() for field in self.layer.fields()]
         feature_data = []
 
         for elem in selected_features:
@@ -1150,7 +1150,7 @@ class DetailsTreeView(DetailsDBHandler):
         :rtype: List
         """
         selected_features = self.layer.selectedFeatures()
-        field_names = [field.name() for field in self.layer.pendingFields()]
+        field_names = [field.name() for field in self.layer.fields()]
         feature_data = []
 
         for elem in selected_features:

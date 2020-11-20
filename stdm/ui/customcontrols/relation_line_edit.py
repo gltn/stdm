@@ -838,7 +838,7 @@ class ExpressionLineEdit(QLineEdit):
         if exp.hasParserError():
             raise Exception(exp.parserErrorString())
 
-        exp.prepare(self.layer.pendingFields())
+        exp.prepare(self.layer.fields())
         if feature is not None:
             value = exp.evaluate(feature)
 

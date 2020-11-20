@@ -192,7 +192,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         stdmLayer = self.currentVectorLayer()
         layerWKBType = stdmLayer.wkbType()
 
-        feature = QgsFeature(stdmLayer.pendingFields())
+        feature = QgsFeature(stdmLayer.fields())
 
         if self._mode == CAPTURE_POINT:
             feature.setGeometry(self._geometry)
