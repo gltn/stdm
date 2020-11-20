@@ -1,1463 +1,1498 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>STDMWizard</class>
-    <widget class="QWizard" name="STDMWizard">
-        <property name="windowModality">
-            <enum>Qt::WindowModal</enum>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>840</width>
-                <height>638</height>
-            </rect>
-        </property>
-        <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-            </sizepolicy>
-        </property>
+ <class>STDMWizard</class>
+ <widget class="QWizard" name="STDMWizard">
+  <property name="windowModality">
+   <enum>Qt::WindowModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>840</width>
+    <height>638</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>720</width>
+    <height>100</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>0</width>
+    <height>460</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Configuration Wizard</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="wizardStyle">
+   <enum>QWizard::ModernStyle</enum>
+  </property>
+  <property name="options">
+   <set>QWizard::HaveCustomButton1|QWizard::HelpButtonOnRight</set>
+  </property>
+  <widget class="QWizardPage" name="wpLicense">
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="title">
+    <string>End User License Agreement</string>
+   </property>
+   <property name="subTitle">
+    <string>Read carefully before you proceed</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QGroupBox" name="groupBox_16">
+      <property name="title">
+       <string>Terms and Conditions</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_20">
+       <item row="2" column="0">
+        <widget class="QRadioButton" name="rbAccpt">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>I Agree</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QRadioButton" name="rbReject">
+         <property name="font">
+          <font>
+           <pointsize>11</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Decline</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QTextEdit" name="txtLicense">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wpPathSetting">
+   <property name="title">
+    <string>Directory Settings</string>
+   </property>
+   <property name="subTitle">
+    <string>Specify configuration and documents directory path</string>
+   </property>
+   <layout class="QFormLayout" name="formLayout_2">
+    <item row="0" column="0" colspan="2">
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetNoConstraint</enum>
+      </property>
+      <property name="topMargin">
+       <number>20</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>100</number>
+      </property>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="btnTemplates">
         <property name="minimumSize">
-            <size>
-                <width>720</width>
-                <height>100</height>
-            </size>
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
         </property>
-        <property name="baseSize">
-            <size>
-                <width>0</width>
-                <height>460</height>
-            </size>
+        <property name="text">
+         <string>Change</string>
         </property>
-        <property name="windowTitle">
-            <string>Configuration Wizard</string>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="btnDocOutput">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
         </property>
-        <property name="modal">
-            <bool>true</bool>
+        <property name="text">
+         <string>Change</string>
         </property>
-        <property name="wizardStyle">
-            <enum>QWizard::ModernStyle</enum>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="edtTemplatePath">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
         </property>
-        <property name="options">
-            <set>QWizard::HaveCustomButton1|QWizard::HelpButtonOnRight</set>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
-        <widget class="QWizardPage" name="wpLicense">
-            <property name="font">
-                <font>
-                    <weight>75</weight>
-                    <bold>true</bold>
-                </font>
-            </property>
-            <property name="title">
-                <string>End User License Agreement</string>
-            </property>
-            <property name="subTitle">
-                <string>Read carefully before you proceed</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="0">
-                    <widget class="QGroupBox" name="groupBox_16">
-                        <property name="title">
-                            <string>Terms and Conditions</string>
-                        </property>
-                        <layout class="QGridLayout" name="gridLayout_20">
-                            <item row="2" column="0">
-                                <widget class="QRadioButton" name="rbAccpt">
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>11</pointsize>
-                                            <weight>75</weight>
-                                            <bold>true</bold>
-                                        </font>
-                                    </property>
-                                    <property name="text">
-                                        <string>I Agree</string>
-                                    </property>
-                                    <property name="checked">
-                                        <bool>false</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="2" column="1">
-                                <widget class="QRadioButton" name="rbReject">
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>11</pointsize>
-                                            <weight>75</weight>
-                                            <bold>true</bold>
-                                        </font>
-                                    </property>
-                                    <property name="text">
-                                        <string>Decline</string>
-                                    </property>
-                                    <property name="checkable">
-                                        <bool>true</bool>
-                                    </property>
-                                    <property name="checked">
-                                        <bool>false</bool>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="1" column="0" colspan="2">
-                                <widget class="QTextEdit" name="txtLicense">
-                                    <property name="font">
-                                        <font>
-                                            <pointsize>14</pointsize>
-                                            <weight>75</weight>
-                                            <bold>true</bold>
-                                        </font>
-                                    </property>
-                                    <property name="frameShape">
-                                        <enum>QFrame::NoFrame</enum>
-                                    </property>
-                                    <property name="frameShadow">
-                                        <enum>QFrame::Raised</enum>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-            </layout>
-        </widget>
-        <widget class="QWizardPage" name="wpPathSetting">
-            <property name="title">
-                <string>Directory Settings</string>
-            </property>
-            <property name="subTitle">
-                <string>Specify configuration and documents directory path</string>
-            </property>
-            <layout class="QFormLayout" name="formLayout_2">
-                <item row="0" column="0" colspan="2">
-                    <layout class="QGridLayout" name="gridLayout">
-                        <property name="sizeConstraint">
-                            <enum>QLayout::SetNoConstraint</enum>
-                        </property>
-                        <property name="topMargin">
-                            <number>20</number>
-                        </property>
-                        <property name="verticalSpacing">
-                            <number>100</number>
-                        </property>
-                        <item row="2" column="2">
-                            <widget class="QPushButton" name="btnTemplates">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="text">
-                                    <string>Change</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="1" column="2">
-                            <widget class="QPushButton" name="btnDocOutput">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="text">
-                                    <string>Change</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="2" column="1">
-                            <widget class="QLineEdit" name="edtTemplatePath">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                                <property name="placeholderText">
-                                    <string>Specify path to save document templates</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="0" column="0">
-                            <widget class="QLabel" name="label_37">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="text">
-                                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supporting documents path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="2" column="0">
-                            <widget class="QLabel" name="label_4">
-                                <property name="text">
-                                    <string>Documents template path</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="1" column="0">
-                            <widget class="QLabel" name="label_31">
-                                <property name="text">
-                                    <string>Documents output path</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="1" column="1">
-                            <widget class="QLineEdit" name="edtOutputPath">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                                <property name="placeholderText">
-                                    <string>Specify path to save generated documents</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="0" column="2">
-                            <widget class="QPushButton" name="btnDocPath">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="text">
-                                    <string>Change</string>
-                                </property>
-                            </widget>
-                        </item>
-                        <item row="0" column="1">
-                            <widget class="QLineEdit" name="edtDocPath">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>30</height>
-                                    </size>
-                                </property>
-                                <property name="toolTip">
-                                    <string extracomment="Specify path to save entity supporting documents"/>
-                                </property>
-                                <property name="text">
-                                    <string/>
-                                </property>
-                                <property name="readOnly">
-                                    <bool>true</bool>
-                                </property>
-                                <property name="placeholderText">
-                                    <string>Specify path to save entity supporting documents</string>
-                                </property>
-                            </widget>
-                        </item>
-                    </layout>
-                </item>
-            </layout>
-        </widget>
-        <widget class="QWizardPage" name="wpProfile">
-            <property name="title">
-                <string>Profile</string>
-            </property>
-            <property name="subTitle">
-                <string>Manage profile and related entities. A profile represents a collection of logically related
+        <property name="placeholderText">
+         <string>Specify path to save document templates</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_37">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Supporting documents path&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Documents template path</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_31">
+        <property name="text">
+         <string>Documents output path</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="edtOutputPath">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Specify path to save generated documents</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="btnDocPath">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Change</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="edtDocPath">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string extracomment="Specify path to save entity supporting documents"/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Specify path to save entity supporting documents</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wpProfile">
+   <property name="title">
+    <string>Profile</string>
+   </property>
+   <property name="subTitle">
+    <string>Manage profile and related entities. A profile represents a collection of logically related
                     entities, some of which represent the party and spatial unit. Examples of profiles include
                     individual, household, neighbourhood or even city-wide profiles.
                 </string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_7">
-                <item>
-                    <widget class="QGroupBox" name="groupBox_17">
-                        <property name="minimumSize">
-                            <size>
-                                <width>0</width>
-                                <height>0</height>
-                            </size>
-                        </property>
-                        <property name="maximumSize">
-                            <size>
-                                <width>13900</width>
-                                <height>300</height>
-                            </size>
-                        </property>
-                        <property name="title">
-                            <string>Profile</string>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_4">
-                            <item>
-                                <layout class="QGridLayout" name="gridLayout_6">
-                                    <item row="0" column="3">
-                                        <widget class="QPushButton" name="btnCopy">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>0</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>150</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string>Copy profile</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="0" column="4">
-                                        <widget class="QPushButton" name="btnPDelete">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>150</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string>Delete profile</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="0" column="1">
-                                        <widget class="QComboBox" name="cboProfile">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>0</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>10</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="font">
-                                                <font>
-                                                    <pointsize>9</pointsize>
-                                                </font>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="0" column="0">
-                                        <widget class="QLabel" name="label">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>50</width>
-                                                    <height>0</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>16777215</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="font">
-                                                <font>
-                                                    <pointsize>9</pointsize>
-                                                    <weight>50</weight>
-                                                    <bold>false</bold>
-                                                </font>
-                                            </property>
-                                            <property name="text">
-                                                <string>Name</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="0" column="2">
-                                        <widget class="QPushButton" name="btnNewP">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>30</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>150</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string>New profile</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="1" column="0">
-                                        <widget class="QLabel" name="label_3">
-                                            <property name="text">
-                                                <string>Description</string>
-                                            </property>
-                                            <property name="margin">
-                                                <number>0</number>
-                                            </property>
-                                            <property name="indent">
-                                                <number>-1</number>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item row="1" column="1" colspan="4">
-                                        <widget class="QLineEdit" name="edtDesc"/>
-                                    </item>
-                                </layout>
-                            </item>
-                            <item>
-                                <widget class="QWidget" name="widget" native="true">
-                                    <property name="layoutDirection">
-                                        <enum>Qt::LeftToRight</enum>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-                <item>
-                    <widget class="QGroupBox" name="groupBox_18">
-                        <property name="sizePolicy">
-                            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>0</width>
-                                <height>300</height>
-                            </size>
-                        </property>
-                        <property name="maximumSize">
-                            <size>
-                                <width>169999</width>
-                                <height>169999</height>
-                            </size>
-                        </property>
-                        <property name="styleSheet">
-                            <string notr="true">font: 75 9pt &quot;Myriad Web Pro&quot;;</string>
-                        </property>
-                        <property name="title">
-                            <string>Profile entities</string>
-                        </property>
-                        <layout class="QFormLayout" name="formLayout_3">
-                            <property name="fieldGrowthPolicy">
-                                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-                            </property>
-                            <item row="0" column="0">
-                                <layout class="QHBoxLayout" name="horizontalLayout">
-                                    <item>
-                                        <widget class="QPushButton" name="btnNewEntity">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="baseSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string/>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item>
-                                        <widget class="QPushButton" name="btnEditEntity">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string/>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item>
-                                        <widget class="QPushButton" name="btnDeleteEntity">
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>30</width>
-                                                    <height>25</height>
-                                                </size>
-                                            </property>
-                                            <property name="text">
-                                                <string/>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </item>
-                            <item row="1" column="0" colspan="2">
-                                <widget class="QTableView" name="pftableView">
-                                    <property name="sizePolicy">
-                                        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                            <horstretch>0</horstretch>
-                                            <verstretch>1</verstretch>
-                                        </sizepolicy>
-                                    </property>
-                                    <property name="maximumSize">
-                                        <size>
-                                            <width>16777215</width>
-                                            <height>16777215</height>
-                                        </size>
-                                    </property>
-                                    <property name="selectionMode">
-                                        <enum>QAbstractItemView::SingleSelection</enum>
-                                    </property>
-                                    <property name="selectionBehavior">
-                                        <enum>QAbstractItemView::SelectRows</enum>
-                                    </property>
-                                    <attribute name="horizontalHeaderStretchLastSection">
-                                        <bool>true</bool>
-                                    </attribute>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                </item>
-            </layout>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_7">
+    <item>
+     <widget class="QGroupBox" name="groupBox_17">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>13900</width>
+        <height>300</height>
+       </size>
+      </property>
+      <property name="title">
+       <string>Profile</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="3">
+          <widget class="QPushButton" name="btnCopy">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Copy profile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4">
+          <widget class="QPushButton" name="btnPDelete">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Delete profile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="cboProfile">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>10</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>50</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>9</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="btnNewP">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>30</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>150</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>New profile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Description</string>
+           </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
+           <property name="indent">
+            <number>-1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1" colspan="4">
+          <widget class="QLineEdit" name="edtDesc"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
         </widget>
-        <widget class="QWizardPage" name="wpEntityCustom">
-            <property name="title">
-                <string>Entity Customization</string>
-            </property>
-            <property name="subTitle">
-                <string>Add or edit entity columns, lookups and lookup values</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_9">
-                <item>
-                    <widget class="QSplitter" name="splitter_3">
-                        <property name="sizePolicy">
-                            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="orientation">
-                            <enum>Qt::Vertical</enum>
-                        </property>
-                        <widget class="QSplitter" name="splitter">
-                            <property name="minimumSize">
-                                <size>
-                                    <width>100</width>
-                                    <height>100</height>
-                                </size>
-                            </property>
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <widget class="QGroupBox" name="groupBox">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="title">
-                                    <string>Entities</string>
-                                </property>
-                                <layout class="QVBoxLayout" name="verticalLayout_8">
-                                    <property name="spacing">
-                                        <number>5</number>
-                                    </property>
-                                    <property name="margin">
-                                        <number>5</number>
-                                    </property>
-                                    <item>
-                                        <widget class="QListView" name="lvEntities">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>1</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>0</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>16777215</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="selectionBehavior">
-                                                <enum>QAbstractItemView::SelectRows</enum>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </widget>
-                            <widget class="QGroupBox" name="groupBox_2">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="title">
-                                    <string>Columns</string>
-                                </property>
-                                <layout class="QVBoxLayout" name="verticalLayout">
-                                    <property name="margin">
-                                        <number>5</number>
-                                    </property>
-                                    <item>
-                                        <layout class="QHBoxLayout" name="horizontalLayout_2">
-                                            <item>
-                                                <widget class="QPushButton" name="btnAddColumn">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                    <property name="iconSize">
-                                                        <size>
-                                                            <width>20</width>
-                                                            <height>20</height>
-                                                        </size>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnEditColumn">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                    <property name="iconSize">
-                                                        <size>
-                                                            <width>20</width>
-                                                            <height>20</height>
-                                                        </size>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnDeleteColumn">
-                                                    <property name="sizePolicy">
-                                                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                                                            <horstretch>0</horstretch>
-                                                            <verstretch>0</verstretch>
-                                                        </sizepolicy>
-                                                    </property>
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <spacer name="horizontalSpacer">
-                                                    <property name="orientation">
-                                                        <enum>Qt::Horizontal</enum>
-                                                    </property>
-                                                    <property name="sizeHint" stdset="0">
-                                                        <size>
-                                                            <width>40</width>
-                                                            <height>20</height>
-                                                        </size>
-                                                    </property>
-                                                </spacer>
-                                            </item>
-                                        </layout>
-                                    </item>
-                                    <item>
-                                        <widget class="QTableView" name="tbvColumns">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                                    <horstretch>1</horstretch>
-                                                    <verstretch>1</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>0</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>16777215</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="frameShape">
-                                                <enum>QFrame::StyledPanel</enum>
-                                            </property>
-                                            <property name="frameShadow">
-                                                <enum>QFrame::Sunken</enum>
-                                            </property>
-                                            <property name="selectionMode">
-                                                <enum>QAbstractItemView::SingleSelection</enum>
-                                            </property>
-                                            <property name="selectionBehavior">
-                                                <enum>QAbstractItemView::SelectRows</enum>
-                                            </property>
-                                            <attribute name="horizontalHeaderDefaultSectionSize">
-                                                <number>130</number>
-                                            </attribute>
-                                            <attribute name="horizontalHeaderStretchLastSection">
-                                                <bool>true</bool>
-                                            </attribute>
-                                            <attribute name="verticalHeaderDefaultSectionSize">
-                                                <number>30</number>
-                                            </attribute>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </widget>
-                        </widget>
-                        <widget class="QSplitter" name="splitter_2">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>100</width>
-                                    <height>100</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>16777215</width>
-                                    <height>16777215</height>
-                                </size>
-                            </property>
-                            <property name="baseSize">
-                                <size>
-                                    <width>0</width>
-                                    <height>230</height>
-                                </size>
-                            </property>
-                            <property name="orientation">
-                                <enum>Qt::Horizontal</enum>
-                            </property>
-                            <widget class="QGroupBox" name="groupBox_5">
-                                <property name="sizePolicy">
-                                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>100</width>
-                                        <height>20</height>
-                                    </size>
-                                </property>
-                                <property name="title">
-                                    <string>Lookups</string>
-                                </property>
-                                <layout class="QVBoxLayout" name="verticalLayout_3">
-                                    <property name="spacing">
-                                        <number>7</number>
-                                    </property>
-                                    <property name="margin">
-                                        <number>5</number>
-                                    </property>
-                                    <item>
-                                        <layout class="QHBoxLayout" name="horizontalLayout_4">
-                                            <property name="spacing">
-                                                <number>6</number>
-                                            </property>
-                                            <item>
-                                                <widget class="QPushButton" name="btnAddLookup">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnEditLookup">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnDeleteLookup">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <spacer name="horizontalSpacer_3">
-                                                    <property name="orientation">
-                                                        <enum>Qt::Horizontal</enum>
-                                                    </property>
-                                                    <property name="sizeHint" stdset="0">
-                                                        <size>
-                                                            <width>40</width>
-                                                            <height>20</height>
-                                                        </size>
-                                                    </property>
-                                                </spacer>
-                                            </item>
-                                        </layout>
-                                    </item>
-                                    <item>
-                                        <widget class="QListView" name="lvLookups">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>1</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>0</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>16777215</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="selectionBehavior">
-                                                <enum>QAbstractItemView::SelectRows</enum>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </widget>
-                            <widget class="QGroupBox" name="groupBox_6">
-                                <property name="sizePolicy">
-                                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                        <horstretch>0</horstretch>
-                                        <verstretch>0</verstretch>
-                                    </sizepolicy>
-                                </property>
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>0</width>
-                                        <height>0</height>
-                                    </size>
-                                </property>
-                                <property name="title">
-                                    <string>Values</string>
-                                </property>
-                                <layout class="QVBoxLayout" name="verticalLayout_2">
-                                    <property name="margin">
-                                        <number>5</number>
-                                    </property>
-                                    <item>
-                                        <layout class="QHBoxLayout" name="horizontalLayout_5">
-                                            <item>
-                                                <widget class="QPushButton" name="btnAddLkupValue">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnEditLkupValue">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <widget class="QPushButton" name="btnDeleteLkupValue">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="maximumSize">
-                                                        <size>
-                                                            <width>30</width>
-                                                            <height>25</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string/>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item>
-                                                <spacer name="horizontalSpacer_2">
-                                                    <property name="orientation">
-                                                        <enum>Qt::Horizontal</enum>
-                                                    </property>
-                                                    <property name="sizeHint" stdset="0">
-                                                        <size>
-                                                            <width>40</width>
-                                                            <height>20</height>
-                                                        </size>
-                                                    </property>
-                                                </spacer>
-                                            </item>
-                                        </layout>
-                                    </item>
-                                    <item>
-                                        <widget class="QListView" name="lvLookupValues">
-                                            <property name="sizePolicy">
-                                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                                    <horstretch>0</horstretch>
-                                                    <verstretch>1</verstretch>
-                                                </sizepolicy>
-                                            </property>
-                                            <property name="minimumSize">
-                                                <size>
-                                                    <width>0</width>
-                                                    <height>0</height>
-                                                </size>
-                                            </property>
-                                            <property name="maximumSize">
-                                                <size>
-                                                    <width>16777215</width>
-                                                    <height>16777215</height>
-                                                </size>
-                                            </property>
-                                            <property name="selectionBehavior">
-                                                <enum>QAbstractItemView::SelectRows</enum>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </widget>
-                        </widget>
-                    </widget>
-                </item>
-            </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_18">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>300</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>169999</width>
+        <height>169999</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 75 9pt &quot;Myriad Web Pro&quot;;</string>
+      </property>
+      <property name="title">
+       <string>Profile entities</string>
+      </property>
+      <layout class="QFormLayout" name="formLayout_3">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QPushButton" name="btnNewEntity">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnEditEntity">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnDeleteEntity">
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>30</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="QTableView" name="pftableView">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>1</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
         </widget>
-        <widget class="QWizardPage" name="wpSTR">
-            <property name="title">
-                <string>Define Social Tenure Entities</string>
-            </property>
-            <property name="subTitle">
-                <string>Set entities to participate in the profile's social tenure relationship</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_3">
-                <property name="leftMargin">
-                    <number>2</number>
-                </property>
-                <property name="topMargin">
-                    <number>4</number>
-                </property>
-                <property name="rightMargin">
-                    <number>2</number>
-                </property>
-                <property name="bottomMargin">
-                    <number>4</number>
-                </property>
-                <property name="horizontalSpacing">
-                    <number>6</number>
-                </property>
-                <item row="1" column="1">
-                    <widget class="ProfileTenureDiagram" name="dg_tenure" native="true">
-                        <property name="sizePolicy">
-                            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>100</width>
-                                <height>320</height>
-                            </size>
-                        </property>
-                    </widget>
-                </item>
-                <item row="1" column="0">
-                    <widget class="QScrollArea" name="scrollArea">
-                        <property name="sizePolicy">
-                            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-                                <horstretch>0</horstretch>
-                                <verstretch>0</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="minimumSize">
-                            <size>
-                                <width>50</width>
-                                <height>0</height>
-                            </size>
-                        </property>
-                        <property name="maximumSize">
-                            <size>
-                                <width>16777215</width>
-                                <height>16777215</height>
-                            </size>
-                        </property>
-                        <property name="frameShape">
-                            <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="widgetResizable">
-                            <bool>true</bool>
-                        </property>
-                        <widget class="QWidget" name="scrollAreaWidgetContents_2">
-                            <property name="geometry">
-                                <rect>
-                                    <x>0</x>
-                                    <y>0</y>
-                                    <width>244</width>
-                                    <height>624</height>
-                                </rect>
-                            </property>
-                            <layout class="QVBoxLayout" name="verticalLayout_5">
-                                <property name="spacing">
-                                    <number>5</number>
-                                </property>
-                                <property name="leftMargin">
-                                    <number>3</number>
-                                </property>
-                                <property name="topMargin">
-                                    <number>0</number>
-                                </property>
-                                <property name="rightMargin">
-                                    <number>2</number>
-                                </property>
-                                <property name="bottomMargin">
-                                    <number>1</number>
-                                </property>
-                                <item>
-                                    <widget class="QLabel" name="label_5">
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>0</width>
-                                                <height>0</height>
-                                            </size>
-                                        </property>
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>300</width>
-                                                <height>16777215</height>
-                                            </size>
-                                        </property>
-                                        <property name="text">
-                                            <string>1. Select the party entities</string>
-                                        </property>
-                                        <property name="alignment">
-                                            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                                        </property>
-                                        <property name="wordWrap">
-                                            <bool>true</bool>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="STRPartyListView" name="lst_parties">
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>16777215</width>
-                                                <height>120</height>
-                                            </size>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QCheckBox" name="cbMultiParty">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                                                <horstretch>1</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="text">
-                                            <string>Allow multiple parties to be
-                                                linked to a single spatial unit
-                                            </string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QLabel" name="label_6">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>0</width>
-                                                <height>0</height>
-                                            </size>
-                                        </property>
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>300</width>
-                                                <height>16777215</height>
-                                            </size>
-                                        </property>
-                                        <property name="text">
-                                            <string>2. Select the spatial unit entities</string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="STRSpatialUnitListView" name="lst_spatial_units">
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>16777215</width>
-                                                <height>120</height>
-                                            </size>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QPushButton" name="btn_sp_units_tenure">
-                                        <property name="text">
-                                            <string>Spatial Unit Tenure Types...</string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QLabel" name="label_7">
-                                        <property name="text">
-                                            <string>3. Specify validity ranges (optional)</string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QgsCollapsibleGroupBox" name="gb_start_dates">
-                                        <property name="sizePolicy">
-                                            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                                                <horstretch>0</horstretch>
-                                                <verstretch>0</verstretch>
-                                            </sizepolicy>
-                                        </property>
-                                        <property name="title">
-                                            <string>'Start' date range</string>
-                                        </property>
-                                        <property name="checkable">
-                                            <bool>true</bool>
-                                        </property>
-                                        <property name="checked">
-                                            <bool>false</bool>
-                                        </property>
-                                        <layout class="QGridLayout" name="gridLayout_4">
-                                            <item row="0" column="0">
-                                                <widget class="QLabel" name="label_8">
-                                                    <property name="text">
-                                                        <string>Minimum</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="0" column="1">
-                                                <widget class="QDateEdit" name="dt_start_minimum">
-                                                    <property name="calendarPopup">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="1" column="0">
-                                                <widget class="QLabel" name="label_9">
-                                                    <property name="text">
-                                                        <string>Maximum</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="1" column="1">
-                                                <widget class="QDateEdit" name="dt_start_maximum">
-                                                    <property name="calendarPopup">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                        </layout>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QgsCollapsibleGroupBox" name="gb_end_dates">
-                                        <property name="title">
-                                            <string>'End' date range</string>
-                                        </property>
-                                        <property name="checkable">
-                                            <bool>true</bool>
-                                        </property>
-                                        <property name="checked">
-                                            <bool>false</bool>
-                                        </property>
-                                        <layout class="QGridLayout" name="gridLayout_5">
-                                            <item row="0" column="0">
-                                                <widget class="QLabel" name="label_10">
-                                                    <property name="text">
-                                                        <string>Minimum</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="0" column="1">
-                                                <widget class="QDateEdit" name="dt_end_minimum">
-                                                    <property name="calendarPopup">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="1" column="0">
-                                                <widget class="QLabel" name="label_11">
-                                                    <property name="text">
-                                                        <string>Maximum</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="1" column="1">
-                                                <widget class="QDateEdit" name="dt_end_maximum">
-                                                    <property name="calendarPopup">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                        </layout>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QLabel" name="label_12">
-                                        <property name="text">
-                                            <string>4. Specify custom tenure attributes (optional)</string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <widget class="QPushButton" name="btn_custom_attrs">
-                                        <property name="text">
-                                            <string>Custom Attributes...</string>
-                                        </property>
-                                    </widget>
-                                </item>
-                                <item>
-                                    <spacer name="verticalSpacer">
-                                        <property name="orientation">
-                                            <enum>Qt::Vertical</enum>
-                                        </property>
-                                        <property name="sizeHint" stdset="0">
-                                            <size>
-                                                <width>20</width>
-                                                <height>40</height>
-                                            </size>
-                                        </property>
-                                    </spacer>
-                                </item>
-                            </layout>
-                        </widget>
-                    </widget>
-                </item>
-                <item row="0" column="0" colspan="2">
-                    <layout class="QVBoxLayout" name="vl_notification_str"/>
-                </item>
-            </layout>
-        </widget>
-        <widget class="QWizardPage" name="wpSaveProfile">
-            <property name="title">
-                <string>Save configuration</string>
-            </property>
-            <property name="subTitle">
-                <string>Click finish to save changes in your configuration to the database.</string>
-            </property>
-            <layout class="QFormLayout" name="formLayout_10">
-                <item row="0" column="0">
-                    <widget class="QLabel" name="label_2">
-                        <property name="text">
-                            <string>Save status will be displayed in the window below.</string>
-                        </property>
-                    </widget>
-                </item>
-                <item row="1" column="0" colspan="2">
-                    <widget class="QTextEdit" name="txtHtml">
-                        <property name="sizePolicy">
-                            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                                <horstretch>0</horstretch>
-                                <verstretch>1</verstretch>
-                            </sizepolicy>
-                        </property>
-                        <property name="readOnly">
-                            <bool>true</bool>
-                        </property>
-                    </widget>
-                </item>
-            </layout>
-        </widget>
-    </widget>
-    <customwidgets>
-        <customwidget>
-            <class>ProfileTenureDiagram</class>
-            <extends>QWidget</extends>
-            <header>stdm.ui.wizard.profile_tenure_view</header>
-            <container>1</container>
-        </customwidget>
-        <customwidget>
-            <class>STRPartyListView</class>
-            <extends>QListView</extends>
-            <header>stdm.ui.wizard.party_list_view</header>
-        </customwidget>
-        <customwidget>
-            <class>QgsCollapsibleGroupBox</class>
-            <extends>QGroupBox</extends>
-            <header>qgis.gui</header>
-            <container>1</container>
-        </customwidget>
-        <customwidget>
-            <class>STRSpatialUnitListView</class>
-            <extends>QListView</extends>
-            <header>stdm.ui.wizard.spatial_unit_list_view</header>
-        </customwidget>
-    </customwidgets>
-    <tabstops>
-        <tabstop>rbAccpt</tabstop>
-        <tabstop>cboProfile</tabstop>
-        <tabstop>rbReject</tabstop>
-        <tabstop>btnPDelete</tabstop>
-        <tabstop>btnNewP</tabstop>
-        <tabstop>pftableView</tabstop>
-        <tabstop>btnNewEntity</tabstop>
-        <tabstop>btnEditEntity</tabstop>
-        <tabstop>btnDeleteEntity</tabstop>
-        <tabstop>btnDeleteColumn</tabstop>
-        <tabstop>btnEditColumn</tabstop>
-        <tabstop>btnAddColumn</tabstop>
-        <tabstop>tbvColumns</tabstop>
-        <tabstop>lvLookups</tabstop>
-        <tabstop>btnEditLookup</tabstop>
-        <tabstop>lvLookupValues</tabstop>
-        <tabstop>btnEditLkupValue</tabstop>
-        <tabstop>txtLicense</tabstop>
-    </tabstops>
-    <connections/>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wpEntityCustom">
+   <property name="title">
+    <string>Entity Customization</string>
+   </property>
+   <property name="subTitle">
+    <string>Add or edit entity columns, lookups and lookup values</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_9">
+    <item>
+     <widget class="QSplitter" name="splitter_3">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Entities</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="spacing">
+          <number>5</number>
+         </property>
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QListView" name="lvEntities">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Columns</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="btnAddColumn">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnEditColumn">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnDeleteColumn">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTableView" name="tbvColumns">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>1</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <attribute name="horizontalHeaderDefaultSectionSize">
+            <number>130</number>
+           </attribute>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="verticalHeaderDefaultSectionSize">
+            <number>30</number>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QSplitter" name="splitter_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>230</height>
+        </size>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QGroupBox" name="groupBox_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Lookups</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <property name="spacing">
+          <number>7</number>
+         </property>
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="btnAddLookup">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnEditLookup">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnDeleteLookup">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListView" name="lvLookups">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_6">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Values</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>5</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QPushButton" name="btnAddLkupValue">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnEditLkupValue">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnDeleteLkupValue">
+             <property name="minimumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>30</width>
+               <height>25</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListView" name="lvLookupValues">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wpSTR">
+   <property name="title">
+    <string>Define Social Tenure Entities</string>
+   </property>
+   <property name="subTitle">
+    <string>Set entities to participate in the profile's social tenure relationship</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>4</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
+     <number>4</number>
+    </property>
+    <property name="horizontalSpacing">
+     <number>6</number>
+    </property>
+    <item row="1" column="1">
+     <widget class="ProfileTenureDiagram" name="dg_tenure" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>320</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>50</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents_2">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>421</width>
+         <height>707</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="spacing">
+         <number>5</number>
+        </property>
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>2</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>1. Select the party entities</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="STRPartyListView" name="lst_parties">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>120</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbMultiParty">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Allow multiple parties to be linked to a single spatial unit</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>2. Select the spatial unit entities</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="STRSpatialUnitListView" name="lst_spatial_units">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>120</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_sp_units_tenure">
+          <property name="text">
+           <string>Spatial Unit Tenure Types...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>3. Specify validity ranges (optional)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QgsCollapsibleGroupBox" name="gb_start_dates">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="title">
+           <string>'Start' date range</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_8">
+             <property name="text">
+              <string>Minimum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDateEdit" name="dt_start_minimum">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Maximum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDateEdit" name="dt_start_maximum">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QgsCollapsibleGroupBox" name="gb_end_dates">
+          <property name="title">
+           <string>'End' date range</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_5">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_10">
+             <property name="text">
+              <string>Minimum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QDateEdit" name="dt_end_minimum">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Maximum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDateEdit" name="dt_end_maximum">
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>4. Specify custom tenure attributes (optional)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="btn_custom_attrs">
+          <property name="text">
+           <string>Custom Attributes...</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="vl_notification_str"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWizardPage" name="wpSaveProfile">
+   <property name="title">
+    <string>Save configuration</string>
+   </property>
+   <property name="subTitle">
+    <string>Click finish to save changes in your configuration to the database.</string>
+   </property>
+   <layout class="QFormLayout" name="formLayout_10">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Save status will be displayed in the window below.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QTextEdit" name="txtHtml">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>qgscollapsiblegroupbox.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ProfileTenureDiagram</class>
+   <extends>QWidget</extends>
+   <header>stdm.ui.wizard.profile_tenure_view</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>STRPartyListView</class>
+   <extends>QListView</extends>
+   <header>stdm.ui.wizard.party_list_view</header>
+  </customwidget>
+  <customwidget>
+   <class>STRSpatialUnitListView</class>
+   <extends>QListView</extends>
+   <header>stdm.ui.wizard.spatial_unit_list_view</header>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>rbAccpt</tabstop>
+  <tabstop>cboProfile</tabstop>
+  <tabstop>rbReject</tabstop>
+  <tabstop>btnPDelete</tabstop>
+  <tabstop>btnNewP</tabstop>
+  <tabstop>pftableView</tabstop>
+  <tabstop>btnNewEntity</tabstop>
+  <tabstop>btnEditEntity</tabstop>
+  <tabstop>btnDeleteEntity</tabstop>
+  <tabstop>btnDeleteColumn</tabstop>
+  <tabstop>btnEditColumn</tabstop>
+  <tabstop>btnAddColumn</tabstop>
+  <tabstop>tbvColumns</tabstop>
+  <tabstop>lvLookups</tabstop>
+  <tabstop>btnEditLookup</tabstop>
+  <tabstop>lvLookupValues</tabstop>
+  <tabstop>btnEditLkupValue</tabstop>
+  <tabstop>txtLicense</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
 </ui>
