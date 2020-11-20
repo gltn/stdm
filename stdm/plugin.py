@@ -130,7 +130,7 @@ from stdm.utils.util import simple_dialog
 from stdm.data import globals
 
 # TODO!
-# from stdm.composer.composer_data_source import composer_data_source
+from stdm.composer.composer_data_source import composer_data_source
 # from stdm.composer.composer_wrapper import ComposerWrapper
 
 LOGGER = logging.getLogger('stdm')
