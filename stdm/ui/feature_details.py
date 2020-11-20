@@ -752,7 +752,7 @@ class DetailsTreeView(DetailsDBHandler):
         if selected_item is None:
             return
         if hasattr(self.container_widget, 'delete_btn'):
-            if selected_item in self.party_items.keys():
+            if selected_item.data() in self.party_items:
                 self.container_widget.delete_btn.setEnabled(False)
             else:
                 self.container_widget.delete_btn.setEnabled(True)
@@ -1001,7 +1001,7 @@ class DetailsTreeView(DetailsDBHandler):
                 if self.entity in self.social_tenure.spatial_units:
                     str_records = self.feature_str_link(id)
 
-                self.spatial_unit_items[root] = self.entity
+                self.spatial_unit_items[root.data()] = self.entity
 
                 if len(str_records) > 0:
                     db_model = getattr(str_records[0], self.entity.name)
@@ -1036,8 +1036,8 @@ class DetailsTreeView(DetailsDBHandler):
         for spu_id in spatial_unit_ids:
 
             root = QStandardItem(layer_icon, str(entity.short_name))
-            self.spatial_unit_items[root] = entity
             root.setData(spu_id)
+            self.spatial_unit_items[root.data()] = entity
             self.set_bold(root)
             self.model.appendRow(root)
 
@@ -1068,7 +1068,7 @@ class DetailsTreeView(DetailsDBHandler):
             str_records = self.party_str_link(entity, spu_id)
 
             root = QStandardItem(table_icon, str(entity.short_name))
-            self.party_items[root] = entity
+            self.party_items[spu_id] = entity
             root.setData(spu_id)
             self.set_bold(root)
             self.model.appendRow(root)
@@ -1392,7 +1392,7 @@ class DetailsTreeView(DetailsDBHandler):
                                 str_root, party, party_model
                             )
 
-                            self.party_items[party_root] = party
+                            self.party_items[party_model.id] = party
                     else:
 
                         record_dict = record.__dict__
@@ -1403,7 +1403,7 @@ class DetailsTreeView(DetailsDBHandler):
                         spu_root = self.add_spatial_unit_child(
                             str_root, spatial_unit, spatial_unit_model
                         )
-                        self.spatial_unit_items[spu_root] = spatial_unit
+                        self.spatial_unit_items[spu_root.data()] = spatial_unit
 
         self.feature_str_model[feature_id] = list(self.str_models.keys())
 
@@ -1780,18 +1780,18 @@ class DetailsTreeView(DetailsDBHandler):
             edit_str.exec_()
 
         # party steam - edit party
-        elif item in self.party_items.keys():
+        elif item.data() in self.party_items:
 
-            entity = self.party_items[item]
+            entity = self.party_items[item.data()]
 
-            model = self.feature_model(self.party_items[item], data)
+            model = self.feature_model(self.party_items[item.data()], data)
             editor = EntityEditorDialog(
                 entity, model, self.iface.mainWindow()
             )
             editor.exec_()
         # Edit spatial entity
-        elif item in self.spatial_unit_items.keys():
-            entity = self.spatial_unit_items[item]
+        elif item.data() in self.spatial_unit_items.keys():
+            entity = self.spatial_unit_items[item.data()]
 
             model = self.feature_model(entity, data)
 
@@ -2013,8 +2013,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         if item.text() == self.str_text:
             db_model = self.str_models[id]
-        elif item in self.party_items:
-            db_model = self.feature_model(self.party_items[item], id)
+        elif item.data() in self.party_items:
+            db_model = self.feature_model(self.party_items[item.data()], id)
         else:
 
             db_model = self.feature_model(entity, id)

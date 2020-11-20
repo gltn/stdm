@@ -543,9 +543,9 @@ class ViewSTRWidget(WIDGET, BASE):
 
 
         # party node - edit party
-        elif item in self.details_tree_view.spatial_unit_items.keys():
+        elif item.data() in self.details_tree_view.spatial_unit_items.keys():
             self.toolBox.setCurrentIndex(0)
-            entity = self.details_tree_view.spatial_unit_items[item]
+            entity = self.details_tree_view.spatial_unit_items[item.data()]
 
             model = self.details_tree_view.feature_model(entity, item.data())
             self.draw_spatial_unit(entity.name, model)
