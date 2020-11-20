@@ -1042,7 +1042,7 @@ class BaseTenureItem(QGraphicsItem):
                 )
 
             # QTextLayout requires the unicode character of the line separator
-            multiline_items = '\\u2028'.join(multiline_items)
+            multiline_items = '\u2028'.join(multiline_items)
             self.draw_text(
                 painter,
                 multiline_items,
