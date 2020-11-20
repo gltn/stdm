@@ -115,6 +115,10 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             self.on_add_to_canvas_button_clicked
         )
 
+        self.set_display_name_button.clicked.connect(
+            self.set_display_name_button_clicked
+        )
+
         self.iface.projectRead.connect(self.on_project_opened)
 
     def on_project_opened(self):
@@ -841,7 +845,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         layer_names = [lyr.name() for lyr in layers.values()]
         return layer_names
 
-    def on_set_display_name_button_clicked(self):
+    def set_display_name_button_clicked(self):
         """
         Method to change display name
         """
