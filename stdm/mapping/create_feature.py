@@ -333,7 +333,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             refLayer = QgsProject.instance().mapLayer(layerid)
 
             if refLayer != None:
-                fidx = refLayer.fieldNameIndex(pendingLayerEntity.featureAttributeName())
+                fidx = refLayer.fields().indexFromName(pendingLayerEntity.featureAttributeName())
 
                 # Show progress dialog for updating the features.
                 progressLabel = QApplication.translate("StdmMapToolCreateFeature", "Updating related entities...")

@@ -684,7 +684,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         for column, fk_field in fk_fields.items():
             header = entity.columns[column].header()
 
-            f_index = layer.fieldNameIndex(
+            f_index = layer.fields().indexFromName(
                 '{} {}'.format(header, fk_field)
             )
             alias = '{} Value'.format(header)
