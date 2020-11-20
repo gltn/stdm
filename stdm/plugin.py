@@ -2044,6 +2044,10 @@ class STDMQGISLoader:
 
             self.current_profile = None
 
+            if self.profile_status_label is not None:
+                self.profile_status_label.deleteLater()
+                self.profile_status_label = None
+
         except Exception as ex:
             LOGGER.debug(str(ex))
 
