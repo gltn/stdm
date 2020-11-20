@@ -256,12 +256,12 @@ class OptionsDialog(WIDGET, BASE):
         profile_path = self.cbo_pg_connections.itemData(index)
 
         q_config = QGISRegistryConfig(profile_path)
-        db_items = q_config.read(['Database', 'Host', 'Port'])
+        db_items = q_config.read(['database', 'host', 'port'])
 
         if len(db_items) > 0:
-            self.txtDatabase.setText(db_items['Database'])
-            self.txtHost.setText(db_items['Host'])
-            self.txtPort.setText(db_items['Port'])
+            self.txtDatabase.setText(db_items['database'])
+            self.txtHost.setText(db_items['host'])
+            self.txtPort.setText(db_items['port'])
 
     def clear_properties(self):
         """
