@@ -362,7 +362,7 @@ class ForeignKeyMapper(QWidget):
         # First (id) column will always be hidden
         self._tbFKEntity.hideColumn(0)
 
-        self._tbFKEntity.horizontalHeader().setResizeMode(
+        self._tbFKEntity.horizontalHeader().setSectionResizeMode(
             QHeaderView.Interactive
         )
         self._tbFKEntity.verticalHeader().setVisible(True)

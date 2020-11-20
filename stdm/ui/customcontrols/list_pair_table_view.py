@@ -173,7 +173,7 @@ class ListPairTableView(QTableView):
         self._pair_model.dataChanged.connect(self._on_pair_data_changed)
 
         self.setModel(self._pair_model)
-        self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         self._combo_delegate = PairComboBoxDelegate(self)
         self.setItemDelegate(self._combo_delegate)

@@ -219,7 +219,7 @@ class FreezeTableWidget(QTableView):
         )
         # The user can not resize columns
         self.frozen_table_view.horizontalHeader(). \
-            setResizeMode(QHeaderView.Fixed)
+            setSectionResizeMode(QHeaderView.Fixed)
         self.frozen_table_view.setObjectName('frozen_table')
         self.setSelectionMode(QAbstractItemView.NoSelection)
         # Remove the scroll bar
@@ -328,7 +328,7 @@ class FreezeTableWidget(QTableView):
                     col, 60
                 )
                 # Fix width
-                self.horizontalHeader().setResizeMode(
+                self.horizontalHeader().setSectionResizeMode(
                     col, QHeaderView.Fixed
                 )
                 # Width of a fixed column - as in the main widget
@@ -339,7 +339,7 @@ class FreezeTableWidget(QTableView):
                 self.horizontalHeader().resizeSection(
                     col, 150
                 )
-                self.horizontalHeader().setResizeMode(
+                self.horizontalHeader().setSectionResizeMode(
                     col, QHeaderView.Fixed
                 )
                 self.frozen_table_view.setColumnWidth(

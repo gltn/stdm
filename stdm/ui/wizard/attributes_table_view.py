@@ -45,7 +45,7 @@ class AttributesTableView(QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         hv = self.horizontalHeader()
-        hv.setResizeMode(QHeaderView.Interactive)
+        hv.setSectionResizeMode(QHeaderView.Interactive)
         hv.setStretchLastSection(True)
 
         self._configure_model()

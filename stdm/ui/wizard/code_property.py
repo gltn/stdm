@@ -128,8 +128,8 @@ class CodeProperty(WIDGET, BASE):
             [column_header, separator_header]
         )
         header = self.column_code_view.horizontalHeader()
-        header.setResizeMode(0, QHeaderView.Stretch)
-        header.setResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
         if self._source:
             self.prefix_source_cbo.setCurrentIndex(
