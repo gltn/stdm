@@ -233,7 +233,7 @@ class ColumnEditor(WIDGET, BASE):
         text_edit.setValidator(name_validator)
         QApplication.processEvents()
         last_character = text[-1:]
-        locale = QSettings().value("locale/userLocale")[0:2]
+        locale = (QSettings().value("locale/userLocale") or 'en-US')[0:2]
 
         # if locale == 'en':
         state = name_validator.validate(text, text.index(last_character))[0]

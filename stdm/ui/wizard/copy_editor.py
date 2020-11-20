@@ -71,7 +71,7 @@ class CopyProfileEditor(WIDGET, BASE):
         text_edit.setValidator(None)
         if len(text) == 0:
             return
-        locale = QSettings().value("locale/userLocale")[0:2]
+        locale = (QSettings().value("locale/userLocale") or 'en-US')[0:2]
 
         if locale == 'en':
             name_regex = QRegExp('^(?=.{0,40}$)[ _a-zA-Z][a-zA-Z0-9_ ]*$')
