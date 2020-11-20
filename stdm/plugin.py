@@ -331,6 +331,8 @@ class STDMQGISLoader:
         # Remove the STDM toolbar
         self.stdmInitToolbar.deleteLater()
         del self.stdmInitToolbar
+        self.stdmMenu.deleteLater()
+        del self.stdmMenu
         # Remove connection info
         self.logoutCleanUp()
 
