@@ -47,6 +47,10 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     QgsProject
 )
+from qgis.gui import (
+    QgsStatusBar
+)
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from stdm import data
@@ -1586,8 +1590,7 @@ class STDMQGISLoader:
         )
 
         if self.profile_status_label.parent() is None:
-            self.iface.mainWindow().statusBar().insertPermanentWidget(
-                0,
+            self.iface.statusBarIface().addPermanentWidget(
                 self.profile_status_label,
                 10
             )
@@ -1615,6 +1618,10 @@ class STDMQGISLoader:
             self.stdmMenu.clear()
         if self.entity_browser is not None:
             self.entity_browser.close()
+
+        if self.profile_status_label is not None:
+            self.profile_status_label.deleteLater()
+            self.profile_status_label = None
 
         self.logoutCleanUp(True)
         if load_from_stc:
