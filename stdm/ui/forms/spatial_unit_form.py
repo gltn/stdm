@@ -289,7 +289,7 @@ class STDMFieldWidget():
         :return: None
         :rtype:NoneType
         """
-        idx = layer.fieldNameIndex(column.name)
+        idx = layer.fields().indexFromName(column.name)
         # Set Alias/ Display names for the column names
         layer.addAttributeAlias(
             idx,
