@@ -337,6 +337,11 @@ class STDMQGISLoader:
         del self.stdmInitToolbar
         self.stdmMenu.deleteLater()
         del self.stdmMenu
+
+        if self.profile_status_label is not None:
+            self.profile_status_label.deleteLater()
+            self.profile_status_label = None
+
         # Remove connection info
         self.logoutCleanUp()
 
@@ -1592,7 +1597,7 @@ class STDMQGISLoader:
         if self.profile_status_label.parent() is None:
             self.iface.statusBarIface().addPermanentWidget(
                 self.profile_status_label,
-                10
+                0
             )
         self.profile_status_label.setText(message)
 
@@ -2050,10 +2055,6 @@ class STDMQGISLoader:
                 self.viewSTRWin = None
 
             self.current_profile = None
-
-            if self.profile_status_label is not None:
-                self.profile_status_label.deleteLater()
-                self.profile_status_label = None
 
         except Exception as ex:
             LOGGER.debug(str(ex))
