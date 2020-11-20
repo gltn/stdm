@@ -27,7 +27,7 @@ from qgis.PyQt.QtWidgets import (
     QTableWidgetItem
 )
 from qgis.core import (
-    QgsPoint
+    QgsPointXY
 )
 
 from stdm.data.pg_utils import vector_layer
@@ -320,7 +320,7 @@ class GPSToolDialog(WIDGET, BASE):
         self.temp_layer_name = 'temp_layer'
         self._set_table_structure(table_widget, feature_count, columns, headers)
         for feature_attr, row in gpx_view.get_feature_attributes(self.gpx_layer):
-            point = QgsPoint(feature_attr[1], feature_attr[2])
+            point = QgsPointXY(feature_attr[1], feature_attr[2])
             point_list.append(point)
             check_box = self._set_table_widget_item(feature_attr, table_widget, row)
             checkbox_state = check_box.checkState()
@@ -624,7 +624,7 @@ class GPSToolDialog(WIDGET, BASE):
                 self.geom_type, self.qgs_point_list
             )
 
-            geometry_wkb = new_geometry.exportToWkt()
+            geometry_wkb = new_geometry.asWkt()
 
             srid = self.entity.columns[self.sp_col].srid
             model = self.entity_editor.model()
