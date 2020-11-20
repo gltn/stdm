@@ -1279,12 +1279,13 @@ class ConfigurationFileUpdater(WIDGET, BASE):
                     delete_table_data('content_base')
 
                     return self.upgrade
-
                 else:
                     if not self._check_config_file_exists("configuration.stc"):
                         self._copy_config_file_from_template()
 
                     return False
+            else:
+                return False
         else:
             self._create_config_folder()
             self._copy_config_file_from_template()
