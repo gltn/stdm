@@ -78,7 +78,7 @@ class Arrow(QGraphicsLineItem):
 
     def __init__(self, start_item, end_item, base_width=None,
                  tip_angle=None, fill_arrow_head=False,
-                 parent_item=None, scene=None):
+                 parent_item=None):
         """
         Class constructor
         :param start_point: Arrow start item.
@@ -102,7 +102,7 @@ class Arrow(QGraphicsLineItem):
         :param scene: Scene object.
         :type scene: QGraphicsScene
         """
-        super(Arrow, self).__init__(parent_item, scene)
+        super(Arrow, self).__init__(parent_item)
 
         self._start_item = start_item
         self._end_item = end_item
@@ -518,8 +518,8 @@ class BaseTenureItem(QGraphicsItem):
     given profile."""
     Type = QGraphicsItem.UserType + 1
 
-    def __init__(self, parent=None, scene=None, **kwargs):
-        super(BaseTenureItem, self).__init__(parent, scene)
+    def __init__(self, parent=None, **kwargs):
+        super(BaseTenureItem, self).__init__(parent)
         self.setFlag(QGraphicsItem.ItemIsMovable)
 
         # Renderer for header icon
@@ -1178,8 +1178,8 @@ class Annotation(QGraphicsTextItem):
 
     lost_focus = pyqtSignal(QGraphicsTextItem)
 
-    def __init__(self, parent=None, scene=None, size=0):
-        super(Annotation, self).__init__(parent, scene)
+    def __init__(self, parent=None, size=0):
+        super(Annotation, self).__init__(parent)
 
         self.setFlag(QGraphicsItem.ItemIsMovable)
         self.setFlag(QGraphicsItem.ItemIsSelectable)
