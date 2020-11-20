@@ -60,7 +60,7 @@ from stdm.ui.notification import NotificationBar
 from stdm.utils.util import format_name
 
 
-class EntityEditorDialog(QDialog, MapperMixin):
+class EntityEditorDialog(MapperMixin):
     """
     Dialog for editing entity attributes.
     """
@@ -100,7 +100,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         :type exclude_columns: List
         :return: If collect_model, returns SQLAlchemy Model
         """
-        QDialog.__init__(self, parent)
+        super().__init__(parent=parent, model=model, entity=entity)
 
         self.entity_table_model = {}
 
