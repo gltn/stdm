@@ -58,7 +58,7 @@ def save_configuration():
 def get_entity_browser_record_limit():
     reg_config = RegistryConfig()
     rec_info = reg_config.read([ENTITY_BROWSER_RECORD_LIMIT])
-    rec_limit = rec_info.get(ENTITY_BROWSER_RECORD_LIMIT, 10)
+    rec_limit = int(rec_info.get(ENTITY_BROWSER_RECORD_LIMIT, 10))
     return rec_limit
 
 
