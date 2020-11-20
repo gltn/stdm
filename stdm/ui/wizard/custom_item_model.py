@@ -61,7 +61,8 @@ class EntitiesModel(QStandardItemModel):
 
         self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)
 
-        self.setSupportedDragActions(Qt.MoveAction)
+    def supportedDragActions(self):
+        return Qt.MoveAction
 
     def entity(self, name):
         if name in self._entities:
@@ -219,7 +220,8 @@ class ColumnEntitiesModel(QStandardItemModel):
 
         self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
 
-        self.setSupportedDragActions(Qt.MoveAction)
+    def supportedDragActions(self):
+        return Qt.MoveAction
 
     def entity(self, name):
         if name in self._entities:
