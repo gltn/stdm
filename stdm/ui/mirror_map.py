@@ -41,7 +41,7 @@ from qgis.gui import (
     QgsMapCanvas,
     QgsMapToolPan,
 )
-
+from stdm.ui.gui_utils import GuiUtils
 
 class MirrorMap(QWidget):
     def __init__(self, parent=None, iface=None):
@@ -78,11 +78,6 @@ class MirrorMap(QWidget):
         self.canvas = QgsMapCanvas(self)
         self.canvas.setCanvasColor(QColor(255, 255, 255))
         settings = QSettings()
-        self.canvas.enableAntiAliasing(settings.value("/qgis/enable_anti_aliasing", False, type=bool))
-        self.canvas.useImageToRender(settings.value("/qgis/use_qimage_to_render", False, type=bool))
-        action = settings.value("/qgis/wheel_action", 0, type=int)
-        zoomFactor = settings.value("/qgis/zoom_factor", 2.0, type=float)
-        self.canvas.setWheelAction(QgsMapCanvas.WheelAction(action), zoomFactor)
         gridLayout.addWidget(self.canvas, 0, 0, 1, 5)
 
         self.addLayerBtn = QToolButton(self)
@@ -160,9 +155,7 @@ class MirrorMap(QWidget):
         self.iface = iface
         self.iface.mapCanvas().extentsChanged.connect(self.onExtentsChanged)
         # self.iface.mapCanvas().mapCanvasRefreshed.connect(self.on_canvas_refreshed)
-        self.iface.mapCanvas().mapRenderer().destinationSrsChanged.connect(self.onCrsChanged)
-        self.iface.mapCanvas().mapRenderer().mapUnitsChanged.connect(self.onCrsChanged)
-        self.iface.mapCanvas().mapRenderer().hasCrsTransformEnabled.connect(self.onCrsTransformEnabled)
+        self.iface.mapCanvas().destinationCrsChanged.connect(self.onCrsChanged)
         QgsProject.instance().layerWillBeRemoved.connect(self.delLayer)
         self.iface.currentLayerChanged.connect(self.refreshLayerButtons)
 
@@ -170,14 +163,13 @@ class MirrorMap(QWidget):
 
         self.onExtentsChanged()
         self.onCrsChanged()
-        self.onCrsTransformEnabled(self.iface.mapCanvas().hasCrsTransformEnabled())
 
     def refresh_layers(self):
         """
         Checks if the layers in the canvas list have already been added.
         If not, then add to the property viewer canvas.
         """
-        for ly in self.iface.legendInterface().layers():
+        for ly in self.iface.mapCanvas().layers():
             layer_id = self._layerId(ly)
             if layer_id not in self.layerId2canvasLayer:
                 self.addLayer(layer_id)
@@ -194,28 +186,7 @@ class MirrorMap(QWidget):
         self.canvas.setRenderFlag(prevFlag)
 
     def onCrsChanged(self):
-
-        prevFlag = self.canvas.renderFlag()
-        self.canvas.setRenderFlag(False)
-        try:
-            renderer = self.iface.mapCanvas().mapRenderer()
-            self._setRendererCrs(
-                self.canvas.mapRenderer(),
-                self._rendererCrs(renderer)
-            )
-            self.canvas.mapRenderer().setMapUnits(renderer.mapUnits())
-
-            self.canvas.setRenderFlag(prevFlag)
-        except Exception:
-            pass
-
-    def onCrsTransformEnabled(self, enabled):
-        prevFlag = self.canvas.renderFlag()
-        self.canvas.setRenderFlag(False)
-
-        self.canvas.mapRenderer().setProjectionsEnabled(enabled)
-
-        self.canvas.setRenderFlag(prevFlag)
+        self.canvas.setDestinationCrs(self.iface.mapCanvas().mapSettings().destinationCrs())
 
     def refreshLayerButtons(self):
         layer = self.iface.activeLayer()
@@ -240,7 +211,7 @@ class MirrorMap(QWidget):
         if layerIds == None:
             self.layerId2canvasLayer = {}
             self.canvasLayers = []
-            self.canvas.setLayerSet([])
+            self.canvas.setLayers([])
 
         else:
             for lid in layerIds:
@@ -278,7 +249,7 @@ class MirrorMap(QWidget):
             self.canvasLayers.append(cl)
 
         self.layerId2canvasLayer = id2cl_dict
-        self.canvas.setLayerSet(self.canvasLayers)
+        self.canvas.setLayers(self.canvasLayers)
 
         self.refreshLayerButtons()
         self.onExtentsChanged()
@@ -301,7 +272,7 @@ class MirrorMap(QWidget):
         cl = self.layerId2canvasLayer[layerId]
         del self.layerId2canvasLayer[layerId]
         self.canvasLayers.remove(cl)
-        self.canvas.setLayerSet(self.canvasLayers)
+        self.canvas.setLayers(self.canvasLayers)
         del cl
 
         self.refreshLayerButtons()
@@ -313,14 +284,3 @@ class MirrorMap(QWidget):
             return layer.id()
 
         return layer.getLayerID()
-
-    def _rendererCrs(self, renderer):
-        if hasattr(renderer, 'destinationCrs'):
-            return renderer.destinationCrs()
-        return renderer.destinationSrs()
-
-    def _setRendererCrs(self, renderer, crs):
-        if hasattr(renderer, 'setDestinationCrs'):
-            return renderer.setDestinationCrs(crs)
-
-        return renderer.setDestinationSrs(crs)
