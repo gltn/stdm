@@ -212,7 +212,7 @@ class STDMGeometry(GeometryProvider):
         """
         poly = self.create_polygon()
         if int(self.user_srid()) == 4326:
-            poly_as_text = poly.exportToWkt()
+            poly_as_text = poly.asWkt()
             return 'SRID={};{}'.format(self.srid, poly_as_text)
         else:
             try:
@@ -220,7 +220,7 @@ class STDMGeometry(GeometryProvider):
                     self.default_coordinate_system(),
                     self.set_destination_coordinate_system(int(self.user_srid())))
                 poly.transform(crsTransform)
-                poly_as_text = poly.exportToWkt()
+                poly_as_text = poly.asWkt()
                 return 'SRID={};{}'.format(self.srid, poly_as_text)
             except Exception as ex:
                 return str(ex)
@@ -231,5 +231,5 @@ class STDMGeometry(GeometryProvider):
         :return:
         """
         point = self.create_point()
-        point_wkt = point.exportToWkt()
+        point_wkt = point.asWkt()
         return 'SRID={};{}'.format(self.srid, point_wkt)
