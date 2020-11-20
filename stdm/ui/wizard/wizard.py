@@ -1866,8 +1866,6 @@ class ConfigWizard(WIDGET, BASE):
 
             tmp_short_name = copy.deepcopy(entity.short_name)
 
-            tmp_entity = entity;
-
             params = {}
             params['parent'] = self
             params['profile'] = profile
@@ -1884,7 +1882,7 @@ class ConfigWizard(WIDGET, BASE):
                 model_item.setData(model_index_name, editor.entity.short_name)
                 model_item.setData(model_index_desc, editor.entity.description)
 
-                model_item.edit_entity(tmp_entity, editor.entity)
+                model_item.edit_entity(tmp_short_name, editor.entity)
 
                 self.clear_view_model(self.STR_spunit_model)
                 self.populate_spunit_model(profile)
