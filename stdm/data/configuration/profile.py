@@ -570,7 +570,8 @@ class Profile(QObject):
         Cleans up the profile upon deleting by clearing the tables and
         corresponding entity relation/FK constraints.
         """
-        for entity in self.entities.values():
+        entity_values = list(self.entities.values())
+        for entity in entity_values:
             self.remove_entity(entity.short_name)
 
     def table_names(self):
