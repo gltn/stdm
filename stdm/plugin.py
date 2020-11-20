@@ -329,6 +329,7 @@ class STDMQGISLoader:
 
     def unload(self):
         # Remove the STDM toolbar
+        self.stdmInitToolbar.deleteLater()
         del self.stdmInitToolbar
         # Remove connection info
         self.logoutCleanUp()
