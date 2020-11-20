@@ -930,7 +930,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         source = layer.source()
         if source is None:
             return False
-        source_value = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        source_value = dict(re.findall('(\\S+)="?(.*?)"? ', source))
         try:
             table = source_value['table'].split('.')
 
