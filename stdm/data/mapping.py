@@ -175,16 +175,17 @@ class _AttributeMapper:
             setattr(self.model(), self._attrName, controlValue)
 
 
-class MapperMixin:
+class MapperMixin(QDialog):
     '''
     Mixin class for use in a dialog or widget, and manages attribute mapping.
     '''
 
-    def __init__(self, model, entity):
+    def __init__(self, model=None, entity=None, parent=None):
         '''
         :param model: Callable (new instances) or instance (existing instance
         for updating) of STDM model.
         '''
+        super().__init__(parent)
         if callable(model):
             self._model = model()
             self._mode = SAVE
@@ -204,12 +205,13 @@ class MapperMixin:
         self.entity_model = entity_model(entity)
 
         self.entity_model_obj = self.entity_model()
-        # Initialize notification bar
-        if hasattr(self, "vlNotification"):
-            self._notifBar = NotificationBar(self.vlNotification)
 
         # Flag to indicate whether to close the widget or dialog once model has been submitted
         # self.closeOnSubmit = True
+
+        # Initialize notification bar
+        if hasattr(self, "vlNotification"):
+            self._notifBar = NotificationBar(self.vlNotification)
 
     def addMapping(self, attributeName, control, isMandatory=False,
                    pseudoname='', valueHandler=None, preloadfunc=None):
