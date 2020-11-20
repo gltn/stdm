@@ -59,7 +59,7 @@ class GPSToolDialog(WIDGET, BASE):
         self.entity_browser = entity_browser
         self.row_number = row_number
         self.entity_editor = None
-        gpx_view.enable_drag_drop(self.table_widget)
+        gpx_view.enable_drag_drop(self.table_widget, self._table_widget_drag_enter, self._table_widget_row_dropped)
         self._init_entity_editor()
         self.active_layer = self.iface.activeLayer()
         self.map_canvas = self.iface.mapCanvas()
@@ -91,8 +91,6 @@ class GPSToolDialog(WIDGET, BASE):
         self.table_widget.itemSelectionChanged.connect(
             self._table_widget_row_selection
         )
-        self.table_widget.itemDragEnter.connect(self._table_widget_drag_enter)
-        self.table_widget.itemDropped.connect(self._table_widget_row_dropped)
         self.table_widget.itemDoubleClicked.connect(self._table_widget_item_double_clicked)
         self.table_widget.itemChanged.connect(self._table_widget_item_changed)
         self.select_all_bt.clicked.connect(self._select_all_items)

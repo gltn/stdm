@@ -21,9 +21,11 @@ email                : stdm@unhabitat.org
 """
 
 from decimal import Decimal, DecimalException
+from functools import partial
 
 from qgis.PyQt.QtCore import (
-    Qt
+    Qt,
+    pyqtSignal
 )
 from qgis.PyQt.QtGui import (
     QColor
@@ -47,7 +49,7 @@ from qgis.gui import (
 VERTEX_COLOR = '#008000'
 
 
-def enable_drag_drop(qt_widget):
+def enable_drag_drop(qt_widget, drag_enter_callback, item_drop_callback):
     """
     Enables internal drag and drop sorting in model/view widgets.
     :param qt_widget: QT widget for which drag and drop sort is enabled
@@ -62,11 +64,11 @@ def enable_drag_drop(qt_widget):
     qt_widget.setSelectionMode(QAbstractItemView.SingleSelection)
     qt_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
     qt_widget.setDragDropMode(QAbstractItemView.InternalMove)
-    qt_widget.__class__.dropEvent = _drop_event
-    qt_widget.__class__.dragEnterEvent = _drag_enter_event
+    qt_widget.__class__.dropEvent = partial(_drop_event, callback=item_drop_callback)
+    qt_widget.__class__.dragEnterEvent = partial(_drag_enter_event, callback=drag_enter_callback)
 
 
-def _drop_event(qt_widget, event):
+def _drop_event(qt_widget, event, callback):
     """
     A drop event function that prevents overwriting of destination
     rows if a row or cell is a destination target.
@@ -96,13 +98,13 @@ def _drop_event(qt_widget, event):
         for srcRow, tgtRow in sorted(row_mapping.items()):
             for col in range(0, col_count):
                 qt_widget.setItem(tgtRow, col, qt_widget.takeItem(srcRow, col))
-        qt_widget.itemDropped.emit()
+        callback()
         event.accept()
         return
     event.ignore()
 
 
-def _drag_enter_event(qt_widget, event):
+def _drag_enter_event(qt_widget, event, callback):
     """
     Drag and drop start event set item drag signal
     :param qt_widget: QT widget for which drag and drop sort is enabled
@@ -111,7 +113,7 @@ def _drag_enter_event(qt_widget, event):
     :rtype: None
     """
     if qt_widget is not None:
-        qt_widget.itemDragEnter.emit()
+        callback()
         event.accept()
         return
     event.ignore()
