@@ -127,7 +127,7 @@ class SupportingDocumentsWidget(QWidget):
         self._cbo_doc_type = QComboBox(self)
         self._gl.addWidget(self._cbo_doc_type, 0, 1, 1, 1)
         self._btn_add_document = QPushButton(self)
-        doc_ico = GuiUtils.get_icon_pixmap('document.png')
+        doc_ico = GuiUtils.get_icon('document.png')
         self._btn_add_document.setIcon(doc_ico)
         self._btn_add_document.setText(self.tr('Add document...'))
         self._btn_add_document.setMaximumWidth(200)
