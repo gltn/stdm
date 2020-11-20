@@ -122,8 +122,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         self.iface.projectRead.connect(self.on_project_opened)
 
     def on_project_opened(self):
-        legend_layers = self.iface.legendInterface().layers()
-        for layer in legend_layers:
+        for _, layer in QgsProject.instance().mapLayers():
             source = self.layer_source(layer)
             if source is not bool and source is not None:
                 self.init_spatial_form(self.active_sp_col, layer)

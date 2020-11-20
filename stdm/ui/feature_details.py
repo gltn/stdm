@@ -46,7 +46,8 @@ from qgis.core import (
     QgsExpression,
     QgsMapLayer,
     NULL,
-    QgsFeature
+    QgsFeature,
+    QgsProject
 )
 from qgis.gui import (
     QgsHighlight
@@ -251,7 +252,7 @@ class LayerSelectionHandler(object):
         """
         Refresh all database layers.
         """
-        layers = self.iface.legendInterface().layers()
+        layers = list(QgsProject.instance().mapLayers().values())
         for layer in layers:
             layer.dataProvider().forceReload()
             layer.triggerRepaint()

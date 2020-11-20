@@ -51,6 +51,7 @@ from qgis.PyQt.QtWidgets import (
     QTabBar,
     QCompleter
 )
+from qgis.core import QgsProject
 from qgis.utils import (
     iface
 )
@@ -657,7 +658,7 @@ class ViewSTRWidget(WIDGET, BASE):
         """
         self._notif_search_config.clear()
 
-        num_layers = len(self._plugin.iface.legendInterface().layers())
+        num_layers = len(QgsProject.instance().mapLayers())
         if num_layers == 0:
             msg = QApplication.translate(
                 "ViewSTR",

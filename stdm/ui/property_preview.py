@@ -265,9 +265,7 @@ class SpatialPreview(WIDGET, BASE):
         :return: Boolean
         """
         if self.active_layer_check():
-            layers = self.iface().legendInterface().layers()
-
-            for layer in layers:
+            for _, layer in QgsProject.instance().mapLayers():
                 layer_source = self.get_layer_source(layer)
                 if layer_source == spatial_unit.name:
                     self.iface().setActiveLayer(layer)
