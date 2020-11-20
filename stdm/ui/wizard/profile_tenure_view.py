@@ -1352,11 +1352,13 @@ class ProfileTenureView(QGraphicsView):
             return
 
         # Remove existing party items
-        for p in self._party_items.keys():
+        party_items = list(self._party_items.keys())
+        for p in party_items:
             self.remove_party(p)
 
         # Remove spatial unit items
-        for sp in self._sp_unit_items.keys():
+        spatial_unit_items = list(self._sp_unit_items.keys())
+        for sp in spatial_unit_items:
             self.remove_spatial_unit(sp)
 
         str_ent = self._profile.social_tenure
