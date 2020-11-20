@@ -58,7 +58,7 @@ class ImageExportSettings(WIDGET, BASE):
         self._default_color = Qt.white
         self.btn_color.setDefaultColor(self._default_color)
         self.btn_color.setColor(self._default_color)
-        self.btn_color.setAllowAlpha(True)
+        self.btn_color.setAllowOpacity(True)
 
         self.path = kwargs.get('image_path', '')
         self.resolution = kwargs.get('resolution', '96')
@@ -121,7 +121,7 @@ class ImageExportSettings(WIDGET, BASE):
         formats = []
 
         for f in QImageWriter.supportedImageFormats():
-            f_type = f.data()
+            f_type = f.data().decode()
             filter_format = '{0} {1} (*.{2})'.format(
                 f_type.upper(),
                 self._image_tr,
