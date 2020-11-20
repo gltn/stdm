@@ -68,8 +68,8 @@ class SpatialPreview(WIDGET, BASE):
         QTabWidget.__init__(self, parent)
         self.setupUi(self)
 
-        self.local.setIcon(GuiUtils.get_icon('local.png'))
-        self.web.setIcon(GuiUtils.get_icon('web.png'))
+        self.setTabIcon(0, GuiUtils.get_icon('local.png'))
+        self.setTabIcon(1, GuiUtils.get_icon('web.png'))
 
         self._notif_bar = None
         self._ol_loaded = False
