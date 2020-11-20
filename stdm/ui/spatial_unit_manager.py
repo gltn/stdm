@@ -412,7 +412,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         """
         table, column = self._layer_table_column(curr_layer)
 
-        if table not in pg_views() and not curr_layer is None:
+        if table not in pg_views() and curr_layer is not None:
             try:
                 self.stdm_fields.init_form(
                     table, spatial_column, curr_layer
@@ -590,7 +590,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         self.curr_lyr_table = table_name
         self.curr_lyr_sp_col = spatial_column
 
-        if not layer_item is None:
+        if layer_item is not None:
             if isinstance(layer_item, str):
                 layer_name = layer_item
             else:
@@ -699,7 +699,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         :rtype:
         """
         layer = self.iface.activeLayer()
-        if not layer is None:
+        if layer is not None:
             self.iface.mapCanvas().setExtent(
                 layer.extent()
             )
@@ -848,7 +848,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         layer_names_ids = pg_layerNamesIDMapping().reverse
         layer = self.iface.activeLayer()
 
-        if not layer is None:
+        if layer is not None:
             table_name = layer_names_ids.get(layer.id(), '')
 
             if table_name:
@@ -883,7 +883,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
 
                                 # Update configuration item
                                 config_item = layer_info.get('item', None)
-                                if not config_item is None:
+                                if config_item is not None:
                                     config_item.layer_display_name = \
                                         display_name
 
