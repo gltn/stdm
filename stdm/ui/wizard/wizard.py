@@ -1371,7 +1371,7 @@ class ConfigWizard(WIDGET, BASE):
         logs_folder = self.get_folder(QDir.home().path() + '/.stdm/logs')
         file_name = logs_folder + '/configuration_update_' + fmt_date + '.log'
         info_file = open(file_name, "w")
-        info_file.write(info.encode('utf8'))
+        info_file.write(info)
         info_file.close()
 
     def get_folder(self, folder):
