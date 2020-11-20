@@ -40,7 +40,8 @@ from qgis.core import (
     QgsPoint,
     QgsVectorLayer,
     QgsFeature,
-    QgsRectangle
+    QgsRectangle,
+    QgsPointXY
 )
 from qgis.gui import (
     QgsVertexMarker
@@ -145,7 +146,7 @@ def set_feature_vertex_marker(map_canvas, lon, lat, color=VERTEX_COLOR):
     :rtype marker: Object
     """
     marker = QgsVertexMarker(map_canvas)
-    marker.setCenter(QgsPoint(lon, lat))
+    marker.setCenter(QgsPointXY(lon, lat))
     marker.setColor(QColor(color))
     marker.setIconType(QgsVertexMarker.ICON_CIRCLE)
     marker.setPenWidth(4)
@@ -203,12 +204,12 @@ def create_geometry(geom_type, point_list):
     new_geometry = None
     if geom_type == 'Point':
         for point in point_list:
-            new_geometry = QgsGeometry.fromPoint(point)
+            new_geometry = QgsGeometry.fromPointXY(point)
 
     elif geom_type == 'LineString':
-        new_geometry = QgsGeometry.fromPolyline(point_list)
+        new_geometry = QgsGeometry.fromPolylineXY(point_list)
     else:
-        new_geometry = QgsGeometry.fromPolygon([point_list])
+        new_geometry = QgsGeometry.fromPolygonXY([point_list])
 
     return new_geometry
 
