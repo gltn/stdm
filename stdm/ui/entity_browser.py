@@ -43,6 +43,7 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     QgsProject
 )
+from qgis.gui import QgsGui
 from qgis.utils import (
     iface
 )
@@ -193,6 +194,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
     def __init__(self, entity, ent_rec_id=0, parent=None, state=MANAGE, load_records=True, plugin=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+
+        QgsGui.enableAutoGeometryRestore(self)
 
         # Add maximize buttons
         self.setWindowFlags(
