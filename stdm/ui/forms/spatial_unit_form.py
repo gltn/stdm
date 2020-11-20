@@ -538,7 +538,7 @@ class STDMFieldWidget():
                 if geom_type in ['MULTIPOLYGON', 'MULTILINESTRING']:
                     geometry.convertToMultiType()
 
-                geom_wkt = geometry.exportToWkt()
+                geom_wkt = geometry.asWkt()
 
         return geom_wkt
 
