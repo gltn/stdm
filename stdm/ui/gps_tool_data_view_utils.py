@@ -163,7 +163,8 @@ def set_feature_vertices_marker(map_canvas, point_attr, color=None):
     """
     for point in point_attr:
         if point['qgs_point'] and (point['check_state'] == 2):
-            lon, lat = point['qgs_point']
+            lon = point['qgs_point'].x()
+            lat = point['qgs_point'].y()
             if color:
                 point['marker'] = set_feature_vertex_marker(
                     map_canvas, lon, lat, color
@@ -395,7 +396,8 @@ def remove_vertex(map_canvas, point_row_attr):
     :rtype: None
     """
     for row, point_attr in enumerate(point_row_attr):
-        map_canvas.scene().removeItem(point_attr['marker'])
+        if point_attr['marker'].scene():
+            map_canvas.scene().removeItem(point_attr['marker'])
     map_canvas.refresh()
 
 
@@ -456,7 +458,7 @@ def get_qgs_points(qt_widget, checkbox_col='', lon_col='Longitude', lat_col='Lat
         lon_value = _valid_number(lon_value)
         lat_value = _valid_number(lat_value)
         if lon_value and lat_value:
-            point = QgsPoint(lon_value, lat_value)
+            point = QgsPointXY(lon_value, lat_value)
             new_point_row_attr.append({'row': row, 'qgs_point': point, 'check_state': checkbox_state})
             if checkbox_state == 2:
                 point_list.append(point)
@@ -502,7 +504,8 @@ def update_point_row_attr(map_canvas, point_row_attr, new_point_row_attr):
                 old_marker = dict_one['marker']
                 dict_one['qgs_point'] = dict_two['qgs_point']
                 if dict_one['qgs_point']:
-                    lon, lat = dict_one['qgs_point']
+                    lon = dict_one['qgs_point'].x()
+                    lat = dict_one['qgs_point'].y()
                     dict_one['marker'] = set_feature_vertex_marker(map_canvas, lon, lat)
                     vertex_markers.append({'marker': dict_one['marker']})
                     vertex_markers.append({'marker': old_marker})
