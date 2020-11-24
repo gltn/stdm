@@ -513,8 +513,7 @@ class STDMQGISLoader:
                 'Configuration Wizard now?'.format(
                     entity.name
                 ),
-                None,
-                QCoreApplication.UnicodeUTF8
+                None
             )
             database_check = QMessageBox.critical(
                 self.iface.mainWindow(),
@@ -538,8 +537,7 @@ class STDMQGISLoader:
             'Configuration Wizard now?'.format(
                 entity.short_name
             ),
-            None,
-            QCoreApplication.UnicodeUTF8
+            None
         )
         database_check = QMessageBox.critical(
             self.iface.mainWindow(),
