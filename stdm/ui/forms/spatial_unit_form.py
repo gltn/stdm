@@ -454,8 +454,7 @@ class STDMFieldWidget():
             title = QApplication.translate(
                 'STDMFieldWidget',
                 'Spatial Entity Form Error',
-                None,
-                QCoreApplication.UnicodeUTF8
+                None
             )
             msg = QApplication.translate(
                 'STDMFieldWidget',
@@ -463,8 +462,7 @@ class STDMFieldWidget():
                 'To fix this issue, check if the feature '
                 'is digitized correctly.  \n'
                 'Make sure you have added a base layer to digitize on.',
-                None,
-                QCoreApplication.UnicodeUTF8
+                None
             )
             # Message: Spatial column information
             # could not be found
