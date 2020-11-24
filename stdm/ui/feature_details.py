@@ -1609,7 +1609,7 @@ class DetailsTreeView(DetailsDBHandler):
             selected_item = self.model.itemFromIndex(index)
             # Use multi-select only when more than 1 items are selected.
             if self.iface.activeLayer() is not None:
-                if self.layer.selectedFeatures() < 2:
+                if len(self.layer.selectedFeatures()) < 2:
                     return
             self.selected_root = selected_item
             # Split the text to get the key and value.
