@@ -47,6 +47,7 @@ from qgis.gui import QgsGui
 from qgis.utils import (
     iface
 )
+from sqlalchemy.sql.expression import text
 
 from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
@@ -772,11 +773,11 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 # return col
 
     def get_sorting_order(self, entity):
-        '''
+        """
         Return a string containing a column and sort order (asc-Ascending, desc-Descending)
         :rtype ordering: str
-        '''
-        ordering = ''
+        """
+        ordering = text('')
 
         if self.sort_order is None:
             return ordering
@@ -785,17 +786,17 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             return ordering
 
         if self.sort_order == 'idasc':
-            ordering = 'id asc'
+            ordering = text('id asc')
 
         if self.sort_order == 'iddesc':
-            ordering = 'id desc'
+            ordering = text('id desc')
 
         if self.sort_order not in ['idasc', 'iddesc']:
             order_column = self.get_sorting_field(entity)
             if order_column == "":
-                ordering = 'id desc'
+                ordering = text('id desc')
             else:
-                ordering = order_column + ' ' + self.sort_order
+                ordering = text(order_column + ' ' + self.sort_order)
 
         return ordering
 
