@@ -76,19 +76,17 @@ class Singleton:
 
     def __init__(self, decorated):
         self.__decorated = decorated
+        self._instance = None
 
     def instance(self, *args, **kwargs):
         """
         Returns an instance of the decorated object or creates
         one if it does not exist
         """
-        try:
-            return self._instance
-
-        # Catch null property exception and create a new instance of the class
-        except AttributeError:
+        if self._instance is None:
             self._instance = self.__decorated(*args, **kwargs)
-            return self._instance
+
+        return self._instance
 
     def __call__(self, *args, **kwargs):
         raise TypeError('Singleton must be accessed through the instance method')
@@ -98,6 +96,7 @@ class Singleton:
         Remove the instance of the referenced singleton class
         """
         del self._instance
+        self._instance = None
 
 
 class NoPostGISError(Exception):
@@ -131,13 +130,6 @@ class STDMDb:
         Creates STDM database schema
         """
         Base.metadata.create_all(self.engine)
-
-    @classmethod
-    def instance(cls, *args, **kwargs):
-        """
-        Dummy method. Eclipse IDE cannot handle the Singleton decorator in Python
-        """
-        pass
 
     def _check_spatial_extension(self):
         """Check if the PostGIS exists and if so, check if the extension
