@@ -2033,8 +2033,6 @@ class STDMQGISLoader:
             # Remove Spatial Unit Manager
             self.remove_spatial_unit_mgr()
 
-            self.details_dock.close_dock()
-
             if not reload_plugin:
                 self.profile_status_label.deleteLater()
                 self.profile_status_label = None
