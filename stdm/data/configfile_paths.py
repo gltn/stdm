@@ -29,6 +29,8 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.data.reports.sys_fonts import SysFonts
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import PLUGIN_DIR
 
 DEFAULT_CONFIG = "stdmConfig.xml"
@@ -37,11 +39,6 @@ HTML = "stdm_schema.html"
 BASIC_SQL = "stdmConfig.sql"
 CONFIG = "Config"
 HELP = "stdm.chm"
-
-xmldoc = os.path.dirname(os.path.abspath(__file__))
-
-from stdm.settings.registryconfig import RegistryConfig
-from stdm.data.reports.sys_fonts import SysFonts
 
 
 class FilePaths:
