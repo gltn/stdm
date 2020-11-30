@@ -29,12 +29,11 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsProject
 )
-from qgis.utils import iface
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import text
 
-import stdm.data
 from stdm.data.database import (
     STDMDb,
     Base
@@ -87,7 +86,7 @@ def pg_tables(schema="public", exclude_lookups=False):
     Views are also excluded. See separate function for retrieving views.
     :rtype: list
     """
-    t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
+    t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype "
              "ORDER BY table_name ASC")
     result = _execute(t, tschema=schema, tbtype="BASE TABLE")
 
@@ -118,7 +117,7 @@ def pg_views(schema="public"):
     """
     Returns the views in the given schema minus the default PostGIS views.
     """
-    t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype " \
+    t = text("SELECT table_name FROM information_schema.tables WHERE table_schema = :tschema and table_type = :tbtype "
              "ORDER BY table_name ASC")
     result = _execute(t, tschema=schema, tbtype="VIEW")
 
@@ -418,7 +417,7 @@ def geometryType(tableName, spatialColumnName, schemaName="public"):
 
         break
 
-    return (geomType, epsg_code)
+    return geomType, epsg_code
 
 
 def unique_column_values(tableName, columnName, quoteDataTypes=["character varying"]):
@@ -443,7 +442,7 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
 
     for r in result:
 
-        if r[str(columnName)] == None:
+        if r[str(columnName)] is None:
             if quoteRequired == -1:
                 uniqueVals.append("NULL")
             else:

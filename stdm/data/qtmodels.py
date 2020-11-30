@@ -47,9 +47,9 @@ ALT_COLOR_ODD = QColor(135, 206, 255)
 
 
 class EnumeratorTableModel(QAbstractTableModel):
-    '''
+    """
     Model for displaying enumerators in a tableview
-    '''
+    """
 
     def __init__(self, enumdata, headerdata, parent=None):
         QAbstractTableModel.__init__(self, parent)
@@ -110,9 +110,9 @@ class EnumeratorTableModel(QAbstractTableModel):
 
 
 class DepartmentTableModel(QAbstractTableModel):
-    '''
+    """
     Model for displaying departments in a tableview
-    '''
+    """
 
     def __init__(self, departmentdata, headerdata, parent=None):
         QAbstractTableModel.__init__(self, parent)
@@ -186,9 +186,9 @@ class DepartmentTableModel(QAbstractTableModel):
 
 
 class QuestionnaireTableModel(QAbstractTableModel):
-    '''
+    """
     Model for use in the questionnaire table view
-    '''
+    """
 
     def __init__(self, questionnairedata, headerdata, parent=None):
         QAbstractTableModel.__init__(self, parent)
@@ -346,9 +346,9 @@ class UsersRolesModel(QAbstractListModel):
 
 
 class PersonTableModel(QAbstractTableModel):
-    '''
+    """
     Model for use in the Person table view
-    '''
+    """
 
     def __init__(self, persondata, headerdata, parent=None):
         QAbstractTableModel.__init__(self, parent)
@@ -673,7 +673,7 @@ class STRTreeViewModel(QAbstractItemModel):
 
         parentNode = node.parent()
 
-        if parentNode == self._rootNode or parentNode == None:
+        if parentNode == self._rootNode or parentNode is None:
             return QModelIndex()
 
         return self.createIndex(parentNode.row(), 0, parentNode)

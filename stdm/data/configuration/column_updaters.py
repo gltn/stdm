@@ -57,9 +57,8 @@ def _base_col_attrs(col):
     :returns: Dictionary of name-values for an SQLAlchemy column.
     :rtype: dict
     """
-    col_attrs = {}
+    col_attrs = {'nullable': not col.mandatory}
     # col_attrs['index'] = col.index
-    col_attrs['nullable'] = not col.mandatory
     # col_attrs['unique'] = col.unique
 
     return col_attrs
@@ -137,7 +136,7 @@ def _update_col(column, table, data_type, columns):
 
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
-        if not column.name in columns:
+        if column.name not in columns:
             alchemy_column.create(
                 table=table,
                 unique_name=unique_name
@@ -150,7 +149,7 @@ def _update_col(column, table, data_type, columns):
                 chk_const = check_constraint(
                     column, alchemy_column, table
                 )
-                if not chk_const is None:
+                if chk_const is not None:
                     chk_const.create()
 
     elif column.action == DbItem.ALTER:
