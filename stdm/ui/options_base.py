@@ -203,7 +203,7 @@ class OptionsDialog(WIDGET, BASE):
 
         if not db_conn is None:
             self.txtHost.setText(db_conn.Host)
-            self.txtPort.setText(db_conn.Port)
+            self.txtPort.setText(str(db_conn.Port))
             self.txtDatabase.setText(db_conn.Database)
 
     def _load_qgis_pg_connections(self):
