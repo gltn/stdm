@@ -45,10 +45,10 @@ class ExpressionProperty(QgsExpressionBuilderDialog):
                 text = label.text()
         try:
             text = float(text)
-        except Exception:
+        except ValueError:
             try:
                 text = int(text)
-            except Exception:
+            except ValueError:
                 pass
         if isinstance(text, float):
             return 'float'

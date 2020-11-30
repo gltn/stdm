@@ -32,6 +32,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.exceptions import DummyException
 from stdm.settings import current_profile
 from stdm.ui.sourcedocument import source_document_location
 from stdm.utils.util import (
@@ -620,7 +621,7 @@ class STRNode(EntityNode):
                                     edit_str.updated_str_obj.spatial_unit_id:
                                 self.parentWidget().btnSearch.click()
 
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(self._parentWidget,
                                  QApplication.translate("STRNode",
                                                         "Updating STR Model"),

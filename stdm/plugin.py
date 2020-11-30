@@ -54,6 +54,7 @@ from qgis.gui import (
 from sqlalchemy.exc import SQLAlchemyError
 
 from stdm import data
+from stdm.exceptions import DummyException
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.column_updaters import varchar_updater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -432,7 +433,7 @@ class STDMQGISLoader:
                 self.run_wizard()
                 self.copy_designer_template()
 
-            except Exception as pe:
+            except DummyException as pe:
                 title = QApplication.translate(
                     "STDMQGISLoader",
                     "Error Loading Modules"
@@ -1659,7 +1660,7 @@ class STDMQGISLoader:
             STDMDb.instance().session.rollback()
             self.loadModules()
 
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(
                 'Error Loading Modules: {}'.format(str(ex))
             )
@@ -1676,7 +1677,7 @@ class STDMQGISLoader:
         self.wizard.wizardFinished.connect(self.reload_plugin)
         try:
             self.wizard.exec_()
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(self.iface.mainWindow(),
                                  QApplication.translate(
                                      "STDMPlugin",
@@ -1704,7 +1705,7 @@ class STDMQGISLoader:
             str_editor = STREditor()
             str_editor.open()
 
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(
@@ -1816,7 +1817,7 @@ class STDMQGISLoader:
                         canvas.zoomToFullExtent()
                         extent = active_layer.extent()
                         canvas.setExtent(extent)
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(str(ex))
 
     def onExportData(self):
@@ -1927,7 +1928,7 @@ class STDMQGISLoader:
                 else:
                     return
 
-            except Exception as ex:
+            except DummyException as ex:
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     QApplication.translate(
@@ -2000,7 +2001,7 @@ class STDMQGISLoader:
             self.initMenuItems()
             self.loginAct.setEnabled(True)
             self._user_logged_in = False
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(str(ex))
 
     def removeSTDMLayers(self):
@@ -2056,7 +2057,7 @@ class STDMQGISLoader:
 
             self.current_profile = None
 
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(str(ex))
 
     def remove_spatial_unit_mgr(self):
@@ -2095,7 +2096,7 @@ class STDMQGISLoader:
             os.startfile(
                 help_manual, 'open'
             )
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(

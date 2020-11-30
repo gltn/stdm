@@ -49,6 +49,7 @@ from sqlalchemy import (
     func
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.pg_utils import pg_table_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
@@ -592,7 +593,7 @@ class ValidateSTREditor(object):
             #     next_item.child().setEnabled(enable)
 
             self.enable_save_button()
-        except Exception:
+        except DummyException:
             pass
 
     def enable_save_button(self):

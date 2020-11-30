@@ -53,6 +53,7 @@ from sqlalchemy.schema import (
     MetaData
 )
 
+from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.pg_utils import (
     geometryType,
@@ -516,7 +517,7 @@ class DocumentGenerator(QObject):
                 self.map_registry.removeMapLayer(lyr_id)
                 layers.remove(lyr_id)
 
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(
                 'Could not delete temporary designer layer. {}'.
                     format(ex)

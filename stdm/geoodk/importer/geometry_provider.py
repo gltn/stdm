@@ -27,6 +27,8 @@ from qgis.core import (
     QgsCoordinateTransform
 )
 
+from stdm.exceptions import DummyException
+
 
 class GeometryProvider:
     """
@@ -222,7 +224,7 @@ class STDMGeometry(GeometryProvider):
                 poly.transform(crsTransform)
                 poly_as_text = poly.asWkt()
                 return 'SRID={};{}'.format(self.srid, poly_as_text)
-            except Exception as ex:
+            except DummyException as ex:
                 return str(ex)
 
     def point_to_Wkt(self):

@@ -57,6 +57,7 @@ from qgis.PyQt.QtWidgets import (
     QDesktopWidget,
 )
 
+from stdm.exceptions import DummyException
 from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
@@ -330,7 +331,7 @@ class DocumentViewer(QMdiSubWindow):
                 self.doc_height = photo_obj.height()
 
                 self.update_size(self.doc_width, self.doc_height)
-            except Exception as message:
+            except DummyException as message:
                 LOGGER.debug(str(message))
 
     def update_size(self, doc_width, doc_height):

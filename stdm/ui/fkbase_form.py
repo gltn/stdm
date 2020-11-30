@@ -24,6 +24,7 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
+from stdm.exceptions import DummyException
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.stdmdialog import DeclareMapping
 
@@ -74,7 +75,7 @@ class ForeignKeyMapperDialog(QWidget):
                 return
             else:
                 return self.personFKMapper.global_id.baseid()
-        except Exception as ex:
+        except DummyException as ex:
             raise str(ex)
 
     def model_display_value(self):
@@ -83,5 +84,5 @@ class ForeignKeyMapperDialog(QWidget):
                 return "0"
             else:
                 return self.personFKMapper.global_id.display_value()
-        except Exception as ex:
-            raise str(message)
+        except DummyException as ex:
+            raise str(ex)

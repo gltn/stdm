@@ -43,6 +43,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtXml import QDomDocument
 
+from stdm.exceptions import DummyException
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.exception import ConfigurationException
@@ -230,7 +231,7 @@ class ConfigurationFileUpdater(WIDGET, BASE):
         try:
             info_file = open(file_name, 'a')
             info_file.close()
-        except Exception:
+        except DummyException:
             pass
 
     def append_log(self, info):

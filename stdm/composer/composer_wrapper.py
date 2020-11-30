@@ -45,6 +45,7 @@ from qgis.core import (
     QgsLayoutItemPage
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.pg_utils import (
     vector_layer
 )
@@ -695,7 +696,7 @@ class ComposerWrapper(QObject):
         # Catch exception raised when writing items' elements
         try:
             self._writeXML(templateDoc, template_name)
-        except Exception as exc:
+        except DummyException as exc:
             msg = str(exc)
             QMessageBox.critical(
                 self.composerView(),

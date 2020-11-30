@@ -46,6 +46,7 @@ from qgis.utils import (
     iface
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.database import (
     STDMDb
@@ -199,7 +200,7 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
             if not widget_wrapper is None:
                 return widget_wrapper
 
-        except Exception:
+        except DummyException:
             pass
 
     def configWidget(self, layer, idx, parent):

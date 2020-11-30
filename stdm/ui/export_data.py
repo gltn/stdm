@@ -35,6 +35,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
@@ -301,7 +302,7 @@ class ExportData(WIDGET, BASE):
 
             succeed = True
 
-        except Exception as ex:
+        except DummyException as ex:
             self.ErrorInfoMessage(ex)
 
         return succeed

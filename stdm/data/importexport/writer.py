@@ -16,15 +16,11 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-try:
-    from osgeo import gdal
-    from osgeo import ogr
-    from osgeo import osr
-except:
-    import gdal
-    import ogr
-    import osr
+from osgeo import gdal
+from osgeo import ogr
+from osgeo import osr
 
+from stdm.exceptions import DummyException
 from stdm.data.pg_utils import (
     columnType,
     geometryType
@@ -193,5 +189,5 @@ class OGRWriter():
             n = round(number)
 
             return True
-        except Exception:
+        except DummyException:
             return False

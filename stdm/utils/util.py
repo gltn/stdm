@@ -55,6 +55,7 @@ from sqlalchemy import (
 from stdm.data.configuration import (
     entity_model
 )
+from stdm.exceptions import DummyException
 
 PLUGIN_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.path.pardir)).replace("\\", "/")
@@ -930,7 +931,7 @@ def enable_drag_sort(mv_widget):
                     row_mapping[row + len(rows)] = target_row + idx
             try:
                 colCount = mv_widget.model().columnCount()
-            except Exception:
+            except DummyException:
                 colCount = mv_widget.columnCount()
 
             for src_row, tgt_row in sorted(row_mapping.items()):
@@ -944,7 +945,7 @@ def enable_drag_sort(mv_widget):
                                 src_row, col
                             )
                         )
-                    except Exception:
+                    except DummyException:
                         mv_widget.setItem(
                             tgt_row,
                             col,
@@ -1026,7 +1027,7 @@ def enable_drag_sort_widgets(qt_widget):
                     row_mapping[row + len(rows)] = target_row + idx
             # try:
             #     colCount = qt_widget.model().columnCount()
-            # except Exception:
+            # except DummyException:
             #     colCount = qt_widget.columnCount()
 
             # for src_row, tgt_row in sorted(row_mapping.items()):
@@ -1040,7 +1041,7 @@ def enable_drag_sort_widgets(qt_widget):
             #                     src_row, col
             #                 )
             #             )
-            #         except Exception:
+            #         except DummyException:
             for src_row, tgt_row in sorted(row_mapping.items()):
                 tgt_widget_item = qt_widget.item(tgt_row)
                 tgt_widget = qt_widget.itemWidget(tgt_widget_item)

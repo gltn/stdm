@@ -52,6 +52,7 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import QgsProject
 from qgis.utils import iface
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
 from stdm.settings.registryconfig import (
@@ -95,7 +96,7 @@ class ComponentUtility(QObject):
             self.str_model, self.str_doc_model = entity_model(
                 self.social_tenure, False, True
             )
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 iface.mainWindow(),
                 QApplication.translate('ComponentUtility', 'Database Error'),
@@ -154,7 +155,7 @@ class ComponentUtility(QObject):
         table_name = entity.name
         try:
             model = entity_model(entity)
-        except Exception:
+        except DummyException:
             return None
 
         if model is not None:

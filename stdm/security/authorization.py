@@ -20,6 +20,7 @@ email                : gkahiu@gmail.com
 from stdm.data.database import Content
 from stdm.security.roleprovider import RoleProvider
 from stdm.utils.util import getIndex
+from stdm.exceptions import DummyException
 
 
 class RoleMapper:
@@ -72,7 +73,7 @@ class Authorizer:
                     if getIndex(self.userRoles, rl.name) != -1:
                         hasPermission = True
                         break
-        except Exception:
+        except DummyException:
             '''
             Current user does not have permission to access the content tables.
             Catches all errors

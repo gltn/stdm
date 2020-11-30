@@ -37,6 +37,7 @@ from qgis.PyQt.QtWidgets import (
     QDoubleSpinBox
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.qtmodels import BaseSTDMTableModel
 from stdm.settings import current_profile
@@ -430,7 +431,7 @@ class FreezeTableWidget(QTableView):
         QTableView.resizeEvent(self, event)
         try:
             self.update_frozen_table_geometry()
-        except Exception as log:
+        except DummyException as log:
             LOGGER.debug(str(log))
 
     def scrollTo(self, index, hint):

@@ -28,6 +28,7 @@ from qgis.PyQt.QtWidgets import (
     QDialog
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.database import STDMDb
 from stdm.ui.customcontrols.relation_line_edit import (
@@ -530,7 +531,7 @@ class MapperMixin(QDialog):
             self._model.update()
             # STDMDb.instance().session.flush()
 
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 self,
                 QApplication.translate(

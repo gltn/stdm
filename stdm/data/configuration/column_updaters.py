@@ -37,6 +37,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import reflection
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.database import (
     metadata
@@ -186,7 +187,7 @@ def _update_col(column, table, data_type, columns):
                 else:
                     idx = Index(idx_name, alchemy_column, postgresql_using='btree')
                     idx.create()
-        except Exception:
+        except DummyException:
             pass
 
     return alchemy_column
