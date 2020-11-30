@@ -17,6 +17,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from typing import Optional
 
 from stdm.data.connection import DatabaseConnection
 from stdm.settings.registryconfig import RegistryConfig
@@ -26,32 +27,32 @@ class DatabaseConfig:
     """
     Reads and writes database settings in the registry.
     """
+    HOST = "Host"
+    PORT = "Port"
+    DB_NAME = "Database"
 
     def __init__(self):
-        self.host = "Host"
-        self.port = "Port"
-        self.db_name = "Database"
         self.reg_config = RegistryConfig()
 
-    def read(self):
-        '''
+    def read(self) -> Optional[DatabaseConnection]:
+        """
         Get the database connection properties
-        '''
-        db_props = self.reg_config.read([self.host, self.port, self.db_name])
+        """
+        db_props = self.reg_config.read([DatabaseConfig.HOST, DatabaseConfig.PORT, DatabaseConfig.DB_NAME])
 
         if len(db_props) < 3:
             return None
         else:
-            return DatabaseConnection(db_props[self.host], db_props[self.port],
-                                      db_props[self.db_name])
+            return DatabaseConnection(db_props[DatabaseConfig.HOST],
+                                      db_props[DatabaseConfig.PORT],
+                                      db_props[DatabaseConfig.DB_NAME])
 
     def write(self, db_connection):
-        '''
+        """
         Writes the database connection settings to the registry
-        '''
-        db_settings = {}
-        db_settings[self.host] = db_connection.Host
-        db_settings[self.port] = db_connection.Port
-        db_settings[self.db_name] = db_connection.Database
+        """
+        db_settings = {DatabaseConfig.HOST: db_connection.Host,
+                       DatabaseConfig.PORT: db_connection.Port,
+                       DatabaseConfig.DB_NAME: db_connection.Database}
 
         self.reg_config.write(db_settings)
