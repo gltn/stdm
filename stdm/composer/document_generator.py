@@ -93,7 +93,6 @@ class DocumentGenerator(QObject):
     def __init__(self, iface, parent = None):
         QObject.__init__(self,parent)
         self._iface = iface
-        self._map_renderer = self._iface.mapCanvas().mapRenderer()
         self._map_settings = self._iface.mapCanvas().mapSettings()
         self._dbSession = STDMDb.instance().session
         self._attr_value_formatters = {}

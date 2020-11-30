@@ -45,7 +45,8 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 from qgis.core import (
-    QgsProject
+    QgsProject,
+    QgsPrintLayout
 )
 from qgis.gui import (
     QgsStatusBar
@@ -134,9 +135,8 @@ from stdm.utils.util import (
 from stdm.utils.util import simple_dialog
 from stdm.data import globals
 
-# TODO!
 from stdm.composer.composer_data_source import composer_data_source
-# from stdm.composer.composer_wrapper import ComposerWrapper
+from stdm.composer.composer_wrapper import ComposerWrapper
 
 LOGGER = logging.getLogger('stdm')
 
@@ -1764,12 +1764,27 @@ class STDMQGISLoader:
             "STDMPlugin",
             "STDM Document Designer"
         )
-        documentComposer = self.iface.createNewComposer(
-            title
-        )
+
+        # get unique layout name
+        names = [l.name() for l in QgsProject.instance().layoutManager().layouts()]
+        idx = 1
+        while title in names:
+            idx += 1
+            title = QApplication.translate(
+                "STDMPlugin",
+                "STDM Document Designer {}"
+            ).format(idx)
+
+        layout = QgsPrintLayout(QgsProject.instance())
+        layout.setName(title)
+        layout.initializeDefaults()
+
+        QgsProject.instance().layoutManager().addLayout(layout)
+
+        designer = self.iface.openLayoutDesigner(layout)
         # Embed STDM customizations
         composerWrapper = ComposerWrapper(
-            documentComposer, self.iface
+            designer, self.iface
         )
         composerWrapper.configure()
 
