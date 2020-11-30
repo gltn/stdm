@@ -21,7 +21,7 @@ email                : stdm@unhabitat.org
 """
 import json
 import os
-from configparser import ConfigParser
+from configparser import RawConfigParser
 from datetime import datetime
 
 from qgis.PyQt.QtCore import QDir
@@ -41,7 +41,7 @@ class ImportLogger:
         """
         Initialize vairables
         """
-        self.config_logger = ConfigParser.RawConfigParser()
+        self.config_logger = RawConfigParser()
         self.logger_path()
 
     def logger_path(self):
