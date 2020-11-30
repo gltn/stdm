@@ -431,14 +431,12 @@ class SpatialUnit(ComponentUtility):
 
 
 class STRType(ComponentUtility):
-    def __init__(self, container_widget, box, notification_bar, party=None):
+    def __init__(self, container_widget, notification_bar, party=None):
         """
         Handles the STR type component for loading tenure type and share
         widgets in a QTableView.
         :param container_widget: The container widget for the component.
         :type container_widget: QWidget
-        :param box: The layout holding the container widget.
-        :type box: QVBoxLayout
         :param notification_bar: The NotificationBar object that
         displays notification.
         :type notification_bar: Object
@@ -448,7 +446,6 @@ class STRType(ComponentUtility):
         """
         ComponentUtility.__init__(self)
         self.container_widget = container_widget
-        self.container_box = box
         self.notification_bar = notification_bar
         self.str_type_data = []
         self.selected_party = party
@@ -535,14 +532,12 @@ class STRType(ComponentUtility):
         )
         self.str_type_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.container_box.setSpacing(4)
-        self.container_box.setMargin(5)
         grid_layout = QGridLayout(self.container_widget)
         grid_layout.setHorizontalSpacing(5)
         grid_layout.setColumnStretch(4, 5)
+        grid_layout.setMargin(5)
 
-        self.container_box.addLayout(grid_layout)
-        self.container_box.addWidget(self.str_type_table)
+        grid_layout.addWidget(self.str_type_table)
 
     def enable_str_type_widgets(self, row):
         """

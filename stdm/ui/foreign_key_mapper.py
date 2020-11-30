@@ -198,7 +198,7 @@ class ForeignKeyMapper(QWidget):
         layout.setSpacing(4)
         layout.setMargin(5)
 
-        self.grid_layout = QGridLayout(self)
+        self.grid_layout = QGridLayout()
         self.grid_layout.setHorizontalSpacing(5)
         self.grid_layout.addWidget(self._add_entity_btn, 0, 0, 1, 1)
         self.grid_layout.addWidget(self._filter_entity_btn, 0, 1, 1, 1)
