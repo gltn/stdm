@@ -1276,7 +1276,6 @@ class STREditor(WIDGET, BASE):
             return
         self.str_type_component = STRType(
             self.str_type_widget,
-            self.str_type_box,
             self.notice,
             party
         )
