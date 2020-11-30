@@ -193,7 +193,7 @@ class GeoODKReader:
         for col in col_objs:
             if col.TYPE_INFO == "LOOKUP" or col.TYPE_INFO == "MULTIPLE_SELECT":
                 value_list = col.value_list
-                lk_attributes[col] = str(value_list.name)
+                lk_attributes[col.name] = str(value_list.name)
         return lk_attributes
 
     def column_info(self, item_col):
