@@ -132,7 +132,8 @@ class STDMDb:
         """
         Base.metadata.create_all(self.engine)
 
-    def instance(self, *args, **kwargs):
+    @classmethod
+    def instance(cls, *args, **kwargs):
         """
         Dummy method. Eclipse IDE cannot handle the Singleton decorator in Python
         """
