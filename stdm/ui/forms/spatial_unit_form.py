@@ -33,7 +33,9 @@ from qgis.core import (
     NULL,
     QgsFeatureRequest,
     QgsVectorLayer,
-    QgsField)
+    QgsField,
+    QgsEditorWidgetSetup,
+    QgsEditFormConfig)
 from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
@@ -233,33 +235,28 @@ class STDMFieldWidget():
         :return: None
         :rtype: NoneTYpe
         """
-        try:
-            # init form
-            self.set_entity(table)
-            self.set_widget_mapping()
-            self.register_factory()
-            self.set_widget_type(curr_layer)
 
-            curr_layer.editFormConfig().setSuppress(1)
-            try:
+        # init form
+        self.set_entity(table)
+        self.set_widget_mapping()
+        self.register_factory()
+        self.set_widget_type(curr_layer)
 
-                curr_layer.featureAdded.connect(
-                    lambda feature_id: self.load_stdm_form(
-                        feature_id, spatial_column
-                    )
-                )
-            except Exception:
-                pass
-            curr_layer.featureDeleted.connect(
-                self.on_feature_deleted
+        curr_layer.editFormConfig().setSuppress(QgsEditFormConfig.SuppressOn)
+
+        curr_layer.featureAdded.connect(
+            lambda feature_id: self.load_stdm_form(
+                feature_id, spatial_column
             )
+        )
 
-            curr_layer.beforeCommitChanges.connect(
-                self.on_digitizing_saved
-            )
+        curr_layer.featureDeleted.connect(
+            self.on_feature_deleted
+        )
 
-        except Exception as ex:
-            LOGGER.debug(ex)
+        curr_layer.beforeCommitChanges.connect(
+            self.on_digitizing_saved
+        )
 
     def set_entity(self, source):
         """
@@ -297,15 +294,8 @@ class STDMFieldWidget():
             column.header()
         )
 
-        try:
-            layer.editFormConfig().setWidgetType(
-                idx, widget_type_id
-            )
-
-        except Exception:
-            layer.setEditorWidgetV2(
-                idx, widget_type_id
-            )
+        setup = QgsEditorWidgetSetup(widget_type_id, {})
+        layer.setEditorWidgetSetup(idx, setup)
 
     def set_widget_mapping(self):
         """
