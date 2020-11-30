@@ -480,7 +480,7 @@ class OptionsDialog(WIDGET, BASE):
             timer.setSingleShot(True)
 
             # Remove previous connected slots (if any)
-            receivers = timer.receivers(SIGNAL('timeout()'))
+            receivers = timer.receivers(QTimer.timeout)
             if receivers > 0:
                 self._timer.timeout.disconnect()
 

@@ -37,7 +37,8 @@ from qgis.PyQt.QtWidgets import (
     QMenu,
     QDialog,
     QListWidgetItem,
-    QFileDialog
+    QFileDialog,
+    QComboBox
 )
 
 from stdm.data.importexport import (
@@ -273,7 +274,7 @@ class ImportData(WIDGET, BASE):
         destConf.registerField("optAppend", self.rbAppend)
         destConf.registerField("optOverwrite", self.rbOverwrite)
         destConf.registerField("tabIndex*", self.lstDestTables)
-        destConf.registerField("geomCol", self.geomClm, "currentText", SIGNAL("currentIndexChanged(int)"))
+        destConf.registerField("geomCol", self.geomClm, "currentText", QComboBox.currentIndexChanged[int])
 
     def initializePage(self, pageid):
         # Re-implementation of wizard page initialization

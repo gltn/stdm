@@ -71,7 +71,7 @@ class OGRWriter():
         if ogrType == OGRWriter.OGR_DATE_TYPE:
             ogrType = OGRWriter.OGR_STRING_TYPE
 
-        field_defn = ogr.FieldDefn(field.encode('utf-8'), ogrType)
+        field_defn = ogr.FieldDefn(field, ogrType)
 
         return field_defn
 
@@ -156,8 +156,7 @@ class OGRWriter():
 
                 else:
                     field_value = r[i]
-                    field_value = str(field_value).encode('utf-8')
-                    feat.SetField(i, field_value)
+                    feat.SetField(i, str(field_value))
 
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
