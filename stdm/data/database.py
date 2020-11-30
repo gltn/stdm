@@ -78,10 +78,10 @@ class Singleton:
         self.__decorated = decorated
 
     def instance(self, *args, **kwargs):
-        '''
+        """
         Returns an instance of the decorated object or creates
         one if it does not exist
-        '''
+        """
         try:
             return self._instance
 
@@ -94,9 +94,9 @@ class Singleton:
         raise TypeError('Singleton must be accessed through the instance method')
 
     def cleanUp(self):
-        '''
+        """
         Remove the instance of the referenced singleton class
-        '''
+        """
         del self._instance
 
 
@@ -221,11 +221,11 @@ def alchemy_table_relationships(table_name):
 
 
 class Model:
-    '''
+    """
     Base class that handles all basic database operations.
     All STDM entities that need to be persisted in the database
     will inherit from this class.
-    '''
+    """
     attrTranslations = OrderedDict()
 
     def save(self):
@@ -238,12 +238,12 @@ class Model:
             LOGGER.debug(str(db_error))
             raise db_error
 
-    def saveMany(self, objects=[]):
-        '''
+    def saveMany(self, objects=None):
+        """
         Save multiple objects of the same type in one go.
-        '''
+        """
         db = STDMDb.instance()
-        db.session.add_all(objects)
+        db.session.add_all(objects or [])
         try:
             db.session.commit()
         except exc.SQLAlchemyError as db_error:
@@ -282,16 +282,16 @@ class Model:
 
             raise db_error
 
-    def queryObject(self, args=[]):
-        '''
+    def queryObject(self, args=None):
+        """
         The 'args' specifies the attributes/columns
         that will be returned in the query in a tuple;
         Else, the full model object will be returned.
-        '''
+        """
         db = STDMDb.instance()
         # raise NameError(str(self.__class__))
         try:
-            if len(args) == 0:
+            if not args:
                 return db.session.query(self.__class__)
 
             else:
@@ -303,10 +303,10 @@ class Model:
 
     @classmethod
     def tr(cls, propname):
-        '''
+        """
         Returns a user-friendly name for the given property name.
         :param propname: Property name.
-        '''
+        """
         if propname in cls.attrTranslations:
             return cls.attrTranslations[propname]
         else:
@@ -314,22 +314,22 @@ class Model:
 
     @staticmethod
     def displayMapping():
-        '''
+        """"
         Returns the dictionary containing the translation mapping for the attributes.
         Base classes need to implement this method.
 
         if len(Model.attrTranslations) == 0:
             raise NotImplementedError
         else:
-        '''
+        """
         return Model.attrTranslations
 
 
 class Content(Model, Base):
-    '''
+    """
     Abstract class which is implemented by contents items that need to be registered based
     on the scope of the particular instance of STDM customization.
-    '''
+    """
     __tablename__ = "content_base"
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
@@ -338,10 +338,10 @@ class Content(Model, Base):
 
 
 class Role(Model, Base):
-    '''
+    """
     Model for the database-wide system roles. These are manually synced with the roles in the
     system catalog.
-    '''
+    """
     __tablename__ = "role"
     id = Column(Integer, primary_key=True)
     name = Column(String(100), unique=True)
@@ -356,9 +356,9 @@ content_roles_table = Table("content_roles", Base.metadata,
 
 
 class AdminSpatialUnitSet(Model, Base):
-    '''
+    """
     Hierarchy of administrative units.
-    '''
+    """
     __tablename__ = "admin_spatial_unit_set"
     id = Column(Integer, primary_key=True)
     ParentID = Column("parent_id", Integer, ForeignKey("admin_spatial_unit_set.id"))
@@ -373,15 +373,14 @@ class AdminSpatialUnitSet(Model, Base):
         self.Parent = parent
 
     def hierarchyCode(self, separator="/"):
-        '''
+        """
         Returns a string constituted of codes aggregated from the class instance, prior to which
         there are codes of the parent administrative units in the hierarchy.
-        '''
-        codeList = []
-        codeList.append(self.Code)
+        """
+        codeList = [self.Code]
 
         parent = self.Parent
-        while parent != None:
+        while parent is not None:
             codeList.append(parent.Code)
             parent = parent.Parent
 
@@ -398,11 +397,10 @@ class AdminSpatialUnitSet(Model, Base):
         :return: The name of all admin units in a hierarchy
         :rtype: String
         """
-        name_list = []
-        name_list.append(self.Name)
+        name_list = [self.Name]
 
         parent = self.Parent
-        while parent != None:
+        while parent is not None:
             name_list.append(parent.Name)
             parent = parent.Parent
 
