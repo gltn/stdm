@@ -18,19 +18,10 @@ email                : gkahiu@gmail.com
 from qgis.PyQt.QtCore import (
     QObject
 )
-from qgis.PyQt.QtGui import (
-    QIcon
-)
 from qgis.PyQt.QtWidgets import (
     QAction,
     QApplication,
     QDialog
-)
-
-from qgis.gui import QgsLayoutView
-
-from stdm.ui.composer.composer_doc_selector import (
-    TemplateDocumentSelector
 )
 
 from stdm.composer.item_formatter import (
@@ -41,7 +32,10 @@ from stdm.composer.item_formatter import (
     PhotoFormatter,
     QRCodeFormatter,
     TableFormatter
- )
+)
+from stdm.ui.composer.composer_doc_selector import (
+    TemplateDocumentSelector
+)
 from stdm.ui.gui_utils import GuiUtils
 
 
@@ -51,8 +45,8 @@ class ComposerItemConfig(QObject):
     """
     itemConfigurations = []
 
-    def __init__(self,composerWrapper):
-        QObject.__init__(self,composerWrapper.composerView())
+    def __init__(self, composerWrapper):
+        QObject.__init__(self, composerWrapper.mainWindow())
         self._composerWrapper = composerWrapper
         self._itemFormatter = None
 
@@ -61,15 +55,15 @@ class ComposerItemConfig(QObject):
         self.itemAction.triggered.connect(self.on_action_triggered)
         self.itemAction.toggled.connect(self.on_action_toggled)
 
-        #Add action to toolbar and connect 'triggered' signal
+        # Add action to toolbar and connect 'triggered' signal
         self._composerWrapper.stdmToolBar().addAction(self.itemAction)
 
-        #Add action to the composer items action group
-        if self._composerWrapper.selectMoveAction() != None and self.registerInItemGroup():
+        # Add action to the composer items action group
+        if self._composerWrapper.selectMoveAction() is not None and self.registerInItemGroup():
             actionGroup = self._composerWrapper.selectMoveAction().actionGroup()
             actionGroup.addAction(self.itemAction)
 
-        #Connect signals
+        # Connect signals
         self.composerView().actionFinished.connect(self.onActionFinished)
 
     def action(self):
@@ -85,13 +79,13 @@ class ComposerItemConfig(QObject):
         """
         return True
 
-    def on_action_triggered(self,state):
+    def on_action_triggered(self, state):
         """
         Slot raised upon action trigger.
         """
         pass
 
-    def on_action_toggled(self,checked):
+    def on_action_toggled(self, checked):
         """
         Slot raised when checked status of the action changes.
         """
@@ -137,7 +131,7 @@ class ComposerItemConfig(QObject):
         if self._composerWrapper.selectMoveAction() != None:
             self._composerWrapper.selectMoveAction().setChecked(True)
 
-    def onSelectItemChanged(self,selected):
+    def onSelectItemChanged(self, selected):
         """
         Slot raised when selection changes.
         """
@@ -150,21 +144,23 @@ class ComposerItemConfig(QObject):
         """
         ComposerItemConfig.itemConfigurations.append(cls)
 
+
 class LineItemConfig(ComposerItemConfig):
     """
     For drawing lines in the composition. This uses the arrow composer item as the base.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = LineFormatter()
 
     def action(self):
         lineAct = QAction(GuiUtils.get_icon("line.png"),
-        QApplication.translate("LineItemConfig","Add line"), self.composerView())
+                          QApplication.translate("LineItemConfig", "Add line"), self.mainWindow())
 
         return lineAct
 
-    def on_action_triggered(self,state):
+    def on_action_triggered(self, state):
         self.composerView().setCurrentTool(QgsComposerView.AddArrow)
 
     def on_action_toggled(self, checked):
@@ -184,21 +180,24 @@ class LineItemConfig(ComposerItemConfig):
             return
 
         arrow = selItems[0]
-        self._itemFormatter.apply(arrow,self.composerWrapper())
+        self._itemFormatter.apply(arrow, self.composerWrapper())
+
 
 LineItemConfig.register()
+
 
 class DataLabelConfig(ComposerItemConfig):
     """
     Enables users to define values for QgsComposerLabels from database sources.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = DataLabelFormatter()
 
     def action(self):
         dataLabelAct = QAction(GuiUtils.get_icon("db_field.png"),
-        QApplication.translate("DataLabelConfig","Add data label"), self.composerView())
+                               QApplication.translate("DataLabelConfig", "Add data label"), self.mainWindow())
 
         return dataLabelAct
 
@@ -222,21 +221,24 @@ class DataLabelConfig(ComposerItemConfig):
             return
 
         label = selItems[0]
-        self._itemFormatter.apply(label,self.composerWrapper())
+        self._itemFormatter.apply(label, self.composerWrapper())
+
 
 DataLabelConfig.register()
+
 
 class TableConfig(ComposerItemConfig):
     """
     Table composer item.
     """
+
     def __init__(self, composer_wrapper):
         ComposerItemConfig.__init__(self, composer_wrapper)
         self._itemFormatter = TableFormatter()
 
     def action(self):
         tb_act = QAction(GuiUtils.get_icon("composer_table.png"),
-        QApplication.translate("TableConfig","Add attribute table"), self.composerView())
+                         QApplication.translate("TableConfig", "Add attribute table"), self.mainWindow())
 
         return tb_act
 
@@ -264,18 +266,20 @@ class TableConfig(ComposerItemConfig):
 
 TableConfig.register()
 
+
 class MapConfig(ComposerItemConfig):
     """
     Enables users to add a map into the composition as well as define styling for spatial
     data sources.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = MapFormatter()
 
     def action(self):
         mapAct = QAction(GuiUtils.get_icon("add_map.png"),
-        QApplication.translate("MapConfig","Add map"), self.composerView())
+                         QApplication.translate("MapConfig", "Add map"), self.mainWindow())
 
         return mapAct
 
@@ -299,21 +303,24 @@ class MapConfig(ComposerItemConfig):
             return
 
         templateMap = selItems[0]
-        self._itemFormatter.apply(templateMap,self.composerWrapper())
+        self._itemFormatter.apply(templateMap, self.composerWrapper())
+
 
 MapConfig.register()
+
 
 class PhotoConfig(ComposerItemConfig):
     """
     Photo composer item based on type.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = PhotoFormatter()
 
     def action(self):
         ph_act = QAction(GuiUtils.get_icon("photo_24.png"),
-        QApplication.translate("PhotoConfig","Add photo"), self.composerView())
+                         QApplication.translate("PhotoConfig", "Add photo"), self.mainWindow())
 
         return ph_act
 
@@ -339,6 +346,7 @@ class PhotoConfig(ComposerItemConfig):
         photo_item = sel_items[0]
         self._itemFormatter.apply(photo_item, self.composerWrapper())
 
+
 PhotoConfig.register()
 
 
@@ -347,13 +355,14 @@ class ChartConfig(ComposerItemConfig):
     Chart composer item which uses the QgsComposerPicture item for
     rendering graphs outputted as images.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = ChartFormatter()
 
     def action(self):
         chart_act = QAction(GuiUtils.get_icon("chart.png"),
-        QApplication.translate("ChartConfig","Add chart"), self.composerView())
+                            QApplication.translate("ChartConfig", "Add chart"), self.mainWindow())
 
         return chart_act
 
@@ -385,13 +394,14 @@ ChartConfig.register()
 
 class QRCodeConfig(PhotoConfig):
     """Composer item for QR codes."""
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = QRCodeFormatter()
 
     def action(self):
         qrcode_act = QAction(GuiUtils.get_icon("qrcode.png"),
-        QApplication.translate("QRCodeConfig","Add QR Code"), self.composerView())
+                             QApplication.translate("QRCodeConfig", "Add QR Code"), self.mainWindow())
 
         return qrcode_act
 
@@ -403,7 +413,8 @@ class SeparatorConfig(ComposerItemConfig):
     """
     Simple toolbar separator.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
 
     def action(self):
@@ -415,19 +426,23 @@ class SeparatorConfig(ComposerItemConfig):
     def registerInItemGroup(self):
         return False
 
+
 SeparatorConfig.register()
+
 
 class SaveTemplateConfig(ComposerItemConfig):
     """
     For saving user templates.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self.itemAction.setCheckable(False)
 
     def action(self):
         saveTemplateAct = QAction(GuiUtils.get_icon("save_tb.png"),
-        QApplication.translate("SaveTemplateConfig","Save document template"), self.composerView())
+                                  QApplication.translate("SaveTemplateConfig", "Save document template"),
+                                  self.composerView())
 
         return saveTemplateAct
 
@@ -440,15 +455,19 @@ class SaveTemplateConfig(ComposerItemConfig):
         """
         self.composerWrapper().saveTemplate()
 
+
 SaveTemplateConfig.register()
+
 
 class OpenTemplateConfig(SaveTemplateConfig):
     """
     Opens user templates.
     """
+
     def action(self):
         openTemplateAct = QAction(GuiUtils.get_icon("open_file.png"),
-        QApplication.translate("OpenTemplateConfig","Open document template"), self.composerView())
+                                  QApplication.translate("OpenTemplateConfig", "Open document template"),
+                                  self.composerView())
 
         return openTemplateAct
 
@@ -456,26 +475,30 @@ class OpenTemplateConfig(SaveTemplateConfig):
         """
         Load template document selector dialog then process selection.
         """
-        docSelector = TemplateDocumentSelector(self.composerView())
+        docSelector = TemplateDocumentSelector(self.mainWindow())
 
         if docSelector.exec_() == QDialog.Accepted:
             docName, file_path = docSelector.documentMapping()
 
             self.composerWrapper().create_new_document_designer(file_path)
 
+
 OpenTemplateConfig.register()
+
 
 class ManageTemplatesConfig(ComposerItemConfig):
     """
     Action that loads dialog for managing user document templates.
     """
-    def __init__(self,composerWrapper):
+
+    def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self.itemAction.setCheckable(False)
 
     def action(self):
         manageTemplatesAct = QAction(GuiUtils.get_icon("manage_templates.png"),
-        QApplication.translate("ManageTemplatesConfig","Manage document templates"), self.composerView())
+                                     QApplication.translate("ManageTemplatesConfig", "Manage document templates"),
+                                     self.mainWindow())
 
         return manageTemplatesAct
 
@@ -486,9 +509,8 @@ class ManageTemplatesConfig(ComposerItemConfig):
         """
         Show dialog for managing document templates.
         """
-        docManager = TemplateDocumentSelector(self.composerView(),False)
+        docManager = TemplateDocumentSelector(self.mainWindow(), False)
         docManager.exec_()
 
+
 ManageTemplatesConfig.register()
-
-

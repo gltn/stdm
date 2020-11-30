@@ -275,7 +275,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         # Load supported image types
         supportedImageTypes = QImageWriter.supportedImageFormats()
         for imageType in supportedImageTypes:
-            imageTypeStr = imageType.data()
+            imageTypeStr = imageType.data().decode()
             self.cboImageType.addItem(imageTypeStr)
 
         self._init_progress_dialog()

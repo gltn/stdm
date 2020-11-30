@@ -128,11 +128,12 @@ class ComposerWrapper(QObject):
     """
     dataSourceSelected = pyqtSignal(str)
 
-    def __init__(self, composerView, iface):
-        QObject.__init__(self, composerView)
+    def __init__(self, layout_interface, iface):
+        QObject.__init__(self, layout_interface)
 
-        self._compView = composerView
-        self._stdmTB = self.mainWindow().addToolBar("STDM Document Designer")
+        self._layout_interface = layout_interface
+        #self._compView = composerView
+        self._stdmTB = layout_interface.window().addToolBar("STDM Document Designer")
         self._selectMoveAction = None
         self._iface = iface
 
@@ -152,7 +153,7 @@ class ComposerWrapper(QObject):
         # Remove default toolbars
         self._remove_composer_toolbar('mAtlasToolbar')
 
-        self._remove_composer_toolbar('mComposerToolbar')
+        self._remove_composer_toolbar('mLayoutToolbar')
 
         #Create dock widget for configuring STDM data source
         self._stdmDataSourceDock = QDockWidget(
@@ -209,11 +210,11 @@ class ComposerWrapper(QObject):
             self.generalDock().raise_()
 
         #Connect signals
-        self.composition().itemRemoved.connect(self._onItemRemoved)
+        # self.composition().itemRemoved.connect(self._onItemRemoved)
         self._dataSourceWidget.cboDataSource.currentIndexChanged.connect(
             self.propagateDataSourceSelection
         )
-        self.composerView().selectedItemChanged.connect(self._onItemSelected)
+        self.composition().selectedItemChanged.connect(self._onItemSelected)
 
         #Current template document file
         self._currDocFile = None
@@ -257,12 +258,9 @@ class ComposerWrapper(QObject):
         :return: None
         :rtype: NoneType
         """
-        composers = self._iface.activeComposers()
-        for i in range(len(composers)):
-            comp = composers[i].composerWindow()
-            widgets = comp.findChildren(QToolBar, object_name)
-            for widget in widgets:
-                comp.removeToolBar(widget)
+        widgets = self.mainWindow().findChildren(QToolBar, object_name)
+        for widget in widgets:
+            self.mainWindow().removeToolBar(widget)
 
     def _removeActions(self):
         """
@@ -309,7 +307,7 @@ class ComposerWrapper(QObject):
         """
         Returns the QMainWindow used by the composer view.
         """
-        return self._compView.composerWindow()
+        return self._layout_interface.window()
 
     def stdmToolBar(self):
         """
@@ -327,7 +325,7 @@ class ComposerWrapper(QObject):
         """
         Returns the QgsComposition instance used in the composer view.
         """
-        return self._compView.composition()
+        return self._layout_interface.layout()
 
     def composerItemToolBar(self):
         """
@@ -339,7 +337,7 @@ class ComposerWrapper(QObject):
         """
         Returns the toolbar containing actions for managing templates.
         """
-        return self.mainWindow().findChild(QToolBar,"mComposerToolbar")
+        return self.mainWindow().findChild(QToolBar,"mLayoutToolbar")
 
     def selectMoveAction(self):
         """
@@ -379,7 +377,7 @@ class ComposerWrapper(QObject):
         """
         Get the 'Composition' dock widget.
         """
-        return self.mainWindow().findChild(QDockWidget,"CompositionDock")
+        return self.mainWindow().findChild(QDockWidget,"LayoutDock")
 
     def stdmDataSourceDock(self):
         """
@@ -463,7 +461,7 @@ class ComposerWrapper(QObject):
                     del self._widgetMappings[c_item.uuid()]
 
                 self.composition().removeItem(c_item)
-                self.composition().itemRemoved.emit(c_item)
+                # self.composition().itemRemoved.emit(c_item)
 
                 del c_item
 
@@ -478,7 +476,7 @@ class ComposerWrapper(QObject):
         :type file_path: str
         """
         if len(self.composerView().items()) == 3:
-            self.composerView().composerWindow().close()
+            self.mainWindow().close()
 
         document_designer = self._iface.createNewComposer("STDM Document Designer")
 
@@ -494,7 +492,7 @@ class ComposerWrapper(QObject):
         Loads a document template into the view and updates the necessary STDM-related composer items.
         """
         if not QFile.exists(filePath):
-                QMessageBox.critical(self.composerView(),
+                QMessageBox.critical(self.mainWindow(),
                                      QApplication.translate("OpenTemplateConfig",
                                                             "Open Template Error"),
                                     QApplication.translate("OpenTemplateConfig",
@@ -523,7 +521,7 @@ class ComposerWrapper(QObject):
         self.copy_template_file = templateFile
 
         if not templateFile.open(QIODevice.ReadOnly):
-            QMessageBox.critical(self.composerView(),
+            QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper",
                                                         "Open Operation Error"),
                                             "{0}\n{1}".format(QApplication.translate(
@@ -579,9 +577,6 @@ class ComposerWrapper(QObject):
             # Load table editors
             self._configure_table_editors(table_config_collection)
 
-            items = self.composerView().items()
-            items = []
-
             #Load chart property editors
             chart_config_collection = ChartConfigurationCollection.create(templateDoc)
             self._configure_chart_editors(chart_config_collection)
@@ -598,7 +593,7 @@ class ComposerWrapper(QObject):
         """
         # Validate if the user has specified the data source
         if not self.selectedDataSource():
-            QMessageBox.critical(self.composerView(),
+            QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper","Error"),
                                 QApplication.translate("ComposerWrapper","Please specify the "
                                             "data source name for the document composition."))
@@ -606,7 +601,7 @@ class ComposerWrapper(QObject):
 
         # Assert if the referenced table name has been set
         if not self.selected_referenced_table():
-            QMessageBox.critical(self.composerView(),
+            QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper","Error"),
                                 QApplication.translate("ComposerWrapper","Please specify the "
                                             "referenced table name for the selected data source."))
@@ -616,7 +611,7 @@ class ComposerWrapper(QObject):
         docFile = self.documentFile()
 
         if docFile is None:
-            docName,ok = QInputDialog.getText(self.composerView(),
+            docName,ok = QInputDialog.getText(self.mainWindow(),
                             QApplication.translate("ComposerWrapper","Template Name"),
                             QApplication.translate("ComposerWrapper","Please enter the template name below"),
                             )
@@ -625,7 +620,7 @@ class ComposerWrapper(QObject):
                 return
 
             if ok and not docName:
-                QMessageBox.critical(self.composerView(),
+                QMessageBox.critical(self.mainWindow(),
                         QApplication.translate("ComposerWrapper", "Error"),
                         QApplication.translate("ComposerWrapper",
                             "Please enter a template name!") )
@@ -635,7 +630,7 @@ class ComposerWrapper(QObject):
                 templateDir = self._composerTemplatesPath()
 
                 if templateDir is None:
-                    QMessageBox.critical(self.composerView(),
+                    QMessageBox.critical(self.mainWindow(),
                         QApplication.translate("ComposerWrapper","Error"),
                         QApplication.translate("ComposerWrapper",
                         "Directory for document templates cannot not be found."))
@@ -647,7 +642,7 @@ class ComposerWrapper(QObject):
                 #Check if there is an existing document with the same name
                 caseInsenDic = CaseInsensitiveDict(documentTemplates())
                 if docName in caseInsenDic:
-                    result = QMessageBox.warning(self.composerView(),
+                    result = QMessageBox.warning(self.mainWindow(),
                             QApplication.translate("ComposerWrapper",
                                                    "Existing Template"),
                                             "'{0}' {1}.\nDo you want to replace the "
@@ -663,7 +658,7 @@ class ComposerWrapper(QObject):
                         delFile = QFile(absPath)
                         remove_status = delFile.remove()
                         if not remove_status:
-                            QMessageBox.critical(self.composerView(),
+                            QMessageBox.critical(self.mainWindow(),
                             QApplication.translate("ComposerWrapper",
                                                    "Delete Error"),
                                             "'{0}' {1}.".format(docName,
@@ -680,7 +675,7 @@ class ComposerWrapper(QObject):
         docFileInfo = QFileInfo(docFile)
 
         if not docFile.open(QIODevice.WriteOnly):
-            QMessageBox.critical(self.composerView(),
+            QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper",
                                 "Save Operation Error"),
                                 "{0}\n{1}".format(QApplication.translate("ComposerWrapper",
@@ -699,7 +694,7 @@ class ComposerWrapper(QObject):
         except DummyException as exc:
             msg = str(exc)
             QMessageBox.critical(
-                self.composerView(),
+                self.mainWindow(),
                 QApplication.translate("ComposerWrapper", "Save Error"),
                 msg
             )
@@ -709,7 +704,7 @@ class ComposerWrapper(QObject):
             return
 
         if docFile.write(templateDoc.toByteArray()) == -1:
-            QMessageBox.critical(self.composerView(),
+            QMessageBox.critical(self.mainWindow(),
             QApplication.translate("ComposerWrapper","Save Error"),
             QApplication.translate("ComposerWrapper","Could not save template file."))
 
@@ -781,7 +776,7 @@ class ComposerWrapper(QObject):
                 composerItem = self.composition().getComposerItemById(composerId)
 
                 if not composerItem is None:
-                    compFieldSelector = ComposerFieldSelector(self, composerItem, self.composerView())
+                    compFieldSelector = ComposerFieldSelector(self, composerItem, self.mainWindow())
                     compFieldSelector.selectFieldName(composer_data_source.dataFieldName(composerId))
 
                     #Add widget to the collection but now use the current uuid of the composition item
@@ -796,7 +791,7 @@ class ComposerWrapper(QObject):
                 mapItem = self.composition().getComposerItemById(item_id)
 
                 if not mapItem is None:
-                    composerSymbolEditor = ComposerSymbolEditor(self, self.composerView())
+                    composerSymbolEditor = ComposerSymbolEditor(self, self.mainWindow())
                     composerSymbolEditor.add_spatial_field_mappings(spFieldsMappings)
 
                     #Add widget to the collection but now use the current uuid of the composer map
@@ -815,7 +810,7 @@ class ComposerWrapper(QObject):
             pic_item = self.composition().getComposerItemById(item_id)
 
             if not pic_item is None:
-                photo_editor = ComposerPhotoDataSourceEditor(self, self.composerView())
+                photo_editor = ComposerPhotoDataSourceEditor(self, self.mainWindow())
                 photo_editor.set_configuration(photo_config)
 
                 self.addWidgetMapping(pic_item.uuid(), photo_editor)
@@ -834,7 +829,7 @@ class ComposerWrapper(QObject):
             chart_item = self.composition().getComposerItemById(item_id)
 
             if not chart_item is None:
-                chart_editor = ComposerChartConfigEditor(self, self.composerView())
+                chart_editor = ComposerChartConfigEditor(self, self.mainWindow())
                 chart_editor.set_configuration(chart_config)
 
                 self.addWidgetMapping(chart_item.uuid(), chart_editor)
@@ -851,7 +846,7 @@ class ComposerWrapper(QObject):
         for item_id, table_config in table_config_collection.mapping().items():
             table_item = self.composition().getComposerItemById(item_id)
             if table_item is not None:
-                table_editor = ComposerTableDataSourceEditor(self, table_item, self.composerView())
+                table_editor = ComposerTableDataSourceEditor(self, table_item, self.mainWindow())
 
                 table_editor.set_configuration(table_config)
 
@@ -875,7 +870,7 @@ class ComposerWrapper(QObject):
 
             if not qrc_item is None:
                 qrc_editor_cls = qr_code_config_collection.editor_type
-                qrc_editor = qrc_editor_cls(self, self.composerView())
+                qrc_editor = qrc_editor_cls(self, self.mainWindow())
                 qrc_editor.set_configuration(qrc_config)
 
                 self.addWidgetMapping(qrc_item.uuid(), qrc_editor)
