@@ -99,9 +99,9 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
         )
 
         # Remove the supporting doc tables from the metadata
-        if not ent_supporting_docs_table is None:
+        if ent_supporting_docs_table is not None:
             rf_metadata.remove(ent_supporting_docs_table)
-        if not profile_supporting_docs_table is None:
+        if profile_supporting_docs_table is not None:
             rf_metadata.remove(profile_supporting_docs_table)
 
     Base = automap_base(metadata=rf_metadata, cls=Model)

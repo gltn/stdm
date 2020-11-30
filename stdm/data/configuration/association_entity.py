@@ -107,7 +107,7 @@ class AssociationEntity(Entity):
         if parent_id is None:
             err = self.tr('%s does not have an id column. This is required '
                           'in order to link it to the social tenure '
-                          'relationship table.' % (parent_entity.name))
+                          'relationship table.' % parent_entity.name)
 
             LOGGER.debug(err)
 
