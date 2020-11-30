@@ -378,18 +378,15 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
 
     def control_digitize_toolbar(self, curr_layer):
         if not curr_layer is None:
-            try:
-                table, column = self._layer_table_column(
-                    curr_layer
-                )
-                if table not in pg_views():
-                    # Make sure digitizing toolbar is enabled
-                    self.iface.digitizeToolBar().setEnabled(True)
-                    self.set_canvas_crs(curr_layer)
-                elif table in pg_views():
-                    self.iface.digitizeToolBar().setEnabled(False)
-            except Exception:
-                pass
+            table, column = self._layer_table_column(
+                curr_layer
+            )
+            if table not in pg_views():
+                # Make sure digitizing toolbar is enabled
+                self.iface.digitizeToolBar().setEnabled(True)
+                self.set_canvas_crs(curr_layer)
+            elif table in pg_views():
+                self.iface.digitizeToolBar().setEnabled(False)
 
     def set_canvas_crs(self, layer):
         # Sets canvas CRS
@@ -416,12 +413,9 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         table, column = self._layer_table_column(curr_layer)
 
         if table not in pg_views() and curr_layer is not None:
-            try:
-                self.stdm_fields.init_form(
-                    table, spatial_column, curr_layer
-                )
-            except Exception as ex:
-                LOGGER.debug(str(ex))
+            self.stdm_fields.init_form(
+                table, spatial_column, curr_layer
+            )
 
     def _format_layer_display_name(self, col, table):
         return '{0}.{1}'.format(table, col)
