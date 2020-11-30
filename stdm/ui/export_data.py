@@ -32,7 +32,8 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QListWidgetItem,
     QFileDialog,
-    QMessageBox
+    QMessageBox,
+    QComboBox
 )
 
 from stdm.exceptions import DummyException
@@ -110,7 +111,7 @@ class ExportData(WIDGET, BASE):
         pgExportTab = self.page(1)
         pgExportTab.registerField("srcTabIndex*", self.lstSrcTab)
         pgExportTab.registerField("geomCol", self.cboSpatialCols_2,
-                                  "currentText", SIGNAL("currentIndexChanged(int)"))
+                                  "currentText", QComboBox.currentIndexChanged[int])
 
     def initializePage(self, int):
         # Re-implementation of wizard page initialization
