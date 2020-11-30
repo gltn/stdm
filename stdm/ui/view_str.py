@@ -169,8 +169,6 @@ class ViewSTRWidget(WIDGET, BASE):
         self._source_doc_manager.setEditPermissions(False)
 
         self.initGui()
-        # if self._plugin.details_tree_view is None:
-        # self._plugin.details_dock.init_dock()
         self.add_spatial_unit_layer()
         self.details_tree_view = DetailsTreeView(iface, self._plugin, self)
         # else:
