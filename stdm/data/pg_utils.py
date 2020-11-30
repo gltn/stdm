@@ -26,7 +26,8 @@ from qgis.PyQt.QtCore import (
 from qgis.core import (
     QgsGeometry,
     QgsVectorLayer,
-    QgsCoordinateReferenceSystem
+    QgsCoordinateReferenceSystem,
+    QgsProject
 )
 from qgis.utils import iface
 from sqlalchemy.exc import IntegrityError
@@ -642,13 +643,13 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
     if not layer_name:
         layer_name = table_name
 
+    layer_options = QgsVectorLayer.LayerOptions(QgsProject.instance().transformContext())
     if proj_wkt is not None:
-        iface.mainWindow().blockSignals(True)
+        layer_options.skipCrsValidation = True
 
-    v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres")
+    v_layer = QgsVectorLayer(ds_uri.uri(), layer_name, "postgres", layer_options)
 
     if proj_wkt is not None:
-        iface.mainWindow().blockSignals(False)
         try:
             target_crs = QgsCoordinateReferenceSystem(
                 proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
