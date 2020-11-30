@@ -18,42 +18,44 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from typing import Optional, Union
+
 import sqlalchemy
 from qgis.core import QgsDataSourceUri
 from sqlalchemy import create_engine
 
 
 class DatabaseConnection:
-    '''
+    """
     Class for capturing the minimum database connection properties
-    '''
+    """
 
-    def __init__(self, Host, Port, Database):
+    def __init__(self, Host: str, Port: Union[str, int], Database: str):
         self.Host = Host
-        self.Port = Port
+        self.Port = int(Port)
         self.Database = Database
         self.User = None
 
-    def toAlchemyConnection(self):
-        '''
+    def toAlchemyConnection(self) -> Optional[str]:
+        """
         Returns the corresponding connection string in SQLAlchemy format
-        '''
+        """
         if self.User:
             return "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
-            self.User.UserName, self.User.Password, self.Host, self.Port, self.Database)
+                self.User.UserName, self.User.Password, self.Host, self.Port, self.Database)
         else:
             return None
 
     def toPsycopg2Connection(self):
-        '''
+        """
         Returns the corresponding connection string in Psycopg2 format
-        '''
+        """
         pass
 
     def validateConnection(self):
-        '''
+        """
         Return whether the connection is valid or not
-        '''
+        """
         isValid = False
         errMsg = ""
         engine = create_engine(
@@ -72,7 +74,7 @@ class DatabaseConnection:
 
         return isValid, errMsg
 
-    def toQgsDataSourceUri(self):
+    def toQgsDataSourceUri(self) -> QgsDataSourceUri:
         """
         Returns a QgsDataSourceURI object with database connection properties
         defined.
