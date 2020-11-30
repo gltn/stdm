@@ -868,6 +868,8 @@ class DetailsTreeView(DetailsDBHandler):
             str_model = self.str_models[item.data()]
             self.selected_model = str_model
             self.selected_item = SelectedItem(item)
+        else:
+            self.selected_item = None
 
     def prepare_for_selection(self):
         """
@@ -1731,6 +1733,9 @@ class DetailsTreeView(DetailsDBHandler):
         """
         Edits the record based on the selected item in the tree view.
         """
+        if not self.selected_item or not self.view.selectedIndexes():
+            return
+
         self.edit_btn_connected = True
         # data, item = self.node_data('edit', self._selected_features)
         index = self.view.selectedIndexes()[0]
