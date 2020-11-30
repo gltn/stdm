@@ -196,6 +196,8 @@ class STDMQGISLoader:
         self.menubarLoader = None
         self.details_tree_view = None
         self.combo_action = None
+        self.stdmInitToolbar = None
+        self.stdmMenu = None
         self.spatialLayerManagerDockWidget = self
 
         # Setup locale
@@ -334,10 +336,13 @@ class STDMQGISLoader:
 
     def unload(self):
         # Remove the STDM toolbar
-        self.stdmInitToolbar.deleteLater()
-        del self.stdmInitToolbar
-        self.stdmMenu.deleteLater()
-        del self.stdmMenu
+        if self.stdmInitToolbar is not None:
+            self.stdmInitToolbar.deleteLater()
+            self.stdmInitToolbar = None
+
+        if self.stdmMenu is not None:
+            self.stdmMenu.deleteLater()
+            self.stdmMenu = None
 
         self.remove_spatial_unit_mgr()
 
@@ -2034,8 +2039,10 @@ class STDMQGISLoader:
             self.remove_spatial_unit_mgr()
 
             if not reload_plugin:
-                self.profile_status_label.deleteLater()
-                self.profile_status_label = None
+                if self.profile_status_label is not None:
+                    self.profile_status_label.deleteLater()
+                    self.profile_status_label = None
+
                 # Clear current profile combobox
                 self.profiles_combobox.deleteLater()
                 self.profiles_combobox = None
@@ -2046,7 +2053,8 @@ class STDMQGISLoader:
                 # Remove database reference
                 globals.APP_DBCONN = None
             else:
-                self.profile_status_label.setText('')
+                if self.profile_status_label:
+                    self.profile_status_label.setText('')
 
             # Reset View STR Window
             if not self.viewSTRWin is None:
