@@ -211,6 +211,7 @@ class STDMFieldWidget():
     def __init__(self, plugin):
         self.entity = None
         self.widget_mapping = {}
+        self.column_mapping = {}
         self.layer = None
         self.feature_models = OrderedDict()
         self.removed_feature_models = OrderedDict()
@@ -313,17 +314,19 @@ class STDMFieldWidget():
         :rtype:NoneType
         """
         self.widget_mapping.clear()
+        self.column_mapping.clear()
         for c in self.entity.columns.values():
+            self.column_mapping[c.name] = c
 
             if c.TYPE_INFO == 'SERIAL':
-                self.widget_mapping[c] = ['Hidden', None]
+                self.widget_mapping[c.name] = ['Hidden', None]
             elif c.TYPE_INFO == 'GEOMETRY':
-                self.widget_mapping[c] = ['TextEdit', None]
+                self.widget_mapping[c.name] = ['TextEdit', None]
             else:
                 stdm = QApplication.translate(
                     'STDMFieldWidget', 'STDM'
                 )
-                self.widget_mapping[c] = [
+                self.widget_mapping[c.name] = [
                     'stdm_{}'.format(
                         c.TYPE_INFO.lower()
                     ),
@@ -366,8 +369,10 @@ class STDMFieldWidget():
         :rtype: NoneType
         """
         self.layer = layer
-        for col, widget_id_name in \
+        for col_name, widget_id_name in \
                 self.widget_mapping.items():
+
+            col = self.column_mapping[col_name]
             self._set_widget_type(
                 layer, col, widget_id_name[0]
             )
