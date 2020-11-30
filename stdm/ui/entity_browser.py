@@ -664,7 +664,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                     if type(self.parent_record_id) == int and self.parent_record_id > 0:
                         col = self.filter_col(self._entity)
                         if col is None:
-                            entity_records = entity_cls.queryObject().filter().limit(
+                            entity_records = entity_cls.queryObject().filter().order_by(
+                                ordering).limit(
                                 self.record_limit
                             ).all()
                         else:
@@ -673,11 +674,12 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                             child_model_obj = child_model()
                             entity_records = child_model_obj.queryObject().filter(
                                 col_name == self.parent_record_id
-                            ).all()
+                            ).order_by(ordering).all()
                     else:
                         # if isinstance(self._parent, QMainWindow):
                         if not isinstance(self._parent, EntityEditorDialog):
-                            entity_records = entity_cls.queryObject().filter().limit(self.record_limit).all()
+                            entity_records = entity_cls.queryObject().filter().order_by(
+                                ordering).limit(self.record_limit).all()
 
                     numRecords = len(entity_records)
 
