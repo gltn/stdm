@@ -62,6 +62,7 @@ from sqlalchemy import (
 )
 
 import stdm.data
+from stdm.exceptions import DummyException
 from stdm.data import globals
 from stdm.data.configuration import entity_model
 from stdm.data.database import Content
@@ -353,7 +354,7 @@ class ViewSTRWidget(WIDGET, BASE):
                     #     )
                     # )
 
-        except Exception as pe:
+        except DummyException as pe:
             self._notif_search_config.clear()
             self._notif_search_config.insertErrorNotification(str(pe))
 
@@ -594,7 +595,7 @@ class ViewSTRWidget(WIDGET, BASE):
             add_str = STREditor()
             add_str.exec_()
 
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 self._plugin.iface.mainWindow(),
                 QApplication.translate(
@@ -765,7 +766,7 @@ class ViewSTRWidget(WIDGET, BASE):
                     self._source_doc_manager.insertDocFromModel(
                         doc, doc_type_id
                     )
-                except Exception as ex:
+                except DummyException as ex:
                     LOGGER.debug(str(ex))
 
             self.tbSupportingDocs.addTab(
@@ -1298,5 +1299,5 @@ class ModelWorker(QObject):
                 ).distinct()
                 self.retrieved.emit(model_values)
 
-        except Exception as ex:
+        except DummyException as ex:
             self.error.emit(str(ex))

@@ -48,6 +48,7 @@ from qgis.utils import (
     iface
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     GeometryColumn,
@@ -404,9 +405,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         if self._data_initialized:
             return
         try:
-            if not self._dbmodel is None:
+            if self._dbmodel is not None:
                 self._initializeData()
-        except Exception as ex:
+        except DummyException as ex:
             QMessageBox.critical(
                 self,
                 QApplication.translate(
@@ -699,7 +700,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                                     formatter = self._cell_formatters[attr]
                                     attr_val = formatter.format_column_value(attr_val)
                             entity_row_info.append(attr_val)
-                    except Exception as ex:
+                    except DummyException as ex:
                         QMessageBox.critical(
                             self,
                             QApplication.translate(

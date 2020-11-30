@@ -30,6 +30,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.reports.sys_fonts import SysFonts
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import PLUGIN_DIR
@@ -61,7 +62,7 @@ class FilePaths:
                 self.setUserConfigPath(pathSettings[CONFIG])
             else:
                 self.setUserConfigPath()
-        except Exception as ex:
+        except DummyException as ex:
             raise ex
 
     def XMLFile(self):

@@ -21,6 +21,9 @@ email                : gkahiu@gmail.com
 from typing import Optional, Union
 
 import sqlalchemy
+
+from stdm.exceptions import DummyException
+
 from qgis.core import QgsDataSourceUri
 from sqlalchemy import create_engine
 
@@ -69,7 +72,7 @@ class DatabaseConnection:
             isValid = True
         except sqlalchemy.exc.OperationalError as oe:
             errMsg = str(oe)
-        except Exception as e:
+        except DummyException as e:
             errMsg = str(e)
 
         return isValid, errMsg

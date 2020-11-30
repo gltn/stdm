@@ -38,6 +38,7 @@ from qgis.utils import (
 )
 from sqlalchemy.sql.expression import text
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.pg_utils import (
     _execute,
@@ -145,7 +146,7 @@ class TemplateFileHandler:
                     error_access
                 )
                 self.updater.append_log(str(ex))
-            except Exception as ex:
+            except DummyException as ex:
                 self.updater.append_log(str(ex))
 
 
@@ -512,7 +513,7 @@ class TemplateViewHandler:
             try:
                 _execute(query, view_name=view)
                 return 'new_{}'.format(view)
-            except Exception as ex:
+            except DummyException as ex:
                 self.updater.append_log(str(ex))
                 return None
 
@@ -1076,8 +1077,7 @@ class TemplateFileUpdater(
                         template, old_source
                     )
 
-
-            except Exception as ex:
+            except DummyException as ex:
                 self.updater.append_log(
                     'Failed to upgrade {}'.format(
                         template

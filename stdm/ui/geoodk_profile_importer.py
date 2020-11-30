@@ -43,6 +43,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
 )
@@ -281,7 +282,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             basename = os.path.basename(os.path.dirname(file))
             if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
                 shutil.move(os.path.dirname(file), instance_path)
-        except Exception as ex:
+        except DummyException as ex:
             return str(ex)
 
     def populate_entities_widget(self):
@@ -419,7 +420,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     if table not in entities:
                         silent_list.append(table)
                 return silent_list
-        except Exception as ex:
+        except DummyException as ex:
             self._notif_bar_str.insertErrorNotification(str(ex))
 
     def archive_this_import_file(self, counter, instance):
@@ -698,7 +699,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 QCoreApplication.processEvents()
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
-        except Exception as ex:
+        except DummyException as ex:
             self.feedback_message(str(ex))
         except SQLAlchemyError as ae:
             QCoreApplication.processEvents()
@@ -751,7 +752,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.save_instance_data_to_db(entities)
                 self.buttonBox.setEnabled(True)
                 QApplication.restoreOverrideCursor()
-        except Exception as ex:
+        except DummyException as ex:
             self.feedback_message(str(ex))
             self.log_table_entry(str(ex))
             self.buttonBox.setEnabled(True)

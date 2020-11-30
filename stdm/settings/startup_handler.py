@@ -5,6 +5,7 @@ from os.path import expanduser, isfile
 
 from qgis.core import QgsApplication
 
+from stdm.exceptions import DummyException
 
 def copy_startup():
     home = expanduser("~")
@@ -36,7 +37,7 @@ def copy_startup():
                 destination_file.writelines(['', '', ''])
                 destination_file.writelines(source_lines)
 
-    except Exception as ex:
+    except DummyException as ex:
         log_config_path = '{}/python/log.txt'.format(QgsApplication.qgisSettingsDirPath())
         file = open(log_config_path, "a+")
         file.write('Could not copy a file from the source due to an error:' \

@@ -53,6 +53,7 @@ from qgis.gui import (
     QgsHighlight
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration import (
     entity_model
 )
@@ -1378,7 +1379,7 @@ class DetailsTreeView(DetailsDBHandler):
                                 custom_attr_entity,
                                 'social_tenure_relationship_id', record_dict['id']
                             )
-                        except Exception:
+                        except DummyException:
                             custom_attr_model = None
 
                         if custom_attr_model is not None:

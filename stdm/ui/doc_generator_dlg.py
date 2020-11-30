@@ -44,6 +44,7 @@ from qgis.PyQt.QtWidgets import (
     QTableView
 )
 
+from stdm.exceptions import DummyException
 from stdm.composer.document_generator import DocumentGenerator
 from stdm.data.configuration import entity_model
 from stdm.settings import current_profile
@@ -188,7 +189,7 @@ class DocumentGeneratorDialogWrapper(object):
                 if entity_cfg is not None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg, i)
             self._doc_gen_dlg.progress.hide()
-        except Exception as pe:
+        except DummyException as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(str(pe))
 
@@ -691,7 +692,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                                                            "Document generation has successfully completed.")
                                     )
 
-        except Exception as ex:
+        except DummyException as ex:
             LOGGER.debug(str(ex))
             err_msg = sys.exc_info()[1]
             QApplication.restoreOverrideCursor()

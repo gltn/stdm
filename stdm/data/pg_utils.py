@@ -34,6 +34,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import text
 
+from stdm.exceptions import DummyException
 from stdm.data.database import (
     STDMDb,
     Base
@@ -654,7 +655,7 @@ def vector_layer(table_name, sql='', key='id', geom_column='', layer_name='', pr
                 proj_wkt, QgsCoordinateReferenceSystem.InternalCrsId
             )
             v_layer.setCrs(target_crs)
-        except Exception:
+        except DummyException:
             pass
     return v_layer
 

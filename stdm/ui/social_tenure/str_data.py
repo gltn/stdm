@@ -37,6 +37,7 @@ from stdm.data.database import (
 )
 from stdm.settings import current_profile
 from stdm.ui.progress_dialog import STDMProgressDialog
+from stdm.exceptions import DummyException
 
 LOGGER = logging.getLogger('stdm')
 
@@ -422,7 +423,7 @@ class STRDBHandler():
             self.progress.hide()
             isValid = False
             STDMDb.instance().session.rollback()
-        except Exception as e:
+        except DummyException as e:
             errMsg = str(e)
             QMessageBox.critical(
                 iface.mainWindow(),

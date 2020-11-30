@@ -211,7 +211,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             geoodk_writer.write_data_to_xform()
             msg = 'File saved in: {}'
             self._notif_bar_str.insertInformationNotification(msg.format(FORM_HOME))
-        # except Exception as ex:
+        # except DummyException as ex:
         #    self._notif_bar_str.insertErrorNotification(ex.message +
         #                                                ': Unable to generate Mobile Form')
         #   return
