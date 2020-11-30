@@ -23,6 +23,7 @@ import filecmp
 import os
 import platform
 import shutil
+from typing import Optional
 
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -114,8 +115,10 @@ class FilePaths:
         self.baseDir = self._file + "/templates/"
         return self.baseDir
 
-    def setUserConfigPath(self, path=None):
-        ''' set new path with user configuration'''
+    def setUserConfigPath(self, path: Optional[str] = None):
+        """
+        set new path with user configuration
+        """
         if path is not None:
             self.userPath = path
         else:
@@ -142,8 +145,6 @@ class FilePaths:
     def compare_config_version(self, path=None):
         """
         Method to check the version of the two files being copied and return the latest one
-        :param newfile: QFile
-        :return: QFile
         """
         if not path:
             path = self.userPath
@@ -178,7 +179,7 @@ class FilePaths:
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
-        if path == None:
+        if path is None:
             if platform.system() == "Windows":
                 path = os.environ["USERPROFILE"]
             else:
