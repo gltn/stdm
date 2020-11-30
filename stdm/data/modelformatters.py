@@ -30,9 +30,9 @@ from stdm.data.database import STDMDb
 
 
 def intFromQType(intitem):
-    '''
+    """
     OBSOLETE:Converts integer from QVariant or QString to Python int, otherwise returns -1
-    '''
+    """
     pyint = intitem
     if isinstance(intitem, QVariant) or isinstance(intitem, str):
         qint, ok = intitem.toInt()
@@ -42,9 +42,9 @@ def intFromQType(intitem):
 
 
 def dateFromQType(dateitem):
-    '''
+    """
     Converts date from QVariant or QDate to Python Date
-    '''
+    """
     pydate = dateitem
     if isinstance(pydate, QVariant):
         pydate = pydate.toDate()
@@ -89,9 +89,9 @@ class BasePersonFormatter(LookupFormatter):
 
 
 def geometryFormatter(geom):
-    '''
+    """
     Reads point data in WKB format to X,Y coordinate value.
-    '''
+    """
     x = y = 0
 
     dbSession = STDMDb.instance().session
@@ -161,14 +161,14 @@ def foodCropCategoryFormatter(foodCropId):
 
 
 class DoBFormatter:
-    '''
+    """
     Formatter for displaying the current age (in years) calculated from the date of birth
-    '''
+    """
 
     def setDisplay(self, dob):
-        '''
+        """
         Set display information
-        '''
+        """
         dob = dateFromQType(dob)
         if dob > QDate.currentDate().toPyDate():
             return QVariant()
@@ -181,17 +181,17 @@ class DoBFormatter:
 
 
 class LocalityFormatter:
-    '''
+    """
     Formatter for displaying user-friendly information about a locality
-    '''
+    """
 
     def __init__(self):
         self.locality = Locality()
 
     def setDisplay(self, locality):
-        '''
+        """
         Display the area name and street number
-        '''
+        """
         if isinstance(locality, int):
             loc = self.locality.queryObject().filter(Locality.id == locality).first()
             if loc:

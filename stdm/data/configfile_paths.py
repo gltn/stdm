@@ -221,7 +221,7 @@ class FilePaths:
         else:
             return dirPath
 
-    def STDMLicenseDoc(self):
+    def STDMLicenseDoc(self) -> str:
         """
         load STDM license file for viewing
         """

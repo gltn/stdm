@@ -31,22 +31,28 @@ class LicenseDocument:
         self.filehandler = FilePaths()
 
     def open_license_file(self):
-        '''get the path to the license file'''
+        """
+        get the path to the license file
+        """
         self.file = self.filehandler.STDMLicenseDoc()
         # self.file=docFile
 
-    def read_license_info(self):
-        '''read license information for user '''
+    def read_license_info(self) -> str:
+        """
+        read license information for user
+        """
         try:
             self.open_license_file()
-            with open(self.file, 'r')as inf:
+            with open(self.file, 'r') as inf:
                 lic_data = inf.read()
             return lic_data
         except IOError as ex:
             raise ex
 
-    def text_font(self):
-        '''set document font'''
+    def text_font(self) -> QFont:
+        """
+        set document font
+        """
         doc_font = QFont('Helvetica [Cronyx]', 10, QFont.Bold)
         # docFont.setBold(True)
         return doc_font
