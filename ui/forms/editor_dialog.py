@@ -168,7 +168,7 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.register_column_widgets()
 
         if not isinstance(parent, QTabWidget):
-            if not isinstance(parent, QMainWindow):
+            if not isinstance(parent, QMainWindow) and parent.entity_browser is not None:
                 self.current_user = parent.entity_browser.current_user
         try:
             if isinstance(parent._parent, EntityEditorDialog):
