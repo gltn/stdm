@@ -778,11 +778,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             ordering = 'id desc'
 
         if self.sort_order not in ['idasc', 'iddesc']:
-            order_column = self.get_sorting_field(entity)
-            if order_column == "":
+            sort_field = self.get_sorting_field(entity)
+            if sort_field == "":
                 ordering = 'id desc'
             else:
-                ordering = order_column+' '+self.sort_order
+                ordering = sort_field+' '+self.sort_order
 
         return ordering
 
@@ -794,11 +794,11 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
         Column with the smallest(positive integer) rowindex is the first
         column on an entity, and thats the column we use for sorting.
         '''
-        cols = {}
-        for k in entity.updated_columns.keys():
-            cols[int(entity.updated_columns[k].row_index)] = k
-        cols_ordered = OrderedDict(sorted(cols.items()))
         try:
+            cols = {}
+            for k in entity.updated_columns.keys():
+                cols[int(entity.updated_columns[k].row_index)] = k
+            cols_ordered = OrderedDict(sorted(cols.items()))
             min_id = min(i for i in cols_ordered.keys() if i > -1)
             column = cols_ordered[min_id]
         except:
