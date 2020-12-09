@@ -139,6 +139,7 @@ class ComposerWrapper(QObject):
         self._layout_interface = layout_interface
         # self._compView = composerView
         self._stdmTB = layout_interface.window().addToolBar("STDM Document Designer")
+        self._stdmTB.setObjectName('stdmDocumentDesigner')
         self._selectMoveAction = None
         self._iface = iface
 

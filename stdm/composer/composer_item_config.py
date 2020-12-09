@@ -66,7 +66,7 @@ class ComposerItemConfig(QObject):
             actionGroup.addAction(self.itemAction)
 
         # Connect signals
-        self.composerView().actionFinished.connect(self.onActionFinished)
+        # self.composerView().actionFinished.connect(self.onActionFinished)
 
     def action(self):
         """
