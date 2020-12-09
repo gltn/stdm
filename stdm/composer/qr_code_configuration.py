@@ -18,18 +18,16 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import pyqrcode
+from qgis.PyQt.QtCore import (
+    QTemporaryFile
+)
 from qgis.PyQt.QtXml import (
     QDomDocument,
     QDomElement
 )
-from qgis.PyQt.QtCore import (
-    QTemporaryFile
-)
-
-import pyqrcode
-
-from stdm.utils.util import (
-    is_ascii
+from qgis.core import (
+    QgsLayout
 )
 
 from stdm.composer.configuration_collection_base import (
@@ -37,18 +35,21 @@ from stdm.composer.configuration_collection_base import (
     ItemConfigBase,
     ItemConfigValueHandler
 )
+from stdm.utils.util import (
+    is_ascii
+)
 
 
 class QRCodeConfiguration(ItemConfigBase):
     """Configuration item for specifying QRCode properties."""
     tag_name = "Code"
 
-    def __init__(self, **kwargs):
-        self._ds_field = kwargs.pop('data_source_field', '')
+    def __init__(self, data_source_field: str = None, **kwargs):
+        self._ds_field = data_source_field or ''
         super(QRCodeConfiguration, self).__init__(**kwargs)
 
     @property
-    def data_source_field(self):
+    def data_source_field(self) -> str:
         """
         :return: Returns the name of the data source field whose value is
         used to generate the QR code.
@@ -57,7 +58,7 @@ class QRCodeConfiguration(ItemConfigBase):
         return self._ds_field
 
     @data_source_field.setter
-    def data_source_field(self, field):
+    def data_source_field(self, field: str):
         """
         Set the name of the data source field whose value will be used to
         generate the QR code.
@@ -66,7 +67,7 @@ class QRCodeConfiguration(ItemConfigBase):
         """
         self._ds_field = field
 
-    def to_dom_element(self, dom_document):
+    def to_dom_element(self, dom_document: QDomDocument) -> QDomElement:
         """
         :param dom_document: Root composer element.
         :type dom_document: QDomDocument
@@ -80,7 +81,7 @@ class QRCodeConfiguration(ItemConfigBase):
 
         return qrc_element
 
-    def create_handler(self, composition, query_handler=None):
+    def create_handler(self, composition: QgsLayout, query_handler=None):
         """
         Override for returning object that will be responsible for creating
         the QR code.
@@ -88,7 +89,7 @@ class QRCodeConfiguration(ItemConfigBase):
         return QRCodeConfigValueHandler(composition, self, query_handler)
 
     @staticmethod
-    def create(dom_element):
+    def create(dom_element: QDomElement):
         """
         Create a QRCodeConfiguration object from a QDomElement instance.
         :param dom_element: QDomDocument that represents composer configuration.
@@ -102,7 +103,7 @@ class QRCodeConfiguration(ItemConfigBase):
 
         return QRCodeConfiguration(
             item_id=item_id,
-            data_source_field = ds_field
+            data_source_field=ds_field
         )
 
 
@@ -130,6 +131,7 @@ class QRCodeConfigValueHandler(ItemConfigValueHandler):
     Generates the QR code base on the value of the data source field in the
     referenced record.
     """
+
     def _ds_field(self):
         # Return the name of data source field in the configuration
         return self.config_item().data_source_field

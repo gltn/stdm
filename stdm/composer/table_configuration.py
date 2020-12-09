@@ -18,13 +18,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+
+from typing import Optional
+
 from qgis.PyQt.QtXml import (
     QDomElement
-)
-
-from stdm.composer.configuration_collection_base import (
-    ConfigurationCollectionBase,
-    ItemConfigValueHandler
 )
 from qgis.core import (
     QgsProject,
@@ -32,12 +30,16 @@ from qgis.core import (
     QgsLayoutFrame
 )
 
+from stdm.composer.configuration_collection_base import (
+    ConfigurationCollectionBase,
+    ItemConfigValueHandler
+)
 from stdm.composer.photo_configuration import PhotoConfiguration
 
 
 class TableConfiguration(PhotoConfiguration):
 
-    def vector_layer(self):
+    def vector_layer(self) -> Optional[QgsVectorLayer]:
         """
         :return: Instance of vector layer in the layer registry matching
         the linked table name.
@@ -45,14 +47,14 @@ class TableConfiguration(PhotoConfiguration):
         """
         layers = QgsProject.instance().mapLayersByName(self.linked_table())
 
-        #Return first matching layer
-        if len(layers) > 0:
+        # Return first matching layer
+        if layers:
             return layers[0]
 
         return None
 
     @staticmethod
-    def create(dom_element):
+    def create(dom_element: QDomElement):
         """
         Create a TableConfiguration object from a QDomElement instance.
         :param dom_element: QDomDocument that represents composer configuration.
@@ -98,6 +100,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
     Class that applies the appropriate filter to the table composer item
     to fetch the corresponding rows from the linked table in the database.
     """
+
     def set_data_source_record(self, record):
 
         table_item = self.composer_item()
@@ -125,7 +128,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
         if not vl is None:
             table_item.setVectorLayer(vl)
 
-            #Restore column settings
+            # Restore column settings
             table_item.setColumns(display_attrs_cols)
 
         else:
@@ -134,7 +137,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
         if not self._config_item.source_field():
             return
 
-        #We are definitely going to filter the rows
+        # We are definitely going to filter the rows
         if not table_item.filterFeatures():
             table_item.setFilterFeatures(True)
 
@@ -151,4 +154,3 @@ class TableItemValueHandler(ItemConfigValueHandler):
 
         exp = "{0} = {1}".format(linked_field, source_col_value)
         table_item.setFeatureFilter(exp)
-
