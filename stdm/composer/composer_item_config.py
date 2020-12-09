@@ -23,6 +23,8 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
 )
+from qgis.core import QgsLayout
+from qgis.gui import QgsLayoutView
 
 from stdm.composer.item_formatter import (
     ChartFormatter,
@@ -97,13 +99,13 @@ class ComposerItemConfig(QObject):
         """
         return self._composerWrapper.mainWindow()
 
-    def composerView(self):
+    def composerView(self) -> QgsLayoutView:
         """
         Returns the composer view.
         """
         return self._composerWrapper.composerView()
 
-    def composition(self):
+    def composition(self) -> QgsLayout:
         """
         Returns the QgsComposition instance.
         """
@@ -128,7 +130,7 @@ class ComposerItemConfig(QObject):
         current configuration item.
         """
         self.itemAction.setChecked(False)
-        if self._composerWrapper.selectMoveAction() != None:
+        if self._composerWrapper.selectMoveAction() is not None:
             self._composerWrapper.selectMoveAction().setChecked(True)
 
     def onSelectItemChanged(self, selected):
@@ -165,17 +167,17 @@ class LineItemConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
 
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        selItems = self.composition().selectedComposerItems()
+        selItems = self.composition().selectedLayoutItems()
         if len(selItems) == 0:
             return
 
@@ -206,17 +208,17 @@ class DataLabelConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
 
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        selItems = self.composition().selectedComposerItems()
+        selItems = self.composition().selectedLayoutItems()
         if len(selItems) == 0:
             return
 
@@ -247,16 +249,16 @@ class TableConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        sel_items = self.composition().selectedComposerItems()
+        sel_items = self.composition().selectedLayoutItems()
         if len(sel_items) == 0:
             return
 
@@ -288,17 +290,17 @@ class MapConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
 
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        selItems = self.composition().selectedComposerItems()
+        selItems = self.composition().selectedLayoutItems()
         if len(selItems) == 0:
             return
 
@@ -329,17 +331,17 @@ class PhotoConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
 
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        sel_items = self.composition().selectedComposerItems()
+        sel_items = self.composition().selectedLayoutItems()
         if len(sel_items) == 0:
             return
 
@@ -371,17 +373,17 @@ class ChartConfig(ComposerItemConfig):
 
     def on_action_toggled(self, checked):
         if checked:
-            self.composerView().selectedItemChanged.connect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
 
         else:
-            self.composerView().selectedItemChanged.disconnect(self.onSelectItemChanged)
+            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
 
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
         signals when new composer items are added in the composition.
         """
-        sel_items = self.composition().selectedComposerItems()
+        sel_items = self.composition().selectedLayoutItems()
         if len(sel_items) == 0:
             return
 

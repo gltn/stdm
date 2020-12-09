@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
 """
 from collections import OrderedDict
 
+from qgis.PyQt.QtXml import QDomDocument
 from qgis.core import (
     QgsApplication,
     QgsSymbolLayerUtils
@@ -27,14 +28,14 @@ from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
 
-__all__ = ["SpatialFieldsConfiguration"]
 
 class SpatialFieldsConfiguration:
     """
     Styling and labeling configuration for spatial data fields.
     """
+
     def __init__(self):
-        #Mapping of map item id and list of spatial field configurations
+        # Mapping of map item id and list of spatial field configurations
         self._sp_fields_mapping_collec = OrderedDict()
 
     def addSpatialFieldMapping(self, spatial_field_mapping):
@@ -71,17 +72,17 @@ class SpatialFieldsConfiguration:
             return []
 
     @staticmethod
-    def domElement(composerWrapper, dom_document):
+    def domElement(composerWrapper, dom_document: QDomDocument):
         """
         Helper method that creates a spatial columns DOM element from a composer wrapper instance.
         """
         spatialColumnsElement = dom_document.createElement("SpatialFields")
 
-        #Get the configured composer style editors for spatial columns
-        for uuid,symbolEditor in composerWrapper.widgetMappings().items():
-            composerItem = composerWrapper.composition().getComposerItemByUuid(uuid)
+        # Get the configured composer style editors for spatial columns
+        for uuid, symbolEditor in composerWrapper.widgetMappings().items():
+            composerItem = composerWrapper.composition().itemByUuid(uuid)
 
-            if not composerItem is None:
+            if composerItem is not None:
                 if isinstance(symbolEditor, ComposerSymbolEditor):
                     spFieldMappings = symbolEditor.spatial_field_mappings()
 
@@ -98,17 +99,17 @@ class SpatialFieldsConfiguration:
         Create an instance of the 'SpatialFieldsConfiguration' object from a DOM document.
         Returns None if the dom_document is invalid.
         """
-        from stdm import SpatialFieldMapping
+        from stdm.ui.composer.composer_spcolumn_styler import SpatialFieldMapping
 
         dataSourceElem = dom_document.documentElement().firstChildElement("DataSource")
 
-        if dataSourceElem == None:
+        if dataSourceElem is None:
             return None
 
         spatialFieldsConfigElement = dataSourceElem.firstChildElement("SpatialFields")
         spFieldsConfig = SpatialFieldsConfiguration()
 
-        #Get spatial field mappings
+        # Get spatial field mappings
         spatialFieldMappingList = spatialFieldsConfigElement.elementsByTagName("SpatialField")
         numItems = spatialFieldMappingList.length()
 
@@ -122,8 +123,8 @@ class SpatialFieldsConfiguration:
             zoom = float(spatialFieldMappingElement.attribute("zoom"))
             zoom_type = spatialFieldMappingElement.attribute('zoomType', 'RELATIVE')
 
-            #Create spatial field mapping
-            spFieldMapping = SpatialFieldMapping(spatialField,labelField)
+            # Create spatial field mapping
+            spFieldMapping = SpatialFieldMapping(spatialField, labelField)
             spFieldMapping.setItemId(itemId)
             spFieldMapping.setSRID(srid)
             spFieldMapping.setGeometryType(geomType)
@@ -131,10 +132,10 @@ class SpatialFieldsConfiguration:
             spFieldMapping.zoom_type = zoom_type
 
             symbolElement = spatialFieldMappingElement.firstChildElement("Symbol")
-            if not symbolElement is None:
+            if symbolElement is not None:
                 layerType = symbolElement.attribute("layerType")
                 layerProps = QgsSymbolLayerUtils.parseProperties(symbolElement)
-                symbolLayer =  QgsApplication.symbolLayerRegistry().createSymbolLayer(layerType,layerProps)
+                symbolLayer = QgsApplication.symbolLayerRegistry().createSymbolLayer(layerType, layerProps)
                 spFieldMapping.setSymbolLayer(symbolLayer)
 
             spFieldsConfig.addSpatialFieldMapping(spFieldMapping)

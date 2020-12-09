@@ -22,23 +22,23 @@ from qgis.PyQt.QtCore import (
 from qgis.PyQt.QtXml import (
     QDomDocument
 )
-from stdm.utils.util import getIndex
+
 from stdm.utils.reverse_dict import ReverseDict
 
-__all__ = ["ComposerDataSource"]
 
 class ComposerDataSource:
     """
     Container for data source settings.
     """
-    def __init__(self,dataSourceName="",category = "", referenced_table_name=''):
+
+    def __init__(self, dataSourceName="", category="", referenced_table_name=''):
         self._dataSourceName = dataSourceName
         self._dataSourceCategory = category
         self.referenced_table_name = referenced_table_name
         self._dataFieldmappings = ReverseDict()
         self._spatialFieldsConfig = None
 
-    def setName(self,dataSourceName):
+    def setName(self, dataSourceName):
         """
         Sets the data source name.
         """
@@ -56,19 +56,19 @@ class ComposerDataSource:
         """
         return self._dataSourceCategory
 
-    def setCategory(self,category):
+    def setCategory(self, category):
         """
         Set the category of the data source.
         """
         self._dataSourceCategory = category
 
-    def setSpatialFieldsConfig(self,spFieldsConfig):
+    def setSpatialFieldsConfig(self, spFieldsConfig):
         """
         Set the spatial fields configuration object
         """
         self._spatialFieldsConfig = spFieldsConfig
 
-    def addDataFieldMapping(self,dataField,composerItemId):
+    def addDataFieldMapping(self, dataField, composerItemId):
         """
         Add the name of the data field.
         """
@@ -87,7 +87,7 @@ class ComposerDataSource:
         self._dataSourceName = ""
         self._dataFieldmappings = ReverseDict()
 
-    def dataFieldName(self,composerItemId):
+    def dataFieldName(self, composerItemId):
         """
         Returns the data field name corresponding to the composer item id.
         """
@@ -96,7 +96,7 @@ class ComposerDataSource:
         else:
             return None
 
-    def composerItemId(self,dataField):
+    def composerItemId(self, dataField):
         """
         Returns the composer item unique identifier corresponding to the given
         field.
@@ -113,8 +113,8 @@ class ComposerDataSource:
         """
         dataFields = list(self._dataFieldmappings.keys())
 
-        #Get spatial fields and embed into the dataFields list
-        if self._spatialFieldsConfig != None:
+        # Get spatial fields and embed into the dataFields list
+        if self._spatialFieldsConfig is not None:
             spatialFieldsCollection = list(self._spatialFieldsConfig.spatialFieldsMapping().values())
 
             for spfEntry in spatialFieldsCollection:
@@ -128,12 +128,12 @@ class ComposerDataSource:
         if len(dataFields) == 0:
             return ""
 
-        #Ensure you only have unique fields
+        # Ensure you only have unique fields
         dataFieldsSet = set(dataFields)
 
         dtFieldsStr = ",".join(dataFieldsSet)
 
-        return "SELECT {0} FROM {1}".format(dtFieldsStr,self._dataSourceName)
+        return "SELECT {0} FROM {1}".format(dtFieldsStr, self._dataSourceName)
 
     @staticmethod
     def create(domDocument):
@@ -156,9 +156,9 @@ class ComposerDataSource:
             dataSourceName,
             dataSourceCategory,
             referenced_table_name
-            )
+        )
 
-        #Get data fields
+        # Get data fields
         dataFieldList = dataSourceElem.elementsByTagName("DataField")
         numItems = dataFieldList.length()
 
@@ -172,39 +172,40 @@ class ComposerDataSource:
         return composerDS
 
     @staticmethod
-    def domElement(composerWrapper,domDocument):
+    def domElement(composerWrapper, domDocument):
         """
         Helper method that creates a data source DOM element from a composer wrapper instance.
         """
         from stdm.ui.composer import ComposerFieldSelector
 
         dataSourceElement = domDocument.createElement("DataSource")
-        dataSourceElement.setAttribute("name",composerWrapper.selectedDataSource())
-        dataSourceElement.setAttribute("category",composerWrapper.selectedDataSourceCategory())
+        dataSourceElement.setAttribute("name", composerWrapper.selectedDataSource())
+        dataSourceElement.setAttribute("category", composerWrapper.selectedDataSourceCategory())
         dataSourceElement.setAttribute(
             "referencedTable",
             composerWrapper.selected_referenced_table()
         )
 
-        #Get the configured field names
-        for uuid,fieldWidget in composerWrapper.widgetMappings().items():
+        # Get the configured field names
+        for uuid, fieldWidget in composerWrapper.widgetMappings().items():
             """
             Assert whether the item exists in the composition since the 'itemRemoved' signal cannot be used to 
             delete items from the collection as it only returns a QObject instead of a QgsComposerItem subclass.
             """
-            composerItem = composerWrapper.composition().getComposerItemByUuid(uuid)
+            composerItem = composerWrapper.composition().itemByUuid(uuid)
 
-            if composerItem != None:
-                if isinstance(fieldWidget,ComposerFieldSelector):
+            if composerItem is not None:
+                if isinstance(fieldWidget, ComposerFieldSelector):
                     fieldName = fieldWidget.fieldName()
 
                     fieldElement = domDocument.createElement("DataField")
-                    fieldElement.setAttribute("itemid",uuid)
-                    fieldElement.setAttribute("name",fieldName)
+                    fieldElement.setAttribute("itemid", uuid)
+                    fieldElement.setAttribute("name", fieldName)
 
                     dataSourceElement.appendChild(fieldElement)
 
         return dataSourceElement
+
 
 def composer_data_source(template_file):
     """
@@ -218,17 +219,17 @@ def composer_data_source(template_file):
     """
     t_file = QFile(template_file)
 
-    #Check if the file exists
+    # Check if the file exists
     if not t_file.exists():
         return None
 
-    #Check if the file can be opened
+    # Check if the file can be opened
     if not t_file.open(QIODevice.ReadOnly):
         return None
 
     template_doc = QDomDocument()
 
-    #Populate dom document
+    # Populate dom document
     if template_doc.setContent(t_file):
         return ComposerDataSource.create(template_doc)
 

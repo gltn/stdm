@@ -32,12 +32,12 @@ from stdm.composer.configuration_collection_base import (
 class PhotoConfiguration(LinkedTableItemConfiguration):
     tag_name = "Source"
 
-    def __init__(self, **kwargs):
-        self.document_type = kwargs.pop('document_type', '')
-        self.document_type_id = kwargs.pop('document_type_id', -1)
+    def __init__(self, document_type=None, document_type_id=None, **kwargs):
+        self.document_type = document_type or ''
+        self.document_type_id = document_type_id or -1
         LinkedTableItemConfiguration.__init__(self, **kwargs)
 
-    def to_dom_element(self, dom_document):
+    def to_dom_element(self, dom_document: QDomDocument):
         """
         :param dom_document: Root composer element.
         :type dom_document: QDomDocument
@@ -53,7 +53,7 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         return ph_element
 
     @staticmethod
-    def create(dom_element):
+    def create(dom_element: QDomElement):
         """
         Create a PhotoConfiguration object from a QDomElement instance.
         :param dom_element: QDomDocument that represents composer configuration.
@@ -67,7 +67,7 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         item_id = dom_element.attribute("itemid")
         ph_table = linked_table_props.linked_table
         source_col = linked_table_props.source_field
-        ref_col= linked_table_props.linked_field
+        ref_col = linked_table_props.linked_field
         document_type = dom_element.attribute('documentType', '')
         document_type_id = dom_element.attribute('documentTypeId', '-1')
 

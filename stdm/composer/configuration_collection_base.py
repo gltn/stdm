@@ -25,11 +25,13 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 from qgis.PyQt.QtXml import (
-    QDomElement
+    QDomElement,
+    QDomDocument
 )
-
-__all__ = ['ItemConfigBase', 'ConfigurationCollectionBase',
-           'LinkedTableItemConfiguration']
+from qgis.core import (
+    QgsLayoutItem,
+    QgsLayout
+)
 
 
 class ItemConfigBase:
@@ -43,17 +45,17 @@ class ItemConfigBase:
     '''
     tag_name = ""
 
-    def __init__(self, item_id=""):
-        self._item_id = item_id
+    def __init__(self, item_id=None):
+        self._item_id = item_id or ""
 
-    def item_id(self):
+    def item_id(self) -> str:
         """
         :return: Identifier of the referenced composer item.
         :rtype: str
         """
         return self._item_id
 
-    def set_item_id(self,item_id):
+    def set_item_id(self, item_id: str):
         """
         Sets the identifier of the referenced composer item.
         :param item_id: Unique identifier of the referenced composer item.
@@ -61,12 +63,12 @@ class ItemConfigBase:
         """
         self._item_id = item_id
 
-    def create_handler(self, composition, query_handler=None):
+    def create_handler(self, composition: QgsLayout, query_handler=None):
         """
         Returns an object for setting the value of the composer item
         specified by this configuration item.
         :param composition: Composition object.
-        :type composition: QgsComposition
+        :type composition: QgsLayout
         :param query_handler: Re-usable function for executing sub-queries
         that the value handler might require.
         :type query_handler: object
@@ -105,22 +107,23 @@ class LinkedTableItemConfiguration(ItemConfigBase):
     PhotoConfiguration and TableConfiguration classes inherit this
     class.
     """
-    def __init__(self, **kwargs):
-        item_id = kwargs.pop("item_id", "")
-        ItemConfigBase.__init__(self, item_id)
 
-        self._linked_table = kwargs.pop("linked_table", "")
-        self._source_field = kwargs.pop("source_field", "")
-        self._linked_field = kwargs.pop("linked_field", "")
+    def __init__(self, item_id=None, linked_table=None, source_field=None, linked_field=None, **kwargs):
+        item_id = item_id or ""
+        super().__init__(item_id)
 
-    def linked_table(self):
+        self._linked_table = linked_table or ""
+        self._source_field = source_field or ""
+        self._linked_field = linked_field or ""
+
+    def linked_table(self) -> str:
         """
         :return: Name of the referenced table.
         :rtype: str
         """
         return self._linked_table
 
-    def set_linked_table(self, table):
+    def set_linked_table(self, table: str):
         """
         Set the name of the referenced table.
         :param table: Table name.
@@ -128,33 +131,32 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         """
         self._linked_table = table
 
-    def source_field(self):
+    def source_field(self) -> str:
         """
         :return: Column name in the referenced data source.
         :rtype: str
         """
         return self._source_field
 
-    def set_source_field(self, field):
+    def set_source_field(self, field: str):
         """
         Set the name of the column in the referenced data source.
-        :param column: Column name.
-        :rtype: str
+        :param field: Column name.
         """
         self._source_field = field
 
-    def linked_field(self):
+    def linked_field(self) -> str:
         """
         :return: Name of the matching column in the linked table.
         :rtype: str
         """
         return self._linked_field
 
-    def set_linked_column(self, field):
+    def set_linked_column(self, field: str):
         """
         Set the name of the matching column in the linked table.
-        :param column: Column name.
-        :type column: str
+        :param field: Column name.
+        :type field: str
         """
         self._linked_field = field
 
@@ -168,18 +170,18 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         self._source_field = ltic.source_field
         self._linked_table = ltic.linked_table
 
-    def write_to_dom_element(self, dom_element):
+    def write_to_dom_element(self, dom_element: QDomElement):
         """
         Appends the configuration information to the specified DOM element.
-        :param dom_document: Composer item element.
-        :type dom_document: QDomElement
+        :param dom_element: Composer item element.
+        :type dom_element: QDomElement
         """
         dom_element.setAttribute("itemid", self._item_id)
         dom_element.setAttribute("table", self._linked_table)
         dom_element.setAttribute("referenced_field", self._source_field)
         dom_element.setAttribute("referencing_field", self._linked_field)
 
-    def _extract_from_dom_element(self, dom_element):
+    def _extract_from_dom_element(self, dom_element: QDomElement):
         """
         Sets the object properties from the values specified in the dom
         element. This method is useful for subclasses.
@@ -203,11 +205,11 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         from stdm.ui.composer.referenced_table_editor import LinkedTableProps
 
         return LinkedTableProps(linked_table=self._linked_table,
-                                      source_field=self._source_field,
-                                      linked_field=self._linked_field)
+                                source_field=self._source_field,
+                                linked_field=self._linked_field)
 
     @staticmethod
-    def linked_table_properties(dom_element):
+    def linked_table_properties(dom_element: QDomElement):
         from stdm.ui.composer.referenced_table_editor import LinkedTableProps
         """
         Creates a LinkedTableProps object which contains all the data
@@ -222,8 +224,8 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         linked_field = dom_element.attribute("referencing_field")
 
         return LinkedTableProps(linked_table=linked_table,
-                                              source_field=source_field,
-                                              linked_field=linked_field)
+                                source_field=source_field,
+                                linked_field=linked_field)
 
 
 class ItemConfigValueHandler:
@@ -234,12 +236,13 @@ class ItemConfigValueHandler:
     and provides extensibility of value handling composer items. Custom
     composer item configurations need to inherit this class.
     """
-    def __init__(self, composition, config_item, query_handler=None):
+
+    def __init__(self, composition: QgsLayout, config_item: ItemConfigBase, query_handler=None):
         self._composition = composition
         self._config_item = config_item
         self._query_handler = query_handler
 
-    def config_item(self):
+    def config_item(self) -> ItemConfigBase:
         """
         :return: Returns the composer item configuration. This should be a
         sub-class of item configuration base.
@@ -247,14 +250,14 @@ class ItemConfigValueHandler:
         """
         return self._config_item
 
-    def composer_item(self):
+    def composer_item(self) -> QgsLayoutItem:
         """
         :return: Returns a composer item based on the item ID contained in
         the configuration item. Returns None if no item was found in the
         composition.
-        :rtype: QgsComposerItem
+        :rtype: QgsLayoutItem
         """
-        return self._composition.getComposerItemById(self._config_item.item_id())
+        return self._composition.itemById(self._config_item.item_id())
 
     def set_data_source_record(self, record):
         """
@@ -274,6 +277,7 @@ class LinkedTableValueHandler(ItemConfigValueHandler):
     Add supports for querying data based on information provided
     by a LinkedTableItemConfiguration object.
     """
+
     def _linked_table(self):
         return self.config_item().linked_table()
 
@@ -300,31 +304,31 @@ class LinkedTableValueHandler(ItemConfigValueHandler):
             return None
 
         ds_table, results = self._query_handler(self._linked_table(),
-                                               self._linked_field(),
-                                               source_value)
+                                                self._linked_field(),
+                                                source_value)
 
         return results
 
 
-def col_values(cols, results):
-        """
-        :param cols: List containing column names whose values are to be
-        retrieved from the results set.
-        :type cols: list
-        :param results: ResultProxy object containing values for row columns.
-        :return: Returns values for the specified column names which exist
-        in the results set.
-        :rtype: dict
-        """
-        if results is None:
-            return {}
+def col_values(cols, results) -> dict:
+    """
+    :param cols: List containing column names whose values are to be
+    retrieved from the results set.
+    :type cols: list
+    :param results: ResultProxy object containing values for row columns.
+    :return: Returns values for the specified column names which exist
+    in the results set.
+    :rtype: dict
+    """
+    if results is None:
+        return {}
 
-        col_values = {}
+    values = {}
 
-        for c in cols:
-            col_values[c] = [getattr(r,c) for r in results if hasattr(r,c)]
+    for c in cols:
+        values[c] = [getattr(r, c) for r in results if hasattr(r, c)]
 
-        return col_values
+    return values
 
 
 class ConfigurationCollectionBase:
@@ -338,7 +342,7 @@ class ConfigurationCollectionBase:
     def __init__(self):
         self._config_collec = OrderedDict()
 
-    def items(self):
+    def items(self) -> OrderedDict:
         """
         :return: Collection of item configurations mapped according to
         composer identifiers.
@@ -346,7 +350,7 @@ class ConfigurationCollectionBase:
         """
         return self._config_collec
 
-    def add_item_configuration(self, item_config):
+    def add_item_configuration(self, item_config: ItemConfigBase):
         """
         Add configuration object to the collection.
         :param item_config: Custom configuration object.
@@ -359,7 +363,7 @@ class ConfigurationCollectionBase:
 
         self._config_collec[item_id] = item_config
 
-    def add_item_from_element(self, item_el):
+    def add_item_from_element(self, item_el: QDomElement):
         """
         Creates an item configuration from a Dom element and adds it to the collection.
         :param item_el: Dom element.
@@ -408,7 +412,7 @@ class ConfigurationCollectionBase:
         """
         return self._config_collec
 
-    def item_configuration(self, item_id):
+    def item_configuration(self, item_id: str):
         """
         Returns a configuration object corresponding to the specified item identifier.
         :param item_id:
@@ -418,7 +422,7 @@ class ConfigurationCollectionBase:
         return self._config_collec.get(item_id, None)
 
     @classmethod
-    def dom_element(cls, composer_wrapper, dom_document):
+    def dom_element(cls, composer_wrapper, dom_document: QDomElement):
         """
         Returns a DOM element with sub-elements where each corresponds to the
         serializable properties of a configuration object.
@@ -433,10 +437,10 @@ class ConfigurationCollectionBase:
         collection_element = dom_document.createElement(cls.collection_root)
 
         # Get configuration items
-        for uuid,item_editor in composer_wrapper.widgetMappings().items():
-            composerItem = composer_wrapper.composition().getComposerItemByUuid(uuid)
+        for uuid, item_editor in composer_wrapper.widgetMappings().items():
+            composerItem = composer_wrapper.composition().itemByUuid(uuid)
 
-            if not composerItem is None:
+            if composerItem is not None:
                 if isinstance(item_editor, cls.editor_type):
                     item_config = item_editor.configuration()
                     item_config.set_item_id(uuid)
@@ -447,7 +451,7 @@ class ConfigurationCollectionBase:
         return collection_element
 
     @classmethod
-    def create(cls, dom_document):
+    def create(cls, dom_document: QDomDocument):
         """
         Returns an instance of a ConfigurationCollectionBase subclass containing
         item configurations.

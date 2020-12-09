@@ -16,14 +16,11 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-import uuid
 import logging
+import uuid
 from datetime import date, datetime
 from numbers import Number
 
-from qgis.PyQt.QtWidgets import (
-    QApplication
-)
 from qgis.PyQt.QtCore import (
     QObject,
     QIODevice,
@@ -31,8 +28,10 @@ from qgis.PyQt.QtCore import (
     QFileInfo,
     QDir
 )
+from qgis.PyQt.QtWidgets import (
+    QApplication
+)
 from qgis.PyQt.QtXml import QDomDocument
-
 from qgis.core import (
     QgsLayoutItemLabel,
     QgsLayoutItemMap,
@@ -40,43 +39,40 @@ from qgis.core import (
     QgsPrintLayout,
     QgsFeature,
     QgsGeometry,
-    Qgis,
     QgsProject,
     QgsVectorLayer,
-    QgsWkbTypes
+    QgsWkbTypes,
+    QgsReadWriteContext
 )
-
 from sqlalchemy.exc import SQLAlchemyError
-
 from sqlalchemy.schema import (
     Table,
     MetaData
 )
 
-from stdm.exceptions import DummyException
-from stdm.settings.registryconfig import RegistryConfig
+from stdm.composer.chart_configuration import ChartConfigurationCollection
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.composer_wrapper import load_table_layers
+from stdm.composer.photo_configuration import PhotoConfigurationCollection
+from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
+from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
+from stdm.composer.table_configuration import TableConfigurationCollection
+from stdm.data.database import STDMDb
 from stdm.data.pg_utils import (
     geometryType,
     pg_table_exists,
     vector_layer
 )
-from stdm.data.database import STDMDb
+from stdm.exceptions import DummyException
 from stdm.settings import (
     current_profile
 )
+from stdm.settings.registryconfig import RegistryConfig
+from stdm.ui.forms.widgets import EntityValueFormatter
 from stdm.ui.sourcedocument import (
     network_document_path
 )
 from stdm.utils.util import PLUGIN_DIR
-from stdm.ui.forms.widgets import EntityValueFormatter
-
-from stdm.composer.composer_data_source import ComposerDataSource
-from stdm.composer.composer_wrapper import load_table_layers
-from stdm.composer.chart_configuration import ChartConfigurationCollection
-from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
-from stdm.composer.photo_configuration import PhotoConfigurationCollection
-from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
-from stdm.composer.table_configuration import TableConfigurationCollection
 
 LOGGER = logging.getLogger('stdm')
 
@@ -86,12 +82,12 @@ class DocumentGenerator(QObject):
     Generates documents from user-defined templates.
     """
 
-    #Output type enumerations
+    # Output type enumerations
     Image = 0
     PDF = 1
 
-    def __init__(self, iface, parent = None):
-        QObject.__init__(self,parent)
+    def __init__(self, iface, parent=None):
+        QObject.__init__(self, parent)
         self._iface = iface
         self._map_settings = self._iface.mapCanvas().mapSettings()
         self._dbSession = STDMDb.instance().session
@@ -101,7 +97,7 @@ class DocumentGenerator(QObject):
         if self._current_profile is None:
             raise Exception('Current data profile has not been set.')
 
-        #For cleanup after document compositions have been created
+        # For cleanup after document compositions have been created
         self._map_memory_layers = []
         self.map_registry = QgsProject.instance()
         self._table_mem_layers = []
@@ -111,10 +107,10 @@ class DocumentGenerator(QObject):
 
         self._base_photo_table = "supporting_document"
 
-        #Value formatter for output files
+        # Value formatter for output files
         self._file_name_value_formatter = None
 
-    def link_field(self):
+    def link_field(self) -> str:
         """
         :return: The field name in the data source that should also exist
         in the configuration for composer items that require to use this
@@ -124,7 +120,7 @@ class DocumentGenerator(QObject):
         """
         return self._link_field
 
-    def set_link_field(self, field):
+    def set_link_field(self, field: str):
         """
         :param field: Name of the link field in the data source
         :type field: str
@@ -139,7 +135,7 @@ class DocumentGenerator(QObject):
         """
         self._attr_value_formatters = formattermapping
 
-    def add_attr_value_formatter(self,attributeName,formatterFunc):
+    def add_attr_value_formatter(self, attributeName, formatterFunc):
         """
         Add a new attribute value formatter configuration to the collection.
         """
@@ -167,7 +163,7 @@ class DocumentGenerator(QObject):
         """
         return pg_table_exists(data_source.name())
 
-    def template_document(self, path):
+    def template_document(self, path: str):
         """
         Reads the document template file and returns the corresponding
         QDomDocument.
@@ -190,7 +186,7 @@ class DocumentGenerator(QObject):
 
         if not template_file.open(QIODevice.ReadOnly):
             return None, QApplication.translate("DocumentGenerator",
-                                            "Cannot read template file")
+                                                "Cannot read template file")
 
         template_doc = QDomDocument()
 
@@ -200,7 +196,7 @@ class DocumentGenerator(QObject):
         return None, QApplication.translate("DocumentGenerator",
                                             "Cannot read document template contents")
 
-    def composer_data_source(self, template_document):
+    def composer_data_source(self, template_document: QDomDocument):
         """
         :param template_document: Document containing document composition
         information.
@@ -212,15 +208,16 @@ class DocumentGenerator(QObject):
 
         if not self.data_source_exists(composer_ds):
             msg = QApplication.translate("DocumentGenerator",
-                                             "'{0}' data source does not exist in the database."
-                                             "\nPlease contact your database "
-                                             "administrator.".format(composer_ds.name()))
+                                         "'{0}' data source does not exist in the database."
+                                         "\nPlease contact your database "
+                                         "administrator.".format(composer_ds.name()))
 
             return None, msg
 
         return composer_ds, ""
 
-    def run(self, *args, **kwargs):
+    def run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
+            dataFields=None, fileExtension=None, data_source=None):
         """
         :param templatePath: The file path to the user-defined template.
         :param entityFieldName: The name of the column for the specified entity which
@@ -237,20 +234,20 @@ class DocumentGenerator(QObject):
         row values will be used to name output files if the options has been
         specified by the user.
         """
-        templatePath = args[0]
-        entityFieldName = args[1]
-        entityFieldValue = args[2]
-        outputMode = args[3]
-        filePath = kwargs.get("filePath", None)
-        dataFields = kwargs.get("dataFields", [])
-        fileExtension = kwargs.get("fileExtension", "")
-        data_source = kwargs.get("data_source", "")
+        if dataFields is None:
+            dataFields = []
+
+        if fileExtension is None:
+            fileExtension = ''
+
+        if data_source is None:
+            data_source = ''
 
         templateFile = QFile(templatePath)
 
         if not templateFile.open(QIODevice.ReadOnly):
             return False, QApplication.translate("DocumentGenerator",
-                                            "Cannot read template file.")
+                                                 "Cannot read template file.")
 
         templateDoc = QDomDocument()
 
@@ -259,7 +256,7 @@ class DocumentGenerator(QObject):
             spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
             composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
 
-            #Check if data source exists and return if it doesn't
+            # Check if data source exists and return if it doesn't
             if not self.data_source_exists(composerDS):
                 msg = QApplication.translate("DocumentGenerator",
                                              "'{0}' data source does not exist in the database."
@@ -267,38 +264,38 @@ class DocumentGenerator(QObject):
                                              "administrator.".format(composerDS.name()))
                 return False, msg
 
-            #Set file name value formatter
+            # Set file name value formatter
             self._file_name_value_formatter = EntityValueFormatter(
                 name=data_source
             )
 
-            #Register field names to be used for file naming
+            # Register field names to be used for file naming
             self._file_name_value_formatter.register_columns(dataFields)
 
-            #TODO: Need to automatically register custom configuration collections
-            #Photo config collection
+            # TODO: Need to automatically register custom configuration collections
+            # Photo config collection
             ph_config_collection = PhotoConfigurationCollection.create(templateDoc)
 
-            #Table configuration collection
+            # Table configuration collection
             table_config_collection = TableConfigurationCollection.create(templateDoc)
 
-            #Create chart configuration collection object
+            # Create chart configuration collection object
             chart_config_collection = ChartConfigurationCollection.create(templateDoc)
 
             # Create QR code configuration collection object
             qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
 
-            #Load the layers required by the table composer items
+            # Load the layers required by the table composer items
             self._table_mem_layers = load_table_layers(table_config_collection)
 
             entityFieldName = self.format_entity_field_name(composerDS.name(), data_source)
 
-            #Execute query
-            dsTable,records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
+            # Execute query
+            dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
 
             if records is None or len(records) == 0:
                 return False, QApplication.translate("DocumentGenerator",
-                                                    "No matching records in the database")
+                                                     "No matching records in the database")
 
             """
             Iterate through records where a single file output will be generated for each matching record.
@@ -306,15 +303,16 @@ class DocumentGenerator(QObject):
 
             for rec in records:
                 composition = QgsPrintLayout(self._map_settings)
-                composition.loadFromTemplate(templateDoc)
+                context = QgsReadWriteContext()
+                composition.loadFromTemplate(templateDoc, context)
                 ref_layer = None
-                #Set value of composer items based on the corresponding db values
+                # Set value of composer items based on the corresponding db values
                 for composerId in composerDS.dataFieldMappings().reverse:
-                    #Use composer item id since the uuid is stripped off
-                    composerItem = composition.getComposerItemById(composerId)
-                    if not composerItem is None:
+                    # Use composer item id since the uuid is stripped off
+                    composerItem = composition.itemById(composerId)
+                    if composerItem is not None:
                         fieldName = composerDS.dataFieldName(composerId)
-                        fieldValue = getattr(rec,fieldName)
+                        fieldValue = getattr(rec, fieldName)
                         self._composeritem_value_handler(composerItem, fieldValue)
 
                 # Extract photo information
@@ -331,15 +329,15 @@ class DocumentGenerator(QObject):
                 use_fixed_scale = False
 
                 # Create memory layers for spatial features and add them to the map
-                for mapId,spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
+                for mapId, spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
 
-                    map_item = composition.getComposerItemById(mapId)
+                    map_item = composition.itemById(mapId)
 
-                    if not map_item is None:
+                    if map_item is not None:
                         # Clear any previous map memory layer
                         # self.clear_temporary_map_layers()
                         for spfm in spfmList:
-                            #Use the value of the label field to name the layer
+                            # Use the value of the label field to name the layer
                             lbl_field = spfm.labelField()
                             spatial_field = spfm.spatialField()
 
@@ -354,7 +352,7 @@ class DocumentGenerator(QObject):
                             else:
                                 layerName = self._random_feature_layer_name(spatial_field)
 
-                            #Extract the geometry using geoalchemy spatial capabilities
+                            # Extract the geometry using geoalchemy spatial capabilities
                             geom_value = getattr(rec, spatial_field)
                             if geom_value is None:
                                 continue
@@ -362,11 +360,11 @@ class DocumentGenerator(QObject):
                             geom_func = geom_value.ST_AsText()
                             geomWKT = self._dbSession.scalar(geom_func)
 
-                            #Get geometry type
+                            # Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
-                                                          spatial_field)
+                                                           spatial_field)
 
-                            #Create reference layer with feature
+                            # Create reference layer with feature
                             ref_layer = self._build_vector_layer(layerName, geom_type, srid)
 
                             if ref_layer is None or not ref_layer.isValid():
@@ -379,17 +377,17 @@ class DocumentGenerator(QObject):
                             if zoom_type == 'RELATIVE':
                                 bbox.scale(spfm.zoomLevel())
 
-                            #Workaround for zooming to single point extent
+                            # Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QgsWkbTypes.Point:
                                 canvas_extent = self._iface.mapCanvas().fullExtent()
                                 cnt_pnt = bbox.center()
-                                canvas_extent.scale(1.0/32, cnt_pnt)
+                                canvas_extent.scale(1.0 / 32, cnt_pnt)
                                 bbox = canvas_extent
 
-                            #Style layer based on the spatial field mapping symbol layer
+                            # Style layer based on the spatial field mapping symbol layer
                             symbol_layer = spfm.symbolLayer()
-                            if not symbol_layer is None:
-                                ref_layer.rendererV2().symbols()[0].changeSymbolLayer(0,spfm.symbolLayer())
+                            if symbol_layer is not None:
+                                ref_layer.renderer().symbols()[0].changeSymbolLayer(0, spfm.symbolLayer())
                             '''
                             Add layer to map and ensure its always added at the top
                             '''
@@ -415,35 +413,34 @@ class DocumentGenerator(QObject):
                 self._generate_charts(composition, chart_config_collection, rec)
 
                 # Extract QR code information in order to generate QR codes
-                self._generate_qr_codes(composition, qrc_config_collection,rec)
+                self._generate_qr_codes(composition, qrc_config_collection, rec)
 
-                #Build output path and generate composition
-                if not filePath is None and len(dataFields) == 0:
+                # Build output path and generate composition
+                if filePath is not None and len(dataFields) == 0:
                     self._write_output(composition, outputMode, filePath)
 
                 elif filePath is None and len(dataFields) > 0:
                     entityFieldName = 'id'
                     docFileName = self._build_file_name(data_source, entityFieldName,
-                                                      entityFieldValue, dataFields, fileExtension)
+                                                        entityFieldValue, dataFields, fileExtension)
 
                     # Replace unsupported characters in Windows file naming
                     docFileName = docFileName.replace('/', '_').replace \
                         ('\\', '_').replace(':', '_').strip('*?"<>|')
 
-
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
-                                    "File name could not be generated from the data fields."))
+                                                              "File name could not be generated from the data fields."))
 
                     outputDir = self._composer_output_path()
                     if outputDir is None:
                         return (False, QApplication.translate("DocumentGenerator",
-                            "System could not read the location of the output directory in the registry."))
+                                                              "System could not read the location of the output directory in the registry."))
 
                     qDir = QDir()
                     if not qDir.exists(outputDir):
                         return (False, QApplication.translate("DocumentGenerator",
-                                "Output directory does not exist"))
+                                                              "Output directory does not exist"))
 
                     absDocPath = "{0}/{1}".format(outputDir, docFileName)
                     self._write_output(composition, outputMode, absDocPath)
@@ -454,7 +451,7 @@ class DocumentGenerator(QObject):
 
     def format_entity_field_name(self, composer_datasource, entity):
         if '_vw_' in composer_datasource:
-            return composer_datasource+'.'+entity[entity.find('_')+1:]+'_id'
+            return composer_datasource + '.' + entity[entity.find('_') + 1:] + '_id'
         else:
             return 'id'
 
@@ -466,24 +463,22 @@ class DocumentGenerator(QObject):
         Updates the map item with the current extents and layer set in the
         map canvas.
         """
-        mode = map_item.previewMode()
-        if mode == QgsLayoutItemMap.Rectangle:
-            tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
-            layer_ids = [lyt.layerId() for lyt in tree_layers]
-            map_item.setLayerSet(layer_ids)
-            map_item.zoomToExtent(self._iface.mapCanvas().extent())
 
-            # If use_scale is True then set NewScale based on that of the
-            # map renderer.
-            if use__fixed_scale:
-                map_item.setNewScale(self._iface.mapCanvas().scale())
+        tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
+        map_item.setLayers(tree_layers)
+        map_item.zoomToExtent(self._iface.mapCanvas().extent())
+
+        # If use_scale is True then set NewScale based on that of the
+        # map renderer.
+        if use__fixed_scale:
+            map_item.setNewScale(self._iface.mapCanvas().scale())
 
     def _refresh_composer_maps(self, composition, ignore_ids):
         """
         Refreshes only those map composer items whose ids are not in the list
         of 'ignore_ids'.
         """
-        c_maps = composition.composerMapItems()
+        c_maps = [i for i in composition.items() if isinstance(i, QgsLayoutItemMap)]
         for c_map in c_maps:
             if not c_map.id() in ignore_ids:
                 self._refresh_map_item(c_map)
@@ -578,7 +573,7 @@ class DocumentGenerator(QObject):
         self.map_registry.addMapLayers(v_layers, False)
 
     def _set_table_data(self, composition, config_collection, record):
-        #TODO: Clean up code to adopt this design.
+        # TODO: Clean up code to adopt this design.
         """
         Set table data by applying appropriate filter using information
         from the config item and the record value.
@@ -655,13 +650,13 @@ class DocumentGenerator(QObject):
             document_type = conf.document_type.replace(' ', '_').lower()
             document_type_id = int(conf.document_type_id)
 
-            #Get name of base supporting documents table
+            # Get name of base supporting documents table
             supporting_doc_base = self._current_profile.supporting_document.name
 
-            #Get parent table of supporting document table
+            # Get parent table of supporting document table
             s_doc_entities = self._current_profile.supporting_document_entities()
             photo_doc_entities = [de for de in s_doc_entities
-                                   if de.name == photo_tb]
+                                  if de.name == photo_tb]
 
             if len(photo_doc_entities) == 0:
                 continue
@@ -669,14 +664,14 @@ class DocumentGenerator(QObject):
             photo_doc_entity = photo_doc_entities[0]
             document_parent_table = photo_doc_entity.parent_entity.name
 
-            #Get id of base photo
+            # Get id of base photo
             alchemy_table, results = self._exec_query(
                 photo_tb,
                 referencing_column,
                 getattr(record, referenced_column, '')
             )
 
-            #Filter results further based on document type
+            # Filter results further based on document type
             results = [r for r in results
                        if r.document_type == document_type_id]
 
@@ -685,9 +680,9 @@ class DocumentGenerator(QObject):
             photo image
             '''
             if len(results) == 0:
-                pic_item = composition.getComposerItemById(conf.item_id())
+                pic_item = composition.itemById(conf.item_id())
 
-                if not pic_item is None:
+                if pic_item is not None:
                     no_photo_path = PLUGIN_DIR + "/images/icons/no_photo.png"
 
                     if QFile.exists(no_photo_path):
@@ -712,7 +707,7 @@ class DocumentGenerator(QObject):
                         dr.filename
                     )
 
-                #TODO: Only interested in one photograph, should support more?
+                # TODO: Only interested in one photograph, should support more?
                 break
 
     def _build_photo_path(
@@ -724,7 +719,7 @@ class DocumentGenerator(QObject):
             doc_id,
             doc_name
     ):
-        pic_item = composition.getComposerItemById(composer_id)
+        pic_item = composition.itemById(composer_id)
 
         if pic_item is None:
             return
@@ -770,15 +765,15 @@ class DocumentGenerator(QObject):
 
         return g.boundingBox()
 
-    def _write_output(self,composition,outputMode,filePath):
+    def _write_output(self, composition, outputMode, filePath):
         """
         Write composition to file based on the output type (PDF or IMAGE).
         """
         if outputMode == DocumentGenerator.Image:
-            self._export_composition_as_image(composition,filePath)
+            self._export_composition_as_image(composition, filePath)
 
         elif outputMode == DocumentGenerator.PDF:
-            self._export_composition_as_pdf(composition,filePath)
+            self._export_composition_as_pdf(composition, filePath)
 
     def _export_composition_as_image(self, composition, file_path):
         """
@@ -791,8 +786,8 @@ class DocumentGenerator(QObject):
 
             if img.isNull():
                 msg = QApplication.translate("DocumentGenerator",
-                                        "Memory allocation error. Please try "
-                                        "a lower resolution or a smaller paper size.")
+                                             "Memory allocation error. Please try "
+                                             "a lower resolution or a smaller paper size.")
                 raise Exception(msg)
 
             if p == 0:
@@ -801,13 +796,13 @@ class DocumentGenerator(QObject):
             else:
                 fi = QFileInfo(file_path)
                 file_path = "{0}/{1}_{2}.{3}".format(fi.absolutePath(),
-                                                             fi.baseName(),
-                    (p+1), fi.suffix())
+                                                     fi.baseName(),
+                                                     (p + 1), fi.suffix())
                 state = img.save(file_path)
 
             if not state:
                 msg = QApplication.translate("DocumentGenerator",
-                                        "Error creating {0}.".format(file_path))
+                                             "Error creating {0}.".format(file_path))
                 raise Exception(msg)
 
     def _export_composition_as_pdf(self, composition, file_path):
@@ -817,7 +812,7 @@ class DocumentGenerator(QObject):
         status = composition.exportAsPDF(file_path)
         if not status:
             msg = QApplication.translate("DocumentGenerator",
-                                        "Error creating {0}".format(file_path))
+                                         "Error creating {0}".format(file_path))
 
             raise Exception(msg)
 
@@ -826,7 +821,7 @@ class DocumentGenerator(QObject):
         """
         Build a file name based on the values of the specified data fields.
         """
-        table, results = self._exec_query(data_source,fieldName, fieldValue)
+        table, results = self._exec_query(data_source, fieldName, fieldValue)
 
         if len(results) > 0:
             rec = results[0]
@@ -836,7 +831,7 @@ class DocumentGenerator(QObject):
             for dt in data_fields:
                 f_value = getattr(rec, dt, '')
 
-                #Get display value
+                # Get display value
                 display_value = \
                     self._file_name_value_formatter.column_display_value(
                         dt,
@@ -858,7 +853,7 @@ class DocumentGenerator(QObject):
         dsTable = Table(dataSourceName, meta, autoload=True)
         try:
             if not queryField and not queryValue:
-                #Return all the rows; this is currently limited to 100 rows
+                # Return all the rows; this is currently limited to 100 rows
                 results = self._dbSession.query(dsTable).limit(100).all()
 
             else:
@@ -871,7 +866,6 @@ class DocumentGenerator(QObject):
         except SQLAlchemyError as ex:
             self._dbSession.rollback()
             raise ex
-
 
     def _composer_output_path(self):
         """
@@ -892,7 +886,7 @@ class DocumentGenerator(QObject):
         """
         Factory for setting values based on the composer item type and value.
         """
-        if isinstance(composer_item,QgsLayoutItemLabel):
+        if isinstance(composer_item, QgsLayoutItemLabel):
             # if value is None:
             #     composer_item.setText("")
             #     return
@@ -910,10 +904,10 @@ class DocumentGenerator(QObject):
             #
             #     return
 
-            label_text =composer_item.text()
+            label_text = composer_item.text()
 
             if value is None:
-                data_text = label_text[label_text.find('[')+1:label_text.find(']')]
+                data_text = label_text[label_text.find('[') + 1:label_text.find(']')]
                 composer_item.setText(label_text.replace('[{}]'.format(data_text), ''))
                 return
 
@@ -942,10 +936,7 @@ class DocumentGenerator(QObject):
                 )
                 return
 
-        #Composer picture requires the absolute file path
+        # Composer picture requires the absolute file path
         elif isinstance(composer_item, QgsLayoutItemPicture):
             if value:
                 composer_item.setPictureFile(value)
-
-
-
