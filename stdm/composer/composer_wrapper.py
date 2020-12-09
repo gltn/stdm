@@ -142,6 +142,7 @@ class ComposerWrapper(QObject):
         self._stdmTB.setObjectName('stdmDocumentDesigner')
         self._selectMoveAction = None
         self._iface = iface
+        self._config_items = []
 
         # Container for custom editor widgets
         self._widgetMappings = {}
@@ -289,7 +290,7 @@ class ComposerWrapper(QObject):
     def configure(self):
         # Create instances of custom STDM composer item configurations
         for ciConfig in ComposerItemConfig.itemConfigurations:
-            ciConfig(self)
+            self._config_items.append(ciConfig(self))
 
     def addWidgetMapping(self, uniqueIdentifier, widget):
         """
