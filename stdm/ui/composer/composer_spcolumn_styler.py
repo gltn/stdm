@@ -18,13 +18,11 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import (
-    QWidget
-)
 from qgis.core import (
     QgsSymbolLayerUtils
 )
 
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.pg_utils import (
     table_column_names
 )
@@ -86,7 +84,7 @@ class SpatialFieldMapping(object):
         """
         self._symbol = symbol
 
-        if not self._symbol is None:
+        if self._symbol is not None:
             self._layerType = self._symbol.layerType()
 
     def symbolLayer(self):
@@ -171,7 +169,7 @@ class SpatialFieldMapping(object):
         symbolElement = domDocument.createElement("Symbol")
 
         # Append symbol properties element
-        if not self._symbol is None:
+        if self._symbol is not None:
             prop = self._symbol.properties()
             QgsSymbolLayerUtils.saveProperties(prop, domDocument, symbolElement)
             symbolElement.setAttribute("layerType", self._layerType)
@@ -190,11 +188,12 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
     Widget for defining symbology and labeling properties for the selected spatial field.
     """
 
-    def __init__(self, spColumnName, composerWrapper, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, spColumnName, layout_item, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
 
-        self._composerWrapper = composerWrapper
+        self._layout = layout_item.layout()
+        self._item = layout_item
 
         self._spColumnName = spColumnName
 
@@ -213,17 +212,24 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         self._geomType = ""
 
         # Load fields if the data source has been specified
-        self._dsName = self._composerWrapper.selectedDataSource()
+        self._dsName = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         self._loadFields()
 
         # Connect signals
-        self._composerWrapper.dataSourceSelected.connect(self.onDataSourceChanged)
+        self._layout.variablesChanged.connect(self.layout_variables_changed)
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
         self.sb_fixed_zoom.valueChanged.connect(self.on_zoom_fixed_scale_changed)
         self.rb_relative_zoom.toggled.connect(self.on_relative_zoom_checked)
 
         # Set relative zoom level as the default selected option for the radio buttons
         self.rb_relative_zoom.setChecked(True)
+
+    def layout_variables_changed(self):
+        """
+        When the user changes the data source then update the fields.
+        """
+        data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        self.onDataSourceChanged(data_source_name)
 
     def onDataSourceChanged(self, dataSourceName):
         """

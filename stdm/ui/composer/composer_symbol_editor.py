@@ -22,12 +22,12 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox,
-    QPushButton,
-    QWidget
+    QPushButton
 )
 from qgis.core import (
     QgsVectorLayer,
-    QgsSimpleMarkerSymbolLayer
+    QgsSimpleMarkerSymbolLayer,
+    QgsSimpleFillSymbolLayer
 )
 from qgis.gui import (
     QgsSimpleMarkerSymbolLayerWidget,
@@ -35,6 +35,8 @@ from qgis.gui import (
     QgsSimpleFillSymbolLayerWidget
 )
 
+from stdm.composer.custom_layout_items import StdmMapLayoutItem
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.pg_utils import (
     table_column_names,
     geometryType
@@ -55,7 +57,7 @@ class _SymbolLayerProxyWidgetMixin(object):
 
     def remove_data_defined_properties_button(self):
         btn_data_prop = self.findChild(QPushButton, "mDataDefinedPropertiesButton")
-        if not btn_data_prop is None:
+        if btn_data_prop is not None:
             btn_data_prop.setVisible(False)
 
 
@@ -114,7 +116,7 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
         # Set symbol layer for the widget
         self._sym_layer = symbol_layer
         if self._sym_layer is None:
-            self._sym_layer = QgsSimpleFillSymbolLayerV2()
+            self._sym_layer = QgsSimpleFillSymbolLayer()
             self._sym_layer.setColor(Qt.cyan)
             self._sym_layer.setFillColor(Qt.yellow)
 
@@ -123,7 +125,7 @@ class _SimpleFillSymbolLayerProxyWidget(QgsSimpleFillSymbolLayerWidget,
         self.remove_data_defined_properties_button()
 
         self._btnFillColor = self.findChild(QPushButton, "btnChangeColor")
-        if not self._btnFillColor is None:
+        if self._btnFillColor is not None:
             self._btnFillColor.colorChanged.disconnect()
             self._btnFillColor.colorChanged.connect(self.onSetFillColor)
 
@@ -136,24 +138,35 @@ class ComposerSymbolEditor(WIDGET, BASE):
     Widget for defining symbology properties for the selected spatial field.
     """
 
-    def __init__(self, composerWrapper, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, item: StdmMapLayoutItem, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
+
+        self._item = item
+        self._layout = item.layout()
 
         self.btnAddField.setIcon(GuiUtils.get_icon('add.png'))
         self.btnClear.setIcon(GuiUtils.get_icon('reset.png'))
 
-        self._composerWrapper = composerWrapper
         self._editorMappings = {}
 
         # Load fields if the data source has been specified
-        self._ds_name = self._composerWrapper.selectedDataSource()
-        self._load_fields()
+        self._ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        if self._ds_name is not None:
+            self._loadFields()
 
         # Connect signals
-        self._composerWrapper.dataSourceSelected.connect(self.on_data_source_changed)
+        self._layout.variablesChanged.connect(self.layout_variables_changed)
+
         self.btnAddField.clicked.connect(self.on_add_column_styler_widget)
         self.btnClear.clicked.connect(self.on_clear_tabs)
+
+    def layout_variables_changed(self):
+        """
+        When the user changes the data source then update the fields.
+        """
+        data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        self.on_data_source_changed(data_source_name)
 
     def on_data_source_changed(self, data_source_name):
         """
@@ -248,7 +261,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
 
             styleEditor = ComposerSpatialColumnEditor(
                 sp_column_name,
-                self._composerWrapper
+                self._item
             )
             styleEditor.setSymbolEditor(symbolEditor)
             styleEditor.setGeomType(geomType)

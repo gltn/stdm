@@ -775,7 +775,7 @@ class ComposerWrapper(QObject):
                 mapItem = self.composition().itemById(item_id)
 
                 if mapItem is not None:
-                    composerSymbolEditor = ComposerSymbolEditor(self, self.mainWindow())
+                    composerSymbolEditor = ComposerSymbolEditor(mapItem, self.mainWindow())
                     composerSymbolEditor.add_spatial_field_mappings(spFieldsMappings)
 
                     # Add widget to the collection but now use the current uuid of the composer map

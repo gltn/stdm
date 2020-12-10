@@ -52,7 +52,7 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     COMPOSER_OUTPUT
 )
-from stdm.ui.composer import TemplateDocumentSelector
+from stdm.ui.composer.composer_doc_selector import TemplateDocumentSelector
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar

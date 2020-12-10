@@ -27,7 +27,6 @@ from qgis.core import QgsLayout
 from qgis.gui import QgsLayoutView
 
 from stdm.composer.item_formatter import (
-    MapFormatter,
     TableFormatter
 )
 from stdm.ui.composer.composer_doc_selector import (
@@ -178,44 +177,6 @@ class TableConfig(ComposerItemConfig):
         table_item = sel_items[0]
         self._itemFormatter.apply(table_item, self.composerWrapper())
 
-
-class MapConfig(ComposerItemConfig):
-    """
-    Enables users to add a map into the composition as well as define styling for spatial
-    data sources.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = MapFormatter()
-
-    def action(self):
-        mapAct = QAction(GuiUtils.get_icon("add_map.png"),
-                         QApplication.translate("MapConfig", "Add map"), self.mainWindow())
-
-        return mapAct
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddMap)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        selItems = self.composition().selectedLayoutItems()
-        if len(selItems) == 0:
-            return
-
-        templateMap = selItems[0]
-        self._itemFormatter.apply(templateMap, self.composerWrapper())
 
 
 class SaveTemplateConfig(ComposerItemConfig):
