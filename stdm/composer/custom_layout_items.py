@@ -22,7 +22,9 @@ from qgis.core import (
     QgsLayoutItemLabel,
     QgsLayoutItemMap,
     QgsLayoutItemPicture,
-    QgsApplication
+    QgsLayoutItemAttributeTable,
+    QgsApplication,
+    QgsLayoutMultiFrameAbstractMetadata
 )
 
 from stdm.ui.gui_utils import GuiUtils
@@ -103,7 +105,7 @@ class StdmDataLabelLayoutItemMetadata(QgsLayoutItemAbstractMetadata):
         return StdmDataLabelLayoutItem(layout)
 
 
-class StdmTableLayoutItem(QgsLayoutItemLabel):
+class StdmTableLayoutItem(QgsLayoutItemAttributeTable):
 
     def __init__(self, layout):
         super().__init__(layout)
@@ -115,12 +117,12 @@ class StdmTableLayoutItem(QgsLayoutItemLabel):
         return GuiUtils.get_icon('composer_table.png')
 
 
-class StdmTableLayoutItemMetadata(QgsLayoutItemAbstractMetadata):
+class StdmTableLayoutItemMetadata(QgsLayoutMultiFrameAbstractMetadata):
 
     def __init__(self):
         super().__init__(STDM_DATA_TABLE_ITEM_TYPE, QCoreApplication.translate('StdmItems', 'STDM Data Table'))
 
-    def createItem(self, layout):
+    def createMultiFrame(self, layout):
         return StdmTableLayoutItem(layout)
 
 
@@ -211,11 +213,13 @@ class StdmQrCodeLayoutItemMetadata(QgsLayoutItemAbstractMetadata):
 class StdmCustomLayoutItems:
     CUSTOM_CLASSES = [StdmLineLayoutItemMetadata,
                       StdmDataLabelLayoutItemMetadata,
-                      StdmTableLayoutItemMetadata,
                       StdmMapLayoutItemMetadata,
                       StdmPhotoLayoutItemMetadata,
                       StdmChartLayoutItemMetadata,
                       StdmQrCodeLayoutItemMetadata]
+    CUSTOM_MULTIFRAME_CLASSES = [
+        StdmTableLayoutItemMetadata
+    ]
     metadata = []
 
     @classmethod
@@ -227,3 +231,11 @@ class StdmCustomLayoutItems:
 
             cls.metadata.append(item_metadata)
             QgsApplication.layoutItemRegistry().addLayoutItemType(item_metadata)
+
+        for mf in cls.CUSTOM_MULTIFRAME_CLASSES:
+            item_metadata = mf()
+            if item_metadata.type() in QgsApplication.layoutItemRegistry().itemTypes():
+                continue  # already added
+
+            cls.metadata.append(item_metadata)
+            QgsApplication.layoutItemRegistry().addLayoutMultiFrameType(item_metadata)

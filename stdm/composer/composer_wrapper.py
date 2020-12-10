@@ -56,7 +56,6 @@ from stdm.data.pg_utils import (
 )
 from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
-from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
 from stdm.ui.composer.composer_chart_config import (
     ComposerChartConfigEditor
 )
@@ -68,6 +67,7 @@ from stdm.ui.composer.composer_field_selector import (
 from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
+from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
 from stdm.ui.composer.photo_data_source import (
     ComposerPhotoDataSourceEditor,
 )
@@ -133,7 +133,6 @@ class ComposerWrapper(QObject):
         # self._compView = composerView
         self._stdmTB = layout_interface.window().addToolBar("STDM Document Designer")
         self._stdmTB.setObjectName('stdmDocumentDesigner')
-        self._selectMoveAction = None
         self._iface = iface
         self._config_items = []
 
@@ -209,9 +208,6 @@ class ComposerWrapper(QObject):
             self.generalDock().activateWindow()
             self.generalDock().raise_()
 
-        # Connect signals
-        # self.composition().itemRemoved.connect(self._onItemRemoved)
-
         # Current template document file
         self._currDocFile = None
 
@@ -220,8 +216,6 @@ class ComposerWrapper(QObject):
 
         self._selected_item_uuid = str()
 
-        self._current_ref_table_index = -1
-
     @property
     def copy_template_file(self):
         return self._copy_template_file
@@ -229,22 +223,6 @@ class ComposerWrapper(QObject):
     @copy_template_file.setter
     def copy_template_file(self, value):
         self._copy_template_file = value
-
-    @property
-    def selected_item_uuid(self):
-        return self._selected_item_uuid
-
-    @selected_item_uuid.setter
-    def selected_item_uuid(self, uuid):
-        self._selected_item_uuid = uuid
-
-    @property
-    def current_ref_table_index(self):
-        return self._current_ref_table_index
-
-    @current_ref_table_index.setter
-    def current_ref_table_index(self, value):
-        self._current_ref_table_index = value
 
     def _remove_composer_toolbar(self, object_name):
         """
@@ -323,39 +301,11 @@ class ComposerWrapper(QObject):
         """
         return self._layout_interface.layout()
 
-    def composerItemToolBar(self):
-        """
-        Returns the toolbar containing actions for adding composer items.
-        """
-        return self.mainWindow().findChild(QToolBar, "mItemToolbar")
-
     def composerMainToolBar(self):
         """
         Returns the toolbar containing actions for managing templates.
         """
         return self.mainWindow().findChild(QToolBar, "mLayoutToolbar")
-
-    def selectMoveAction(self):
-        """
-        Returns the QAction for selecting or moving composer items.
-        """
-        if self.composerItemToolBar() is not None:
-            if self._selectMoveAction is None:
-                for itemAction in self.composerItemToolBar().actions():
-                    if itemAction.objectName() == "mActionSelectMoveItem":
-                        self._selectMoveAction = itemAction
-                        break
-
-        return self._selectMoveAction
-
-    def checkedItemAction(self):
-        """
-        Returns the currently selected composer item action.
-        """
-        if self.selectMoveAction() is not None:
-            return self.selectMoveAction().actionGroup().checkedAction()
-
-        return None
 
     def itemDock(self):
         """
@@ -421,34 +371,6 @@ class ComposerWrapper(QObject):
             return self._dataSourceWidget.category()
 
         return ""
-
-    def composer_items(self):
-        """
-        :return: Returns a list of custom composer items.
-        :rtype: list
-        """
-        return [self.composition().getComposerItemById(uuid) for uuid in self._widgetMappings.keys()
-                if not self.composition().getComposerItemById(uuid) is None]
-
-    def _clear_composition(self):
-        """
-        Removes composer items which, otherwise, are causing QGIS to crash
-        when loading a subsequent document template.
-        """
-        items = self.composition().items()
-
-        for c_item in items:
-            if isinstance(c_item, QgsLayoutItem) and not isinstance(c_item, QgsLayoutItemPage):
-                if c_item.uuid() in self._widgetMappings:
-                    # Remove corresponding widget as well as reference in the collection
-                    del self._widgetMappings[c_item.uuid()]
-
-                self.composition().removeLayoutItem(c_item)
-                # self.composition().itemRemoved.emit(c_item)
-
-                del c_item
-
-        self.composition().undoStack().stack().clear()
 
     def create_new_document_designer(self, file_path):
         """
@@ -884,14 +806,3 @@ class ComposerWrapper(QObject):
 
         else:
             return valueCollection[keyName]
-
-    def _onItemRemoved(self, item):
-        """
-        Slot raised when a composer item is removed from the scene.
-        """
-        """
-        Code will not work since a QObject instance is returned instead of a QgsComposerItem
-        if item.uuid() in self._widgetMappings:
-            del self._widgetMappings[item.uuid()]
-        """
-        pass
