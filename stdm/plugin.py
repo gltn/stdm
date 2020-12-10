@@ -136,6 +136,7 @@ from stdm.utils.util import (
 from stdm.utils.util import simple_dialog
 from stdm.data import globals
 
+from stdm.composer.custom_layout_items import StdmCustomLayoutItems
 from stdm.composer.composer_data_source import composer_data_source
 from stdm.composer.composer_wrapper import ComposerWrapper
 
@@ -214,6 +215,9 @@ class STDMQGISLoader:
             self.translator.load(localePath)
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
+
+        StdmCustomLayoutItems.add_custom_item_types()
+        StdmCustomLayoutItems.register_gui()
 
         # STDM Tables
         self.stdmTables = []
@@ -1793,6 +1797,7 @@ class STDMQGISLoader:
         Triggered when a layout designer window is opened
         """
         if current_profile() is None or globals.APP_DBCONN is None:
+            ComposerWrapper.disable_stdm_items(designer_interface)
             return
 
         # Embed STDM customizations

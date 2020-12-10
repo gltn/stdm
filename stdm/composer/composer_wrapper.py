@@ -30,7 +30,8 @@ from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QApplication,
     QMessageBox,
-    QInputDialog
+    QInputDialog,
+    QAction
 )
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.core import (
@@ -52,6 +53,7 @@ from qgis.gui import (
 from stdm.composer.chart_configuration import ChartConfigurationCollection
 from stdm.composer.composer_data_source import ComposerDataSource
 from stdm.composer.composer_item_config import ComposerItemConfig
+from stdm.composer.custom_layout_items import StdmCustomLayoutItems
 from stdm.composer.item_formatter import (
     ChartFormatter,
     DataLabelFormatter,
@@ -132,6 +134,13 @@ class ComposerWrapper(QObject):
     STDM document templates.
     """
     dataSourceSelected = pyqtSignal(str)
+
+    @staticmethod
+    def disable_stdm_items(layout_interface):
+        stdm_action_text = StdmCustomLayoutItems.stdm_action_text()
+        stdm_actions = [a for a in layout_interface.window().findChildren(QAction) if a.text() in stdm_action_text]
+        for a in stdm_actions:
+            a.setEnabled(False)
 
     def __init__(self, layout_interface, iface):
         QObject.__init__(self, layout_interface)
