@@ -1792,7 +1792,7 @@ class STDMQGISLoader:
         """
         Triggered when a layout designer window is opened
         """
-        if current_profile() is None:
+        if current_profile() is None or globals.APP_DBCONN is None:
             return
 
         # Embed STDM customizations
