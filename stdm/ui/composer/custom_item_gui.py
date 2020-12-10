@@ -22,7 +22,9 @@ from qgis.core import (
     QgsLayoutItemRegistry,
     QgsLayoutItemPicture,
     QgsLayoutMeasurement,
-    QgsUnitTypes
+    QgsUnitTypes,
+    QgsLayoutFrame,
+    QgsLayoutTableColumn
 )
 from qgis.gui import (
     QgsGui,
@@ -37,15 +39,17 @@ from stdm.composer.custom_layout_items import (
     STDM_MAP_ITEM_TYPE,
     STDM_PHOTO_ITEM_TYPE,
     STDM_CHART_ITEM_TYPE,
-    STDM_QR_ITEM_TYPE
+    STDM_QR_ITEM_TYPE,
+    StdmTableLayoutItem
 )
+from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
+from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.ui.composer.linear_rubber_band import LinearRubberBand
 from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 from stdm.ui.composer.qr_code import ComposerQREditor
-from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
-from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
+from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
 from stdm.ui.gui_utils import GuiUtils
 
 
@@ -142,6 +146,39 @@ class StdmDataLabelLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         item.setId(item.uuid())
 
 
+class TableConfigWidget(QgsLayoutItemBaseWidget):
+
+    def __init__(self, parent, layout_object):
+        super().__init__(parent, layout_object)
+
+        label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
+
+        vl = QVBoxLayout()
+        vl.setContentsMargins(0, 0, 0, 0)
+        vl.addWidget(label)
+
+        self.source_editor = ComposerTableDataSourceEditor(layout_object)
+        vl.addWidget(self.source_editor)
+
+        self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
+                                                                      QgsLayoutItemRegistry.LayoutAttributeTable)
+
+        for name in (
+                'mRefreshPushButton'):
+            widget = self.base_widget.findChild(QWidget, name)
+            if widget is not None:
+                widget.setVisible(False)
+
+        self.connectChildPanel(self.base_widget)
+        vl.addWidget(self.base_widget)
+
+        self.setLayout(vl)
+
+    def setDockMode(self, dockMode):
+        self.base_widget.setDockMode(dockMode)
+        super().setDockMode(dockMode)
+
+
 class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
 
     def __init__(self):
@@ -151,7 +188,26 @@ class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return GuiUtils.get_icon('composer_table.png')
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
-        return None  # PlotLayoutItemWidget(None, item)
+        return TableConfigWidget(None, item)
+
+    def createItem(self, layout):
+        attribute_table = StdmTableLayoutItem(layout)
+        layout.addMultiFrame(attribute_table)
+        frame = QgsLayoutFrame(layout, attribute_table)
+        attribute_table.addFrame(frame)
+        return frame
+
+    def newItemAddedToLayout(self, frame):
+        item=frame.multiFrame()
+        item.setMap(None)
+        text = 'Choose the data source of the table and ' \
+               'the link columns in the STDM item properties.'
+        table_text = QCoreApplication.translate('StdmItems', text)
+        default_column = QgsLayoutTableColumn(table_text)
+
+        item.setColumns([default_column])
+        # Set ID to match UUID
+        frame.setId(frame.uuid())
 
 
 class MapConfigWidget(QgsLayoutItemBaseWidget):

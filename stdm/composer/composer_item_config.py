@@ -23,12 +23,7 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog
 )
-from qgis.core import QgsLayout
-from qgis.gui import QgsLayoutView
 
-from stdm.composer.item_formatter import (
-    TableFormatter
-)
 from stdm.ui.composer.composer_doc_selector import (
     TemplateDocumentSelector
 )
@@ -44,23 +39,13 @@ class ComposerItemConfig(QObject):
     def __init__(self, composerWrapper):
         QObject.__init__(self, composerWrapper.mainWindow())
         self._composerWrapper = composerWrapper
-        self._itemFormatter = None
 
         self.itemAction = self.action()
         self.itemAction.setCheckable(True)
         self.itemAction.triggered.connect(self.on_action_triggered)
-        self.itemAction.toggled.connect(self.on_action_toggled)
 
         # Add action to toolbar and connect 'triggered' signal
         self._composerWrapper.stdmToolBar().addAction(self.itemAction)
-
-        # Add action to the composer items action group
-        if self._composerWrapper.selectMoveAction() is not None and self.registerInItemGroup():
-            actionGroup = self._composerWrapper.selectMoveAction().actionGroup()
-            actionGroup.addAction(self.itemAction)
-
-        # Connect signals
-        # self.composerView().actionFinished.connect(self.onActionFinished)
 
     def action(self):
         """
@@ -68,22 +53,9 @@ class ComposerItemConfig(QObject):
         """
         raise NotImplementedError
 
-    def registerInItemGroup(self):
-        """
-        Returns whether the action associated with this config should be registered in the item group
-        for adding composer items.
-        """
-        return True
-
     def on_action_triggered(self, state):
         """
         Slot raised upon action trigger.
-        """
-        pass
-
-    def on_action_toggled(self, checked):
-        """
-        Slot raised when checked status of the action changes.
         """
         pass
 
@@ -93,45 +65,11 @@ class ComposerItemConfig(QObject):
         """
         return self._composerWrapper.mainWindow()
 
-    def composerView(self) -> QgsLayoutView:
-        """
-        Returns the composer view.
-        """
-        return self._composerWrapper.composerView()
-
-    def composition(self) -> QgsLayout:
-        """
-        Returns the QgsComposition instance.
-        """
-        return self._composerWrapper.composition()
-
     def composerWrapper(self):
         """
         Returns an instance of the composer wrapper.
         """
         return self._composerWrapper
-
-    def itemFormatter(self):
-        """
-        Returns the formatter configured for the item configuration.
-        """
-        return self._itemFormatter
-
-    def onActionFinished(self):
-        """
-        Slot raised when the specified action has finished drawing in the composition.
-        This checks the default move/select action and uncheck the QAction for the
-        current configuration item.
-        """
-        self.itemAction.setChecked(False)
-        if self._composerWrapper.selectMoveAction() is not None:
-            self._composerWrapper.selectMoveAction().setChecked(True)
-
-    def onSelectItemChanged(self, selected):
-        """
-        Slot raised when selection changes.
-        """
-        pass
 
     @classmethod
     def register(cls):
@@ -139,44 +77,6 @@ class ComposerItemConfig(QObject):
         Add subclasses to the collection of config items.
         """
         ComposerItemConfig.itemConfigurations.append(cls)
-
-
-class TableConfig(ComposerItemConfig):
-    """
-    Table composer item.
-    """
-
-    def __init__(self, composer_wrapper):
-        ComposerItemConfig.__init__(self, composer_wrapper)
-        self._itemFormatter = TableFormatter()
-
-    def action(self):
-        tb_act = QAction(GuiUtils.get_icon("composer_table.png"),
-                         QApplication.translate("TableConfig", "Add attribute table"), self.mainWindow())
-
-        return tb_act
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddAttributeTable)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        sel_items = self.composition().selectedLayoutItems()
-        if len(sel_items) == 0:
-            return
-
-        table_item = sel_items[0]
-        self._itemFormatter.apply(table_item, self.composerWrapper())
-
 
 
 class SaveTemplateConfig(ComposerItemConfig):
@@ -191,12 +91,9 @@ class SaveTemplateConfig(ComposerItemConfig):
     def action(self):
         saveTemplateAct = QAction(GuiUtils.get_icon("save_tb.png"),
                                   QApplication.translate("SaveTemplateConfig", "Save document template"),
-                                  self.composerView())
+                                  self.mainWindow())
 
         return saveTemplateAct
-
-    def registerInItemGroup(self):
-        return False
 
     def on_action_triggered(self, state):
         """
@@ -216,7 +113,7 @@ class OpenTemplateConfig(SaveTemplateConfig):
     def action(self):
         openTemplateAct = QAction(GuiUtils.get_icon("open_file.png"),
                                   QApplication.translate("OpenTemplateConfig", "Open document template"),
-                                  self.composerView())
+                                  self.mainWindow())
 
         return openTemplateAct
 
@@ -250,9 +147,6 @@ class ManageTemplatesConfig(ComposerItemConfig):
                                      self.mainWindow())
 
         return manageTemplatesAct
-
-    def registerInItemGroup(self):
-        return False
 
     def on_action_triggered(self, state):
         """
