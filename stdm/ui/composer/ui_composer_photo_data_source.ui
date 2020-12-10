@@ -1,102 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>PhotoDataSourceEditor</class>
-    <widget class="QWidget" name="PhotoDataSourceEditor">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>276</width>
-                <height>298</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>Photo Data Source Editor</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-            <property name="verticalSpacing">
-                <number>12</number>
-            </property>
-            <item row="1" column="0" colspan="2">
-                <layout class="QVBoxLayout" name="vl_notification"/>
-            </item>
-            <item row="0" column="0" colspan="2">
-                <widget class="QLabel" name="label_4">
-                    <property name="styleSheet">
-                        <string notr="true">padding: 2px; font-weight: bold; background-color: rgb(200, 200, 200);
+ <class>PhotoDataSourceEditor</class>
+ <widget class="QWidget" name="PhotoDataSourceEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>283</width>
+    <height>271</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Photo Data Source Editor</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+   <property name="verticalSpacing">
+    <number>12</number>
+   </property>
+   <item row="1" column="0" colspan="2">
+    <layout class="QVBoxLayout" name="vl_notification"/>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="label_4">
+     <property name="styleSheet">
+      <string notr="true">padding: 2px; font-weight: bold; background-color: rgb(200, 200, 200);
                         </string>
-                    </property>
-                    <property name="text">
-                        <string>Photo</string>
-                    </property>
-                </widget>
-            </item>
-            <item row="4" column="1">
-                <spacer name="verticalSpacer">
-                    <property name="orientation">
-                        <enum>Qt::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                        <size>
-                            <width>20</width>
-                            <height>118</height>
-                        </size>
-                    </property>
-                </spacer>
-            </item>
-            <item row="2" column="0" colspan="2">
-                <widget class="QGroupBox" name="groupBox">
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>0</height>
-                        </size>
-                    </property>
-                    <property name="title">
-                        <string>Linked Table Properties</string>
-                    </property>
-                    <layout class="QGridLayout" name="gridLayout_2">
-                        <item row="0" column="0">
-                            <widget class="ReferencedTableEditor" name="ref_table" native="true"/>
-                        </item>
-                    </layout>
-                    <zorder>ref_table</zorder>
-                    <zorder>ref_table</zorder>
-                </widget>
-            </item>
-            <item row="3" column="0">
-                <widget class="QLabel" name="label">
-                    <property name="maximumSize">
-                        <size>
-                            <width>100</width>
-                            <height>16777215</height>
-                        </size>
-                    </property>
-                    <property name="text">
-                        <string>Document type</string>
-                    </property>
-                </widget>
-            </item>
-            <item row="3" column="1">
-                <widget class="QComboBox" name="cbo_document_type">
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                </widget>
-            </item>
-        </layout>
+     </property>
+     <property name="text">
+      <string>Photo</string>
+     </property>
     </widget>
-    <customwidgets>
-        <customwidget>
-            <class>ReferencedTableEditor</class>
-            <extends>QWidget</extends>
-            <header>stdm.ui.composer.referenced_table_editor</header>
-            <container>1</container>
-        </customwidget>
-    </customwidgets>
-    <resources/>
-    <connections/>
+   </item>
+   <item row="4" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>118</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Linked Table Properties</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="ReferencedTableEditor" name="ref_table" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Document type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QComboBox" name="cbo_document_type">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ReferencedTableEditor</class>
+   <extends>QWidget</extends>
+   <header>stdm.ui.composer.referenced_table_editor</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
 </ui>
