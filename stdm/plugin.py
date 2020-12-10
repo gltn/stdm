@@ -49,7 +49,8 @@ from qgis.core import (
     QgsPrintLayout
 )
 from qgis.gui import (
-    QgsStatusBar
+    QgsStatusBar,
+    QgsLayoutDesignerInterface
 )
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -276,6 +277,8 @@ class STDMQGISLoader:
         self.logoutAct.triggered.connect(self.logout)
         self.aboutAct.triggered.connect(self.about)
         self.helpAct.triggered.connect(self.help_contents)
+
+        self.iface.layoutDesignerOpened.connect(self.on_designer_opened)
         self.initToolbar()
         self.initMenuItems()
 
@@ -349,6 +352,8 @@ class STDMQGISLoader:
         if self.profile_status_label is not None:
             self.profile_status_label.deleteLater()
             self.profile_status_label = None
+
+        self.iface.layoutDesignerOpened.disconnect(self.on_designer_opened)
 
         # Remove connection info
         self.logoutCleanUp()
@@ -1781,10 +1786,18 @@ class STDMQGISLoader:
 
         QgsProject.instance().layoutManager().addLayout(layout)
 
-        designer = self.iface.openLayoutDesigner(layout)
+        self.iface.openLayoutDesigner(layout)
+
+    def on_designer_opened(self, designer_interface: QgsLayoutDesignerInterface):
+        """
+        Triggered when a layout designer window is opened
+        """
+        if current_profile() is None:
+            return
+
         # Embed STDM customizations
         composerWrapper = ComposerWrapper(
-            designer, self.iface
+            designer_interface, self.iface
         )
         composerWrapper.configure()
 
