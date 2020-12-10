@@ -194,22 +194,6 @@ class DataLabelConfig(ComposerItemConfig):
         ComposerItemConfig.__init__(self, composerWrapper)
         self._itemFormatter = DataLabelFormatter()
 
-    def action(self):
-        dataLabelAct = QAction(GuiUtils.get_icon("db_field.png"),
-                               QApplication.translate("DataLabelConfig", "Add data label"), self.mainWindow())
-
-        return dataLabelAct
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddLabel)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
     def onSelectItemChanged(self, selected):
         """
         We use this method since there seems to be an issue with QgsComposition not raising
