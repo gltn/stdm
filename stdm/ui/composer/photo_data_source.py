@@ -23,6 +23,8 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
+from stdm.composer.custom_layout_items import StdmPhotoLayoutItem
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.configuration import entity_model
 from stdm.data.supporting_documents import supporting_doc_tables_regexp
 from stdm.settings import (
@@ -40,18 +42,19 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class ComposerPhotoDataSourceEditor(WIDGET, BASE):
-    def __init__(self, composer_wrapper, parent=None):
+    def __init__(self, item: StdmPhotoLayoutItem, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
 
-        self._composer_wrapper = composer_wrapper
+        self._layout = item.layout()
+        self._item = item
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
         self._curr_profile = current_profile()
 
         # Load fields if the data source has been specified
-        ds_name = self._composer_wrapper.selectedDataSource()
+        ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         self.ref_table.load_data_source_fields(ds_name)
 
         # Base document table in the current profile
@@ -66,14 +69,11 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
         '''
         self.ref_table.load_link_tables(supporting_doc_tables_regexp())
 
-        # Connect signals
-        self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)
+        self.ref_table.set_layout(self._layout)
+
         self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
             self.update_document_types
         )
-
-    def composer_item(self):
-        return self._picture_item
 
     def update_document_types(self, document_table):
         # Updates the types of documents for the specified supporting doc table
@@ -101,7 +101,7 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
             self.cbo_document_type.addItem(r.value, r.id)
 
     def configuration(self):
-        from stdm.stdm.composer import PhotoConfiguration
+        from stdm.composer.photo_configuration import PhotoConfiguration
 
         linked_table_props = self.ref_table.properties()
 

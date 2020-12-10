@@ -10,12 +10,20 @@
 """
 Contains GUI classes for STDM custom layout item types
 """
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QFile
+)
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget
 )
-from qgis.core import QgsLayoutItemRegistry
+from qgis.core import (
+    QgsLayoutItemRegistry,
+    QgsLayoutItemPicture,
+    QgsLayoutMeasurement,
+    QgsUnitTypes
+)
 from qgis.gui import (
     QgsGui,
     QgsLayoutItemBaseWidget,
@@ -32,6 +40,7 @@ from stdm.composer.custom_layout_items import (
     STDM_QR_ITEM_TYPE
 )
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
+from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.ui.composer.linear_rubber_band import LinearRubberBand
 from stdm.ui.gui_utils import GuiUtils
@@ -142,7 +151,6 @@ class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return None  # PlotLayoutItemWidget(None, item)
 
 
-
 class MapConfigWidget(QgsLayoutItemBaseWidget):
 
     def __init__(self, parent, layout_object):
@@ -178,16 +186,67 @@ class StdmMapLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return MapConfigWidget(None, item)
 
 
+class PhotoConfigWidget(QgsLayoutItemBaseWidget):
+
+    def __init__(self, parent, layout_object):
+        super().__init__(parent, layout_object)
+        label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
+
+        vl = QVBoxLayout()
+        vl.setContentsMargins(0, 0, 0, 0)
+        vl.addWidget(label)
+
+        data_source_editor = ComposerPhotoDataSourceEditor(layout_object)
+        vl.addWidget(data_source_editor)
+
+        self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
+                                                                      QgsLayoutItemRegistry.LayoutPicture)
+
+        for name in (
+        'mSVGFrame', 'mRotationGroupBox', 'mSVGParamsGroupBox', 'mRadioSVG', 'mRadioRaster', 'mRasterFrame',
+        'mPreviewGroupBox'):
+            widget = self.base_widget.findChild(QWidget, name)
+            if widget is not None:
+                widget.setVisible(False)
+
+        self.connectChildPanel(self.base_widget)
+        vl.addWidget(self.base_widget)
+
+        self.setLayout(vl)
+
+    def setDockMode(self, dockMode):
+        self.base_widget.setDockMode(dockMode)
+        super().setDockMode(dockMode)
+
+
 class StdmPhotoLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
 
     def __init__(self):
         super().__init__(STDM_PHOTO_ITEM_TYPE, QCoreApplication.translate('StdmItems', 'STDM Photo'))
 
+        self.default_photo = GuiUtils.get_icon_svg("photo_512.png")
+
     def creationIcon(self):  # pylint: disable=missing-docstring, no-self-use
         return GuiUtils.get_icon('photo_24.png')
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
-        return None  # PlotLayoutItemWidget(None, item)
+        return PhotoConfigWidget(None, item)
+
+    def newItemAddedToLayout(self, item):
+        try:
+            item.setMode(QgsLayoutItemPicture.FormatRaster)
+        except AttributeError:
+            pass
+
+        item.setFrameEnabled(True)
+        item.setFrameStrokeWidth(QgsLayoutMeasurement(0.5, QgsUnitTypes.LayoutMillimeters))
+
+        item.setResizeMode(QgsLayoutItemPicture.ZoomResizeFrame)
+
+        if QFile.exists(self.default_photo):
+            item.setPicturePath(self.default_photo)
+
+        item.setId(item.uuid())
 
 
 class StdmChartLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):

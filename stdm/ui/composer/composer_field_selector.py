@@ -45,9 +45,9 @@ class BaseComposerFieldSelector(WIDGET, BASE):
 
         # Load fields if the data source has been specified
 
-        dsName = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
-        if dsName is not None:
-            self._loadFields(dsName)
+        ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        if ds_name is not None:
+            self._loadFields(ds_name)
 
         # Connect signals
         self._layout.variablesChanged.connect(self.layout_variables_changed)
@@ -57,8 +57,8 @@ class BaseComposerFieldSelector(WIDGET, BASE):
         """
         When the user changes the data source then update the fields.
         """
-        dataSourceName = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
-        self._loadFields(dataSourceName)
+        data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        self._loadFields(data_source_name)
 
     def onFieldNameChanged(self, fieldName):
         """

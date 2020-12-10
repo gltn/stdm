@@ -47,8 +47,8 @@ from stdm.utils.util import (
     setComboCurrentIndexWithText,
     profile_and_user_views
 )
+from stdm.composer.layout_utils import LayoutUtils
 
-__all__ = ["LinkedTableProps", "ReferencedTableEditor"]
 
 
 class LinkedTableProps(object):
@@ -99,6 +99,8 @@ class ReferencedTableEditor(QWidget):
 
         # Tables that will be omitted from the referenced table list
         self._omit_ref_tables = []
+
+        self._layout = None
 
     def add_omit_table(self, table):
         """
@@ -173,7 +175,17 @@ class ReferencedTableEditor(QWidget):
         QMetaObject.connectSlotsByName(self)
         self.cbo_ref_table.currentIndexChanged[str].connect(self._load_source_table_fields)
 
-    @pyqtSlot(str)
+    def set_layout(self, layout):
+        self._layout = layout
+        self._layout.variablesChanged.connect(self.layout_variables_changed)
+
+    def layout_variables_changed(self):
+        """
+        When the user changes the data source then update the fields.
+        """
+        data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+        self.load_data_source_fields(data_source_name)
+
     def on_data_source_changed(self, data_source_name):
         """
         Loads data source fields for the given data source name.
@@ -281,9 +293,9 @@ class ReferencedTableEditor(QWidget):
     def _load_source_table_fields(self, sel):
         self.cbo_referencing_col.clear()
         data_source_index = self.cbo_source_field.currentIndex()
-        self.on_data_source_changed(
-            self.cbo_source_field.itemData(data_source_index)
-        )
+       # self.on_data_source_changed(
+       #     self.cbo_source_field.itemData(data_source_index)
+       # )
 
         if not sel:
             return

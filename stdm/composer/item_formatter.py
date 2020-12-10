@@ -111,62 +111,6 @@ class PhotoFormatter(BaseComposerItemFormatter):
         self.has_frame = True
         self._item_editor_cls = ComposerPhotoDataSourceEditor
 
-    def apply(self, photo_item, composerWrapper, fromTemplate=False):
-        if not isinstance(photo_item, QgsLayoutItemPicture):
-            return
-
-        # Get the main picture editor widget and configure widgets
-        picture_editor = composerWrapper.itemDock().widget()
-        if picture_editor is not None:
-            self._configure_picture_editor_properties(picture_editor)
-
-        if not fromTemplate:
-            if self.has_frame:
-                # Enable outline in map composer item
-                frame_width = 0.15
-                photo_item.setFrameEnabled(True)
-                photo_item.setFrameOutlineWidth(frame_width)
-
-            photo_item.setResizeMode(QgsLayoutItemPicture.ZoomResizeFrame)
-
-            # Create data properties editor and it to the dock widget
-            photo_data_source_editor = self._item_editor_cls(composerWrapper)
-            stdmDock = composerWrapper.stdmItemDock()
-            stdmDock.setWidget(photo_data_source_editor)
-
-            # Add widget to the composer wrapper widget mapping collection
-            composerWrapper.addWidgetMapping(photo_item.uuid(), photo_data_source_editor)
-
-        # Set default photo properties
-        if QFile.exists(self.default_photo):
-            photo_item.setPicturePath(self.default_photo)
-
-        # Set ID to match UUID
-        photo_item.setId(photo_item.uuid())
-
-    def _configure_picture_editor_properties(self, base_picture_editor):
-        # Get scroll area first
-        scroll_area = base_picture_editor.findChild(QScrollArea, "scrollArea")
-        if scroll_area is not None:
-            contents_widget = scroll_area.widget()
-
-            properties_groupbox = contents_widget.findChild(QGroupBox, "mPreviewGroupBox")
-            if properties_groupbox is not None:
-                properties_groupbox.setVisible(False)
-
-            search_directory_groupbox = contents_widget.findChild(QGroupBox,
-                                                                  "mSearchDirectoriesGroupBox")
-            if search_directory_groupbox is not None:
-                search_directory_groupbox.setVisible(False)
-
-            img_rotation_groupbox = contents_widget.findChild(QgsCollapsibleGroupBoxBasic,
-                                                              "mRotationGroupBox")
-            if img_rotation_groupbox is not None:
-                img_rotation_groupbox.setVisible(False)
-
-            item_id_groupboxes = contents_widget.findChildren(QGroupBox, "groupBox")
-            for gp in item_id_groupboxes:
-                gp.setVisible(False)
 
 
 class TableFormatter(BaseComposerItemFormatter):
@@ -290,8 +234,6 @@ class ChartFormatter(PhotoFormatter):
 
         # Get the main picture editor widget and configure widgets
         picture_editor = composerWrapper.itemDock().widget()
-        if picture_editor is not None:
-            self._configure_picture_editor_properties(picture_editor)
 
         if not fromTemplate:
             # Disable outline in map composer item
