@@ -45,6 +45,7 @@ from stdm.ui.composer.linear_rubber_band import LinearRubberBand
 from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 from stdm.ui.composer.qr_code import ComposerQREditor
 from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
+from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.gui_utils import GuiUtils
 
 
@@ -164,6 +165,9 @@ class MapConfigWidget(QgsLayoutItemBaseWidget):
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
 
+        self.symbol_editor = ComposerSymbolEditor(layout_object)
+        vl.addWidget(self.symbol_editor)
+
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutMap)
 
         self.connectChildPanel(self.base_widget)
@@ -186,6 +190,13 @@ class StdmMapLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
         return MapConfigWidget(None, item)
+
+    def newItemAddedToLayout(self, item):
+        item.setFrameEnabled(True)
+        item.setFrameStrokeWidth(QgsLayoutMeasurement(0.3, QgsUnitTypes.LayoutMillimeters))
+
+        item.setKeepLayerSet(True)
+        item.setId(item.uuid())
 
 
 class PhotoConfigWidget(QgsLayoutItemBaseWidget):

@@ -24,21 +24,15 @@ from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QWidget,
     QLineEdit,
-    QDoubleSpinBox,
     QScrollArea,
     QToolButton
 )
 from qgis.core import (
     Qgis,
-    QgsLayoutItemMap,
     QgsLayoutFrame,
     QgsLayoutTableColumn
 )
-from qgis.gui import (
-    QgsCollapsibleGroupBoxBasic
-)
 
-from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
 
 
@@ -52,48 +46,6 @@ class BaseComposerItemFormatter:
         Subclasses to implement this method for formatting composer items.
         """
         raise NotImplementedError
-
-
-class MapFormatter(BaseComposerItemFormatter):
-    """
-    Add widget for formatting spatial data sources.
-    """
-
-    def apply(self, templateMap, composerWrapper, fromTemplate=False):
-        if not isinstance(templateMap, QgsLayoutItemMap):
-            return
-
-        if not fromTemplate:
-            # Enable outline in map composer item
-            frameWidth = 0.3
-            templateMap.setFrameEnabled(True)
-            templateMap.setFrameOutlineWidth(frameWidth)
-
-            templateMap.setKeepLayerSet(True)
-
-            # Enable the properties for the corresponding widget for the frame
-            # Get the editor widget for the label
-            mapEditor = composerWrapper.itemDock().widget()
-
-            if mapEditor is not None:
-                frameGP = mapEditor.findChild(QgsCollapsibleGroupBoxBasic, "mGridFrameGroupBox")
-                if frameGP is not None:
-                    frameGP.setCollapse(True)
-
-                thicknessSpinBox = mapEditor.findChild(QDoubleSpinBox, "mGridFramePenSizeSpinBox")
-                if thicknessSpinBox is not None:
-                    thicknessSpinBox.setValue(frameWidth)
-
-            # Create styling editor and it to the dock widget
-            composerSymbolEditor = ComposerSymbolEditor(composerWrapper)
-            stdmDock = composerWrapper.stdmItemDock()
-            stdmDock.setWidget(composerSymbolEditor)
-
-            # Add widget to the composer wrapper widget mapping collection
-            composerWrapper.addWidgetMapping(templateMap.uuid(), composerSymbolEditor)
-
-        # Set ID to match UUID
-        templateMap.setId(templateMap.uuid())
 
 
 class TableFormatter(BaseComposerItemFormatter):
