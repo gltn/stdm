@@ -18,7 +18,8 @@ from qgis.core import QgsLayoutItemRegistry
 from qgis.gui import (
     QgsGui,
     QgsLayoutItemBaseWidget,
-    QgsLayoutItemAbstractGuiMetadata
+    QgsLayoutItemAbstractGuiMetadata,
+    QgsLayoutViewEllipticalRubberBand
 )
 
 from stdm.composer.custom_layout_items import (
@@ -33,6 +34,7 @@ from stdm.composer.custom_layout_items import (
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
 from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.ui.gui_utils import GuiUtils
+from stdm.ui.composer.linear_rubber_band import LinearRubberBand
 
 
 class StdmLineLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
@@ -45,6 +47,9 @@ class StdmLineLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
         return None  # PlotLayoutItemWidget(None, item)
+
+    def createRubberBand(self, view):
+        return LinearRubberBand(view)
 
 
 class DataLabelConfigWidget(QgsLayoutItemBaseWidget):
