@@ -47,10 +47,16 @@ class LineConfigWidget(QgsLayoutItemBaseWidget):
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
 
-        base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutPolyline)
-        vl.addWidget(base_widget)
+        self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
+                                                                      QgsLayoutItemRegistry.LayoutPolyline)
+        self.connectChildPanel(self.base_widget)
+        vl.addWidget(self.base_widget)
 
         self.setLayout(vl)
+
+    def setDockMode(self, dockMode):
+        self.base_widget.setDockMode(dockMode)
+        super().setDockMode(dockMode)
 
 
 class StdmLineLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
@@ -82,10 +88,15 @@ class DataLabelConfigWidget(QgsLayoutItemBaseWidget):
         fieldSelector = ComposerFieldSelector(layout_object)
         vl.addWidget(fieldSelector)
 
-        base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutLabel)
-        vl.addWidget(base_widget)
+        self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutLabel)
+        self.connectChildPanel(self.base_widget)
+        vl.addWidget(self.base_widget)
 
         self.setLayout(vl)
+
+    def setDockMode(self, dockMode):
+        self.base_widget.setDockMode(dockMode)
+        super().setDockMode(dockMode)
 
 
 class StdmDataLabelLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
