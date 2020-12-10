@@ -20,7 +20,6 @@ email                : gkahiu@gmail.com
 from qgis.PyQt.QtCore import (
     Qt,
     QObject,
-    pyqtSignal,
     QFile,
     QFileInfo,
     QIODevice
@@ -133,7 +132,6 @@ class ComposerWrapper(QObject):
     Embeds custom STDM tools in a QgsComposer instance for managing map-based
     STDM document templates.
     """
-    dataSourceSelected = pyqtSignal(str)
 
     @staticmethod
     def disable_stdm_items(layout_interface):
@@ -172,18 +170,18 @@ class ComposerWrapper(QObject):
         self._remove_composer_toolbar('mLayoutToolbar')
 
         # Create dock widget for configuring STDM data source
-        self._stdmDataSourceDock = QDockWidget(
+        stdmDataSourceDock = QDockWidget(
             QApplication.translate("ComposerWrapper", "STDM Data Source"),
             self.mainWindow())
-        self._stdmDataSourceDock.setObjectName("STDMDataSourceDock")
-        self._stdmDataSourceDock.setMinimumWidth(300)
-        self._stdmDataSourceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
+        stdmDataSourceDock.setObjectName("STDMDataSourceDock")
+        stdmDataSourceDock.setMinimumWidth(300)
+        stdmDataSourceDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
         self.mainWindow().addDockWidget(Qt.RightDockWidgetArea,
-                                        self._stdmDataSourceDock)
+                                        stdmDataSourceDock)
 
-        self._dataSourceWidget = ComposerDataSourceSelector()
-        self._stdmDataSourceDock.setWidget(self._dataSourceWidget)
-        self._stdmDataSourceDock.show()
+        self._dataSourceWidget = ComposerDataSourceSelector(self.composition())
+        stdmDataSourceDock.setWidget(self._dataSourceWidget)
+        stdmDataSourceDock.show()
 
         # Re-insert dock widgets
         if self.generalDock() is not None:
@@ -205,11 +203,11 @@ class ComposerWrapper(QObject):
 
         # Re-arrange dock widgets and push up STDM data source dock widget
         if self.generalDock() is not None:
-            self.mainWindow().splitDockWidget(self._stdmDataSourceDock,
+            self.mainWindow().splitDockWidget(stdmDataSourceDock,
                                               self.generalDock(), Qt.Vertical)
 
         if self.itemDock() is not None:
-            self.mainWindow().splitDockWidget(self._stdmDataSourceDock,
+            self.mainWindow().splitDockWidget(stdmDataSourceDock,
                                               self.itemDock(), Qt.Vertical)
             if self.generalDock() is not None:
                 self.mainWindow().tabifyDockWidget(self.generalDock(),
@@ -227,9 +225,6 @@ class ComposerWrapper(QObject):
 
         # Connect signals
         # self.composition().itemRemoved.connect(self._onItemRemoved)
-        self._dataSourceWidget.cboDataSource.currentIndexChanged.connect(
-            self.propagateDataSourceSelection
-        )
         self.composition().selectedItemChanged.connect(self._onItemSelected)
 
         # Current template document file
@@ -395,12 +390,6 @@ class ComposerWrapper(QObject):
         """
         return self.mainWindow().findChild(QDockWidget, "LayoutDock")
 
-    def stdmDataSourceDock(self):
-        """
-        Returns the STDM data source dock widget.
-        """
-        return self._stdmDataSourceDock
-
     def stdmItemDock(self):
         """
         Returns the STDM item dock widget.
@@ -427,8 +416,8 @@ class ComposerWrapper(QObject):
         """
         Returns the name of the data source specified by the user.
         """
-        row = self._stdmDataSourceDock.widget().cboDataSource.currentIndex()
-        table_name = self._stdmDataSourceDock.widget().cboDataSource.itemData(row)
+        row = self._dataSourceWidget.cboDataSource.currentIndex()
+        table_name = self._dataSourceWidget.cboDataSource.itemData(row)
 
         return table_name
 
@@ -437,23 +426,16 @@ class ComposerWrapper(QObject):
         :return: Returns the name of currently specified referenced table name.
         :rtype: str
         """
-        return self._stdmDataSourceDock.widget().referenced_table_name()
+        return self._dataSourceWidget.referenced_table_name()
 
     def selectedDataSourceCategory(self):
         """
         Returns the category (view or table) that the data source belongs to.
         """
-        if not self.stdmDataSourceDock().widget() is None:
-            return self.stdmDataSourceDock().widget().category()
+        if not self._dataSourceWidget is None:
+            return self._dataSourceWidget.category()
 
         return ""
-
-    def propagateDataSourceSelection(self, index):
-        """
-        Propagates the signal when a user select a data source. Listening objects can hook on to it.
-        """
-        data_source_name = self._stdmDataSourceDock.widget().cboDataSource.itemData(index)
-        self.dataSourceSelected.emit(data_source_name)
 
     def composer_items(self):
         """
@@ -778,9 +760,9 @@ class ComposerWrapper(QObject):
         Configure the data source and data field controls based on the composer data
         source configuration.
         """
-        if not self.stdmDataSourceDock().widget() is None:
+        if not self._dataSourceWidget is None:
             # Set data source
-            dataSourceWidget = self.stdmDataSourceDock().widget()
+            dataSourceWidget = self._dataSourceWidget
             dataSourceWidget.setCategory(composer_data_source.category())
             dataSourceWidget.setSelectedSource(composer_data_source.name())
             dataSourceWidget.set_referenced_table(
@@ -803,7 +785,7 @@ class ComposerWrapper(QObject):
         """
         Configure symbol editor controls.
         """
-        if not self.stdmDataSourceDock().widget() is None:
+        if not self._dataSourceWidget is None:
             for item_id, spFieldsMappings in spatial_field_config.spatialFieldsMapping().items():
                 mapItem = self.composition().itemById(item_id)
 
@@ -820,7 +802,7 @@ class ComposerWrapper(QObject):
         :param photo_config_collection: PhotoConfigurationCollection instance.
         :type photo_config_collection: PhotoConfigurationCollection
         """
-        if self.stdmDataSourceDock().widget() is None:
+        if self._dataSourceWidget is None:
             return
 
         for item_id, photo_config in photo_config_collection.mapping().items():
@@ -838,7 +820,7 @@ class ComposerWrapper(QObject):
         :param chart_config_collection: ChartConfigurationCollection instance.
         :type chart_config_collection: ChartConfigurationCollection
         """
-        if self.stdmDataSourceDock().widget() is None:
+        if self._dataSourceWidget is None:
             return
 
         for item_id, chart_config in chart_config_collection.mapping().items():
@@ -856,7 +838,7 @@ class ComposerWrapper(QObject):
         :param table_config_collection: TableConfigurationCollection instance.
         :type table_config_collection: TableConfigurationCollection
         """
-        if self.stdmDataSourceDock().widget() is None:
+        if self._dataSourceWidget is None:
             return
 
         for item_id, table_config in table_config_collection.mapping().items():
@@ -877,7 +859,7 @@ class ComposerWrapper(QObject):
         :param qr_code_config_collection: QRCodeConfigurationCollection instance.
         :type qr_code_config_collection: QRCodeConfigurationCollection
         """
-        if self.stdmDataSourceDock().widget() is None:
+        if self._dataSourceWidget is None:
             return
 
         for item_id, qrc_config in qr_code_config_collection.mapping().items():
