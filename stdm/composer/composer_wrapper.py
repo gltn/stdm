@@ -34,12 +34,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtXml import QDomDocument
 from qgis.core import (
-    QgsLayoutItemPolyline,
-    QgsLayoutItemAttributeTable,
-    QgsLayoutItemLabel,
     QgsLayoutItem,
-    QgsLayoutItemMap,
-    QgsLayoutItemPicture,
     QgsProject,
     QgsLayout,
     QgsLayoutItemPage,
@@ -52,15 +47,6 @@ from qgis.gui import (
 from stdm.composer.chart_configuration import ChartConfigurationCollection
 from stdm.composer.composer_data_source import ComposerDataSource
 from stdm.composer.composer_item_config import ComposerItemConfig
-from stdm.composer.item_formatter import (
-    ChartFormatter,
-    DataLabelFormatter,
-    LineFormatter,
-    MapFormatter,
-    PhotoFormatter,
-    QRCodeFormatter,
-    TableFormatter
-)
 from stdm.composer.photo_configuration import PhotoConfigurationCollection
 from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
 from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
@@ -225,7 +211,6 @@ class ComposerWrapper(QObject):
 
         # Connect signals
         # self.composition().itemRemoved.connect(self._onItemRemoved)
-        self.composition().selectedItemChanged.connect(self._onItemSelected)
 
         # Current template document file
         self._currDocFile = None
@@ -910,71 +895,3 @@ class ComposerWrapper(QObject):
             del self._widgetMappings[item.uuid()]
         """
         pass
-
-    def _onItemSelected(self, item):
-        """
-        Slot raised when a composer item is selected. Load the corresponding field selector
-        if the selection is an STDM data field label.
-        QComposerLabel is returned as a QObject in the slot argument hence, we have resorted to
-        capturing the current selected items in the composition.
-        """
-        selectedItems = self.composition().selectedLayoutItems()
-
-        if len(selectedItems) == 0:
-            self._stdmItemPropDock.setWidget(None)
-
-        elif len(selectedItems) == 1:
-            composer_item = selectedItems[0]
-
-            if composer_item.uuid() in self._widgetMappings:
-                stdmWidget = self._widgetMappings[composer_item.uuid()]
-
-                self.selected_item_uuid = composer_item.uuid()
-
-                if stdmWidget == self._stdmItemPropDock.widget():
-                    return
-                else:
-                    self._stdmItemPropDock.setWidget(stdmWidget)
-
-                # Playing it safe in applying the formatting for the editor controls where applicable
-                itemFormatter = None
-
-                if isinstance(stdmWidget, ComposerTableDataSourceEditor):
-                    itemFormatter = TableFormatter()
-
-                if isinstance(composer_item, QgsLayoutItemPolyline):
-                    itemFormatter = LineFormatter()
-
-                elif isinstance(composer_item, QgsLayoutItemLabel):
-                    itemFormatter = DataLabelFormatter()
-
-                elif isinstance(composer_item, QgsLayoutItemMap):
-                    itemFormatter = MapFormatter()
-
-                elif isinstance(composer_item, QgsLayoutItemPicture):
-                    """
-                    Use widget attribute to distinguish type i.e.
-                    whether it is a photo, graph etc.
-                    """
-                    editor_widget = self._widgetMappings[composer_item.uuid()]
-
-                    if isinstance(editor_widget, ComposerPhotoDataSourceEditor):
-                        itemFormatter = PhotoFormatter()
-
-                    elif isinstance(editor_widget, ComposerChartConfigEditor):
-                        itemFormatter = ChartFormatter()
-
-                    elif isinstance(editor_widget, QRCodeConfigurationCollection.editor_type):
-                        itemFormatter = QRCodeFormatter()
-
-                elif isinstance(composer_item, QgsLayoutItemAttributeTable):
-                    itemFormatter = TableFormatter()
-
-                if itemFormatter is not None:
-                    itemFormatter.apply(composer_item, self, True)
-
-            else:
-                self._stdmItemPropDock.setWidget(None)
-
-        elif len(selectedItems) > 1:
-            self._stdmItemPropDock.setWidget(None)
