@@ -185,9 +185,6 @@ class LineItemConfig(ComposerItemConfig):
         self._itemFormatter.apply(arrow, self.composerWrapper())
 
 
-LineItemConfig.register()
-
-
 class DataLabelConfig(ComposerItemConfig):
     """
     Enables users to define values for QgsComposerLabels from database sources.
@@ -226,9 +223,6 @@ class DataLabelConfig(ComposerItemConfig):
         self._itemFormatter.apply(label, self.composerWrapper())
 
 
-DataLabelConfig.register()
-
-
 class TableConfig(ComposerItemConfig):
     """
     Table composer item.
@@ -264,9 +258,6 @@ class TableConfig(ComposerItemConfig):
 
         table_item = sel_items[0]
         self._itemFormatter.apply(table_item, self.composerWrapper())
-
-
-TableConfig.register()
 
 
 class MapConfig(ComposerItemConfig):
@@ -308,9 +299,6 @@ class MapConfig(ComposerItemConfig):
         self._itemFormatter.apply(templateMap, self.composerWrapper())
 
 
-MapConfig.register()
-
-
 class PhotoConfig(ComposerItemConfig):
     """
     Photo composer item based on type.
@@ -347,9 +335,6 @@ class PhotoConfig(ComposerItemConfig):
 
         photo_item = sel_items[0]
         self._itemFormatter.apply(photo_item, self.composerWrapper())
-
-
-PhotoConfig.register()
 
 
 class ChartConfig(ComposerItemConfig):
@@ -391,9 +376,6 @@ class ChartConfig(ComposerItemConfig):
         self._itemFormatter.apply(chart_item, self.composerWrapper())
 
 
-ChartConfig.register()
-
-
 class QRCodeConfig(PhotoConfig):
     """Composer item for QR codes."""
 
@@ -406,30 +388,6 @@ class QRCodeConfig(PhotoConfig):
                              QApplication.translate("QRCodeConfig", "Add QR Code"), self.mainWindow())
 
         return qrcode_act
-
-
-QRCodeConfig.register()
-
-
-class SeparatorConfig(ComposerItemConfig):
-    """
-    Simple toolbar separator.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-
-    def action(self):
-        separatorAct = QAction(self.composerView())
-        separatorAct.setSeparator(True)
-
-        return separatorAct
-
-    def registerInItemGroup(self):
-        return False
-
-
-SeparatorConfig.register()
 
 
 class SaveTemplateConfig(ComposerItemConfig):
