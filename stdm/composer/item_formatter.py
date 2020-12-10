@@ -22,10 +22,7 @@ from qgis.PyQt.QtWidgets import (
     QComboBox,
     QGroupBox,
     QCheckBox,
-    QPushButton,
-    QRadioButton,
     QWidget,
-    QLabel,
     QLineEdit,
     QDoubleSpinBox,
     QScrollArea,
@@ -33,7 +30,6 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.core import (
     Qgis,
-    QgsLayoutItemLabel,
     QgsLayoutItemMap,
     QgsLayoutItemPicture,
     QgsLayoutFrame,
@@ -44,7 +40,6 @@ from qgis.gui import (
 )
 
 from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
-from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
 from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
 from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
 from stdm.ui.composer.qr_code import ComposerQREditor
@@ -62,82 +57,6 @@ class BaseComposerItemFormatter:
         Subclasses to implement this method for formatting composer items.
         """
         raise NotImplementedError
-
-
-class LineFormatter(BaseComposerItemFormatter):
-    """
-    Removes the marker in an arrow composer item to depict a line.
-    """
-
-    def apply(self, arrow, composerWrapper, fromTemplate=False):
-        """
-        This code is not applicable since the method returns a QgsComposerItem instance
-        instead of an arrow.
-        if not isinstance(arrow,QgsComposerArrow):
-            return
-        """
-
-        # Resorted to use the editor to manually edit the composer item to depict a line
-        arrowEditor = composerWrapper.itemDock().widget()
-
-        if arrowEditor is not None:
-            noMarkerRadioButton = arrowEditor.findChild(QRadioButton, "mNoMarkerRadioButton")
-            # If exists, force remove of marker
-            if noMarkerRadioButton is not None:
-                noMarkerRadioButton.toggle()
-
-            # Hide arrow editor controls
-            arrowMarkersGroup = arrowEditor.findChild(QWidget, "mArrowMarkersGroupBox")
-            if arrowMarkersGroup is not None:
-                arrowMarkersGroup.setVisible(False)
-
-            # Remove arrowhead width controls
-            lblWidth = arrowEditor.findChild(QLabel, "label_2")
-            if lblWidth is not None:
-                lblWidth.setVisible(False)
-
-            widthSpinBox = arrowEditor.findChild(QDoubleSpinBox, "mArrowHeadWidthSpinBox")
-            if widthSpinBox is not None:
-                widthSpinBox.setVisible(False)
-
-
-class DataLabelFormatter(BaseComposerItemFormatter):
-    """
-    Adds text to indicate that the label is an STDM data field.
-    """
-
-    def apply(self, label, composerWrapper, fromTemplate=False):
-        if not isinstance(label, QgsLayoutItemLabel):
-            return
-
-        if not fromTemplate:
-            # Set display text
-            label.setText(QApplication.translate("DataLabelFormatter", "[STDM Data Field]"))
-
-            # Adjust width
-            label.adjustSizeToText()
-
-            fieldSelector = ComposerFieldSelector(composerWrapper, label)
-            stdmDock = composerWrapper.stdmItemDock()
-            stdmDock.setWidget(fieldSelector)
-
-            # Add widget to the composer wrapper widget mapping collection
-            composerWrapper.addWidgetMapping(label.uuid(), fieldSelector)
-
-        # Set ID to match UUID
-        label.setId(label.uuid())
-
-        # Get the editor widget for the label
-        labelEditor = composerWrapper.itemDock().widget()
-
-        # Remove some of the editing controls
-        if labelEditor is not None:
-
-            expressionBtn = labelEditor.findChild(
-                QPushButton, "mInsertExpressionButton"
-            )
-            if expressionBtn is not None:
-                expressionBtn.setVisible(False)
 
 
 class MapFormatter(BaseComposerItemFormatter):

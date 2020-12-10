@@ -28,8 +28,6 @@ from qgis.gui import QgsLayoutView
 
 from stdm.composer.item_formatter import (
     ChartFormatter,
-    DataLabelFormatter,
-    LineFormatter,
     MapFormatter,
     PhotoFormatter,
     QRCodeFormatter,
@@ -145,66 +143,6 @@ class ComposerItemConfig(QObject):
         Add subclasses to the collection of config items.
         """
         ComposerItemConfig.itemConfigurations.append(cls)
-
-
-class LineItemConfig(ComposerItemConfig):
-    """
-    For drawing lines in the composition. This uses the arrow composer item as the base.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = LineFormatter()
-
-    def action(self):
-        lineAct = QAction(GuiUtils.get_icon("line.png"),
-                          QApplication.translate("LineItemConfig", "Add line"), self.mainWindow())
-
-        return lineAct
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddArrow)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        selItems = self.composition().selectedLayoutItems()
-        if len(selItems) == 0:
-            return
-
-        arrow = selItems[0]
-        self._itemFormatter.apply(arrow, self.composerWrapper())
-
-
-class DataLabelConfig(ComposerItemConfig):
-    """
-    Enables users to define values for QgsComposerLabels from database sources.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = DataLabelFormatter()
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        selItems = self.composition().selectedLayoutItems()
-        if len(selItems) == 0:
-            return
-
-        label = selItems[0]
-        self._itemFormatter.apply(label, self.composerWrapper())
 
 
 class TableConfig(ComposerItemConfig):

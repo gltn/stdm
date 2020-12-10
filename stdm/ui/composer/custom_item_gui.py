@@ -12,7 +12,8 @@ Contains GUI classes for STDM custom layout item types
 """
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import (
-    QVBoxLayout
+    QVBoxLayout,
+    QWidget
 )
 from qgis.core import QgsLayoutItemRegistry
 from qgis.gui import (
@@ -49,6 +50,11 @@ class LineConfigWidget(QgsLayoutItemBaseWidget):
 
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
                                                                       QgsLayoutItemRegistry.LayoutPolyline)
+
+        arrow_group = self.base_widget.findChild(QWidget, 'mArrowMarkersGroupBox')
+        if arrow_group is not None:
+            arrow_group.setVisible(False)
+
         self.connectChildPanel(self.base_widget)
         vl.addWidget(self.base_widget)
 
@@ -89,6 +95,10 @@ class DataLabelConfigWidget(QgsLayoutItemBaseWidget):
         vl.addWidget(fieldSelector)
 
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutLabel)
+        expression_button = self.base_widget.findChild(QWidget, 'mInsertExpressionButton')
+        if expression_button is not None:
+            expression_button.setVisible(False)
+
         self.connectChildPanel(self.base_widget)
         vl.addWidget(self.base_widget)
 
@@ -132,6 +142,30 @@ class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return None  # PlotLayoutItemWidget(None, item)
 
 
+
+class MapConfigWidget(QgsLayoutItemBaseWidget):
+
+    def __init__(self, parent, layout_object):
+        super().__init__(parent, layout_object)
+
+        label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
+
+        vl = QVBoxLayout()
+        vl.setContentsMargins(0, 0, 0, 0)
+        vl.addWidget(label)
+
+        self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutMap)
+
+        self.connectChildPanel(self.base_widget)
+        vl.addWidget(self.base_widget)
+
+        self.setLayout(vl)
+
+    def setDockMode(self, dockMode):
+        self.base_widget.setDockMode(dockMode)
+        super().setDockMode(dockMode)
+
+
 class StdmMapLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
 
     def __init__(self):
@@ -141,7 +175,7 @@ class StdmMapLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return GuiUtils.get_icon('add_map.png')
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
-        return None  # PlotLayoutItemWidget(None, item)
+        return MapConfigWidget(None, item)
 
 
 class StdmPhotoLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
