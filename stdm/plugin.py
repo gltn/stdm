@@ -139,6 +139,8 @@ from stdm.data import globals
 from stdm.composer.custom_layout_items import StdmCustomLayoutItems
 from stdm.composer.composer_data_source import composer_data_source
 from stdm.composer.composer_wrapper import ComposerWrapper
+from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
+
 
 LOGGER = logging.getLogger('stdm')
 
@@ -217,7 +219,7 @@ class STDMQGISLoader:
                 QCoreApplication.installTranslator(self.translator)
 
         StdmCustomLayoutItems.add_custom_item_types()
-        StdmCustomLayoutItems.register_gui()
+        StdmCustomLayoutGuiItems.register_gui()
 
         # STDM Tables
         self.stdmTables = []

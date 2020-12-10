@@ -53,7 +53,6 @@ from qgis.gui import (
 from stdm.composer.chart_configuration import ChartConfigurationCollection
 from stdm.composer.composer_data_source import ComposerDataSource
 from stdm.composer.composer_item_config import ComposerItemConfig
-from stdm.composer.custom_layout_items import StdmCustomLayoutItems
 from stdm.composer.item_formatter import (
     ChartFormatter,
     DataLabelFormatter,
@@ -72,6 +71,7 @@ from stdm.data.pg_utils import (
 )
 from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
+from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
 from stdm.ui.composer.composer_chart_config import (
     ComposerChartConfigEditor
 )
@@ -137,7 +137,7 @@ class ComposerWrapper(QObject):
 
     @staticmethod
     def disable_stdm_items(layout_interface):
-        stdm_action_text = StdmCustomLayoutItems.stdm_action_text()
+        stdm_action_text = StdmCustomLayoutGuiItems.stdm_action_text()
         stdm_actions = [a for a in layout_interface.window().findChildren(QAction) if a.text() in stdm_action_text]
         for a in stdm_actions:
             a.setEnabled(False)
