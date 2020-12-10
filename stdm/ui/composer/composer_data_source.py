@@ -23,6 +23,8 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 
+from qgis.core import QgsLayout
+
 from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
@@ -33,6 +35,9 @@ from stdm.utils.util import (
     profile_and_user_views
 )
 
+from stdm.composer.layout_utils import LayoutUtils
+
+
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_data_source.ui'))
 
@@ -42,9 +47,11 @@ class ComposerDataSourceSelector(WIDGET, BASE):
     Widget for selecting a database table or view.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, layout: QgsLayout, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self._layout = layout
 
         self.cboDataSource.setInsertPolicy(QComboBox.InsertAlphabetically)
         self.cboReferencedTable.setInsertPolicy(QComboBox.InsertAlphabetically)
@@ -88,6 +95,10 @@ class ComposerDataSourceSelector(WIDGET, BASE):
 
         if self._sync_data_source:
             setComboCurrentIndexWithText(self.cboReferencedTable, dataSource)
+
+        data_source_name = self.cboDataSource.currentData()
+        # this causes the QgsLayout.variablesChanged signal to be emitted -- listening objects should hook to this
+        LayoutUtils.set_stdm_data_source_for_layout(self._layout, data_source_name)
 
     def _populate_referenced_tables(self):
         # Populate combo box with the list of tables names

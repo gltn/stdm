@@ -22,3 +22,7 @@ class LayoutUtils:
     @staticmethod
     def get_stdm_data_source_for_layout(layout: QgsLayout) -> Optional[str]:
         return layout.customProperty('variable_stdm_data_source', None)
+
+    @staticmethod
+    def set_stdm_data_source_for_layout(layout: QgsLayout, source: Optional[str]):
+        layout.setCustomProperty('variable_stdm_data_source', source)
