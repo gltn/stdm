@@ -11,8 +11,10 @@
 Contains custom layout item types
 """
 from qgis.PyQt.QtCore import (
-    QCoreApplication
+    QCoreApplication,
+    QPointF
 )
+from qgis.PyQt.QtGui import QPolygonF
 from qgis.core import (
     QgsLayoutItemRegistry,
     QgsLayoutItemAbstractMetadata,
@@ -39,12 +41,36 @@ class StdmLineLayoutItem(QgsLayoutItemPolyline):
 
     def __init__(self, layout):
         super().__init__(layout)
+        self._size = None
+        self._point = None
 
     def type(self):
         return STDM_LINE_ITEM_TYPE
 
     def icon(self):
         return GuiUtils.get_icon('line.png')
+
+    def attemptResize(self, size, includesFrame):
+        if not self.nodes():
+            self._size = size
+            self._set_initial_line()
+        else:
+            super().attemptResize(size, includesFrame)
+
+    def attemptMove(self, point, useReferencePoint, includesFrame, page):
+        if not self.nodes():
+            self._point = point
+            self._set_initial_line()
+        else:
+            super().attemptMove(point, useReferencePoint, includesFrame, page)
+
+    def _set_initial_line(self):
+        if self._point is not None and self._size is not None:
+            self.setNodes(QPolygonF([QPointF(self._point.x(), self._point.y()),
+                                     QPointF(self._point.x() + self._size.width(),
+                                             self._point.y() + self._size.height())]))
+            self._point = None
+            self._size = None
 
 
 class StdmLineLayoutItemMetadata(QgsLayoutItemAbstractMetadata):
