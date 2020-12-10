@@ -76,6 +76,8 @@ from stdm.ui.composer.table_data_source import (
 )
 from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 from stdm.utils.util import documentTemplates
+from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
+from stdm.composer.layout_utils import LayoutUtils
 
 
 def load_table_layers(config_collection):
@@ -208,21 +210,7 @@ class ComposerWrapper(QObject):
             self.generalDock().activateWindow()
             self.generalDock().raise_()
 
-        # Current template document file
-        self._currDocFile = None
-
-        # Copy of template document file
-        self._copy_template_file = None
-
         self._selected_item_uuid = str()
-
-    @property
-    def copy_template_file(self):
-        return self._copy_template_file
-
-    @copy_template_file.setter
-    def copy_template_file(self, value):
-        self._copy_template_file = value
 
     def _remove_composer_toolbar(self, object_name):
         """
@@ -331,22 +319,6 @@ class ComposerWrapper(QObject):
         """
         return self._stdmItemPropDock
 
-    def documentFile(self):
-        """
-        Returns the QFile instance associated with the current document. 'None' will be returned for
-        new, unsaved documents.
-        """
-        return self._currDocFile
-
-    def setDocumentFile(self, docFile):
-        """
-        Sets the document file.
-        """
-        if not isinstance(docFile, QFile):
-            return
-
-        self._currDocFile = docFile
-
     def selectedDataSource(self):
         """
         Returns the name of the data source specified by the user.
@@ -379,24 +351,7 @@ class ComposerWrapper(QObject):
         :param file_path: Path to document template
         :type file_path: str
         """
-        if not [i for i in self.composition().items() if
-                isinstance(i, QgsLayoutItem) and not isinstance(i, QgsLayoutItemPage)]:
-            self.mainWindow().close()
-
-        document_designer = self._iface.createNewComposer("STDM Document Designer")
-
-        # Embed STDM customizations
-        cw = ComposerWrapper(document_designer, self._iface)
-        cw.configure()
-
-        # Load template
-        cw.loadTemplate(file_path)
-
-    def loadTemplate(self, filePath):
-        """
-        Loads a document template into the view and updates the necessary STDM-related composer items.
-        """
-        if not QFile.exists(filePath):
+        if not QFile.exists(file_path):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("OpenTemplateConfig",
                                                         "Open Template Error"),
@@ -404,39 +359,44 @@ class ComposerWrapper(QObject):
                                                         "The specified template does not exist."))
             return
 
-        copy_file = filePath.replace('sdt', 'cpy')
+        if not [i for i in self.composition().items() if
+                isinstance(i, QgsLayoutItem) and not isinstance(i, QgsLayoutItemPage)]:
+            self.mainWindow().close()
 
-        # remove existing copy file
-        if QFile.exists(copy_file):
-            copy_template = QFile(copy_file)
-            copy_template.remove()
+        layout = LayoutGuiUtils.create_unique_named_layout()
+        layout.initializeDefaults()
+        self._iface.openLayoutDesigner(layout)
 
-        orig_template_file = QFile(filePath)
-
-        self.setDocumentFile(orig_template_file)
-
-        # make a copy of the original
-        result = orig_template_file.copy(copy_file)
-
-        # templateFile = QFile(filePath)
-
-        # work with copy
-        templateFile = QFile(copy_file)
-
-        self.copy_template_file = templateFile
-
-        if not templateFile.open(QIODevice.ReadOnly):
+        # Load template
+        try:
+            LayoutUtils.load_template_into_layout(layout, file_path)
+        except IOError as e:
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper",
                                                         "Open Operation Error"),
                                  "{0}\n{1}".format(QApplication.translate(
                                      "ComposerWrapper",
                                      "Cannot read template file."),
-                                     templateFile.errorString()
+                                     str(e)
+                                 ))
+
+    def xxxloadTemplate(self, filePath):
+        """
+        Loads a document template into the view and updates the necessary STDM-related composer items.
+        """
+
+        try:
+            LayoutUtils.load_template_into_layout(self.composition(), filePath)
+        except IOError as e:
+            QMessageBox.critical(self.mainWindow(),
+                                 QApplication.translate("ComposerWrapper",
+                                                        "Open Operation Error"),
+                                 "{0}\n{1}".format(QApplication.translate(
+                                     "ComposerWrapper",
+                                     "Cannot read template file."),
+                                     str(e)
                                  ))
             return
-
-        templateDoc = QDomDocument()
 
         if templateDoc.setContent(templateFile):
             table_config_collection = TableConfigurationCollection.create(templateDoc)
@@ -491,8 +451,6 @@ class ComposerWrapper(QObject):
             qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
             self._configure_qr_code_editors(qrc_config_collection)
 
-            self._sync_ids_with_uuids()
-
     def saveTemplate(self):
         """
         Creates and saves a new document template.
@@ -514,9 +472,9 @@ class ComposerWrapper(QObject):
             return
 
         # If it is a new unsaved document template then prompt for the document name.
-        docFile = self.documentFile()
+        template_path = self.composition().customProperty('variable_template_path', None)
 
-        if docFile is None:
+        if template_path is None:
             docName, ok = QInputDialog.getText(self.mainWindow(),
                                                QApplication.translate("ComposerWrapper", "Template Name"),
                                                QApplication.translate("ComposerWrapper",
@@ -575,6 +533,9 @@ class ComposerWrapper(QObject):
                             return
 
                 docFile = QFile(absPath)
+                template_path = absPath
+        else:
+            docFile = QFile(template_path)
 
             # else:
             # return
@@ -620,11 +581,9 @@ class ComposerWrapper(QObject):
         else:
             self.mainWindow().setWindowTitle(template_name)
 
-        self.setDocumentFile(docFile)
-        docFile.close()
+        self.composition().setCustomProperty('variable_template_path', template_path)
 
-        if self.copy_template_file:
-            self.copy_template_file.close()
+        docFile.close()
 
     def _writeXML(self, xml_doc, doc_name):
         """
@@ -641,6 +600,10 @@ class ComposerWrapper(QObject):
         # Write STDM data field configurations
         dataSourceElement = ComposerDataSource.domElement(self, xml_doc)
         composer_element.appendChild(dataSourceElement)
+
+        return
+
+        # TODO!!!!!!
 
         # Write spatial field configurations
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
@@ -778,19 +741,6 @@ class ComposerWrapper(QObject):
                 qrc_editor.set_configuration(qrc_config)
 
                 self.addWidgetMapping(qrc_item.uuid(), qrc_editor)
-
-    def _sync_ids_with_uuids(self):
-        """
-        Matches IDs of custom STDM items with the corresponding UUIDs. This
-        is applied when loading existing templates so that the saved
-        document contains a matching pair of ID and UUID for each composer
-        item.
-        """
-        items = list(self._widgetMappings.keys())
-        for item_uuid in list(self._widgetMappings.keys()):
-            item = self.composition().itemById(item_uuid)
-            if item is not None:
-                item.setId(item_uuid)
 
     def _composerTemplatesPath(self):
         """

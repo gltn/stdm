@@ -176,7 +176,7 @@ class ComposerDataSource:
         """
         Helper method that creates a data source DOM element from a composer wrapper instance.
         """
-        from stdm.ui.composer import ComposerFieldSelector
+        from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
 
         dataSourceElement = domDocument.createElement("DataSource")
         dataSourceElement.setAttribute("name", composerWrapper.selectedDataSource())
