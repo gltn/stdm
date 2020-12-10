@@ -16,7 +16,7 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QRegExp, QFile
+from qgis.PyQt.QtCore import QRegExp
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QComboBox,
@@ -31,7 +31,6 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     Qgis,
     QgsLayoutItemMap,
-    QgsLayoutItemPicture,
     QgsLayoutFrame,
     QgsLayoutTableColumn
 )
@@ -39,12 +38,8 @@ from qgis.gui import (
     QgsCollapsibleGroupBoxBasic
 )
 
-from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
-from stdm.ui.composer.photo_data_source import ComposerPhotoDataSourceEditor
-from stdm.ui.composer.qr_code import ComposerQREditor
 from stdm.ui.composer.table_data_source import ComposerTableDataSourceEditor
-from stdm.utils.util import PLUGIN_DIR
 
 
 class BaseComposerItemFormatter:
@@ -99,18 +94,6 @@ class MapFormatter(BaseComposerItemFormatter):
 
         # Set ID to match UUID
         templateMap.setId(templateMap.uuid())
-
-
-class PhotoFormatter(BaseComposerItemFormatter):
-    """
-    Add widget for formatting composer picture items.
-    """
-
-    def __init__(self):
-        self.default_photo = PLUGIN_DIR + "/images/icons/photo_512.png"
-        self.has_frame = True
-        self._item_editor_cls = ComposerPhotoDataSourceEditor
-
 
 
 class TableFormatter(BaseComposerItemFormatter):
@@ -221,45 +204,3 @@ class TableFormatter(BaseComposerItemFormatter):
         filter_btn = groupbox.findChild(QToolButton, "mFeatureFilterButton")
         if filter_btn is not None:
             filter_btn.setVisible(False)
-
-
-class ChartFormatter(PhotoFormatter):
-    """
-    Add widget for formatting composer picture items.
-    """
-
-    def apply(self, chart_item, composerWrapper, fromTemplate=False):
-        if not isinstance(chart_item, QgsLayoutItemPicture):
-            return
-
-        # Get the main picture editor widget and configure widgets
-        picture_editor = composerWrapper.itemDock().widget()
-
-        if not fromTemplate:
-            # Disable outline in map composer item
-            chart_item.setFrameEnabled(False)
-
-            # Create data properties editor and it to the dock widget
-            graph_config_editor = ComposerChartConfigEditor(composerWrapper)
-            stdmDock = composerWrapper.stdmItemDock()
-            stdmDock.setWidget(graph_config_editor)
-
-            # Add widget to the composer wrapper widget mapping collection
-            composerWrapper.addWidgetMapping(chart_item.uuid(), graph_config_editor)
-
-        # Set default photo properties
-        default_chart_pic = PLUGIN_DIR + "/images/icons/chart-512.png"
-        if QFile.exists(default_chart_pic):
-            chart_item.setPicturePath(default_chart_pic)
-
-        # Set ID to match UUID
-        chart_item.setId(chart_item.uuid())
-
-
-class QRCodeFormatter(PhotoFormatter):
-    """Add composer widget for editing QRCode properties"""
-
-    def __init__(self):
-        self.default_photo = PLUGIN_DIR + "/images/icons/qrcode_512.png"
-        self.has_frame = False
-        self._item_editor_cls = ComposerQREditor

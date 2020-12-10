@@ -19,7 +19,7 @@ email                : gkahiu@gmail.com
 """
 from qgis.PyQt import uic
 from qgis.core import (
-    QgsLayoutItemLabel
+    QgsLayoutItem
 )
 
 from stdm.composer.layout_utils import LayoutUtils
@@ -36,15 +36,14 @@ class BaseComposerFieldSelector(WIDGET, BASE):
     or view.
     """
 
-    def __init__(self, label: QgsLayoutItemLabel, parent=None):
+    def __init__(self, item: QgsLayoutItem, parent=None):
         super().__init__(parent)
         self.setupUi(self)
 
-        self._layout = label.layout()
-        self._label = label
+        self._layout = item.layout()
+        self._item = item
 
         # Load fields if the data source has been specified
-
         ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         if ds_name is not None:
             self._loadFields(ds_name)
@@ -111,16 +110,16 @@ class ComposerFieldSelector(BaseComposerFieldSelector):
         """
         data_source = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         if fieldName == "" or data_source is None:
-            self._label.setText("[STDM Data Field]")
+            self._item.setText("[STDM Data Field]")
 
         else:
-            label_text = self._label.text()
+            label_text = self._item.text()
             data_text = label_text[
                         label_text.find('[') + 1:label_text.find(']')]
             data_source = data_source + "." + self.fieldName()
 
-            self._label.setText(
-                self._label.text().replace(data_text, data_source)
+            self._item.setText(
+                self._item.text().replace(data_text, data_source)
             )
 
-        self._label.refresh()
+        self._item.refresh()

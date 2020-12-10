@@ -27,10 +27,7 @@ from qgis.core import QgsLayout
 from qgis.gui import QgsLayoutView
 
 from stdm.composer.item_formatter import (
-    ChartFormatter,
     MapFormatter,
-    PhotoFormatter,
-    QRCodeFormatter,
     TableFormatter
 )
 from stdm.ui.composer.composer_doc_selector import (
@@ -219,97 +216,6 @@ class MapConfig(ComposerItemConfig):
 
         templateMap = selItems[0]
         self._itemFormatter.apply(templateMap, self.composerWrapper())
-
-
-class PhotoConfig(ComposerItemConfig):
-    """
-    Photo composer item based on type.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = PhotoFormatter()
-
-    def action(self):
-        ph_act = QAction(GuiUtils.get_icon("photo_24.png"),
-                         QApplication.translate("PhotoConfig", "Add photo"), self.mainWindow())
-
-        return ph_act
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddPicture)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        sel_items = self.composition().selectedLayoutItems()
-        if len(sel_items) == 0:
-            return
-
-        photo_item = sel_items[0]
-        self._itemFormatter.apply(photo_item, self.composerWrapper())
-
-
-class ChartConfig(ComposerItemConfig):
-    """
-    Chart composer item which uses the QgsComposerPicture item for
-    rendering graphs outputted as images.
-    """
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = ChartFormatter()
-
-    def action(self):
-        chart_act = QAction(GuiUtils.get_icon("chart.png"),
-                            QApplication.translate("ChartConfig", "Add chart"), self.mainWindow())
-
-        return chart_act
-
-    def on_action_triggered(self, state):
-        self.composerView().setCurrentTool(QgsComposerView.AddPicture)
-
-    def on_action_toggled(self, checked):
-        if checked:
-            self.composition().selectedItemChanged.connect(self.onSelectItemChanged)
-
-        else:
-            self.composition().selectedItemChanged.disconnect(self.onSelectItemChanged)
-
-    def onSelectItemChanged(self, selected):
-        """
-        We use this method since there seems to be an issue with QgsComposition not raising
-        signals when new composer items are added in the composition.
-        """
-        sel_items = self.composition().selectedLayoutItems()
-        if len(sel_items) == 0:
-            return
-
-        chart_item = sel_items[0]
-        self._itemFormatter.apply(chart_item, self.composerWrapper())
-
-
-class QRCodeConfig(PhotoConfig):
-    """Composer item for QR codes."""
-
-    def __init__(self, composerWrapper):
-        ComposerItemConfig.__init__(self, composerWrapper)
-        self._itemFormatter = QRCodeFormatter()
-
-    def action(self):
-        qrcode_act = QAction(GuiUtils.get_icon("qrcode.png"),
-                             QApplication.translate("QRCodeConfig", "Add QR Code"), self.mainWindow())
-
-        return qrcode_act
 
 
 class SaveTemplateConfig(ComposerItemConfig):

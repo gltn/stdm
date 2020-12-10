@@ -23,8 +23,7 @@ email                : stdm@unhabitat.org
 from qgis.PyQt.QtCore import (
     QMetaObject,
     QSize,
-    pyqtSignal,
-    pyqtSlot
+    pyqtSignal
 )
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -34,6 +33,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
@@ -47,8 +47,6 @@ from stdm.utils.util import (
     setComboCurrentIndexWithText,
     profile_and_user_views
 )
-from stdm.composer.layout_utils import LayoutUtils
-
 
 
 class LinkedTableProps(object):
@@ -293,9 +291,9 @@ class ReferencedTableEditor(QWidget):
     def _load_source_table_fields(self, sel):
         self.cbo_referencing_col.clear()
         data_source_index = self.cbo_source_field.currentIndex()
-       # self.on_data_source_changed(
-       #     self.cbo_source_field.itemData(data_source_index)
-       # )
+        # self.on_data_source_changed(
+        #     self.cbo_source_field.itemData(data_source_index)
+        # )
 
         if not sel:
             return

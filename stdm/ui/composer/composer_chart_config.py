@@ -21,10 +21,11 @@ email                : stdm@unhabitat.org
 """
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (
-    QApplication,
-    QWidget
+    QApplication
 )
 
+from stdm.composer.custom_layout_items import StdmChartLayoutItem
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.ui.composer.chart_type_editors import DataSourceNotifier
 from stdm.ui.composer.chart_type_register import ChartTypeUISettings
 from stdm.ui.gui_utils import GuiUtils
@@ -41,11 +42,12 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class ComposerChartConfigEditor(WIDGET, BASE):
-    def __init__(self, composer_wrapper, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, item: StdmChartLayoutItem, parent=None):
+        super().__init__(parent)
         self.setupUi(self)
 
-        self._composer_wrapper = composer_wrapper
+        self._item = item
+        self._layout = item.layout()
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
@@ -66,18 +68,19 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         self.groupBox_2.collapsedStateChanged.connect(self._on_series_properties_collapsed)
 
         # Load fields if the data source has been specified
-        ds_name = self._composer_wrapper.selectedDataSource()
+        ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         self.ref_table.load_data_source_fields(ds_name)
 
         # Load referenced table list
         self.ref_table.load_link_tables()
 
+        self.ref_table.set_layout(self._layout)
+
         # Connect signals
-        self._composer_wrapper.dataSourceSelected.connect(self.ref_table.on_data_source_changed)
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
 
     def _load_legend_positions(self):
-        from stdm.composer import legend_positions
+        from stdm.composer.chart_configuration import legend_positions
 
         self.cbo_legend_pos.clear()
         for k, v in legend_positions.items():
@@ -142,7 +145,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         :type table: str
         """
         curr_editor = self.series_type_container.currentWidget()
-        if not curr_editor is None:
+        if curr_editor is not None:
             if isinstance(curr_editor, DataSourceNotifier):
                 curr_editor.on_table_name_changed(table)
 
@@ -151,7 +154,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         config = None
 
         curr_editor = self.series_type_container.currentWidget()
-        if not curr_editor is None:
+        if curr_editor is not None:
             try:
                 config = curr_editor.configuration()
             except AttributeError:
@@ -163,7 +166,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
             raise Exception(QApplication.translate("ComposerChartConfigEditor",
                                                    "No series editor found."))
 
-        if not config is None:
+        if config is not None:
             ref_table_config = self.ref_table.properties()
             config.extract_from_linked_table_properties(ref_table_config)
             config.set_insert_legend(self.gb_legend.isChecked())
@@ -197,7 +200,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
                 # Set series editor properties
                 curr_editor = self.series_type_container.currentWidget()
-                if not curr_editor is None:
+                if curr_editor is not None:
                     try:
                         curr_editor.set_configuration(configuration)
                         self._set_graph_properties(configuration)

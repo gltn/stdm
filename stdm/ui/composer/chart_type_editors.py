@@ -32,6 +32,7 @@ from qgis.PyQt.QtWidgets import (
     QLineEdit,
     QWidget
 )
+from qgis.gui import QgsColorButton
 
 from stdm.data.pg_utils import (
     numeric_columns,
@@ -68,8 +69,8 @@ class BarValueConfigWidget(QWidget):
         self.lbl_fill_color = QLabel(self)
         self.lbl_fill_color.setText(QApplication.translate("ValueConfigWidget",
                                                            "Fill color"))
-        self.fill_color_btn = QgsColorButtonV2(self, QApplication.translate("ValueConfigWidget",
-                                                                            "Select bar fill color"))
+        self.fill_color_btn = QgsColorButton(self, QApplication.translate("ValueConfigWidget",
+                                                                          "Select bar fill color"))
         self.fill_color_btn.setMaximumHeight(30)
         self.fill_color_btn.setMinimumHeight(30)
         self.fill_color_btn.setMinimumWidth(100)
@@ -112,7 +113,7 @@ class BarValueConfigWidget(QWidget):
         :return: BarValueConfiguration settings.
         :rtype: BarValueConfiguration
         """
-        from stdm import BarValueConfiguration
+        from stdm.composer.chart_configuration import BarValueConfiguration
 
         bar_value_config = BarValueConfiguration()
         bar_value_config.set_value_field(self._value_field)
@@ -132,7 +133,7 @@ WIDGET, BASE = uic.loadUiType(
 class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
                              BASE):
     def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+        super().__init__(parent)
 
         self.setupUi(self)
 
@@ -167,7 +168,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         :return: VerticalBar configuration settings.
         :rtype: VerticalBarConfiguration
         """
-        from stdm import VerticalBarConfiguration
+        from stdm.composer.chart_configuration import VerticalBarConfiguration
 
         vbar_config = VerticalBarConfiguration()
         vbar_config.set_x_label(self.txt_x_label.text())
@@ -217,7 +218,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         if not curr_value_field:
             return
 
-        if not curr_value_field in self._value_config_widgets:
+        if curr_value_field not in self._value_config_widgets:
             config_widget = BarValueConfigWidget(**kwargs)
             widg_idx = self.tb_value_config.addTab(config_widget, curr_value_field)
             self.tb_value_config.setCurrentIndex(widg_idx)

@@ -19,14 +19,15 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+from qgis.core import QgsLayoutItem
+
 from stdm.ui.composer.composer_field_selector import BaseComposerFieldSelector
 
 
 class ComposerQREditor(BaseComposerFieldSelector):
-    def __init__(self, *args, **kwargs):
-        # Add label argument and set it as None to conform to parent class
-        args = (args[0], None)
-        super(ComposerQREditor, self).__init__(*args, **kwargs)
+
+    def __init__(self, item: QgsLayoutItem, parent=None):
+        super().__init__(item, parent)
 
     def configuration(self):
         from stdm.composer.qr_code_configuration import QRCodeConfiguration
