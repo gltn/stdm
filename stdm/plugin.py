@@ -124,6 +124,7 @@ from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.wizard.wizard import ConfigWizard
+from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.utils.util import (
     getIndex,
     db_user_tables,
@@ -1771,27 +1772,9 @@ class STDMQGISLoader:
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
-        title = QApplication.translate(
-            "STDMPlugin",
-            "STDM Document Designer"
-        )
 
-        # get unique layout name
-        names = [l.name() for l in QgsProject.instance().layoutManager().layouts()]
-        idx = 1
-        while title in names:
-            idx += 1
-            title = QApplication.translate(
-                "STDMPlugin",
-                "STDM Document Designer {}"
-            ).format(idx)
-
-        layout = QgsPrintLayout(QgsProject.instance())
-        layout.setName(title)
+        layout = LayoutGuiUtils.create_unique_named_layout()
         layout.initializeDefaults()
-
-        QgsProject.instance().layoutManager().addLayout(layout)
-
         self.iface.openLayoutDesigner(layout)
 
     def on_designer_opened(self, designer_interface: QgsLayoutDesignerInterface):

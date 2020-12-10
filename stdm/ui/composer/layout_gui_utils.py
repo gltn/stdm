@@ -13,12 +13,15 @@ Contains custom layout item types
 
 from typing import Optional
 
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import (
     QLabel,
     QSizePolicy
 )
 from qgis.core import (
-    QgsLayoutItem
+    QgsLayoutItem,
+    QgsPrintLayout,
+    QgsProject
 )
 from qgis.gui import (
     QgsGui,
@@ -54,3 +57,27 @@ class LayoutGuiUtils:
         label.setSizePolicy(sp)
         label.setStyleSheet("padding: 2px; font-weight: bold; background-color: rgb(200, 200, 200);")
         return label
+
+    @staticmethod
+    def create_unique_named_layout() -> QgsPrintLayout:
+        # get unique layout name
+        names = [l.name() for l in QgsProject.instance().layoutManager().layouts()]
+        idx = 1
+
+        title = QCoreApplication.translate(
+            "STDMPlugin",
+            "STDM Document Designer"
+        )
+
+        while title in names:
+            idx += 1
+            title = QCoreApplication.translate(
+                "STDMPlugin",
+                "STDM Document Designer {}"
+            ).format(idx)
+
+        layout = QgsPrintLayout(QgsProject.instance())
+        layout.setName(title)
+
+        QgsProject.instance().layoutManager().addLayout(layout)
+        return layout
