@@ -18,8 +18,7 @@ from qgis.core import QgsLayoutItemRegistry
 from qgis.gui import (
     QgsGui,
     QgsLayoutItemBaseWidget,
-    QgsLayoutItemAbstractGuiMetadata,
-    QgsLayoutViewEllipticalRubberBand
+    QgsLayoutItemAbstractGuiMetadata
 )
 
 from stdm.composer.custom_layout_items import (
@@ -33,8 +32,25 @@ from stdm.composer.custom_layout_items import (
 )
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
 from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
-from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.composer.linear_rubber_band import LinearRubberBand
+from stdm.ui.gui_utils import GuiUtils
+
+
+class LineConfigWidget(QgsLayoutItemBaseWidget):
+
+    def __init__(self, parent, layout_object):
+        super().__init__(parent, layout_object)
+
+        label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
+
+        vl = QVBoxLayout()
+        vl.setContentsMargins(0, 0, 0, 0)
+        vl.addWidget(label)
+
+        base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutPolyline)
+        vl.addWidget(base_widget)
+
+        self.setLayout(vl)
 
 
 class StdmLineLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
@@ -46,7 +62,7 @@ class StdmLineLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return GuiUtils.get_icon('line.png')
 
     def createItemWidget(self, item):  # pylint: disable=missing-docstring, no-self-use
-        return None  # PlotLayoutItemWidget(None, item)
+        return LineConfigWidget(None, item)
 
     def createRubberBand(self, view):
         return LinearRubberBand(view)
