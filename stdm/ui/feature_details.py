@@ -1067,6 +1067,7 @@ class DetailsTreeView(DetailsDBHandler):
         table_icon = GuiUtils.get_icon('table.png')
         ### add non entity layer for views.
 
+        str_records = []
         for spu_id in party_ids:
             str_records = self.party_str_link(entity, spu_id)
 
@@ -1083,7 +1084,10 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records, True)
 
-        return getattr(str_records[0], self.layer_table).id  # Nasty hack!!
+        if len(str_records) > 0:
+            return getattr(str_records[0], self.layer_table).id  # Assuming we have an Id!!
+        else:
+            return -1
 
         # self.layer.selectByIds(
         # self.feature_models.keys()
