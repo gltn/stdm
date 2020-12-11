@@ -792,11 +792,11 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             ordering = text('id desc')
 
         if self.sort_order not in ['idasc', 'iddesc']:
-            order_column = self.get_sorting_field(entity)
-            if order_column == "":
+            sort_field = self.get_sorting_field(entity)
+            if sort_field == "":
                 ordering = text('id desc')
             else:
-                ordering = text(order_column + ' ' + self.sort_order)
+                ordering = text(sort_field + ' ' + self.sort_order)
 
         return ordering
 
