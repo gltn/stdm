@@ -177,17 +177,6 @@ class ComposerWrapper(QObject):
         if self.itemDock() is not None:
             self.itemDock().show()
 
-        # Create dock widget for configuring STDM item properties
-        self._stdmItemPropDock = QDockWidget(
-            QApplication.translate("ComposerWrapper", "STDM item properties"),
-            self.mainWindow())
-
-        self._stdmItemPropDock.setObjectName("STDMItemDock")
-        self._stdmItemPropDock.setMinimumWidth(300)
-        self._stdmItemPropDock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetClosable)
-        self.mainWindow().addDockWidget(Qt.RightDockWidgetArea, self._stdmItemPropDock)
-        self._stdmItemPropDock.show()
-
         # Re-arrange dock widgets and push up STDM data source dock widget
         if self.generalDock() is not None:
             self.mainWindow().splitDockWidget(stdmDataSourceDock,
@@ -199,11 +188,6 @@ class ComposerWrapper(QObject):
             if self.generalDock() is not None:
                 self.mainWindow().tabifyDockWidget(self.generalDock(),
                                                    self.itemDock())
-
-        if self.itemDock() is not None:
-            self.mainWindow().splitDockWidget(self.itemDock(),
-                                              self._stdmItemPropDock,
-                                              Qt.Vertical)
 
         # Set focus on composition properties window
         if self.generalDock() is not None:
@@ -312,12 +296,6 @@ class ComposerWrapper(QObject):
         Get the 'Composition' dock widget.
         """
         return self.mainWindow().findChild(QDockWidget, "LayoutDock")
-
-    def stdmItemDock(self):
-        """
-        Returns the STDM item dock widget.
-        """
-        return self._stdmItemPropDock
 
     def selectedDataSource(self):
         """
