@@ -147,23 +147,14 @@ def configure_supporting_documents_inheritance(entity_supporting_docs_t,
     :return: Database model corresponding to an entity's supporting document.
     """
 
-    class ProfileSupportingDocumentProxy(base):
-        """
-        Represents the root table for storing supporting documents in a
-        given profile.
-        """
-        __table__ = profile_supporting_docs_t
-
-        __mapper_args__ = {
-            'polymorphic_identity': 'NA',
-            'polymorphic_on': 'source_entity'
-        }
-
     # Get the link columns
     t_doc_id_col = getattr(entity_supporting_docs_t.c, 'supporting_doc_id')
-    p_doc_id_col = getattr(profile_supporting_docs_t.c, 'id')
+    if profile_supporting_docs_t is not None:
+        p_doc_id_col = getattr(profile_supporting_docs_t.c, 'id')
+    else:
+        p_doc_id_col = None
 
-    class EntitySupportingDocumentProxy(ProfileSupportingDocumentProxy):
+    class EntitySupportingDocumentProxy(base):
         """
         Represents the entity supporting documents table.
         """
