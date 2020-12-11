@@ -119,6 +119,10 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             self.set_display_name_button_clicked
         )
 
+        self.import_gpx_file_button.clicked.connect(
+            self.import_gpx_file
+        )
+
         self.iface.projectRead.connect(self.on_project_opened)
 
     def on_project_opened(self):
@@ -967,7 +971,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         except KeyError:
             return False
 
-    def on_import_gpx_file_button_clicked(self):
+    def import_gpx_file(self):
         """
         Method to load GPS dialog
         """
