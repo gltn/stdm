@@ -18,6 +18,8 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import pyqtSignal
+
 from qgis.core import (
     QgsLayoutItem
 )
@@ -36,6 +38,8 @@ class BaseComposerFieldSelector(WIDGET, BASE):
     or view.
     """
 
+    changed = pyqtSignal()
+
     def __init__(self, item: QgsLayoutItem, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -51,6 +55,7 @@ class BaseComposerFieldSelector(WIDGET, BASE):
         # Connect signals
         self._layout.variablesChanged.connect(self.layout_variables_changed)
         self.cboDataField.currentIndexChanged[str].connect(self.onFieldNameChanged)
+        self.cboDataField.currentIndexChanged[str].connect(self.changed)
 
     def layout_variables_changed(self):
         """

@@ -28,21 +28,3 @@ class ComposerQREditor(BaseComposerFieldSelector):
 
     def __init__(self, item: QgsLayoutItem, parent=None):
         super().__init__(item, parent)
-
-    def configuration(self):
-        from stdm.composer.qr_code_configuration import QRCodeConfiguration
-
-        # Assert field name has been selected
-        if not self.fieldName():
-            raise Exception(
-                'Data field for QR code item cannot be empty.'
-            )
-
-        qrc_config = QRCodeConfiguration()
-        qrc_config.data_source_field = self.fieldName()
-
-        return qrc_config
-
-    def set_configuration(self, configuration):
-        # Load selected field name for generating QR codes
-        self.selectFieldName(configuration.data_source_field)

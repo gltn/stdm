@@ -393,10 +393,6 @@ class ComposerWrapper(QObject):
             spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
             self._configureSpatialSymbolEditor(spatialFieldsConfig)
 
-            # Load photo editors
-            photo_config_collection = PhotoConfigurationCollection.create(templateDoc)
-            self._configure_photo_editors(photo_config_collection)
-
             # Load table editors
             self._configure_table_editors(table_config_collection)
 
@@ -613,24 +609,6 @@ class ComposerWrapper(QObject):
                     # Add widget to the collection but now use the current uuid of the composer map
                     self.addWidgetMapping(mapItem.uuid(), composerSymbolEditor)
 
-    def _configure_photo_editors(self, photo_config_collection):
-        """
-        Creates widgets for editing photo data sources.
-        :param photo_config_collection: PhotoConfigurationCollection instance.
-        :type photo_config_collection: PhotoConfigurationCollection
-        """
-        if self._dataSourceWidget is None:
-            return
-
-        for item_id, photo_config in photo_config_collection.mapping().items():
-            pic_item = self.composition().itemById(item_id)
-
-            if pic_item is not None:
-                photo_editor = ComposerPhotoDataSourceEditor(self, self.mainWindow())
-                photo_editor.set_configuration(photo_config)
-
-                self.addWidgetMapping(pic_item.uuid(), photo_editor)
-
     def _configure_chart_editors(self, chart_config_collection):
         """
         Creates widgets for editing chart properties.
@@ -669,25 +647,6 @@ class ComposerWrapper(QObject):
                     table_editor.set_table_vector_layer)
 
                 self.addWidgetMapping(table_item.uuid(), table_editor)
-
-    def _configure_qr_code_editors(self, qr_code_config_collection):
-        """
-        Creates widgets for editing QR code properties.
-        :param qr_code_config_collection: QRCodeConfigurationCollection instance.
-        :type qr_code_config_collection: QRCodeConfigurationCollection
-        """
-        if self._dataSourceWidget is None:
-            return
-
-        for item_id, qrc_config in qr_code_config_collection.mapping().items():
-            qrc_item = self.composition().itemById(item_id)
-
-            if qrc_item is not None:
-                qrc_editor_cls = qr_code_config_collection.editor_type
-                qrc_editor = qrc_editor_cls(self, self.mainWindow())
-                qrc_editor.set_configuration(qrc_config)
-
-                self.addWidgetMapping(qrc_item.uuid(), qrc_editor)
 
     def _composerTemplatesPath(self):
         """
