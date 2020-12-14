@@ -28,17 +28,18 @@ from stdm.composer.custom_items.chart import StdmChartLayoutItem
 from stdm.composer.layout_utils import LayoutUtils
 from stdm.ui.composer.chart_type_editors import DataSourceNotifier
 from stdm.ui.composer.chart_type_register import ChartTypeUISettings
+from stdm.ui.composer.referenced_table_editor import LinkedTableProps
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
 )
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_chart_config.ui'))
 
 
 class ComposerChartConfigEditor(WIDGET, BASE):
+
     def __init__(self, item: StdmChartLayoutItem, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -50,9 +51,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
         self.cbo_chart_type.currentIndexChanged[int].connect(self._on_chart_type_changed)
 
-        '''
-        Register chartname to the positional index of the corresponding editor
-        '''
+        # Register chartname to the positional index of the corresponding editor
         self._short_name_idx = {}
 
         # Add registered chart types
@@ -73,8 +72,16 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
         self.ref_table.set_layout(self._layout)
 
+        self.set_from_item()
+
         # Connect signals
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
+
+        self.ref_table.changed.connect(self._item_changed)
+        self.cbo_chart_type.currentIndexChanged.connect(self._item_changed)
+        self.txt_plot_title.textChanged.connect(self._item_changed)
+        self.gb_legend.toggled.connect(self._item_changed)
+        self.cbo_legend_pos.currentIndexChanged.connect(self._item_changed)
 
     def _load_legend_positions(self):
         from stdm.composer.chart_configuration import legend_positions
@@ -85,7 +92,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
         # Select 'Automatic' option
         GuiUtils.set_combo_current_index_by_text(self.cbo_legend_pos,
-                                     QApplication.translate("ChartConfiguration", "Automatic"))
+                                                 QApplication.translate("ChartConfiguration", "Automatic"))
 
     def _load_chart_type_settings(self):
         for cts in ChartTypeUISettings.registry:
@@ -101,7 +108,9 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         """
         cts_obj = cts(self)
 
-        widget_idx = self.series_type_container.addWidget(cts_obj.editor())
+        widget = cts_obj.editor()
+        widget.changed.connect(self._item_changed)
+        widget_idx = self.series_type_container.addWidget(widget)
         self.cbo_chart_type.insertItem(widget_idx, cts_obj.icon(),
                                        cts_obj.title())
 
@@ -146,8 +155,8 @@ class ComposerChartConfigEditor(WIDGET, BASE):
             if isinstance(curr_editor, DataSourceNotifier):
                 curr_editor.on_table_name_changed(table)
 
-    def configuration(self):
-        # Return chart configuration settings
+    def _item_changed(self):
+
         config = None
 
         curr_editor = self.series_type_container.currentWidget()
@@ -164,14 +173,17 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                                                    "No series editor found."))
 
         if config is not None:
-            ref_table_config = self.ref_table.properties()
-            config.extract_from_linked_table_properties(ref_table_config)
             config.set_insert_legend(self.gb_legend.isChecked())
             config.set_title(self.txt_plot_title.text())
             config.set_legend_position(self.cbo_legend_pos.itemData
                                        (self.cbo_legend_pos.currentIndex()))
+            self._item.set_chart_configuration(config)
 
-        return config
+        linked_table_props = self.ref_table.properties()
+
+        self._item.set_linked_table(linked_table_props.linked_table)
+        self._item.set_source_field(linked_table_props.source_field)
+        self._item.set_linked_column(linked_table_props.linked_field)
 
     def composer_item(self):
         return self._picture_item
@@ -183,8 +195,9 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         GuiUtils.set_combo_index_by_data(self.cbo_legend_pos,
                                          config.legend_position())
 
-    def set_configuration(self, configuration):
-        # Load configuration settings
+    def set_from_item(self):
+        configuration = self._item.chart_configuration()
+
         short_name = configuration.plot_type
 
         if short_name:
@@ -192,8 +205,12 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                 plot_type_idx = self._short_name_idx[short_name]
                 self.cbo_chart_type.setCurrentIndex(plot_type_idx)
 
-                # Set linked table properties
-                self.ref_table.set_properties(configuration.linked_table_props())
+                table_props = LinkedTableProps(linked_table=self._item.linked_table(),
+                                               source_field=self._item.source_field(),
+                                               linked_field=self._item.linked_field())
+
+                self.ref_table.set_properties(table_props)
+                self.on_referenced_table_changed(table_props.linked_table)
 
                 # Set series editor properties
                 curr_editor = self.series_type_container.currentWidget()

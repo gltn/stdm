@@ -126,7 +126,7 @@ class BarValueConfiguration:
         return bar_cfg
 
 
-class ChartConfiguration(LinkedTableItemConfiguration):
+class ChartConfiguration:
     tag_name = "Plot"
     types = {}
     plot_type = ""
@@ -156,17 +156,6 @@ class ChartConfiguration(LinkedTableItemConfiguration):
         except AttributeError:
             raise AttributeError("Plot type attribute is missing")
 
-    def write_source_to_dom_element(self, dom_element: QDomElement):
-        """
-        Appends the linked table configuration information to the specified
-        DOM element.
-        :param dom_element: Composer item element.
-        :type dom_element: QDomElement
-        """
-        dom_element.setAttribute("table", self._linked_table)
-        dom_element.setAttribute("referenced_field", self._source_field)
-        dom_element.setAttribute("referencing_field", self._linked_field)
-
     def to_dom_element(self, dom_document, plot_type):
         """
         :param dom_document: Root composer element.
@@ -178,7 +167,6 @@ class ChartConfiguration(LinkedTableItemConfiguration):
         :rtype: QDomElement
         """
         plot_element = dom_document.createElement(self.tag_name)
-        plot_element.setAttribute("itemid", self._item_id)
         plot_element.setAttribute("type", plot_type)
         plot_element.setAttribute("title", self._title)
         plot_element.setAttribute("back_color", self._axis_back_color)
@@ -190,8 +178,6 @@ class ChartConfiguration(LinkedTableItemConfiguration):
         plot_element.setAttribute("y_label", self._y_label)
         plot_element.setAttribute("y_field", self._y_field)
         plot_element.setAttribute("replace_none_by_zero", self._replace_none_by_zero)
-
-        self.write_source_to_dom_element(plot_element)
 
         return plot_element
 
@@ -384,9 +370,6 @@ class ChartConfiguration(LinkedTableItemConfiguration):
         else:
             self._replace_none_by_zero = True
 
-        # Set base linked table properties
-        self._extract_from_dom_element(dom_element)
-
     @staticmethod
     def create(dom_element: QDomElement):
         """
@@ -419,10 +402,10 @@ class ChartConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing a collection of ChartConfiguration objects.
     """
-    from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
+    # from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 
     collection_root = "Charts"
-    editor_type = ComposerChartConfigEditor
+    # editor_type = ComposerChartConfigEditor
     config_root = ChartConfiguration.tag_name
     item_config = ChartConfiguration
 
