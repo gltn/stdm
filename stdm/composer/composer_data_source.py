@@ -178,49 +178,7 @@ class ComposerDataSource:
             data_category,
             referenced_table_name
         )
-
-        # Get data fields
-        ### TODO
-        ### dataFieldList = dataSourceElem.elementsByTagName("DataField")
-        ### numItems = dataFieldList.length()
-        ###
-        ### for i in range(numItems):
-        ###     dataFieldElement = dataFieldList.item(i).toElement()
-        ###     dataFieldName = dataFieldElement.attribute("name")
-        ###     composerItemId = dataFieldElement.attribute("itemid")
-        ###
-        ###     data_source.addDataFieldMapping(dataFieldName, composerItemId)
-
         return data_source
-
-    @staticmethod
-    def domElement(composerWrapper, domDocument):
-        """
-        Helper method that creates a data source DOM element from a composer wrapper instance.
-        """
-        from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
-
-        dataSourceElement = domDocument.createElement("DataSource")
-
-        # Get the configured field names
-        for uuid, fieldWidget in composerWrapper.widgetMappings().items():
-            """
-            Assert whether the item exists in the composition since the 'itemRemoved' signal cannot be used to 
-            delete items from the collection as it only returns a QObject instead of a QgsComposerItem subclass.
-            """
-            composerItem = composerWrapper.composition().itemByUuid(uuid)
-
-            if composerItem is not None:
-                if isinstance(fieldWidget, ComposerFieldSelector):
-                    fieldName = fieldWidget.fieldName()
-
-                    fieldElement = domDocument.createElement("DataField")
-                    fieldElement.setAttribute("itemid", uuid)
-                    fieldElement.setAttribute("name", fieldName)
-
-                    dataSourceElement.appendChild(fieldElement)
-
-        return dataSourceElement
 
     @staticmethod
     def from_template_file(template_file: str) -> 'Optional[ComposerDataSource]':

@@ -554,10 +554,6 @@ class ComposerWrapper(QObject):
 
         xml_doc.appendChild(composer_element)
 
-        # Write STDM data field configurations
-        dataSourceElement = ComposerDataSource.domElement(self, xml_doc)
-        composer_element.appendChild(dataSourceElement)
-
         return
 
         # TODO!!!!!!

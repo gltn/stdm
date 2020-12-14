@@ -35,7 +35,7 @@ from qgis.gui import (
     QgsSimpleFillSymbolLayerWidget
 )
 
-from stdm.composer.custom_layout_items import StdmMapLayoutItem
+from stdm.composer.custom_items.map import StdmMapLayoutItem
 from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.pg_utils import (
     table_column_names,
