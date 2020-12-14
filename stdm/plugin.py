@@ -137,56 +137,13 @@ from stdm.utils.util import simple_dialog
 from stdm.data import globals
 
 from stdm.composer.custom_layout_items import StdmCustomLayoutItems
-from stdm.composer.composer_data_source import composer_data_source
+from stdm.composer.composer_data_source import ComposerDataSource
 from stdm.composer.composer_wrapper import ComposerWrapper
 from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
+from stdm.composer.document_template import DocumentTemplate
 
 
 LOGGER = logging.getLogger('stdm')
-
-
-class _DocumentTemplate:
-    """
-    Contains basic information about a document template.
-    """
-
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name', '')
-        self.path = kwargs.get('path', '')
-        self.data_source = kwargs.get('data_source', None)
-
-    @property
-    def referenced_table_name(self):
-        """
-        :return: Returns the referenced table name.
-        :rtype: str
-        """
-        if self.data_source is None:
-            return ''
-
-        return self.data_source.referenced_table_name
-
-    @staticmethod
-    def build_from_path(name, path):
-        """
-        Creates an instance of the _DocumentTemplate class from the path of
-        a document template.
-        :param name: Template name.
-        :type name: str
-        :param path: Absolute path to the document template.
-        :type path: str
-        :return: Returns an instance of the _DocumentTemplate class from the
-        absolute path of the document template.
-        :rtype: _DocumentTemplate
-        """
-        data_source = composer_data_source(path)
-        kwargs = {
-            'name': name,
-            'path': path,
-            'data_source': data_source
-        }
-
-        return _DocumentTemplate(**kwargs)
 
 
 class STDMQGISLoader:
@@ -1265,7 +1222,7 @@ class STDMQGISLoader:
         templates = documentTemplates()
         profile_tables = self.current_profile.table_names()
         for name, path in templates.items():
-            doc_temp = _DocumentTemplate.build_from_path(name, path)
+            doc_temp = DocumentTemplate.build_from_path(name, path)
             if doc_temp.data_source is None:
                 continue
             if doc_temp.data_source.referenced_table_name in profile_tables:

@@ -36,7 +36,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtXml import QDomDocument
 
-from stdm.composer.composer_data_source import composer_data_source
+from stdm.composer.document_template import DocumentTemplate
 from stdm.settings import current_profile
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.gui_utils import GuiUtils
@@ -44,51 +44,6 @@ from stdm.ui.notification import (
     NotificationBar
 )
 from stdm.utils.util import documentTemplates, user_non_profile_views
-
-
-class _DocumentTemplate(object):
-    """
-    Contains basic information about a document template.
-    """
-
-    def __init__(self, **kwargs):
-        self.name = kwargs.get('name', '')
-        self.path = kwargs.get('path', '')
-        self.data_source = kwargs.get('data_source', None)
-
-    @property
-    def referenced_table_name(self):
-        """
-        :return: Returns the referenced table name.
-        :rtype: str
-        """
-        if self.data_source is None:
-            return ''
-
-        return self.data_source.referenced_table_name
-
-    @staticmethod
-    def build_from_path(name, path):
-        """
-        Creates an instance of the _DocumentTemplate class from the path of
-        a document template.
-        :param name: Template name.
-        :type name: str
-        :param path: Absolute path to the document template.
-        :type path: str
-        :return: Returns an instance of the _DocumentTemplate class from the
-        absolute path of the document template.
-        :rtype: _DocumentTemplate
-        """
-        data_source = composer_data_source(path)
-        kwargs = {
-            'name': name,
-            'path': path,
-            'data_source': data_source
-        }
-
-        return _DocumentTemplate(**kwargs)
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_doc_selector.ui'))
@@ -99,7 +54,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
     Dialog for selecting a document template from the saved list.
     """
 
-    def __init__(self, parent=None, selectMode=True, filter_data_source='', access_templates=[]):
+    def __init__(self, parent=None, selectMode=True, filter_data_source='', access_templates=None):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -118,7 +73,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
         # Load current profile templates
         self._load_current_profile_templates()
 
-        self.access_templates = access_templates
+        self.access_templates = access_templates or []
 
         if selectMode:
             self.buttonBox.setVisible(True)
@@ -179,16 +134,13 @@ class TemplateDocumentSelector(WIDGET, BASE):
 
         # Get templates for the current profile
         for name, path in templates.items():
-            doc_temp = _DocumentTemplate.build_from_path(name, path)
+            doc_temp = DocumentTemplate.build_from_path(name, path)
             if doc_temp.data_source is None:
                 continue
 
             # Assert data source is in the current profile
-            if doc_temp.data_source.referenced_table_name in profile_tables:
-                self._add_doc_temp(doc_temp)
-                # self._profile_templates.append(doc_temp)
-
-            if doc_temp.data_source._dataSourceName in user_non_profile_views():
+            if doc_temp.data_source.referenced_table_name in profile_tables or \
+                    doc_temp.data_source.name() in user_non_profile_views():
                 self._add_doc_temp(doc_temp)
                 # self._profile_templates.append(doc_temp)
 
@@ -251,7 +203,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
         """
         self.notifBar.clear()
 
-        if self.documentMapping() == None:
+        if self.documentMapping() is None:
             self.notifBar.insertErrorNotification(QApplication.translate("TemplateDocumentSelector", \
                                                                          "Please select a document template to edit"))
             return
@@ -386,7 +338,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
                                  "{0}\n{1}".format(
                                      QApplication.translate("TemplateDocumentSelector", "Cannot read template file."), \
                                      templateFile.errorString()
-                                     ))
+                                 ))
             return (False, "")
 
         templateDoc = QDomDocument()
