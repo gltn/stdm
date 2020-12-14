@@ -111,6 +111,7 @@ class ComposerFieldSelector(BaseComposerFieldSelector):
         data_source = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         if fieldName == "" or data_source is None:
             self._item.setText("[STDM Data Field]")
+            self._item.set_linked_field(None)
 
         else:
             label_text = self._item.text()
@@ -121,5 +122,6 @@ class ComposerFieldSelector(BaseComposerFieldSelector):
             self._item.setText(
                 self._item.text().replace(data_text, data_source)
             )
+            self._item.set_linked_field(self.fieldName())
 
         self._item.refresh()
