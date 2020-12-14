@@ -23,7 +23,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget
 )
 
-from stdm.composer.custom_layout_items import StdmPhotoLayoutItem
+from stdm.composer.custom_items.photo import StdmPhotoLayoutItem
 from stdm.composer.layout_utils import LayoutUtils
 from stdm.data.configuration import entity_model
 from stdm.data.supporting_documents import supporting_doc_tables_regexp
@@ -74,6 +74,11 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
             self.update_document_types
         )
 
+        self.set_from_item()
+
+        self.ref_table.changed.connect(self._item_changed)
+        self.cbo_document_type.currentTextChanged.connect(self._item_changed)
+
     def update_document_types(self, document_table):
         # Updates the types of documents for the specified supporting doc table
         self.cbo_document_type.clear()
@@ -99,32 +104,28 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
         for r in res:
             self.cbo_document_type.addItem(r.value, r.id)
 
-    def configuration(self):
-        from stdm.composer.photo_configuration import PhotoConfiguration
-
+    def _item_changed(self):
         linked_table_props = self.ref_table.properties()
 
-        ph_config = PhotoConfiguration()
-        ph_config.set_linked_table(linked_table_props.linked_table)
-        ph_config.set_source_field(linked_table_props.source_field)
-        ph_config.set_linked_column(linked_table_props.linked_field)
-        ph_config.document_type = self.cbo_document_type.currentText()
+        self._item.set_linked_table(linked_table_props.linked_table)
+        self._item.set_source_field(linked_table_props.source_field)
+        self._item.set_linked_column(linked_table_props.linked_field)
+        self._item.set_document_type(self.cbo_document_type.currentText())
 
         doc_type_id = self.cbo_document_type.itemData(
             self.cbo_document_type.currentIndex()
         )
-        ph_config.document_type_id = doc_type_id
+        self._item.set_document_type_id(doc_type_id)
 
-        return ph_config
-
-    def set_configuration(self, configuration):
+    def set_from_item(self):
         # Load referenced table editor with item configuration settings.
-        photo_props = LinkedTableProps(linked_table=configuration.linked_table(),
-                                       source_field=configuration.source_field(),
-                                       linked_field=configuration.linked_field())
+        photo_props = LinkedTableProps(linked_table=self._item.linked_table(),
+                                       source_field=self._item.source_field(),
+                                       linked_field=self._item.linked_field())
 
         self.ref_table.set_properties(photo_props)
+
         GuiUtils.set_combo_current_index_by_text(
             self.cbo_document_type,
-            configuration.document_type
+            self._item.document_type()
         )

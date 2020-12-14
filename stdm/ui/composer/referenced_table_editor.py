@@ -87,18 +87,30 @@ class LinkedTableProps(object):
 class ReferencedTableEditor(QWidget):
     referenced_table_changed = pyqtSignal(str)
 
+    changed = pyqtSignal()
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
         self.setupUi()
+
+        self._block_changed = False
 
         self.cbo_ref_table.setInsertPolicy(QComboBox.InsertAlphabetically)
 
         self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
 
+        self.cbo_source_field.currentTextChanged.connect(self._on_changed)
+        self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
+        self.cbo_referencing_col.currentTextChanged.connect(self._on_changed)
+
         # Tables that will be omitted from the referenced table list
         self._omit_ref_tables = []
 
         self._layout = None
+
+    def _on_changed(self):
+        if not self._block_changed:
+            self.changed.emit()
 
     def add_omit_table(self, table):
         """
@@ -219,9 +231,11 @@ class ReferencedTableEditor(QWidget):
         :param table_props: Object containing the linked table information.
         :type table_props: LinkedTableProps
         """
+        self._block_changed = True
         GuiUtils.set_combo_current_index_by_text(self.cbo_ref_table, table_props.linked_table)
         GuiUtils.set_combo_current_index_by_text(self.cbo_source_field, table_props.source_field)
         GuiUtils.set_combo_current_index_by_text(self.cbo_referencing_col, table_props.linked_field)
+        self._block_changed = False
 
     def load_data_source_fields(self, data_source_name):
         """

@@ -24,7 +24,7 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
-from stdm.composer.custom_layout_items import StdmChartLayoutItem
+from stdm.composer.custom_items.chart import StdmChartLayoutItem
 from stdm.composer.layout_utils import LayoutUtils
 from stdm.ui.composer.chart_type_editors import DataSourceNotifier
 from stdm.ui.composer.chart_type_register import ChartTypeUISettings
