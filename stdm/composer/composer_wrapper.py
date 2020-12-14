@@ -550,7 +550,7 @@ class ComposerWrapper(QObject):
         # Write default composer configuration
         context = QgsReadWriteContext()
         composer_element = self.composition().writeXml(xml_doc, context)
-        composer_element.setAttribute("title", doc_name)
+        composer_element.setAttribute("name", doc_name)
 
         xml_doc.appendChild(composer_element)
 

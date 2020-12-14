@@ -32,16 +32,13 @@ from qgis.gui import (
     QgsLayoutItemAbstractGuiMetadata
 )
 
-from stdm.composer.custom_layout_items import (
-    STDM_LINE_ITEM_TYPE,
-    STDM_DATA_LABEL_ITEM_TYPE,
-    STDM_DATA_TABLE_ITEM_TYPE,
-    STDM_MAP_ITEM_TYPE,
-    STDM_PHOTO_ITEM_TYPE,
-    STDM_CHART_ITEM_TYPE,
-    STDM_QR_ITEM_TYPE,
-    StdmTableLayoutItem
-)
+from stdm.composer.custom_items.chart import STDM_CHART_ITEM_TYPE
+from stdm.composer.custom_items.label import STDM_DATA_LABEL_ITEM_TYPE
+from stdm.composer.custom_items.line import STDM_LINE_ITEM_TYPE
+from stdm.composer.custom_items.map import STDM_MAP_ITEM_TYPE
+from stdm.composer.custom_items.photo import STDM_PHOTO_ITEM_TYPE
+from stdm.composer.custom_items.qrcode import STDM_QR_ITEM_TYPE
+from stdm.composer.custom_items.table import STDM_DATA_TABLE_ITEM_TYPE, StdmTableLayoutItem
 from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 from stdm.ui.composer.composer_field_selector import ComposerFieldSelector
 from stdm.ui.composer.composer_symbol_editor import ComposerSymbolEditor
@@ -107,8 +104,9 @@ class DataLabelConfigWidget(QgsLayoutItemBaseWidget):
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
 
-        fieldSelector = ComposerFieldSelector(layout_object)
-        vl.addWidget(fieldSelector)
+        field_selector = ComposerFieldSelector(layout_object)
+        field_selector.selectFieldName(layout_object.linked_field())
+        vl.addWidget(field_selector)
 
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object, QgsLayoutItemRegistry.LayoutLabel)
         expression_button = self.base_widget.findChild(QWidget, 'mInsertExpressionButton')
@@ -198,7 +196,7 @@ class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         return frame
 
     def newItemAddedToLayout(self, frame):
-        item=frame.multiFrame()
+        item = frame.multiFrame()
         item.setMap(None)
         text = 'Choose the data source of the table and ' \
                'the link columns in the STDM item properties.'
