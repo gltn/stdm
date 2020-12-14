@@ -56,9 +56,6 @@ from stdm.data.pg_utils import (
 )
 from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
-from stdm.ui.composer.composer_chart_config import (
-    ComposerChartConfigEditor
-)
 from stdm.ui.composer.composer_data_source import (
     ComposerDataSourceSelector
 )
@@ -68,9 +65,6 @@ from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
 from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
-from stdm.ui.composer.photo_data_source import (
-    ComposerPhotoDataSourceEditor,
-)
 from stdm.ui.composer.table_data_source import (
     ComposerTableDataSourceEditor
 )
@@ -608,24 +602,6 @@ class ComposerWrapper(QObject):
 
                     # Add widget to the collection but now use the current uuid of the composer map
                     self.addWidgetMapping(mapItem.uuid(), composerSymbolEditor)
-
-    def _configure_chart_editors(self, chart_config_collection):
-        """
-        Creates widgets for editing chart properties.
-        :param chart_config_collection: ChartConfigurationCollection instance.
-        :type chart_config_collection: ChartConfigurationCollection
-        """
-        if self._dataSourceWidget is None:
-            return
-
-        for item_id, chart_config in chart_config_collection.mapping().items():
-            chart_item = self.composition().itemById(item_id)
-
-            if chart_item is not None:
-                chart_editor = ComposerChartConfigEditor(self, self.mainWindow())
-                chart_editor.set_configuration(chart_config)
-
-                self.addWidgetMapping(chart_item.uuid(), chart_editor)
 
     def _configure_table_editors(self, table_config_collection):
         """

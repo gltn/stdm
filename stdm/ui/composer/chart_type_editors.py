@@ -22,6 +22,7 @@ from collections import (
 )
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import (
     QColor,
 )
@@ -128,6 +129,9 @@ WIDGET, BASE = uic.loadUiType(
 
 class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
                              BASE):
+
+    changed = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -142,6 +146,16 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         self.btn_add_value_field.clicked.connect(self.on_add_value_config_widget)
         self.tb_value_config.tabCloseRequested.connect(self._on_tab_close_requested)
         self.btn_reset_value_fields.clicked.connect(self.clear)
+
+        self._changed_blocked = False
+
+        self.cbo_x_field.currentTextChanged.connect(self._on_changed)
+        self.txt_x_label.textChanged.connect(self._on_changed)
+        self.txt_y_label.textChanged.connect(self._on_changed)
+
+    def _on_changed(self):
+        if not self._changed_blocked:
+            self.changed.emit()
 
     def on_table_name_changed(self, table):
         """
@@ -178,6 +192,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         return vbar_config
 
     def set_configuration(self, configuration):
+        self._changed_blocked = True
         GuiUtils.set_combo_current_index_by_text(self.cbo_x_field, configuration.x_field())
         self.txt_x_label.setText(configuration.x_label())
         self.txt_y_label.setText(configuration.y_label())
@@ -185,6 +200,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         # Set barvalue configurations
         for bar_cfg in configuration.value_configurations():
             self.add_value_configuration(bar_cfg)
+        self._changed_blocked = False
 
     def bar_value_configurations(self):
         return [self.tb_value_config.widget(i).configuration()
@@ -220,6 +236,8 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
             self.tb_value_config.setCurrentIndex(widg_idx)
 
             self._value_config_widgets[curr_value_field] = config_widget
+
+        self._on_changed()
 
     def _on_tab_close_requested(self, idx):
         """
@@ -257,3 +275,5 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         """
         self.tb_value_config.clear()
         self._value_config_widgets = OrderedDict()
+
+        self._on_changed()

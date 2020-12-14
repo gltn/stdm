@@ -326,8 +326,8 @@ class ChartConfigWidget(QgsLayoutItemBaseWidget):
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
 
-        data_source_editor = ComposerChartConfigEditor(layout_object)
-        vl.addWidget(data_source_editor)
+        self.data_source_editor = ComposerChartConfigEditor(layout_object)
+        vl.addWidget(self.data_source_editor)
 
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
                                                                       QgsLayoutItemRegistry.LayoutPicture)
