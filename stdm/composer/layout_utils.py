@@ -27,13 +27,33 @@ from qgis.core import (
 
 class LayoutUtils:
 
+    DATA_SOURCE_PROPERTY = 'variable_stdm_data_source'
+    DATA_CATEGORY_PROPERTY = 'variable_stdm_data_category'
+    REFERENCED_TABLE_PROPERTY = 'variable_stdm_referenced_table'
+
     @staticmethod
     def get_stdm_data_source_for_layout(layout: QgsLayout) -> Optional[str]:
-        return layout.customProperty('variable_stdm_data_source', None)
+        return layout.customProperty(LayoutUtils.DATA_SOURCE_PROPERTY, None)
 
     @staticmethod
     def set_stdm_data_source_for_layout(layout: QgsLayout, source: Optional[str]):
-        layout.setCustomProperty('variable_stdm_data_source', source)
+        layout.setCustomProperty(LayoutUtils.DATA_SOURCE_PROPERTY, source)
+
+    @staticmethod
+    def get_stdm_data_category_for_layout(layout: QgsLayout) -> Optional[str]:
+        return layout.customProperty(LayoutUtils.DATA_CATEGORY_PROPERTY, None)
+
+    @staticmethod
+    def set_stdm_data_category_for_layout(layout: QgsLayout, category: Optional[str]):
+        layout.setCustomProperty(LayoutUtils.DATA_CATEGORY_PROPERTY, category)
+
+    @staticmethod
+    def get_stdm_referenced_table_for_layout(layout: QgsLayout) -> Optional[str]:
+        return layout.customProperty(LayoutUtils.REFERENCED_TABLE_PROPERTY, None)
+
+    @staticmethod
+    def set_stdm_referenced_table_for_layout(layout: QgsLayout, table: Optional[str]):
+        layout.setCustomProperty(LayoutUtils.REFERENCED_TABLE_PROPERTY, table)
 
     @staticmethod
     def load_template_into_layout(layout: QgsLayout, file_path: str):
@@ -62,6 +82,14 @@ class LayoutUtils:
 
         template_doc = QDomDocument()
         if template_doc.setContent(template_file):
+
+            # First load vector layers for the table definitions in the config
+            # collection before loading the composition from file.
+
+            from stdm.composer.table_configuration import TableConfigurationCollection
+
+            #  table_config_collection = TableConfigurationCollection.create(template_doc)
+
 
             # Load items into the composition and configure STDM data controls
             context = QgsReadWriteContext()

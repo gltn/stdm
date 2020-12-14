@@ -196,6 +196,9 @@ class ComposerWrapper(QObject):
 
         self._selected_item_uuid = str()
 
+        composer_data_source = ComposerDataSource.from_layout(self.composition())
+        self._configure_data_controls(composer_data_source)
+
     def _remove_composer_toolbar(self, object_name):
         """
         Removes toolbars from composer window.
@@ -297,31 +300,6 @@ class ComposerWrapper(QObject):
         """
         return self.mainWindow().findChild(QDockWidget, "LayoutDock")
 
-    def selectedDataSource(self):
-        """
-        Returns the name of the data source specified by the user.
-        """
-        row = self._dataSourceWidget.cboDataSource.currentIndex()
-        table_name = self._dataSourceWidget.cboDataSource.itemData(row)
-
-        return table_name
-
-    def selected_referenced_table(self):
-        """
-        :return: Returns the name of currently specified referenced table name.
-        :rtype: str
-        """
-        return self._dataSourceWidget.referenced_table_name()
-
-    def selectedDataSourceCategory(self):
-        """
-        Returns the category (view or table) that the data source belongs to.
-        """
-        if not self._dataSourceWidget is None:
-            return self._dataSourceWidget.category()
-
-        return ""
-
     def create_new_document_designer(self, file_path):
         """
         Creates a new document designer and loads the document template
@@ -343,7 +321,6 @@ class ComposerWrapper(QObject):
 
         layout = LayoutGuiUtils.create_unique_named_layout()
         layout.initializeDefaults()
-        self._iface.openLayoutDesigner(layout)
 
         # Load template
         try:
@@ -357,6 +334,8 @@ class ComposerWrapper(QObject):
                                      "Cannot read template file."),
                                      str(e)
                                  ))
+
+        self._iface.openLayoutDesigner(layout)
 
     def xxxloadTemplate(self, filePath):
         """
@@ -434,7 +413,8 @@ class ComposerWrapper(QObject):
         Creates and saves a new document template.
         """
         # Validate if the user has specified the data source
-        if not self.selectedDataSource():
+
+        if not LayoutUtils.get_stdm_data_source_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper", "Error"),
                                  QApplication.translate("ComposerWrapper", "Please specify the "
@@ -442,7 +422,7 @@ class ComposerWrapper(QObject):
             return
 
         # Assert if the referenced table name has been set
-        if not self.selected_referenced_table():
+        if not LayoutUtils.get_stdm_referenced_table_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper", "Error"),
                                  QApplication.translate("ComposerWrapper", "Please specify the "
@@ -571,7 +551,6 @@ class ComposerWrapper(QObject):
         context = QgsReadWriteContext()
         composer_element = self.composition().writeXml(xml_doc, context)
         composer_element.setAttribute("title", doc_name)
-        composer_element.setAttribute("visible", 1)
 
         xml_doc.appendChild(composer_element)
 
@@ -608,14 +587,8 @@ class ComposerWrapper(QObject):
         Configure the data source and data field controls based on the composer data
         source configuration.
         """
-        if not self._dataSourceWidget is None:
-            # Set data source
-            dataSourceWidget = self._dataSourceWidget
-            dataSourceWidget.setCategory(composer_data_source.category())
-            dataSourceWidget.setSelectedSource(composer_data_source.name())
-            dataSourceWidget.set_referenced_table(
-                composer_data_source.referenced_table_name
-            )
+        if self._dataSourceWidget is not None:
+            self._dataSourceWidget.set_data_source(composer_data_source)
 
             # Set data field controls
             for composerId in composer_data_source.dataFieldMappings().reverse:

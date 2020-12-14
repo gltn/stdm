@@ -22,9 +22,10 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
     QComboBox
 )
-
 from qgis.core import QgsLayout
 
+from stdm.composer.composer_data_source import ComposerDataSource
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
@@ -32,10 +33,6 @@ from stdm.utils.util import (
     profile_entities,
     profile_and_user_views
 )
-
-from stdm.composer.layout_utils import LayoutUtils
-from stdm.composer.composer_data_source import ComposerDataSource
-
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_data_source.ui'))
@@ -55,8 +52,6 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         self.cboDataSource.setInsertPolicy(QComboBox.InsertAlphabetically)
         self.cboReferencedTable.setInsertPolicy(QComboBox.InsertAlphabetically)
         self.curr_profile = current_profile()
-        self.rbTables.toggled.connect(self.onShowTables)
-        self.rbViews.toggled.connect(self.onShowViews)
 
         # Load reference tables
         self._ref_tables = profile_entities(
@@ -74,18 +69,29 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         self._sync_data_source = False
 
         # Force views to be loaded
-        self.rbViews.toggle()
+        self.rbViews.setChecked(True)
+        self.onShowViews(True, save_change=False)
 
         # Connect signal
         self.cboDataSource.currentIndexChanged[str].connect(self.onDataSourceSelected)
+        self.cboReferencedTable.currentIndexChanged[str].connect(self.on_referenced_table_selected)
 
         self.cboReferencedTable.setEnabled(False)
 
+        self.rbTables.toggled.connect(self.onShowTables)
+        self.rbViews.toggled.connect(self.onShowViews)
+
     def set_data_source(self, data_source: ComposerDataSource):
+        """
+        Sets the data_source to show in the widget
+        """
+        if not data_source.name():
+            return
+
         self.setCategory(data_source.category())
         self.setSelectedSource(data_source.name())
-        dataSourceWidget.set_referenced_table(
-            composer_data_source.referenced_table_name
+        self.set_referenced_table(
+            data_source.referenced_table_name
         )
 
     def onDataSourceSelected(self, dataSource):
@@ -106,6 +112,13 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         # this causes the QgsLayout.variablesChanged signal to be emitted -- listening objects should hook to this
         LayoutUtils.set_stdm_data_source_for_layout(self._layout, data_source_name)
 
+    def on_referenced_table_selected(self, _):
+        """
+        Slot raised upon selecting a referenced table
+        """
+        # this causes the QgsLayout.variablesChanged signal to be emitted -- listening objects should hook to this
+        LayoutUtils.set_stdm_referenced_table_for_layout(self._layout, self.referenced_table_name())
+
     def _populate_referenced_tables(self):
         # Populate combo box with the list of tables names
         self.cboReferencedTable.addItem('')
@@ -115,7 +128,8 @@ class ComposerDataSourceSelector(WIDGET, BASE):
                 entity.short_name.lower(), entity.name
             )
 
-    def _contains_supporting_document(self, table):
+    @staticmethod
+    def _contains_supporting_document(table):
         # Returns true if the table contains 'supporting_document' text
         res = table.find('supporting_document')
         if res == -1:
@@ -133,15 +147,15 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         elif self.rbViews.isChecked():
             return "View"
 
-    def setCategory(self, categoryName):
+    def setCategory(self, categoryName: str):
         """
         Set selected radio button.
         """
         if categoryName == "Table":
-            self.rbTables.toggle()
+            self.rbTables.setChecked(True)
 
         elif categoryName == "View":
-            self.rbViews.toggle()
+            self.rbViews.setChecked(True)
 
     def setSelectedSource(self, dataSourceName):
         """
@@ -152,7 +166,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             dataSourceName
         )
 
-    def set_referenced_table(self, referenced_table):
+    def set_referenced_table(self, referenced_table: str):
         """
         Selects the specified table in the referenced table combobox.
         :param referenced_table: Name of the referenced table.
@@ -164,7 +178,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
                 referenced_table
             )
 
-    def referenced_table_name(self):
+    def referenced_table_name(self) -> str:
         """
         :return: Returns the name of the currently selected referenced table
         name.
@@ -187,7 +201,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             self.cboReferencedTable.setEnabled(True)
             self._sync_data_source = False
 
-    def onShowTables(self, state):
+    def onShowTables(self, state, save_change=True):
         """
         Slot raised to show STDM database tables.
         """
@@ -198,10 +212,13 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             self.cboDataSource.addItem('')
 
             for key, value in self._tables.items():
-                if not self._contains_supporting_document(key):
+                if not ComposerDataSourceSelector._contains_supporting_document(key):
                     self.cboDataSource.addItem(value.lower(), key)
 
-    def onShowViews(self, state):
+        if save_change:
+            LayoutUtils.set_stdm_data_category_for_layout(self._layout, self.category())
+
+    def onShowViews(self, state, save_change=True):
         """
         Slot raised to show STDM database views.
         """
@@ -213,3 +230,6 @@ class ComposerDataSourceSelector(WIDGET, BASE):
             profile_user_views = profile_and_user_views(self.curr_profile, True)
             for view in profile_user_views:
                 self.cboDataSource.addItem(view, view)
+
+        if save_change:
+            LayoutUtils.set_stdm_data_category_for_layout(self._layout, self.category())
