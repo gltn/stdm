@@ -29,6 +29,8 @@ from qgis.PyQt.QtGui import (
     QPainter,
     QPixmap
 )
+from qgis.PyQt.QtWidgets import QComboBox
+
 from qgis.core import (
     Qgis,
     QgsExpressionContext,
@@ -151,3 +153,28 @@ class GuiUtils:
         symbol.stopRender(context)
 
         return preview
+
+    @staticmethod
+    def set_combo_index_by_data(combo: QComboBox, item_data, on_none_set_current_index: bool = True):
+        """
+        Convenience method for setting the current index of the combo item
+        with the specified value of the item data.
+        """
+        if item_data is None and on_none_set_current_index:
+            combo.setCurrentIndex(0)
+        elif item_data is None and not on_none_set_current_index:
+            return
+
+        current_index = combo.findData(item_data)
+        if current_index != -1:
+            combo.setCurrentIndex(current_index)
+
+    @staticmethod
+    def set_combo_current_index_by_text(combo: QComboBox, text: str):
+        """
+        Convenience method for setting the current index of the combo item
+        with the specified value of the corresponding display text.
+        """
+        txt_index = combo.findText(text)
+        if txt_index != -1:
+            combo.setCurrentIndex(txt_index)

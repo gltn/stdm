@@ -44,7 +44,7 @@ from stdm.ui.customcontrols.relation_line_edit import (
 )
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.sourcedocument import SourceDocumentManager
-from stdm.utils.util import setComboCurrentIndexWithItemData
+from stdm.ui.gui_utils import GuiUtils
 
 
 class ControlValueHandler(object):
@@ -303,7 +303,7 @@ class ComboBoxValueHandler(LineEditValueHandler):
         return dataID
 
     def setValue(self, value):
-        setComboCurrentIndexWithItemData(self.control, value)
+        GuiUtils.set_combo_index_by_data(self.control, value)
 
     def supportsMandatory(self):
         return True

@@ -32,10 +32,7 @@ from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
 )
-from stdm.utils.util import (
-    setComboCurrentIndexWithItemData,
-    setComboCurrentIndexWithText
-)
+
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_chart_config.ui'))
@@ -87,7 +84,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
             self.cbo_legend_pos.addItem(k, v)
 
         # Select 'Automatic' option
-        setComboCurrentIndexWithText(self.cbo_legend_pos,
+        GuiUtils.set_combo_current_index_by_text(self.cbo_legend_pos,
                                      QApplication.translate("ChartConfiguration", "Automatic"))
 
     def _load_chart_type_settings(self):
@@ -183,7 +180,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         # Set the general graph properties from the config object
         self.txt_plot_title.setText(config.title())
         self.gb_legend.setChecked(config.insert_legend())
-        setComboCurrentIndexWithItemData(self.cbo_legend_pos,
+        GuiUtils.set_combo_index_by_data(self.cbo_legend_pos,
                                          config.legend_position())
 
     def set_configuration(self, configuration):

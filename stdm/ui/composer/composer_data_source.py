@@ -29,13 +29,12 @@ from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     profile_user_tables,
-    setComboCurrentIndexWithText,
-    setComboCurrentIndexWithItemData,
     profile_entities,
     profile_and_user_views
 )
 
 from stdm.composer.layout_utils import LayoutUtils
+from stdm.composer.composer_data_source import ComposerDataSource
 
 
 WIDGET, BASE = uic.loadUiType(
@@ -82,6 +81,13 @@ class ComposerDataSourceSelector(WIDGET, BASE):
 
         self.cboReferencedTable.setEnabled(False)
 
+    def set_data_source(self, data_source: ComposerDataSource):
+        self.setCategory(data_source.category())
+        self.setSelectedSource(data_source.name())
+        dataSourceWidget.set_referenced_table(
+            composer_data_source.referenced_table_name
+        )
+
     def onDataSourceSelected(self, dataSource):
         """
         Slot raised upon selecting a data source from the items.
@@ -94,7 +100,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
                 self.cboReferencedTable.setEnabled(True)
 
         if self._sync_data_source:
-            setComboCurrentIndexWithText(self.cboReferencedTable, dataSource)
+            GuiUtils.set_combo_current_index_by_text(self.cboReferencedTable, dataSource)
 
         data_source_name = self.cboDataSource.currentData()
         # this causes the QgsLayout.variablesChanged signal to be emitted -- listening objects should hook to this
@@ -141,7 +147,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         """
         Set the data source name if it exists in the list.
         """
-        setComboCurrentIndexWithItemData(
+        GuiUtils.set_combo_index_by_data(
             self.cboDataSource,
             dataSourceName
         )
@@ -153,7 +159,7 @@ class ComposerDataSourceSelector(WIDGET, BASE):
         :type: str
         """
         if self.category() == 'View':
-            setComboCurrentIndexWithItemData(
+            GuiUtils.set_combo_index_by_data(
                 self.cboReferencedTable,
                 referenced_table
             )

@@ -65,7 +65,7 @@ from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
-from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
+from stdm.utils.util import version_from_metadata
 
 MAX_LIMIT = 500  # Maximum records in a entity browser
 
@@ -162,7 +162,7 @@ class OptionsDialog(WIDGET, BASE):
         # Set current profile in the combobox
         curr_profile = current_profile()
         if not curr_profile is None:
-            setComboCurrentIndexWithText(self.cbo_profiles, curr_profile.name)
+            GuiUtils.set_combo_current_index_by_text(self.cbo_profiles, curr_profile.name)
 
         # Load current database connection properties
         self._load_db_conn_properties()

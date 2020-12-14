@@ -44,9 +44,9 @@ from stdm.settings import (
     current_profile
 )
 from stdm.utils.util import (
-    setComboCurrentIndexWithText,
     profile_and_user_views
 )
+from stdm.ui.gui_utils import GuiUtils
 
 
 class LinkedTableProps(object):
@@ -219,9 +219,9 @@ class ReferencedTableEditor(QWidget):
         :param table_props: Object containing the linked table information.
         :type table_props: LinkedTableProps
         """
-        setComboCurrentIndexWithText(self.cbo_ref_table, table_props.linked_table)
-        setComboCurrentIndexWithText(self.cbo_source_field, table_props.source_field)
-        setComboCurrentIndexWithText(self.cbo_referencing_col, table_props.linked_field)
+        GuiUtils.set_combo_current_index_by_text(self.cbo_ref_table, table_props.linked_table)
+        GuiUtils.set_combo_current_index_by_text(self.cbo_source_field, table_props.source_field)
+        GuiUtils.set_combo_current_index_by_text(self.cbo_referencing_col, table_props.linked_field)
 
     def load_data_source_fields(self, data_source_name):
         """
