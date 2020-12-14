@@ -43,7 +43,6 @@ from stdm.data.pg_utils import (
 )
 from stdm.ui.composer.composer_spcolumn_styler import ComposerSpatialColumnEditor
 from stdm.ui.gui_utils import GuiUtils
-from stdm.utils.util import setComboCurrentIndexWithText
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_symbol_editor.ui'))
@@ -202,7 +201,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
         :param spatial_field: Name of the spatial field to select.
         :type spatial_field: str
         """
-        setComboCurrentIndexWithText(self.cboSpatialFields, spatial_field)
+        GuiUtils.set_combo_current_index_by_text(self.cboSpatialFields, spatial_field)
 
     def add_spatial_field_mappings(self, spatial_field_mappings):
         """

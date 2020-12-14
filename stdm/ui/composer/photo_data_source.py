@@ -35,7 +35,6 @@ from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
 )
-from stdm.utils.util import setComboCurrentIndexWithText
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('composer/ui_composer_photo_data_source.ui'))
@@ -125,7 +124,7 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
                                        linked_field=configuration.linked_field())
 
         self.ref_table.set_properties(photo_props)
-        setComboCurrentIndexWithText(
+        GuiUtils.set_combo_current_index_by_text(
             self.cbo_document_type,
             configuration.document_type
         )

@@ -113,31 +113,6 @@ def setModelAttrFromCombo(model, attributename, combo, ignorefirstitem=True):
     setattr(model, attributename, itemValue)
 
 
-def setComboCurrentIndexWithItemData(combo, itemdata, onNoneSetCurrentIndex=True):
-    '''
-    Convenience method for setting the current index of the combo item
-    with the specified value of the item data.
-    '''
-    if itemdata == None and onNoneSetCurrentIndex:
-        combo.setCurrentIndex(0)
-    elif itemdata == None and not onNoneSetCurrentIndex:
-        return
-
-    currIndex = combo.findData(itemdata)
-    if currIndex != -1:
-        combo.setCurrentIndex(currIndex)
-
-
-def setComboCurrentIndexWithText(combo, text):
-    """
-    Convenience method for setting the current index of the combo item
-    with the specified value of the corresponding display text.
-    """
-    txtIndex = combo.findText(text)
-    if txtIndex != -1:
-        combo.setCurrentIndex(txtIndex)
-
-
 def createQuerySet(columnList, resultSet, imageFields):
     '''
     Create a list consisting of dictionary items

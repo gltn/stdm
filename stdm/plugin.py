@@ -129,7 +129,6 @@ from stdm.utils.util import (
     getIndex,
     db_user_tables,
     format_name,
-    setComboCurrentIndexWithText,
     version_from_metadata,
     documentTemplates,
     user_non_profile_views
@@ -1434,7 +1433,7 @@ class STDMQGISLoader:
          }}
             """
         )
-        setComboCurrentIndexWithText(
+        GuiUtils.set_combo_current_index_by_text(
             self.profiles_combobox, self.current_profile.name
         )
         self.profiles_combobox.currentIndexChanged[str].connect(

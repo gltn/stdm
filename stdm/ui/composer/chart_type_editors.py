@@ -39,10 +39,6 @@ from stdm.data.pg_utils import (
     table_column_names
 )
 from stdm.ui.gui_utils import GuiUtils
-from stdm.utils.util import (
-    setComboCurrentIndexWithText
-)
-
 
 class DataSourceNotifier(object):
     """
@@ -182,7 +178,7 @@ class VerticalBarGraphEditor(WIDGET, DataSourceNotifier,
         return vbar_config
 
     def set_configuration(self, configuration):
-        setComboCurrentIndexWithText(self.cbo_x_field, configuration.x_field())
+        GuiUtils.set_combo_current_index_by_text(self.cbo_x_field, configuration.x_field())
         self.txt_x_label.setText(configuration.x_label())
         self.txt_y_label.setText(configuration.y_label())
 
