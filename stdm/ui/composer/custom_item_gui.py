@@ -386,8 +386,9 @@ class QrConfigWidget(QgsLayoutItemBaseWidget):
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
 
-        data_source_editor = ComposerQREditor(layout_object)
-        vl.addWidget(data_source_editor)
+        self.data_source_editor = ComposerQREditor(layout_object)
+        self.data_source_editor.selectFieldName(layout_object.linked_field())
+        vl.addWidget(self.data_source_editor)
 
         self.base_widget = LayoutGuiUtils.create_standard_item_widget(layout_object,
                                                                       QgsLayoutItemRegistry.LayoutPicture)
@@ -404,9 +405,15 @@ class QrConfigWidget(QgsLayoutItemBaseWidget):
 
         self.setLayout(vl)
 
+        self.data_source_editor.changed.connect(self._item_changed)
+
     def setDockMode(self, dockMode):
         self.base_widget.setDockMode(dockMode)
         super().setDockMode(dockMode)
+
+    def _item_changed(self):
+        self.layoutObject().set_linked_field(self.data_source_editor.fieldName())
+
 
 
 class StdmQrCodeLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):

@@ -10,14 +10,20 @@
 """
 Custom QR code item
 """
+from typing import Optional
 
 from qgis.PyQt.QtCore import (
     QCoreApplication
 )
+from qgis.PyQt.QtXml import (
+    QDomDocument,
+    QDomElement
+)
 from qgis.core import (
     QgsLayoutItemRegistry,
     QgsLayoutItemAbstractMetadata,
-    QgsLayoutItemPicture
+    QgsLayoutItemPicture,
+    QgsReadWriteContext
 )
 
 from stdm.ui.gui_utils import GuiUtils
@@ -29,12 +35,32 @@ class StdmQrCodeLayoutItem(QgsLayoutItemPicture):
 
     def __init__(self, layout):
         super().__init__(layout)
+        self._linked_field = None
 
     def type(self):
         return STDM_QR_ITEM_TYPE
 
     def icon(self):
         return GuiUtils.get_icon('qrcode.png')
+
+    def linked_field(self) -> Optional[str]:
+        return self._linked_field
+
+    def set_linked_field(self, field: Optional[str]):
+        self._linked_field = field
+
+    def writePropertiesToElement(self, element: QDomElement, document: QDomDocument,
+                                 context: QgsReadWriteContext) -> bool:
+        super().writePropertiesToElement(element, document, context)
+        if self._linked_field:
+            element.setAttribute('linked_field', self._linked_field)
+        return True
+
+    def readPropertiesFromElement(self, element: QDomElement, document: QDomDocument,
+                                  context: QgsReadWriteContext) -> bool:
+        super().readPropertiesFromElement(element, document, context)
+        self._linked_field = element.attribute('linked_field') or None
+        return True
 
 
 class StdmQrCodeLayoutItemMetadata(QgsLayoutItemAbstractMetadata):
