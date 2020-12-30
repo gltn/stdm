@@ -146,7 +146,6 @@ def configure_supporting_documents_inheritance(entity_supporting_docs_t,
     :type parent_entity: str
     :return: Database model corresponding to an entity's supporting document.
     """
-
     class ProfileSupportingDocumentProxy(base):
         """
         Represents the root table for storing supporting documents in a

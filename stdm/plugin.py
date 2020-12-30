@@ -1934,13 +1934,6 @@ class STDMQGISLoader:
                     self.entity_browser = ContentGroupEntityBrowser(
                         sel_entity, table_content, rec_id=0, parent=self.iface.mainWindow(), plugin=self,
                         current_user=self.current_user)
-
-                    # self.entity_browser = EntityBrowserWithEditor(
-                    # sel_entity,
-                    # self.iface.mainWindow(),
-                    # plugin=self
-                    # )
-
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()
                     else:
