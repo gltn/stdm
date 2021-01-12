@@ -725,16 +725,17 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
                 self.set_proxy_model_filter_column(0)
 
             self.tbEntity.setModel(self._proxyModel)
-            if numRecords < self.record_limit:
-                self.tbEntity.setSortingEnabled(True)
-                self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+            #if numRecords < self.record_limit:
+            self.tbEntity.setSortingEnabled(True)
+            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
 
             self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+            self.tbEntity.horizontalHeader().resizeSections(QHeaderView.Stretch)
 
-            self.tbEntity.resizeColumnsToContents()
+            #self.tbEntity.resizeColumnsToContents()
 
             #Connect signals
             self.connect(self.cboFilterColumn, SIGNAL('currentIndexChanged (int)'), self.onFilterColumnChanged)
