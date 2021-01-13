@@ -14,6 +14,7 @@ from qgis.PyQt.QtCore import (
     QCoreApplication,
     QFile
 )
+from qgis.PyQt.QtGui import QFontMetricsF
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QWidget
@@ -204,6 +205,15 @@ class StdmTableLayoutItemGuiMetadata(QgsLayoutItemAbstractGuiMetadata):
         default_column = QgsLayoutTableColumn(table_text)
 
         item.setColumns([default_column])
+        item.recalculateFrameSizes()
+
+        fm = QFontMetricsF(item.headerTextFormat().font())
+        table_width_layout_units = fm.width(text + '  ')
+
+        size = frame.sizeWithUnits()
+        size.setWidth(item.layout().convertFromLayoutUnits(table_width_layout_units, size.units()).length())
+        frame.attemptResize(size)
+
         # Set ID to match UUID
         frame.setId(frame.uuid())
 
