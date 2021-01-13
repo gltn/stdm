@@ -39,6 +39,9 @@ from stdm.utils.util import getIndex
 from stdm.settings import (
     current_profile
 )
+
+from sqlalchemy.exc import DataError
+
 from stdm.data.database import (
     STDMDb
 )
@@ -289,13 +292,7 @@ class OGRReader:
                 if not isinstance(value, IgnoreType):
                     setattr(model_instance, col, value)
 
-        try:
-            self._dbSession.add(model_instance)
-            self._dbSession.commit()
-
-        except:
-            self._dbSession.rollback()
-            raise
+        self._dbSession.add(model_instance)
 
     def auto_fix_geom_type(self, geom, source_geom_type, destination_geom_type):
         """
@@ -508,15 +505,17 @@ class OGRReader:
                                 geom_type,
                                 self._geomType))
 
-            try:
-                # Insert the record
-                self._insertRow(targettable, column_value_mapping)
-
-            except:
-                progress.close()
-                raise
+            # Insert the record
+            self._insertRow(targettable, column_value_mapping)
 
             init_val += 1
+
+        try:
+            self._dbSession.commit()
+        except DataError:
+            self._dbSession.rollback()
+            progress.close()
+            raise
 
         progress.setValue(numFeat)
 

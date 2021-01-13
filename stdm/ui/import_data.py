@@ -41,6 +41,8 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 
+from sqlalchemy.exc import DataError
+
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
@@ -543,8 +545,8 @@ class ImportData(WIDGET, BASE):
                 # Update directory info in the registry
                 setVectorFileDir(self.field("srcFile"))
                 success = True
-        except:
-            self.ErrorInfoMessage(str(sys.exc_info()[1]))
+        except DataError as e:
+            self.ErrorInfoMessage(str(e))
 
         return success
 
