@@ -17,6 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from typing import List
+
 from geoalchemy2 import WKBElement
 from qgis.PyQt.QtCore import (
     QFile,
@@ -340,7 +342,7 @@ def import_data(table_name, columns_names, data, **kwargs):
         return False
 
 
-def table_column_names(tableName, spatialColumns=False, creation_order=False):
+def table_column_names(tableName, spatialColumns=False, creation_order=False) -> List[str]:
     """
     Returns the column names of the given table name.
     If 'spatialColumns' then the function will lookup for spatial columns in the given
