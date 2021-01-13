@@ -302,31 +302,50 @@ class ImportData(WIDGET, BASE):
 
     def assignCols(self):
         # Load source and target columns respectively
-        srcCols = self._source_columns()
-
-        for c in srcCols:
-            srcItem = QListWidgetItem(c, self.lstSrcFields)
-            srcItem.setCheckState(Qt.Unchecked)
-            srcItem.setIcon(GuiUtils.get_icon("column.png"))
-            self.lstSrcFields.addItem(srcItem)
+        source_columns = self._source_columns()
 
         # Destination Columns
         tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
-        targetCols = table_column_names(self.targetTab, False, True)
+        target_columns = table_column_names(self.targetTab, False, True)
 
-        # Remove geometry columns in the target columns list
-        for gc in self.geomcols:
-            colIndex = getIndex(targetCols, gc)
-            if colIndex != -1:
-                targetCols.remove(gc)
+        # Remove geometry columns and 'id' column in the target columns list
+        target_columns = [c for c in target_columns if c not in self.geomcols and c != 'id']
 
-        # Remove 'id' column if there
-        id_idx = getIndex(targetCols, 'id')
-        if id_idx != -1:
-            targetCols.remove('id')
+        # now synchronize the lists, as much as possible
+        # this consists of moving columns with matching names in the source and target lists to the same
+        # placement at the top of the lists, and filtering out lists of remaining unmatched columns
 
-        self._add_target_table_columns(targetCols)
+        def format_name_for_matching(name: str) -> str:
+            """
+            Returns a column name formatted for tolerant matching, e.g. we ignore
+            case, _ characters, etc
+            """
+            return name.strip().lower().replace(' ', '').replace('_', '').replace('-', '')
+
+        matched_source_columns = []
+        unmatched_source_columns = source_columns[:]
+        matched_target_columns = []
+        unmatched_target_columns = target_columns[:]
+        for source in source_columns:
+            for target in unmatched_target_columns:
+                if format_name_for_matching(source) == format_name_for_matching(target):
+                    matched_source_columns.append(source)
+                    unmatched_source_columns = [c for c in unmatched_source_columns if c != source]
+                    matched_target_columns.append(target)
+                    unmatched_target_columns = [c for c in unmatched_target_columns if c != target]
+                    break
+
+        # any matching columns get added to the start of the lists, and unmatched get added
+        # to the end of the list
+        for c in matched_source_columns + unmatched_source_columns:
+            src_item = QListWidgetItem(c, self.lstSrcFields)
+            # automatically check any columns we could match
+            src_item.setCheckState(Qt.Checked if c in matched_source_columns else Qt.Unchecked)
+            src_item.setIcon(GuiUtils.get_icon("column.png"))
+            self.lstSrcFields.addItem(src_item)
+
+        self._add_target_table_columns(matched_target_columns + unmatched_target_columns)
 
     def _add_target_table_columns(self, items, style=False):
         for item in items:
