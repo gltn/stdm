@@ -381,11 +381,11 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
                     )
 
     def control_digitize_toolbar(self, curr_layer):
-        if not curr_layer is None:
+        if curr_layer is not None:
             table, column = self._layer_table_column(
                 curr_layer
             )
-            if table not in pg_views():
+            if curr_layer.isSpatial() and table not in pg_views():
                 # Make sure digitizing toolbar is enabled
                 self.iface.digitizeToolBar().setEnabled(True)
                 self.set_canvas_crs(curr_layer)
