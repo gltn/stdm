@@ -300,7 +300,7 @@
                                                         </size>
                                                     </property>
                                                     <property name="text">
-                                                        <string>Unsellect All</string>
+                                                        <string>Unselect All</string>
                                                     </property>
                                                 </widget>
                                             </item>
