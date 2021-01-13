@@ -18,13 +18,15 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-import sys
+import json
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
     QFile,
-    QSignalMapper
+    QSignalMapper,
+    QDir,
+    QFileInfo
 )
 from qgis.PyQt.QtGui import (
     QColor
@@ -41,6 +43,8 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 
+from qgis.core import QgsFileUtils
+
 from sqlalchemy.exc import DataError
 
 from stdm.data.importexport import (
@@ -52,6 +56,7 @@ from stdm.data.pg_utils import (
     table_column_names
 )
 from stdm.settings import current_profile
+from stdm.settings.registryconfig import RegistryConfig
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.importexport.translator_config import (
     ValueTranslatorConfig
@@ -59,7 +64,6 @@ from stdm.ui.importexport.translator_config import (
 from stdm.ui.importexport.translator_widget_base import (
     TranslatorWidgetManager
 )
-from stdm.utils.util import getIndex
 from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
@@ -97,6 +101,11 @@ class ImportData(WIDGET, BASE):
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
+        self.button_save_configuration.clicked.connect(self._save_column_mapping)
+        self.button_load_configuration.clicked.connect(self._load_column_mapping)
+
+        self.destCheckedItem = None
+        self.targetTab = ''
 
         # Data Reader
         self.dataReader = None
@@ -105,7 +114,7 @@ class ImportData(WIDGET, BASE):
         self.registerFields()
 
         # Geometry columns
-        self.geomcols = []
+        self.geom_cols = []
 
         # Initialize value translators from definitions
         self._init_translators()
@@ -157,7 +166,8 @@ class ImportData(WIDGET, BASE):
                 trans_config = ValueTranslatorConfig.translators.get(config_key, None)
 
                 # Safety precaution
-                if trans_config is None: return
+                if trans_config is None:
+                    return
 
                 try:
                     trans_dlg = trans_config.create(
@@ -212,7 +222,7 @@ class ImportData(WIDGET, BASE):
         if not destination_column:
             return
 
-        res = self._trans_widget_mgr.remove_translator_widget(destination_column)
+        _ = self._trans_widget_mgr.remove_translator_widget(destination_column)
 
         self._enable_disable_trans_tools()
 
@@ -278,10 +288,10 @@ class ImportData(WIDGET, BASE):
         destConf.registerField("tabIndex*", self.lstDestTables)
         destConf.registerField("geomCol", self.geomClm, "currentText", QComboBox.currentIndexChanged[int])
 
-    def initializePage(self, pageid):
+    def initializePage(self, page_id):
         # Re-implementation of wizard page initialization
-        if pageid == 1:
-            # Reference to checked listwidget item representing table name
+        if page_id == 1:
+            # Reference to checked list widget item representing table name
             self.destCheckedItem = None
             self.geomClm.clear()
 
@@ -293,7 +303,7 @@ class ImportData(WIDGET, BASE):
                 self.loadTables("spatial")
                 self.geomClm.setEnabled(True)
 
-        if pageid == 2:
+        if page_id == 2:
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
             self.assignCols()
@@ -302,28 +312,36 @@ class ImportData(WIDGET, BASE):
     def _source_columns(self):
         return self.dataReader.getFields()
 
+    @staticmethod
+    def format_name_for_matching(name: str) -> str:
+        """
+        Returns a column name formatted for tolerant matching, e.g. we ignore
+        case, _ characters, etc
+        """
+        return name.strip().lower().replace(' ', '').replace('_', '').replace('-', '')
+
+    @staticmethod
+    def names_are_matching(name1: str, name2: str) -> bool:
+        """
+        Returns True if the specified column name pairs should be considered a tolerant
+        match
+        """
+        return ImportData.format_name_for_matching(name1) == ImportData.format_name_for_matching(name2)
+
     def assignCols(self):
         # Load source and target columns respectively
         source_columns = self._source_columns()
 
         # Destination Columns
-        tabIndex = int(self.field("tabIndex"))
         self.targetTab = self.destCheckedItem.text()
         target_columns = table_column_names(self.targetTab, False, True)
 
         # Remove geometry columns and 'id' column in the target columns list
-        target_columns = [c for c in target_columns if c not in self.geomcols and c != 'id']
+        target_columns = [c for c in target_columns if c not in self.geom_cols and c != 'id']
 
         # now synchronize the lists, as much as possible
         # this consists of moving columns with matching names in the source and target lists to the same
         # placement at the top of the lists, and filtering out lists of remaining unmatched columns
-
-        def format_name_for_matching(name: str) -> str:
-            """
-            Returns a column name formatted for tolerant matching, e.g. we ignore
-            case, _ characters, etc
-            """
-            return name.strip().lower().replace(' ', '').replace('_', '').replace('-', '')
 
         matched_source_columns = []
         unmatched_source_columns = source_columns[:]
@@ -331,7 +349,7 @@ class ImportData(WIDGET, BASE):
         unmatched_target_columns = target_columns[:]
         for source in source_columns:
             for target in unmatched_target_columns:
-                if format_name_for_matching(source) == format_name_for_matching(target):
+                if ImportData.names_are_matching(source, target):
                     matched_source_columns.append(source)
                     unmatched_source_columns = [c for c in unmatched_source_columns if c != source]
                     matched_target_columns.append(target)
@@ -403,9 +421,9 @@ class ImportData(WIDGET, BASE):
 
     def loadGeomCols(self, table):
         # Load geometry columns based on the selected table
-        self.geomcols = table_column_names(table, True, True)
+        self.geom_cols = table_column_names(table, True, True)
         self.geomClm.clear()
-        self.geomClm.addItems(self.geomcols)
+        self.geomClm.addItems(self.geom_cols)
 
     def loadTables(self, type):
         # Load textual or spatial tables
@@ -428,7 +446,7 @@ class ImportData(WIDGET, BASE):
         validPage = True
 
         if not QFile.exists(str(self.field("srcFile"))):
-            self.ErrorInfoMessage("The specified source file does not exist.")
+            self.show_error_message("The specified source file does not exist.")
             validPage = False
 
         else:
@@ -437,14 +455,14 @@ class ImportData(WIDGET, BASE):
             self.dataReader = OGRReader(str(self.field("srcFile")))
 
             if not self.dataReader.isValid():
-                self.ErrorInfoMessage("The source file could not be opened."
+                self.show_error_message("The source file could not be opened."
                                       "\nPlease check is the given file type "
                                       "is supported")
                 validPage = False
 
         if self.currentId() == 1:
-            if self.destCheckedItem == None:
-                self.ErrorInfoMessage("Please select the destination table.")
+            if self.destCheckedItem is None:
+                self.show_error_message("Please select the destination table.")
                 validPage = False
 
         if self.currentId() == 2:
@@ -459,22 +477,49 @@ class ImportData(WIDGET, BASE):
         if sourceFile:
             self.txtDataSource.setText(sourceFile)
 
-    def getSrcDestPairs(self):
-        # Return the matched source and destination columns
-        srcDest = {}
-        for l in range(self.lstTargetFields.count()):
-            if l < self.lstSrcFields.count():
-                srcItem = self.lstSrcFields.item(l)
-                if srcItem.checkState() == Qt.Checked:
-                    destItem = self.lstTargetFields.item(l)
-                    srcDest[srcItem.text()] = destItem.text()
+    def get_source_dest_pairs(self) -> dict:
+        """
+        Builds a dictionary of source field to destination field name
+        """
+        mapping = {}
+        for target_row in range(self.lstTargetFields.count()):
+            if target_row < self.lstSrcFields.count():
+                source_item = self.lstSrcFields.item(target_row)
+                if source_item.checkState() == Qt.Checked:
+                    dest_item = self.lstTargetFields.item(target_row)
+                    mapping[source_item.text()] = dest_item.text()
 
-        return srcDest
+        return mapping
+
+    def set_source_dest_pairs(self, mapping: dict):
+        """
+        Sets the source to destination pairs for fields to match
+
+        Any existing mapping will be cleared
+        """
+        self.uncheckSrcItems()
+
+        index = 0
+        for target_source, target_dest in mapping.items():
+            # move source row up
+            for source_row in range(self.lstSrcFields.count()):
+                if ImportData.names_are_matching(target_source, self.lstSrcFields.item(source_row).text()):
+                    source_item = self.lstSrcFields.takeItem(source_row)
+                    self.lstSrcFields.insertItem(index, source_item)
+                    source_item.setCheckState(Qt.Checked)
+
+            # move target row up
+            for dest_row in range(self.lstTargetFields.count()):
+                if ImportData.names_are_matching(target_source, self.lstTargetFields.item(dest_row).text()):
+                    dest_item = self.lstTargetFields.takeItem(dest_row)
+                    self.lstTargetFields.insertItem(index, dest_item)
+
+            index += 1
 
     def execImport(self):
         # Initiate the import process
         success = False
-        matchCols = self.getSrcDestPairs()
+        matchCols = self.get_source_dest_pairs()
 
         # Specify geometry column
         geom_column = None
@@ -485,7 +530,7 @@ class ImportData(WIDGET, BASE):
         # Ensure that user has selected at least one column if it is a
         # non-spatial table
         if len(matchCols) == 0:
-            self.ErrorInfoMessage("Please select at least one source column.")
+            self.show_error_message("Please select at least one source column.")
             return success
 
         value_translator_manager = self._trans_widget_mgr.translator_manager()
@@ -527,7 +572,7 @@ class ImportData(WIDGET, BASE):
                         # Update directory info in the registry
                         setVectorFileDir(self.field("srcFile"))
 
-                        self.InfoMessage(
+                        self.show_info_message(
                             "All features have been imported successfully!"
                         )
                         success = True
@@ -539,14 +584,14 @@ class ImportData(WIDGET, BASE):
                     self.targetTab, matchCols, True, self, geom_column,
                     translator_manager=value_translator_manager
                 )
-                self.InfoMessage(
+                self.show_info_message(
                     "All features have been imported successfully!"
                 )
                 # Update directory info in the registry
                 setVectorFileDir(self.field("srcFile"))
                 success = True
         except DataError as e:
-            self.ErrorInfoMessage(str(e))
+            self.show_error_message(str(e))
 
         return success
 
@@ -565,7 +610,7 @@ class ImportData(WIDGET, BASE):
         Handler when a list widget item is clicked,
         clears previous selections
         """
-        if not self.destCheckedItem is None:
+        if self.destCheckedItem is not None:
             if item.checkState() == Qt.Checked:
                 self.destCheckedItem.setCheckState(Qt.Unchecked)
             else:
@@ -652,16 +697,95 @@ class ImportData(WIDGET, BASE):
         if e.key() == Qt.Key_Escape:
             pass
 
-    def InfoMessage(self, message):
+    def show_info_message(self, message):
         # Information message box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
         msg.setText(message)
         msg.exec_()
 
-    def ErrorInfoMessage(self, message):
+    def show_error_message(self, message):
         # Error Message Box
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
         msg.exec_()
+
+    def _save_column_mapping(self):
+        """
+        Exports the current column mapping to a JSON definition file
+        """
+        config = RegistryConfig()
+        prev_folder = config.read(["LastImportConfigFolder"]).get("LastImportConfigFolder")
+        if not prev_folder:
+            prev_folder = QDir.homePath()
+
+        dest_path, _ = QFileDialog.getSaveFileName(self, self.tr("Save Configuration"),
+                                                   prev_folder,
+                                                   "{0} (*.json)".format(self.tr('Configuration files')))
+
+        if not dest_path:
+            return
+
+        dest_path = QgsFileUtils.ensureFileNameHasExtension(dest_path, ['.json'])
+
+        config.write({"LastImportConfigFolder": QFileInfo(dest_path).path()})
+
+        with open(dest_path, 'wt') as f:
+            f.write(json.dumps(self._get_column_config(), indent=4))
+
+    def _get_column_config(self) -> dict:
+        """
+        Returns a dictionary encapsulating the column mapping configuration
+        """
+        return {
+           'column_mapping': self.get_source_dest_pairs()
+        }
+
+    def _load_column_mapping(self):
+        """
+        Imports the current column mapping from a JSON definition file
+        """
+        config = RegistryConfig()
+        prev_folder = config.read(["LastImportConfigFolder"]).get("LastImportConfigFolder")
+        if not prev_folder:
+            prev_folder = QDir.homePath()
+
+        source_path, _ = QFileDialog.getOpenFileName(self, self.tr("Load Configuration"),
+                                                     prev_folder,
+                                                     "{0} (*.json)".format(self.tr('Configuration files')))
+
+        if not source_path:
+            return
+
+        config.write({"LastImportConfigFolder": QFileInfo(source_path).path()})
+
+        with open(source_path, 'rt') as f:
+            imported_config = json.loads(''.join(f.readlines()))
+            self._restore_column_config(imported_config)
+
+    def _restore_column_config(self, config: dict):
+        """
+        Restores a previously saved column configuration
+        """
+        column_mapping = config.get('column_mapping', {})
+
+        # test validity -- ensure that all the referenced source and destination columns
+        # from the saved file are available
+        for saved_source, saved_dest in column_mapping.items():
+
+            for source_row in range(self.lstSrcFields.count()):
+                if ImportData.names_are_matching(saved_source, self.lstSrcFields.item(source_row).text()):
+                    break
+            else:
+                self.show_error_message(self.tr('Source column {} not found in dataset'.format(saved_source)))
+                return
+
+            for destination_row in range(self.lstTargetFields.count()):
+                if ImportData.names_are_matching(saved_dest, self.lstTargetFields.item(destination_row).text()):
+                    break
+            else:
+                self.show_error_message(self.tr('Destination column {} not found in dataset'.format(saved_dest)))
+                return
+
+        self.set_source_dest_pairs(column_mapping)
