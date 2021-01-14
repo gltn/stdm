@@ -601,7 +601,8 @@ class STDMFieldWidget():
         # It will also clear all the models from
         # self.feature_models as on_feature_deleted
         # is raised when a feature is removed.
-        for f_id in self.feature_models.keys():
+        feature_ids_to_delete = list(self.feature_models.keys())
+        for f_id in feature_ids_to_delete:
             iface.mainWindow().blockSignals(True)
             self.layer.deleteFeature(f_id)
             self.on_feature_deleted(f_id)
