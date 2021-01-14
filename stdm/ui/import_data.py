@@ -70,6 +70,8 @@ from stdm.utils.util import (
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_import_data.ui'))
 
+BACKUP_IMPORT_CONFIG_PATH = QDir.home().path() + '/.stdm/last_import_settings.json'
+
 
 class ImportData(WIDGET, BASE):
     def __init__(self, parent=None):
@@ -105,6 +107,8 @@ class ImportData(WIDGET, BASE):
         self.destCheckedItem = None
         self.targetTab = ''
 
+        self.import_was_successful = False
+
         # Data Reader
         self.dataReader = None
 
@@ -118,6 +122,33 @@ class ImportData(WIDGET, BASE):
         self._init_translators()
 
         # self._set_target_fields_stylesheet()
+
+    def closeEvent(self, event):
+        self._save_if_unfinished()
+        super().closeEvent(event)
+
+    def reject(self):
+        self._save_if_unfinished()
+        super().reject()
+
+    def accept(self):
+        super().accept()
+        self._save_if_unfinished()
+
+    def _save_if_unfinished(self):
+        """
+        If an unfinished import is in progress, then automatically save the settings to a hidden file
+        """
+        if self.import_was_successful:
+            return
+
+        if not self.field("srcFile"):
+            # user hasn't even started the process by picking a file, so we've nothing of value to save...
+            return
+
+        current_config = self._get_column_config()
+        with open(BACKUP_IMPORT_CONFIG_PATH, 'wt') as f:
+            f.write(json.dumps(current_config, indent=4))
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -464,7 +495,8 @@ class ImportData(WIDGET, BASE):
                 validPage = False
 
         if self.currentId() == 2:
-            validPage = self.execImport()
+            self.import_was_successful = self.execImport()
+            validPage = self.import_was_successful
 
         return validPage
 
