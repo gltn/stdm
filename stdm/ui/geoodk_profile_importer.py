@@ -607,7 +607,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
                     instance_obj_data.field_data_nodes)
 
-                for entity, entity_data in single_occuring.items():
+                single_occurring_keys = list(single_occuring.keys())
+                for entity in single_occurring_keys:
+                    entity_data = single_occuring[entity]
                     print(entity, entity_data)
                     import_status = False
                     if entity in self.relations.keys():
