@@ -22,6 +22,7 @@ import os
 import shutil
 # from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 from collections import OrderedDict
+from typing import Dict, List
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
@@ -43,14 +44,14 @@ from qgis.PyQt.QtWidgets import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
 )
+from stdm.exceptions import DummyException
 from stdm.geoodk.importer.entity_importer import EntityImporter
 from stdm.geoodk.importer.entity_importer import Save2DB
 from stdm.geoodk.importer.import_log import ImportLogger
-from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor
+from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor, DocumentEntityData
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
@@ -66,6 +67,13 @@ HOME = QDir.home().path()
 CONFIG_FILE = HOME + '/.stdm/geoodk/'
 MSG = 'Error creating log'
 GEOODK_FORM_HOME = CONFIG_FILE + 'instances'
+
+
+class InstanceData:
+
+    def __init__(self, field_data_nodes: List[DocumentEntityData], str_data_nodes: List[DocumentEntityData]):
+        self.field_data_nodes = field_data_nodes
+        self.str_data_nodes = str_data_nodes
 
 
 class ProfileInstanceRecords(QDialog, FORM_CLASS):
@@ -240,9 +248,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if os.path.isfile(file_instance):
                     self.rename_file_to_UUID(file_instance)
 
-    def read_instance_data(self):
+    def read_instance_data(self) -> Dict[str, InstanceData]:
         """Read all instance data once and store them in a dict
-        :rtype: dict
         """
         mobile_data = OrderedDict()
         social_tenure_info = OrderedDict()
@@ -253,12 +260,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             else:
                 instance = instance_p
             self.uuid_extractor.set_file_path(instance)
-            field_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
-                                                                               self.user_selected_entities())
 
-            str_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
-                                                                             ['social_tenure'])
-            mobile_data[instance] = [field_data_nodes, str_data_nodes]
+            mobile_data[instance] = InstanceData(
+                field_data_nodes=self.uuid_extractor.document_entities_with_data(
+                    self.active_profile().replace(' ', '_'),
+                    self.user_selected_entities()),
+                str_data_nodes=self.uuid_extractor.document_entities_with_data(
+                    self.active_profile().replace(' ', '_'),
+                    ['social_tenure']))
 
             self.uuid_extractor.close_document()
         return mobile_data
@@ -578,7 +587,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                        QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
                 return
 
-        if not len(mobile_field_data) > 0 and not len(list(mobile_field_data.values())) > 0:
+        if not mobile_field_data:
             self.feedback_message('Not matching data in mobile files')
             return
         counter = 0
@@ -596,7 +605,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.parent_ids = {}
 
                 single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
-                    instance_obj_data[0])
+                    instance_obj_data.field_data_nodes)
 
                 for entity, entity_data in single_occuring.items():
                     print(entity, entity_data)
@@ -676,11 +685,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         else:
                             continue
 
-                if instance_obj_data[1]:
+                if instance_obj_data.str_data_nodes:
                     '''We treat social tenure entities separately because of foreign key references'''
                     entity_relation = EntityImporter(instance_obj)
                     single_str, multiple_str = self.uuid_extractor.attribute_data_from_nodelist(
-                        instance_obj_data[1])
+                        instance_obj_data.str_data_nodes)
                     # self.txt_feedback.append('----Creating social tenure relationship')
                     if len(single_str) > 0:
                         entity_relation.process_social_tenure(single_str, self.parent_ids)
