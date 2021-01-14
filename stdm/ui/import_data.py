@@ -19,6 +19,8 @@ email                : gkahiu@gmail.com
 """
 
 import json
+import os
+from typing import Optional
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
@@ -104,10 +106,10 @@ class ImportData(WIDGET, BASE):
         self.button_save_configuration.clicked.connect(self._save_column_mapping)
         self.button_load_configuration.clicked.connect(self._load_column_mapping)
 
-        self.destCheckedItem = None
         self.targetTab = ''
 
         self.import_was_successful = False
+        self.restored_config = {}
 
         # Data Reader
         self.dataReader = None
@@ -122,6 +124,9 @@ class ImportData(WIDGET, BASE):
         self._init_translators()
 
         # self._set_target_fields_stylesheet()
+
+        if os.path.exists(BACKUP_IMPORT_CONFIG_PATH):
+            self._restore_previous_configuration()
 
     def closeEvent(self, event):
         self._save_if_unfinished()
@@ -149,6 +154,32 @@ class ImportData(WIDGET, BASE):
         current_config = self._get_column_config()
         with open(BACKUP_IMPORT_CONFIG_PATH, 'wt') as f:
             f.write(json.dumps(current_config, indent=4))
+
+    def _restore_previous_configuration(self):
+        """
+        Loads the previously unfinished configuration
+        """
+        with open(BACKUP_IMPORT_CONFIG_PATH, 'rt') as f:
+            config = json.loads(''.join(f.readlines()))
+
+        os.remove(BACKUP_IMPORT_CONFIG_PATH)
+        if not config:
+            return
+
+        if QMessageBox.question(self,
+                                self.tr('Import Data'),
+                                self.tr(
+                                    'A previously incomplete or unsuccessful import was detected. Would you like to restore the previous configuration and retry?'),
+                                QMessageBox.Yes | QMessageBox.No,
+                                QMessageBox.Yes
+                                ) != QMessageBox.Yes:
+            return
+
+        self.restored_config = config
+        self.txtDataSource.setText(self.restored_config.get('source_file'))
+
+        self.rbTextType.setChecked(self.restored_config.get('is_text', True))
+        self.rbSpType.setChecked(self.restored_config.get('is_spatial', False))
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -321,21 +352,32 @@ class ImportData(WIDGET, BASE):
         # Re-implementation of wizard page initialization
         if page_id == 1:
             # Reference to checked list widget item representing table name
-            self.destCheckedItem = None
             self.geomClm.clear()
 
             if self.field("typeText"):
-                self.loadTables("textual")
+                self.load_tables_of_type("textual", self.restored_config.get('dest_table'))
                 self.geomClm.setEnabled(False)
-
             elif self.field("typeSpatial"):
-                self.loadTables("spatial")
+                self.load_tables_of_type("spatial", self.restored_config.get('dest_table'))
+
+                if self.selected_destination_table():
+                    self.loadGeomCols(self.selected_destination_table())
                 self.geomClm.setEnabled(True)
+
+            if self.restored_config:
+                if self.restored_config.get('overwrite', False):
+                    self.rbOverwrite.setChecked(True)
+                else:
+                    self.rbAppend.setChecked(True)
 
         if page_id == 2:
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
+
             self.assignCols()
+            if self.restored_config and self.selected_destination_table() == self.restored_config.get('dest_table'):
+                self._restore_column_config(self.restored_config)
+
             self._enable_disable_trans_tools()
 
     def _source_columns(self):
@@ -357,12 +399,23 @@ class ImportData(WIDGET, BASE):
         """
         return ImportData.format_name_for_matching(name1) == ImportData.format_name_for_matching(name2)
 
+    def selected_destination_table(self) -> Optional[str]:
+        """
+        Returns the selected (checked) destination table
+        """
+        for i in range(self.lstDestTables.count()):
+            item = self.lstDestTables.item(i)
+            if item.checkState() == Qt.Checked:
+                return item.text()
+
+        return None
+
     def assignCols(self):
         # Load source and target columns respectively
         source_columns = self._source_columns()
 
         # Destination Columns
-        self.targetTab = self.destCheckedItem.text()
+        self.targetTab = self.selected_destination_table()
         target_columns = table_column_names(self.targetTab, False, True)
 
         # Remove geometry columns and 'id' column in the target columns list
@@ -454,21 +507,32 @@ class ImportData(WIDGET, BASE):
         self.geomClm.clear()
         self.geomClm.addItems(self.geom_cols)
 
-    def loadTables(self, type):
-        # Load textual or spatial tables
+        if self.restored_config.get('geom_column'):
+            self.geomClm.setCurrentIndex(self.geomClm.findText(self.restored_config['geom_column']))
+
+    def load_tables_of_type(self, type: str, initial_selection: Optional[str] = None):
+        """
+        Load textual or spatial tables
+
+        If initial_selection is specified then that table will be initially checked
+        """
         self.lstDestTables.clear()
         tables = None
         if type == "textual":
             tables = profile_user_tables(self.curr_profile, False, True)
-
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
+
         if tables is not None:
-            for t in tables:
-                tabItem = QListWidgetItem(t, self.lstDestTables)
-                tabItem.setCheckState(Qt.Unchecked)
-                tabItem.setIcon(GuiUtils.get_icon("table.png"))
-                self.lstDestTables.addItem(tabItem)
+            for table_name in tables:
+                table_item = QListWidgetItem(table_name, self.lstDestTables)
+                if initial_selection:
+                    table_item.setCheckState(
+                        Qt.Checked if ImportData.names_are_matching(table_name, initial_selection) else Qt.Unchecked)
+                else:
+                    table_item.setCheckState(Qt.Unchecked)
+                table_item.setIcon(GuiUtils.get_icon("table.png"))
+                self.lstDestTables.addItem(table_item)
 
     def validateCurrentPage(self):
         # Validate the current page before proceeding to the next one
@@ -490,7 +554,7 @@ class ImportData(WIDGET, BASE):
                 validPage = False
 
         if self.currentId() == 1:
-            if self.destCheckedItem is None:
+            if self.selected_destination_table() is None:
                 self.show_error_message("Please select the destination table.")
                 validPage = False
 
@@ -540,7 +604,7 @@ class ImportData(WIDGET, BASE):
 
             # move target row up
             for dest_row in range(self.lstTargetFields.count()):
-                if ImportData.names_are_matching(target_source, self.lstTargetFields.item(dest_row).text()):
+                if ImportData.names_are_matching(target_dest, self.lstTargetFields.item(dest_row).text()):
                     dest_item = self.lstTargetFields.takeItem(dest_row)
                     self.lstTargetFields.insertItem(index, dest_item)
 
@@ -640,15 +704,7 @@ class ImportData(WIDGET, BASE):
         Handler when a list widget item is clicked,
         clears previous selections
         """
-        if self.destCheckedItem is not None:
-            if item.checkState() == Qt.Checked:
-                self.destCheckedItem.setCheckState(Qt.Unchecked)
-            else:
-                self.destCheckedItem = None
-
         if item.checkState() == Qt.Checked:
-            self.destCheckedItem = item
-
             # Ensure other selected items have been cleared
             self._clear_dest_table_selections(exclude=[item.text()])
 
