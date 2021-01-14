@@ -18,17 +18,24 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-
+from typing import List
 import os
 
 from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtXml import (
     QDomDocument,
-    QDomNode
+    QDomNode,
+    QDomNodeList
 )
 
 UUID = "uuid"
 from collections import OrderedDict
+
+class DocumentEntityData:
+
+    def __init__(self):
+        self.name_entity = ''
+        self.entity_nodes = QDomNodeList()
 
 
 class InstanceUUIDExtractor():
@@ -121,32 +128,34 @@ class InstanceUUIDExtractor():
         nodes = self.doc.elementsByTagName(profile)
         return nodes.item(0).childNodes()
 
-    def document_entities_with_data(self, profile, selected_entities):
+    def document_entities_with_data(self, profile, selected_entities) -> List[DocumentEntityData]:
         """
         Get entities in the dom document matching user
         selected entities
-        :rtype: OrderedDict
         """
-
-        instance_data = OrderedDict()
+        instance_data = []
         self.set_document()
         nodes = self.doc.elementsByTagName(profile)
         entity_nodes = nodes.item(0).childNodes()
         for attrs in range(entity_nodes.count()):
             if entity_nodes.item(attrs).nodeName() in selected_entities:
-                name_entity = entity_nodes.item(attrs).nodeName()
-                attr_nodes = self.doc.elementsByTagName(name_entity)
-                instance_data[attr_nodes] = name_entity
+                data = DocumentEntityData()
+                data.name_entity = entity_nodes.item(attrs).nodeName()
+                data.entity_nodes = self.doc.elementsByTagName(data.name_entity)
+                instance_data.append(data)
         return instance_data
 
-    def attribute_data_from_nodelist(self, args_list):
+    def attribute_data_from_nodelist(self, args_list: List[DocumentEntityData]):
         """
         process nodelist data before Importing  attribute data into db
         """
         repeat_instance_data = OrderedDict()
         attribute_data = OrderedDict()
-        for attr_nodes, entity in args_list.items():
-            '''The assuption is that there are repeated entities from mobile sub forms. handle them separately'''
+        for item in args_list:
+            attr_nodes = item.entity_nodes
+            entity = item.name_entity
+
+            '''The assumption is that there are repeated entities from mobile sub forms. handle them separately'''
             if attr_nodes.count() > 1:
                 for i in range(attr_nodes.count()):
                     attrib_node = attr_nodes.at(i).childNodes()
