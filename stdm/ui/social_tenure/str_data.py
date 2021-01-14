@@ -42,7 +42,7 @@ from stdm.exceptions import DummyException
 LOGGER = logging.getLogger('stdm')
 
 
-class STRDataStore():
+class STRDataStore:
     """
     A data container for STR Editor.
     """
@@ -66,7 +66,7 @@ class STRDataStore():
         self.current_party = None
 
 
-class STRDBHandler():
+class STRDBHandler:
     """
     Handles the saving of data in the STR table.
     """

@@ -657,8 +657,8 @@ class ValidateSTREditor(object):
         Validates the length of party component data.
         :param store: The current data store.
         :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
+        :param selected_item: The current item
+        :type selected_item: QStandardItem
         """
         # TODO fix validation issue when str type is 0 or None
         if 0 in store.str_type.values() or None in store.str_type.values():
@@ -685,10 +685,6 @@ class ValidateSTREditor(object):
     def validation_error(self, index):
         """
         Validates the length of party component data.
-        :param store: The current data store.
-        :type store: Object
-        :param item: The current item
-        :type item: QStandardItem
         """
         item = self.editor.tree_view_model.itemFromIndex(index)
         if item is None:
@@ -764,7 +760,7 @@ class ValidateSTREditor(object):
         spatial_unit = format_name(
             self.editor.spatial_unit.short_name
         )
-        if not self.editor.party is None:
+        if self.editor.party is not None:
             party = format_name(
                 self.editor.party.short_name
             )
@@ -792,7 +788,7 @@ class ValidateSTREditor(object):
         a spatial unit.
         :type usage_count: Integer
         """
-        if not self.editor.party is None:
+        if self.editor.party is not None:
             party = format_name(self.editor.party.short_name)
         else:
             party = 'party'
@@ -1282,8 +1278,6 @@ class STREditor(WIDGET, BASE):
     def init_custom_tenure_info_component(self):
         """
         Initializes the str type component.
-        :param party: Party entity object.
-        If party is none, the default party loads.
         """
         if self.custom_tenure_info_component is not None:
             return
@@ -1746,8 +1740,6 @@ class STREditor(WIDGET, BASE):
     def update_str_type_lookup(self):
         """
         Removes str_type row from the data store.
-        :param row_numbers: The row numbers of removed row.
-        :type row_numbers: List
         """
         current_store = self.current_data_store()
 
