@@ -24,6 +24,7 @@ import os
 from configparser import RawConfigParser
 from datetime import datetime
 
+from stdm.exceptions import DummyException
 from qgis.PyQt.QtCore import QDir
 
 HOME = QDir.home().path()
@@ -73,17 +74,21 @@ class ImportLogger:
         """
         try:
             config_location = LOGGER_HOME
-            if os.path.isfile(config_location + '/history.txt'):
-                return config_location + '/history.txt'
-            else:
-                return open(config_location + '/history.txt', 'w+')
-        except:
+
+            history_path = config_location + '/history.txt'
+            if not os.path.isfile(history_path):
+                with open(history_path, 'w+'):
+                    pass
+            return history_path
+
+        except DummyException:
             pass
 
-    def open_logger(self):
+    def open_logger(self) -> str:
         """
-        Open the logger text file so that we can write data
-        :return:
+        Open the logger text file so that we can write data.
+
+        Returns the path to the log file
         """
         return self.enable_logger_document()
 
