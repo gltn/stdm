@@ -42,9 +42,7 @@ from qgis.PyQt.QtWidgets import (
     QFileDialog,
     QComboBox
 )
-
 from qgis.core import QgsFileUtils
-
 from sqlalchemy.exc import DataError
 
 from stdm.data.importexport import (
@@ -456,8 +454,8 @@ class ImportData(WIDGET, BASE):
 
             if not self.dataReader.isValid():
                 self.show_error_message("The source file could not be opened."
-                                      "\nPlease check is the given file type "
-                                      "is supported")
+                                        "\nPlease check is the given file type "
+                                        "is supported")
                 validPage = False
 
         if self.currentId() == 1:
@@ -472,8 +470,8 @@ class ImportData(WIDGET, BASE):
 
     def setSourceFile(self):
         # Set the file path to the source file
-        imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)"
-        sourceFile, _ = QFileDialog.getOpenFileName(self, "Select Source File", vectorFileDir(), imageFilters)
+        filters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)"
+        sourceFile, _ = QFileDialog.getOpenFileName(self, "Select Source File", vectorFileDir(), filters)
         if sourceFile:
             self.txtDataSource.setText(sourceFile)
 
@@ -739,7 +737,13 @@ class ImportData(WIDGET, BASE):
         Returns a dictionary encapsulating the column mapping configuration
         """
         return {
-           'column_mapping': self.get_source_dest_pairs()
+            'column_mapping': self.get_source_dest_pairs(),
+            'source_file': str(self.field("srcFile")),
+            'is_text': bool(self.field("typeText")),
+            'is_spatial': bool(self.field("typeSpatial")),
+            'geom_column': self.field("geomCol") or None,
+            'overwrite': bool(self.field("optOverwrite")),
+            'dest_table': self.targetTab or ''
         }
 
     def _load_column_mapping(self):
