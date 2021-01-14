@@ -19,12 +19,15 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import re
 
 from qgis.core import (
     QgsGeometry,
     QgsPoint,
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform
+    QgsCoordinateTransform,
+    QgsPolygon,
+    QgsLineString
 )
 
 from stdm.exceptions import DummyException
@@ -55,7 +58,7 @@ class GeometryProvider:
 
         :return:
         """
-        self._local_list = self.point_list.split(";")
+        self._local_list = [part.strip() for part in self.point_list.split(";")]
         return self._local_list
 
     def points(self):
@@ -150,14 +153,14 @@ class GeometryProvider:
         self.point_to_list()
         line_array = []
         for point in self._local_list:
-            if point != '':
-                var = point.replace('0.0 0.0', '').strip().split(' ')
+            # point is a whitespace (any type!) delimited list of 4D coordinates
+            if point:
+                var = re.split(r'[\s\n\t]+', point)
                 line_array.append(QgsPoint(self.set_point(var[1]),
                                            self.set_point(var[0])))
 
-        geom_poly = QgsGeometry.fromPolygon([line_array])
-
-        return geom_poly
+        geom_poly = QgsPolygon(QgsLineString(line_array))
+        return QgsGeometry(geom_poly)
 
     def geometry_from_wkt(self, wkt):
         """
