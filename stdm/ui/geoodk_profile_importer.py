@@ -440,7 +440,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         try:
             self.importlogger.logger_sections()
             file_info = 'File instance ' + str(counter) + ' : \n' + instance
-            self.importlogger.log_action(file_info)
+            ImportLogger.log_action(file_info)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
             pass
@@ -454,7 +454,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             current_time = QDateTime()
             import_time = current_time.currentDateTime()
             log_entry = instance + ' ' + str(import_time.toPyDateTime())
-            self.importlogger.log_action(log_entry)
+            ImportLogger.log_action(log_entry)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
             raise NameError(str(io))
@@ -594,11 +594,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         try:
             self.pgbar.setRange(counter, len(self.instance_list))
             self.pgbar.setValue(0)
-            self.importlogger.log_action("Import started ...\n")
+            ImportLogger.log_action("Import started ...\n")
 
             for instance_obj, instance_obj_data in mobile_field_data.items():
 
-                self.importlogger.log_action("File {} ...\n".format(instance_obj))
+                ImportLogger.log_action("File {} ...\n".format(instance_obj))
                 parents_info = []
                 import_status = False
                 counter = counter + 1
@@ -672,7 +672,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         log_timestamp = '          child table {0} >> : {1}' \
                             .format(repeat_table, enum_index)
                         self.count_import_file_step(counter, repeat_table)
-                        self.importlogger.log_action(log_timestamp)
+                        ImportLogger.log_action(log_timestamp)
                         if repeat_table in self.profile_entities_names(current_profile()):
                             entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                             entity_add.objects_from_supporting_doc(instance_obj)
