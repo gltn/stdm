@@ -67,30 +67,18 @@ class ImportLogger:
         except IOError as ex:
             raise str(ex)
 
-    def enable_logger_document(self):
+    @staticmethod
+    def log_file_path() -> str:
         """
-        Create the log file document
-        :return:
+        Returns the path to the log file, ensuring that it always exists
         """
-        try:
-            config_location = LOGGER_HOME
+        config_location = LOGGER_HOME
 
-            history_path = config_location + '/history.txt'
-            if not os.path.isfile(history_path):
-                with open(history_path, 'w+'):
-                    pass
-            return history_path
-
-        except DummyException:
-            pass
-
-    def open_logger(self) -> str:
-        """
-        Open the logger text file so that we can write data.
-
-        Returns the path to the log file
-        """
-        return self.enable_logger_document()
+        history_path = config_location + '/history.txt'
+        if not os.path.isfile(history_path):
+            with open(history_path, 'w+'):
+                pass
+        return history_path
 
     def json_file(self):
         """
@@ -99,11 +87,12 @@ class ImportLogger:
         """
         return self.start_json_file()
 
-    def log_action(self, action):
+    @staticmethod
+    def log_action(action):
         """"
         Ensure the logger information is written to the file
         """
-        log_file = self.open_logger()
+        log_file = ImportLogger.log_file_path()
         with open(log_file, 'a') as f:
             f.write('\n')
             f.write(action)
