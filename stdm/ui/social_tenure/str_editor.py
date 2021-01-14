@@ -49,7 +49,6 @@ from sqlalchemy import (
     func
 )
 
-from stdm.exceptions import DummyException
 from stdm.data.pg_utils import pg_table_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
@@ -582,19 +581,19 @@ class ValidateSTREditor(object):
         :param enable: A boolean to enable and disable the next treeview item.
         :type enable: Boolean
         """
-        try:
-            str_root = selected_item.parent()
+        str_root = selected_item.parent()
 
-            if str_root is None:
-                return
-            next_item = str_root.child(child_row, 0)
-            next_item.setEnabled(enable)
-            # if handle_child:
-            #     next_item.child().setEnabled(enable)
+        if str_root is None:
+            return
+        next_item = str_root.child(child_row, 0)
+        if next_item is None:
+            return
 
-            self.enable_save_button()
-        except DummyException:
-            pass
+        next_item.setEnabled(enable)
+        # if handle_child:
+        #     next_item.child().setEnabled(enable)
+
+        self.enable_save_button()
 
     def enable_save_button(self):
         """
