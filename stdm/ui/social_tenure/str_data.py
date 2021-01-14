@@ -131,7 +131,7 @@ class STRDBHandler:
             # get all doc model objects
             doc_objs = str_store.supporting_document
             # get the number of unique documents.
-            number_of_docs = len(doc_objs) / no_of_party
+            number_of_docs = len(doc_objs) // no_of_party
             party_short_name = party.short_name
             party_entity_id = '{}_id'.format(
                 party_short_name.replace(' ', '_').lower()
