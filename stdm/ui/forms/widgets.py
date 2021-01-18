@@ -310,7 +310,7 @@ class ColumnWidgetRegistry(object):
         """
         factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
 
-        if not factory is None:
+        if factory is not None:
             w = factory._create_widget(c, parent, host)
             factory._widget_configuration(w, c)
 
