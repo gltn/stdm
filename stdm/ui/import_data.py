@@ -45,13 +45,12 @@ from qgis.PyQt.QtWidgets import (
     QComboBox
 )
 from qgis.core import QgsFileUtils
-from sqlalchemy.exc import DataError
 
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
 )
-from stdm.data.importexport.reader import OGRReader
+from stdm.data.importexport.reader import OGRReader, ImportFeatureException
 from stdm.data.pg_utils import (
     table_column_names
 )
@@ -687,7 +686,7 @@ class ImportData(WIDGET, BASE):
                 # Update directory info in the registry
                 setVectorFileDir(self.field("srcFile"))
                 success = True
-        except DataError as e:
+        except ImportFeatureException as e:
             self.show_error_message(str(e))
 
         return success

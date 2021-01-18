@@ -40,7 +40,7 @@ from stdm.settings import (
     current_profile
 )
 
-from sqlalchemy.exc import DataError
+from sqlalchemy.exc import DataError, IntegrityError
 
 from stdm.data.database import (
     STDMDb
@@ -52,6 +52,12 @@ from stdm.data.importexport.value_translators import (
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
+
+
+class ImportFeatureException(Exception):
+    """
+    Raised when an error occurs during feature import
+    """
 
 
 class OGRReader:
@@ -512,10 +518,10 @@ class OGRReader:
 
         try:
             self._dbSession.commit()
-        except DataError:
+        except (DataError, IntegrityError) as e:
             self._dbSession.rollback()
             progress.close()
-            raise
+            raise ImportFeatureException(str(e))
 
         progress.setValue(numFeat)
 
