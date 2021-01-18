@@ -23,7 +23,6 @@ import logging
 import re
 from collections import OrderedDict
 
-from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QLabel,
@@ -46,11 +45,11 @@ from qgis.utils import (
     iface
 )
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.database import (
     STDMDb
 )
+from stdm.exceptions import DummyException
 from stdm.settings import (
     current_profile
 )
@@ -103,7 +102,7 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         if self.layer is not None:
             source = self.layer.source()
             vals = dict(
-                re.findall('(\S+)="?(.*?)"? ', source)
+                re.findall(r'(\S+)="?(.*?)"? ', source)
             )
             try:
                 table = vals['table'].split('.')
@@ -114,12 +113,12 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
 
     def value(self):
         """ Return the current value of the widget"""
-        if not self.handler_obj is None:
+        if self.handler_obj is not None:
             self.value()
 
     def setValue(self, value):
         """ Set a value on the widget """
-        if not self.handler_obj is None:
+        if self.handler_obj is not None:
             if value != NULL:
                 self.set_value(value)
 
@@ -146,14 +145,13 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
         """
         Initialize the widget
         """
-        if not widget is None:
+        if widget is not None:
             self.value_handler = valueHandler(widget)
 
-            if not self.value_handler is None:
+            if self.value_handler is not None:
                 self.handler_obj = self.value_handler()
 
-                if widget is not None:
-                    self.handler_obj.setControl(widget)
+                self.handler_obj.setControl(widget)
 
                 self.value = getattr(
                     self.handler_obj, 'value'
@@ -197,7 +195,7 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
                 layer, fieldIdx, editor, parent
             )
 
-            if not widget_wrapper is None:
+            if widget_wrapper is not None:
                 return widget_wrapper
 
         except DummyException:
@@ -207,7 +205,7 @@ class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
         return QGISFieldWidgetConfig(layer, idx, parent)
 
 
-class STDMFieldWidget():
+class STDMFieldWidget:
     # Instantiate the singleton QgsEditorWidgetRegistry
     widgetRegistry = QgsGui.editorWidgetRegistry()
 
@@ -362,7 +360,6 @@ class STDMFieldWidget():
         self.layer = layer
         for col_name, widget_id_name in \
                 self.widget_mapping.items():
-
             col = self.column_mapping[col_name]
             self._set_widget_type(
                 layer, col, widget_id_name[0]
@@ -490,7 +487,7 @@ class STDMFieldWidget():
         if len(full_srid) > 0:
             # Only extract the number
             srid = full_srid[1]
-        if not geom_wkt is None:
+        if geom_wkt is not None:
             # add geometry into the model
 
             setattr(
@@ -548,7 +545,7 @@ class STDMFieldWidget():
         :return: None
         :rtype: NoneType
         """
-        if not model is None:
+        if model is not None:
             self.feature_models[self.current_feature] = model
             if self.editor.is_valid:
                 self.editor.accept()
