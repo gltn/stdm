@@ -76,6 +76,8 @@ BACKUP_IMPORT_CONFIG_PATH = QDir.home().path() + '/.stdm/last_import_settings.js
 
 
 class ImportData(WIDGET, BASE):
+    ROLE_TABLE_NAME = Qt.UserRole + 1
+
     def __init__(self, parent=None):
         QWizard.__init__(self, parent)
         self.setupUi(self)
@@ -406,7 +408,7 @@ class ImportData(WIDGET, BASE):
         for i in range(self.lstDestTables.count()):
             item = self.lstDestTables.item(i)
             if item.checkState() == Qt.Checked:
-                return item.text()
+                return item.data(ImportData.ROLE_TABLE_NAME)
 
         return None
 
@@ -524,8 +526,9 @@ class ImportData(WIDGET, BASE):
             tables = profile_spatial_tables(self.curr_profile, include_read_only=False)
 
         if tables is not None:
-            for table_name in tables:
-                table_item = QListWidgetItem(table_name, self.lstDestTables)
+            for table_name, table_label in tables.items():
+                table_item = QListWidgetItem(table_label, self.lstDestTables)
+                table_item.setData(ImportData.ROLE_TABLE_NAME, table_name)
                 if initial_selection:
                     table_item.setCheckState(
                         Qt.Checked if ImportData.names_are_matching(table_name, initial_selection) else Qt.Unchecked)
@@ -696,7 +699,7 @@ class ImportData(WIDGET, BASE):
 
         for i in range(self.lstDestTables.count()):
             item = self.lstDestTables.item(i)
-            if item.checkState() == Qt.Checked and not item.text() in exclude:
+            if item.checkState() == Qt.Checked and not item.data(ImportData.ROLE_TABLE_NAME) in exclude:
                 item.setCheckState(Qt.Unchecked)
 
     def destSelectChanged(self, item):
@@ -705,12 +708,13 @@ class ImportData(WIDGET, BASE):
         clears previous selections
         """
         if item.checkState() == Qt.Checked:
+            selected_table = item.data(ImportData.ROLE_TABLE_NAME)
             # Ensure other selected items have been cleared
-            self._clear_dest_table_selections(exclude=[item.text()])
+            self._clear_dest_table_selections(exclude=[selected_table])
 
             # Load geometry columns if selection is a spatial table
             if self.field("typeSpatial"):
-                self.loadGeomCols(item.text())
+                self.loadGeomCols(selected_table)
 
     def syncRowSelection(self, srcList, destList):
         """
