@@ -452,25 +452,25 @@ def model_display_mapping(model, entity):
     return model_display_cols
 
 
-def profile_spatial_tables(profile):
+def profile_spatial_tables(profile, include_read_only: bool = True):
     """
     Returns the current profile spatial tables.
     :param profile: Current Profile
     :type profile: Class
     :return: Dictionary of spatial tables short name and name
+    :param include_read_only: if set to False, then only user editable tables will be returned
     :rtype: Dictionary
     """
-    spatial_tables = [
-        (e.name, e.short_name)
-        for e in
-        profile.entities.values()
-        if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()
-    ]
-    spatial_tables = dict(spatial_tables)
+    entities = [e for e in profile.entities.values() if e.TYPE_INFO == 'ENTITY' and e.has_geometry_column()]
+
+    if not include_read_only:
+        entities = [e for e in entities if e.user_editable]
+
+    spatial_tables = dict([(e.name, e.short_name) for e in entities])
     return spatial_tables
 
 
-def profile_user_tables(profile, include_views=True, admin=False, sort=False):
+def profile_user_tables(profile, include_views=True, admin=False, sort=False, include_read_only: bool = True):
     """
     Returns user accessible tables from current profile and pg_views
     .
@@ -482,45 +482,34 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False):
     short name as a key and value.
     :param admin: A Boolean that enables administrative unit table if True.
     :type admin: Boolean
+    :param include_read_only: if set to False, then only user editable tables will be returned
     :rtype: Dictionary
     """
     from stdm.data.pg_utils import (
         pg_views
     )
 
-    if not admin:
-        tables = [
-            (e.name, e.short_name)
-            for e in
-            profile.entities.values()
-            if e.TYPE_INFO in [
-                'ENTITY',
-                'ENTITY_SUPPORTING_DOCUMENT',
-                'SOCIAL_TENURE',
-                'SUPPORTING_DOCUMENT',
-                'VALUE_LIST',
-                'ASSOCIATION_ENTITY'
-            ]
-        ]
-    else:
-        tables = [
-            (e.name, e.short_name)
-            for e in
-            profile.entities.values()
-            if e.TYPE_INFO in [
-                'ENTITY',
-                'ENTITY_SUPPORTING_DOCUMENT',
-                'ADMINISTRATIVE_SPATIAL_UNIT',
-                'SOCIAL_TENURE',
-                'SUPPORTING_DOCUMENT',
-                'ASSOCIATION_ENTITY',
-                'VALUE_LIST'
-            ]
-        ]
-    tables = OrderedDict(tables)
+    valid_types = [
+        'ENTITY',
+        'ENTITY_SUPPORTING_DOCUMENT',
+        'SOCIAL_TENURE',
+        'SUPPORTING_DOCUMENT',
+        'VALUE_LIST',
+        'ASSOCIATION_ENTITY'
+    ]
+    if admin:
+        valid_types.append('ADMINISTRATIVE_SPATIAL_UNIT')
+
+    entities = [e for e in profile.entities.values() if e.TYPE_INFO in valid_types]
+
+    if not include_read_only:
+        entities = [e for e in entities if e.user_editable]
+
+    tables = OrderedDict([(e.name, e.short_name) for e in entities])
     if include_views:
         for view in pg_views():
             tables[view] = view
+
     if sort:
         names = list(tables.keys())
         names = sorted(names)
