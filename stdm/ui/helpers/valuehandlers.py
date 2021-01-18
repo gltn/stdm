@@ -18,7 +18,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtCore import QDate, QDateTime
+from qgis.PyQt.QtCore import QDate, QDateTime, QObject, pyqtSignal
 from qgis.PyQt.QtWidgets import (
     QLineEdit,
     QCheckBox,
@@ -47,7 +47,7 @@ from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.ui.gui_utils import GuiUtils
 
 
-class ControlValueHandler(object):
+class ControlValueHandler(QObject):
     control = None
     handlers = {}
     '''
@@ -56,8 +56,14 @@ class ControlValueHandler(object):
     Setter injection of the control.
     '''
 
+    value_changed = pyqtSignal()
+
     def setControl(self, control):
         self.control = control
+
+        # TODO - other widget types may need to be handled here
+        if isinstance(self.control, QLineEdit):
+            self.control.textChanged.connect(self.value_changed)
 
     @classmethod
     def register(cls):
