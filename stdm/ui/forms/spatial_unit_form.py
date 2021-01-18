@@ -161,6 +161,8 @@ class WidgetWrapper(QgsEditorWidgetWrapper):
                     self.handler_obj, 'setValue'
                 )
 
+                self.handler_obj.value_changed.connect(self.emitValueChanged)
+
 
 class QGISFieldWidgetConfig(QgsEditorConfigWidget):
     def __init__(self, layer, idx, parent):
