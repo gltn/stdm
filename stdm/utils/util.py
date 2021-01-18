@@ -466,7 +466,7 @@ def profile_spatial_tables(profile, include_read_only: bool = True):
     if not include_read_only:
         entities = [e for e in entities if e.user_editable]
 
-    spatial_tables = dict([(e.name, e.short_name) for e in entities])
+    spatial_tables = dict([(e.name, e.ui_display()) for e in entities])
     return spatial_tables
 
 
@@ -505,7 +505,7 @@ def profile_user_tables(profile, include_views=True, admin=False, sort=False, in
     if not include_read_only:
         entities = [e for e in entities if e.user_editable]
 
-    tables = OrderedDict([(e.name, e.short_name) for e in entities])
+    tables = OrderedDict([(e.name, e.ui_display()) for e in entities])
     if include_views:
         for view in pg_views():
             tables[view] = view
