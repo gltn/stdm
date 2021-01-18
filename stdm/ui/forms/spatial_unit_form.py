@@ -182,7 +182,7 @@ class QGISFieldWidgetConfig(QgsEditorConfigWidget):
         )
 
     def config(self):
-        pass
+        return {}
 
 
 class QGISFieldWidgetFactory(QgsEditorWidgetFactory):
