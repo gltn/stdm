@@ -519,9 +519,9 @@ class ImportData(WIDGET, BASE):
         self.lstDestTables.clear()
         tables = None
         if type == "textual":
-            tables = profile_user_tables(self.curr_profile, False, True)
+            tables = profile_user_tables(self.curr_profile, False, True, include_read_only=False)
         elif type == "spatial":
-            tables = profile_spatial_tables(self.curr_profile)
+            tables = profile_spatial_tables(self.curr_profile, include_read_only=False)
 
         if tables is not None:
             for table_name in tables:
