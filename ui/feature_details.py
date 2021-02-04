@@ -1044,10 +1044,15 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records)
 
-        self.layer.selectByIds(
-            self.feature_models.keys()
-        )
-        #self.zoom_to_selected(self.layer)
+
+
+        try:
+            self.layer.selectByIds(
+                self.feature_models.keys()
+            )
+            #self.zoom_to_selected(self.layer)
+        except:
+            pass
 
     def search_party(self, entity, party_ids):
         """
@@ -1073,9 +1078,9 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records, True)
 
-        if len(str_records) > 0:
-            return getattr(str_records[0], self.layer_table).id  # Assuming we have an Id!!
-        else:
+        try:
+            return getattr(str_records[0], self.layer_table).id
+        except:
             return -1
 
         #self.layer.selectByIds(
@@ -1207,7 +1212,11 @@ class DetailsTreeView(DetailsDBHandler):
             #if len(model) == 0: return
             feature_id = model['id']
         else:
-            feature_id = model.id
+            if hasattr(model, 'id'):
+                feature_id = model.id
+            else:
+                return
+
         self.feature_models[feature_id] = model
 
         if not isinstance(model, OrderedDict):
@@ -1642,11 +1651,12 @@ class DetailsTreeView(DetailsDBHandler):
                     self.sel_highlight.setColor(QColor(212, 95, 0, 255))
                     self.sel_highlight.show()
                     break
-        except AttributeError:
+        #except AttributeError:
+        except:
             # escape attribute error on child items such as party
             pass
-        except IndexError:
-            pass
+        #except IndexError:
+            #pass
 
     def node_signals(self, entity):
         """

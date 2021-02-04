@@ -213,15 +213,18 @@ class SpatialPreview(QTabWidget, Ui_frmPropertyPreview):
 
         geom, geom_col = None, ""
         sc_obj = None
+        db_geom = None
         for sc in spatial_cols:
 
-            db_geom = getattr(model, sc.name)
+            if hasattr(model, 'geom'):
+                db_geom = getattr(model, sc.name)
             #Use the first non-empty geometry
             # value in the collection
             if not db_geom is None:
                 sc_obj = sc
                 geom_col = sc.name
                 geom = db_geom
+
         QApplication.processEvents()
 
         lyr = sp_unit_manager.geom_col_layer_name(
