@@ -224,6 +224,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             self
         )
 
+        self._proxyModel = None
+
         self.load_records = load_records
         # Initialize toolbar
         self.plugin = plugin
@@ -441,34 +443,42 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         """
         self._notifBar.clear()
 
-    def recomputeRecordCount(self, init_data=False):
+    def recomputeRecordCount(self, init_data=False) -> int:
         """
         Get the number of records in the specified table and updates the window title.
         """
         entity = self._dbmodel()
 
         # Get number of records
-        numRecords = entity.queryObject().count()
-
+        num_records = entity.queryObject().count()
         if init_data:
             if self.current_records < 1:
-                if numRecords > self.record_limit:
+                if num_records > self.record_limit:
                     self.current_records = self.record_limit
-                    numRecords = self.record_limit
+                    num_records = self.record_limit
                 else:
-                    self.current_records = numRecords
+                    self.current_records = num_records
+        self.update_visible_row_count()
+        return num_records
+
+    def update_visible_row_count(self):
+        """
+        Updates the display of visible and total records
+        """
+        if not self._proxyModel:
+            return
+
+        total_records = self._proxyModel.sourceModel().rowCount()
+        visible_records = self._proxyModel.rowCount()
 
         rowStr = QApplication.translate('EntityBrowser', 'row') \
-            if numRecords == 1 \
+            if total_records == 1 \
             else QApplication.translate('EntityBrowser', 'rows')
         showing = QApplication.translate('EntityBrowser', 'Showing')
         windowTitle = "{0} - {1} {2} of {3} {4}".format(
-            self.title(), showing, self.current_records, numRecords, rowStr
+            self.title(), showing, visible_records, total_records, rowStr
         )
-
         self.setWindowTitle(windowTitle)
-
-        return numRecords
 
     def _init_entity_columns(self):
         """
@@ -584,6 +594,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         """
         self._proxyModel.set_filter_params(search_parameters)
         self._search_act.setChecked(bool(self._proxyModel.filter_params))
+        self.update_visible_row_count()
 
     def on_load_document_viewer(self):
         # Slot raised to show the document viewer for the selected entity
@@ -853,6 +864,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         # Set the filter column for the proxy model using the combo index
         name, header_idx = self._header_index_from_filter_combo_index(index)
         self._proxyModel.setFilterKeyColumn(header_idx)
+        self.update_visible_row_count()
 
     def onFilterColumnChanged(self, index):
         """
@@ -869,6 +881,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         """
         regExp = QRegExp(text, Qt.CaseInsensitive, QRegExp.FixedString)
         self._proxyModel.setFilterRegExp(regExp)
+        self.update_visible_row_count()
 
     def onDoubleClickView(self, modelindex):
         """
