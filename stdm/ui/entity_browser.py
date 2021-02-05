@@ -724,7 +724,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 entity_records_collection.append(entity_row_info)
 
             self._tableModel = BaseSTDMTableModel(
-                entity_records_collection, self._headers, self
+                entity_records_collection, self._headers, self, attribute_names=self._entity_attrs
             )
 
             if self.plugin is not None:

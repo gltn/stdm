@@ -466,12 +466,14 @@ class BaseSTDMTableModel(QAbstractTableModel):
     """
     Generic table model for use in STDM table views.
     """
+    ROLE_ATTRIBUTE_NAME  = Qt.UserRole + 10
 
-    def __init__(self, initdata, headerdata, parent=None):
+    def __init__(self, initdata, headerdata, parent=None, attribute_names=None):
         QAbstractTableModel.__init__(self, parent)
 
         self._initData = initdata
         self._headerdata = headerdata
+        self._attribute_names = attribute_names
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._initData)
@@ -480,25 +482,26 @@ class BaseSTDMTableModel(QAbstractTableModel):
         return len(self._headerdata)
 
     def data(self, index, role):
-        if index.row() != -1 and index.column() != -1:
-            try:
-                indexData = self._initData[index.row()][index.column()]
-            except:
-                return None
-        else:
+        if index.row() < 0 or index.row() >= len(self._initData):
+            return None
+
+        if index.column() < 0 or index.column() >= self.columnCount():
             return None
 
         if not index.isValid():
             return None
 
+        if role == BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME:
+            return self._attribute_names[index.column()]
         elif role == Qt.DisplayRole:
+            val = self._initData[index.row()][index.column()]
+
             # Decimal not supported by QVariant so we adapt it to a supported type
-            if isinstance(indexData, Decimal):
-                return str(indexData)
+            if isinstance(val, Decimal):
+                return str(val)
 
             else:
-                return indexData
-
+                return val
         else:
             return None
 
