@@ -23,7 +23,7 @@ from datetime import (
     datetime
 )
 
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QDate, QDateTime
 from qgis.PyQt.QtGui import (
     QMouseEvent,
     QPixmap,
@@ -31,8 +31,6 @@ from qgis.PyQt.QtGui import (
 from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QComboBox,
-    QDateEdit,
-    QDateTimeEdit,
     QDoubleSpinBox,
     QLabel,
     QLineEdit,
@@ -41,6 +39,10 @@ from qgis.PyQt.QtWidgets import (
     QTextEdit,
     QToolTip,
     QWidget
+)
+from qgis.gui import (
+    QgsDateEdit,
+    QgsDateTimeEdit
 )
 
 from stdm.data.configuration import entity_model
@@ -409,7 +411,8 @@ class DateWidgetFactory(ColumnWidgetRegistry):
 
     @classmethod
     def _create_widget(cls, c, parent, host=None):
-        dt = QDateEdit(parent)
+        dt = QgsDateEdit(parent)
+        dt.setAllowNull(True)
         dt.setObjectName('{0}_{1}'.format(cls._TYPE_PREFIX, c.name))
         dt.setCalendarPopup(True)
 
@@ -424,8 +427,8 @@ class DateWidgetFactory(ColumnWidgetRegistry):
         else:
             dt.setMaximumDate(c.maximum)
 
-        # Set maximum date as current date
-        dt.setDate(date.today())
+        # default to a null value
+        dt.setDate(QDate())
 
         return dt
 
@@ -452,7 +455,8 @@ class DateTimeWidgetFactory(ColumnWidgetRegistry):
 
     @classmethod
     def _create_widget(cls, c, parent, host=None):
-        dtt = QDateTimeEdit(parent)
+        dtt = QgsDateTimeEdit(parent)
+        dtt.setAllowNull(True)
         dtt.setObjectName('{0}_{1}'.format(cls._TYPE_PREFIX, c.name))
         dtt.setCalendarPopup(True)
 
@@ -467,8 +471,8 @@ class DateTimeWidgetFactory(ColumnWidgetRegistry):
         else:
             dtt.setMaximumDateTime(c.maximum)
 
-        # Set maximum datetime as current datetime
-        dtt.setDateTime(dtt.maximumDateTime())
+        # default to a null value
+        dtt.setDateTime(QDateTime())
 
         return dtt
 
