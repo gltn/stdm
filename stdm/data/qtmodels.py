@@ -466,14 +466,16 @@ class BaseSTDMTableModel(QAbstractTableModel):
     """
     Generic table model for use in STDM table views.
     """
-    ROLE_ATTRIBUTE_NAME  = Qt.UserRole + 10
+    ROLE_ATTRIBUTE_NAME = Qt.UserRole + 10
+    ROLE_RAW_VALUE = ROLE_ATTRIBUTE_NAME + 1
 
-    def __init__(self, initdata, headerdata, parent=None, attribute_names=None):
+    def __init__(self, initdata, headerdata, parent=None, attribute_names=None, raw_values = None):
         QAbstractTableModel.__init__(self, parent)
 
         self._initData = initdata
         self._headerdata = headerdata
         self._attribute_names = attribute_names
+        self._raw_values = raw_values
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._initData)
@@ -493,6 +495,11 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
         if role == BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME:
             return self._attribute_names[index.column()]
+        elif role == BaseSTDMTableModel.ROLE_RAW_VALUE:
+            if self._raw_values is None:
+                return self._initData[index.row()][index.column()]
+            else:
+                return self._raw_values[index.row()][index.column()]
         elif role == Qt.DisplayRole:
             val = self._initData[index.row()][index.column()]
 
@@ -518,7 +525,11 @@ class BaseSTDMTableModel(QAbstractTableModel):
         if index.isValid() and role == Qt.EditRole:
             self._initData[index.row()][index.column()] = value
             self.dataChanged.emit(index, index)
-
+            return True
+        elif index.isValid() and role == BaseSTDMTableModel.ROLE_RAW_VALUE:
+            if self._raw_values is not None:
+                self._raw_values[index.row()][index.column()] = value
+            self.dataChanged.emit(index, index)
             return True
 
         return False
@@ -538,9 +549,14 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
         # Initialize column values for the new row
         initRowVals = ["" for c in range(self.columnCount())]
+        init_raw_values = [None] * self.columnCount()
 
         for i in range(rows):
-            self._initData.insert(position, initRowVals)
+            self._initData.insert(position, initRowVals[:])
+
+        if self._raw_values is not None:
+            for i in range(rows):
+                self._raw_values.insert(position, init_raw_values[:])
 
         self.endInsertRows()
 
@@ -558,6 +574,9 @@ class BaseSTDMTableModel(QAbstractTableModel):
                 del self._initData[position]
             except IndexError:
                 pass
+
+            if self._raw_values is not None:
+                del self._raw_values[position]
 
         self.endRemoveRows()
 
