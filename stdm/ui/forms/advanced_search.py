@@ -35,15 +35,15 @@ from stdm.data.configuration.columns import (
     MultipleSelectColumn,
     VirtualColumn
 )
-from stdm.data.pg_utils import table_column_names, fetch_with_filter
+from stdm.data.pg_utils import table_column_names
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
-from stdm.utils.util import entity_display_columns, format_name, simple_dialog
+from stdm.utils.util import entity_display_columns, format_name
+
 
 class AdvancedSearch(EntityEditorDialog):
-
     search_triggered = pyqtSignal(dict)
 
-    def __init__(self, entity, parent, initial_values: dict=None):
+    def __init__(self, entity, parent, initial_values: dict = None):
         super().__init__(entity, parent=parent)
         self.parent = parent
 
@@ -124,70 +124,6 @@ class AdvancedSearch(EntityEditorDialog):
                 if value != handler.default() and bool(value):
                     search_data[column.name] = value
         return search_data
-
-    def on_search_deprecated(self):
-        search_data = self.current_search_data()
-        # self.search_db(search_data)
-        result = self.search_db_raw(search_data)
-
-        #self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
-        if result is not None:
-            found = QApplication.translate('AdvancedSearch', 'records found')
-            new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
-            if result.rowcount > 3000:
-                title = QApplication.translate(
-                    'AdvancedSearch',
-                    'Advanced Search'
-                )
-                message = QApplication.translate(
-                    'AdvancedSearch',
-                    'The search result returned {0} records, which is above the '
-                    'search result limit. <br>Would you like to see the first 3000 '
-                    'records?'.format("{:,}".format(result.rowcount))
-                )
-
-                res, chk_result = simple_dialog(self, title, message)
-                if res:
-                    self.setWindowTitle(new_title)
-                    #self.parent._initializeData(result)
-                else:
-                    return
-
-            else:
-                self.setWindowTitle(new_title)
-                #self.parent._initializeData(result)
-
-            self.search_triggered.emit(result)
-
-    def search_db(self, search_data):
-        ent_model_obj = self.ent_model()
-        # query = ent_model_obj.queryObject()
-        for attr, value in search_data.items():
-            ent_model_obj.queryObject().filter(
-                getattr(self.ent_model(), attr) == value)
-
-        # now we can run the query
-        # print(ent_model_obj.queryObject(), vars(ent_model_obj.queryObject()))
-        # print(str(ent_model_obj.queryObject()))
-        results = ent_model_obj.queryObject().all()
-
-    def search_db_raw(self, search_data):
-        sql = "SELECT * FROM {} WHERE ".format(self._entity.name)
-        # query = ent_model_obj.queryObject()
-        param = []
-        if len(search_data) == 0:
-            return None
-        for attr, value in search_data.items():
-            if isinstance(value, (int, float)):
-                param.append('{} = {}'.format(str(attr), str(value)))
-            if isinstance(value, str):
-                param.append("{} = '{}'".format(str(attr), str(value)))
-        final_sql = '{} {}'.format(sql, ' AND '.join(param))
-        # sql_text = text(final_sql)
-        results = fetch_with_filter(final_sql)
-        # now we can run the query
-
-        return results
 
     def _setup_columns_content_area(self):
         # Only use this if entity supports documents
