@@ -24,12 +24,14 @@ from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QComboBox,
     QTextEdit,
-    QDateEdit,
     QApplication,
     QMessageBox,
-    QDateTimeEdit,
     QSpinBox,
     QDoubleSpinBox
+)
+from qgis.gui import (
+    QgsDateEdit,
+    QgsDateTimeEdit
 )
 
 from stdm.ui.customcontrols.checkable_combo import MultipleChoiceCombo
@@ -328,7 +330,7 @@ class DateEditValueHandler(ControlValueHandler):
     '''
     DateEdit value reader.
     '''
-    controlType = QDateEdit
+    controlType = QgsDateEdit
 
     def value(self):
         return self.control.date()
@@ -367,7 +369,7 @@ class DateTimeEditValueHandler(ControlValueHandler):
     '''
     DateTimeEdit value reader.
     '''
-    controlType = QDateTimeEdit
+    controlType = QgsDateTimeEdit
 
     def value(self, for_spatial_unit=False):
 
