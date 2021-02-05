@@ -93,10 +93,10 @@ class AdvancedSearch(EntityEditorDialog):
             self.search, QDialogButtonBox.ActionRole
         )
         self.buttonBox.setStandardButtons(
-            QDialogButtonBox.Cancel
+            QDialogButtonBox.Close
         )
         self.search.clicked.connect(self.on_search)
-        self.buttonBox.rejected.connect(self.reject)
+        self.buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.reject)
 
     def on_search(self):
         """
