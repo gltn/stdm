@@ -695,15 +695,18 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
             # if self._tableModel is None:
             entity_records_collection = []
+            entity_raw_records = []
             for i, er in enumerate(entity_records):
                 if i == self.record_limit:
                     break
                 QApplication.processEvents()
                 entity_row_info = []
+                entity_raw_values = []
                 progressDialog.setValue(i)
                 try:
                     for attr in self._entity_attrs:
                         attr_val = getattr(er, attr)
+                        entity_raw_values.append(attr_val)
 
                         # Check if there are display formatters and apply if
                         # one exists for the given attribute.
@@ -722,9 +725,12 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                     return
 
                 entity_records_collection.append(entity_row_info)
+                entity_raw_records.append(entity_raw_values)
 
             self._tableModel = BaseSTDMTableModel(
-                entity_records_collection, self._headers, self, attribute_names=self._entity_attrs
+                entity_records_collection, self._headers, self,
+                attribute_names=self._entity_attrs,
+                raw_values=entity_raw_records
             )
 
             if self.plugin is not None:
@@ -921,7 +927,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         for i, attr in enumerate(self._entity_attrs):
 
             prop_idx = self._tableModel.index(insertPosition, i)
-            attr_val = getattr(model_obj, attr)
+            raw_val = getattr(model_obj, attr)
 
             """
             Check if there are display formatters and apply if one exists
@@ -929,9 +935,12 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             """
             if attr in self._cell_formatters:
                 formatter = self._cell_formatters[attr]
-                attr_val = formatter.format_column_value(attr_val)
+                attr_val = formatter.format_column_value(raw_val)
+            else:
+                attr_val = raw_val
 
             self._tableModel.setData(prop_idx, attr_val)
+            self._tableModel.setData(prop_idx, raw_val, BaseSTDMTableModel.ROLE_RAW_VALUE)
         return insertPosition
 
     def _model_from_id(self, record_id, row_number):
@@ -1282,7 +1291,7 @@ class EntityBrowserWithEditor(EntityBrowser):
                 return
             for i, attr in enumerate(self._entity_attrs):
                 prop_idx = self._tableModel.index(rownumber, i)
-                attr_val = getattr(updated_model_obj, attr)
+                raw_val = getattr(updated_model_obj, attr)
 
                 """
                 Check if there are display formatters and apply if
@@ -1290,9 +1299,12 @@ class EntityBrowserWithEditor(EntityBrowser):
                 """
                 if attr in self._cell_formatters:
                     formatter = self._cell_formatters[attr]
-                    attr_val = formatter.format_column_value(attr_val)
+                    attr_val = formatter.format_column_value(raw_val)
+                else:
+                    attr_val = raw_val
 
                 self._tableModel.setData(prop_idx, attr_val)
+                self._tableModel.setData(prop_idx, raw_val, BaseSTDMTableModel.ROLE_RAW_VALUE)
 
     def _delete_record(self, rec_id, row_number):
         """
