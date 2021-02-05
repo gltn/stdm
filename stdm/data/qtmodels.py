@@ -614,7 +614,14 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
             attribute_name = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME)
             if attribute_name in self.filter_params:
                 row_attribute_value = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_RAW_VALUE)
-                if row_attribute_value != self.filter_params[attribute_name]:
+
+                if isinstance(row_attribute_value, str):
+                    # For string values we do a case insensitive "contains" search
+                    is_match = str(self.filter_params[attribute_name]).upper() in row_attribute_value.upper()
+                else:
+                    is_match = row_attribute_value == self.filter_params[attribute_name]
+
+                if not is_match:
                     return False
 
         return True
