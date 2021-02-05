@@ -18,7 +18,8 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from qgis.PyQt.QtCore import (
-    Qt
+    Qt,
+    pyqtSignal
 )
 from qgis.PyQt.QtWidgets import (
     QDialogButtonBox,
@@ -37,12 +38,15 @@ from stdm.data.configuration.columns import (
 from stdm.data.pg_utils import table_column_names, fetch_with_filter
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.utils.util import entity_display_columns, format_name, simple_dialog
-
+from sqlalchemy.engine.result import ResultProxy
 
 class AdvancedSearch(EntityEditorDialog):
+
+    search_triggered = pyqtSignal(dict)
+
     def __init__(self, entity, parent):
 
-        EntityEditorDialog.__init__(self, entity, parent=parent)
+        super().__init__(entity, parent=parent)
         self.parent = parent
 
     def _init_gui(self):
@@ -52,13 +56,10 @@ class AdvancedSearch(EntityEditorDialog):
         self.gridLayout.addLayout(
             self.vlNotification, 0, 0, 1, 1
         )
-        QApplication.processEvents()
-
         column_widget_area = self._setup_columns_content_area()
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
-        QApplication.processEvents()
         # Add notification for mandatory columns if applicable
         next_row = 2
         # Set title
@@ -74,18 +75,6 @@ class AdvancedSearch(EntityEditorDialog):
         title = '{0} {1}'.format(title_str, search_trans)
         self.do_not_check_dirty = True
         self.setWindowTitle(title)
-        # if self.has_mandatory:
-        #     self.required_fields_lbl = QLabel(self)
-        #     msg = self.tr(
-        #         'Please fill out all required (*) fields.'
-        #     )
-        #     msg = self._highlight_asterisk(msg)
-        #     self.required_fields_lbl.setText(msg)
-        #     self.gridLayout.addWidget(
-        #         self.required_fields_lbl, next_row, 0, 1, 2
-        #     )
-        #     # Bump up row reference
-        #     next_row += 1
 
         self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setObjectName('buttonBox')
@@ -107,48 +96,18 @@ class AdvancedSearch(EntityEditorDialog):
             QDialogButtonBox.Cancel
         )
         self.search.clicked.connect(self.on_search)
-        #
-        #
-        # # edit model, collect model
-        # # adding new record for child
-        #
-        # # Saving in parent editor
-        # if not isinstance(self._parent._parent, EntityEditorDialog):
-        #     # adding a new record
-        #     if self.edit_model is None:
-        #         # saving when digitizing.
-        #         if self.collect_model:
-        #             self.buttonBox.accepted.connect(self.on_model_added)
-        #         # saving parent editor
-        #         else:
-        #             self.buttonBox.accepted.connect(self.save_parent_editor)
-        #             self.save_new_button.clicked.connect(self.save_and_new)
-        #     # updating existing record
-        #     else:
-        #         if not self.collect_model:
-        #             # updating existing record of the parent editor
-        #             self.buttonBox.accepted.connect(self.save_parent_editor)
-        #         else:
-        #             self.buttonBox.accepted.connect(self.on_model_added)
-        # # Saving in child editor
-        # else:
-        #     # save and new record
-        #     if self.edit_model is None:
-        #         self.buttonBox.accepted.connect(self.on_child_saved)
-        #         self.save_new_button.clicked.connect(
-        #             lambda: self.on_child_saved(True)
-        #         )
-        #
-        #     else:
-        #         # When updating an existing child editor save to the db
-        #         self.buttonBox.accepted.connect(
-        #             self.on_child_saved
-        #         )
-        #         #self.buttonBox.accepted.connect(self.submit)
-        #
-        self.buttonBox.rejected.connect(self.cancel)
+        self.buttonBox.rejected.connect(self.reject)
 
     def on_search(self):
+        """
+        Builds a dictionary of the desired search values and emits the search_triggered signal
+        """
+        self.search_triggered.emit(self.current_search_data())
+
+    def current_search_data(self) -> dict:
+        """
+        Returns a dictionary representing the current search data
+        """
         search_data = {}
         for column in self._entity.columns.values():
             if column.name in entity_display_columns(self._entity):
@@ -159,9 +118,14 @@ class AdvancedSearch(EntityEditorDialog):
                 value = handler.value()
                 if value != handler.default() and bool(value):
                     search_data[column.name] = value
+        return search_data
+
+    def on_search_deprecated(self):
+        search_data = self.current_search_data()
         # self.search_db(search_data)
         result = self.search_db_raw(search_data)
-        self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
+
+        #self.parent._tableModel.removeRows(0, self.parent._tableModel.rowCount())
         if result is not None:
             found = QApplication.translate('AdvancedSearch', 'records found')
             new_title = '{} - {} {}'.format(self.title, result.rowcount, found)
@@ -180,13 +144,15 @@ class AdvancedSearch(EntityEditorDialog):
                 res, chk_result = simple_dialog(self, title, message)
                 if res:
                     self.setWindowTitle(new_title)
-                    self.parent._initializeData(result)
+                    #self.parent._initializeData(result)
                 else:
                     return
 
             else:
                 self.setWindowTitle(new_title)
-                self.parent._initializeData(result)
+                #self.parent._initializeData(result)
+
+            self.search_triggered.emit(result)
 
     def search_db(self, search_data):
         ent_model_obj = self.ent_model()
@@ -244,7 +210,7 @@ class AdvancedSearch(EntityEditorDialog):
                 continue
             if isinstance(c, MultipleSelectColumn):
                 continue
-            if not c.name in columns and not isinstance(c, VirtualColumn):
+            if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
 
             if column_widget is not None:
@@ -289,18 +255,3 @@ class AdvancedSearch(EntityEditorDialog):
             return self.entity_tab_widget
 
         return self.entity_scroll_area
-
-    def closeEvent(self, event):
-        '''
-        Raised when a request to close the window is received.
-        Check the dirty state of input controls and prompt user to
-        save if dirty.
-        '''
-        event.accept()
-
-    def cancel(self):
-        '''
-        Slot for closing the dialog.
-        Checks the dirty state first before closing.
-        '''
-        self.reject()
