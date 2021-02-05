@@ -49,7 +49,6 @@ from qgis.utils import (
 )
 from sqlalchemy.sql.expression import text
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     GeometryColumn,
@@ -65,6 +64,7 @@ from stdm.data.qtmodels import (
     BaseSTDMTableModel,
     VerticalHeaderSortFilterProxyModel
 )
+from stdm.exceptions import DummyException
 from stdm.navigation.content_group import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
 from stdm.settings import (
@@ -349,15 +349,15 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._dateFormatter = formatter
 
     def state(self):
-        '''
+        """
         Returns the current state that the dialog has been configured in.
-        '''
+        """
         return self._state
 
     def setState(self, state):
-        '''
+        """
         Set the state of the dialog.
-        '''
+        """
         self._state = state
 
     def set_selection_record_id(self, id):
@@ -370,10 +370,10 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._select_item = id
 
     def title(self):
-        '''
+        """
         Set the title of the entity browser dialog.
         Protected method to be overridden by subclasses.
-        '''
+        """
         records = QApplication.translate('EntityBrowser', 'Records')
         if self._entity.label != '':
             title = self._entity.label
@@ -383,24 +383,24 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         return '{} {}'.format(title, records)
 
     def setCellFormatters(self, formattermapping):
-        '''
+        """
         Dictionary of attribute mappings and corresponding functions for
         formatting the attribute value to the display value.
-        '''
+        """
         self._cell_formatters = formattermapping
 
     def addCellFormatter(self, attributeName, formatterFunc):
-        '''
+        """
         Add a new cell formatter configuration to the collection
-        '''
+        """
         self._cell_formatters[attributeName] = formatterFunc
 
     def showEvent(self, showEvent):
-        '''
+        """
         Override event for loading the database records once the dialog is visible.
         This is for improved user experience i.e. to prevent the dialog from taking
         long to load.
-        '''
+        """
         self.setWindowTitle(str(self.title()))
 
         if self._data_initialized:
@@ -420,10 +420,10 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._data_initialized = True
 
     def hideEvent(self, hideEvent):
-        '''
+        """
         Override event which just sets a flag to indicate that the data records have already been
         initialized.
-        '''
+        """
         pass
 
     def clear_selection(self):
@@ -439,9 +439,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._notifBar.clear()
 
     def recomputeRecordCount(self, init_data=False):
-        '''
+        """
         Get the number of records in the specified table and updates the window title.
-        '''
+        """
         entity = self._dbmodel()
 
         # Get number of records
@@ -489,7 +489,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 continue
 
             # Do not include virtual columns in list of missing columns
-            if not c.name in columns and not isinstance(c, VirtualColumn):
+            if c.name not in columns and not isinstance(c, VirtualColumn):
                 missing_columns.append(c.name)
 
             else:
@@ -497,11 +497,11 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 self._headers.append(header)
                 col_name = c.name
 
-                '''
+                """
                 If it is a virtual column then use column name as the header
                 but fully qualified column name (created by SQLAlchemy
                 relationship) as the entity attribute name.
-                '''
+                """
 
                 if isinstance(c, MultipleSelectColumn):
                     col_name = c.model_attribute_name
@@ -510,7 +510,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
                 # Get widget factory so that we can use the value formatter
                 w_factory = ColumnWidgetRegistry.factory(c.TYPE_INFO)
-                if not w_factory is None:
+                if w_factory is not None:
                     formatter = w_factory(c)
                     self._cell_formatters[col_name] = formatter
 
@@ -581,7 +581,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         for sel_id in sel_rec_ids:
             er = ent_obj.queryObject().filter(self._dbmodel.id == sel_id).first()
-            if not er is None:
+            if er is not None:
                 docs = er.documents
 
                 # Notify there are no documents for the selected doc
@@ -602,9 +602,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 self._doc_viewer.load(docs)
 
     def _initializeData(self, filtered_records=None):
-        '''
+        """
         Set table model and load data into it.
-        '''
+        """
         if self._dbmodel is None:
             msg = QApplication.translate(
                 'EntityBrowser',
@@ -616,157 +616,157 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 QApplication.translate('EntityBrowser', 'Entity Browser'),
                 msg
             )
+            return
 
-        else:
-            self._init_entity_columns()
+        self._init_entity_columns()
 
-            # Load entity data. There might be a better way in future in order
-            # to ensure that there is a balance between user data discovery
-            # experience and performance.
-            if filtered_records is not None:
-                self.current_records = filtered_records.rowcount
+        # Load entity data. There might be a better way in future in order
+        # to ensure that there is a balance between user data discovery
+        # experience and performance.
+        if filtered_records is not None:
+            self.current_records = filtered_records.rowcount
 
-            numRecords = self.recomputeRecordCount(init_data=True)
+        numRecords = self.recomputeRecordCount(init_data=True)
 
-            # Load progress dialog
-            progressLabel = QApplication.translate(
-                "EntityBrowser", "Fetching Records..."
-            )
-            progressDialog = QProgressDialog(
-                progressLabel, None, 0, numRecords, self
-            )
+        # Load progress dialog
+        progressLabel = QApplication.translate(
+            "EntityBrowser", "Fetching Records..."
+        )
+        progressDialog = QProgressDialog(
+            progressLabel, None, 0, numRecords, self
+        )
 
-            QApplication.processEvents()
-            progressDialog.show()
-            progressDialog.setValue(0)
+        QApplication.processEvents()
+        progressDialog.show()
+        progressDialog.setValue(0)
 
-            entity_records = []
-            # Add records to nested list for enumeration in table model
+        entity_records = []
+        # Add records to nested list for enumeration in table model
+        load_data = True
+        if self.plugin is not None:
+            if self._entity.name in self.plugin.entity_table_model.keys():
+                if filtered_records is None:
+                    self._tableModel = self.plugin.entity_table_model[
+                        self._entity.name
+                    ]
+
+        if isinstance(self._parent, EntityEditorDialog):
             load_data = True
-            if self.plugin is not None:
-                if self._entity.name in self.plugin.entity_table_model.keys():
-                    if filtered_records is None:
-                        self._tableModel = self.plugin.entity_table_model[
-                            self._entity.name
-                        ]
 
-            if isinstance(self._parent, EntityEditorDialog):
-                load_data = True
-
-            if load_data:
-                # Only one filter is possible.
-                if len(self.filtered_records) > 0:
-                    entity_records = self.filtered_records
-                else:
-                    entity_cls = self._dbmodel()
-
-                    ordering = self.get_sorting_order(self._entity)
-
-                    if type(self.parent_record_id) == int and self.parent_record_id > 0:
-                        col = self.filter_col(self._entity)
-                        if col is None:
-                            entity_records = entity_cls.queryObject().filter().order_by(
-                                ordering).limit(
-                                self.record_limit
-                            ).all()
-                        else:
-                            child_model = entity_model(self._entity)
-                            col_name = getattr(child_model, col.name)
-                            child_model_obj = child_model()
-                            entity_records = child_model_obj.queryObject().filter(
-                                col_name == self.parent_record_id
-                            ).order_by(ordering).all()
-                    else:
-                        # if isinstance(self._parent, QMainWindow):
-                        if not isinstance(self._parent, EntityEditorDialog):
-                            entity_records = entity_cls.queryObject().filter().order_by(
-                                ordering).limit(self.record_limit).all()
-
-                    numRecords = len(entity_records)
-
-                # if self._tableModel is None:
-                entity_records_collection = []
-                for i, er in enumerate(entity_records):
-                    if i == self.record_limit:
-                        break
-                    QApplication.processEvents()
-                    entity_row_info = []
-                    progressDialog.setValue(i)
-                    try:
-                        for attr in self._entity_attrs:
-                            attr_val = getattr(er, attr)
-
-                            # Check if there are display formatters and apply if
-                            # one exists for the given attribute.
-                            if attr_val is not None:  # No need of formatter for None value
-                                if attr in self._cell_formatters:
-                                    formatter = self._cell_formatters[attr]
-                                    attr_val = formatter.format_column_value(attr_val)
-                            entity_row_info.append(attr_val)
-                    except DummyException as ex:
-                        QMessageBox.critical(
-                            self,
-                            QApplication.translate(
-                                'EntityBrowser', 'Loading Records'
-                            ),
-                            str(ex))
-                        return
-
-                    entity_records_collection.append(entity_row_info)
-
-                self._tableModel = BaseSTDMTableModel(
-                    entity_records_collection, self._headers, self
-                )
-
-                if self.plugin is not None:
-                    self.plugin.entity_table_model[self._entity.name] = \
-                        self._tableModel
-
-            # Add filter columns
-            for header, info in self._searchable_columns.items():
-                column_name, index = info['name'], info['header_index']
-                if column_name != 'id':
-                    self.cboFilterColumn.addItem(header, info)
-
-            # Use sortfilter proxy model for the view
-            self._proxyModel = VerticalHeaderSortFilterProxyModel()
-            self._proxyModel.setDynamicSortFilter(True)
-            self._proxyModel.setSourceModel(self._tableModel)
-            self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
-
-            # USe first column in the combo for filtering
-            if self.cboFilterColumn.count() > 0:
-                self.set_proxy_model_filter_column(0)
-
-            self.tbEntity.setModel(self._proxyModel)
-            if numRecords < self.record_limit:
-                self.tbEntity.setSortingEnabled(True)
-                self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
-
-            # First (ID) column will always be hidden
-            self.tbEntity.hideColumn(0)
-
-            for col in range(self.tbEntity.horizontalHeader().count()):
-                self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeToContents)
-
-            for col in range(self.tbEntity.horizontalHeader().count()):
-                self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.Interactive)
-
-            self.tbEntity.resizeColumnsToContents()
-
-            # Connect signals
-            self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)
-            self.txtFilterPattern.textChanged.connect(self.onFilterRegExpChanged)
-
-            # Select record with the given ID if specified
-            if not self._select_item is None:
-                self._select_record(self._select_item)
-
-            if numRecords > 0:
-                # Set maximum value of the progress dialog
-                progressDialog.setValue(numRecords)
+        if load_data:
+            # Only one filter is possible.
+            if len(self.filtered_records) > 0:
+                entity_records = self.filtered_records
             else:
-                progressDialog.close()
+                entity_cls = self._dbmodel()
+
+                ordering = self.get_sorting_order(self._entity)
+
+                if type(self.parent_record_id) == int and self.parent_record_id > 0:
+                    col = self.filter_col(self._entity)
+                    if col is None:
+                        entity_records = entity_cls.queryObject().filter().order_by(
+                            ordering).limit(
+                            self.record_limit
+                        ).all()
+                    else:
+                        child_model = entity_model(self._entity)
+                        col_name = getattr(child_model, col.name)
+                        child_model_obj = child_model()
+                        entity_records = child_model_obj.queryObject().filter(
+                            col_name == self.parent_record_id
+                        ).order_by(ordering).all()
+                else:
+                    # if isinstance(self._parent, QMainWindow):
+                    if not isinstance(self._parent, EntityEditorDialog):
+                        entity_records = entity_cls.queryObject().filter().order_by(
+                            ordering).limit(self.record_limit).all()
+
+                numRecords = len(entity_records)
+
+            # if self._tableModel is None:
+            entity_records_collection = []
+            for i, er in enumerate(entity_records):
+                if i == self.record_limit:
+                    break
+                QApplication.processEvents()
+                entity_row_info = []
+                progressDialog.setValue(i)
+                try:
+                    for attr in self._entity_attrs:
+                        attr_val = getattr(er, attr)
+
+                        # Check if there are display formatters and apply if
+                        # one exists for the given attribute.
+                        if attr_val is not None:  # No need of formatter for None value
+                            if attr in self._cell_formatters:
+                                formatter = self._cell_formatters[attr]
+                                attr_val = formatter.format_column_value(attr_val)
+                        entity_row_info.append(attr_val)
+                except DummyException as ex:
+                    QMessageBox.critical(
+                        self,
+                        QApplication.translate(
+                            'EntityBrowser', 'Loading Records'
+                        ),
+                        str(ex))
+                    return
+
+                entity_records_collection.append(entity_row_info)
+
+            self._tableModel = BaseSTDMTableModel(
+                entity_records_collection, self._headers, self
+            )
+
+            if self.plugin is not None:
+                self.plugin.entity_table_model[self._entity.name] = \
+                    self._tableModel
+
+        # Add filter columns
+        for header, info in self._searchable_columns.items():
+            column_name, index = info['name'], info['header_index']
+            if column_name != 'id':
+                self.cboFilterColumn.addItem(header, info)
+
+        # Use sortfilter proxy model for the view
+        self._proxyModel = VerticalHeaderSortFilterProxyModel()
+        self._proxyModel.setDynamicSortFilter(True)
+        self._proxyModel.setSourceModel(self._tableModel)
+        self._proxyModel.setSortCaseSensitivity(Qt.CaseInsensitive)
+
+        # USe first column in the combo for filtering
+        if self.cboFilterColumn.count() > 0:
+            self.set_proxy_model_filter_column(0)
+
+        self.tbEntity.setModel(self._proxyModel)
+        if numRecords < self.record_limit:
+            self.tbEntity.setSortingEnabled(True)
+            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+
+        # First (ID) column will always be hidden
+        self.tbEntity.hideColumn(0)
+
+        for col in range(self.tbEntity.horizontalHeader().count()):
+            self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeToContents)
+
+        for col in range(self.tbEntity.horizontalHeader().count()):
+            self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.Interactive)
+
+        self.tbEntity.resizeColumnsToContents()
+
+        # Connect signals
+        self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)
+        self.txtFilterPattern.textChanged.connect(self.onFilterRegExpChanged)
+
+        # Select record with the given ID if specified
+        if self._select_item is not None:
+            self._select_record(self._select_item)
+
+        if numRecords > 0:
+            # Set maximum value of the progress dialog
+            progressDialog.setValue(numRecords)
+        else:
+            progressDialog.close()
 
     def filter_col(self, child_entity):
         for col in child_entity.columns.values():
@@ -805,13 +805,13 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         return ordering
 
     def get_sorting_field(self, entity):
-        '''
+        """
         Return sorting column based on the rowindex of the column
         in the entity. Rowindex is set when you re-order the columns
         in the configration wizard (It is saved in the configuration file).
         Column with the smallest(positive integer) rowindex is the first
         column on an entity, and thats the column we use for sorting.
-        '''
+        """
         cols = {}
         for k in entity.updated_columns.keys():
             cols[int(entity.updated_columns[k].row_index)] = k
@@ -819,7 +819,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         try:
             min_id = min(i for i in cols_ordered.keys() if i > -1)
             column = cols_ordered[min_id]
-        except:
+        except DummyException:
             column = ""
         return column
 
@@ -833,32 +833,32 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._proxyModel.setFilterKeyColumn(header_idx)
 
     def onFilterColumnChanged(self, index):
-        '''
+        """
         Set the filter column for the proxy model.
-        '''
+        """
         self.set_proxy_model_filter_column(index)
 
     def _onFilterRegExpChanged(self, text):
         cProfile.runctx('self._onFilterRegExpChanged(text)', globals(), locals())
 
     def onFilterRegExpChanged(self, text):
-        '''
+        """
         Slot raised whenever the filter text changes.
-        '''
+        """
         regExp = QRegExp(text, Qt.CaseInsensitive, QRegExp.FixedString)
         self._proxyModel.setFilterRegExp(regExp)
 
     def onDoubleClickView(self, modelindex):
-        '''
+        """
         Slot raised upon double clicking the table view.
         To be implemented by subclasses.
-        '''
+        """
         pass
 
     def _selected_record_ids(self):
-        '''
+        """
         Get the IDs of the selected row in the table view.
-        '''
+        """
         self._notifBar.clear()
 
         selected_ids = []
@@ -881,10 +881,10 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         return selected_ids
 
     def onAccept(self):
-        '''
+        """
         Slot raised when user clicks to accept the dialog. The resulting action will be dependent
         on the state that the browser is currently configured in.
-        '''
+        """
         selIDs = self._selected_record_ids()
         if len(selIDs) == 0:
             return
@@ -903,9 +903,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             self._notifBar.insertInformationNotification(msg)
 
     def addModelToView(self, model_obj):
-        '''
+        """
         Convenience method for adding model info into the view.
-        '''
+        """
         insertPosition = self._tableModel.rowCount()
         self._tableModel.insertRows(insertPosition, 1)
 
@@ -914,10 +914,10 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             prop_idx = self._tableModel.index(insertPosition, i)
             attr_val = getattr(model_obj, attr)
 
-            '''
+            """
             Check if there are display formatters and apply if one exists
             for the given attribute.
-            '''
+            """
             if attr in self._cell_formatters:
                 formatter = self._cell_formatters[attr]
                 attr_val = formatter.format_column_value(attr_val)
@@ -926,9 +926,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         return insertPosition
 
     def _model_from_id(self, record_id, row_number):
-        '''
+        """
         Convenience method that returns the model object based on its ID.
-        '''
+        """
         dbHandler = self._dbmodel()
         modelObj = dbHandler.queryObject().filter(
             self._dbmodel.id == record_id
@@ -1037,9 +1037,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._editor_dlg = EntityEditorDialog
 
     def onNewEntity(self):
-        '''
+        """
         Load editor dialog for adding a new record.
-        '''
+        """
         self._notifBar.clear()
 
         if not self._can_add_edit():
@@ -1108,9 +1108,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         return True
 
     def onEditEntity(self):
-        '''
+        """
         Slot raised to load the editor for the selected row.
-        '''
+        """
         self._notifBar.clear()
 
         if not self._can_add_edit():
@@ -1160,9 +1160,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         self.child_model[row_position] = model
 
     def onRemoveEntity(self):
-        '''
+        """
         Load editor dialog for editing an existing record.
-        '''
+        """
         self._notifBar.clear()
 
         sel_row_indices = self.tbEntity.selectionModel().selectedRows(0)
@@ -1236,9 +1236,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.tbEntity.model().removeRows(0, row_count)
 
     def _load_editor_dialog(self, recid, rownumber):
-        '''
+        """
         Load editor dialog based on the selected model instance with the given ID.
-        '''
+        """
         model_obj = self._model_from_id(recid, rownumber)
         # show GPS editor if geometry
         if self._entity.has_geometry_column():
@@ -1275,10 +1275,10 @@ class EntityBrowserWithEditor(EntityBrowser):
                 prop_idx = self._tableModel.index(rownumber, i)
                 attr_val = getattr(updated_model_obj, attr)
 
-                '''
+                """
                 Check if there are display formatters and apply if
                 one exists for the given attribute.
-                '''
+                """
                 if attr in self._cell_formatters:
                     formatter = self._cell_formatters[attr]
                     attr_val = formatter.format_column_value(attr_val)
@@ -1335,9 +1335,9 @@ class EntityBrowserWithEditor(EntityBrowser):
         return del_result
 
     def onDoubleClickView(self, modelindex):
-        '''
+        """
         Override for loading editor dialog.
-        '''
+        """
         rowIndex = self._proxyModel.mapToSource(modelindex)
         rowNumber = rowIndex.row()
         recordIdIndex = self._tableModel.index(rowNumber, 0)
@@ -1563,4 +1563,4 @@ class ForeignKeyBrowser(EntityBrowser):
 
     def title(self):
         return QApplication.translate("EnumeratorEntityBrowser",
-                                      "%s Entity Records") % (self._data_source_name).replace("_", " ").capitalize()
+                                      "%s Entity Records") % self._data_source_name.replace("_", " ").capitalize()
