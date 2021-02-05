@@ -38,16 +38,21 @@ from stdm.data.configuration.columns import (
 from stdm.data.pg_utils import table_column_names, fetch_with_filter
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.utils.util import entity_display_columns, format_name, simple_dialog
-from sqlalchemy.engine.result import ResultProxy
 
 class AdvancedSearch(EntityEditorDialog):
 
     search_triggered = pyqtSignal(dict)
 
-    def __init__(self, entity, parent):
-
+    def __init__(self, entity, parent, initial_values: dict=None):
         super().__init__(entity, parent=parent)
         self.parent = parent
+
+        self.initial_values = initial_values or {}
+
+        for k, v in self.initial_values.items():
+            for mapper in self._attrMappers:
+                if mapper.attributeName() == k:
+                    mapper.valueHandler().setValue(v)
 
     def _init_gui(self):
         # Setup base elements

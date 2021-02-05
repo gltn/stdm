@@ -567,7 +567,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             )
 
     def on_advanced_search(self):
-        search = AdvancedSearch(self._entity, parent=self)
+        search = AdvancedSearch(self._entity, parent=self, initial_values=self._proxyModel.filter_params)
+        search.setAttribute(Qt.WA_DeleteOnClose, True)
 
         search.search_triggered.connect(self._filter_to_search_results)
         search.exec_()
@@ -576,7 +577,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         """
         Filters the view using the specified search parameters
         """
-        assert False, search_parameters
+        self._proxyModel.set_filter_params(search_parameters)
 
     def on_load_document_viewer(self):
         # Slot raised to show the document viewer for the selected entity
