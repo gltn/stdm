@@ -589,11 +589,35 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
     are ordered correctly.
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.filter_params = {}
+
     def headerData(self, section, orientation, role):
         if orientation == Qt.Vertical and role == Qt.DisplayRole:
             return section + 1
 
         return super(VerticalHeaderSortFilterProxyModel, self).headerData(section, orientation, role)
+
+    def set_filter_params(self, parameters: dict):
+        """
+        Sets a dictionary of filtering parameters to use to filter the model
+        """
+        self.filter_params = parameters
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row: int, source_parent: QModelIndex) -> bool:
+        if not super().filterAcceptsRow(source_row, source_parent):
+            return False
+
+        for col in range(self.sourceModel().columnCount()):
+            attribute_name = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME)
+            if attribute_name in self.filter_params:
+                row_attribute_value = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_RAW_VALUE)
+                if row_attribute_value != self.filter_params[attribute_name]:
+                    return False
+
+        return True
 
 
 class STRTreeViewModel(QAbstractItemModel):
