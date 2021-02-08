@@ -732,8 +732,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
 
-            self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
-            self.tbEntity.horizontalHeader().resizeSections(QHeaderView.Stretch)
+            #self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
+            #self.tbEntity.horizontalHeader().resizeSections(QHeaderView.Stretch)
 
             #self.tbEntity.resizeColumnsToContents()
 
