@@ -98,10 +98,23 @@ class AdvancedSearch(EntityEditorDialog):
             self.search, QDialogButtonBox.ActionRole
         )
         self.buttonBox.setStandardButtons(
-            QDialogButtonBox.Close
+            QDialogButtonBox.Close | QDialogButtonBox.Reset
         )
         self.search.clicked.connect(self.on_search)
         self.buttonBox.button(QDialogButtonBox.Close).clicked.connect(self.reject)
+        self.buttonBox.button(QDialogButtonBox.Reset).clicked.connect(self.reset)
+
+    def reset(self):
+        """
+        Resets the dialog back to an empty/no filter status
+        """
+        for column in self._entity.columns.values():
+            if column.name in entity_display_columns(self._entity):
+                if column.name == 'id':
+                    continue
+                handler = self.attribute_mappers[
+                    column.name].valueHandler()
+                handler.setValue(handler.default())
 
     def on_search(self):
         """
