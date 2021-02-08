@@ -199,6 +199,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         QgsGui.enableAutoGeometryRestore(self)
 
+        self.txtFilterPattern.setShowSearchIcon(True)
+
         # Add maximize buttons
         self.setWindowFlags(
             self.windowFlags() |
