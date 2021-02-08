@@ -1338,58 +1338,6 @@ class STDMQGISLoader:
 
         self.profiles_combobox.addItems(profile_names)
 
-        self.profiles_combobox.setStyleSheet(
-            f"""
-        QComboBox {{
-                border: 2px solid #4b85ca;
-                border-radius: 0px;
-                padding: 1px 3px 1px 3px;
-                min-width: 6em;
-            }}
-         QComboBox:editable {{
-             background: white;
-         }}
-
-         QComboBox:!editable, QComboBox::drop-down:editable {{
-                 background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                            stop: 0 #f8f8f8, stop: 0.4 #eeeeee,
-                                          stop: 0.5 #e6e6e6, stop: 1.0 #cecece);
-         }}
-
-         /* QComboBox gets the "on" state when the popup is open */
-         QComboBox:!editable:on, QComboBox::drop-down:editable:on {{
-                     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                                    stop: 0 #D3D3D3, stop: 0.4 #D8D8D8,
-                                                    stop: 0.5 #DDDDDD, stop: 1.0 #E1E1E1);
-         }}
-
-         QComboBox:on {{ /* shift the text when the popup opens */
-             padding-top: 3px;
-             padding-left: 4px;
-         }}
-
-         QComboBox::drop-down {{
-             subcontrol-origin: padding;
-             subcontrol-position: top right;
-             width: 15px;
-
-             border-left-width: 1px;
-             border-left-color: darkgray;
-             border-left-style: solid; /* just a single line */
-             border-top-right-radius: 3px; /* same radius as the QComboBox */
-             border-bottom-right-radius: 3px;
-         }}
-
-         QComboBox::down-arrow {{
-             image: url({GuiUtils.get_icon_svg('down_arrow.png')});
-         }}
-
-         QComboBox::down-arrow:on {{ /* shift the arrow when popup is open */
-             top: 1px;
-             left: 1px;
-         }}
-            """
-        )
         GuiUtils.set_combo_current_index_by_text(
             self.profiles_combobox, self.current_profile.name
         )
