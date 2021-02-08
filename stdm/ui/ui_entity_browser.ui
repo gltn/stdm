@@ -1,116 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>EntityBrowser</class>
-    <widget class="QDialog" name="EntityBrowser">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>650</width>
-                <height>416</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>Dialog</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-            <item row="3" column="0">
-                <widget class="QLabel" name="label">
-                    <property name="text">
-                        <string>Look For</string>
-                    </property>
-                </widget>
-            </item>
-            <item row="4" column="0" colspan="4">
-                <widget class="QDialogButtonBox" name="buttonBox">
-                    <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="standardButtons">
-                        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
-                    </property>
-                </widget>
-            </item>
-            <item row="3" column="2">
-                <widget class="QLabel" name="label_2">
-                    <property name="text">
-                        <string>In Column</string>
-                    </property>
-                </widget>
-            </item>
-            <item row="3" column="3">
-                <widget class="QComboBox" name="cboFilterColumn">
-                    <property name="minimumSize">
-                        <size>
-                            <width>150</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                </widget>
-            </item>
-            <item row="0" column="0" colspan="4">
-                <layout class="QVBoxLayout" name="vlNotification"/>
-            </item>
-            <item row="2" column="0" colspan="4">
-                <widget class="QTableView" name="tbEntity">
-                    <property name="frameShape">
-                        <enum>QFrame::StyledPanel</enum>
-                    </property>
-                    <property name="frameShadow">
-                        <enum>QFrame::Sunken</enum>
-                    </property>
-                    <property name="editTriggers">
-                        <set>QAbstractItemView::NoEditTriggers</set>
-                    </property>
-                    <property name="alternatingRowColors">
-                        <bool>true</bool>
-                    </property>
-                    <property name="selectionMode">
-                        <enum>QAbstractItemView::ExtendedSelection</enum>
-                    </property>
-                    <property name="selectionBehavior">
-                        <enum>QAbstractItemView::SelectRows</enum>
-                    </property>
-                </widget>
-            </item>
-            <item row="3" column="1">
-                <widget class="QLineEdit" name="txtFilterPattern">
-                    <property name="minimumSize">
-                        <size>
-                            <width>0</width>
-                            <height>30</height>
-                        </size>
-                    </property>
-                    <property name="maxLength">
-                        <number>50</number>
-                    </property>
-                    <property name="placeholderText">
-                        <string>Type the filter keyword here...</string>
-                    </property>
-                </widget>
-            </item>
-            <item row="1" column="0" colspan="4">
-                <layout class="QVBoxLayout" name="vlActions"/>
-            </item>
-        </layout>
+ <class>EntityBrowser</class>
+ <widget class="QDialog" name="EntityBrowser">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>650</width>
+    <height>416</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Look For</string>
+     </property>
     </widget>
-    <resources/>
-    <connections>
-        <connection>
-            <sender>buttonBox</sender>
-            <signal>rejected()</signal>
-            <receiver>EntityBrowser</receiver>
-            <slot>reject()</slot>
-            <hints>
-                <hint type="sourcelabel">
-                    <x>316</x>
-                    <y>260</y>
-                </hint>
-                <hint type="destinationlabel">
-                    <x>286</x>
-                    <y>274</y>
-                </hint>
-            </hints>
-        </connection>
-    </connections>
+   </item>
+   <item row="4" column="0" colspan="4">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>In Column</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QComboBox" name="cboFilterColumn">
+     <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>30</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="4">
+    <layout class="QVBoxLayout" name="vlNotification"/>
+   </item>
+   <item row="2" column="0" colspan="4">
+    <widget class="QTableView" name="tbEntity">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::ExtendedSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QgsFilterLineEdit" name="txtFilterPattern">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maxLength">
+      <number>50</number>
+     </property>
+     <property name="placeholderText">
+      <string>Type the filter keyword here...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="4">
+    <layout class="QVBoxLayout" name="vlActions"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qgis.gui</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>EntityBrowser</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
