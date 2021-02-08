@@ -263,6 +263,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         if self.can_view_supporting_documents:
             self._add_view_supporting_docs_btn()
 
+        self._search_act = None
+        self._clear_search_action = None
         self._add_advanced_search_btn()
 
         # Connect signals
@@ -325,7 +327,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self.tbActions.addAction(self._view_docs_act)
 
     def _add_advanced_search_btn(self):
-        # Add button for viewing supporting documents if supported
+        """
+        Add button for viewing supporting documents if supported
+        """
         search_str = QApplication.translate(
             'EntityBrowser',
             'Advanced Search'
@@ -335,13 +339,23 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             search_str,
             self
         )
-
         self._search_act.setCheckable(True)
-
-        # Connect signal for showing document viewer
         self._search_act.triggered.connect(self.on_advanced_search)
-
         self.tbActions.addAction(self._search_act)
+
+        # Add "clear search" button
+        search_str = QApplication.translate(
+            'EntityBrowser',
+            'Clear Advanced Search'
+        )
+        self._clear_search_action = QAction(
+            GuiUtils.get_icon('advanced_search_clear.png'),
+            search_str,
+            self
+        )
+        self._clear_search_action.setEnabled(False)
+        self._clear_search_action.triggered.connect(self.clear_advanced_search)
+        self.tbActions.addAction(self._clear_search_action)
 
     def dateFormatter(self):
         """
@@ -595,8 +609,15 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         Filters the view using the specified search parameters
         """
         self._proxyModel.set_filter_params(search_parameters)
-        self._search_act.setChecked(bool(self._proxyModel.filter_params))
+        self._search_act.setChecked(bool(search_parameters))
         self.update_visible_row_count()
+        self._clear_search_action.setEnabled(bool(search_parameters))
+
+    def clear_advanced_search(self):
+        """
+        Clears any advanced search which is in place
+        """
+        self._filter_to_search_results({})
 
     def on_load_document_viewer(self):
         # Slot raised to show the document viewer for the selected entity
