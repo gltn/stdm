@@ -604,16 +604,7 @@
          <property name="spacing">
           <number>5</number>
          </property>
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>5</number>
          </property>
          <item>
@@ -654,16 +645,7 @@
          <string>Columns</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>5</number>
          </property>
          <item>
@@ -852,16 +834,7 @@
          <property name="spacing">
           <number>7</number>
          </property>
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>5</number>
          </property>
          <item>
@@ -985,16 +958,7 @@
          <string>Values</string>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>5</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>5</number>
          </property>
          <item>
@@ -1173,8 +1137,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>421</width>
-         <height>707</height>
+         <width>293</width>
+         <height>609</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1474,24 +1438,50 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>txtLicense</tabstop>
   <tabstop>rbAccpt</tabstop>
-  <tabstop>cboProfile</tabstop>
   <tabstop>rbReject</tabstop>
-  <tabstop>btnPDelete</tabstop>
+  <tabstop>edtDocPath</tabstop>
+  <tabstop>btnDocPath</tabstop>
+  <tabstop>edtOutputPath</tabstop>
+  <tabstop>btnDocOutput</tabstop>
+  <tabstop>edtTemplatePath</tabstop>
+  <tabstop>btnTemplates</tabstop>
+  <tabstop>cboProfile</tabstop>
   <tabstop>btnNewP</tabstop>
-  <tabstop>pftableView</tabstop>
+  <tabstop>btnCopy</tabstop>
+  <tabstop>btnPDelete</tabstop>
+  <tabstop>edtDesc</tabstop>
   <tabstop>btnNewEntity</tabstop>
   <tabstop>btnEditEntity</tabstop>
   <tabstop>btnDeleteEntity</tabstop>
-  <tabstop>btnDeleteColumn</tabstop>
-  <tabstop>btnEditColumn</tabstop>
+  <tabstop>pftableView</tabstop>
+  <tabstop>lvEntities</tabstop>
   <tabstop>btnAddColumn</tabstop>
+  <tabstop>btnEditColumn</tabstop>
+  <tabstop>btnDeleteColumn</tabstop>
   <tabstop>tbvColumns</tabstop>
-  <tabstop>lvLookups</tabstop>
+  <tabstop>btnAddLookup</tabstop>
   <tabstop>btnEditLookup</tabstop>
-  <tabstop>lvLookupValues</tabstop>
+  <tabstop>btnDeleteLookup</tabstop>
+  <tabstop>lvLookups</tabstop>
+  <tabstop>btnAddLkupValue</tabstop>
   <tabstop>btnEditLkupValue</tabstop>
-  <tabstop>txtLicense</tabstop>
+  <tabstop>btnDeleteLkupValue</tabstop>
+  <tabstop>lvLookupValues</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>lst_parties</tabstop>
+  <tabstop>cbMultiParty</tabstop>
+  <tabstop>lst_spatial_units</tabstop>
+  <tabstop>btn_sp_units_tenure</tabstop>
+  <tabstop>gb_start_dates</tabstop>
+  <tabstop>dt_start_minimum</tabstop>
+  <tabstop>dt_start_maximum</tabstop>
+  <tabstop>gb_end_dates</tabstop>
+  <tabstop>dt_end_minimum</tabstop>
+  <tabstop>dt_end_maximum</tabstop>
+  <tabstop>btn_custom_attrs</tabstop>
+  <tabstop>txtHtml</tabstop>
  </tabstops>
  <resources/>
  <connections/>
