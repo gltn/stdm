@@ -161,12 +161,18 @@ class _AttributeMapper:
         """
         if hasattr(self.model(), self._attrName):
             controlValue = self._valueHandler.value()
-            # The to conditions below fix the issue of
+            # The conditions below fix the issue of
             # saving data for QGIS forms and other forms.
             # QGIS only recognizes QDate so we have to
-            # keep the control value as QData and
+            # keep the control value as QDate and
             # convert it to python date before
             # saving it to the database here.
+
+            # First check if date(time) objects are valid
+            if isinstance(controlValue, (QDate, QDateTime)):
+                if not controlValue.isValid():
+                    return
+
             if isinstance(controlValue, QDate):
                 controlValue = controlValue.toPyDate()
 
