@@ -79,8 +79,6 @@ from stdm.utils.util import (
     entity_attr_to_model
 )
 
-DETAILS_DOCK_ON = False
-
 
 class LayerSelectionHandler(object):
     """
@@ -595,13 +593,11 @@ class DetailsDockWidget(WIDGET, BASE):
         clearing feature selection, and hiding the dock.
 
         """
-        global DETAILS_DOCK_ON
         self.iface.actionPan().trigger()
         self.plugin.feature_details_act.setChecked(False)
         self.clear_feature_selection()
         # self.clear_sel_highlight()
         self.hide()
-        DETAILS_DOCK_ON = False
 
     def closeEvent(self, event):
         """
