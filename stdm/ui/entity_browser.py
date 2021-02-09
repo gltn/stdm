@@ -75,6 +75,7 @@ from stdm.settings import (
 )
 from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
 from stdm.ui.document_viewer import DocumentViewManager
+from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.forms.advanced_search import AdvancedSearch
 from stdm.ui.forms.editor_dialog import EntityEditorDialog
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
@@ -82,7 +83,6 @@ from stdm.ui.gps_tool import GPSToolDialog
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
 from stdm.ui.notification import NotificationBar
-from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.sourcedocument import (
     DocumentWidget,
     network_document_path,
@@ -286,7 +286,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(self.details_tree_view)
             self.str_preview_container.setLayout(layout)
-            self.details_tree_view.activate_feature_details(True)
+            self.details_tree_view.activate_feature_details(True, follow_layer_selection=False)
             self.details_tree_view.model.clear()
         else:
             self.details_tree_view = None
@@ -959,8 +959,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             )
         else:
             self.details_tree_view.search_spatial_unit(
-                self.entity, [row_id]
+                self.entity, [row_id], select_matching_features=False
             )
+
     def _selected_record_ids(self):
         """
         Get the IDs of the selected row in the table view.
@@ -1015,7 +1016,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         insertPosition = self._tableModel.rowCount()
         self._tableModel.insertRows(insertPosition, 1)
 
-        self._tableModel.setData(self._tableModel.index(insertPosition, 0), model_obj.id, BaseSTDMTableModel.ROLE_ROW_ID)
+        self._tableModel.setData(self._tableModel.index(insertPosition, 0), model_obj.id,
+                                 BaseSTDMTableModel.ROLE_ROW_ID)
         for i, attr in enumerate(self._entity_attrs):
 
             prop_idx = self._tableModel.index(insertPosition, i)
