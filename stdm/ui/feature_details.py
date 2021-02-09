@@ -50,7 +50,8 @@ from qgis.core import (
     QgsProject
 )
 from qgis.gui import (
-    QgsHighlight
+    QgsHighlight,
+    QgsDockWidget
 )
 
 from stdm.exceptions import DummyException
@@ -521,20 +522,18 @@ WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_feature_details.ui'))
 
 
-class DetailsDockWidget(WIDGET, BASE):
+class DetailsDockWidget(WIDGET, QgsDockWidget):
     """
     The logic for the spatial entity details dock widget.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, iface):
         """
         Initializes the DetailsDockWidget.
         :param iface: The QGIS interface
         :type iface: Object
-        :param plugin: The STDM plugin object
-        :type plugin: Object
         """
-        QDockWidget.__init__(self, iface.mainWindow())
+        super().__init__()
 
         self.setupUi(self)
 
@@ -542,7 +541,6 @@ class DetailsDockWidget(WIDGET, BASE):
         self.delete_btn.setIcon(GuiUtils.get_icon('remove.png'))
         self.view_document_btn.setIcon(GuiUtils.get_icon('document.png'))
 
-        self.plugin = plugin
         self.iface = iface
 
         self.edit_btn.setDisabled(True)
@@ -550,32 +548,6 @@ class DetailsDockWidget(WIDGET, BASE):
         self.view_document_btn.setDisabled(True)
         # LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
-
-        plugin.feature_details_act.toggled.connect(
-            self.handle_dock
-        )
-
-    def open_dock(self):
-        """
-        Creates dock on right dock widget area and set window title.
-        """
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-
-        self.setWindowTitle(
-            QApplication.translate(
-                'DetailsDockWidget', 'Spatial Entity Details'
-            )
-        )
-
-    def handle_dock(self, checked):
-        """
-        Closes or opens dock.
-        :param checked: True if the tool for feature detail is checked
-        :type tool: Boolean
-        :return:
-        :rtype:
-        """
-        self.open_dock() if checked else self.close_dock()
 
     def clear_feature_selection(self):
         """
@@ -586,41 +558,6 @@ class DetailsDockWidget(WIDGET, BASE):
             if layer.type() == layer.VectorLayer:
                 layer.removeSelection()
         map.refresh()
-
-    def close_dock(self):
-        """
-        Closes the dock by replacing select tool with pan tool,
-        clearing feature selection, and hiding the dock.
-
-        """
-        self.iface.actionPan().trigger()
-        self.plugin.feature_details_act.setChecked(False)
-        self.clear_feature_selection()
-        # self.clear_sel_highlight()
-        self.hide()
-
-    def closeEvent(self, event):
-        """
-        On close of the dock window, this event is executed
-        to run close_dock method
-        :param event: The close event
-        :type event: QCloseEvent
-        :return: None
-        """
-        if self.plugin is None:
-            return
-        self.close_dock()
-    #
-    # def hideEvent(self, event):
-    #     """
-    #     Listens to the hide event of the dock and properly close the dock
-    #     using the close_dock method.
-    #     :param event: The close event
-    #     :type event: QCloseEvent
-    #     """
-    #     self.close_dock(
-    #         self.plugin.feature_details_act
-    #     )
 
 
 class SelectedItem(object):
@@ -794,20 +731,22 @@ class DetailsTreeView(DetailsDBHandler):
 
         return config_done
 
-    def activate_feature_details(self, button_clicked=True):
+    def activate_feature_details(self, checked: bool=True):
         """
         A slot raised when the feature details button is clicked.
-        :param button_clicked: A boolean to identify if it is activated
+        :param checked: A boolean to identify if it is activated
         because of button click or because of change in the active layer.
-        :type button_clicked: Boolean
+        :type checked: Boolean
         """
-        if not button_clicked: return
+        if not checked:
+            return
 
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
 
-        if not self.db_configuration_done(): return
+        if not self.db_configuration_done():
+            return
 
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
@@ -830,18 +769,16 @@ class DetailsTreeView(DetailsDBHandler):
         # self.zoom_to_selected(self.layer)
 
         if self.layer is None:
-            if button_clicked:
-                self.active_layer_check()
+            self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
             return
 
         # if the selected layer is not an STDM layer,
         # show not feature layer.
         if not self.stdm_layer(self.layer):
-            if button_clicked:
-                # show popup message if dock is hidden and button clicked
-                self.non_stdm_layer_error()
-                self.plugin.feature_details_act.setChecked(False)
+            # show popup message if dock is hidden and button clicked
+            self.non_stdm_layer_error()
+            self.plugin.feature_details_act.setChecked(False)
 
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget

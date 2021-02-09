@@ -1027,8 +1027,12 @@ class STDMQGISLoader:
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
-        dock_widget = DetailsDockWidget(self.iface, self)
-        self.details_tree_view = DetailsTreeView(self.iface, self, dock_widget)
+        self.details_dock_widget = DetailsDockWidget(self.iface)
+        self.details_dock_widget.setToggleVisibilityAction(self.feature_details_act)
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.details_dock_widget)
+        self.details_dock_widget.setUserVisible(False)
+
+        self.details_tree_view = DetailsTreeView(self.iface, self, self.details_dock_widget)
 
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
