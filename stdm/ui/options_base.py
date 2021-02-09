@@ -67,7 +67,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.utils.util import version_from_metadata
 
-MAX_LIMIT = 500  # Maximum records in a entity browser
+MAX_LIMIT = 100000  # Maximum records in a entity browser
 
 
 def pg_profile_names():
