@@ -34,6 +34,7 @@ STDM can be installed in two ways:
     1.  In QGIS Desktop, go to menu **“Plugins -&gt; Manage and Install Plugins…”** On the **“Plugins”** dialog, select **“Settings”** tab.
 
     2.  Click **“Add…”** to open repository details dialog. The dialog allows you to enter STDM repository properties, enter the details as shown below:
+        
         <img src="stdm/images/readme/image3.png" width="520" height="240" />
 
         -   In the **Name** field enter: GLTN Plugin Repository
