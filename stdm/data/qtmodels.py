@@ -498,7 +498,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
         if role == BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME:
             return self._attribute_names[index.column()]
         if role == BaseSTDMTableModel.ROLE_ROW_ID:
-            return self._row_ids[index.column()]
+            return self._row_ids[index.row()]
         elif role == BaseSTDMTableModel.ROLE_RAW_VALUE:
             if self._raw_values is None:
                 return self._initData[index.row()][index.column()]
