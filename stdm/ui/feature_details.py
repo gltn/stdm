@@ -562,6 +562,12 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         """
         self.visibilityChanged.connect(self._visibility_changed)
 
+    def remove_connections(self):
+        """
+        Removes visibility based connections for the dock
+        """
+        self.visibilityChanged.disconnect(self._visibility_changed)
+
     def _visibility_changed(self, visible: bool):
         """
         Called when dock visibility is changed
