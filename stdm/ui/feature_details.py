@@ -24,7 +24,6 @@ from collections import OrderedDict
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    Qt,
     QDateTime,
     QDate
 )
@@ -35,11 +34,12 @@ from qgis.PyQt.QtGui import (
     QColor
 )
 from qgis.PyQt.QtWidgets import (
-    QDockWidget,
     QMessageBox,
     QTreeView,
     QAbstractItemView,
     QApplication,
+    QWidget,
+    QVBoxLayout
 )
 from qgis.core import (
     QgsFeatureRequest,
@@ -50,10 +50,11 @@ from qgis.core import (
     QgsProject
 )
 from qgis.gui import (
-    QgsHighlight
+    QgsHighlight,
+    QgsDockWidget,
+    QgsMapCanvas
 )
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration import (
     entity_model
 )
@@ -66,6 +67,7 @@ from stdm.data.supporting_documents import (
     supporting_doc_tables,
     document_models
 )
+from stdm.exceptions import DummyException
 from stdm.settings import current_profile
 from stdm.settings.registryconfig import (
     selection_color
@@ -79,15 +81,17 @@ from stdm.utils.util import (
     entity_attr_to_model
 )
 
-DETAILS_DOCK_ON = False
 
-
-class LayerSelectionHandler(object):
+# TODO: the base class here shouldn't really be QWidget, but
+# the levels of inheritance here prohibit us to make the subclass
+# a QObject subclass without causing diamond inheritance issues
+class LayerSelectionHandler(QWidget):
     """
      Handles all tasks related to the layer.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, parent, plugin):
+        super().__init__(parent)
         """
         Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
@@ -96,7 +100,7 @@ class LayerSelectionHandler(object):
         :type plugin: Object
         """
         self.layer = None
-        self.iface = iface
+        self.iface = plugin.iface
         self.plugin = plugin
         self.sel_highlight = None
         self.current_profile = current_profile()
@@ -166,13 +170,15 @@ class LayerSelectionHandler(object):
         :return: Table name.
         :rtype: str
         """
-        if layer is None: return ''
+        if layer is None:
+            return ''
 
         source = layer.source()
 
-        if source is None: return ''
+        if source is None:
+            return ''
 
-        vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        vals = dict(re.findall(r'(\S+)="?(.*?)"? ', source))
 
         table_name = ''
         try:
@@ -280,7 +286,7 @@ class DetailsDBHandler(LayerSelectionHandler):
     Handles the database linkage of the spatial entity details.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, parent, plugin):
         """
         Initializes the DetailsDBHandler.
         """
@@ -292,7 +298,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         self._formatted_record = OrderedDict()
         self.display_columns = None
         self._entity_supporting_doc_tables = {}
-        LayerSelectionHandler.__init__(self, iface, plugin)
+        super().__init__(parent, plugin)
 
     def set_entity(self, entity):
         """
@@ -333,7 +339,7 @@ class DetailsDBHandler(LayerSelectionHandler):
             widget_factory = ColumnWidgetRegistry.factory(
                 col.TYPE_INFO
             )
-            if not widget_factory is None:
+            if widget_factory is not None:
                 formatter = widget_factory(col)
                 self.column_formatter[col_name] = formatter
         self.plugin.entity_formatters[entity.name] = self.column_formatter
@@ -425,7 +431,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         """
         Gets all STR records linked to a party, if the record is party record.
         :param party_id: The party id/id of the spatial unit
-        :type feature_id: Integer
+        :type party_id: Integer
         :return: The list of social tenure records
         :rtype: List
         """
@@ -523,20 +529,16 @@ WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_feature_details.ui'))
 
 
-class DetailsDockWidget(WIDGET, BASE):
+class DetailsDockWidget(WIDGET, QgsDockWidget):
     """
     The logic for the spatial entity details dock widget.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, map_canvas: QgsMapCanvas, plugin):
         """
         Initializes the DetailsDockWidget.
-        :param iface: The QGIS interface
-        :type iface: Object
-        :param plugin: The STDM plugin object
-        :type plugin: Object
         """
-        QDockWidget.__init__(self, iface.mainWindow())
+        super().__init__()
 
         self.setupUi(self)
 
@@ -544,87 +546,58 @@ class DetailsDockWidget(WIDGET, BASE):
         self.delete_btn.setIcon(GuiUtils.get_icon('remove.png'))
         self.view_document_btn.setIcon(GuiUtils.get_icon('document.png'))
 
-        self.plugin = plugin
-        self.iface = iface
+        self.map_canvas = map_canvas
 
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
         self.view_document_btn.setDisabled(True)
-        # LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
 
-        plugin.feature_details_act.toggled.connect(
-            self.handle_dock
-        )
+        self.details_tree_view = DetailsTreeView(self, plugin, delete_button=self.delete_btn, edit_button=self.edit_btn,
+                                                 view_document_button=self.view_document_btn)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.details_tree_view)
+        self.tree_container.setLayout(layout)
 
-    def open_dock(self):
-        """
-        Creates dock on right dock widget area and set window title.
-        """
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self)
-
-        self.setWindowTitle(
-            QApplication.translate(
-                'DetailsDockWidget', 'Spatial Entity Details'
+        if map_canvas:
+            map_canvas.currentLayerChanged.connect(
+                lambda: self.details_tree_view.activate_feature_details(False)
             )
-        )
 
-    def handle_dock(self, checked):
+    def init_connections(self):
         """
-        Closes or opens dock.
-        :param checked: True if the tool for feature detail is checked
-        :type tool: Boolean
-        :return:
-        :rtype:
+        Initializes visibility based connections for the dock
         """
-        self.open_dock() if checked else self.close_dock()
+        self.visibilityChanged.connect(self._visibility_changed)
+
+    def remove_connections(self):
+        """
+        Removes visibility based connections for the dock
+        """
+        self.visibilityChanged.disconnect(self._visibility_changed)
+
+    def _visibility_changed(self, visible: bool):
+        """
+        Called when dock visibility is changed
+        """
+        if not visible:
+            self.clear_feature_selection()
+        else:
+            self.details_tree_view.activate_feature_details(True)
 
     def clear_feature_selection(self):
         """
         Clears selection of layer(s).
         """
-        map = self.iface.mapCanvas()
-        for layer in map.layers():
+
+        if not self.map_canvas:
+            return
+
+        for layer in self.map_canvas.layers():
             if layer.type() == layer.VectorLayer:
                 layer.removeSelection()
-        map.refresh()
-
-    def close_dock(self):
-        """
-        Closes the dock by replacing select tool with pan tool,
-        clearing feature selection, and hiding the dock.
-
-        """
-        global DETAILS_DOCK_ON
-        self.iface.actionPan().trigger()
-        self.plugin.feature_details_act.setChecked(False)
-        self.clear_feature_selection()
-        # self.clear_sel_highlight()
-        self.hide()
-        DETAILS_DOCK_ON = False
-
-    def closeEvent(self, event):
-        """
-        On close of the dock window, this event is executed
-        to run close_dock method
-        :param event: The close event
-        :type event: QCloseEvent
-        :return: None
-        """
-        if self.plugin is None:
-            return
-        self.close_dock()
-    #
-    # def hideEvent(self, event):
-    #     """
-    #     Listens to the hide event of the dock and properly close the dock
-    #     using the close_dock method.
-    #     :param event: The close event
-    #     :type event: QCloseEvent
-    #     """
-    #     self.close_dock(
-    #         self.plugin.feature_details_act
-    #     )
+        self.map_canvas.refresh()
 
 
 class SelectedItem(object):
@@ -638,25 +611,31 @@ class DetailsTreeView(DetailsDBHandler):
     to add the widget.
     """
 
-    def __init__(self, iface, plugin=None, container=None):
+    def __init__(self, parent=None, plugin=None, edit_button=None, delete_button=None, view_document_button=None):
         """
         The method initializes the dockwidget.
-        :param iface: QGIS user interface class
-        :type iface: Object
         :param plugin: The STDM plugin
         :type plugin: class
         """
         from .entity_browser import _EntityDocumentViewerHandler
-        DetailsDBHandler.__init__(self, iface, plugin)
+        super().__init__(parent, plugin=plugin)
 
         self.plugin = plugin
 
-        self.view = QTreeView(container)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.view = QTreeView()
+        layout.addWidget(self.view)
+        self.setLayout(layout)
 
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
-        self.container_widget = container
+
+        self.edit_button = edit_button
+        self.delete_button = delete_button
+        self.view_document_button = view_document_button
+
         self.edit_btn_connected = False
         self.layer_table = None
         self.entity = None
@@ -692,7 +671,8 @@ class DetailsTreeView(DetailsDBHandler):
             '''
         )
         self.current_profile = current_profile()
-        if self.current_profile is None: return
+        if self.current_profile is None:
+            return
 
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_units = self.social_tenure.spatial_units
@@ -752,11 +732,8 @@ class DetailsTreeView(DetailsDBHandler):
         selected_item = self.model.itemFromIndex(current)
         if selected_item is None:
             return
-        if hasattr(self.container_widget, 'delete_btn'):
-            if selected_item.data() in self.party_items:
-                self.container_widget.delete_btn.setEnabled(False)
-            else:
-                self.container_widget.delete_btn.setEnabled(True)
+        if self.delete_button is not None:
+            self.delete_button.setEnabled(selected_item.data() not in self.party_items)
 
     def set_layer_entity(self):
         """
@@ -798,20 +775,22 @@ class DetailsTreeView(DetailsDBHandler):
 
         return config_done
 
-    def activate_feature_details(self, button_clicked=True):
+    def activate_feature_details(self, checked: bool = True):
         """
         A slot raised when the feature details button is clicked.
-        :param button_clicked: A boolean to identify if it is activated
+        :param checked: A boolean to identify if it is activated
         because of button click or because of change in the active layer.
-        :type button_clicked: Boolean
+        :type checked: Boolean
         """
-        if not button_clicked: return
+        if not checked:
+            return
 
         # if self.plugin is None:
         # Registry column widget
         # set formatter for social tenure relationship.
 
-        if not self.db_configuration_done(): return
+        if not self.db_configuration_done():
+            return
 
         self.set_formatter(self.social_tenure)
         for party in self.social_tenure.parties:
@@ -834,18 +813,16 @@ class DetailsTreeView(DetailsDBHandler):
         # self.zoom_to_selected(self.layer)
 
         if self.layer is None:
-            if button_clicked:
-                self.active_layer_check()
+            self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
             return
 
         # if the selected layer is not an STDM layer,
         # show not feature layer.
         if not self.stdm_layer(self.layer):
-            if button_clicked:
-                # show popup message if dock is hidden and button clicked
-                self.non_stdm_layer_error()
-                self.plugin.feature_details_act.setChecked(False)
+            # show popup message if dock is hidden and button clicked
+            self.non_stdm_layer_error()
+            self.plugin.feature_details_act.setChecked(False)
 
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
@@ -875,10 +852,6 @@ class DetailsTreeView(DetailsDBHandler):
         """
         Prepares the dock widget for data loading.
         """
-        # self.open_dock()
-        # if self.container_widget is not None:
-        self.add_tree_view()
-
         # enable the select tool
         self.activate_select_tool()
         self.update_tree_source(self.layer)
@@ -902,13 +875,6 @@ class DetailsTreeView(DetailsDBHandler):
         )
 
         self.node_signals(self.entity)
-
-    def add_tree_view(self):
-        """
-        Adds tree view to the dock widget and sets style.
-        """
-        if self.container_widget is not None:
-            self.container_widget.tree_scrollArea.setWidget(self.view)
 
     def reset_tree_view(self, features=None):
         """
@@ -935,12 +901,6 @@ class DetailsTreeView(DetailsDBHandler):
             self.view.clicked.connect(
                 self.multi_select_highlight
             )
-        if features is None:
-            return
-        # # if there is at least one selected feature
-        if len(features) > 0:
-            if self.container_widget is None:
-                self.add_tree_view()
 
     def disable_buttons(self, bool):
         """
@@ -949,12 +909,12 @@ class DetailsTreeView(DetailsDBHandler):
         :param bool: A boolean setting the disabled status. True disables it.
         :type bool: Boolean
         """
-        if hasattr(self.container_widget, 'edit_btn'):
-            self.container_widget.edit_btn.setDisabled(bool)
-        if hasattr(self.container_widget, 'delete_btn'):
-            self.container_widget.delete_btn.setDisabled(bool)
-        if hasattr(self.container_widget, 'view_document_btn'):
-            self.container_widget.view_document_btn.setDisabled(bool)
+        if self.edit_button is not None:
+            self.edit_button.setDisabled(bool)
+        if self.delete_button is not None:
+            self.delete_button.setDisabled(bool)
+        if self.view_document_button is not None:
+            self.view_document_button.setDisabled(bool)
 
     def show_tree(self):
         """
@@ -963,7 +923,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         str_records = []
 
-        if self._selected_features is None: return
+        if self._selected_features is None:
+            return
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -983,8 +944,8 @@ class DetailsTreeView(DetailsDBHandler):
             self.disable_buttons(True)
             return
         layer_icon = GuiUtils.get_icon('layer.gif')
-        ### add non entity layer for views.
-        if not self.entity is None:
+        # add non entity layer for views.
+        if self.entity is not None:
             self.reset_tree_view(self._selected_features)
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
@@ -1032,7 +993,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         self.reset_tree_view()
         layer_icon = GuiUtils.get_icon('layer.gif')
-        ### add non entity layer for views.
+        # add non entity layer for views.
 
         # self.reset_tree_view(selected_features)
 
@@ -1065,7 +1026,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         self.reset_tree_view()
         table_icon = GuiUtils.get_icon('table.png')
-        ### add non entity layer for views.
+        # add non entity layer for views.
 
         str_records = []
         for spu_id in party_ids:
@@ -1162,7 +1123,7 @@ class DetailsTreeView(DetailsDBHandler):
         feature_data = []
 
         for elem in selected_features:
-            if not party_id is None:
+            if party_id is not None:
                 if elem.id() == party_id:
                     feature_map = OrderedDict(
                         list(zip(field_names, elem.attributes()))
@@ -1210,7 +1171,8 @@ class DetailsTreeView(DetailsDBHandler):
         :type str_records: List
         """
 
-        if model is None: return
+        if model is None:
+            return
 
         if isinstance(model, OrderedDict):
             # if len(model) == 0: return
@@ -1300,7 +1262,7 @@ class DetailsTreeView(DetailsDBHandler):
             party_name = party.short_name.lower().replace(' ', '_')
             party_id = '{}_id'.format(party_name)
 
-            if not party_id in record:
+            if party_id not in record:
                 return None, None
 
             if record[party_id] is not None:
@@ -1321,7 +1283,7 @@ class DetailsTreeView(DetailsDBHandler):
         for spatial_unit in spatial_units:
             spatial_unit_name = spatial_unit.name.split(self.current_profile.prefix, 1)[1]
             spatial_unit_id = '{}_id'.format(spatial_unit_name).lstrip('_')
-            if not spatial_unit_id in record:
+            if spatial_unit_id not in record:
                 return None, None
             if record[spatial_unit_id] is not None:
                 return spatial_unit, spatial_unit_id
@@ -1336,7 +1298,8 @@ class DetailsTreeView(DetailsDBHandler):
         :param feature_id: The selected feature id.
         :type feature_id: Integer
         """
-        if str_records is None: return
+        if str_records is None:
+            return
 
         if self.layer_table is None and self.plugin is not None:
             return
@@ -1662,28 +1625,27 @@ class DetailsTreeView(DetailsDBHandler):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
-        if self.container_widget is not None:
-            if hasattr(self.container_widget, 'edit_btn'):
-                if self.edit_btn_connected:
-                    self.container_widget.edit_btn.clicked.disconnect(
-                        self.edit_selected_node
-                    )
-
-            if hasattr(self.container_widget, 'edit_btn'):
-                self.container_widget.edit_btn.clicked.connect(
+        if self.edit_button is not None:
+            if self.edit_btn_connected:
+                self.edit_button.clicked.disconnect(
                     self.edit_selected_node
                 )
-            if hasattr(self.container_widget, 'delete_btn'):
-                self.container_widget.delete_btn.clicked.connect(
-                    self.delete_selected_item
-                )
 
-            if hasattr(self.container_widget, 'view_document_btn'):
-                self.container_widget.view_document_btn.clicked.connect(
-                    lambda: self.view_node_document(
-                        entity
-                    )
+        if self.edit_button is not None:
+            self.edit_button.clicked.connect(
+                self.edit_selected_node
+            )
+        if self.delete_button is not None:
+            self.delete_button.clicked.connect(
+                self.delete_selected_item
+            )
+
+        if self.view_document_button is not None:
+            self.view_document_button.clicked.connect(
+                lambda: self.view_node_document(
+                    entity
                 )
+            )
 
     def node_data(self, mode, results):
         """
@@ -1748,7 +1710,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         feature_edit = True
 
-        if data is None: return
+        if data is None:
+            return
 
         if isinstance(data, str):
             data_error = QApplication.translate(
@@ -2028,7 +1991,7 @@ class DetailsTreeView(DetailsDBHandler):
         else:
 
             db_model = self.feature_model(entity, id)
-        if not db_model is None:
+        if db_model is not None:
             if not hasattr(db_model, 'documents'):
                 docs = []
             else:

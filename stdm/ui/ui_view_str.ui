@@ -1,310 +1,309 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>frmManageSTR</class>
-    <widget class="QMainWindow" name="frmManageSTR">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>968</width>
-                <height>638</height>
-            </rect>
+ <class>frmManageSTR</class>
+ <widget class="QMainWindow" name="frmManageSTR">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>968</width>
+    <height>638</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>View Social Tenure Relationship</string>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="dockOptions">
+   <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QFrame" name="frame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>380</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>450</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_5">
+        <property name="leftMargin">
+         <number>1</number>
         </property>
-        <property name="windowTitle">
-            <string>View Social Tenure Relationship</string>
+        <property name="topMargin">
+         <number>1</number>
         </property>
-        <property name="documentMode">
-            <bool>false</bool>
+        <property name="rightMargin">
+         <number>1</number>
         </property>
-        <property name="dockOptions">
-            <set>QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
+        <property name="bottomMargin">
+         <number>1</number>
         </property>
-        <widget class="QWidget" name="centralwidget">
-            <layout class="QGridLayout" name="gridLayout">
-                <item row="1" column="0">
-                    <widget class="QSplitter" name="splitter">
-                        <property name="orientation">
-                            <enum>Qt::Horizontal</enum>
-                        </property>
-                        <widget class="QFrame" name="frame">
-                            <property name="sizePolicy">
-                                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                                    <horstretch>0</horstretch>
-                                    <verstretch>0</verstretch>
-                                </sizepolicy>
-                            </property>
-                            <property name="minimumSize">
-                                <size>
-                                    <width>380</width>
-                                    <height>0</height>
-                                </size>
-                            </property>
-                            <property name="maximumSize">
-                                <size>
-                                    <width>450</width>
-                                    <height>16777215</height>
-                                </size>
-                            </property>
-                            <property name="frameShape">
-                                <enum>QFrame::NoFrame</enum>
-                            </property>
-                            <property name="frameShadow">
-                                <enum>QFrame::Raised</enum>
-                            </property>
-                            <layout class="QGridLayout" name="gridLayout_5">
-                                <property name="margin">
-                                    <number>1</number>
-                                </property>
-                                <item row="0" column="0">
-                                    <widget class="QGroupBox" name="groupBox">
-                                        <property name="minimumSize">
-                                            <size>
-                                                <width>0</width>
-                                                <height>250</height>
-                                            </size>
-                                        </property>
-                                        <property name="maximumSize">
-                                            <size>
-                                                <width>16777215</width>
-                                                <height>250</height>
-                                            </size>
-                                        </property>
-                                        <property name="title">
-                                            <string>Search by:</string>
-                                        </property>
-                                        <layout class="QGridLayout" name="gridLayout_4">
-                                            <item row="0" column="0" colspan="2">
-                                                <widget class="QTabWidget" name="tbSTREntity"/>
-                                            </item>
-                                            <item row="1" column="0">
-                                                <widget class="QPushButton" name="btnSearch">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>0</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>Search</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                            <item row="1" column="1">
-                                                <widget class="QPushButton" name="btnClearSearch">
-                                                    <property name="minimumSize">
-                                                        <size>
-                                                            <width>0</width>
-                                                            <height>30</height>
-                                                        </size>
-                                                    </property>
-                                                    <property name="text">
-                                                        <string>Clear Results</string>
-                                                    </property>
-                                                </widget>
-                                            </item>
-                                        </layout>
-                                    </widget>
-                                </item>
-                                <item row="1" column="0">
-                                    <widget class="QGroupBox" name="groupBox_2">
-                                        <property name="title">
-                                            <string>Search Results:</string>
-                                        </property>
-                                        <layout class="QVBoxLayout" name="verticalLayout">
-                                            <property name="topMargin">
-                                                <number>5</number>
-                                            </property>
-                                            <item>
-                                                <layout class="QVBoxLayout" name="toolbarVBox">
-                                                    <property name="spacing">
-                                                        <number>0</number>
-                                                    </property>
-                                                </layout>
-                                            </item>
-                                            <item>
-                                                <widget class="QScrollArea" name="tree_scrollArea">
-                                                    <property name="frameShape">
-                                                        <enum>QFrame::NoFrame</enum>
-                                                    </property>
-                                                    <property name="frameShadow">
-                                                        <enum>QFrame::Plain</enum>
-                                                    </property>
-                                                    <property name="widgetResizable">
-                                                        <bool>true</bool>
-                                                    </property>
-                                                    <widget class="QWidget" name="scrollAreaWidgetContents">
-                                                        <property name="geometry">
-                                                            <rect>
-                                                                <x>0</x>
-                                                                <y>0</y>
-                                                                <width>424</width>
-                                                                <height>85</height>
-                                                            </rect>
-                                                        </property>
-                                                    </widget>
-                                                </widget>
-                                            </item>
-                                        </layout>
-                                    </widget>
-                                </item>
-                            </layout>
-                        </widget>
-                        <widget class="QFrame" name="frame_2">
-                            <property name="enabled">
-                                <bool>true</bool>
-                            </property>
-                            <property name="frameShape">
-                                <enum>QFrame::Panel</enum>
-                            </property>
-                            <property name="frameShadow">
-                                <enum>QFrame::Raised</enum>
-                            </property>
-                            <layout class="QGridLayout" name="gridLayout_3">
-                                <property name="margin">
-                                    <number>1</number>
-                                </property>
-                                <property name="spacing">
-                                    <number>7</number>
-                                </property>
-                                <item row="0" column="0">
-                                    <widget class="QToolBox" name="toolBox">
-                                        <property name="font">
-                                            <font>
-                                                <weight>50</weight>
-                                                <bold>false</bold>
-                                                <strikeout>false</strikeout>
-                                            </font>
-                                        </property>
-                                        <property name="cursor">
-                                            <cursorShape>PointingHandCursor</cursorShape>
-                                        </property>
-                                        <property name="inputMethodHints">
-                                            <set>Qt::ImhNone</set>
-                                        </property>
-                                        <property name="frameShape">
-                                            <enum>QFrame::NoFrame</enum>
-                                        </property>
-                                        <property name="frameShadow">
-                                            <enum>QFrame::Sunken</enum>
-                                        </property>
-                                        <property name="lineWidth">
-                                            <number>1</number>
-                                        </property>
-                                        <property name="midLineWidth">
-                                            <number>1</number>
-                                        </property>
-                                        <property name="currentIndex">
-                                            <number>0</number>
-                                        </property>
-                                        <property name="tabSpacing">
-                                            <number>1</number>
-                                        </property>
-                                        <widget class="QWidget" name="page_1">
-                                            <property name="geometry">
-                                                <rect>
-                                                    <x>0</x>
-                                                    <y>0</y>
-                                                    <width>486</width>
-                                                    <height>333</height>
-                                                </rect>
-                                            </property>
-                                            <attribute name="label">
-                                                <string>Spatial Unit Preview</string>
-                                            </attribute>
-                                            <layout class="QVBoxLayout" name="verticalLayout_2">
-                                                <item>
-                                                    <widget class="SpatialPreview" name="tbPropertyPreview"/>
-                                                </item>
-                                            </layout>
-                                        </widget>
-                                        <widget class="QWidget" name="page_2">
-                                            <property name="geometry">
-                                                <rect>
-                                                    <x>0</x>
-                                                    <y>0</y>
-                                                    <width>486</width>
-                                                    <height>326</height>
-                                                </rect>
-                                            </property>
-                                            <attribute name="label">
-                                                <string>Supporting Documents</string>
-                                            </attribute>
-                                            <layout class="QVBoxLayout" name="verticalLayout_3">
-                                                <item>
-                                                    <widget class="QTabWidget" name="tbSupportingDocs">
-                                                        <property name="maximumSize">
-                                                            <size>
-                                                                <width>16777215</width>
-                                                                <height>16777215</height>
-                                                            </size>
-                                                        </property>
-                                                    </widget>
-                                                </item>
-                                            </layout>
-                                        </widget>
-                                    </widget>
-                                </item>
-                            </layout>
-                        </widget>
-                    </widget>
-                </item>
-                <item row="2" column="0">
-                    <widget class="QDialogButtonBox" name="buttonBox">
-                        <property name="standardButtons">
-                            <set>QDialogButtonBox::Close</set>
-                        </property>
-                    </widget>
-                </item>
-                <item row="0" column="0">
-                    <layout class="QVBoxLayout" name="vl_notification"/>
-                </item>
+        <item row="0" column="0">
+         <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>250</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>250</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Search by:</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_4">
+           <item row="0" column="0" colspan="2">
+            <widget class="QTabWidget" name="tbSTREntity"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QPushButton" name="btnSearch">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Search</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QPushButton" name="btnClearSearch">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Clear Results</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_2">
+          <property name="title">
+           <string>Search Results:</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+           <property name="topMargin">
+            <number>5</number>
+           </property>
+           <item>
+            <layout class="QVBoxLayout" name="toolbarVBox">
+             <property name="spacing">
+              <number>0</number>
+             </property>
             </layout>
-        </widget>
-        <widget class="QToolBar" name="tb_actions">
-            <property name="windowTitle">
-                <string>toolBar</string>
-            </property>
-            <property name="movable">
-                <bool>false</bool>
-            </property>
-            <property name="toolButtonStyle">
-                <enum>Qt::ToolButtonTextBesideIcon</enum>
-            </property>
-            <property name="floatable">
-                <bool>false</bool>
-            </property>
-            <attribute name="toolBarArea">
-                <enum>TopToolBarArea</enum>
-            </attribute>
-            <attribute name="toolBarBreak">
-                <bool>false</bool>
-            </attribute>
-        </widget>
-    </widget>
-    <customwidgets>
-        <customwidget>
-            <class>SpatialPreview</class>
-            <extends>QTabWidget</extends>
-            <header>stdm.ui.property_preview</header>
-            <container>1</container>
-        </customwidget>
-    </customwidgets>
-    <connections>
-        <connection>
-            <sender>buttonBox</sender>
-            <signal>rejected()</signal>
-            <receiver>frmManageSTR</receiver>
-            <slot>close()</slot>
-            <hints>
-                <hint type="sourcelabel">
-                    <x>461</x>
-                    <y>586</y>
-                </hint>
-                <hint type="destinationlabel">
-                    <x>461</x>
-                    <y>303</y>
-                </hint>
-            </hints>
-        </connection>
-    </connections>
+           </item>
+           <item>
+            <widget class="QWidget" name="str_tree_container" native="true"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QFrame" name="frame_2">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::Panel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <property name="spacing">
+         <number>7</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="QToolBox" name="toolBox">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <strikeout>false</strikeout>
+           </font>
+          </property>
+          <property name="cursor">
+           <cursorShape>PointingHandCursor</cursorShape>
+          </property>
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="lineWidth">
+           <number>1</number>
+          </property>
+          <property name="midLineWidth">
+           <number>1</number>
+          </property>
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <property name="tabSpacing">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="page_1">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>492</width>
+             <height>316</height>
+            </rect>
+           </property>
+           <attribute name="label">
+            <string>Spatial Unit Preview</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="SpatialPreview" name="tbPropertyPreview"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_2">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>492</width>
+             <height>316</height>
+            </rect>
+           </property>
+           <attribute name="label">
+            <string>Supporting Documents</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QTabWidget" name="tbSupportingDocs">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="standardButtons">
+       <set>QDialogButtonBox::Close</set>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <layout class="QVBoxLayout" name="vl_notification"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QToolBar" name="tb_actions">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextBesideIcon</enum>
+   </property>
+   <property name="floatable">
+    <bool>false</bool>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpatialPreview</class>
+   <extends>QTabWidget</extends>
+   <header>stdm.ui.property_preview</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>frmManageSTR</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>461</x>
+     <y>586</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>461</x>
+     <y>303</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

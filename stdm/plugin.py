@@ -155,7 +155,7 @@ class STDMQGISLoader:
         # Initialize loader
         self.toolbarLoader = None
         self.menubarLoader = None
-        self.details_tree_view = None
+        self.details_dock_widget = None
         self.combo_action = None
         self.stdmInitToolbar = None
         self.stdmMenu = None
@@ -309,6 +309,11 @@ class STDMQGISLoader:
         if self.stdmMenu is not None:
             self.stdmMenu.deleteLater()
             self.stdmMenu = None
+
+        if self.details_dock_widget is not None:
+            self.details_dock_widget.remove_connections()
+            self.details_dock_widget.deleteLater()
+            self.details_dock_widget = None
 
         self.remove_spatial_unit_mgr()
 
@@ -1027,8 +1032,11 @@ class STDMQGISLoader:
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
-        dock_widget = DetailsDockWidget(self.iface, self)
-        self.details_tree_view = DetailsTreeView(self.iface, self, dock_widget)
+        self.details_dock_widget = DetailsDockWidget(map_canvas=self.iface.mapCanvas(), plugin=self)
+        self.details_dock_widget.setToggleVisibilityAction(self.feature_details_act)
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.details_dock_widget)
+        self.details_dock_widget.setUserVisible(False)
+        self.details_dock_widget.init_connections()
 
         # Add current profiles to profiles combobox
         self.load_profiles_combobox()
@@ -1044,14 +1052,9 @@ class STDMQGISLoader:
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
         self.spatialLayerManager.triggered.connect(self.spatialLayerMangerActivate)
 
-        self.feature_details_act.triggered.connect(self.details_tree_view.activate_feature_details)
-
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
 
-        self.iface.mapCanvas().currentLayerChanged.connect(
-            lambda: self.details_tree_view.activate_feature_details(False)
-        )
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
         self.viewSTRAct.triggered.connect(self.onViewSTR)
