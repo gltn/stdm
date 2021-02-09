@@ -806,7 +806,6 @@ class DetailsTreeView(DetailsDBHandler):
         # Get and set the active layer.
         self.layer = self.iface.activeLayer()
 
-        QApplication.processEvents()
         # if no active layer, show error message
         # and uncheck the feature tool
 

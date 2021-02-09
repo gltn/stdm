@@ -38,7 +38,8 @@ from qgis.PyQt.QtWidgets import (
     QDialog,
     QToolBar,
     QAction,
-    QHeaderView
+    QHeaderView,
+    QVBoxLayout
 )
 from qgis.core import (
     QgsProject
@@ -69,7 +70,8 @@ from stdm.navigation.content_group import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
 from stdm.settings import (
     get_entity_browser_record_limit,
-    get_entity_sort_order
+    get_entity_sort_order,
+    current_profile
 )
 from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
 from stdm.ui.document_viewer import DocumentViewManager
@@ -80,6 +82,7 @@ from stdm.ui.gps_tool import GPSToolDialog
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
 from stdm.ui.notification import NotificationBar
+from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.sourcedocument import (
     DocumentWidget,
     network_document_path,
@@ -270,6 +273,24 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         # Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
         self.tbEntity.doubleClicked[QModelIndex].connect(self.onDoubleClickView)
+
+        # add STR preview widget - we only do this when a spatial layer is present and entity participates in STR
+        curr_profile = current_profile()
+        party_names = [e.name for e in curr_profile.social_tenure.parties]
+        spu_names = [e.name for e in curr_profile.social_tenure.spatial_units]
+        participates_in_str = self.entity.name in party_names or self.entity.name in spu_names
+
+        if participates_in_str and iface.activeLayer():
+            self.details_tree_view = DetailsTreeView(parent=self, plugin=plugin)
+            layout = QVBoxLayout()
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self.details_tree_view)
+            self.str_preview_container.setLayout(layout)
+            self.details_tree_view.activate_feature_details(True)
+            self.details_tree_view.model.clear()
+        else:
+            self.details_tree_view = None
+            self.str_preview_container.hide()
 
     def get_records_limit(self):
         records = get_entity_browser_record_limit()
@@ -745,6 +766,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 entity_row_info = []
                 entity_raw_values = []
                 progressDialog.setValue(i)
+
                 try:
                     for attr in self._entity_attrs:
                         attr_val = getattr(er, attr)
@@ -816,6 +838,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         # Connect signals
         self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)
         self.txtFilterPattern.textChanged.connect(self.onFilterRegExpChanged)
+        self.tbEntity.selectionModel().currentChanged.connect(self._current_row_changed)
 
         # Select record with the given ID if specified
         if self._select_item is not None:
@@ -916,6 +939,28 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         """
         pass
 
+    def _current_row_changed(self, current: QModelIndex, _):
+        """
+        Triggered when current row is changed
+        """
+        if self.details_tree_view is None:
+            # if the STR preview isn't visible, nothing more to do...
+            return
+
+        row_id = self._tableModel.data(self._proxyModel.mapToSource(current), BaseSTDMTableModel.ROLE_ROW_ID)
+
+        curr_profile = current_profile()
+        party_names = [e.name for e in curr_profile.social_tenure.parties]
+
+        if self.entity.name in party_names:
+
+            self.active_spu_id = self.details_tree_view.search_party(
+                self.entity, [row_id]
+            )
+        else:
+            self.details_tree_view.search_spatial_unit(
+                self.entity, [row_id]
+            )
     def _selected_record_ids(self):
         """
         Get the IDs of the selected row in the table view.
