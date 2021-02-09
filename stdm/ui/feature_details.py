@@ -87,7 +87,7 @@ class LayerSelectionHandler(object):
      Handles all tasks related to the layer.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, plugin):
         """
         Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
@@ -96,7 +96,7 @@ class LayerSelectionHandler(object):
         :type plugin: Object
         """
         self.layer = None
-        self.iface = iface
+        self.iface = plugin.iface
         self.plugin = plugin
         self.sel_highlight = None
         self.current_profile = current_profile()
@@ -280,7 +280,7 @@ class DetailsDBHandler(LayerSelectionHandler):
     Handles the database linkage of the spatial entity details.
     """
 
-    def __init__(self, iface, plugin):
+    def __init__(self, plugin):
         """
         Initializes the DetailsDBHandler.
         """
@@ -292,7 +292,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         self._formatted_record = OrderedDict()
         self.display_columns = None
         self._entity_supporting_doc_tables = {}
-        LayerSelectionHandler.__init__(self, iface, plugin)
+        LayerSelectionHandler.__init__(self, plugin)
 
     def set_entity(self, entity):
         """
@@ -528,7 +528,7 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
     The logic for the spatial entity details dock widget.
     """
 
-    def __init__(self, map_canvas: QgsMapCanvas):
+    def __init__(self, map_canvas: QgsMapCanvas, plugin):
         """
         Initializes the DetailsDockWidget.
         :param iface: The QGIS interface
@@ -549,6 +549,17 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         self.view_document_btn.setDisabled(True)
         self.setBaseSize(300, 5000)
 
+        self.details_tree_view = DetailsTreeView(plugin, self)
+
+        if map_canvas:
+            map_canvas.currentLayerChanged.connect(
+                lambda: self.details_tree_view.activate_feature_details(False)
+            )
+
+    def init_connections(self):
+        """
+        Initializes visibility based connections for the dock
+        """
         self.visibilityChanged.connect(self._visibility_changed)
 
     def _visibility_changed(self, visible: bool):
@@ -557,6 +568,8 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         """
         if not visible:
             self.clear_feature_selection()
+        else:
+            self.details_tree_view.activate_feature_details(True)
 
     def clear_feature_selection(self):
         """
@@ -583,16 +596,14 @@ class DetailsTreeView(DetailsDBHandler):
     to add the widget.
     """
 
-    def __init__(self, iface, plugin=None, container=None):
+    def __init__(self, plugin=None, container=None):
         """
         The method initializes the dockwidget.
-        :param iface: QGIS user interface class
-        :type iface: Object
         :param plugin: The STDM plugin
         :type plugin: class
         """
         from .entity_browser import _EntityDocumentViewerHandler
-        DetailsDBHandler.__init__(self, iface, plugin)
+        DetailsDBHandler.__init__(self, plugin)
 
         self.plugin = plugin
 

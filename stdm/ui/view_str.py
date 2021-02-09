@@ -170,7 +170,7 @@ class ViewSTRWidget(WIDGET, BASE):
 
         self.initGui()
         self.add_spatial_unit_layer()
-        self.details_tree_view = DetailsTreeView(iface, self._plugin, self)
+        self.details_tree_view = DetailsTreeView(self._plugin, self)
         # else:
         #     self.details_tree_view = self._plugin.details_tree_view
         self.details_tree_view.activate_feature_details(True)
