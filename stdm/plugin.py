@@ -310,6 +310,11 @@ class STDMQGISLoader:
             self.stdmMenu.deleteLater()
             self.stdmMenu = None
 
+        if self.details_dock_widget is not None:
+            self.details_dock_widget.remove_connections()
+            self.details_dock_widget.deleteLater()
+            self.details_dock_widget = None
+
         self.remove_spatial_unit_mgr()
 
         if self.profile_status_label is not None:
