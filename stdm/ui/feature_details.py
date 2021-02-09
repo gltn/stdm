@@ -775,7 +775,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         return config_done
 
-    def activate_feature_details(self, checked: bool = True):
+    def activate_feature_details(self, checked: bool = True, follow_layer_selection: bool = True):
         """
         A slot raised when the feature details button is clicked.
         :param checked: A boolean to identify if it is activated
@@ -826,7 +826,7 @@ class DetailsTreeView(DetailsDBHandler):
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
         else:
-            self.prepare_for_selection()
+            self.prepare_for_selection(follow_layer_selection)
 
         if self.selected_item is None:
             sel_model = self.view.selectionModel()
@@ -847,15 +847,16 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.selected_item = None
 
-    def prepare_for_selection(self):
+    def prepare_for_selection(self, follow_layer_selection: bool=True):
         """
         Prepares the dock widget for data loading.
         """
         # enable the select tool
-        self.activate_select_tool()
-        self.update_tree_source(self.layer)
+        if follow_layer_selection:
+            self.activate_select_tool()
+        self.update_tree_source(self.layer, follow_layer_selection)
 
-    def update_tree_source(self, active_layer):
+    def update_tree_source(self, active_layer, follow_layer_selection: bool=True):
         """
         Updates the treeview source in case of layer change.
         :param active_layer: The active layer on the canvas.
@@ -869,9 +870,10 @@ class DetailsTreeView(DetailsDBHandler):
         # set entity for the super class DetailModel
         self.set_entity(self.entity)
 
-        active_layer.selectionChanged.connect(
-            self.show_tree
-        )
+        if follow_layer_selection:
+            active_layer.selectionChanged.connect(
+                self.show_tree
+            )
 
         self.node_signals(self.entity)
 
@@ -986,7 +988,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         # self.zoom_to_selected(self.layer)
 
-    def search_spatial_unit(self, entity, spatial_unit_ids):
+    def search_spatial_unit(self, entity, spatial_unit_ids, select_matching_features: bool = True):
         """
         Shows the treeview.
         """
@@ -1014,9 +1016,10 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records)
 
-        self.layer.selectByIds(
-            list(self.feature_models.keys())
-        )
+        if select_matching_features:
+            self.layer.selectByIds(
+                list(self.feature_models.keys())
+            )
         # self.zoom_to_selected(self.layer)
 
     def search_party(self, entity, party_ids):
@@ -1048,11 +1051,6 @@ class DetailsTreeView(DetailsDBHandler):
             return getattr(str_records[0], self.layer_table).id  # Assuming we have an Id!!
         else:
             return -1
-
-        # self.layer.selectByIds(
-        # self.feature_models.keys()
-        # )
-        # self.zoom_to_selected(self.layer)
 
     def add_non_entity_parent(self, layer_icon):
         """
