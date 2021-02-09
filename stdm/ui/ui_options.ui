@@ -296,6 +296,12 @@
              <height>30</height>
             </size>
            </property>
+           <property name="maximum">
+            <number>1000000</number>
+           </property>
+           <property name="singleStep">
+            <number>10</number>
+           </property>
           </widget>
          </item>
         </layout>
