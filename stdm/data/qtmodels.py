@@ -468,14 +468,16 @@ class BaseSTDMTableModel(QAbstractTableModel):
     """
     ROLE_ATTRIBUTE_NAME = Qt.UserRole + 10
     ROLE_RAW_VALUE = ROLE_ATTRIBUTE_NAME + 1
+    ROLE_ROW_ID = ROLE_ATTRIBUTE_NAME + 2
 
-    def __init__(self, initdata, headerdata, parent=None, attribute_names=None, raw_values = None):
+    def __init__(self, initdata, headerdata, parent=None, attribute_names=None, raw_values = None, row_ids = None):
         QAbstractTableModel.__init__(self, parent)
 
         self._initData = initdata
         self._headerdata = headerdata
         self._attribute_names = attribute_names
         self._raw_values = raw_values
+        self._row_ids = row_ids
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._initData)
@@ -495,6 +497,8 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
         if role == BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME:
             return self._attribute_names[index.column()]
+        if role == BaseSTDMTableModel.ROLE_ROW_ID:
+            return self._row_ids[index.column()]
         elif role == BaseSTDMTableModel.ROLE_RAW_VALUE:
             if self._raw_values is None:
                 return self._initData[index.row()][index.column()]
@@ -531,7 +535,11 @@ class BaseSTDMTableModel(QAbstractTableModel):
                 self._raw_values[index.row()][index.column()] = value
             self.dataChanged.emit(index, index)
             return True
-
+        elif index.isValid() and role == BaseSTDMTableModel.ROLE_ROW_ID:
+            if self._row_ids is not None:
+                self._row_ids[index.row()][index.column()] = value
+            self.dataChanged.emit(index, index)
+            return True
         return False
 
     def flags(self, index):
@@ -557,6 +565,9 @@ class BaseSTDMTableModel(QAbstractTableModel):
         if self._raw_values is not None:
             for i in range(rows):
                 self._raw_values.insert(position, init_raw_values[:])
+        if self._row_ids is not None:
+            for i in range(rows):
+                self._row_ids.insert(position, None)
 
         self.endInsertRows()
 
@@ -577,6 +588,8 @@ class BaseSTDMTableModel(QAbstractTableModel):
 
             if self._raw_values is not None:
                 del self._raw_values[position]
+            if self._row_ids is not None:
+                del self._row_ids[position]
 
         self.endRemoveRows()
 
