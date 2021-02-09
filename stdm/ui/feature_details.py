@@ -51,7 +51,8 @@ from qgis.core import (
 )
 from qgis.gui import (
     QgsHighlight,
-    QgsDockWidget
+    QgsDockWidget,
+    QgsMapCanvas
 )
 
 from stdm.exceptions import DummyException
@@ -527,7 +528,7 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
     The logic for the spatial entity details dock widget.
     """
 
-    def __init__(self, iface):
+    def __init__(self, map_canvas: QgsMapCanvas):
         """
         Initializes the DetailsDockWidget.
         :param iface: The QGIS interface
@@ -541,23 +542,34 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         self.delete_btn.setIcon(GuiUtils.get_icon('remove.png'))
         self.view_document_btn.setIcon(GuiUtils.get_icon('document.png'))
 
-        self.iface = iface
+        self.map_canvas = map_canvas
 
         self.edit_btn.setDisabled(True)
         self.delete_btn.setDisabled(True)
         self.view_document_btn.setDisabled(True)
-        # LayerSelectionHandler.__init__(self, iface, plugin)
         self.setBaseSize(300, 5000)
+
+        self.visibilityChanged.connect(self._visibility_changed)
+
+    def _visibility_changed(self, visible: bool):
+        """
+        Called when dock visibility is changed
+        """
+        if not visible:
+            self.clear_feature_selection()
 
     def clear_feature_selection(self):
         """
         Clears selection of layer(s).
         """
-        map = self.iface.mapCanvas()
-        for layer in map.layers():
+
+        if not self.map_canvas:
+            return
+
+        for layer in self.map_canvas.layers():
             if layer.type() == layer.VectorLayer:
                 layer.removeSelection()
-        map.refresh()
+        self.map_canvas.refresh()
 
 
 class SelectedItem(object):

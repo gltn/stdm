@@ -1027,7 +1027,7 @@ class STDMQGISLoader:
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
-        self.details_dock_widget = DetailsDockWidget(self.iface)
+        self.details_dock_widget = DetailsDockWidget(map_canvas=self.iface.mapCanvas())
         self.details_dock_widget.setToggleVisibilityAction(self.feature_details_act)
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.details_dock_widget)
         self.details_dock_widget.setUserVisible(False)
