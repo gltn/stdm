@@ -168,9 +168,19 @@ class ViewSTRWidget(WIDGET, BASE):
 
         self._source_doc_manager.setEditPermissions(False)
 
+        self.addSTR = None
+        self.editSTR = None
+        self.deleteSTR = None
+
         self.initGui()
         self.add_spatial_unit_layer()
-        self.details_tree_view = DetailsTreeView(self._plugin, self)
+
+        self.details_tree_view = DetailsTreeView(parent=self, plugin=self._plugin)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(self.details_tree_view)
+        self.str_tree_container.setLayout(layout)
+
         # else:
         #     self.details_tree_view = self._plugin.details_tree_view
         self.details_tree_view.activate_feature_details(True)
