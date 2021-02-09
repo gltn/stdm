@@ -114,7 +114,9 @@ class OptionsDialog(WIDGET, BASE):
         self._db_config = DatabaseConfig()
 
         version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace('1.4', version)
+        upgrade_label_text = self.label_9.text().replace(
+            '1.4', version.strip()
+        )
         self.label_9.setText(upgrade_label_text)
 
         # Connect signals
