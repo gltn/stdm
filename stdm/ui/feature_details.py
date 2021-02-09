@@ -24,7 +24,6 @@ from collections import OrderedDict
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    Qt,
     QDateTime,
     QDate
 )
@@ -56,7 +55,6 @@ from qgis.gui import (
     QgsMapCanvas
 )
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration import (
     entity_model
 )
@@ -69,6 +67,7 @@ from stdm.data.supporting_documents import (
     supporting_doc_tables,
     document_models
 )
+from stdm.exceptions import DummyException
 from stdm.settings import current_profile
 from stdm.settings.registryconfig import (
     selection_color
@@ -81,6 +80,7 @@ from stdm.utils.util import (
     format_name,
     entity_attr_to_model
 )
+
 
 # TODO: the base class here shouldn't really be QWidget, but
 # the levels of inheritance here prohibit us to make the subclass
@@ -170,13 +170,15 @@ class LayerSelectionHandler(QWidget):
         :return: Table name.
         :rtype: str
         """
-        if layer is None: return ''
+        if layer is None:
+            return ''
 
         source = layer.source()
 
-        if source is None: return ''
+        if source is None:
+            return ''
 
-        vals = dict(re.findall('(\S+)="?(.*?)"? ', source))
+        vals = dict(re.findall(r'(\S+)="?(.*?)"? ', source))
 
         table_name = ''
         try:
@@ -337,7 +339,7 @@ class DetailsDBHandler(LayerSelectionHandler):
             widget_factory = ColumnWidgetRegistry.factory(
                 col.TYPE_INFO
             )
-            if not widget_factory is None:
+            if widget_factory is not None:
                 formatter = widget_factory(col)
                 self.column_formatter[col_name] = formatter
         self.plugin.entity_formatters[entity.name] = self.column_formatter
@@ -429,7 +431,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         """
         Gets all STR records linked to a party, if the record is party record.
         :param party_id: The party id/id of the spatial unit
-        :type feature_id: Integer
+        :type party_id: Integer
         :return: The list of social tenure records
         :rtype: List
         """
@@ -535,8 +537,6 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
     def __init__(self, map_canvas: QgsMapCanvas, plugin):
         """
         Initializes the DetailsDockWidget.
-        :param iface: The QGIS interface
-        :type iface: Object
         """
         super().__init__()
 
@@ -553,9 +553,10 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         self.view_document_btn.setDisabled(True)
         self.setBaseSize(300, 5000)
 
-        self.details_tree_view = DetailsTreeView(self, plugin, delete_button=self.delete_btn, edit_button=self.edit_btn, view_document_button=self.view_document_btn)
+        self.details_tree_view = DetailsTreeView(self, plugin, delete_button=self.delete_btn, edit_button=self.edit_btn,
+                                                 view_document_button=self.view_document_btn)
         layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.details_tree_view)
         self.tree_container.setLayout(layout)
 
@@ -622,7 +623,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.plugin = plugin
 
         layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.view = QTreeView()
         layout.addWidget(self.view)
         self.setLayout(layout)
@@ -670,7 +671,8 @@ class DetailsTreeView(DetailsDBHandler):
             '''
         )
         self.current_profile = current_profile()
-        if self.current_profile is None: return
+        if self.current_profile is None:
+            return
 
         self.social_tenure = self.current_profile.social_tenure
         self.spatial_units = self.social_tenure.spatial_units
@@ -773,7 +775,7 @@ class DetailsTreeView(DetailsDBHandler):
 
         return config_done
 
-    def activate_feature_details(self, checked: bool=True):
+    def activate_feature_details(self, checked: bool = True):
         """
         A slot raised when the feature details button is clicked.
         :param checked: A boolean to identify if it is activated
@@ -921,7 +923,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         str_records = []
 
-        if self._selected_features is None: return
+        if self._selected_features is None:
+            return
 
         self._selected_features[:] = []
         self._selected_features = self.selected_features()
@@ -941,8 +944,8 @@ class DetailsTreeView(DetailsDBHandler):
             self.disable_buttons(True)
             return
         layer_icon = GuiUtils.get_icon('layer.gif')
-        ### add non entity layer for views.
-        if not self.entity is None:
+        # add non entity layer for views.
+        if self.entity is not None:
             self.reset_tree_view(self._selected_features)
             roots = self.add_parent_tree(
                 layer_icon, format_name(self.entity.short_name)
@@ -990,7 +993,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         self.reset_tree_view()
         layer_icon = GuiUtils.get_icon('layer.gif')
-        ### add non entity layer for views.
+        # add non entity layer for views.
 
         # self.reset_tree_view(selected_features)
 
@@ -1023,7 +1026,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         self.reset_tree_view()
         table_icon = GuiUtils.get_icon('table.png')
-        ### add non entity layer for views.
+        # add non entity layer for views.
 
         str_records = []
         for spu_id in party_ids:
@@ -1120,7 +1123,7 @@ class DetailsTreeView(DetailsDBHandler):
         feature_data = []
 
         for elem in selected_features:
-            if not party_id is None:
+            if party_id is not None:
                 if elem.id() == party_id:
                     feature_map = OrderedDict(
                         list(zip(field_names, elem.attributes()))
@@ -1168,7 +1171,8 @@ class DetailsTreeView(DetailsDBHandler):
         :type str_records: List
         """
 
-        if model is None: return
+        if model is None:
+            return
 
         if isinstance(model, OrderedDict):
             # if len(model) == 0: return
@@ -1258,7 +1262,7 @@ class DetailsTreeView(DetailsDBHandler):
             party_name = party.short_name.lower().replace(' ', '_')
             party_id = '{}_id'.format(party_name)
 
-            if not party_id in record:
+            if party_id not in record:
                 return None, None
 
             if record[party_id] is not None:
@@ -1279,7 +1283,7 @@ class DetailsTreeView(DetailsDBHandler):
         for spatial_unit in spatial_units:
             spatial_unit_name = spatial_unit.name.split(self.current_profile.prefix, 1)[1]
             spatial_unit_id = '{}_id'.format(spatial_unit_name).lstrip('_')
-            if not spatial_unit_id in record:
+            if spatial_unit_id not in record:
                 return None, None
             if record[spatial_unit_id] is not None:
                 return spatial_unit, spatial_unit_id
@@ -1294,7 +1298,8 @@ class DetailsTreeView(DetailsDBHandler):
         :param feature_id: The selected feature id.
         :type feature_id: Integer
         """
-        if str_records is None: return
+        if str_records is None:
+            return
 
         if self.layer_table is None and self.plugin is not None:
             return
@@ -1705,7 +1710,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         feature_edit = True
 
-        if data is None: return
+        if data is None:
+            return
 
         if isinstance(data, str):
             data_error = QApplication.translate(
@@ -1985,7 +1991,7 @@ class DetailsTreeView(DetailsDBHandler):
         else:
 
             db_model = self.feature_model(entity, id)
-        if not db_model is None:
+        if db_model is not None:
             if not hasattr(db_model, 'documents'):
                 docs = []
             else:
