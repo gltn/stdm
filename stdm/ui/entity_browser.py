@@ -737,6 +737,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             # if self._tableModel is None:
             entity_records_collection = []
             entity_raw_records = []
+            row_ids = []
             for i, er in enumerate(entity_records):
                 if i == self.record_limit:
                     break
@@ -765,13 +766,15 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                         str(ex))
                     return
 
+                row_ids.append(er.id)
                 entity_records_collection.append(entity_row_info)
                 entity_raw_records.append(entity_raw_values)
 
             self._tableModel = BaseSTDMTableModel(
                 entity_records_collection, self._headers, self,
                 attribute_names=self._entity_attrs,
-                raw_values=entity_raw_records
+                raw_values=entity_raw_records,
+                row_ids=row_ids
             )
 
             if self.plugin is not None:
@@ -967,6 +970,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         insertPosition = self._tableModel.rowCount()
         self._tableModel.insertRows(insertPosition, 1)
 
+        self._tableModel.setData(self._tableModel.index(insertPosition, 0), model_obj.id, BaseSTDMTableModel.ROLE_ROW_ID)
         for i, attr in enumerate(self._entity_attrs):
 
             prop_idx = self._tableModel.index(insertPosition, i)
