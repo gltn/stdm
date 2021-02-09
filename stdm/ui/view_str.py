@@ -174,7 +174,6 @@ class ViewSTRWidget(WIDGET, BASE):
         # else:
         #     self.details_tree_view = self._plugin.details_tree_view
         self.details_tree_view.activate_feature_details(True)
-        self.details_tree_view.add_tree_view()
         self.details_tree_view.model.clear()
 
         count = pg_table_count(self.curr_profile.social_tenure.name)
