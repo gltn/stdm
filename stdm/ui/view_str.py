@@ -61,8 +61,6 @@ from sqlalchemy import (
     String
 )
 
-import stdm.data
-from stdm.exceptions import DummyException
 from stdm.data import globals
 from stdm.data.configuration import entity_model
 from stdm.data.database import Content
@@ -70,6 +68,7 @@ from stdm.data.pg_utils import pg_table_count
 from stdm.data.qtmodels import (
     BaseSTDMTableModel
 )
+from stdm.exceptions import DummyException
 from stdm.security.authorization import Authorizer
 from stdm.settings import current_profile
 from stdm.ui.feature_details import DetailsTreeView, SelectedItem
@@ -177,7 +176,7 @@ class ViewSTRWidget(WIDGET, BASE):
 
         self.details_tree_view = DetailsTreeView(parent=self, plugin=self._plugin)
         layout = QVBoxLayout()
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.details_tree_view)
         self.str_tree_container.setLayout(layout)
 
@@ -352,7 +351,7 @@ class ViewSTRWidget(WIDGET, BASE):
                     str(t.name), t.short_name
                 )
 
-                if not entity_cfg is None:
+                if entity_cfg is not None:
                     entity_widget = self.add_entity_config(entity_cfg)
 
                     # entity_widget.setNodeFormatter(
@@ -549,7 +548,6 @@ class ViewSTRWidget(WIDGET, BASE):
                 self.toolBox.setCurrentIndex(1)
             self.disable_buttons(False)
 
-
         # party node - edit party
         elif item.data() in self.details_tree_view.spatial_unit_items.keys():
             self.toolBox.setCurrentIndex(0)
@@ -587,7 +585,7 @@ class ViewSTRWidget(WIDGET, BASE):
             party_id = '{}_id'.format(party_name)
             if party_id not in record.__dict__:
                 return None
-            if record.__dict__[party_id] != None:
+            if record.__dict__[party_id] is not None:
                 party_id_obj = getattr(self.str_model, party_id)
                 return party_id_obj
 
@@ -839,6 +837,7 @@ class EntitySearchItem(QObject):
     """
 
     def __init__(self, formatter=None):
+        super().__init__()
         # Specify the formatter that should be
         # applied on the result item. It should
         # inherit from 'stdm.navigation.STRNodeFormatter'
@@ -1053,8 +1052,8 @@ class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
 
         prog_dialog.setValue(2)
         # Try to get the corresponding search term value from the completer model
-        if not self._completer_model is None:
-            reg_exp = QRegExp("^%s$" % (search_term), Qt.CaseInsensitive,
+        if self._completer_model is not None:
+            reg_exp = QRegExp("^%s$" % search_term, Qt.CaseInsensitive,
                               QRegExp.RegExp2)
             self._proxy_completer_model.setFilterRegExp(reg_exp)
 
@@ -1110,7 +1109,7 @@ class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
                             func.lower(value_obj).like(search_term + '%')
                         ).first()
 
-                    if not result is None:
+                    if result is not None:
                         results = modelQueryObj.filter(
                             queryObjProperty == result.id
                         ).all()
