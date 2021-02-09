@@ -1,147 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>DetailsDock</class>
-    <widget class="QDockWidget" name="DetailsDock">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>400</width>
-                <height>300</height>
-            </rect>
+ <class>DetailsDock</class>
+ <widget class="QDockWidget" name="DetailsDock">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="allowedAreas">
+   <set>Qt::AllDockWidgetAreas</set>
+  </property>
+  <property name="windowTitle">
+   <string>Feature Details</string>
+  </property>
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,1">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QToolButton" name="edit_btn">
+        <property name="minimumSize">
+         <size>
+          <width>23</width>
+          <height>22</height>
+         </size>
         </property>
-        <property name="allowedAreas">
-            <set>Qt::AllDockWidgetAreas</set>
+        <property name="toolTip">
+         <string>Edit attribute details</string>
         </property>
-        <property name="windowTitle">
-            <string>Feature Details</string>
+        <property name="text">
+         <string>...</string>
         </property>
-        <widget class="QWidget" name="dockWidgetContents">
-            <layout class="QVBoxLayout" name="verticalLayout">
-                <item>
-                    <layout class="QHBoxLayout" name="horizontalLayout">
-                        <item>
-                            <widget class="QToolButton" name="edit_btn">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>23</width>
-                                        <height>22</height>
-                                    </size>
-                                </property>
-                                <property name="toolTip">
-                                    <string>Edit attribute details</string>
-                                </property>
-                                <property name="text">
-                                    <string>...</string>
-                                </property>
-                                <property name="iconSize">
-                                    <size>
-                                        <width>16</width>
-                                        <height>16</height>
-                                    </size>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <widget class="QToolButton" name="delete_btn">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>23</width>
-                                        <height>22</height>
-                                    </size>
-                                </property>
-                                <property name="toolTip">
-                                    <string>Delete a record</string>
-                                </property>
-                                <property name="text">
-                                    <string>...</string>
-                                </property>
-                                <property name="iconSize">
-                                    <size>
-                                        <width>16</width>
-                                        <height>16</height>
-                                    </size>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <widget class="QToolButton" name="view_document_btn">
-                                <property name="minimumSize">
-                                    <size>
-                                        <width>23</width>
-                                        <height>22</height>
-                                    </size>
-                                </property>
-                                <property name="maximumSize">
-                                    <size>
-                                        <width>16777215</width>
-                                        <height>16777215</height>
-                                    </size>
-                                </property>
-                                <property name="toolTip">
-                                    <string>View record supporting documents</string>
-                                </property>
-                                <property name="text">
-                                    <string>...</string>
-                                </property>
-                                <property name="iconSize">
-                                    <size>
-                                        <width>16</width>
-                                        <height>16</height>
-                                    </size>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
-                            <spacer name="horizontalSpacer">
-                                <property name="orientation">
-                                    <enum>Qt::Horizontal</enum>
-                                </property>
-                                <property name="sizeHint" stdset="0">
-                                    <size>
-                                        <width>40</width>
-                                        <height>20</height>
-                                    </size>
-                                </property>
-                            </spacer>
-                        </item>
-                    </layout>
-                </item>
-                <item>
-                    <widget class="QScrollArea" name="tree_scrollArea">
-                        <property name="minimumSize">
-                            <size>
-                                <width>70</width>
-                                <height>70</height>
-                            </size>
-                        </property>
-                        <property name="frameShape">
-                            <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                            <enum>QFrame::Plain</enum>
-                        </property>
-                        <property name="lineWidth">
-                            <number>0</number>
-                        </property>
-                        <property name="widgetResizable">
-                            <bool>true</bool>
-                        </property>
-                        <widget class="QWidget" name="scrollAreaWidgetContents">
-                            <property name="geometry">
-                                <rect>
-                                    <x>0</x>
-                                    <y>0</y>
-                                    <width>378</width>
-                                    <height>221</height>
-                                </rect>
-                            </property>
-                            <layout class="QVBoxLayout" name="verticalLayout_2"/>
-                        </widget>
-                    </widget>
-                </item>
-            </layout>
-        </widget>
-    </widget>
-    <connections/>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="delete_btn">
+        <property name="minimumSize">
+         <size>
+          <width>23</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Delete a record</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="view_document_btn">
+        <property name="minimumSize">
+         <size>
+          <width>23</width>
+          <height>22</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>View record supporting documents</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QWidget" name="tree_container" native="true"/>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

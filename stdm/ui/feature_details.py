@@ -35,11 +35,12 @@ from qgis.PyQt.QtGui import (
     QColor
 )
 from qgis.PyQt.QtWidgets import (
-    QDockWidget,
     QMessageBox,
     QTreeView,
     QAbstractItemView,
     QApplication,
+    QWidget,
+    QVBoxLayout
 )
 from qgis.core import (
     QgsFeatureRequest,
@@ -81,13 +82,16 @@ from stdm.utils.util import (
     entity_attr_to_model
 )
 
-
-class LayerSelectionHandler(object):
+# TODO: the base class here shouldn't really be QWidget, but
+# the levels of inheritance here prohibit us to make the subclass
+# a QObject subclass without causing diamond inheritance issues
+class LayerSelectionHandler(QWidget):
     """
      Handles all tasks related to the layer.
     """
 
-    def __init__(self, plugin):
+    def __init__(self, parent, plugin):
+        super().__init__(parent)
         """
         Initializes the LayerSelectionHandler.
         :param iface: The QGIS Interface object
@@ -280,7 +284,7 @@ class DetailsDBHandler(LayerSelectionHandler):
     Handles the database linkage of the spatial entity details.
     """
 
-    def __init__(self, plugin):
+    def __init__(self, parent, plugin):
         """
         Initializes the DetailsDBHandler.
         """
@@ -292,7 +296,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         self._formatted_record = OrderedDict()
         self.display_columns = None
         self._entity_supporting_doc_tables = {}
-        LayerSelectionHandler.__init__(self, plugin)
+        super().__init__(parent, plugin)
 
     def set_entity(self, entity):
         """
@@ -549,7 +553,11 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         self.view_document_btn.setDisabled(True)
         self.setBaseSize(300, 5000)
 
-        self.details_tree_view = DetailsTreeView(plugin, self)
+        self.details_tree_view = DetailsTreeView(self, plugin, delete_button=self.delete_btn, edit_button=self.edit_btn, view_document_button=self.view_document_btn)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        layout.addWidget(self.details_tree_view)
+        self.tree_container.setLayout(layout)
 
         if map_canvas:
             map_canvas.currentLayerChanged.connect(
@@ -602,23 +610,31 @@ class DetailsTreeView(DetailsDBHandler):
     to add the widget.
     """
 
-    def __init__(self, plugin=None, container=None):
+    def __init__(self, parent=None, plugin=None, edit_button=None, delete_button=None, view_document_button=None):
         """
         The method initializes the dockwidget.
         :param plugin: The STDM plugin
         :type plugin: class
         """
         from .entity_browser import _EntityDocumentViewerHandler
-        DetailsDBHandler.__init__(self, plugin)
+        super().__init__(parent, plugin=plugin)
 
         self.plugin = plugin
 
-        self.view = QTreeView(container)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0,0,0,0)
+        self.view = QTreeView()
+        layout.addWidget(self.view)
+        self.setLayout(layout)
 
         self.view.setSelectionBehavior(
             QAbstractItemView.SelectRows
         )
-        self.container_widget = container
+
+        self.edit_button = edit_button
+        self.delete_button = delete_button
+        self.view_document_button = view_document_button
+
         self.edit_btn_connected = False
         self.layer_table = None
         self.entity = None
@@ -714,11 +730,8 @@ class DetailsTreeView(DetailsDBHandler):
         selected_item = self.model.itemFromIndex(current)
         if selected_item is None:
             return
-        if hasattr(self.container_widget, 'delete_btn'):
-            if selected_item.data() in self.party_items:
-                self.container_widget.delete_btn.setEnabled(False)
-            else:
-                self.container_widget.delete_btn.setEnabled(True)
+        if self.delete_button is not None:
+            self.delete_button.setEnabled(selected_item.data() not in self.party_items)
 
     def set_layer_entity(self):
         """
@@ -837,10 +850,6 @@ class DetailsTreeView(DetailsDBHandler):
         """
         Prepares the dock widget for data loading.
         """
-        # self.open_dock()
-        # if self.container_widget is not None:
-        self.add_tree_view()
-
         # enable the select tool
         self.activate_select_tool()
         self.update_tree_source(self.layer)
@@ -864,13 +873,6 @@ class DetailsTreeView(DetailsDBHandler):
         )
 
         self.node_signals(self.entity)
-
-    def add_tree_view(self):
-        """
-        Adds tree view to the dock widget and sets style.
-        """
-        if self.container_widget is not None:
-            self.container_widget.tree_scrollArea.setWidget(self.view)
 
     def reset_tree_view(self, features=None):
         """
@@ -897,12 +899,6 @@ class DetailsTreeView(DetailsDBHandler):
             self.view.clicked.connect(
                 self.multi_select_highlight
             )
-        if features is None:
-            return
-        # # if there is at least one selected feature
-        if len(features) > 0:
-            if self.container_widget is None:
-                self.add_tree_view()
 
     def disable_buttons(self, bool):
         """
@@ -911,12 +907,12 @@ class DetailsTreeView(DetailsDBHandler):
         :param bool: A boolean setting the disabled status. True disables it.
         :type bool: Boolean
         """
-        if hasattr(self.container_widget, 'edit_btn'):
-            self.container_widget.edit_btn.setDisabled(bool)
-        if hasattr(self.container_widget, 'delete_btn'):
-            self.container_widget.delete_btn.setDisabled(bool)
-        if hasattr(self.container_widget, 'view_document_btn'):
-            self.container_widget.view_document_btn.setDisabled(bool)
+        if self.edit_button is not None:
+            self.edit_button.setDisabled(bool)
+        if self.delete_button is not None:
+            self.delete_button.setDisabled(bool)
+        if self.view_document_button is not None:
+            self.view_document_button.setDisabled(bool)
 
     def show_tree(self):
         """
@@ -1624,28 +1620,27 @@ class DetailsTreeView(DetailsDBHandler):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
-        if self.container_widget is not None:
-            if hasattr(self.container_widget, 'edit_btn'):
-                if self.edit_btn_connected:
-                    self.container_widget.edit_btn.clicked.disconnect(
-                        self.edit_selected_node
-                    )
-
-            if hasattr(self.container_widget, 'edit_btn'):
-                self.container_widget.edit_btn.clicked.connect(
+        if self.edit_button is not None:
+            if self.edit_btn_connected:
+                self.edit_button.clicked.disconnect(
                     self.edit_selected_node
                 )
-            if hasattr(self.container_widget, 'delete_btn'):
-                self.container_widget.delete_btn.clicked.connect(
-                    self.delete_selected_item
-                )
 
-            if hasattr(self.container_widget, 'view_document_btn'):
-                self.container_widget.view_document_btn.clicked.connect(
-                    lambda: self.view_node_document(
-                        entity
-                    )
+        if self.edit_button is not None:
+            self.edit_button.clicked.connect(
+                self.edit_selected_node
+            )
+        if self.delete_button is not None:
+            self.delete_button.clicked.connect(
+                self.delete_selected_item
+            )
+
+        if self.view_document_button is not None:
+            self.view_document_button.clicked.connect(
+                lambda: self.view_node_document(
+                    entity
                 )
+            )
 
     def node_data(self, mode, results):
         """
