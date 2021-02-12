@@ -46,7 +46,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.core import (
     QgsProject,
-    QgsPrintLayout
+    QgsApplication
 )
 from qgis.gui import (
     QgsStatusBar,
@@ -133,6 +133,7 @@ from stdm.utils.util import (
     documentTemplates,
     user_non_profile_views
 )
+from stdm.utils.layer_utils import LayerUtils
 from stdm.utils.util import simple_dialog
 from stdm.data import globals
 
@@ -244,6 +245,29 @@ class STDMQGISLoader:
         self.iface.layoutDesignerOpened.connect(self.on_designer_opened)
         self.initToolbar()
         self.initMenuItems()
+
+        self.init_qgis_hooks()
+
+    def init_qgis_hooks(self):
+        """
+        Initialises hooks into QGIS gui signals
+        """
+        QgsProject.instance().layerWasAdded.connect(self._on_layer_added)
+
+    def _on_layer_added(self, layer):
+        """
+        Triggered when a layer is added to the project
+        """
+        if layer is None:
+            return
+
+        if not LayerUtils.is_layer_stdm_layer(layer):
+            # we don't care about this layer, users can edit however they want...
+            return
+
+        # this is an STDM layer, and user is not logged in -- prevent editing of the layer
+        if not self._user_logged_in:
+            layer.setReadOnly(True)
 
     def _menu_items(self):
         # Create menu and menu items on the menu bar
@@ -404,6 +428,8 @@ class STDMQGISLoader:
                     result = self.default_profile()
                     if not result:
                         return
+
+                LayerUtils.enable_editing_of_stdm_layers(True)
                 self.create_custom_tenure_dummy_col()
 
                 self.loadModules()
@@ -1924,6 +1950,8 @@ class STDMQGISLoader:
             self.initMenuItems()
             self.loginAct.setEnabled(True)
             self._user_logged_in = False
+            LayerUtils.enable_editing_of_stdm_layers(False)
+
         except DummyException as ex:
             LOGGER.debug(str(ex))
 
