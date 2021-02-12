@@ -77,7 +77,7 @@ class EntityEditorDialog(MapperMixin):
             manage_documents=True,
             collect_model=False,
             parent_entity=None,
-            exclude_columns=[],
+            exclude_columns=None,
             plugin=None
     ):
         """
@@ -122,7 +122,7 @@ class EntityEditorDialog(MapperMixin):
         self.column_widgets = OrderedDict()
         self.columns = {}
         self._parent = parent
-        self.exclude_columns = exclude_columns
+        self.exclude_columns = exclude_columns or []
         self.entity_tab_widget = None
         self._disable_collections = False
         self.filter_val = None
@@ -150,7 +150,7 @@ class EntityEditorDialog(MapperMixin):
             )
         else:
             self.ent_model = entity_model(self._entity)
-        if not model is None:
+        if model is not None:
             self.ent_model = model
 
         MapperMixin.__init__(self, self.ent_model, entity)
@@ -206,7 +206,7 @@ class EntityEditorDialog(MapperMixin):
 
         # Register custom editor extension if specified
         self._editor_ext = entity_dlg_extension(self)
-        if not self._editor_ext is None:
+        if self._editor_ext is not None:
             self._editor_ext.post_init()
 
             # Initialize CascadingFieldContext objects
@@ -398,11 +398,11 @@ class EntityEditorDialog(MapperMixin):
         self.addedModel.emit(self.model())
 
     def closeEvent(self, event):
-        '''
+        """
         Raised when a request to close the window is received.
         Check the dirty state of input controls and prompt user to
         save if dirty.
-        '''
+        """
 
         if self.do_not_check_dirty:
             event.accept()
@@ -485,7 +485,7 @@ class EntityEditorDialog(MapperMixin):
         for c in self._entity.columns.values():
             if c.name in self.exclude_columns:
                 continue
-            if not c.name in columns and not isinstance(c, VirtualColumn):
+            if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
             # Get widget factory
             column_widget = ColumnWidgetRegistry.create(
@@ -519,7 +519,7 @@ class EntityEditorDialog(MapperMixin):
             c = self.columns[column_name]
             if c.name in self.exclude_columns:
                 continue
-            if not c.name in columns and not isinstance(c, VirtualColumn):
+            if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
 
             if column_widget is not None:
@@ -606,7 +606,7 @@ class EntityEditorDialog(MapperMixin):
             )
 
         # Return the correct widget
-        if not self.entity_tab_widget is None:
+        if self.entity_tab_widget is not None:
             return self.entity_tab_widget
 
         return self.entity_scroll_area
@@ -615,7 +615,7 @@ class EntityEditorDialog(MapperMixin):
         # Check if the primary entity
         # exists and add if it does not
         pr_txt = self.tr('Primary')
-        if not self.entity_tab_widget is None:
+        if self.entity_tab_widget is not None:
             tab_txt = self.entity_tab_widget.tabText(0)
             if not tab_txt == pr_txt:
                 self.entity_tab_widget.addTab(
@@ -757,7 +757,7 @@ class EntityEditorDialog(MapperMixin):
         otherwise False.
         :rtype: bool
         """
-        if not self._editor_ext is None:
+        if self._editor_ext is not None:
             return self._editor_ext.validate()
 
         # Return True if there is no custom editor extension specified
@@ -769,7 +769,7 @@ class EntityEditorDialog(MapperMixin):
         :param model: SQLAlchemy model
         :type model: object
         """
-        if not self._editor_ext is None:
+        if self._editor_ext is not None:
             self._editor_ext.post_save(model)
 
     def _get_entity_editor_widgets(self):
