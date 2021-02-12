@@ -57,6 +57,7 @@ from qgis.gui import (
 
 from qgis.utils import iface
 
+from stdm.data.globals import ENTITY_FORMATTERS
 from stdm.data.configuration import (
     entity_model
 )
@@ -329,8 +330,8 @@ class DetailsDBHandler(LayerSelectionHandler):
         if entity is None:
             return
 
-        if entity.name in self.plugin.entity_formatters.keys():
-            self.column_formatter = self.plugin.entity_formatters[entity.name]
+        if entity.name in ENTITY_FORMATTERS.keys():
+            self.column_formatter = ENTITY_FORMATTERS[entity.name]
             return
 
         for col in entity.columns.values():
@@ -343,7 +344,7 @@ class DetailsDBHandler(LayerSelectionHandler):
             if widget_factory is not None:
                 formatter = widget_factory(col)
                 self.column_formatter[col_name] = formatter
-        self.plugin.entity_formatters[entity.name] = self.column_formatter
+        ENTITY_FORMATTERS[entity.name] = self.column_formatter
 
     def display_column_object(self, entity):
         """

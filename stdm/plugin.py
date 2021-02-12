@@ -182,7 +182,6 @@ class STDMQGISLoader:
 
         # STDM Tables
         self.stdmTables = []
-        self.entity_formatters = {}
         self.entity_table_model = {}
         self.stdm_config = StdmConfiguration.instance()
         self.reg_config = RegistryConfig()
