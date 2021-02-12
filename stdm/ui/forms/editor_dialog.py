@@ -107,8 +107,6 @@ class EntityEditorDialog(MapperMixin):
 
         QgsGui.enableAutoGeometryRestore(self)
 
-        self.entity_table_model = {}
-
         self.collection_suffix = self.tr('Collection')
 
         # Set minimum width

@@ -175,15 +175,13 @@ class STDMQGISLoader:
         if QFileInfo(localePath).exists():
             self.translator = QTranslator()
             self.translator.load(localePath)
-            if qVersion() > '4.3.3':
-                QCoreApplication.installTranslator(self.translator)
+            QCoreApplication.installTranslator(self.translator)
 
         StdmCustomLayoutItems.add_custom_item_types()
         StdmCustomLayoutGuiItems.register_gui()
 
         # STDM Tables
         self.stdmTables = []
-        self.entity_table_model = {}
         self.stdm_config = StdmConfiguration.instance()
         self.reg_config = RegistryConfig()
         self.spatialLayerMangerDockWidget = None

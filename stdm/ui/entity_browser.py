@@ -56,6 +56,7 @@ from stdm.data.configuration.columns import (
     MultipleSelectColumn,
     VirtualColumn
 )
+from stdm.data.globals import ENTITY_TABLE_MODEL
 from stdm.data.configuration.entity import Entity
 from stdm.data.pg_utils import (
     table_column_names,
@@ -722,9 +723,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         # Add records to nested list for enumeration in table model
         load_data = True
         if self.plugin is not None:
-            if self._entity.name in self.plugin.entity_table_model.keys():
+            if self._entity.name in ENTITY_TABLE_MODEL.keys():
                 if filtered_records is None:
-                    self._tableModel = self.plugin.entity_table_model[
+                    self._tableModel = ENTITY_TABLE_MODEL[
                         self._entity.name
                     ]
 
@@ -809,9 +810,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 row_ids=row_ids
             )
 
-            if self.plugin is not None:
-                self.plugin.entity_table_model[self._entity.name] = \
-                    self._tableModel
+            ENTITY_TABLE_MODEL[self._entity.name] = self._tableModel
 
         # Add filter columns
         for header, info in self._searchable_columns.items():
