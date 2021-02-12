@@ -55,6 +55,8 @@ from qgis.gui import (
     QgsMapCanvas
 )
 
+from qgis.utils import iface
+
 from stdm.data.configuration import (
     entity_model
 )
@@ -100,7 +102,6 @@ class LayerSelectionHandler(QWidget):
         :type plugin: Object
         """
         self.layer = None
-        self.iface = plugin.iface
         self.plugin = plugin
         self.sel_highlight = None
         self.current_profile = current_profile()
@@ -132,7 +133,7 @@ class LayerSelectionHandler(QWidget):
                 )
 
                 QMessageBox.warning(
-                    self.iface.mainWindow(),
+                    iface.mainWindow(),
                     QApplication.translate(
                         'LayerSelectionHandler', 'Maximum Features Error'
                     ),
@@ -155,7 +156,7 @@ class LayerSelectionHandler(QWidget):
         )
 
         QMessageBox.warning(
-            self.iface.mainWindow(),
+            iface.mainWindow(),
             QApplication.translate(
                 'LayerSelectionHandler', 'Invalid Layer Error'
             ),
@@ -199,7 +200,7 @@ class LayerSelectionHandler(QWidget):
         Check if there is active layer and if not, displays
         a message box to select a feature layer.
         """
-        active_layer = self.iface.activeLayer()
+        active_layer = iface.activeLayer()
 
         if active_layer is None:
             no_layer_msg = QApplication.translate(
@@ -208,7 +209,7 @@ class LayerSelectionHandler(QWidget):
                 'layer to view feature details.'
             )
             QMessageBox.critical(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate(
                     'LayerSelectionHandler', 'Layer Error'
                 ),
@@ -236,8 +237,8 @@ class LayerSelectionHandler(QWidget):
         """
         Enables the select tool to be used to select features.
         """
-        self.iface.actionSelect().trigger()
-        layer_select_tool = self.iface.mapCanvas().mapTool()
+        iface.actionSelect().trigger()
+        layer_select_tool = iface.mapCanvas().mapTool()
 
         layer_select_tool.activate()
 
@@ -263,12 +264,12 @@ class LayerSelectionHandler(QWidget):
         for layer in layers:
             layer.dataProvider().forceReload()
             layer.triggerRepaint()
-        if not self.iface.activeLayer() is None:
-            canvas = self.iface.mapCanvas()
+        if iface.activeLayer() is not None:
+            canvas = iface.mapCanvas()
             canvas.setExtent(
-                self.iface.activeLayer().extent()
+                iface.activeLayer().extent()
             )
-            self.iface.mapCanvas().refresh()
+            iface.mapCanvas().refresh()
 
     def multi_select_highlight(self, index):
         """
@@ -683,7 +684,7 @@ class DetailsTreeView(DetailsDBHandler):
             'Document Viewer'
         )
         self.doc_viewer = _EntityDocumentViewerHandler(
-            self.doc_viewer_title, self.iface.mainWindow()
+            self.doc_viewer_title, iface.mainWindow()
         )
 
         self.view_selection = self.view.selectionModel()
@@ -716,7 +717,7 @@ class DetailsTreeView(DetailsDBHandler):
         """
         box = layer.boundingBoxOfSelected()
         box.scale(1.2)
-        canvas = self.iface.mapCanvas()
+        canvas = iface.mapCanvas()
         canvas.setExtent(box)
         canvas.refresh()
 
@@ -740,7 +741,7 @@ class DetailsTreeView(DetailsDBHandler):
         Sets the entity property using the layer table.
         """
         self.layer_table = self.get_layer_source(
-            self.iface.activeLayer()
+            iface.activeLayer()
         )
         if self.layer_table == '':
             return
@@ -765,7 +766,7 @@ class DetailsTreeView(DetailsDBHandler):
                 'the required database tables are missing. \n'
                 'Please run the configuration wizard to configure the database ')
             QMessageBox.critical(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate(
                     "DetailsTreeView",
                     'Default Profile Error'
@@ -804,7 +805,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.set_formatter(custom_attr_entity)
             # return
         # Get and set the active layer.
-        self.layer = self.iface.activeLayer()
+        self.layer = iface.activeLayer()
 
         # if no active layer, show error message
         # and uncheck the feature tool
@@ -1570,12 +1571,12 @@ class DetailsTreeView(DetailsDBHandler):
         :param index: Selected QTreeView item index
         :type index: Integer
         """
-        map = self.iface.mapCanvas()
+        map = iface.mapCanvas()
         try:
             # Get the selected item text using the index
             selected_item = self.model.itemFromIndex(index)
             # Use multi-select only when more than 1 items are selected.
-            if self.iface.activeLayer() is not None:
+            if iface.activeLayer() is not None:
                 if len(self.layer.selectedFeatures()) < 2:
                     return
             self.selected_root = selected_item
@@ -1715,7 +1716,7 @@ class DetailsTreeView(DetailsDBHandler):
                 'DetailsTreeView', data
             )
             QMessageBox.warning(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate(
                     'DetailsTreeView', 'Edit Error'
                 ),
@@ -1756,7 +1757,7 @@ class DetailsTreeView(DetailsDBHandler):
 
             model = self.feature_model(self.party_items[item.data()], data)
             editor = EntityEditorDialog(
-                entity, model, self.iface.mainWindow()
+                entity, model, iface.mainWindow()
             )
             editor.exec_()
         # Edit spatial entity
@@ -1766,7 +1767,7 @@ class DetailsTreeView(DetailsDBHandler):
             model = self.feature_model(entity, data)
 
             editor = EntityEditorDialog(
-                entity, model, self.iface.mainWindow()
+                entity, model, iface.mainWindow()
             )
             editor.exec_()
         else:
@@ -1790,7 +1791,7 @@ class DetailsTreeView(DetailsDBHandler):
                 'DetailsTreeView', id
             )
             QMessageBox.warning(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate('DetailsTreeView', 'Delete Error'),
                 data_error
             )
@@ -1818,7 +1819,7 @@ class DetailsTreeView(DetailsDBHandler):
                 )
             )
             QMessageBox.warning(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate('DetailsTreeView', 'Delete Error'),
                 delete_warning
             )
@@ -1837,7 +1838,7 @@ class DetailsTreeView(DetailsDBHandler):
                 "\nClick Yes to proceed or No to cancel."
             )
             delete_question = QMessageBox.critical(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate(
                     'DetailsTreeView',
                     'Delete Social Tenure Relationship'
@@ -1855,7 +1856,7 @@ class DetailsTreeView(DetailsDBHandler):
             )
 
             delete_question = QMessageBox.warning(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate('DetailsTreeView', 'Delete Warning'),
                 delete_warning,
                 QMessageBox.Yes | QMessageBox.No
@@ -1975,7 +1976,7 @@ class DetailsTreeView(DetailsDBHandler):
         if isinstance(id, str):
             data_error = QApplication.translate('DetailsTreeView', id)
             QMessageBox.warning(
-                self.iface.mainWindow(),
+                iface.mainWindow(),
                 QApplication.translate('DetailsTreeView', 'Edit Error'),
                 data_error
             )
@@ -2002,7 +2003,7 @@ class DetailsTreeView(DetailsDBHandler):
                 )
 
                 QMessageBox.warning(
-                    self.iface.mainWindow(),
+                    iface.mainWindow(),
                     self.doc_viewer_title,
                     msg
                 )
