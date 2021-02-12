@@ -184,7 +184,7 @@ class EntityEditorDialog(MapperMixin):
         curr_profile = current_profile()
         participates_in_str = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
-        self._init_gui()
+        self._init_gui(show_str_tab=participates_in_str)
         self.adjustSize()
 
         self._get_entity_editor_widgets()
@@ -212,7 +212,7 @@ class EntityEditorDialog(MapperMixin):
             # Initialize CascadingFieldContext objects
             self._editor_ext.connect_cf_contexts()
 
-    def _init_gui(self):
+    def _init_gui(self, show_str_tab: bool):
         # Setup base elements
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName('glMain')
@@ -227,6 +227,9 @@ class EntityEditorDialog(MapperMixin):
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
+
+        if show_str_tab:
+            self._setup_str_tab()
 
         QApplication.processEvents()
         # Add notification for mandatory columns if applicable
@@ -622,6 +625,15 @@ class EntityEditorDialog(MapperMixin):
                     self.entity_scroll_area,
                     pr_txt
                 )
+
+    def _setup_str_tab(self):
+        """
+        Creates the STR relationship tab
+        """
+        self.entity_tab_widget.addTab(
+            QWidget(),
+            self.tr('STR')
+        )
 
     def _add_fk_browser(self, child_entity, column):
         # Create and add foreign key
