@@ -52,6 +52,7 @@ from stdm.data.pg_utils import table_column_names
 from stdm.navigation.content_group import (
     TableContentGroup
 )
+from stdm.security.user import User
 from stdm.ui.forms import entity_dlg_extension
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.forms.widgets import (
@@ -160,9 +161,6 @@ class EntityEditorDialog(MapperMixin):
 
         self.register_column_widgets()
 
-        if not isinstance(parent, QTabWidget):
-            if not isinstance(parent, QMainWindow) and parent.entity_browser is not None:
-                self.current_user = parent.entity_browser.current_user
         try:
             if isinstance(parent._parent, EntityEditorDialog):
                 # hide collections form child editor
@@ -636,7 +634,7 @@ class EntityEditorDialog(MapperMixin):
         if not hasattr(self._model, attr):
             return
 
-        table_content = TableContentGroup(self.plugin.current_user.UserName, child_entity.short_name)
+        table_content = TableContentGroup(User.CURRENT_USER.UserName, child_entity.short_name)
 
         if self.edit_model is not None:
             parent_id = self.edit_model.id
@@ -644,8 +642,7 @@ class EntityEditorDialog(MapperMixin):
             parent_id = 0
 
         entity_browser = ContentGroupEntityBrowser(
-            child_entity, table_content, rec_id=parent_id, parent=self, plugin=self.plugin,
-            current_user=self.plugin.current_user, load_recs=False)
+            child_entity, table_content, rec_id=parent_id, parent=self, plugin=self.plugin, load_recs=False)
 
         # entity_browser = EntityBrowserWithEditor(
         # child_entity,

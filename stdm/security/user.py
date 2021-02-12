@@ -24,6 +24,11 @@ class User:
     'Validity' is of PyDate type
     """
 
+    """
+    Current logged on user
+    """
+    CURRENT_USER: 'User' = None
+
     def __init__(self, UserName, Password='', Validity=None, Approved=True):
         self.UserName = UserName
         self.Password = Password

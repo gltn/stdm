@@ -37,7 +37,7 @@ class ContentGroup(QObject, HashableMixin):
     """
     contentAuthorized = pyqtSignal(Content)
 
-    def __init__(self, username, containerItem=None, parent=None):
+    def __init__(self, username: str, containerItem=None, parent=None):
         from stdm.security.authorization import Authorizer
 
         QObject.__init__(self, parent)
@@ -192,7 +192,7 @@ class TableContentGroup(ContentGroup):
     update_op = QApplication.translate("DatabaseContentGroup", "Update")
     delete_op = QApplication.translate("DatabaseContentGroup", "Delete")
 
-    def __init__(self, username, groupName, action=None):
+    def __init__(self, username: str, groupName, action=None):
         ContentGroup.__init__(self, username, action)
         self._groupName = groupName
         self._createDbOpContent()

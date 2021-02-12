@@ -81,6 +81,7 @@ from stdm.navigation.container_loader import (
 from stdm.navigation.content_group import TableContentGroup
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
+from stdm.security.user import User
 from stdm.settings import current_profile, save_current_profile
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.settings.config_serializer import ConfigurationFileSerializer
@@ -190,8 +191,6 @@ class STDMQGISLoader:
         self._user_logged_in = False
         self.current_profile = None
 
-        # current logged-in user
-        self.current_user = None
         self.profile_templates = []
 
         # Profile status label showing the current profile
@@ -351,9 +350,9 @@ class STDMQGISLoader:
         self.logoutCleanUp()
 
     def login(self):
-        '''
+        """
         Show login dialog
-        '''
+        """
         frmLogin = loginDlg(self.iface.mainWindow())
         retstatus = frmLogin.exec_()
 
@@ -361,7 +360,7 @@ class STDMQGISLoader:
             # Assign the connection object
             globals.APP_DBCONN = frmLogin.dbConn
 
-            self.current_user = frmLogin.dbConn.User
+            User.CURRENT_USER = frmLogin.dbConn.User
 
             # Initialize the whole STDM database
 
@@ -922,10 +921,9 @@ class STDMQGISLoader:
             return result
 
     def loadModules(self):
-
-        '''
+        """
         Define and add modules to the menu and/or toolbar using the module loader
-        '''
+        """
 
         self.toolbarLoader = QtContainerLoader(self.iface.mainWindow(),
                                                self.stdmInitToolbar, self.logoutAct)
@@ -1267,7 +1265,7 @@ class STDMQGISLoader:
             # template_content = ContentGroup.contentItemFromName(template.name)
             template_content = self._create_table_content_group(
                 template.name,
-                self.current_user.UserName,
+                User.CURRENT_USER.UserName,
                 'templates'
             )
             # template_content.code = template_content_group.hash_code(unicode(template.name))
@@ -1737,7 +1735,7 @@ class STDMQGISLoader:
 
         access_templates = []
         for pt in self.profile_templates:
-            tcg = TableContentGroup(self.current_user.UserName, pt.name)
+            tcg = TableContentGroup(User.CURRENT_USER.UserName, pt.name)
             if tcg.canRead():
                 access_templates.append(pt.name)
 
@@ -1866,10 +1864,9 @@ class STDMQGISLoader:
                         list(self._reportModules.keys()), dispName
                     )
 
-                    table_content = TableContentGroup(self.current_user.UserName, dispName)
+                    table_content = TableContentGroup(User.CURRENT_USER.UserName, dispName)
                     self.entity_browser = ContentGroupEntityBrowser(
-                        sel_entity, table_content, rec_id=0, parent=self.iface.mainWindow(), plugin=self,
-                        current_user=self.current_user)
+                        sel_entity, table_content, rec_id=0, parent=self.iface.mainWindow(), plugin=self)
                     if sel_entity.has_geometry_column():
                         self.entity_browser.show()
                     else:
