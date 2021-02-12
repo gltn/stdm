@@ -636,7 +636,7 @@ class EntityEditorDialog(MapperMixin):
         if not hasattr(self._model, attr):
             return
 
-        table_content = TableContentGroup(self._parent.entity_browser.current_user.UserName, child_entity.short_name)
+        table_content = TableContentGroup(self.plugin.current_user.UserName, child_entity.short_name)
 
         if self.edit_model is not None:
             parent_id = self.edit_model.id
@@ -645,7 +645,7 @@ class EntityEditorDialog(MapperMixin):
 
         entity_browser = ContentGroupEntityBrowser(
             child_entity, table_content, rec_id=parent_id, parent=self, plugin=self.plugin,
-            current_user=self.current_user, load_recs=False)
+            current_user=self.plugin.current_user, load_recs=False)
 
         # entity_browser = EntityBrowserWithEditor(
         # child_entity,
