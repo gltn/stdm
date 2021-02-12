@@ -243,7 +243,9 @@ class STDMFieldWidget:
         self.register_factory()
         self.set_widget_type(curr_layer)
 
-        curr_layer.editFormConfig().setSuppress(QgsEditFormConfig.SuppressOn)
+        form_config = curr_layer.editFormConfig()
+        form_config.setSuppress(QgsEditFormConfig.SuppressOn)
+        curr_layer.setEditFormConfig(form_config)
 
         curr_layer.featureAdded.connect(
             lambda feature_id: self.load_stdm_form(
