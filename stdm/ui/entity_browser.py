@@ -1610,12 +1610,10 @@ class ContentGroupEntityBrowser(EntityBrowserWithEditor):
         SELECT=2303 #When widget is used to select one or more records from the table list
     """
 
-    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None, current_user=None,
+    def __init__(self, dataModel, tableContentGroup, rec_id=0, parent=None, plugin=None,
                  load_recs=False, state=VIEW | MANAGE):
         EntityBrowserWithEditor.__init__(self, dataModel, r_id=rec_id, parent=parent, state=VIEW | MANAGE,
                                          load_records=load_recs, plugin=plugin)
-
-        self.current_user = current_user
 
         self.resize(700, 500)
 
