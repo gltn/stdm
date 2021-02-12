@@ -46,7 +46,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.core import (
     QgsProject,
-    QgsApplication
+    QgsMapLayer
 )
 from qgis.gui import (
     QgsStatusBar,
@@ -254,14 +254,14 @@ class STDMQGISLoader:
         """
         QgsProject.instance().layerWasAdded.connect(self._on_layer_added)
 
-    def _on_layer_added(self, layer):
+    def _on_layer_added(self, layer: QgsMapLayer):
         """
         Triggered when a layer is added to the project
         """
         if layer is None:
             return
 
-        if not LayerUtils.is_layer_stdm_layer(layer):
+        if layer.type() != QgsMapLayer.VectorLayer or not LayerUtils.is_layer_stdm_layer(layer):
             # we don't care about this layer, users can edit however they want...
             return
 
