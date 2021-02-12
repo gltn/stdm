@@ -24,7 +24,6 @@ from qgis.PyQt.QtCore import (
     pyqtSignal
 )
 from qgis.PyQt.QtWidgets import (
-    QDialog,
     QDialogButtonBox,
     QFrame,
     QGridLayout,
@@ -35,10 +34,8 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
     QApplication,
     QPushButton,
-    QMessageBox,
-    QMainWindow
+    QMessageBox
 )
-
 from qgis.gui import QgsGui
 
 from stdm.data.configuration import entity_model
@@ -53,6 +50,9 @@ from stdm.navigation.content_group import (
     TableContentGroup
 )
 from stdm.security.user import User
+from stdm.settings import (
+    current_profile
+)
 from stdm.ui.forms import entity_dlg_extension
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.forms.widgets import (
@@ -179,6 +179,10 @@ class EntityEditorDialog(MapperMixin):
         self.title = '{0} {1}'.format(title_str, editor_trans)
 
         self.setWindowTitle(self.title)
+
+        # determine whether the entity is part of the STR relationship
+        curr_profile = current_profile()
+        participates_in_str = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
         self._init_gui()
         self.adjustSize()

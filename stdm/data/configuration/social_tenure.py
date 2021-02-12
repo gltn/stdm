@@ -293,6 +293,18 @@ class SocialTenure(Entity):
 
         return self._view_name_from_entity(self.spatial_unit)
 
+    def entity_participates_in_str(self, entity: Entity) -> bool:
+        """
+        Returns True if the entity is part of the STR relationship
+        """
+        if entity.name in [e.name for e in self.parties]:
+            return True
+
+        if entity.name in [e.name for e in self.spatial_units]:
+            return True
+
+        return False
+
     @property
     def parties(self):
         """
