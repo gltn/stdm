@@ -793,6 +793,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                             'EntityBrowser', 'Loading Records'
                         ),
                         str(ex))
+
+                    progressDialog.deleteLater()
+                    del progressDialog
                     return
 
                 row_ids.append(er.id)

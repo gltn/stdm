@@ -161,6 +161,7 @@ class STDMQGISLoader:
         self.combo_action = None
         self.stdmInitToolbar = None
         self.stdmMenu = None
+        self.progress = None
         self.spatialLayerManagerDockWidget = self
 
         # Setup locale
@@ -668,9 +669,10 @@ class STDMQGISLoader:
         :return:
         :rtype:
         """
-        self.progress.show()
-        self.progress.setRange(0, 0)
-        self.progress.progress_message(message)
+        if self.progress is not None:
+            self.progress.show()
+            self.progress.setRange(0, 0)
+            self.progress.progress_message(message)
 
     def on_update_complete(self, document):
         """
@@ -689,8 +691,9 @@ class STDMQGISLoader:
             {WIZARD_RUN: 1}
         )
 
-        self.progress.hide()
-        self.progress.cancel()
+        if self.progress is not None:
+            self.progress.deleteLater()
+            self.progress = None
 
     def load_configuration_to_serializer(self):
         try:
@@ -825,6 +828,10 @@ class STDMQGISLoader:
         loaded. Otherwise, False.
         :rtype: bool
         """
+        if self.progress is not None:
+            self.progress.deleteLater()
+            self.progess = None
+
         self.progress = STDMProgressDialog(parent)
         self.progress.overall_progress('Upgrading STDM Configuration...')
 
@@ -915,8 +922,8 @@ class STDMQGISLoader:
                 _copy_config_file_from_template()
 
             result = self.load_configuration_to_serializer()
-            self.progress.hide()
-            self.progress.cancel()
+            self.progress.deleteLater()
+            self.progress = None
             return result
 
     def loadModules(self):

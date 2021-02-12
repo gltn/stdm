@@ -521,9 +521,14 @@ class OGRReader:
         except (DataError, IntegrityError) as e:
             self._dbSession.rollback()
             progress.close()
+            progress.deleteLater()
+            del progress
             raise ImportFeatureException(str(e))
 
         progress.setValue(numFeat)
+
+        progress.deleteLater()
+        del progress
 
     def _enumeration_column_type(self, column_name, value):
         """

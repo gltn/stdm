@@ -346,6 +346,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                     pendingLayerEntity.setPrimaryKey(uniqueAttrValue, int(feat.id()))
 
                 progressDlg.setValue(len(features))
+                progressDlg.deleteLater()
+                del progressDlg
 
     def canvasReleaseEvent(self, e):
         '''

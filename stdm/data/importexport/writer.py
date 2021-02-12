@@ -160,6 +160,8 @@ class OGRWriter():
 
             if lyr.CreateFeature(feat) != 0:
                 progress.close()
+                progress.deleteLater()
+                del progress
                 raise Exception(
                     "Failed to create feature in %s" % (self._targetFile)
                 )
@@ -171,6 +173,8 @@ class OGRWriter():
             initVal += 1
 
         progress.setValue(numFeat)
+        progress.deleteLater()
+        del progress
 
     @staticmethod
     def is_date(string):

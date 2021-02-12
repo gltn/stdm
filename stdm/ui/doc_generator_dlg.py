@@ -663,6 +663,8 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
                     if result == QMessageBox.Abort:
                         progressDlg.close()
+                        progressDlg.deleteLater()
+                        del progressDlg
                         success_status = False
 
                         # Restore cursor
@@ -673,6 +675,8 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                     # If its the last record and user has selected to ignore
                     if i + 1 == len(records):
                         progressDlg.close()
+                        progressDlg.deleteLater()
+                        del progressDlg
                         success_status = False
 
                         # Restore cursor
@@ -706,6 +710,9 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                 )
             )
             success_status = False
+
+        progressDlg.deleteLater()
+        del progressDlg
 
         # Reset UI
         self.reset(success_status)

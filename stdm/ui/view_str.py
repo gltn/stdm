@@ -779,6 +779,9 @@ class ViewSTRWidget(WIDGET, BASE):
             )
             progress_dialog.setValue(i + 1)
 
+        progress_dialog.deleteLater()
+        del progress_dialog
+
     # def _on_node_reference_changed(self, rootHash):
     #     """
     #     Method for resetting document listing and map preview
@@ -1129,6 +1132,8 @@ class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
 
             prog_dialog.setValue(7)
         except exc.StatementError:
+            prog_dialog.deleteLater()
+            del prog_dialog
             return model_root_node, [], search_term
 
         # if self.formatter is not None:
@@ -1136,6 +1141,9 @@ class STRViewEntityWidget(WIDGET2, BASE2, EntitySearchItem):
         # model_root_node = self.formatter.root(valid_str_ids)
         prog_dialog.setValue(10)
         prog_dialog.hide()
+
+        prog_dialog.deleteLater()
+        del prog_dialog
 
         return results, search_term
 

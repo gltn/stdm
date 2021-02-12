@@ -86,7 +86,6 @@ class STRDBHandler:
         """
         self.str_model = str_model
         self.data_store = data_store
-        self.progress = STDMProgressDialog(iface.mainWindow())
         self.social_tenure = current_profile().social_tenure
         self.str_edit_node = []
 
@@ -322,21 +321,24 @@ class STRDBHandler:
         isValid = True
         # Create a progress dialog
         try:
-            self.progress.show()
+            progress = STDMProgressDialog(iface.mainWindow())
+            progress.show()
 
             if not self.str_edit_node:
                 QApplication.processEvents()
-                self.progress.setRange(0, len(self.data_store))
-                self.progress.overall_progress('Creating a STR...', )
+                progress.setRange(0, len(self.data_store))
+                progress.overall_progress('Creating a STR...', )
 
                 for i, str_store in enumerate(self.data_store.values()):
-                    self.progress.progress_message(
+                    progress.progress_message(
                         'Saving STR {}'.format(i + 1), '')
-                    self.progress.setValue(i + 1)
+                    progress.setValue(i + 1)
 
                     self.on_add_str(str_store)  # ==>
 
-                self.progress.hide()
+                progress.deleteLater()
+                progress = None
+
                 strMsg = QApplication.translate(
                     "STRDBHandler",
                     "The social tenure relationship has "
@@ -350,17 +352,16 @@ class STRDBHandler:
                 )
             else:
                 QApplication.processEvents()
-                self.progress.setRange(0, 1)
-                self.progress.setValue(0)
-                self.progress.overall_progress('Editing a STR...', )
+                progress.setRange(0, 1)
+                progress.setValue(0)
+                progress.overall_progress('Editing a STR...', )
 
-                self.progress.progress_message('Updating STR', '')
+                progress.progress_message('Updating STR', '')
 
                 updated_str_obj = self.on_edit_str(self.data_store[1])  # ===>
 
-                self.progress.setValue(1)
-
-                self.progress.hide()
+                progress.deleteLater()
+                progress = None
 
                 strMsg = QApplication.translate(
                     "STRDBHandler",
@@ -386,7 +387,8 @@ class STRDBHandler:
                 ),
                 errMsg
             )
-            self.progress.hide()
+            progress.deleteLater()
+            progress = None
             isValid = False
             STDMDb.instance().session.rollback()
             LOGGER.debug(str(oe))
@@ -401,7 +403,9 @@ class STRDBHandler:
                 ),
                 errMsg
             )
-            self.progress.hide()
+            progress.deleteLater()
+            progress = None
+
             isValid = False
             STDMDb.instance().session.rollback()
             LOGGER.debug(str(ie))
@@ -420,7 +424,9 @@ class STRDBHandler:
                 )
             )
             LOGGER.debug(str(ie))
-            self.progress.hide()
+            progress.deleteLater()
+            progress = None
+
             isValid = False
             STDMDb.instance().session.rollback()
         except DummyException as e:
@@ -435,10 +441,14 @@ class STRDBHandler:
             LOGGER.debug(str(e))
             isValid = False
             STDMDb.instance().session.rollback()
-            self.progress.hide()
+            progress.deleteLater()
+            progress = None
+
         finally:
 
             STDMDb.instance().session.rollback()
-            self.progress.hide()
+            if progress is not None:
+                progress.deleteLater()
+                progress = None
 
         return isValid
