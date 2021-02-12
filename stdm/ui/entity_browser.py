@@ -241,7 +241,6 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         self.load_records = load_records
         # Initialize toolbar
-        self.plugin = plugin
         self.tbActions = QToolBar()
         self.tbActions.setObjectName('eb_actions_toolbar')
         self.tbActions.setIconSize(QSize(16, 16))
@@ -722,12 +721,11 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         entity_records = []
         # Add records to nested list for enumeration in table model
         load_data = True
-        if self.plugin is not None:
-            if self._entity.name in ENTITY_TABLE_MODEL.keys():
-                if filtered_records is None:
-                    self._tableModel = ENTITY_TABLE_MODEL[
-                        self._entity.name
-                    ]
+        if self._entity.name in ENTITY_TABLE_MODEL.keys():
+            if filtered_records is None:
+                self._tableModel = ENTITY_TABLE_MODEL[
+                    self._entity.name
+                ]
 
         if isinstance(self._parent, EntityEditorDialog):
             load_data = True
