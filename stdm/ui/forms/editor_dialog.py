@@ -630,8 +630,11 @@ class EntityEditorDialog(MapperMixin):
         """
         Creates the STR relationship tab
         """
+        from stdm.ui.social_tenure.str_editor import STREditor
+        add_str = STREditor()
+
         self.entity_tab_widget.addTab(
-            QWidget(),
+            add_str,
             self.tr('STR')
         )
 
