@@ -141,7 +141,7 @@ class _EntityDocumentViewerHandler(object):
 
         # Configure progress bar
         num_docs = len(documents)
-        prog_dlg = QProgressDialog('', None, 0, num_docs, self._parent)
+        prog_dlg = QProgressDialog('', None, 0, num_docs, parent=self)
         prog_dlg.setWindowModality(Qt.WindowModal)
         prog_msg = QApplication.translate(
             'EntityBrowser',
@@ -167,6 +167,13 @@ class _EntityDocumentViewerHandler(object):
             QApplication.processEvents()
 
         prog_dlg.setValue(num_docs)
+        # because prog_dlg has been parented to a widget, it won't ever get deleted until that parent
+        # widget is. But we're done with it now and don't want it hanging around and showing on top of things,
+        # so we FORCE it's immediate deletion with a call to deleteLater(). Despite what the name says, this
+        # will cause the underlying c++ dialog instance to be closed and deleted as soon as Qt returns to the
+        # event loop
+        prog_dlg.deleteLater()
+        del prog_dlg
 
         # cRestore pointer cursor
         QApplication.restoreOverrideCursor()
@@ -704,7 +711,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             "EntityBrowser", "Fetching Records..."
         )
         progressDialog = QProgressDialog(
-            progressLabel, None, 0, numRecords, self
+            progressLabel, None, 0, numRecords, parent=self
         )
 
         QApplication.processEvents()
@@ -849,6 +856,14 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             progressDialog.setValue(numRecords)
         else:
             progressDialog.close()
+
+        # because progressDialog has been parented to a widget, it won't ever get deleted until that parent
+        # widget is. But we're done with it now and don't want it hanging around and showing on top of things,
+        # so we FORCE it's immediate deletion with a call to deleteLater(). Despite what the name says, this
+        # will cause the underlying c++ dialog instance to be closed and deleted as soon as Qt returns to the
+        # event loop
+        progressDialog.deleteLater()
+        del progressDialog
 
     def filter_col(self, child_entity):
         for col in child_entity.columns.values():
