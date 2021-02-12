@@ -632,6 +632,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             QgsProject.instance().addMapLayer(
                 curr_layer
             )
+            curr_layer.setCustomProperty('stdm/is_stdm_layer', True)
             self.zoom_to_layer()
 
             self.onLayerAdded.emit(spatial_column, curr_layer)
