@@ -68,6 +68,7 @@ from stdm.ui.gui_utils import GuiUtils
 from stdm.utils.util import (
     profile_and_user_views
 )
+from stdm.utils.layer_utils import LayerUtils
 
 LOGGER = logging.getLogger('stdm')
 
@@ -632,7 +633,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             QgsProject.instance().addMapLayer(
                 curr_layer
             )
-            curr_layer.setCustomProperty('stdm/is_stdm_layer', True)
+            LayerUtils.tag_layer_as_stdm_layer(curr_layer)
             self.zoom_to_layer()
 
             self.onLayerAdded.emit(spatial_column, curr_layer)
