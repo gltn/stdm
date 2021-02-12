@@ -895,8 +895,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         column on an entity, and thats the column we use for sorting.
         """
         cols = {}
-        for k in entity.updated_columns.keys():
-            cols[int(entity.updated_columns[k].row_index)] = k
+        for k, v in entity.updated_columns.items():
+            cols[int(v.row_index)] = k
         cols_ordered = OrderedDict(sorted(cols.items()))
         try:
             min_id = min(i for i in cols_ordered.keys() if i > -1)
