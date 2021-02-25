@@ -956,6 +956,29 @@ class STREditor(WIDGET, BASE):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
 
+        self.str_text = QApplication.translate(
+            'InitSTREditor', 'Social Tenure Relationship'
+        )
+        self.party_text = QApplication.translate(
+            'InitSTREditor', 'Party'
+        )
+        self.spatial_unit_text = QApplication.translate(
+            'InitSTREditor', 'Spatial Unit'
+        )
+        self.tenure_type_text = QApplication.translate(
+            'InitSTREditor', 'Tenure Information'
+        )
+        self.custom_tenure_info_text = QApplication.translate(
+            'InitSTREditor', 'Custom Tenure Information'
+        )
+        self.supporting_doc_text = QApplication.translate(
+            'InitSTREditor', 'Supporting Documents'
+        )
+
+        self.validity_period_text = QApplication.translate(
+            'InitSTREditor', 'Validity Period'
+        )
+
         self.add_str_btn.setIcon(GuiUtils.get_icon('add.png'))
         self.remove_str_btn.setIcon(GuiUtils.get_icon('remove.png'))
         self.add_documents_btn.setIcon(GuiUtils.get_icon('document.png'))
@@ -1127,7 +1150,6 @@ class STREditor(WIDGET, BASE):
         :param str_root: The STR root item.
         :type str_root: QStandardItem
         """
-        self.translate_str_items()
         children = OrderedDict()
         children[self.party_text] = 'user.png'
         children[self.spatial_unit_text] = 'property.png'

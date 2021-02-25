@@ -829,6 +829,8 @@ class DetailsTreeView(DetailsDBHandler):
         # display treeview in a dock widget
         elif self.layer is not None:
             self.prepare_for_selection(follow_layer_selection)
+        else:
+            self.node_signals(self.entity)
 
         if self.selected_item is None:
             sel_model = self.view.selectionModel()
@@ -1891,7 +1893,7 @@ class DetailsTreeView(DetailsDBHandler):
         :type feature_id: Integer
         """
         # remove rows before adding the updated ones.
-        if self.plugin is not None:
+        if self.plugin is not None and self.layer is not None:
             self.layer.selectByIds(
                 list(self.feature_models.keys())
             )
