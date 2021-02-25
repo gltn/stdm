@@ -653,7 +653,7 @@ class ForeignKeyMapper(QWidget):
         else:
             return
 
-        if not modelObj is None:
+        if modelObj is not None:
             # Raise before entity added signal
             self.beforeEntityAdded.emit(modelObj)
 

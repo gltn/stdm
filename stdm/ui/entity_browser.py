@@ -283,9 +283,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         # add STR preview widget - we only do this when a spatial layer is present and entity participates in STR
         curr_profile = current_profile()
-        participates_in_str = curr_profile.social_tenure.entity_participates_in_str(self.entity)
+        participates_in_str, _ = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
-        if participates_in_str and iface.activeLayer():
+        if participates_in_str:
             self.details_tree_view = DetailsTreeView(parent=self, plugin=plugin)
             layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)

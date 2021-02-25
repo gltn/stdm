@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import logging
+from typing import Tuple
 from collections import OrderedDict
 
 from stdm.data.configuration.columns import (
@@ -293,17 +294,18 @@ class SocialTenure(Entity):
 
         return self._view_name_from_entity(self.spatial_unit)
 
-    def entity_participates_in_str(self, entity: Entity) -> bool:
+    def entity_participates_in_str(self, entity: Entity) -> Tuple[bool, bool]:
         """
-        Returns True if the entity is part of the STR relationship
+        Returns a tuple of True if the entity is part of the STR relationship,
+        and True if the entity is an STR party or False if it is a spatial unit
         """
         if entity.name in [e.name for e in self.parties]:
-            return True
+            return True, True
 
         if entity.name in [e.name for e in self.spatial_units]:
-            return True
+            return True, False
 
-        return False
+        return False, False
 
     @property
     def parties(self):
