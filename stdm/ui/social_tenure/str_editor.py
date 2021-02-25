@@ -1094,34 +1094,7 @@ class STREditor(WIDGET, BASE):
         )
         self.view_selection = self.tree_view.selectionModel()
 
-    def translate_str_items(self):
-        """
-        Translates the texts of the STR items.
-        """
-        self.str_text = QApplication.translate(
-            'InitSTREditor', 'Social Tenure Relationship'
-        )
-        self.party_text = QApplication.translate(
-            'InitSTREditor', 'Party'
-        )
-        self.spatial_unit_text = QApplication.translate(
-            'InitSTREditor', 'Spatial Unit'
-        )
-        self.tenure_type_text = QApplication.translate(
-            'InitSTREditor', 'Tenure Information'
-        )
-        self.custom_tenure_info_text = QApplication.translate(
-            'InitSTREditor', 'Custom Tenure Information'
-        )
-        self.supporting_doc_text = QApplication.translate(
-            'InitSTREditor', 'Supporting Documents'
-        )
-
-        self.validity_period_text = QApplication.translate(
-            'InitSTREditor', 'Validity Period'
-        )
-
-    def str_node(self):
+    def create_new_str_node(self):
         """
         Creates the STR node with its children.
         """
@@ -1136,14 +1109,14 @@ class STREditor(WIDGET, BASE):
         )
         str_root.setData(self.str_number)
         self.tree_view_model.appendRow(str_root)
-        self.str_children(str_root)
+        self.populate_children_for_str_node(str_root)
         self.tree_view.expandAll()
         store = STRDataStore()
         self.data_store[self.str_number] = store
         store.current_spatial_unit = self.spatial_unit
         store.current_party = self.party
 
-    def str_children(self, str_root):
+    def populate_children_for_str_node(self, str_root: QStandardItem):
         """
         Creates STR children and
         populates self.str_items dictionary.
@@ -1158,7 +1131,7 @@ class STREditor(WIDGET, BASE):
         children[self.validity_period_text] = 'period.png'
         children[self.custom_tenure_info_text] = 'custom_tenure.png'
         for name, icon in children.items():
-            item = self.child_item(str_root, name, icon)
+            item = self.create_str_child_item(str_root, name, icon)
             self.str_items['%s%s' % (name, self.str_number)] = item
 
         self.str_items['%s%s' % (self.str_text, self.str_number)] = str_root
@@ -1166,7 +1139,7 @@ class STREditor(WIDGET, BASE):
         party_item = self.str_item(self.party_text, self.str_number)
         party_item.setEnabled(True)
 
-    def child_item(self, str_root, name, icon):
+    def create_str_child_item(self, str_root: QStandardItem, name: str, icon: str):
         """
         Creates the child item of str_root.
         :param str_root:  The STR root item.
@@ -1212,7 +1185,7 @@ class STREditor(WIDGET, BASE):
         Adds the first STR tree node.
         """
         self.str_number = self.str_number + 1
-        self.str_node()
+        self.create_new_str_node()
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
 
     def str_item(self, text, str_number):
