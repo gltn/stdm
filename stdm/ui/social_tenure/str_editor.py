@@ -1014,6 +1014,7 @@ class STREditor(WIDGET, BASE):
             self.spatial_unit = None
 
         self.add_str_tree_node()
+
         self.party_component = None
         self.str_model = None
         self.str_doc_model = None

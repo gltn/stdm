@@ -31,10 +31,12 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea,
     QTabWidget,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QApplication,
     QPushButton,
-    QMessageBox
+    QMessageBox,
+    QToolButton
 )
 from qgis.gui import QgsGui
 
@@ -184,7 +186,7 @@ class EntityEditorDialog(MapperMixin):
         curr_profile = current_profile()
         participates_in_str, is_party_unit = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
-        self._init_gui(show_str_tab=participates_in_str)
+        self._init_gui(show_str_tab=participates_in_str, is_party_unit=is_party_unit)
         self.adjustSize()
 
         self._get_entity_editor_widgets()
@@ -212,7 +214,7 @@ class EntityEditorDialog(MapperMixin):
             # Initialize CascadingFieldContext objects
             self._editor_ext.connect_cf_contexts()
 
-    def _init_gui(self, show_str_tab: bool):
+    def _init_gui(self, show_str_tab: bool, is_party_unit: bool):
         # Setup base elements
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName('glMain')
@@ -228,7 +230,7 @@ class EntityEditorDialog(MapperMixin):
         )
 
         if show_str_tab:
-            self._setup_str_tab()
+            self._setup_str_tab(is_party_unit=is_party_unit)
 
         # Add notification for mandatory columns if applicable
         next_row = 2
@@ -624,17 +626,48 @@ class EntityEditorDialog(MapperMixin):
                     pr_txt
                 )
 
-    def _setup_str_tab(self):
+    def _setup_str_tab(self, is_party_unit: bool):
         """
         Creates the STR relationship tab
         """
-        from stdm.ui.social_tenure.str_editor import STREditor
-        add_str = STREditor()
+        from stdm.ui.feature_details import DetailsTreeView
+
+        layout = QVBoxLayout()
+        hl = QHBoxLayout()
+        edit_btn = QToolButton(self)
+        edit_btn.setText(self.tr('Edit'))
+        edit_btn.setDisabled(True)
+        hl.addWidget(edit_btn)
+        layout.addLayout(hl)
+
+        details_tree_view = DetailsTreeView(parent=self, plugin=self.plugin, edit_button=edit_btn)
+        details_tree_view.activate_feature_details(True, follow_layer_selection=False)
+        details_tree_view.model.clear()
+
+        if is_party_unit:
+            details_tree_view.search_party(self.entity, [self.ent_model.id])
+        else:
+            details_tree_view.search_spatial_unit(self.entity, [self.ent_model.id])
+
+        layout.addWidget(details_tree_view)
+        w = QWidget()
+        w.setLayout(layout)
 
         self.entity_tab_widget.addTab(
-            add_str,
+            w,
             self.tr('STR')
         )
+
+        # from stdm.ui.social_tenure.str_editor import STREditor
+        # add_str = STREditor()
+
+        # if is_party_unit:
+        #     add_str.set_party_data(self.entity_model_obj)
+
+        # self.entity_tab_widget.addTab(
+        #     add_str,
+        #    self.tr('Create STR')
+        # )
 
     def _add_fk_browser(self, child_entity, column):
         # Create and add foreign key
