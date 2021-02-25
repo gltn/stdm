@@ -813,21 +813,21 @@ class DetailsTreeView(DetailsDBHandler):
 
         # self.zoom_to_selected(self.layer)
 
-        if self.layer is None:
+        if follow_layer_selection and self.layer is None:
             self.active_layer_check()
             self.plugin.feature_details_act.setChecked(False)
             return
 
         # if the selected layer is not an STDM layer,
         # show not feature layer.
-        if not self.stdm_layer(self.layer):
+        if self.layer is not None and not self.stdm_layer(self.layer):
             # show popup message if dock is hidden and button clicked
             self.non_stdm_layer_error()
             self.plugin.feature_details_act.setChecked(False)
 
         # If the selected layer is feature layer, get data and
         # display treeview in a dock widget
-        else:
+        elif self.layer is not None:
             self.prepare_for_selection(follow_layer_selection)
 
         if self.selected_item is None:
@@ -1049,7 +1049,7 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.add_root_children(db_model, root, str_records, True)
 
-        if len(str_records) > 0:
+        if len(str_records) > 0 and self.layer_table is not None:
             return getattr(str_records[0], self.layer_table).id  # Assuming we have an Id!!
         else:
             return -1
@@ -1192,19 +1192,17 @@ class DetailsTreeView(DetailsDBHandler):
             child = QStandardItem('{}: {}'.format(col, row))
 
             child.setSelectable(False)
-            try:
-                parent.appendRow([child])
-            except RuntimeError:
-                pass
+            parent.appendRow([child])
 
             # Add Social Tenure Relationship node as a last child
             if i == len(self._formatted_record) - 1:
                 if len(str_records) > 0:
                     self.add_str_child(parent, str_records, feature_id, party_query)
-                else:
+                elif self.entity is not None:
 
                     if self.entity in self.social_tenure.spatial_units:
                         self.add_no_str_steam(parent)
+
         self.expand_node(parent)
 
     def add_str_node(self, parent, str_id):
@@ -1300,13 +1298,13 @@ class DetailsTreeView(DetailsDBHandler):
         if str_records is None:
             return
 
-        if self.layer_table is None and self.plugin is not None:
-            return
+        # if self.layer_table is None and self.plugin is not None:
+        #     return
 
         spatial_unit_names = [sp.name for sp in self.spatial_units]
 
         # If the layer table is not spatial unit table, don't show STR node.
-        if self.layer_table not in spatial_unit_names and self.plugin is not None:
+        if self.layer_table is not None and self.layer_table not in spatial_unit_names and self.plugin is not None:
             return
 
         for record in str_records:

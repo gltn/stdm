@@ -182,7 +182,7 @@ class EntityEditorDialog(MapperMixin):
 
         # determine whether the entity is part of the STR relationship
         curr_profile = current_profile()
-        participates_in_str = curr_profile.social_tenure.entity_participates_in_str(self.entity)
+        participates_in_str, is_party_unit = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
         self._init_gui(show_str_tab=participates_in_str)
         self.adjustSize()
