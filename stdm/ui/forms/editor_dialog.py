@@ -219,7 +219,6 @@ class EntityEditorDialog(MapperMixin):
         self.gridLayout.addLayout(
             self.vlNotification, 0, 0, 1, 1
         )
-        QApplication.processEvents()
 
         # set widgets values
         column_widget_area = self._setup_columns_content_area()
@@ -231,7 +230,6 @@ class EntityEditorDialog(MapperMixin):
         if show_str_tab:
             self._setup_str_tab()
 
-        QApplication.processEvents()
         # Add notification for mandatory columns if applicable
         next_row = 2
         if self.has_mandatory:
