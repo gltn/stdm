@@ -792,7 +792,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.instance_list.remove(instance)
                     else:
                         continue
-                except:
+                except DummyException:
                     continue
             # if len(del_list)>0:
             # [self.instance_list.remove(inst) for inst in del_list]

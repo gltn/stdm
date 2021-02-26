@@ -39,6 +39,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
+from stdm.exceptions import DummyException
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.data.pg_utils import vector_layer
@@ -807,7 +808,7 @@ class ColumnEditor(WIDGET, BASE):
     def property_by_name(self, ti, name):
         try:
             return self.dtype_property(ti)['property'][name]
-        except:
+        except DummyException:
             return None
 
     def populate_data_type_cbo(self):
@@ -885,7 +886,7 @@ class ColumnEditor(WIDGET, BASE):
         text = self.cboDataType.itemText(self.cboDataType.currentIndex())
         try:
             return BaseColumn.types_by_display_name()[text].TYPE_INFO
-        except:
+        except DummyException:
             return ''
 
     def fill_work_area(self):
