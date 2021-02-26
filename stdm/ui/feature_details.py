@@ -22,6 +22,7 @@ email                : stdm@unhabitat.org
 import re
 from collections import OrderedDict
 
+from qgis.PyQt import sip
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QDateTime,
@@ -255,6 +256,9 @@ class LayerSelectionHandler(QWidget):
         """
         Removes sel_highlight from the canvas.
         """
+        if self.sel_highlight is not None and not sip.isdeleted(self.sel_highlight):
+            iface.mapCanvas().scene().removeItem(self.sel_highlight)
+
         self.sel_highlight = None
 
     def refresh_layers(self):
@@ -691,7 +695,7 @@ class DetailsTreeView(DetailsDBHandler):
         self.view_selection = self.view.selectionModel()
 
         self.view_selection.currentChanged.connect(
-            self.disable_delete_btn
+            self._on_view_selection_changed
         )
 
         self.selected_model = None
@@ -708,6 +712,13 @@ class DetailsTreeView(DetailsDBHandler):
 
             self.treeview_error(not_feature_msg)
 
+        if self.edit_button is not None:
+            self.edit_button.clicked.connect(self.edit_selected_node)
+        if self.delete_button is not None:
+            self.delete_button.clicked.connect(self.delete_selected_item)
+        if self.view_document_button is not None:
+            self.view_document_button.clicked.connect(self.view_node_document)
+
     def zoom_to_selected(self, layer):
         """
         Zooms to selected features.
@@ -722,20 +733,15 @@ class DetailsTreeView(DetailsDBHandler):
         canvas.setExtent(box)
         canvas.refresh()
 
-    def disable_delete_btn(self, current, previous):
+    def _on_view_selection_changed(self, current, previous):
         """
-        Disables the delete button if the party node is clicked and enable it
-        if other items are clicked.
-        :param current: The newly clicked item index
-        :type current: QModelIndex
-        :param previous: The previous item index
-        :type previous: QModelIndex
+        Triggered when the view selection is changed
         """
+        self.multi_select_highlight(current)
+
         selected_item = self.model.itemFromIndex(current)
-        if selected_item is None:
-            return
         if self.delete_button is not None:
-            self.delete_button.setEnabled(selected_item.data() not in self.party_items)
+            self.delete_button.setEnabled(selected_item is not None and selected_item.data() not in self.party_items)
 
     def set_layer_entity(self):
         """
@@ -829,8 +835,6 @@ class DetailsTreeView(DetailsDBHandler):
         # display treeview in a dock widget
         elif self.layer is not None:
             self.prepare_for_selection(follow_layer_selection)
-        else:
-            self.node_signals(self.entity)
 
         if self.selected_item is None:
             sel_model = self.view.selectionModel()
@@ -876,10 +880,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         if follow_layer_selection:
             active_layer.selectionChanged.connect(
-                self.show_tree
+                self.layer_selection_changed
             )
-
-        self.node_signals(self.entity)
 
     def reset_tree_view(self, features=None):
         """
@@ -900,13 +902,6 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.removed_feature = None
 
-        # if the selected feature is over 1,
-        # activate multi_select_highlight
-        if features is not None:
-            self.view.clicked.connect(
-                self.multi_select_highlight
-            )
-
     def disable_buttons(self, bool):
         """
         Disables or enables the edit, delete, and view document buttons on
@@ -921,8 +916,9 @@ class DetailsTreeView(DetailsDBHandler):
         if self.view_document_button is not None:
             self.view_document_button.setDisabled(bool)
 
-    def show_tree(self):
+    def layer_selection_changed(self):
         """
+        Triggered when the layer selection has changed.
         Shows the treeview.
         """
 
@@ -1572,51 +1568,47 @@ class DetailsTreeView(DetailsDBHandler):
         :param index: Selected QTreeView item index
         :type index: Integer
         """
-        map = iface.mapCanvas()
+        # Get the selected item text using the index
+        selected_item = self.model.itemFromIndex(index)
+
+        if selected_item is None or self.layer is None:
+            return
+
+        # Use multi-select only when more than 1 items are selected.
+        if self.layer.selectedFeatureCount() < 2:
+            return
+
+        self.selected_root = selected_item
+        # Split the text to get the key and value.
+        selected_item_text = selected_item.text()
+
+        selected_value = selected_item.data()
+        # If the first word is feature, expand & highlight.
         try:
-            # Get the selected item text using the index
-            selected_item = self.model.itemFromIndex(index)
-            # Use multi-select only when more than 1 items are selected.
-            if iface.activeLayer() is not None:
-                if len(self.layer.selectedFeatures()) < 2:
-                    return
-            self.selected_root = selected_item
-            # Split the text to get the key and value.
-            selected_item_text = selected_item.text()
-
-            selected_value = selected_item.data()
-            # If the first word is feature, expand & highlight.
-
-            if selected_item_text == format_name(self.entity.short_name):
-                self.view.expand(index)  # expand the item
-                # Clear any existing highlight
-                self.clear_sel_highlight()
-                # Insert highlight
-                # Create expression to target the selected feature
-
-                expression = QgsExpression(
-                    "\"id\"='" + str(selected_value.id()) + "'"
-                )
-                # Get feature iteration based on the expression
-                ft_iteration = self.layer.getFeatures(
-                    QgsFeatureRequest(expression)
-                )
-
-                # Retrieve geometry and attributes
-                for feature in ft_iteration:
-                    # Fetch geometry
-                    geom = feature.geometry()
-                    self.sel_highlight = QgsHighlight(map, geom, self.layer)
-                    self.sel_highlight.setFillColor(selection_color())
-                    self.sel_highlight.setWidth(4)
-                    self.sel_highlight.setColor(QColor(212, 95, 0, 255))
-                    self.sel_highlight.show()
-                    break
+            name = format_name(self.entity.short_name)
         except AttributeError:
             # escape attribute error on child items such as party
-            pass
-        except IndexError:
-            pass
+            return
+
+        if selected_item_text == name:
+            self.view.expand(index)  # expand the item
+            # Clear any existing highlight
+            self.clear_sel_highlight()
+            # Insert highlight
+
+            # Create expression to target the selected feature
+            # Get feature iteration based on the expression
+            feature = next(self.layer.getFeatures(
+                QgsFeatureRequest().setFilterExpression(QgsExpression.createFieldEqualityExpression('id', selected_value.id()))
+            ))
+
+            # Fetch geometry
+            geom = feature.geometry()
+            self.sel_highlight = QgsHighlight(iface.mapCanvas(), geom, self.layer)
+            self.sel_highlight.setFillColor(selection_color())
+            self.sel_highlight.setWidth(4)
+            self.sel_highlight.setColor(QColor(212, 95, 0, 255))
+            self.sel_highlight.show()
 
     def node_signals(self, entity):
         """
@@ -1624,27 +1616,7 @@ class DetailsTreeView(DetailsDBHandler):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
-        if self.edit_button is not None:
-            if self.edit_btn_connected:
-                self.edit_button.clicked.disconnect(
-                    self.edit_selected_node
-                )
 
-        if self.edit_button is not None:
-            self.edit_button.clicked.connect(
-                self.edit_selected_node
-            )
-        if self.delete_button is not None:
-            self.delete_button.clicked.connect(
-                self.delete_selected_item
-            )
-
-        if self.view_document_button is not None:
-            self.view_document_button.clicked.connect(
-                lambda: self.view_node_document(
-                    entity
-                )
-            )
 
     def node_data(self, mode, results):
         """
@@ -1959,15 +1931,17 @@ class DetailsTreeView(DetailsDBHandler):
                 row = item.row()
                 item.parent().removeRow(row)
 
-    def view_node_document(self, entity):
+    def view_node_document(self):
         """
         A slot raised when view document button is clicked. It opens document
         viewer and shows a document if a supporting document exists for the
         record.
-        :param entity: The entity object
         :type entity: Object
 
         """
+        entity = self.entity
+        if entity is None:
+            return
 
         id, item = self.node_data('edit', self._selected_features)
         if isinstance(id, QgsFeature):
