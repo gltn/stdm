@@ -626,7 +626,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
                 table_name, geom_column=spatial_column
             )
 
-        if curr_layer.isValid():
+        if curr_layer is not None and curr_layer.isValid():
             if curr_layer.name() in self._map_registry_layer_names():
                 return
 
@@ -657,7 +657,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
                 self.sort_joined_columns(curr_layer, fk_fields)
                 self.set_field_alias(curr_layer, entity, fk_fields)
 
-        else:
+        elif curr_layer is not None:
             msg = QApplication.translate(
                 "Spatial Unit Manager",
                 "'{0}.{1}' layer is invalid, it cannot "
