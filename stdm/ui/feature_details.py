@@ -20,8 +20,8 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import re
-from typing import Optional
 from collections import OrderedDict
+from typing import Optional
 
 from qgis.PyQt import sip
 from qgis.PyQt import uic
@@ -56,13 +56,12 @@ from qgis.gui import (
     QgsDockWidget,
     QgsMapCanvas
 )
-
 from qgis.utils import iface
 
-from stdm.data.globals import ENTITY_FORMATTERS
 from stdm.data.configuration import (
     entity_model
 )
+from stdm.data.globals import ENTITY_FORMATTERS
 from stdm.data.pg_utils import pg_table_exists
 from stdm.data.pg_utils import (
     spatial_tables,
@@ -757,7 +756,8 @@ class DetailsTreeView(DetailsDBHandler):
         if self.delete_button is not None:
             self.delete_button.setEnabled(bool(selected_item is not None and selected_item.data() is not None))
 
-        is_str_node = bool(selected_item is not None and selected_item.data() is not None and selected_item.text() == self.str_text)
+        is_str_node = bool(
+            selected_item is not None and selected_item.data() is not None and selected_item.text() == self.str_text)
         if self.edit_button is not None:
             self.edit_button.setEnabled(is_str_node)
         if self.view_document_button is not None:
@@ -875,7 +875,7 @@ class DetailsTreeView(DetailsDBHandler):
         else:
             self.selected_item = None
 
-    def prepare_for_selection(self, follow_layer_selection: bool=True):
+    def prepare_for_selection(self, follow_layer_selection: bool = True):
         """
         Prepares the dock widget for data loading.
         """
@@ -884,7 +884,7 @@ class DetailsTreeView(DetailsDBHandler):
             self.activate_select_tool()
         self.update_tree_source(self.layer, follow_layer_selection)
 
-    def update_tree_source(self, active_layer, follow_layer_selection: bool=True):
+    def update_tree_source(self, active_layer, follow_layer_selection: bool = True):
         """
         Updates the treeview source in case of layer change.
         :param active_layer: The active layer on the canvas.
@@ -913,7 +913,6 @@ class DetailsTreeView(DetailsDBHandler):
         self.model.clear()
 
         self.clear_sel_highlight()  # remove sel_highlight
-        self.disable_buttons(False)
         if self.removed_feature is None:
             self.str_models.clear()
             self.feature_models.clear()
@@ -921,20 +920,6 @@ class DetailsTreeView(DetailsDBHandler):
             self.spatial_unit_items.clear()
         else:
             self.removed_feature = None
-
-    def disable_buttons(self, bool):
-        """
-        Disables or enables the edit, delete, and view document buttons on
-        the dock widget.
-        :param bool: A boolean setting the disabled status. True disables it.
-        :type bool: Boolean
-        """
-        if self.edit_button is not None:
-            self.edit_button.setDisabled(bool)
-        if self.delete_button is not None:
-            self.delete_button.setDisabled(bool)
-        if self.view_document_button is not None:
-            self.view_document_button.setDisabled(bool)
 
     def layer_selection_changed(self):
         """
@@ -962,8 +947,8 @@ class DetailsTreeView(DetailsDBHandler):
 
         if len(self._selected_features) < 1:
             self.reset_tree_view(self._selected_features)
-            self.disable_buttons(True)
             return
+
         layer_icon = GuiUtils.get_icon('layer.gif')
         # add non entity layer for views.
         if self.entity is not None:
@@ -1003,7 +988,6 @@ class DetailsTreeView(DetailsDBHandler):
 
         else:
             self.reset_tree_view(self._selected_features)
-            self.disable_buttons(True)
             self.add_non_entity_parent(layer_icon)
 
         # self.zoom_to_selected(self.layer)
@@ -1624,7 +1608,8 @@ class DetailsTreeView(DetailsDBHandler):
         # Create expression to target the selected feature
         # Get feature iteration based on the expression
         feature = next(self.layer.getFeatures(
-            QgsFeatureRequest().setFilterExpression(QgsExpression.createFieldEqualityExpression('id', selected_value.id()))
+            QgsFeatureRequest().setFilterExpression(
+                QgsExpression.createFieldEqualityExpression('id', selected_value.id()))
         ))
 
         # Fetch geometry
@@ -1641,7 +1626,6 @@ class DetailsTreeView(DetailsDBHandler):
         :param entity: The entity to be edited or its document viewed.
         :type entity: Object
         """
-
 
     def node_data(self, mode, results):
         """
