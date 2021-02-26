@@ -1647,11 +1647,11 @@ class STDMQGISLoader:
         frmPwdDlg.exec_()
 
     def newSTR(self):
-        '''
+        """
         Slot for showing the wizard for
         defining a new social
         tenure relationship
-        '''
+        """
         try:
 
             str_editor = STREditor()
