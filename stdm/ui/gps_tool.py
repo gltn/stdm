@@ -46,7 +46,8 @@ WIDGET, BASE = uic.loadUiType(
 
 class GPSToolDialog(WIDGET, BASE):
     def __init__(self, iface, entity, sp_table, sp_col,
-                 model=None, reload=True, row_number=None, entity_browser=None):
+                 model=None, reload=True, row_number=None, entity_browser=None,
+                 allow_str_creation=True):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
@@ -60,7 +61,7 @@ class GPSToolDialog(WIDGET, BASE):
         self.row_number = row_number
         self.entity_editor = None
         gpx_view.enable_drag_drop(self.table_widget, self._table_widget_drag_enter, self._table_widget_row_dropped)
-        self._init_entity_editor()
+        self._init_entity_editor(allow_str_creation)
         self.active_layer = self.iface.activeLayer()
         self.map_canvas = self.iface.mapCanvas()
         self.init_gpx_file = None
@@ -103,14 +104,14 @@ class GPSToolDialog(WIDGET, BASE):
         self.enable_save = True
         self.load_bt.setEnabled(self.enable_save)
 
-    def _init_entity_editor(self):
+    def _init_entity_editor(self, allow_str_creation: bool):
         """
         Instantiates entity editor and add its widgets to
         the GPX import tool as tabs
         :return: None
         :rtype:None
         """
-        self.entity_editor = EntityEditorDialog(self.entity, self.model, self)
+        self.entity_editor = EntityEditorDialog(self.entity, self.model, self, allow_str_creation=allow_str_creation)
         self.entity_editor.buttonBox.hide()  # Hide entity editor buttons
         self.setWindowTitle(self.entity_editor.title)
         for tab_text, tab_object in self.entity_editor.entity_editor_widgets.items():
