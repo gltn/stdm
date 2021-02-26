@@ -619,11 +619,6 @@ class DetailsDockWidget(WIDGET, QgsDockWidget):
         self.map_canvas.refresh()
 
 
-class SelectedItem(object):
-    def __init__(self, q_standard_item):
-        self.standard_item = q_standard_item
-
-
 class DetailsTreeView(DetailsDBHandler):
     """
     Avails the treeview dock widget. This class must be called
