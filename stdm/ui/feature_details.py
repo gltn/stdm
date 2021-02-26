@@ -755,7 +755,13 @@ class DetailsTreeView(DetailsDBHandler):
 
         selected_item = self.model.itemFromIndex(current)
         if self.delete_button is not None:
-            self.delete_button.setEnabled(selected_item is not None and selected_item.data() not in self.party_items)
+            self.delete_button.setEnabled(bool(selected_item is not None and selected_item.data() is not None))
+
+        is_str_node = bool(selected_item is not None and selected_item.data() is not None and selected_item.text() == self.str_text)
+        if self.edit_button is not None:
+            self.edit_button.setEnabled(is_str_node)
+        if self.view_document_button is not None:
+            self.view_document_button.setEnabled(is_str_node)
 
     def set_layer_entity(self):
         """
@@ -1651,8 +1657,7 @@ class DetailsTreeView(DetailsDBHandler):
         item = None
         index = self.view.selectedIndexes()[0]
         item = self.model.itemFromIndex(index)
-        # item = self.selected_item.standard_item #self.model.itemFromIndex(self.selected_index)
-        result = self.selected_item.standard_item.data()
+        result = item.data()
         return result, item
 
         # One item is selected and number of feature is also 1
