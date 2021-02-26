@@ -1,0 +1,8 @@
+[run]
+omit = 
+    stdm/third_party/*
+
+
+[report]
+omit = 
+    stdm/third_party/*
