@@ -1,7 +1,6 @@
-from stdm import data
-
 from sqlalchemy import create_engine
 
+from stdm import data
 from stdm.data.configuration.columns import (
     DateColumn,
     ForeignKeyColumn,
@@ -13,9 +12,8 @@ from stdm.data.configuration.columns import (
     VarCharColumn
 )
 from stdm.data.configuration.entity import entity_factory
-from stdm.data.configuration.value_list import value_list_factory
 from stdm.data.configuration.social_tenure import SocialTenure
-
+from stdm.data.configuration.value_list import value_list_factory
 from stdm.data.connection import DatabaseConnection
 from stdm.security.user import User
 
@@ -40,17 +38,22 @@ full_entity_opt_args = {
     'is_proxy': False
 }
 
+
 def create_profile(config, name):
     return config.create_profile(name)
+
 
 def create_entity(profile, name, **kwargs):
     return profile.create_entity(name, entity_factory, **kwargs)
 
+
 def create_value_list(profile, name):
     return profile.create_entity(name, value_list_factory)
 
+
 def create_basic_profile(config):
     return create_profile(config, 'Basic')
+
 
 def add_basic_profile(config):
     basic_profile = create_basic_profile(config)
@@ -58,10 +61,12 @@ def add_basic_profile(config):
 
     return basic_profile
 
+
 def create_person_entity(profile):
     entity = create_entity(profile, PERSON_ENTITY, **full_entity_opt_args)
 
     return entity
+
 
 def create_spatial_unit_entity(profile):
     entity = create_entity(profile, SPATIAL_UNIT_ENTITY, **full_entity_opt_args)
@@ -69,17 +74,21 @@ def create_spatial_unit_entity(profile):
 
     return entity
 
+
 def create_spatial_unit_entity2(profile):
     entity = create_entity(profile, SPATIAL_UNIT_ENTITY_2, **full_entity_opt_args)
     add_geometry_column('geom_poly_2', entity)
 
     return entity
 
+
 def create_surveyor_entity(profile):
     return create_entity(profile, SURVEYOR_ENTITY, **full_entity_opt_args)
 
+
 def create_community_entity(profile):
     return create_entity(profile, COMMUNITY_ENTITY, **full_entity_opt_args)
+
 
 def add_surveyor_entity(profile):
     surveyor = create_surveyor_entity(profile)
@@ -87,11 +96,13 @@ def add_surveyor_entity(profile):
 
     return surveyor
 
+
 def add_community_entity(profile):
     community = create_community_entity(profile)
     profile.add_entity(community)
 
     return community
+
 
 def add_person_entity(profile):
     entity = create_person_entity(profile)
@@ -99,11 +110,13 @@ def add_person_entity(profile):
 
     return entity
 
+
 def add_spatial_unit_entity(profile):
     entity = create_spatial_unit_entity(profile)
     profile.add_entity(entity)
 
     return entity
+
 
 def add_spatial_unit_entity_2(profile):
     entity = create_spatial_unit_entity2(profile)
@@ -111,11 +124,13 @@ def add_spatial_unit_entity_2(profile):
 
     return entity
 
+
 def add_geometry_column(name, entity):
     geom_col = GeometryColumn(name, entity, GeometryColumn.POLYGON)
     entity.add_column(geom_col)
 
     return geom_col
+
 
 def set_profile_social_tenure(profile):
     party = add_person_entity(profile)
@@ -124,13 +139,16 @@ def set_profile_social_tenure(profile):
     profile.set_social_tenure_attr(SocialTenure.PARTY, [party])
     profile.set_social_tenure_attr(SocialTenure.SPATIAL_UNIT, [spatial_unit])
 
+
 def create_relation(profile, **kwargs):
     return profile.create_entity_relation(**kwargs)
+
 
 def create_household_entity(profile):
     entity = create_entity(profile, HOUSEHOLD_ENTITY, **full_entity_opt_args)
 
     return entity
+
 
 def add_household_entity(profile):
     entity = create_household_entity(profile)
@@ -138,12 +156,14 @@ def add_household_entity(profile):
 
     return entity
 
+
 def create_gender_lookup(entity):
     gender_value_list = create_value_list(entity.profile, 'gender')
     gender_value_list.add_value('Male')
     gender_value_list.add_value('Female')
 
     return gender_value_list
+
 
 def create_secondary_tenure_lookup(profile):
     sec_tenure_value_list = create_value_list(profile, 'secondary_tenure')
@@ -153,18 +173,20 @@ def create_secondary_tenure_lookup(profile):
 
     return sec_tenure_value_list
 
+
 def add_secondary_tenure_value_list(profile):
     tenure_vl = create_secondary_tenure_lookup(profile)
     profile.add_entity(tenure_vl)
 
     return tenure_vl
 
+
 def append_person_columns(entity):
     household_id = IntegerColumn('household_id', entity)
     first_name = VarCharColumn('first_name', entity, maximum=30)
     last_name = VarCharColumn('last_name', entity, maximum=30)
 
-    #Create gender lookup column and attach value list
+    # Create gender lookup column and attach value list
     gender = LookupColumn('gender', entity)
     gender_value_list = create_gender_lookup(entity)
     gender.value_list = gender_value_list
@@ -174,15 +196,18 @@ def append_person_columns(entity):
     entity.add_column(last_name)
     entity.add_column(gender)
 
+
 def append_surveyor_columns(surveyor):
     first_name = VarCharColumn('first_name', surveyor, maximum=30)
     last_name = VarCharColumn('last_name', surveyor, maximum=30)
     surveyor.add_column(first_name)
     surveyor.add_column(last_name)
 
+
 def append_community_columns(community):
     name = VarCharColumn('comm_name', community, maximum=100)
     community.add_column(name)
+
 
 def populate_configuration(config):
     profile = add_basic_profile(config)
@@ -199,19 +224,19 @@ def populate_configuration(config):
 
     profile.add_entity_relation(rel)
 
-    #Add save option lookup
+    # Add save option lookup
     save_options = create_value_list(profile, 'save_options')
     save_options.add_value('House')
     save_options.add_value('Bank')
     save_options.add_value('SACCO')
     profile.add_entity(save_options)
 
-    #Add save options to multiple select column to person entity
+    # Add save options to multiple select column to person entity
     save_options_column = MultipleSelectColumn('save_location', person_entity)
     save_options_column.value_list = save_options
     person_entity.add_column(save_options_column)
 
-    #Add community entity
+    # Add community entity
     community = add_community_entity(profile)
     append_community_columns(community)
 
@@ -277,6 +302,7 @@ def populate_configuration(config):
     application_date_col = DateColumn('application_date', s_custom_ent)
     s_custom_ent.add_column(application_date_col)
 
+
 def create_db_connection():
     db_conn = DatabaseConnection(DB_SERVER, DB_PORT, DB_NAME)
     user = User(DB_USER, DB_PASS)
@@ -284,12 +310,12 @@ def create_db_connection():
 
     return db_conn
 
+
 def create_alchemy_engine():
     db_conn = create_db_connection()
     connection_str = db_conn.toAlchemyConnection()
 
-    #Set STDMDb instance
+    # Set STDMDb instance
     data.app_dbconn = db_conn
 
     return create_engine(connection_str, echo=False)
-

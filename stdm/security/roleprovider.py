@@ -163,7 +163,7 @@ class RoleProvider:
         '''
         rl = Role()
         existRole = rl.queryObject().filter(Role.name == rolename).first()
-        if existRole == None:
+        if existRole is None:
             rl.name = rolename
             rl.description = description
             rl.save()
@@ -174,7 +174,7 @@ class RoleProvider:
         '''
         rl = Role()
         existRole = rl.queryObject().filter(Role.name == rolename).first()
-        if existRole != None:
+        if existRole is not None:
             existRole.delete()
 
     def DeleteRole(self, roleName):

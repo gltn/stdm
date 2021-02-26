@@ -23,4 +23,3 @@ class DummyException(Exception):
     Never raised, but allows temporary replacement of too broad exception clauses by
     a specific exception in order to allow real issues to correctly propagate as exceptions
     """
-

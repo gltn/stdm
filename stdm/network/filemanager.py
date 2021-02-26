@@ -147,7 +147,7 @@ class NetworkFileManager(QObject):
         """
         Delete the source document from the central repository.
         """
-        if not docmodel is None:
+        if docmodel is not None:
             # Build the path from the model variable values.
             fileName, fileExt = guess_extension(docmodel.filename)
             profile_name = self.curr_profile.name

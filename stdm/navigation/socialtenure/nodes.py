@@ -23,9 +23,6 @@ import os
 from qgis.PyQt.QtCore import (
     Qt
 )
-from qgis.PyQt.QtGui import (
-    QIcon,
-)
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QAction,
@@ -34,13 +31,12 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.exceptions import DummyException
 from stdm.settings import current_profile
+from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.sourcedocument import source_document_location
 from stdm.utils.util import (
     gen_random_string,
     entity_id_to_attr
 )
-from stdm.ui.gui_utils import GuiUtils
-
 
 EDIT_ICON = GuiUtils.get_icon("edit.png")
 DELETE_ICON = GuiUtils.get_icon("delete.png")
@@ -69,11 +65,11 @@ class BaseSTRNode:
             self._view = parent.treeView()
             self._parentWidget = parent.parentWidget()
 
-        '''
+        """
         Set the hash of the node that will be taken as the root parent node.
         In this case it will be level one.
         Level zero will not have any hash specified (just be an empty string).
-        '''
+        """
         if self.depth() == rootDepthForHash:
             self._rootNodeHash = gen_random_string()
         elif self.depth() > rootDepthForHash:
@@ -100,15 +96,15 @@ class BaseSTRNode:
                                         self._parentWidget)
 
     def addChild(self, child):
-        '''
+        """
         Add child to the parent node.
-        '''
+        """
         self._children.append(child)
 
     def insertChild(self, position, child):
-        '''
+        """
         Append child at the specified position in the list
-        '''
+        """
         if position < 0 or position > len(self._children):
             return False
 
@@ -118,9 +114,9 @@ class BaseSTRNode:
         return True
 
     def removeChild(self, position):
-        '''
+        """
         Remove child at the specified position.
-        '''
+        """
         if position < 0 or position >= len(self._children):
             return False
 
@@ -130,86 +126,86 @@ class BaseSTRNode:
         return True
 
     def clear(self):
-        '''
+        """
         Removes all children in the node.
-        '''
+        """
         try:
             del self._children[:]
             return True
-        except:
+        except DummyException:
             return False
 
     def child(self, row):
-        '''
+        """
         Get the child node at the specified row.
-        '''
+        """
         if row < 0 or row >= len(self._children):
             return None
 
         return self._children[row]
 
     def childCount(self):
-        '''
+        """
         Number of children node with the current node as the parent.
-        '''
+        """
         return len(self._children)
 
     def children(self):
-        '''
+        """
         Returns all the node's children as a list.
-        '''
+        """
         return self._children
 
     def hasParent(self):
-        '''
+        """
         True if the node has a parent. Otherwise returns False.
-        '''
+        """
         return True if self._parent else False
 
     def parent(self):
-        '''
+        """
         The parent of this node.
-        '''
+        """
         return self._parent
 
     def treeView(self):
-        '''
+        """
         Returns the tree view that contains this node.
-        '''
+        """
         return self._view
 
     def parentWidget(self):
-        '''
+        """
         Returns the main widget that displays the social tenure relationship information.
-        '''
+        """
         return self._parentWidget
 
     def row(self):
-        '''
+        """
         Return the position of this node in the parent container.
-        '''
+        """
         if self._parent:
             return self.parent()._children.index(self)
 
         return 0
 
     def icon(self):
-        '''
+        """
         Return a QIcon for decorating the node.
         To be implemented by subclasses.
-        '''
+        """
         return None
 
     def id(self):
-        '''
+        """
         Returns the ID of the model it represents.
-        '''
+        """
         return -1
 
     def depth(self):
-        '''
+        """
         Returns the depth/hierarchy of this node.
-        '''
+        """
         depth = 0
         item = self.parent()
 
@@ -220,24 +216,24 @@ class BaseSTRNode:
         return depth
 
     def rootHash(self):
-        '''
+        """
         Returns a hash key that is used to identify
         the lineage of the child nodes i.e.
         which node exactly is the 'forefather'.
-        '''
+        """
         return self._rootNodeHash
 
     def styleIfChild(self):
-        '''
+        """
         Style the parent _title if set to 'True'.
         This is a read only property.
-        '''
+        """
         return self._styleIfChild
 
     def data(self, column):
-        '''
+        """
         Returns the data item in the specified specified column index within the list.
-        '''
+        """
         if column < 0 or column >= len(self._data):
             raise IndexError
 
@@ -247,9 +243,9 @@ class BaseSTRNode:
         return self._data
 
     def setData(self, column, value):
-        '''
+        """
         Set the value of the node data at the given column index.
-        '''
+        """
         if column < 0 or column >= len(self._data):
             return False
 
@@ -266,24 +262,24 @@ class BaseSTRNode:
         return self._model
 
     def columnCount(self):
-        '''
+        """
         Return the number of columns.
-        '''
+        """
         return len(self._data)
 
     def column(self, position):
-        '''
+        """
         Get the data in the specified column.
-        '''
+        """
         if position < 0 and position >= len(self._data):
             return None
 
         return self._data[position]
 
     def removeColumns(self, position, columns):
-        '''
+        """
         Removes columns in the STR node.
-        '''
+        """
         if position < 0 or position >= len(self._data):
             return False
 
@@ -293,9 +289,9 @@ class BaseSTRNode:
         return True
 
     def clearColumns(self):
-        '''
+        """
         Removes all columns in the node.
-        '''
+        """
         del self._data[:]
 
     def typeInfo(self):
@@ -316,7 +312,7 @@ class BaseSTRNode:
                              self.parentWidget())
         nullAction.setEnabled(False)
 
-        if not self._view is None:
+        if self._view is not None:
             if self._view.isExpanded(modelindex):
                 self._expand_action.setEnabled(False)
                 self._collapse_action.setEnabled(True)
@@ -360,23 +356,23 @@ class BaseSTRNode:
             self._view.collapse(index)
 
     def onEdit(self, index):
-        '''
+        """
         Slot triggered when the Edit action of the node is triggered by the user.
         Subclasses to implement.
-        '''
+        """
         pass
 
     def onDelete(self, index):
-        '''
+        """
         Slot triggered when the Delete action of the node is triggered by the user.
         Subclasses to implement.
-        '''
+        """
         pass
 
     def signalReceivers(self, action, signal):
-        '''
+        """
         Convenience method that returns the number of receivers connected to the signal of the action object.
-        '''
+        """
         return action.receivers(signal)
 
     def _concat_names_values(self, display_mapping, formatter):

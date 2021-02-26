@@ -1,12 +1,11 @@
+import unittest
 from unittest import (
     makeSuite,
     TestCase
 )
-import unittest
 
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-
 from stdm.tests.data.utils import (
     create_alchemy_engine,
     populate_configuration
@@ -30,6 +29,7 @@ class TestConfigurationSchemaUpdater(TestCase):
 
     def _on_complete(self, result):
         self.assertTrue(result)
+
 
 def suite():
     suite = makeSuite(TestConfigurationSchemaUpdater, 'test')

@@ -122,7 +122,7 @@ class EntityNodeFormatter(STRNodeFormatter):
         self._entity_supporting_doc_tables = {}
 
         self._str_model_disp_mapping = {}
-        if not self._str_model is None:
+        if self._str_model is not None:
             self._str_model_disp_mapping = entity_display_columns(
                 self.curr_profile.social_tenure, True
             )

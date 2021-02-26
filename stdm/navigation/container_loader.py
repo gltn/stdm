@@ -31,12 +31,12 @@ from qgis.PyQt.QtWidgets import (
     QApplication
 )
 
+from stdm.data import globals
 from stdm.data.database import (
     Content
 )
 from stdm.navigation.content_group import ContentGroup
 from stdm.utils.util import getIndex
-from stdm.data import globals
 
 
 class QtContainerLoader(QObject):
@@ -94,7 +94,7 @@ class QtContainerLoader(QObject):
 
         if len(userRoles) == 0:
             msg = QApplication.translate("ModuleLoader",
-                                         "'%s' must be a member of at least one STDM role in order to access the modules.\nPlease contact " \
+                                         "'%s' must be a member of at least one STDM role in order to access the modules.\nPlease contact "
                                          "the system administrator for more information." % (self._userName,))
             raise SecurityException(msg)
 
@@ -115,10 +115,10 @@ class QtContainerLoader(QObject):
                         v[0].addAction(k.containerItem())
                         self._insertWidgettoContainer(v[1])
 
-                    '''
+                    """
                     Raise signal to indicate that an STDMAction has been added to the container
                     self.contentAdded.emit(k)
-                    '''
+                    """
 
         # Add separator
         if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
@@ -157,11 +157,11 @@ class QtContainerLoader(QObject):
                 self._container.removeAction(first_act)
 
     def _addItemtoContainer(self, content):
-        '''
+        """
         Adds items to specific container
-        '''
+        """
         if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
-            if self._actionReference != None:
+            if self._actionReference is not None:
                 self._container.insertAction(self._actionReference, content)
             else:
                 self._container.addAction(content)
@@ -171,11 +171,11 @@ class QtContainerLoader(QObject):
             self._iter += 1
 
     def _insertWidgettoContainer(self, widget):
-        '''
+        """
         This method inserts the parent widget to the container for those actions
         that have parents defined. But it ensures that only one instance of the parent widget
         is inserted.
-        '''
+        """
         objName = widget.objectName()
         # Determine if the widget is already in the container
         if getIndex(self._widgets, objName) == -1:
@@ -187,13 +187,13 @@ class QtContainerLoader(QObject):
             self._widgets.append(objName)
 
     def unloadContent(self):
-        '''
+        """
         Remove all items in the container.
-        '''
+        """
         for k, v in self._contentGroups.items():
             if isinstance(self._container, QToolBar) or isinstance(self._container, QMenu):
                 # If there is a parent then delete the widget
-                if v != None:
+                if v is not None:
                     v[1].setParent(None)
                 else:
                     if isinstance(k, ContentGroup):
@@ -202,5 +202,5 @@ class QtContainerLoader(QObject):
                     self._container.removeAction(k)
 
         # Remove separator
-        if self._separatorAction != None:
+        if self._separatorAction is not None:
             self._container.removeAction(self._separatorAction)

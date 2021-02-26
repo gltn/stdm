@@ -470,7 +470,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
     ROLE_RAW_VALUE = ROLE_ATTRIBUTE_NAME + 1
     ROLE_ROW_ID = ROLE_ATTRIBUTE_NAME + 2
 
-    def __init__(self, initdata, headerdata, parent=None, attribute_names=None, raw_values = None, row_ids = None):
+    def __init__(self, initdata, headerdata, parent=None, attribute_names=None, raw_values=None, row_ids=None):
         QAbstractTableModel.__init__(self, parent)
 
         self._initData = initdata
@@ -624,9 +624,11 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
             return False
 
         for col in range(self.sourceModel().columnCount()):
-            attribute_name = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME)
+            attribute_name = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()),
+                                                     BaseSTDMTableModel.ROLE_ATTRIBUTE_NAME)
             if attribute_name in self.filter_params:
-                row_attribute_value = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()), BaseSTDMTableModel.ROLE_RAW_VALUE)
+                row_attribute_value = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()),
+                                                              BaseSTDMTableModel.ROLE_RAW_VALUE)
 
                 if isinstance(row_attribute_value, str):
                     # For string values we do a case insensitive "contains" search

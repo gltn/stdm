@@ -236,7 +236,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
             party = parties[0].short_name.lower()
             party_table = parties[0].name
             old_column = 'party_id'
-            if not old_column in table_column_names(social_tenure.name):
+            if old_column not in table_column_names(social_tenure.name):
                 return
             new_column = '{}_id'.format(party)
             if old_column != new_column:
@@ -256,7 +256,7 @@ class DatabaseVersionUpdater13(DatabaseVersionUpdater):
         self.backup_database()
         self.update_str_table()
         # Initialize the next updater if it exists.
-        if not self.NEXT_UPDATER is None:
+        if self.NEXT_UPDATER is not None:
             pass
             # if there is next updater, show progress
         # TODO add an if condition if the to version is the ...

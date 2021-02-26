@@ -21,4 +21,3 @@ email                : stdm@unhabitat.org
 
 class TranslatorException(Exception):
     pass
-

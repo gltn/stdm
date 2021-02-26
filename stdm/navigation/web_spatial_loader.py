@@ -364,7 +364,7 @@ class ProxyWebPage(QWebPage):
         # Set proxy in webpage
         proxy = getProxy()
 
-        if not proxy is None:
+        if proxy is not None:
             self._manager = QgsNetworkAccessManager()
             self._manager.setProxy(proxy)
             self.setNetworkAccessManager(self._manager)

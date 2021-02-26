@@ -38,7 +38,6 @@ from qgis.utils import (
 )
 from sqlalchemy.sql.expression import text
 
-from stdm.exceptions import DummyException
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.pg_utils import (
     _execute,
@@ -46,6 +45,7 @@ from stdm.data.pg_utils import (
     table_column_names,
     foreign_key_parent_tables
 )
+from stdm.exceptions import DummyException
 from stdm.settings.config_file_updater import ConfigurationFileUpdater
 from stdm.settings.registryconfig import (
     composer_template_path,
@@ -483,7 +483,7 @@ class TemplateViewHandler:
         # exclude str view of the new configuration
         if view in self.old_new_tables.values():
             return
-        if not view_def is None:
+        if view_def is not None:
             query_lines = view_def.splitlines()
             query_list = []
 
@@ -829,7 +829,7 @@ class TemplateFileUpdater(
             upgraded_view = self.upgrade_view(
                 old_view
             )
-            if not upgraded_view is None:
+            if upgraded_view is not None:
                 ref_old_new_cols = self.old_new_columns(
                     child.attrib[key],
                     upgraded_view
@@ -918,7 +918,7 @@ class TemplateFileUpdater(
                     )
 
                 if key == 'referencing_field':
-                    if not ref_old_new_cols is None:
+                    if ref_old_new_cols is not None:
                         self.update_referencing(
                             key, child, ref_old_new_cols
                         )
@@ -1019,7 +1019,7 @@ class TemplateFileUpdater(
                 old_source
             ]
 
-            if not new_table is None:
+            if new_table is not None:
                 self.prog.progress_message('Upgrading', template)
                 self.update_template(
                     template, old_source, new_table

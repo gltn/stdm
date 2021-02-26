@@ -48,9 +48,9 @@ from stdm.mapping.edit_tool import StdmMapToolEdit
 
 
 class StdmMapToolCreateFeature(StdmMapToolCapture):
-    '''
+    """
     Map tool for creating spatial units.
-    '''
+    """
 
     def __init__(self, iface):
         self.iface = iface
@@ -70,14 +70,14 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         StdmMapToolEdit.activate(self)
 
     def mapContextMenuRequested(self, pnt, menu):
-        '''
+        """
         Add actions to the editing context menu.
-        '''
-        self.addXYAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Add X,Y Vertex..."), \
+        """
+        self.addXYAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Add X,Y Vertex..."),
                                    self.iface.mainWindow())
-        self.cancelSketchAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Cancel Sketch"), \
+        self.cancelSketchAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Cancel Sketch"),
                                           self.iface.mainWindow())
-        self.finishSketchAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Finish Sketch"), \
+        self.finishSketchAction = QAction(QApplication.translate("StdmMapToolCreateFeature", "Finish Sketch"),
                                           self.iface.mainWindow())
 
         if not self._capturing:
@@ -95,16 +95,16 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         menu.addAction(self.cancelSketchAction)
 
     def supportsContextMenu(self):
-        '''
+        """
         This map tool supports an editing context menu.
-        '''
+        """
         return True
 
     def onAddXY(self):
-        '''
+        """
         Slot raised to show the coordinates point editor for manually entering
         the X, Y coordinate values.
-        '''
+        """
         stdmLayer = self.currentVectorLayer()
 
         # Try to set mode from layer type
@@ -119,8 +119,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         provider = stdmLayer.dataProvider()
 
         if not (provider.capabilities() & QgsVectorDataProvider.AddFeatures):
-            QMessageBox.information(self.iface.mainWindow(), \
-                                    QApplication.translate("StdmMapToolCreateFeature", "Cannot add to layer"), \
+            QMessageBox.information(self.iface.mainWindow(),
+                                    QApplication.translate("StdmMapToolCreateFeature", "Cannot add to layer"),
                                     QApplication.translate("StdmMapToolCreateFeature",
                                                            "The data provider for this layer does not support the addition of features."))
             return
@@ -138,8 +138,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             # Spatial unit point capture
             if self._mode == CAPTURE_POINT:
                 if stdmLayer.geometryType() != QgsWkbTypes.PointGeometry:
-                    QMessageBox.information(self.iface.mainWindow(), \
-                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                    QMessageBox.information(self.iface.mainWindow(),
+                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                             QApplication.translate("StdmMapToolCreateFeature",
                                                                    "Cannot apply the 'Create Point Feature' tool on this vector layer"))
                     return
@@ -153,15 +153,15 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
             elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
                 if self._mode == CAPTURE_LINE and stdmLayer.geometryType() != QgsWkbTypes.LineGeometry:
-                    QMessageBox.information(self.iface.mainWindow(), \
-                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                    QMessageBox.information(self.iface.mainWindow(),
+                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                             QApplication.translate("StdmMapToolCreateFeature",
                                                                    "Cannot apply the 'Create Line Feature' tool on this vector layer"))
                     return
 
                 if self._mode == CAPTURE_POLYGON and stdmLayer.geometryType() != QgsWkbTypes.PolygonGeometry:
-                    QMessageBox.information(self.iface.mainWindow(), \
-                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                    QMessageBox.information(self.iface.mainWindow(),
+                                            QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                             QApplication.translate("StdmMapToolCreateFeature",
                                                                    "Cannot apply the 'Create Polygon Feature' tool on this vector layer"))
                     return
@@ -169,16 +169,16 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 error = self.addVertex(layerPoint, True)
 
                 if error == 2:
-                    QMessageBox.critical(self.iface.mainWindow(), \
+                    QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate("StdmMapToolCreateFeature",
-                                                                "Coordinate transform error"), \
+                                                                "Coordinate transform error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "Cannot transform the point to the layer's coordinate system"))
                     return
                 elif error == 3:
-                    QMessageBox.critical(self.iface.mainWindow(), \
+                    QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate("StdmMapToolCreateFeature",
-                                                                "Coordinate transform error"), \
+                                                                "Coordinate transform error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "Cannot transform the layer point to the map's coordinate system"))
                     return
@@ -186,9 +186,9 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 self.startCapturing()
 
     def onFinishSketch(self):
-        '''
+        """
         Slot raised upon selecting to finish drawing the sketch spatial unit.
-        '''
+        """
         stdmLayer = self.currentVectorLayer()
         layerWKBType = stdmLayer.wkbType()
 
@@ -199,7 +199,7 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
 
         elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
             # Delete temporary rubber band
-            if self._tempRubberBand != None:
+            if self._tempRubberBand is not None:
                 self.canvas.scene().removeItem(self._tempRubberBand)
                 del self._tempRubberBand
                 self._tempRubberBand = None
@@ -221,8 +221,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                     self._geometry = QgsGeometry.fromMultiPolyline(self._captureList)
 
                 else:
-                    QMessageBox.critical(self.iface.mainWindow(), \
-                                         QApplication.translate("StdmMapToolCreateFeature", "WKB Type Error"), \
+                    QMessageBox.critical(self.iface.mainWindow(),
+                                         QApplication.translate("StdmMapToolCreateFeature", "WKB Type Error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "Cannot add feature. Unknown WKB type"))
                     return
@@ -238,8 +238,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                     self._geometry = QgsGeometry.fromMultiPolygon([self._captureList])
 
                 else:
-                    QMessageBox.critical(self.iface.mainWindow(), \
-                                         QApplication.translate("StdmMapToolCreateFeature", "WKB Type Error"), \
+                    QMessageBox.critical(self.iface.mainWindow(),
+                                         QApplication.translate("StdmMapToolCreateFeature", "WKB Type Error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "Cannot add feature. Unknown WKB type"))
                     return
@@ -249,14 +249,14 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 avoidIntersectionsReturn = feature.geometry().avoidIntersections()
 
                 if avoidIntersectionsReturn == 3:
-                    QMessageBox.critical(self.iface.mainWindow(), \
-                                         QApplication.translate("StdmMapToolCreateFeature", "Error"), \
+                    QMessageBox.critical(self.iface.mainWindow(),
+                                         QApplication.translate("StdmMapToolCreateFeature", "Error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "An error was reported during intersection removal"))
 
                 polyWkb = feature.geometry().asWkb()
 
-                if polyWkb == None:
+                if polyWkb is None:
                     reason = ""
                     if avoidIntersectionsReturn != 2:
                         reason = QApplication.translate("StdmMapToolCreateFeature",
@@ -265,8 +265,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                         reason = QApplication.translate("StdmMapToolCreateFeature",
                                                         "The feature cannot be added because it's geometry collapsed due to intersection avoidance")
 
-                    QMessageBox.critical(self.iface.mainWindow(), \
-                                         QApplication.translate("StdmMapToolCreateFeature", "Error"), \
+                    QMessageBox.critical(self.iface.mainWindow(),
+                                         QApplication.translate("StdmMapToolCreateFeature", "Error"),
                                          reason)
 
                     self.stopCapturing()
@@ -289,15 +289,15 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         self.canvas.refresh()
 
     def addFeature(self, stdmlayer, feat):
-        '''
+        """
         Add feature to the vector layer for pending commit.
-        '''
+        """
         # Try set the attribute editor
         self._configureSpatialEditor(stdmlayer)
 
-        if self._editorWidget == None:
-            QMessageBox.critical(self.iface.mainWindow(), \
-                                 QApplication.translate("StdmMapToolCreateFeature", "Cannot open editor"), \
+        if self._editorWidget is None:
+            QMessageBox.critical(self.iface.mainWindow(),
+                                 QApplication.translate("StdmMapToolCreateFeature", "Cannot open editor"),
                                  QApplication.translate("StdmMapToolCreateFeature",
                                                         "Attribute editor for the selected layer could not be found."))
             return False
@@ -323,16 +323,16 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             return False
 
     def onFeaturesCommitted(self, layerid, features):
-        '''
+        """
         Update the related entities with the FK key from the primary spatial unit PK.
-        '''
+        """
         if layerid in self._pendingFKEntities:
             pendingLayerEntity = self._pendingFKEntities[layerid]
 
             # Get map layer using layerid
             refLayer = QgsProject.instance().mapLayer(layerid)
 
-            if refLayer != None:
+            if refLayer is not None:
                 fidx = refLayer.fields().indexFromName(pendingLayerEntity.featureAttributeName())
 
                 # Show progress dialog for updating the features.
@@ -350,9 +350,9 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 del progressDlg
 
     def canvasReleaseEvent(self, e):
-        '''
+        """
         Base class override.
-        '''
+        """
         stdmLayer = self.currentVectorLayer()
 
         # Try to set mode from layer type
@@ -367,8 +367,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         provider = stdmLayer.dataProvider()
 
         if not (provider.capabilities() & QgsVectorDataProvider.AddFeatures):
-            QMessageBox.information(self.iface.mainWindow(), \
-                                    QApplication.translate("StdmMapToolCreateFeature", "Cannot add to layer"), \
+            QMessageBox.information(self.iface.mainWindow(),
+                                    QApplication.translate("StdmMapToolCreateFeature", "Cannot add to layer"),
                                     QApplication.translate("StdmMapToolCreateFeature",
                                                            "The data provider for this layer does not support the addition of features."))
             return
@@ -380,8 +380,8 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         # Spatial unit point capture
         if self._mode == CAPTURE_POINT:
             if stdmLayer.geometryType() != QgsWkbTypes.PointGeometry:
-                QMessageBox.information(self.iface.mainWindow(), \
-                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                QMessageBox.information(self.iface.mainWindow(),
+                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                         QApplication.translate("StdmMapToolCreateFeature",
                                                                "Cannot apply the 'Create Point Feature' tool on this vector layer"))
                 return
@@ -405,9 +405,9 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
             try:
                 layerPoint = self.toLayerCoordinates(stdmLayer, mapPoint)
             except QgsCsException:
-                QMessageBox.information(self.iface.mainWindow(), \
+                QMessageBox.information(self.iface.mainWindow(),
                                         QApplication.translate("StdmMapToolCreateFeature",
-                                                               "Coordinate transform error"), \
+                                                               "Coordinate transform error"),
                                         QApplication.translate("StdmMapToolCreateFeature",
                                                                "Cannot transform the point to the layer's coordinate system"))
                 self._capturing = False
@@ -421,15 +421,15 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
         # Line and polygon capturing
         elif self._mode == CAPTURE_LINE or self._mode == CAPTURE_POLYGON:
             if self._mode == CAPTURE_LINE and stdmLayer.geometryType() != QgsWkbTypes.LineGeometry:
-                QMessageBox.information(self.iface.mainWindow(), \
-                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                QMessageBox.information(self.iface.mainWindow(),
+                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                         QApplication.translate("StdmMapToolCreateFeature",
                                                                "Cannot apply the 'Create Line Feature' tool on this vector layer"))
                 return
 
             if self._mode == CAPTURE_POLYGON and stdmLayer.geometryType() != QgsWkbTypes.PolygonGeometry:
-                QMessageBox.information(self.iface.mainWindow(), \
-                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"), \
+                QMessageBox.information(self.iface.mainWindow(),
+                                        QApplication.translate("StdmMapToolCreateFeature", "Wrong create tool"),
                                         QApplication.translate("StdmMapToolCreateFeature",
                                                                "Cannot apply the 'Create Polygon Feature' tool on this vector layer"))
                 return
@@ -438,9 +438,9 @@ class StdmMapToolCreateFeature(StdmMapToolCapture):
                 error = self.addVertex(e.pos())
 
                 if error == 2:
-                    QMessageBox.critical(self.iface.mainWindow(), \
+                    QMessageBox.critical(self.iface.mainWindow(),
                                          QApplication.translate("StdmMapToolCreateFeature",
-                                                                "Coordinate transform error"), \
+                                                                "Coordinate transform error"),
                                          QApplication.translate("StdmMapToolCreateFeature",
                                                                 "Cannot transform the point to the layer's coordinate system"))
                     return

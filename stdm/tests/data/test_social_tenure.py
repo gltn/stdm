@@ -7,7 +7,6 @@ from unittest import (
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-
 from stdm.tests.data.utils import (
     populate_configuration,
     SPATIAL_UNIT_ENTITY_2

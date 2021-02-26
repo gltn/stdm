@@ -49,14 +49,14 @@ from qgis.core import (
     QgsMapLayer
 )
 from qgis.gui import (
-    QgsStatusBar,
     QgsLayoutDesignerInterface
 )
-
 from sqlalchemy.exc import SQLAlchemyError
 
-from stdm import data
-from stdm.exceptions import DummyException
+from stdm.composer.composer_wrapper import ComposerWrapper
+from stdm.composer.custom_layout_items import StdmCustomLayoutItems
+from stdm.composer.document_template import DocumentTemplate
+from stdm.data import globals
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.column_updaters import varchar_updater
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
@@ -73,6 +73,7 @@ from stdm.data.pg_utils import (
     create_postgis,
     table_column_names
 )
+from stdm.exceptions import DummyException
 from stdm.mapping.utils import pg_layerNamesIDMapping
 from stdm.navigation.components import STDMAction
 from stdm.navigation.container_loader import (
@@ -99,6 +100,8 @@ from stdm.ui.about import AboutSTDMDialog
 from stdm.ui.admin_unit_selector import AdminUnitSelector
 from stdm.ui.change_log import ChangeLog
 from stdm.ui.change_pwd_dlg import changePwdDlg
+from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
+from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.ui.content_auth_dlg import contentAuthDlg
 from stdm.ui.doc_generator_dlg import (
     DocumentGeneratorDialogWrapper
@@ -108,7 +111,6 @@ from stdm.ui.entity_browser import (
 )
 from stdm.ui.export_data import ExportData
 from stdm.ui.feature_details import (
-    DetailsTreeView,
     DetailsDockWidget
 )
 from stdm.ui.geoodk_converter_dialog import GeoODKConverter
@@ -125,7 +127,7 @@ from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
 from stdm.ui.stdmdialog import DeclareMapping
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.wizard.wizard import ConfigWizard
-from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
+from stdm.utils.layer_utils import LayerUtils
 from stdm.utils.util import (
     getIndex,
     db_user_tables,
@@ -134,16 +136,7 @@ from stdm.utils.util import (
     documentTemplates,
     user_non_profile_views
 )
-from stdm.utils.layer_utils import LayerUtils
 from stdm.utils.util import simple_dialog
-from stdm.data import globals
-
-from stdm.composer.custom_layout_items import StdmCustomLayoutItems
-from stdm.composer.composer_data_source import ComposerDataSource
-from stdm.composer.composer_wrapper import ComposerWrapper
-from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
-from stdm.composer.document_template import DocumentTemplate
-
 
 LOGGER = logging.getLogger('stdm')
 
@@ -311,7 +304,7 @@ class STDMQGISLoader:
             home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
             branch_file = '{}/.stdm/.branch'.format(home)
             name = '(' + [line.strip() for line in open(branch_file)][0] + ')'
-        except:
+        except DummyException:
             name = ''
         return name
 
@@ -1153,7 +1146,7 @@ class STDMQGISLoader:
         # create a separator
         tbSeparator = QAction(self.iface.mainWindow())
         tbSeparator.setSeparator(True)
-        if not self.current_profile is None:
+        if self.current_profile is not None:
             if pg_table_exists(self.current_profile.social_tenure.name):
                 # add separator to menu
                 separator_group = TableContentGroup(username, 'separator', tbSeparator)
@@ -1397,12 +1390,11 @@ class STDMQGISLoader:
         """
         # Get entities containing geometry
         # columns based on the config info
-        if not self.current_profile is None:
+        if self.current_profile is not None:
             config_entities = self.current_profile.entities
             self.geom_entities = [
                 ge for ge in config_entities.values()
-                if ge.TYPE_INFO == 'ENTITY' and
-                   ge.has_geometry_column()
+                if ge.TYPE_INFO == 'ENTITY' and ge.has_geometry_column()
             ]
 
             self.sp_tables = spatial_tables()
@@ -1411,7 +1403,7 @@ class STDMQGISLoader:
             missing_tables = [
                 geom_entity.name
                 for geom_entity in self.geom_entities
-                if not geom_entity.name in self.sp_tables
+                if geom_entity.name not in self.sp_tables
             ]
 
             # Notify user of missing tables
@@ -1485,25 +1477,25 @@ class STDMQGISLoader:
                 self.check_spatial_tables(True)
 
     def onActionAuthorised(self, name):
-        '''
+        """
         This slot is raised when a toolbar action
         is authorised for access by the currently
         logged in user.
-        '''
+        """
         pass
 
     def manageAccounts(self):
-        '''
+        """
         Slot for showing the user and
         role accounts management window
-        '''
+        """
         frmUserAccounts = manageAccountsDlg(self)
         frmUserAccounts.exec_()
 
     def contentAuthorization(self):
-        '''
+        """
         Slot for showing the content authorization dialog
-        '''
+        """
         frmAuthContent = contentAuthDlg(self)
         frmAuthContent.exec_()
 
@@ -1592,7 +1584,7 @@ class STDMQGISLoader:
 
         self.current_profile = current_profile()
 
-        if not self.current_profile is None:
+        if self.current_profile is not None:
             LOGGER.debug(
                 'Successfully changed '
                 'the current profile to {}'.format(
@@ -1619,8 +1611,8 @@ class STDMQGISLoader:
             self.loadModules()
 
     def load_config_wizard(self):
-        '''
-        '''
+        """
+        """
         self.wizard = ConfigWizard(
             self.iface.mainWindow()
         )
@@ -1639,9 +1631,9 @@ class STDMQGISLoader:
                                  )
 
     def changePassword(self):
-        '''
+        """
         Slot for changing password
-        '''
+        """
         # Load change password dialog
         frmPwdDlg = changePwdDlg(self)
         frmPwdDlg.exec_()
@@ -1668,10 +1660,10 @@ class STDMQGISLoader:
             )
 
     def onManageAdminUnits(self):
-        '''
+        """
         Slot for showing administrative
         unit selector dialog.
-        '''
+        """
 
         if self.current_profile is None:
             self.default_profile()
@@ -1771,7 +1763,7 @@ class STDMQGISLoader:
                 if importData.geomClm.isEnabled():
                     canvas = self.iface.mapCanvas()
                     active_layer = self.iface.activeLayer()
-                    if not active_layer is None:
+                    if active_layer is not None:
                         canvas.zoomToFullExtent()
                         extent = active_layer.extent()
                         canvas.setExtent(extent)
@@ -1792,19 +1784,19 @@ class STDMQGISLoader:
         exportData.exec_()
 
     def onToggleSpatialUnitManger(self, toggled):
-        '''
+        """
         Slot raised on toggling to activate/deactivate
         editing, and load corresponding
         spatial tools.
-        '''
+        """
         self.spatialLayerManager.setChecked(False)
 
     def onViewSTR(self):
-        '''
+        """
         Slot for showing widget that enables users to browse
         existing STRs.
-        '''
-        if self.current_profile == None:
+        """
+        if self.current_profile is None:
             self.default_profile()
             return
         db_status = self.entity_table_checker(
@@ -1820,9 +1812,9 @@ class STDMQGISLoader:
                 self.viewSTRWin.setFocus()
 
     def isSTDMLayer(self, layer):
-        '''
+        """
         Return whether the layer is an STDM layer.
-        '''
+        """
         if layer.id() in pg_layerNamesIDMapping().reverse:
             return True
         return False
@@ -2004,7 +1996,7 @@ class STDMQGISLoader:
                     self.profile_status_label.setText('')
 
             # Reset View STR Window
-            if not self.viewSTRWin is None:
+            if self.viewSTRWin is not None:
                 del self.viewSTRWin
                 self.viewSTRWin = None
 

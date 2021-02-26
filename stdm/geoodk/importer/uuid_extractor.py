@@ -18,8 +18,8 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
-from typing import List
 import os
+from typing import List
 
 from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtXml import (
@@ -29,7 +29,11 @@ from qgis.PyQt.QtXml import (
 )
 
 UUID = "uuid"
+
 from collections import OrderedDict
+
+from stdm.exceptions import DummyException
+
 
 class DocumentEntityData:
 
@@ -90,7 +94,7 @@ class InstanceUUIDExtractor():
             self.doc.clear()
             self.file.close()
             self.rename_file()
-        except:
+        except DummyException:
             pass
 
     def read_uuid_element(self):

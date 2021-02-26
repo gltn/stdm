@@ -26,9 +26,9 @@ from stdm.security.user import User
 
 
 class Membership:
-    '''
+    """
     Provides generic user management functionality
-    '''
+    """
 
     def __init__(self):
         self._engine = STDMDb.instance().engine
@@ -53,7 +53,7 @@ class Membership:
         # Validate if the user exists only if its a new user
         # if not isupdate:
         similarUser = self.getUser(user.UserName)
-        if similarUser != None:
+        if similarUser is not None:
             self._raiseUserExistsException(user.UserName)
             return
 
@@ -61,7 +61,7 @@ class Membership:
             user.UserName, user.Password)
 
         s2 = ""
-        if user.Validity != None:
+        if user.Validity is not None:
             s2 = "VALID UNTIL '{}' ".format(str(user.Validity))
 
         s3 = "NOSUPERUSER INHERIT NOCREATEDB CREATEROLE NOREPLICATION;"
@@ -118,10 +118,10 @@ class Membership:
         conn.close()
 
     def getUser(self, username):
-        '''
+        """
         Gets the user object based on the username.
         Returns 'None' if not found
-        '''
+        """
         user = None
 
         t = text("select valuntil from pg_user where usename = :uname")
@@ -141,21 +141,21 @@ class Membership:
         return user
 
     def deleteUser(self, username):
-        '''
+        """
         Drops the specified user from the database cluster
-        '''
+        """
         # Check to see if the user exists
         user = self.getUser(username)
 
-        if user != None:
+        if user is not None:
             t = text("DROP ROLE %s;" % (username,))
             conn = self._engine.connect()
             conn.execute(t)
 
     def getAllUsers(self):
-        '''
+        """
         Returns the names of all user accounts in the cluster of the PostgreSQL server
-        '''
+        """
         t = text("select usename from pg_user")
         conn = self._engine.connect()
         result = conn.execute(t)
@@ -170,9 +170,9 @@ class Membership:
         return users
 
     def setPassword(self, username, password):
-        '''
+        """
         Define a new password for the specified username
-        '''
+        """
         if len(password) >= self._minPassLength:
             # Get the SQLAlchemy connection object
             t = text("ALTER USER %s WITH PASSWORD :userpass" % (username,))
@@ -183,27 +183,27 @@ class Membership:
             self._raisePasswordException()
 
     def _raisePasswordException(self):
-        '''
+        """
         Raised when a password condition is not met
-        '''
+        """
         msg = str(QApplication.translate("PasswordError",
                                          "Password length must be equal to or greater than %s characters" % (
                                              str(self._minPassLength, ))))
         raise SecurityException(msg)
 
     def _raiseUserNameException(self):
-        '''
+        """
         Raised when a username condition is not met
-        '''
+        """
         msg = str(QApplication.translate("UsernameError",
                                          "Username length must be equal to or greater than %s characters" % (
                                              str(self._minUserLength, ))))
         raise SecurityException(msg)
 
     def _raiseUserExistsException(self, username):
-        '''
+        """
         Raised when a user with the given username exists
-        '''
+        """
         msg = str(QApplication.translate("UserAccountError",
                                          "'%s' account already exists.Please specify another username." % (username,)))
         raise SecurityException(msg)

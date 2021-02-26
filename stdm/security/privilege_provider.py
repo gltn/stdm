@@ -4,6 +4,7 @@ from stdm.data.pg_utils import (
     pg_table_exists,
     _execute
 )
+from stdm.exceptions import DummyException
 
 
 class PrivilegeProvider:
@@ -102,13 +103,13 @@ class SinglePrivilegeProvider(PrivilegeProvider):
     def grant_privilege_base_table(self, role):
         base_tables = ['content_base', 'content_roles', 'role']
         for bt in base_tables:
-            if not role in self.base_table_roles[bt]:
+            if role not in self.base_table_roles[bt]:
                 self.grant_or_revoke('GRANT', 'SELECT', bt, role)
 
     def grant_revoke_privilege(self, operation):
         try:
             privilege = PrivilegeProvider.Privileges[self.content_name[:self.content_name.index(' ')]]
-        except:
+        except DummyException:
             privilege = 'INSERT'
 
         if operation == 'GRANT':
@@ -165,7 +166,8 @@ class MultiPrivilegeProvider(PrivilegeProvider):
         for row in records:
             content = row['content']
             role = row['role']
-            if role == 'postgres': continue
+            if role == 'postgres':
+                continue
             if role not in self.roles:
                 self.roles[role] = []
             self.roles[role].append(content[:content.index(' ')])
@@ -176,7 +178,8 @@ class MultiPrivilegeProvider(PrivilegeProvider):
                 privilege = PrivilegeProvider.Privileges[p]
                 temp_content = ''
                 for related_content in self.related_contents.values():
-                    if temp_content == related_content: continue
+                    if temp_content == related_content:
+                        continue
                     if pg_table_exists(related_content):
                         temp_content = related_content
                         self.grant_or_revoke(operation, privilege, related_content, role)

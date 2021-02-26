@@ -122,7 +122,7 @@ class EntityFormatter:
         value_list = []
         for val in vals.values():
             r_type = self.model_type_from_columntype(val)
-            if r_type == None:
+            if r_type is None:
                 continue
             value_list.append(r_type)
         return value_list
