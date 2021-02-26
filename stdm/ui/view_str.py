@@ -71,7 +71,7 @@ from stdm.data.qtmodels import (
 from stdm.exceptions import DummyException
 from stdm.security.authorization import Authorizer
 from stdm.settings import current_profile
-from stdm.ui.feature_details import DetailsTreeView, SelectedItem
+from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
