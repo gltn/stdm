@@ -81,7 +81,8 @@ class EntityEditorDialog(MapperMixin):
             collect_model=False,
             parent_entity=None,
             exclude_columns=None,
-            plugin=None
+            plugin=None,
+            allow_str_creation=True
     ):
         """
         Class constructor.
@@ -188,7 +189,7 @@ class EntityEditorDialog(MapperMixin):
         curr_profile = current_profile()
         self.participates_in_str, self.is_party_unit = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
-        self._init_gui(show_str_tab=self.participates_in_str, is_party_unit=self.is_party_unit)
+        self._init_gui(show_str_tab=allow_str_creation and self.participates_in_str, is_party_unit=self.is_party_unit)
         self.adjustSize()
 
         self._get_entity_editor_widgets()

@@ -54,7 +54,7 @@ class AdvancedSearch(EntityEditorDialog):
                 if mapper.attributeName() == k:
                     mapper.valueHandler().setValue(v)
 
-    def _init_gui(self, show_str_tab: bool):
+    def _init_gui(self, show_str_tab: bool, is_party_unit: bool=False):
         # Setup base elements
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName('glMain')

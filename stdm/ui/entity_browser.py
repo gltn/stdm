@@ -1184,7 +1184,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                 self._entity.name,
                 self.sp_unit_manager.active_sp_col,
                 reload=False,
-                entity_browser=self
+                entity_browser=self,
+                allow_str_creation=False
             )
 
             result = gps_tool.exec_()
@@ -1192,7 +1193,8 @@ class EntityBrowserWithEditor(EntityBrowser):
             self.addEntityDlg = gps_tool.entity_editor
         else:
             self.addEntityDlg = self._editor_dlg(
-                self._entity, parent=self, parent_entity=self.parent_entity, plugin=self.plugin
+                self._entity, parent=self, parent_entity=self.parent_entity, plugin=self.plugin,
+                allow_str_creation=False
             )
 
             self.addEntityDlg.addedModel.connect(self.on_save_and_new)
@@ -1377,7 +1379,8 @@ class EntityBrowserWithEditor(EntityBrowser):
                 model=model_obj,
                 reload=False,
                 row_number=rownumber,
-                entity_browser=self
+                entity_browser=self,
+                allow_str_creation=True
             )
 
             result = gps_tool.exec_()
