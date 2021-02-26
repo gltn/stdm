@@ -68,7 +68,7 @@ jobs:
       - name: Install packages
         run: |
           pip install -r REQUIREMENTS_TESTING.txt
-          pip install pylint pycodestyle
+          pip install pylint pycodestyle sphinx
 
       - name: Pylint
         run: make pylint
