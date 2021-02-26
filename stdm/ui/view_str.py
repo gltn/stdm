@@ -534,9 +534,6 @@ class ViewSTRWidget(WIDGET, BASE):
             entity = self.curr_profile.social_tenure
             str_model = self.details_tree_view.str_models[item.data()]
 
-            self.details_tree_view.selected_model = str_model
-            self.details_tree_view.selected_item = SelectedItem(item)
-
             documents = self.details_tree_view._supporting_doc_models(
                 entity.name, str_model
             )
@@ -590,7 +587,7 @@ class ViewSTRWidget(WIDGET, BASE):
                 return party_id_obj
 
     def load_edit_str_editor(self):
-        self.details_tree_view.edit_selected_node(self.details_tree_view)
+        self.details_tree_view.edit_selected_node()
         self.btnSearch.click()
         self.disable_buttons()
 

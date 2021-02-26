@@ -711,10 +711,6 @@ class DetailsTreeView(DetailsDBHandler):
             self._on_view_selection_changed
         )
 
-        self.selected_model = None
-        self.selected_index = None
-        self.selected_item = None
-
         # show tree message if dock is open and button clicked
         if self.plugin is not None:
             not_feature_msg = QApplication.translate(
@@ -855,25 +851,6 @@ class DetailsTreeView(DetailsDBHandler):
         # display treeview in a dock widget
         elif self.layer is not None:
             self.prepare_for_selection(follow_layer_selection)
-
-        if self.selected_item is None:
-            sel_model = self.view.selectionModel()
-            sel_model.selectionChanged.connect(self.on_view_select)
-
-    def on_view_select(self):
-        sel_indexes = self.view.selectedIndexes()
-        if len(sel_indexes) == 0:
-            return
-        index = sel_indexes[0]
-        item = self.model.itemFromIndex(index)
-        # STR Node
-        if item.text() == self.str_text:
-            entity = self.social_tenure
-            str_model = self.str_models[item.data()]
-            self.selected_model = str_model
-            self.selected_item = SelectedItem(item)
-        else:
-            self.selected_item = None
 
     def prepare_for_selection(self, follow_layer_selection: bool = True):
         """
@@ -1674,18 +1651,18 @@ class DetailsTreeView(DetailsDBHandler):
 
         return result, item
 
-    def edit_selected_node(self, self_ref=None):
+    def edit_selected_node(self):
         """
         Edits the record based on the selected item in the tree view.
         """
-        if not self.selected_item or not self.view.selectedIndexes():
+        if not self.view.selectedIndexes():
             return
 
         self.edit_btn_connected = True
         # data, item = self.node_data('edit', self._selected_features)
         index = self.view.selectedIndexes()[0]
         item = self.model.itemFromIndex(index)
-        data = self.selected_item.standard_item.data()
+        data = item.data()
 
         feature_edit = True
 
@@ -1709,7 +1686,7 @@ class DetailsTreeView(DetailsDBHandler):
         if item.text() == self.str_text:
             str_model_doc = []
 
-            str_model_rec = self.selected_model.__dict__
+            str_model_rec = self.str_models[data].__dict__
 
             for i in range(item.parent().rowCount()):
                 child_ = item.parent().child(i)
