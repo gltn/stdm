@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import re
+from typing import Optional
 from collections import OrderedDict
 
 from qgis.PyQt import sip
@@ -105,8 +106,21 @@ class LayerSelectionHandler(QWidget):
         """
         self.layer = None
         self.plugin = plugin
-        self.sel_highlight = None
+        self.sel_highlight: Optional[QgsHighlight] = None
         self.current_profile = current_profile()
+
+        QgsProject.instance().layerWillBeRemoved[QgsMapLayer].connect(self._layer_will_be_removed)
+
+    def __del__(self):
+        # Gracefully cleanup layer highlight -- we don't have ownership of it
+        self.clear_sel_highlight()
+
+    def _layer_will_be_removed(self, layer: QgsMapLayer):
+        """
+        Triggered when a layer will be removed
+        """
+        if self.sel_highlight and layer == self.sel_highlight.layer():
+            self.clear_sel_highlight()
 
     def selected_features(self):
         """
@@ -1578,11 +1592,6 @@ class DetailsTreeView(DetailsDBHandler):
         if self.layer.selectedFeatureCount() < 2:
             return
 
-        self.selected_root = selected_item
-        # Split the text to get the key and value.
-        selected_item_text = selected_item.text()
-
-        selected_value = selected_item.data()
         # If the first word is feature, expand & highlight.
         try:
             name = format_name(self.entity.short_name)
@@ -1590,25 +1599,35 @@ class DetailsTreeView(DetailsDBHandler):
             # escape attribute error on child items such as party
             return
 
-        if selected_item_text == name:
-            self.view.expand(index)  # expand the item
-            # Clear any existing highlight
-            self.clear_sel_highlight()
-            # Insert highlight
+        self.selected_root = selected_item
 
-            # Create expression to target the selected feature
-            # Get feature iteration based on the expression
-            feature = next(self.layer.getFeatures(
-                QgsFeatureRequest().setFilterExpression(QgsExpression.createFieldEqualityExpression('id', selected_value.id()))
-            ))
+        # check parent nodes until we find the parent corresponding to the entity
+        while selected_item is not None and selected_item.text() != name:
+            selected_item = selected_item.parent()
 
-            # Fetch geometry
-            geom = feature.geometry()
-            self.sel_highlight = QgsHighlight(iface.mapCanvas(), geom, self.layer)
-            self.sel_highlight.setFillColor(selection_color())
-            self.sel_highlight.setWidth(4)
-            self.sel_highlight.setColor(QColor(212, 95, 0, 255))
-            self.sel_highlight.show()
+        if selected_item is None:
+            return
+
+        selected_value = selected_item.data()
+
+        self.view.expand(index)  # expand the item
+        # Clear any existing highlight
+        self.clear_sel_highlight()
+        # Insert highlight
+
+        # Create expression to target the selected feature
+        # Get feature iteration based on the expression
+        feature = next(self.layer.getFeatures(
+            QgsFeatureRequest().setFilterExpression(QgsExpression.createFieldEqualityExpression('id', selected_value.id()))
+        ))
+
+        # Fetch geometry
+        geom = feature.geometry()
+        self.sel_highlight = QgsHighlight(iface.mapCanvas(), geom, self.layer)
+        self.sel_highlight.setFillColor(selection_color())
+        self.sel_highlight.setWidth(4)
+        self.sel_highlight.setColor(QColor(212, 95, 0, 255))
+        self.sel_highlight.show()
 
     def node_signals(self, entity):
         """
