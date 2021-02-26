@@ -30,6 +30,7 @@ from stdm.data.database import (
     STDMDb
 )
 from stdm.data.database import Singleton
+from stdm.exceptions import DummyException
 from stdm.ui.python_object import class_from_table
 
 
@@ -54,7 +55,7 @@ class DeclareMapping(object):
 
             try:
                 self.mapper_for_table(table)
-            except:
+            except DummyException:
                 pass
         Base.metadata.reflect(STDMDb.instance().engine)
 
@@ -70,7 +71,7 @@ class DeclareMapping(object):
             mapper(class_object, mapper_table)
             self._mapping[table] = class_object
             self.table_property(mapper_table)
-        except:
+        except DummyException:
             return None
 
     def pythonize_tablename(self, table):

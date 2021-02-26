@@ -56,6 +56,7 @@ from stdm.data.configuration.columns import (
     AdministrativeSpatialUnitColumn,
     MultipleSelectColumn
 )
+from stdm.exceptions import DummyException
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.social_tenure import *
@@ -985,7 +986,7 @@ class ConfigWizard(WIDGET, BASE):
                 reg_doc_path = key[reg_keys[0]]
             else:
                 reg_doc_path = None
-        except:
+        except DummyException:
             reg_doc_path = None
 
         if reg_doc_path is not None:
@@ -1560,7 +1561,7 @@ class ConfigWizard(WIDGET, BASE):
 
             if len(dir_name.strip()) > 0:
                 self.edtDocPath.setText(dir_name)
-        except:
+        except DummyException:
             LOGGER.debug("Error setting support document path!")
             raise
 
@@ -1576,7 +1577,7 @@ class ConfigWizard(WIDGET, BASE):
 
             if len(dir_name.strip()) > 0:
                 self.edtOutputPath.setText(dir_name)
-        except:
+        except DummyException:
             LOGGER.debug("Error setting support document path!")
 
     def set_template_path(self):
@@ -1591,7 +1592,7 @@ class ConfigWizard(WIDGET, BASE):
 
             if len(dir_name.strip()) > 0:
                 self.edtTemplatePath.setText(dir_name)
-        except:
+        except DummyException:
             LOGGER.debug("Error setting support document path!")
 
     def open_dir_chooser(self, message, dir=None):
@@ -2185,7 +2186,7 @@ class ConfigWizard(WIDGET, BASE):
             self.spunit_item_model.clear()
             self.spunit_item_model = STRColumnEntitiesModel()
             self.addColumns(self.spunit_item_model, columns)
-        except:
+        except DummyException:
             pass
 
     def new_column(self):
@@ -2658,7 +2659,7 @@ class ConfigWizard(WIDGET, BASE):
         hashed_vt = lookup.value_hash(vt)
         try:
             code_value = lookup.values[hashed_vt]
-        except:
+        except DummyException:
             code_value = self.find_updated_value(lookup, vt)
 
         ####

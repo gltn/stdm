@@ -9,10 +9,11 @@ Test Suite.
 
 """
 
-import sys
 import os
-import unittest
+import sys
 import tempfile
+import unittest
+
 from osgeo import gdal
 import qgis  # pylint: disable=unused-import
 
@@ -87,4 +88,3 @@ def test_environment():
 
 if __name__ == '__main__':
     test_package()
-
