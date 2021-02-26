@@ -2,6 +2,7 @@ from unittest import (
     makeSuite,
     TestCase
 )
+import unittest
 from datetime import datetime
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -14,6 +15,8 @@ from stdm.tests.data.utils import (
 
 config_path = 'C:/Users/John/.stdm/configuration.stc'
 
+
+@unittest.skip('written for local use only')
 class TestEntityModelFunc(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()
