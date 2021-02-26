@@ -49,6 +49,7 @@ from sqlalchemy import (
     func
 )
 
+from stdm.data.configuration.entity import Entity
 from stdm.data.pg_utils import pg_table_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
@@ -1232,12 +1233,12 @@ class STREditor(WIDGET, BASE):
         else:
             self.top_description.hide()
 
-    def init_party_component(self, party=None):
+    def init_party_component(self, party: Entity = None):
         """
         Initializes the party component.
         :param party: Party entity object.
         If party is none, the default party loads.
-        :type party: Object
+        :type party: Entity
         """
         if party is not None:
             self.party_init.emit()

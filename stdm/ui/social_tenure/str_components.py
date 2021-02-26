@@ -54,6 +54,7 @@ from qgis.utils import iface
 
 from stdm.exceptions import DummyException
 from stdm.data.configuration import entity_model
+from stdm.data.configuration.entity import Entity
 from stdm.settings import current_profile
 from stdm.settings.registryconfig import (
     last_document_path,
@@ -145,11 +146,11 @@ class ComponentUtility(QObject):
 
         return fk_mapper
 
-    def _load_entity_config(self, entity):
+    def _load_entity_config(self, entity: Entity):
         """
         Creates an EntityConfig object from entity.
         :param entity: The entity object
-        :type entity: Object
+        :type entity: Entity
         """
         table_display_name = format_name(entity.short_name)
         table_name = entity.name
@@ -306,11 +307,11 @@ class SpatialUnitForeignKeyMapper(ForeignKeyMapper):
 
 
 class Party(ComponentUtility):
-    def __init__(self, selected_party, box, party_layout, notification_bar):
+    def __init__(self, selected_party: Entity, box, party_layout, notification_bar):
         """
         Handles the loading of party ForeignKeyMapper.
         :param selected_party: The currently selected party entity.
-        :type selected_party: Object
+        :type selected_party: Entity
         :param box: The container widget of the component.
         :type box: QWidget
         :param party_layout: The layout containing the widget.
