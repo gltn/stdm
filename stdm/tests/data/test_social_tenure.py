@@ -1,7 +1,7 @@
 """
 Test for asserting spatial unit mapping to the corresponding tenure lookup colum
 """
-
+import unittest
 from unittest import (
     TestCase
 )
@@ -14,6 +14,7 @@ from stdm.tests.data.utils import (
 )
 
 
+@unittest.skip('written for local use only')
 class TestConfigurationSchemaUpdater(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()

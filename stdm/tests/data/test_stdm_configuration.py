@@ -2,6 +2,7 @@ from unittest import (
     makeSuite,
     TestCase
 )
+import unittest
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 
@@ -10,6 +11,8 @@ from stdm.tests.data.utils import (
     create_basic_profile
 )
 
+
+@unittest.skip('written for local use only')
 class TestStdmConfiguration(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()

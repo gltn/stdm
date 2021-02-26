@@ -1,3 +1,4 @@
+import unittest
 from unittest import (
     makeSuite,
     TestCase
@@ -12,6 +13,8 @@ from stdm.tests.data.utils import (
 
 config_path = 'D:/Temp/Templates/test_writer.stc'
 
+
+@unittest.skip('written for local use only')
 class TestConfigurationSerializer(TestCase):
     def setUp(self):
         self.config = StdmConfiguration.instance()
