@@ -40,6 +40,7 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.gui import QgsGui
 
+from stdm.ui.gui_utils import GuiUtils
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
@@ -634,13 +635,23 @@ class EntityEditorDialog(MapperMixin):
 
         layout = QVBoxLayout()
         hl = QHBoxLayout()
+
         edit_btn = QToolButton(self)
         edit_btn.setText(self.tr('Edit'))
+        edit_btn.setIcon(GuiUtils.get_icon('edit.png'))
         edit_btn.setDisabled(True)
         hl.addWidget(edit_btn)
+
+        view_document_btn = QToolButton(self)
+        view_document_btn.setText(self.tr('View Supporting Documents'))
+        view_document_btn.setIcon(GuiUtils.get_icon('document.png'))
+        view_document_btn.setDisabled(True)
+        hl.addWidget(view_document_btn)
+
+        hl.addStretch()
         layout.addLayout(hl)
 
-        details_tree_view = DetailsTreeView(parent=self, plugin=self.plugin, edit_button=edit_btn)
+        details_tree_view = DetailsTreeView(parent=self, plugin=self.plugin, edit_button=edit_btn, view_document_button=view_document_btn)
         details_tree_view.activate_feature_details(True, follow_layer_selection=False)
         details_tree_view.model.clear()
 

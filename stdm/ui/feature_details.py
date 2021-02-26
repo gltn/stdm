@@ -650,7 +650,6 @@ class DetailsTreeView(DetailsDBHandler):
         self.delete_button = delete_button
         self.view_document_button = view_document_button
 
-        self.edit_btn_connected = False
         self.layer_table = None
         self.entity = None
         self.feature_models = {}
@@ -1653,7 +1652,6 @@ class DetailsTreeView(DetailsDBHandler):
         if not self.view.selectedIndexes():
             return
 
-        self.edit_btn_connected = True
         # data, item = self.node_data('edit', self._selected_features)
         index = self.view.selectedIndexes()[0]
         item = self.model.itemFromIndex(index)
