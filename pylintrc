@@ -21,8 +21,6 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
-ignore=stdm.third_party
-
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can
