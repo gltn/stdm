@@ -133,6 +133,7 @@ class EntityEditorDialog(MapperMixin):
         self.child_models = OrderedDict()
         self.entity_scroll_area = None
         self.entity_editor_widgets = OrderedDict()
+        self.details_tree_view = None
         # Set notification layout bar
         self.vlNotification = QVBoxLayout()
         self.vlNotification.setObjectName('vlNotification')
@@ -185,9 +186,9 @@ class EntityEditorDialog(MapperMixin):
 
         # determine whether the entity is part of the STR relationship
         curr_profile = current_profile()
-        participates_in_str, is_party_unit = curr_profile.social_tenure.entity_participates_in_str(self.entity)
+        self.participates_in_str, self.is_party_unit = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
-        self._init_gui(show_str_tab=participates_in_str, is_party_unit=is_party_unit)
+        self._init_gui(show_str_tab=self.participates_in_str, is_party_unit=self.is_party_unit)
         self.adjustSize()
 
         self._get_entity_editor_widgets()
@@ -636,6 +637,12 @@ class EntityEditorDialog(MapperMixin):
         layout = QVBoxLayout()
         hl = QHBoxLayout()
 
+        add_btn = QToolButton(self)
+        add_btn.setText(self.tr('Create STR'))
+        add_btn.setIcon(GuiUtils.get_icon('add.png'))
+        hl.addWidget(add_btn)
+        add_btn.clicked.connect(self._create_str)
+
         edit_btn = QToolButton(self)
         edit_btn.setText(self.tr('Edit'))
         edit_btn.setIcon(GuiUtils.get_icon('edit.png'))
@@ -651,16 +658,19 @@ class EntityEditorDialog(MapperMixin):
         hl.addStretch()
         layout.addLayout(hl)
 
-        details_tree_view = DetailsTreeView(parent=self, plugin=self.plugin, edit_button=edit_btn, view_document_button=view_document_btn)
-        details_tree_view.activate_feature_details(True, follow_layer_selection=False)
-        details_tree_view.model.clear()
+        self.details_tree_view = DetailsTreeView(parent=self,
+                                            plugin=self.plugin,
+                                            edit_button=edit_btn,
+                                            view_document_button=view_document_btn)
+        self.details_tree_view.activate_feature_details(True, follow_layer_selection=False)
+        self.details_tree_view.model.clear()
 
         if is_party_unit:
-            details_tree_view.search_party(self.entity, [self.ent_model.id])
+            self.details_tree_view.search_party(self.entity, [self.ent_model.id])
         else:
-            details_tree_view.search_spatial_unit(self.entity, [self.ent_model.id])
+            self.details_tree_view.search_spatial_unit(self.entity, [self.ent_model.id])
 
-        layout.addWidget(details_tree_view)
+        layout.addWidget(self.details_tree_view)
         w = QWidget()
         w.setLayout(layout)
 
@@ -669,16 +679,22 @@ class EntityEditorDialog(MapperMixin):
             self.tr('STR')
         )
 
-        # from stdm.ui.social_tenure.str_editor import STREditor
-        # add_str = STREditor()
+    def _create_str(self):
+        """
+        Opens the dialog to create a new STR
+        """
+        from stdm.ui.social_tenure.str_editor import STREditor
+        add_str_window = STREditor()
 
-        # if is_party_unit:
-        #     add_str.set_party_data(self.entity_model_obj)
+        #if is_party_unit:
+        #    add_str.set_party_data(self.entity_model_obj)
 
-        # self.entity_tab_widget.addTab(
-        #     add_str,
-        #    self.tr('Create STR')
-        # )
+        if add_str_window.exec_():
+            # STR created - refresh STR view
+            if self.is_party_unit:
+                self.details_tree_view.search_party(self.entity, [self.ent_model.id])
+            else:
+                self.details_tree_view.search_spatial_unit(self.entity, [self.ent_model.id])
 
     def _add_fk_browser(self, child_entity, column):
         # Create and add foreign key
