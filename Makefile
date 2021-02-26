@@ -127,7 +127,7 @@ pylint:
 	@echo "-----------------"
 	@echo "Pylint violations"
 	@echo "-----------------"
-	@pylint --reports=n --rcfile=pylintrc $(PLUGIN_NAME)
+	@pylint --reports=n --rcfile=pylintrc $(PLUGIN_NAME)/composer $(PLUGIN_NAME)/data $(PLUGIN_NAME)/geoodk $(PLUGIN_NAME)/mapping $(PLUGIN_NAME)/navigation $(PLUGIN_NAME)/network $(PLUGIN_NAME)/security $(PLUGIN_NAME)/settings $(PLUGIN_NAME)/templates $(PLUGIN_NAME)/ui $(PLUGIN_NAME)/utils
 	@echo
 	@echo "----------------------"
 	@echo "If you get a 'no module named qgis.core' error, try sourcing"
