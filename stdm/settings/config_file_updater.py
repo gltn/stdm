@@ -43,7 +43,6 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtXml import QDomDocument
 
-from stdm.exceptions import DummyException
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.config_updater import ConfigurationSchemaUpdater
 from stdm.data.configuration.exception import ConfigurationException
@@ -56,6 +55,7 @@ from stdm.data.pg_utils import (
     export_data_from_columns,
     fix_sequence
 )
+from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import (
     RegistryConfig,
     CONFIG_UPDATED,
@@ -66,9 +66,8 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE
 )
-from stdm.ui.notification import NotificationBar
 from stdm.ui.gui_utils import GuiUtils
-
+from stdm.ui.notification import NotificationBar
 
 COLUMN_TYPE_DICT = {'character varying': 'VARCHAR', 'date': 'DATE',
                     'serial': 'SERIAL', 'integer': 'INT', 'lookup':
@@ -964,8 +963,8 @@ class ConfigurationFileUpdater(WIDGET, BASE):
                                 "name", "fk_" + pref + "_check_" +
                                         relation[0] +
                                         "_document_type_id_" + pref + "_" +
-                                        relation[0]
-                                        + "_supporting_document_document_type")
+                                        relation[0] +
+                                        "_supporting_document_document_type")
                             entity_relation.setAttribute(
                                 'displayColumns', relation[3])
                             entity_relation.setAttribute(
@@ -1723,9 +1722,7 @@ class ConfigurationFileUpdater(WIDGET, BASE):
                                     if last is not None:
                                         new_last_v.append(last)
 
-                                l = tuple(list(first_v) + new_last_v)
-
-                                new_values.append(l)
+                                new_values.append(tuple(list(first_v) + new_last_v))
                             new_values = str(new_values).strip(
                                 "[]")
                         else:

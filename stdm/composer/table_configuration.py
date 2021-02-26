@@ -125,7 +125,7 @@ class TableItemValueHandler(ItemConfigValueHandler):
             display_attrs_cols.append(col.clone())
 
         vl = self._config_item.vector_layer()
-        if not vl is None:
+        if vl is not None:
             table_item.setVectorLayer(vl)
 
             # Restore column settings

@@ -64,10 +64,10 @@ DOUBLE_FILE_EXTENSIONS = ['tar.gz', 'tar.bz2']
 
 
 def getIndex(listObj, item):
-    '''
+    """
     Get the index of the list item without raising an
     error if the item is not found
-    '''
+    """
     index = -1
     try:
         index = listObj.index(item)
@@ -77,9 +77,9 @@ def getIndex(listObj, item):
 
 
 def loadComboSelections(comboref, obj):
-    '''
+    """
     Convenience method for loading lookup values in combo boxes
-    '''
+    """
     modelinstance = obj()
     modelItems = modelinstance.queryObject().all()
     comboref.addItem("")
@@ -88,24 +88,24 @@ def loadComboSelections(comboref, obj):
 
 
 def readComboSelections(obj):
-    '''
+    """
     Convenience method for loading lookup values in combo boxes
-    '''
+    """
     modelinstance = obj()
     modelItems = modelinstance.queryObject().all()
     return modelItems
 
 
 def setModelAttrFromCombo(model, attributename, combo, ignorefirstitem=True):
-    '''
+    """
     Convenience method for checking whether an item in the combo box
     has been selected an get the corresponding integer stored in the
     item data.
-    '''
+    """
     if combo.count() == 0:
         return
 
-    if ignorefirstitem == True:
+    if ignorefirstitem:
         if combo.currentIndex() == 0:
             return
 
@@ -114,12 +114,12 @@ def setModelAttrFromCombo(model, attributename, combo, ignorefirstitem=True):
 
 
 def createQuerySet(columnList, resultSet, imageFields):
-    '''
+    """
     Create a list consisting of dictionary items
     derived from the database result set.
     For image fields, the fxn will write the binary object to disk
     and insert the full path of the image into the dictionary.
-    '''
+    """
     qSet = []
     # Create root directory name to be used for storing the current session's image files
     rtDir = ''
@@ -142,11 +142,11 @@ def createQuerySet(columnList, resultSet, imageFields):
 
 
 def writeImage(rootDir, imageStr):
-    '''
+    """
     Write an image object to disk under the root directory in the
     system's temp directory.
     The method returns the absolute path to the image.
-    '''
+    """
     imgTemp = PLUGIN_DIR + '/images/icons/img_not_available.jpg'
 
     try:
@@ -161,7 +161,7 @@ def writeImage(rootDir, imageStr):
                 imgTemp = imgPath
         os.close(os_hnd)
 
-    except:
+    except DummyException:
         pass
 
     return imgTemp
@@ -185,9 +185,9 @@ def compareLists(validList, userList):
 
 
 def replaceNoneText(dbvalue, replacewith=""):
-    '''
+    """
     Replaces 'None' string with more friendly text.
-    '''
+    """
     if str(dbvalue) == "None":
         return replacewith
     else:
@@ -252,9 +252,9 @@ def gen_random_string(numbytes=10):
 
 
 def randomCodeGenerator(size=8):
-    '''
+    """
     Automatically generates a string containing a random sequence of numbers and uppercase ASCII letters.
-    '''
+    """
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for _ in range(size))
 
@@ -1079,7 +1079,7 @@ def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
 
     simple_dialog.setModal(True)
     result = simple_dialog.exec_()
-    if not checkbox_text is None:
+    if checkbox_text is not None:
         return result, confirm_checkbox.isChecked()
     else:
         return result, False
@@ -1223,7 +1223,7 @@ def string_to_boolean(string_bool, default):
     if not isinstance(string_bool, bool):
         if string_bool == '':
             result = default
-        elif string_bool == None:
+        elif string_bool is None:
             result = default
         elif string_bool.lower() == 'true':
             result = True

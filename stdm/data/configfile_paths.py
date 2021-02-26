@@ -30,8 +30,8 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.exceptions import DummyException
 from stdm.data.reports.sys_fonts import SysFonts
+from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import PLUGIN_DIR
 
@@ -166,7 +166,7 @@ class FilePaths:
                     try:
                         os.remove(user_file)
                         shutil.copy(base_file, self.userPath)
-                    except:
+                    except DummyException:
                         pass
             else:
                 QMessageBox.information(None,
@@ -248,7 +248,7 @@ class FilePaths:
             if os.path.isfile(cur_file):
                 os.remove(cur_file)
             shutil.copy(base_file, self.userPath)
-        except:
+        except DummyException:
             pass
 
     def get_configuration_file(self):

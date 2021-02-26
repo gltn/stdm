@@ -296,7 +296,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         instance_id = self.create_node(self.profile_entity)
         instance_id.setAttribute("id", self.profile_entity.replace('_', ' ').title())
         """ add entity data into the instance node as form fields,
-        language translation aspect of the instance child 
+        language translation aspect of the instance child
         has not been considered
         """
         if isinstance(self.entities, list):

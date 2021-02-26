@@ -47,6 +47,7 @@ from qgis.gui import (
 from stdm.composer.chart_configuration import ChartConfigurationCollection
 from stdm.composer.composer_data_source import ComposerDataSource
 from stdm.composer.composer_item_config import ComposerItemConfig
+from stdm.composer.layout_utils import LayoutUtils
 from stdm.composer.photo_configuration import PhotoConfigurationCollection
 from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
 from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
@@ -65,13 +66,12 @@ from stdm.ui.composer.composer_symbol_editor import (
     ComposerSymbolEditor
 )
 from stdm.ui.composer.custom_item_gui import StdmCustomLayoutGuiItems
+from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
 from stdm.ui.composer.table_data_source import (
     ComposerTableDataSourceEditor
 )
 from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 from stdm.utils.util import documentTemplates
-from stdm.ui.composer.layout_gui_utils import LayoutGuiUtils
-from stdm.composer.layout_utils import LayoutUtils
 
 
 def load_table_layers(config_collection):
@@ -592,7 +592,7 @@ class ComposerWrapper(QObject):
         """
         Configure symbol editor controls.
         """
-        if not self._dataSourceWidget is None:
+        if self._dataSourceWidget is not None:
             for item_id, spFieldsMappings in spatial_field_config.spatialFieldsMapping().items():
                 mapItem = self.composition().itemById(item_id)
 

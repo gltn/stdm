@@ -21,9 +21,9 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 from datetime import datetime
 
-from qgis.PyQt.QtXml import QDomDocument
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtXml import QDomDocument
 
 from stdm.data.configfile_paths import FilePaths
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -399,8 +399,7 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
         )
         self.update_progress.emit(message)
         self.append_log(
-            'Starting to update to configuration version {}'.
-                format(self.TO_VERSION)
+            'Starting to update to configuration version {}'.format(self.TO_VERSION)
         )
         self._profiles_detail()
 

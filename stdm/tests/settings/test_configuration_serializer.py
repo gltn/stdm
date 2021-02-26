@@ -6,7 +6,6 @@ from unittest import (
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.settings.config_serializer import ConfigurationFileSerializer
-
 from stdm.tests.data.utils import (
     populate_configuration
 )

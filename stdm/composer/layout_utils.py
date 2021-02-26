@@ -17,7 +17,6 @@ from qgis.PyQt.QtCore import (
     QIODevice
 )
 from qgis.PyQt.QtXml import QDomDocument
-
 from qgis.core import (
     QgsLayout,
     QgsReadWriteContext,
@@ -26,7 +25,6 @@ from qgis.core import (
 
 
 class LayoutUtils:
-
     DATA_SOURCE_PROPERTY = 'variable_stdm_data_source'
     DATA_CATEGORY_PROPERTY = 'variable_stdm_data_category'
     REFERENCED_TABLE_PROPERTY = 'variable_stdm_referenced_table'
@@ -82,14 +80,10 @@ class LayoutUtils:
 
         template_doc = QDomDocument()
         if template_doc.setContent(template_file):
-
             # First load vector layers for the table definitions in the config
             # collection before loading the composition from file.
 
-            from stdm.composer.table_configuration import TableConfigurationCollection
-
             #  table_config_collection = TableConfigurationCollection.create(template_doc)
-
 
             # Load items into the composition and configure STDM data controls
             context = QgsReadWriteContext()

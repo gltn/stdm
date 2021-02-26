@@ -5,8 +5,9 @@
 
 from qgis.PyQt.QtCore import QFile
 
-from stdm.third_party.ttfquery import ttffiles
+from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
+from stdm.third_party.ttfquery import ttffiles
 from stdm.utils.util import getIndex
 
 
@@ -19,7 +20,7 @@ class SysFonts:
 
     def __init__(self):
         self.reg = ttffiles.Registry()
-        if fontCachePath() == None:
+        if fontCachePath() is None:
             return
         self.reg.load(fontCachePath())
 
@@ -27,7 +28,7 @@ class SysFonts:
         # Get the system font filename from the specific font name
         fontFile = None
         mFont = self.matchingFontName(fontName)
-        if mFont != None:
+        if mFont is not None:
             fontPath = self.reg.fontFile(fontName)
             # dir,fontFile=os.path.split(fontPath)
         return str(fontPath)
@@ -36,7 +37,7 @@ class SysFonts:
         # Get the matching font members for the selected font
         fontMembers = []
         mFont = self.matchingFontName(fontName)
-        if mFont != None:
+        if mFont is not None:
             fontMembers = set(self.reg.fontMembers(mFont))
         return fontMembers
 
@@ -63,7 +64,7 @@ class SysFonts:
         Write fonts into a cache file.
         """
         cache = None
-        if fontPath != None:
+        if fontPath is not None:
             cache = fontPath
         else:
             cache = fontCachePath()
@@ -79,5 +80,5 @@ def fontCachePath():
         lookupReg = regConfig.read(['Config'])
         cachePath = lookupReg['Config']
         return cachePath + "/font.cache"
-    except:
+    except DummyException:
         return None

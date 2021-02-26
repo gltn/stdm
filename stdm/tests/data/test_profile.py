@@ -1,12 +1,11 @@
+import unittest
 from unittest import (
     makeSuite,
     TestCase
 )
-import unittest
 
-from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.configuration.association_entity import AssociationEntity
-
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.tests.data.utils import (
     add_basic_profile,
     add_household_entity,
@@ -27,7 +26,7 @@ class TestProfile(TestCase):
         self.profile = add_basic_profile(self.config)
 
     def test_set_social_tenure_attr(self):
-        #Add STR entities then define the relationship.
+        # Add STR entities then define the relationship.
         set_profile_social_tenure(self.profile)
 
         valid = self.profile.social_tenure.valid()

@@ -29,6 +29,7 @@ from qgis.PyQt.QtXml import QDomDocument
 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import GeometryColumn
+from stdm.exceptions import DummyException
 from stdm.geoodk.importer.geometry_provider import STDMGeometry
 from stdm.settings import current_profile
 from stdm.ui.sourcedocument import SourceDocumentManager
@@ -94,7 +95,7 @@ class EntityImporter():
             attributes = self.entity_attributes_from_instance('social_tenure')
             if attributes is not None or len(attributes) > 0:
                 has_str_defined = True
-        except:
+        except DummyException:
             pass
         return has_str_defined
 
@@ -303,7 +304,7 @@ class Save2DB:
 
                 attributes = self.attributes['social_tenure']
 
-        except:
+        except DummyException:
             pass
 
         for k, v in attributes.items():
@@ -390,9 +391,9 @@ class Save2DB:
             if len(var) > 1:
                 if var == '' or var is None:
                     return None
-                if var == 'Yes' or var == True:
+                if var == 'Yes' or (isinstance(var, bool) and var):
                     return True
-                if var == 'No' or var == False:
+                if var == 'No' or (isinstance(var, bool) and not var):
                     return False
             else:
                 return None
@@ -447,7 +448,7 @@ class Save2DB:
                         var_code = entity_attr_to_id(col_prop.parent, "code", var)
                         if not var_code or var_code == var:
                             return None
-            except:
+            except DummyException:
                 pass
 
         elif col_type == 'MULTIPLE_SELECT':

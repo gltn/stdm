@@ -24,8 +24,9 @@ import os
 from configparser import RawConfigParser
 from datetime import datetime
 
-from stdm.exceptions import DummyException
 from qgis.PyQt.QtCore import QDir
+
+from stdm.exceptions import DummyException
 
 HOME = QDir.home().path()
 
@@ -119,7 +120,7 @@ class ImportLogger:
                 with open(raw_file, "r") as read_file:
                     data = json.load(read_file)
                     read_file.close()
-            except:
+            except DummyException:
                 pass
         return data
 

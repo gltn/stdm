@@ -425,8 +425,7 @@ class DocumentGenerator(QObject):
                                                         entityFieldValue, dataFields, fileExtension)
 
                     # Replace unsupported characters in Windows file naming
-                    docFileName = docFileName.replace('/', '_').replace \
-                        ('\\', '_').replace(':', '_').strip('*?"<>|')
+                    docFileName = docFileName.replace('/', '_').replace('\\', '_').replace(':', '_').strip('*?"<>|')
 
                     if not docFileName:
                         return (False, QApplication.translate("DocumentGenerator",
@@ -513,8 +512,7 @@ class DocumentGenerator(QObject):
 
         except DummyException as ex:
             LOGGER.debug(
-                'Could not delete temporary designer layer. {}'.
-                    format(ex)
+                'Could not delete temporary designer layer. {}'.format(ex)
             )
 
     def _hide_layer(self, layer):

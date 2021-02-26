@@ -27,7 +27,7 @@ from qgis.PyQt.QtWidgets import (
 try:
     from osgeo import gdal
     from osgeo import ogr
-except:
+except ImportError:
     import gdal
     import ogr
 
@@ -83,7 +83,7 @@ class OGRReader:
 
     def getSpatialRefCode(self):
         # Get the EPSG code (More work required)
-        if self.getLayer() != None:
+        if self.getLayer() is not None:
             spRef = self.getLayer().GetSpatialRef()
             refCode = spRef.GetAttrValue("PRIMEM|AUTHORITY", 1)
 
@@ -113,8 +113,8 @@ class OGRReader:
         lyr.ResetReading()
         feat_defn = lyr.GetLayerDefn()
 
-        for l in range(feat_defn.GetFieldCount()):
-            field_defn = feat_defn.GetFieldDefn(l)
+        for field in range(feat_defn.GetFieldCount()):
+            field_defn = feat_defn.GetFieldDefn(field)
             fields.append(str(field_defn.GetNameRef()))
 
         return fields
@@ -288,7 +288,7 @@ class OGRReader:
         for col, value in columnValueMapping.items():
             if hasattr(model_instance, col):
                 # 'documents' is not a column so exclude it.
-                if col != 'documents' and not 'collection' in col:
+                if col != 'documents' and 'collection' not in col:
                     value = self.auto_fix_float_integer(target_table, col,
                                                         value)
                     value = self.auto_fix_percent(target_table, col, value)
@@ -405,7 +405,7 @@ class OGRReader:
 
             # Reset source document manager for new records
             if destination_entity.supports_documents:
-                if not self._source_doc_manager is None:
+                if self._source_doc_manager is not None:
                     self._source_doc_manager.reset()
 
             for f in range(feat_defn.GetFieldCount()):
@@ -506,7 +506,7 @@ class OGRReader:
 
                     if geom_type.lower() != self._geomType.lower():
                         raise TypeError(
-                            "The geometries of the source and destination columns do not match.\n" \
+                            "The geometries of the source and destination columns do not match.\n"
                             "Source Geometry Type: {0}, Destination Geometry Type: {1}".format(
                                 geom_type,
                                 self._geomType))

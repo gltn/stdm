@@ -31,21 +31,20 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsProject
 )
-
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql.expression import text
 
-from stdm.exceptions import DummyException
+from stdm.data import globals
 from stdm.data.database import (
     STDMDb,
     Base
 )
+from stdm.exceptions import DummyException
 from stdm.utils.util import (
     getIndex,
     PLUGIN_DIR
 )
-from stdm.data import globals
 
 _postGISTables = ["spatial_ref_sys", "supporting_document"]
 _postGISViews = ["geometry_columns", "raster_columns", "geography_columns",
@@ -321,7 +320,7 @@ def fix_sequence(table_name):
 
 def import_data(table_name, columns_names, data, **kwargs):
     sql = "INSERT INTO {0} ({1}) VALUES {2}".format(table_name,
-                                                     columns_names, str(data))
+                                                    columns_names, str(data))
 
     t = text(sql)
     conn = STDMDb.instance().engine.connect()
@@ -434,7 +433,7 @@ def unique_column_values(tableName, columnName, quoteDataTypes=["character varyi
     quoteRequired = getIndex(quoteDataTypes, dataType)
     if "'" in columnName and '"' not in columnName:
         sql = 'SELECT DISTINCT "{0}" FROM {1}'.format(str(columnName),
-                                                       tableName)
+                                                      tableName)
     else:
 
         sql = "SELECT DISTINCT {0} FROM {1}".format(str(columnName), tableName)
@@ -708,7 +707,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
     # Fetch foreign key references
     sql = "SELECT column_name,{0},foreign_column_name, constraint_name FROM " \
           "foreign_key_references where {1} =:tb_name".format(ref_table,
-                                                               search_table)
+                                                              search_table)
 
     t = text(sql)
     result = _execute(t, tb_name=table_name)
@@ -721,7 +720,7 @@ def foreign_key_parent_tables(table_name, search_parent=True, filter_exp=None):
         fk_ref = r["column_name"], rel_table, \
                  r["foreign_column_name"], r["constraint_name"]
 
-        if not filter_exp is None:
+        if filter_exp is not None:
             if filter_exp.indexIn(rel_table) >= 0:
                 fk_refs.append(fk_ref)
 

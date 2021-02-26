@@ -302,7 +302,7 @@ class ConfigurationFileSerializer(QObject):
             profile = ProfileSerializer.read_xml(profile_element, element,
                                                  self.config)
 
-            if not profile is None:
+            if profile is not None:
                 profile.sort_entities()
                 self.config.add_profile(profile)
 
@@ -435,7 +435,7 @@ class ProfileSerializer:
             )
 
             if child_element.tagName() == 'Entity':
-                if not item_serializer is None:
+                if item_serializer is not None:
                     # Check if element has dependency
                     if not item_serializer.has_dependency(child_element):
                         item_serializer.read_xml(child_element, profile,
@@ -616,7 +616,7 @@ class SocialTenureSerializer:
             SocialTenureSerializer.START_TAG,
             SocialTenureSerializer.MAXIMUM
         )
-        if not start_min_dt is None and not start_max_dt is None:
+        if start_min_dt is not None and start_max_dt is not None:
             profile.set_social_tenure_attr(
                 SocialTenure.START_DATE,
                 (start_min_dt, start_max_dt)
@@ -633,7 +633,7 @@ class SocialTenureSerializer:
             SocialTenureSerializer.END_TAG,
             SocialTenureSerializer.MAXIMUM
         )
-        if not end_min_dt is None and not end_max_dt is None:
+        if end_min_dt is not None and end_max_dt is not None:
             profile.set_social_tenure_attr(
                 SocialTenure.END_DATE,
                 (end_min_dt, end_max_dt)
@@ -1201,7 +1201,7 @@ class EntitySerializer(EntitySerializerCollection):
                 relation_name = str(er_element.attribute('name', ''))
                 er_element = entity_relation_elements.get(relation_name, None)
 
-                if not er_element is None:
+                if er_element is not None:
                     # Get parent
                     parent = str(
                         er_element.attribute(
@@ -1217,7 +1217,7 @@ class EntitySerializer(EntitySerializerCollection):
                             parent
                         )
 
-                        if not parent_element is None:
+                        if parent_element is not None:
                             # Check if parent has dependency
                             if EntitySerializer.has_dependency(parent_element):
                                 # Resolve dependency
@@ -1449,9 +1449,8 @@ class ValueListSerializer(EntitySerializerCollection):
                         document_type_entity.short_name
                     vl_doc_type = profile.entity(tenure_doc_type_t_name)
 
-                    if not vl_doc_type is None:
+                    if vl_doc_type is not None:
                         vl_doc_type.copy_from(value_list, True)
-
 
                 else:
                     # Add value list to the profile
@@ -1640,7 +1639,7 @@ class ColumnSerializerCollection:
             element
         )
 
-        if not column_handler is None:
+        if column_handler is not None:
             column_handler.read(element, entity, association_elements,
                                 entity_relation_elements)
 
@@ -1738,7 +1737,7 @@ class ColumnSerializerCollection:
         # Get column type based on type info
         column_cls = BaseColumn.column_type(col_type_info)
 
-        if not column_cls is None:
+        if column_cls is not None:
             column = column_cls(*custom_args, **custom_kwargs)
 
             # Append column to the entity
@@ -2121,7 +2120,7 @@ class ForeignKeyColumnSerializer(ColumnSerializerCollection):
             relation_name = str(relation_el.attribute('name', ''))
             er_element = entity_relation_elements.get(relation_name, None)
 
-            if not er_element is None:
+            if er_element is not None:
                 profile = args[1].profile
                 er = EntityRelationSerializer.read_xml(er_element, profile,
                                                        assoc_elements,
@@ -2314,7 +2313,7 @@ class MultipleSelectColumnSerializer(ColumnSerializerCollection):
             assoc_name = str(assoc_el.attribute('name', ''))
             association_element = associations.get(assoc_name, None)
 
-            if not association_element is None:
+            if association_element is not None:
                 first_parent = str(association_element.attribute(
                     AssociationEntitySerializer.FIRST_PARENT, '')
                 )

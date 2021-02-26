@@ -68,13 +68,13 @@ class SettingMapper:
         self._set_func = set_func
         self._mandatory = mandatory
 
-        if not custom_value_handler is None:
+        if custom_value_handler is not None:
             self._value_handler = custom_value_handler()
 
         else:
             self._value_handler = valueHandler(self._control)()
 
-        if not self._value_handler is None:
+        if self._value_handler is not None:
             self._value_handler.setControl(self._control)
 
     def setting_key(self):
@@ -113,7 +113,7 @@ class SettingMapper:
         """
         return self._value_handler
 
-    def has_key(self):
+    def has_setting_key(self):
         """
         :return: Check whether the configuration key exists.
         :rtype: bool
@@ -148,7 +148,7 @@ class SettingMapper:
         """
         conf_value = self.configuration_value()
 
-        if not conf_value is None:
+        if conf_value is not None:
             self._value_handler.setValue(conf_value, self._set_func)
 
     def bind_configuration_value(self):
@@ -156,10 +156,10 @@ class SettingMapper:
         Set the configuration value to the control's value. The handler is
         responsible for adapting the type as required by the setting.
         """
-        if not self.has_key() and not self._create_default:
+        if not self.has_setting_key() and not self._create_default:
             return
 
-        if not self.has_key() and self._create_default:
+        if not self.has_setting_key() and self._create_default:
             if not self.create_key():
                 return
 
@@ -175,7 +175,7 @@ class RegistrySettingMapper(SettingMapper):
         SettingMapper.__init__(self, *args, **kwargs)
         self._reg_config = RegistryConfig()
 
-    def has_key(self):
+    def has_setting_key(self):
         key_mappings = self._reg_config.read([self._key])
 
         if len(key_mappings) == 0:
@@ -185,7 +185,7 @@ class RegistrySettingMapper(SettingMapper):
             return True
 
     def configuration_value(self):
-        if not self.has_key():
+        if not self.has_setting_key():
             return None
 
         key_mappings = self._reg_config.read([self._key])
@@ -276,5 +276,5 @@ class SettingsWidgetMapper:
 
         msg = SUCCESS, QApplication.translate("SettingsWidgetMapper",
                                               "%s settings successfully updated." % (
-                                              self._capitalize_first_char(self._context),))
+                                                  self._capitalize_first_char(self._context),))
         self.notified.emit([msg])

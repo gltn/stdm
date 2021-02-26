@@ -8,7 +8,7 @@ __url__ = 'http://www.unhabitat.org'
 try:
     from osgeo import gdal
     from osgeo import ogr
-except:
+except ImportError:
     import gdal
     import ogr
 

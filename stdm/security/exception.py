@@ -22,4 +22,3 @@ class SecurityException(Exception):
     """
     Raised when an STDM security condition is not met
     """
-

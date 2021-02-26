@@ -1,11 +1,10 @@
+import unittest
 from unittest import (
     makeSuite,
     TestCase
 )
-import unittest
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-
 from stdm.tests.data.utils import (
     add_basic_profile,
     create_basic_profile
@@ -43,6 +42,7 @@ class TestStdmConfiguration(TestCase):
 
     def tearDown(self):
         self.config = None
+
 
 def suite():
     suite = makeSuite(TestStdmConfiguration, 'test')

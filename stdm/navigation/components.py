@@ -32,7 +32,7 @@ class STDMContent:
     a navigation item.
     """
 
-    def __init__(self, code = ""):
+    def __init__(self, code=""):
         self.Name = ""
         self.Group = ""
         self.Code = code

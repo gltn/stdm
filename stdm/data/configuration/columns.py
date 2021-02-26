@@ -213,7 +213,7 @@ class BaseColumn(ColumnItem):
                    'entity_relation']
 
         for k, v in self.__dict__:
-            if not k in exclude:
+            if k not in exclude:
                 attr = k.replace('_', ' ').capitalize()
                 disp.append('{0}: {1}'.format(attr, v))
 

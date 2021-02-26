@@ -392,7 +392,7 @@ class RelatedTableTranslator(SourceValueTranslator):
         for source_col, val in field_values.items():
             ref_table_col = self._input_referenced_columns.get(source_col, None)
 
-            if not ref_table_col is None:
+            if ref_table_col is not None:
                 col_idx = getIndex(link_table_columns, ref_table_col)
 
                 # If column is found, add it to the query fields collection
@@ -447,7 +447,7 @@ class LookupValueTranslator(RelatedTableTranslator):
         source_column = list(field_values.keys())[0]
 
         # Check if the source column is in the field_values
-        if not source_column in field_values:
+        if source_column not in field_values:
             return IgnoreType
 
         # Assume the source column is the first (and only) one in field_values
@@ -643,7 +643,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         source_column = list(field_values.keys())[0]
 
         # Check if the source column is in the field_values
-        if not source_column in field_values:
+        if source_column not in field_values:
             return IgnoreType
 
         # Get file name
