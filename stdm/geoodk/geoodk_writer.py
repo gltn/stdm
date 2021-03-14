@@ -134,7 +134,7 @@ class XFORMDocument:
         :param text:
         :return:
         """
-        return self.doc.createTextNode('{}'.format(text))
+        return self.doc.createTextNode(text)
 
     def create_node_attribute(self, node, key, value):
         """
@@ -738,6 +738,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 body_node = self.create_node("input")
                 label_node = self.create_node("label")
                 body_node.setAttribute("ref", self.model_category_group(parent_path, key))
+
                 label_text_info = self.entity_read.col_label(key)
                 if label_text_info == '' or label_text_info is None:
                     label_text_info = key.replace('_', ' ').title()
@@ -777,7 +778,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         for key in str_entity_tbl:
             lk_item = self.create_node("item")
             lk_item_label = self.create_node("label")
-            encode_key = key[:int(key.index('_id'))].encode('utf_8')
+            encode_key = key[:int(key.index('_id'))]
             lk_item_label_txt = self.create_text_node(encode_key.title())
             lk_item_label_txt_val = self.create_node("value")
             lk_item_label_txt_val_txt = self.create_text_node(encode_key)
