@@ -23,6 +23,7 @@ import re
 
 from qgis.core import (
     QgsGeometry,
+    QgsPointXY,
     QgsPoint,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
@@ -132,7 +133,7 @@ class GeometryProvider:
         for point in self._local_list:
             if point != '':
                 var = point.replace('0.0 0.0', '').strip().split(' ')
-                line_array.append(QgsPoint(self.set_point(var[1]),
+                line_array.append(QgsPointXY(self.set_point(var[1]),
                                            self.set_point(var[0])))
         return QgsGeometry.fromPolyline([line_array])
 
@@ -141,8 +142,8 @@ class GeometryProvider:
 
         :return:
         """
-        qPoint = QgsGeometry.fromPoint(
-            QgsPoint(self.set_point(self.x()), self.set_point(self.y())))
+        qPoint = QgsGeometry.fromPointXY(
+            QgsPointXY(self.set_point(self.x()), self.set_point(self.y())))
         return qPoint
 
     def create_polygon(self):
