@@ -133,7 +133,7 @@ class GeometryProvider:
         for point in self._local_list:
             if point != '':
                 var = point.replace('0.0 0.0', '').strip().split(' ')
-                line_array.append(QgsPointXY(self.set_point(var[1]),
+                line_array.append(QgsPoint(self.set_point(var[1]),
                                            self.set_point(var[0])))
         return QgsGeometry.fromPolyline([line_array])
 
