@@ -134,7 +134,7 @@ class XFORMDocument:
         :param text:
         :return:
         """
-        return self.doc.createTextNode(text)
+        return self.doc.createTextNode('{}'.format(text))
 
     def create_node_attribute(self, node, key, value):
         """
