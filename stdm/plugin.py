@@ -303,10 +303,18 @@ class STDMQGISLoader:
     def active_branch_name(self):
         home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
         branch_file = '{}/.stdm/.branch'.format(home)
+        branch_name = ''
         if QFile.exists(branch_file):
-           return '(' + [line.strip() for line in open(branch_file)][0] + ')'
+            with open(branch_file) as bf:
+                bf.seek(0)
+                # Get first character to see if file is empty
+                first_char = bf.read(1)
+                if first_char:
+                    # Reset cursor position
+                    bf.seek(0)
+                    branch_name = '(' + [line.strip() for line in open(branch_file)][0] + ')'
 
-        return ''
+        return branch_name
 
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
