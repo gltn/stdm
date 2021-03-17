@@ -25,6 +25,7 @@ from collections import OrderedDict
 
 from qgis.PyQt.QtCore import (
     QSettings,
+    QFile,
     QFileInfo,
     QTranslator,
     QCoreApplication,
@@ -300,13 +301,12 @@ class STDMQGISLoader:
         self.stdmInitToolbar.addWidget(self.git_branch)
 
     def active_branch_name(self):
-        try:
-            home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
-            branch_file = '{}/.stdm/.branch'.format(home)
-            name = '(' + [line.strip() for line in open(branch_file)][0] + ')'
-        except DummyException:
-            name = ''
-        return name
+        home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
+        branch_file = '{}/.stdm/.branch'.format(home)
+        if QFile.exists(branch_file):
+            return '(' + [line.strip() for line in open(branch_file)][0] + ')'
+
+        return ''
 
     def initMenuItems(self):
         self.stdmMenu.addAction(self.loginAct)
