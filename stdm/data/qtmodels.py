@@ -537,7 +537,7 @@ class BaseSTDMTableModel(QAbstractTableModel):
             return True
         elif index.isValid() and role == BaseSTDMTableModel.ROLE_ROW_ID:
             if self._row_ids is not None:
-                self._row_ids[index.row()][index.column()] = value
+                self._row_ids[index.row()] = value
             self.dataChanged.emit(index, index)
             return True
         return False
