@@ -304,7 +304,7 @@ class STDMQGISLoader:
         home = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0]
         branch_file = '{}/.stdm/.branch'.format(home)
         if QFile.exists(branch_file):
-            return '(' + [line.strip() for line in open(branch_file)][0] + ')'
+           return '(' + [line.strip() for line in open(branch_file)][0] + ')'
 
         return ''
 

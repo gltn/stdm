@@ -930,7 +930,7 @@ def _is_many_to_many(automap_base, table):
         [],
     )
 
-    if set(cols) != set(table.c):
+    if len(table.c) > 3:
         return None, None, None
 
     return (

@@ -274,6 +274,9 @@ class DependencyProcessor(object):
                     }
                 )
             else:
+                # STDM suppress type conversion issues for many-to-many relationships
+                pass
+                '''
                 raise exc.FlushError(
                     "Attempting to flush an item of type "
                     "%(x)s as a member of collection "
@@ -286,6 +289,7 @@ class DependencyProcessor(object):
                         "z": self.mapper.class_,
                     }
                 )
+                '''
 
     def _synchronize(self, state, child, associationrow, clearkeys, uowcommit):
         raise NotImplementedError()
