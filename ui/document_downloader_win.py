@@ -787,25 +787,26 @@ class KoboDownloader(QObject):
         :doc_type_id: Id picked from lookup "oc_check_household_document_type"
         :src_dir : Path where the file is found in the disk
         """
-        dtype = 'scanned certificate'
+        dtype = 'scanned certificate'  
         dfiles = {}
 
-        src_folder = self.selected_cols.get(dtype)
+        src_folder = self.selected_cols.get(dtype) # local folder with scanned certificates
 
         if src_folder is None or src_folder=='':
             return dfiles
 
-        dtype_id = self.doc_types[dtype]
+        dtype_id = self.doc_types[dtype]  # ID for document of type "Scanned certificate" in table "check_document_type"
 
         for filename in os.listdir(src_folder):
             if fnmatch.fnmatch(filename, '*.pdf'):
                 name, file_ext = os.path.splitext(filename)
                 doc_src = []
+                full_path = src_folder+'\\'+filename
                 doc_src.append(
                         {'doc_type_id':dtype_id,
-                         'key_field_value':name,
-                         'filename':src_folder+'\\'+filename})
-                dfiles[name]=doc_src
+                         'key_field_value':unicode(name),
+                         'filename':full_path})
+                dfiles[unicode(name)]=doc_src
         return dfiles
 
     def fetch_scanned_docs(self, doc_type):
@@ -831,10 +832,11 @@ class KoboDownloader(QObject):
                 else:
                     name = split_name[0]
                 doc_src = []
+                full_path = src_folder+'\\'+filename
                 doc_src.append(
                         {'doc_type_id':dtype_id, 
                          'key_field_value':name, 
-                         'filename':src_folder+'\\'+filename})
+                         'filename':full_path})
                 dfiles[orig_name]=doc_src
         return dfiles
 
@@ -853,10 +855,13 @@ class KoboDownloader(QObject):
 
         for key, value in downloaded_files.iteritems():
             ref_code = value[0]['key_field_value']
-            #ref_code = value[0][1]
 
-            parent_id = self.get_parent_id(self.support_doc_map['parent_table'],
-                                                 ref_code, self.parent_ref_column)
+            try:
+                parent_id = self.get_parent_id(self.support_doc_map['parent_table'],
+                                                     ref_code, self.parent_ref_column)
+            except:
+                parent_id = None
+
             if parent_id is None:
                 msg = "ERROR. No record found for key: "+str(ref_code)
                 self.download_progress.emit(KoboDownloader.ERROR, msg)
@@ -865,9 +870,9 @@ class KoboDownloader(QObject):
             for sfile in downloaded_files[key]:
 
                 try:
-                    src_doc_type = sfile['doc_type_id']  #sfile[0]
-                    short_filename = sfile['key_field_value']  #sfile[1]  
-                    full_filename = sfile['filename']  #sfile[2]  # full path of the source file
+                    src_doc_type = sfile['doc_type_id'] 
+                    short_filename = sfile['key_field_value'] 
+                    full_filename = sfile['filename']  # full path of the source file
 
                     msg = "Uploading file: "+short_filename
                     self.download_progress.emit(KoboDownloader.INFORMATION, msg)
@@ -965,6 +970,5 @@ class KoboDownloader(QObject):
         return req.status_code
 
     def fake_download(self, src_url, dest_url, username, password):
-        print "Test download - Nothing downloaded"
         return 200
         
