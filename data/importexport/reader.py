@@ -31,7 +31,8 @@ except:
 
 from stdm.data.pg_utils import (
     delete_table_data,
-    geometryType
+    geometryType,
+    execute_query
 )
 from stdm.utils.util import getIndex
 from stdm.settings import (
@@ -267,6 +268,20 @@ class OGRReader(object):
                 value = False
         return value
 
+    def update_geom_column(self, target_table, geom_loc, ref_code):
+        """
+        Updates the geometry data for an existing property record
+        :param target_table: Table with containing geometry column
+        :type target_table: str
+        :param geom_loc: String containing geometry data
+        :type geom_loc: str
+        :param ref_code: Reference code to use to search record to update
+                         in the target_table
+        :type ref_code: str
+        """
+        upd_sql = "Update {} set geom_location = {} where reference_code = '{}'".format(target_table, geom_loc, ref_code)
+        execute_query(upd_sql)
+
     def _insertRow(self, target_table, columnValueMapping):
         """
         Insert a new row using the mapped class instance then mapping column
@@ -299,7 +314,6 @@ class OGRReader(object):
         try:
             self._dbSession.add(model_instance)
             self._dbSession.commit()
-
         except:
             self._dbSession.rollback()
             raise
@@ -353,7 +367,7 @@ class OGRReader(object):
         return geom_wkb, geom_type
 
     def featToDb(self, targettable, columnmatch, append, parentdialog,
-                 geomColumn=None, geomCode=-1, translator_manager=None):
+            geomColumn=None, geomCode=-1, update_geom_column_only=False, translator_manager=None):
         """
         Performs the data import from the source layer to the STDM database.
         :param targettable: Destination table name
@@ -510,6 +524,8 @@ class OGRReader(object):
                     column_value_mapping[geomColumn] = "SRID={0!s};{1}".format(
                         self._targetGeomColSRID, geom_wkb)
 
+                    upd_geom_col = "ST_GeomFromText('{0}',{1})".format(geom_wkb, self._targetGeomColSRID)
+
                     if geom_type.lower() != self._geomType.lower():
                         raise TypeError(
                             "The geometries of the source and destination columns do not match.\n" \
@@ -519,8 +535,10 @@ class OGRReader(object):
 
             try:
                 # Insert the record
-                self._insertRow(targettable, column_value_mapping)
-
+                if update_geom_column_only:
+                    self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
+                else:
+                    self._insertRow(targettable, column_value_mapping)
             except:
                 progress.close()
                 raise

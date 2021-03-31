@@ -754,8 +754,10 @@ class ImportData(QWizard, Ui_frmImport):
         #Specify geometry column
         geom_column=None
         
+        update_geom_column = False
         if self.field("typeSpatial"):
             geom_column = self.field("geomCol")
+            update_geom_column = True
             
         # Ensure that user has selected at least one column if it is a
         # non-spatial table
@@ -816,7 +818,7 @@ class ImportData(QWizard, Ui_frmImport):
         else:
             self.dataReader.featToDb(
                 self.targetTab, matchCols, True, self, geom_column,
-                translator_manager=value_translator_manager
+                update_geom_column_only=update_geom_column, translator_manager=value_translator_manager
             )
             self.InfoMessage(
                 "All features have been imported successfully!"
