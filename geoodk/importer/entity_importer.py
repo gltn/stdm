@@ -252,18 +252,15 @@ class Save2DB:
         party_ref_column = ''
         spatial_ref_column = ''
         if self.parents_ids is not None:
-            print self.parents_ids
             if self.attributes.has_key('party'):
                 full_party_ref_column = self.attributes.get('party')
 
                 party_ref_column = full_party_ref_column + '_id'
-                print 'party{}.'.format(party_ref_column)
                 setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column)[0])
 
             if self.attributes.has_key('spatial_unit'):
                 full_spatial_ref_column = self.attributes.get('spatial_unit')
                 spatial_ref_column = full_spatial_ref_column + '_id'
-                print 'sp.{}.'.format(spatial_ref_column)
                 setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
             return party_ref_column, spatial_ref_column
 
@@ -328,7 +325,6 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
-                #print "property{0}....  and type.{1}".format(col_prop, col_type)
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
@@ -449,7 +445,6 @@ class Save2DB:
                 pass
 
         elif col_type == 'MULTIPLE_SELECT':
-            print 'multiple select {}'.format(var)
             if var == '' or var is None:
                 return None
             else:
@@ -477,8 +472,11 @@ class Save2DB:
                     geom_provider.set_user_srid(GEOMPARAM)
                 if col_prop.geometry_type() == 'POINT':
                     return geom_provider.point_to_Wkt()
+
                 if col_prop.geometry_type() == 'POLYGON':
-                    return geom_provider.polygon_to_Wkt()
+                    poly_to_wkt = geom_provider.polygon_to_Wkt()
+                    return poly_to_wkt
+
             else:
                 return None
 
