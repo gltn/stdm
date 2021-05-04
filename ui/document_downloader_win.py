@@ -811,7 +811,7 @@ class KoboDownloader(QObject):
 
     def fetch_scanned_docs(self, doc_type):
         """
-        Return a dict of {'filename':[(doc_type_id, src_dir)]}
+        Return a dict of {'filename':[{'doc_type_id':, key_field_value':, 'filename':}]}
         :rtype dict:
         """
         dfiles = {}
