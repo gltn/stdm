@@ -389,9 +389,10 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         draft_config_file = self.healthy_file(DRAFT_CONFIG_FILE)
         orig_config_file = self.healthy_file(ORIG_CONFIG_FILE)
 
-        if main_config_file and not bak_config_file and \
-                draft_config_file == False:
-            return CONFIG_FILE
+        #if main_config_file and not bak_config_file and \
+        if main_config_file:
+            if not (bak_config_file | draft_config_file):
+                return CONFIG_FILE
 
         if bak_config_file:
             return self.user_choose_config()
