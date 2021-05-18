@@ -563,11 +563,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         cu_obj = ''
         import_status = False
+
         self.txt_feedback.clear()
         self.txt_feedback.append("Import started, please wait...\n")
         QCoreApplication.processEvents()
+
         self._notif_bar_str.clear()
         mobile_field_data = self.read_instance_data()
+        
         self.has_foreign_keys_parent(entities)
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
@@ -626,6 +629,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             if fk_table_name not in self.parent_ids:
                                 in_relations = [_item for subitem in self.relations[fk_table_name]
                                                 for _item in subitem]
+
                                 if entity in in_relations:
                                     fk_table_data = single_occuring[fk_table_name]
                                     entity_add = Save2DB(fk_table_name, fk_table_data)
@@ -643,10 +647,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         cu_obj = entity
                         import_status = True
                         parents_info.append(entity)
+
                         if entity in self.parent_ids:
                             continue
-                        else:
-                            self.parent_ids[entity] = [child_id, entity]
+
+                        self.parent_ids[entity] = [child_id, entity]
+
                         entity_add.cleanup()
 
                 if repeated_entities:
@@ -660,21 +666,24 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         else:
                             enum_index = repeated_entity[:1]
                             repeat_table = repeated_entity[1:]
+
                         log_timestamp = '          child table {0} >> : {1}' \
                                 .format(repeat_table, enum_index)
+
                         self.count_import_file_step(counter, repeat_table)
                         self.importlogger.log_action(log_timestamp)
-                        if repeat_table in self.profile_entities_names(current_profile()):
-                            entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
-                            entity_add.objects_from_supporting_doc(instance_obj)
-                            child_id = entity_add.save_to_db()
-                            cu_obj = repeat_table
-                            import_status = True
-                            self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
-                            entity_add.cleanup()
-                            QCoreApplication.processEvents()
-                        else:
+                        
+                        if repeat_table not in self.profile_entities_names(current_profile()):
                             continue
+
+                        entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
+                        entity_add.objects_from_supporting_doc(instance_obj)
+                        child_id = entity_add.save_to_db()
+                        cu_obj = repeat_table
+                        import_status = True
+                        self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
+                        entity_add.cleanup()
+                        QCoreApplication.processEvents()
 
                 if instance_obj_data[1]:
                     '''We treat social tenure entities separately because of foreign key references'''

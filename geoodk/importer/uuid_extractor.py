@@ -30,9 +30,6 @@ UUID = "uuid"
 from collections import OrderedDict
 
 class InstanceUUIDExtractor():
-    """
-    Class constructor
-    """
     def __init__(self, path):
         """
         Initatlize class variables

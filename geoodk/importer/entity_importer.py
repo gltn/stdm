@@ -329,9 +329,41 @@ class Save2DB:
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
-        self.model.save()
+
+        #if self.entity.has_geometry_column:
+        updated = self.do_update(self.model)
+        if not updated:
+            self.model.save()
+
         self.key = self.model.id
         return self.key
+
+    def do_update(self, model):
+        if not hasattr(model, 'kobo_link_code'):
+            return False
+
+        model_to_update = self.get_model_by_link_code(model, model.kobo_link_code)
+        if model_to_update is None:
+            return False
+
+        for k, v in self.attributes.iteritems():
+            if hasattr(model, k):
+                col_type = self.entity_mapping.get(k)
+                col_prop = self.entity.columns[k]
+                value = self.attribute_formatter(col_type, col_prop, v)
+                setattr(model_to_update, k, value) 
+
+        model_to_update.update()
+        return True
+
+    def get_model_by_link_code(self, model, link_code):
+        #dbHandler = self._dbmodel()
+        handler = model
+        model_obj = handler.queryObject().filter_by(
+            kobo_link_code=link_code
+        ).first()
+
+        return model_obj
 
     def save_foreign_key_table(self):
         """
