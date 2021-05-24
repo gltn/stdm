@@ -376,10 +376,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return:
         """
         has_relations = False
+
         str_tables = current_profile().social_tenure
         party_tbls = str_tables.parties
+
         sp_tbls = str_tables.spatial_units
         self.relations = OrderedDict()
+
         if len(self.instance_list) > 0:
             if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
                 for party_tbl in party_tbls:
@@ -392,6 +395,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         for table in select_entities:
             table_object = current_profile().entity_by_name(table)
             cols = table_object.columns.values()
+
             for col in cols:
                 if col.TYPE_INFO == 'FOREIGN_KEY':
                     parent_object = table_object.columns[col.name]
@@ -400,11 +404,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             self.relations[parent_object.parent.name].append([table, col.name])
                         else:
                             self.relations[parent_object.parent.name] = [table, col.name]
-                            #self.relations[parent_object.parent.name].append([table, col.name])
-                    has_relations = True
-                else:
-                    continue
-            return has_relations
+
+                    #has_relations = True
+                #else:
+                    #continue
+            #return has_relations
 
     def parent_table_isselected(self):
         """
@@ -572,6 +576,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         mobile_field_data = self.read_instance_data()
         
         self.has_foreign_keys_parent(entities)
+
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -585,6 +590,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if not len(mobile_field_data) > 0 and not len(mobile_field_data.values())>0:
             self.feedback_message('Not matching data in mobile files')
             return
+
         counter = 0
         try:
             self.pgbar.setRange(counter, len(self.instance_list))
@@ -604,17 +610,21 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 for entity, entity_data in single_occuring.iteritems():
                     import_status = False
+                    
                     if entity in self.relations.keys():
                         if entity in self.parent_ids:
                             continue
+
                         self.count_import_file_step(counter, entity)
                         log_timestamp = '=== parent table import  === : {0}'.format(entity)
                         cu_obj = entity
                         self.log_table_entry(log_timestamp)
 
                         entity_add = Save2DB(entity, entity_data)
+
                         entity_add.objects_from_supporting_doc(instance_obj)
                         ref_id = entity_add.save_parent_to_db()
+
                         import_status = True
                         self.parent_ids[entity] = [ref_id, entity]
                         #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
@@ -622,11 +632,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         parents_info.append(entity)
                         single_occuring.pop(entity)
 
-                    elif entity not in self.relations.keys():
+                    #elif entity not in self.relations.keys():
+                    else: #entity not in self.relations.keys():
                         import_status = False
 
                         for fk_table_name in self.relations.keys():
                             if fk_table_name not in self.parent_ids:
+
                                 in_relations = [_item for subitem in self.relations[fk_table_name]
                                                 for _item in subitem]
 
@@ -641,9 +653,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         log_timestamp = '=== standalone table import  === : {0}'.format(entity)
                         cu_obj = entity
                         self.log_table_entry(log_timestamp)
+
                         entity_add = Save2DB(entity, entity_data, self.parent_ids)
+
                         entity_add.objects_from_supporting_doc(instance_obj)
                         child_id = entity_add.save_to_db()
+
                         cu_obj = entity
                         import_status = True
                         parents_info.append(entity)
@@ -679,6 +694,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_obj)
                         child_id = entity_add.save_to_db()
+
+                        if self.parent_ids.get(repeat_table) is None:
+                            self.parent_ids[repeat_table] = [(child_id, repeat_table)]
+                        else:
+                            self.parent_ids[repeat_table].append((child_id, repeat_table))
+
                         cu_obj = repeat_table
                         import_status = True
                         self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))

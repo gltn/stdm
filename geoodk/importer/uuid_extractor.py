@@ -127,6 +127,7 @@ class InstanceUUIDExtractor():
         self.set_document()
         nodes = self.doc.elementsByTagName(profile)
         entity_nodes = nodes.item(0).childNodes()
+
         for attrs in range(entity_nodes.count()):
             if entity_nodes.item(attrs).nodeName() in selected_entities:
                 name_entity = entity_nodes.item(attrs).nodeName()
@@ -140,8 +141,10 @@ class InstanceUUIDExtractor():
         """
         repeat_instance_data = OrderedDict()
         attribute_data = OrderedDict()
+
         for attr_nodes, entity in args_list.iteritems():
             '''The assuption is that there are repeated entities from mobile sub forms. handle them separately'''
+
             if attr_nodes.count()>1:
                 for i in range(attr_nodes.count()):
                     attrib_node = attr_nodes.at(i).childNodes()

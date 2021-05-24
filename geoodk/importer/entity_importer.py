@@ -105,9 +105,11 @@ class EntityImporter():
         :return:
         """
         if attributes and ids:
-            entity_add = Save2DB('social_tenure', attributes, ids)
-            entity_add.objects_from_supporting_doc(self.instance)
-            entity_add.save_to_db()
+            for idx in range(len(ids['sy_property'])):
+                entity_add = Save2DB('social_tenure_relationship', attributes, ids)
+                entity_add.spatial_index = idx
+                entity_add.str_supporting_doc(self.instance)
+                entity_add.save_to_db()
 
 class Save2DB:
     """
@@ -125,15 +127,15 @@ class Save2DB:
         self.model = self.dbmodel_from_entity()
         self.key = 0
         self.parents_ids = ids
+        self.spatial_index = -1
         self.geom = 4326
         self.entity_mapping = {}
 
     def object_from_entity_name(self, entity):
         """
-
         :return:
         """
-        if entity == 'social_tenure':
+        if entity == 'social_tenure_relationship':
             return current_profile().social_tenure
         else:
             user_entity = current_profile().entity_by_name(entity)
@@ -144,6 +146,9 @@ class Save2DB:
         Check if the entity has supporting document before importing
         :return: Bool
         """
+        if self.entity is None:
+            return None
+
         if self.entity.supports_documents:
             return self.entity.supports_documents
         else:
@@ -162,6 +167,9 @@ class Save2DB:
         Format model attributes from passed entity attributes
         :return:
         """
+        if self.entity is None:
+            return
+
         if self.entity_has_supporting_docs():
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
             entity_object_model = entity_object()
@@ -179,7 +187,7 @@ class Save2DB:
             entity_object_model = entity_object()
         return entity_object_model
 
-    def objects_from_supporting_doc(self, instance_file = None):
+    def objects_from_supporting_doc(self, instance_file=None):
         """
         Create supporting doc path  instances based on the collected documents
         :return:paths
@@ -187,16 +195,40 @@ class Save2DB:
         """
         if instance_file:
             f_dir, file_name = os.path.split(instance_file)
+
             for document, val in self.attributes.iteritems():
                 if str(document).endswith('supporting_document'):
                     if val != '':
                         doc = self.format_document_name_from_attribute(document)
                         doc_path = os.path.normpath(f_dir+'/'+val)
                         abs_path = doc_path.replace('\\','/').strip()
+
+                        abs_path = val
                         if QFile.exists(abs_path):
                             self.supporting_document_model(abs_path, doc)
 
-    def supporting_document_model(self,doc_path,doc):
+    def str_supporting_doc(self, instance_file=None):
+        """
+        Create supporting doc path  instances based on the collected documents
+        :return:paths
+        :rtype: document object instance
+        """
+        if instance_file:
+            f_dir, file_name = os.path.split(instance_file)
+
+            for document, val in self.attributes.iteritems():
+                for key, value in val.iteritems():
+                    if str(key).endswith('supporting_document'):
+                        if value != '':
+                            doc = self.format_document_name_from_attribute(key)
+                            doc_path = os.path.normpath(f_dir+'/'+value)
+                            abs_path = doc_path.replace('\\','/').strip()
+
+                            abs_path = value
+                            if QFile.exists(abs_path):
+                                self.supporting_document_model(abs_path, doc)
+
+    def supporting_document_model(self, doc_path, doc):
         """
         :param doc_path: absolute document path
         :param doc: document name
@@ -208,11 +240,13 @@ class Save2DB:
         doc_container = QVBoxLayout()
         supporting_doc_entity = self.entity.supporting_doc.document_type_entity
         document_type_id = entity_attr_to_id(supporting_doc_entity, 'value', doc, lower=False)
+
         # Register container
         self._doc_manager.registerContainer(
             doc_container,
             document_type_id
         )
+
         #Copy the document to STDM working directory
         self._doc_manager.insertDocumentFromFile(
                 doc_path,
@@ -271,10 +305,12 @@ class Save2DB:
         """
         self.column_info()
         attributes = self.attributes
+
+        spatial_ref = -1
+
         try:
             if self.entity.short_name == 'social_tenure_relationship':
                 #try:
-
                 prefix = current_profile().prefix + '_'
                 if self.attributes.has_key('party'):
                     full_party_ref_column = self.attributes.get('party')
@@ -293,8 +329,10 @@ class Save2DB:
                 else:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
                     spatial_ref_column = full_spatial_ref_column.replace(prefix,'') + '_id'
-                    
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
+
+                spatial_ref = self.parents_ids.get(full_spatial_ref_column)[self.spatial_index][0]
+
+                setattr(self.model, spatial_ref_column, spatial_ref)
 
                 attributes = self.attributes['social_tenure']
 
@@ -311,8 +349,13 @@ class Save2DB:
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
 
-        self.model.save()
-        return self.model.id
+        updated, model_id = self.do_update(self.model, spatial_ref)
+        
+        if not updated:
+            self.model.save()
+            model_id = self.model.id
+
+        return model_id
 
     def save_parent_to_db(self):
         """
@@ -331,20 +374,22 @@ class Save2DB:
             self.model.documents = self._doc_manager.model_objects()
 
         #if self.entity.has_geometry_column:
-        updated = self.do_update(self.model)
-        if not updated:
+        updated, model_id = self.do_update(self.model)
+        if updated:
+            self.key = model_id
+        else:
             self.model.save()
-
-        self.key = self.model.id
+            self.key = self.model.id
+        #self.key = self.model.id
         return self.key
 
-    def do_update(self, model):
+    def do_update(self, model, spatial_ref=-1):
         if not hasattr(model, 'kobo_link_code'):
-            return False
+            return False, -1
 
         model_to_update = self.get_model_by_link_code(model, model.kobo_link_code)
         if model_to_update is None:
-            return False
+            return False, -1
 
         for k, v in self.attributes.iteritems():
             if hasattr(model, k):
@@ -353,8 +398,18 @@ class Save2DB:
                 value = self.attribute_formatter(col_type, col_prop, v)
                 setattr(model_to_update, k, value) 
 
+        prefix = current_profile().prefix + '_'
+        full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
+        spatial_ref_column = full_spatial_ref_column.replace(prefix,'') + '_id'
+
+        if spatial_ref <> -1:
+            setattr(model_to_update, spatial_ref_column, spatial_ref)
+
+        if self.entity_has_supporting_docs():
+            model_to_update.documents = self._doc_manager.model_objects()
+
         model_to_update.update()
-        return True
+        return True, model_to_update.id
 
     def get_model_by_link_code(self, model, link_code):
         #dbHandler = self._dbmodel()
