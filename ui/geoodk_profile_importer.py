@@ -620,13 +620,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         cu_obj = entity
                         self.log_table_entry(log_timestamp)
 
-                        entity_add = Save2DB(entity, entity_data)
+                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
 
                         entity_add.objects_from_supporting_doc(instance_obj)
                         ref_id = entity_add.save_parent_to_db()
 
                         import_status = True
-                        self.parent_ids[entity] = [ref_id, entity]
+                        if entity == 'sy_property':  #FIXME: Find a way to remove this hard code.
+                            self.parent_ids[entity] = [(ref_id, entity)]
+                        else:
+                            self.parent_ids[entity] = [ref_id, entity]
                         #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
 
                         parents_info.append(entity)
@@ -729,6 +732,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 QCoreApplication.processEvents()
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
+
         except Exception as ex:
             self.feedback_message(unicode(ex.message))
         except SQLAlchemyError as ae:
