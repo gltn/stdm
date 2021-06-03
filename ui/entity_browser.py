@@ -647,13 +647,13 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     ordering = self.get_sorting_order(self._entity)
 
+                    print "ORDERING: ",ordering
+
                     if type(self.parent_record_id) == int and self.parent_record_id > 0:
                         col = self.filter_col(self._entity)
                         if col is None:
                             entity_records = entity_cls.queryObject().filter().order_by(
-                                    ordering).limit(
-                                            self.record_limit
-                                            ).all()
+                                    ordering).limit(self.record_limit).all()
                         else:
                             child_model = entity_model(self._entity)
                             col_name = getattr(child_model, col.name)
@@ -726,8 +726,9 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
             self.tbEntity.setModel(self._proxyModel)
             #if numRecords < self.record_limit:
-            self.tbEntity.setSortingEnabled(True)
-            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+
+            #self.tbEntity.setSortingEnabled(True)
+            #self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
@@ -762,7 +763,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     def get_sorting_order(self, entity):
         '''
         Return a string containing a column and sort order (asc-Ascending, desc-Descending)
-        :rtype ordering: str
+        :rtype: str
         '''
         ordering = ''
 
@@ -790,10 +791,12 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
     def get_sorting_field(self, entity):
         '''
         Return sorting column based on the rowindex of the column
-        in the entity. Rowindex is set when you re-order the columns
-        in the configration wizard (It is saved in the configuration file).
+        in the entity. Rowindex is set when you re-order the columns (drag-n-drop)
+        in the configration wizard (Rowindex is saved in the configuration file).
         Column with the smallest(positive integer) rowindex is the first
         column on an entity, and thats the column we use for sorting.
+
+        :rtype: str
         '''
         try:
             cols = {}
