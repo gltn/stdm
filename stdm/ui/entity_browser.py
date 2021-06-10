@@ -71,7 +71,7 @@ from stdm.navigation.content_group import TableContentGroup
 from stdm.network.filemanager import NetworkFileManager
 from stdm.settings import (
     get_entity_browser_record_limit,
-    get_entity_sort_order,
+    get_entity_sort_details,
     current_profile
 )
 from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
@@ -267,7 +267,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         self.parent_record_id = ent_rec_id
         self.record_limit = self.get_records_limit()  # get_entity_browser_record_limit()
-        self.sort_order = get_entity_sort_order()
+        self.sort_order = self.get_sorting_value()
 
         # Enable viewing of supporting documents
         if self.can_view_supporting_documents:
@@ -735,13 +735,13 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             else:
                 entity_cls = self._dbmodel()
 
-                ordering = self.get_sorting_order(self._entity)
+                #ordering = self.get_sorting_order(self._entity)
 
                 if type(self.parent_record_id) == int and self.parent_record_id > 0:
                     col = self.filter_col(self._entity)
                     if col is None:
                         entity_records = entity_cls.queryObject().filter().order_by(
-                            ordering).limit(
+                            self.sort_order).limit(
                             self.record_limit
                         ).all()
                     else:
@@ -750,12 +750,12 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                         child_model_obj = child_model()
                         entity_records = child_model_obj.queryObject().filter(
                             col_name == self.parent_record_id
-                        ).order_by(ordering).all()
+                        ).order_by(self.sort_order).all()
                 else:
                     # if isinstance(self._parent, QMainWindow):
                     if not isinstance(self._parent, EntityEditorDialog):
                         entity_records = entity_cls.queryObject().filter().order_by(
-                            ordering).limit(self.record_limit).all()
+                            self.sort_order).limit(self.record_limit).all()
 
                 numRecords = len(entity_records)
 
@@ -825,9 +825,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             self.set_proxy_model_filter_column(0)
 
         self.tbEntity.setModel(self._proxyModel)
-        if numRecords < self.record_limit:
-            self.tbEntity.setSortingEnabled(True)
-            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+        #if numRecords < self.record_limit:
+            #self.tbEntity.setSortingEnabled(True)
+            #self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
         # First (ID) column will always be hidden
         self.tbEntity.hideColumn(0)
@@ -871,52 +871,24 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                 # if parent_entity == self._entity:
                 # return col
 
-    def get_sorting_order(self, entity):
+    def get_sorting_value(self):
         """
-        Return a string containing a column and sort order (asc-Ascending, desc-Descending)
-        :rtype ordering: str
+        Returns a quoted string of sort column and sort order for a given entity.
+        :rtype: str
         """
-        ordering = text('')
+        sort_details = get_entity_sort_details('Sorting/'+current_profile().name, self._entity.short_name)
+        if sort_details is None:
+            return text('')
+        order = {'Ascending':'asc', 'Descending':'desc'}
+        column_and_order = sort_details.split()
+        sort_column = column_and_order[0]
+        sort_order = order[column_and_order[1]]
 
-        if self.sort_order is None:
-            return ordering
+        # confirm if the column still exists in the entity
+        if sort_column not in list(self._entity.columns.keys()):
+            return text('')
 
-        if self.sort_order == '':
-            return ordering
-
-        if self.sort_order == 'idasc':
-            ordering = text('id asc')
-
-        if self.sort_order == 'iddesc':
-            ordering = text('id desc')
-
-        if self.sort_order not in ['idasc', 'iddesc']:
-            sort_field = self.get_sorting_field(entity)
-            if sort_field == "":
-                ordering = text('id desc')
-            else:
-                ordering = text(sort_field + ' ' + self.sort_order)
-
-        return ordering
-
-    def get_sorting_field(self, entity):
-        """
-        Return sorting column based on the rowindex of the column
-        in the entity. Rowindex is set when you re-order the columns
-        in the configration wizard (It is saved in the configuration file).
-        Column with the smallest(positive integer) rowindex is the first
-        column on an entity, and thats the column we use for sorting.
-        """
-        cols = {}
-        for k, v in entity.updated_columns.items():
-            cols[int(v.row_index)] = k
-        cols_ordered = OrderedDict(sorted(cols.items()))
-        try:
-            min_id = min(i for i in cols_ordered.keys() if i > -1)
-            column = cols_ordered[min_id]
-        except DummyException:
-            column = ""
-        return column
+        return text(sort_column+' '+sort_order)
 
     def _header_index_from_filter_combo_index(self, idx):
         col_info = self.cboFilterColumn.itemData(idx)

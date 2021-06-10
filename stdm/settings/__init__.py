@@ -70,11 +70,12 @@ def save_entity_browser_record_limit(limit):
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT: limit})
 
 
-def get_entity_sort_order():
+def get_entity_sort_details(group_name, entity_name):
     reg_config = RegistryConfig()
-    rec_info = reg_config.read([ENTITY_SORT_ORDER])
-    sort_order = rec_info.get(ENTITY_SORT_ORDER, None)
-    return sort_order
+    sort_details = reg_config.get_value(group_name, entity_name)
+    #rec_info = reg_config.read([ENTITY_SORT_ORDER])
+    #sort_order = rec_info.get(ENTITY_SORT_ORDER, None)
+    return sort_details
 
 
 def save_entity_sort_order(sort_order):

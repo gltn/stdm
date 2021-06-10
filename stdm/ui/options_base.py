@@ -33,7 +33,13 @@ from qgis.PyQt.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QMessageBox)
+    QMessageBox,
+    QHeaderView,
+    QTableWidgetItem,
+    QComboBox,
+    QPushButton,
+    QLabel
+    )
 
 from qgis.gui import QgsGui
 
@@ -45,8 +51,7 @@ from stdm.settings import (
     save_current_profile,
     get_entity_browser_record_limit,
     save_entity_browser_record_limit,
-    get_entity_sort_order,
-    save_entity_sort_order
+    get_entity_sort_details
 )
 from stdm.settings.registryconfig import (
     composer_output_path,
@@ -114,10 +119,10 @@ class OptionsDialog(WIDGET, BASE):
         self._db_config = DatabaseConfig()
 
         version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace(
-            '1.4', version.strip()
-        )
-        self.label_9.setText(upgrade_label_text)
+        #upgrade_label_text = self.label_9.text().replace(
+            #'1.4', version.strip()
+        #)
+        #self.label_9.setText(upgrade_label_text)
 
         # Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
@@ -136,22 +141,24 @@ class OptionsDialog(WIDGET, BASE):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        self.upgradeButton.toggled.connect(
-            self.manage_upgrade
-        )
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
-        self.manage_upgrade()
-
-        self.sort_order = OrderedDict()
-        self.sort_order['idasc'] = 'ID - Smallest to Biggest'
-        self.sort_order['iddesc'] = 'ID - Biggest to Smallest'
-        self.sort_order['asc'] = 'Smallest to Biggest'
-        self.sort_order['desc'] = 'Biggest to Smallest'
+        #self.upgradeButton.toggled.connect(self.manage_upgrade)
+        #self.manage_upgrade()
 
         self.init_gui()
+
+        self.profile_entity_widget = None
+        self.cache = None
+        self.sort_record_widget = None
+
+        self.tabWidget.setCurrentIndex(0)
+        self.btnAdd.clicked.connect(self.add_sorting_column)
+        self.init_sorting_widgets(self.cbo_profiles.currentText())
+        self.cbo_profiles.currentIndexChanged.connect(self.profile_changed)
+
 
     def init_gui(self):
         # Set integer validator for the port number
@@ -178,16 +185,23 @@ class OptionsDialog(WIDGET, BASE):
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
-        # Sorting order
-        self.populate_sort_order()
-        self.set_current_sort_order(get_entity_sort_order())
-
         # Debug logging
         lvl = debug_logging()
         if lvl:
             self.chk_logging.setCheckState(Qt.Checked)
         else:
             self.chk_logging.setCheckState(Qt.Unchecked)
+
+
+    def profile_changed(self):
+        self.init_sorting_widgets(self.cbo_profiles.currentText())
+
+    def init_sorting_widgets(self, profile_name):
+        profile = self._config.profile(profile_name)
+        self.profile_entity_widget = ProfileEntityWidget(self.cbEntities, profile)
+        self.cache = SortRecordCache(profile, self._reg_config)
+        self.sort_record_widget = SortRecordWidget(self.twSorting, self.cache)
+        self.show_cache(self.cache.profile_cache(profile_name))
 
     def load_profiles(self):
         """
@@ -547,7 +561,7 @@ class OptionsDialog(WIDGET, BASE):
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
-        save_entity_sort_order(self.cbSortOrder.itemData(self.cbSortOrder.currentIndex()))
+        self.cache.save()
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
@@ -564,35 +578,463 @@ class OptionsDialog(WIDGET, BASE):
 
         self.accept()
 
-    def manage_upgrade(self):
+    #def manage_upgrade(self):
+        #"""
+        #A slot raised when the upgrade button is clicked.
+        #It disables or enables the upgrade
+        #button based on the ConfigUpdated registry value.
+        #txt = 'Upgrade STDM Configuration to 1.4'
+        #"""
+
+        #self.config_updated_dic = self._reg_config.read(
+            #[CONFIG_UPDATED]
+        #)
+
+        ## if config file exists, check if registry key exists
+        #if len(self.config_updated_dic) > 0:
+            #config_updated_val = self.config_updated_dic[
+                #CONFIG_UPDATED
+            #]
+            ## If failed to upgrade, enable the upgrade button
+            #if config_updated_val == '0' or config_updated_val == '-1':
+                #self.upgradeButton.setEnabled(True)
+
+            ## disable the button if any other value.
+            #else:
+                #self.upgradeButton.setEnabled(False)
+        #else:
+            #self.upgradeButton.setEnabled(False)
+
+    def add_sorting_column(self):
+        sort_record = self.profile_entity_widget.make_sorting_record()
+        if sort_record is not None:
+            self.sort_record_widget.add_sort_record(sort_record)
+
+    def show_cache(self, cache):
+        for entity in cache:
+            name = list(entity.keys())[0]
+            idx = self.cbEntities.findText(name)
+            self.cbEntities.setCurrentIndex(idx)
+            sort_record = self.profile_entity_widget.make_sorting_record()
+            if sort_record is not None:
+                self.sort_record_widget.add_sort_record_cached(sort_record, entity[name])
+
+class ProfileEntityWidget():
+    """
+    Class to manage entity widget that holds entities for the current profile.
+    """
+    def __init__(self, combo_widget, current_profile):
         """
-        A slot raised when the upgrade button is clicked.
-        It disables or enables the upgrade
-        button based on the ConfigUpdated registry value.
+        :param combo_widget: Combobox for entities of a given profile.
+        :type combo_widget: QCombobox
+        :param current_profile: Name of the current profile.
+        :type current_profile: str
         """
+        self._profile = current_profile
+        self._entities = {}
+        self._entity_combo = combo_widget
+        self._entity_combo.clear()
+        self._populate_entities()
+        self._populate_entities_combo()
 
-        self.config_updated_dic = self._reg_config.read(
-            [CONFIG_UPDATED]
-        )
+    def _populate_entities(self):
+        """
+        Reads and populate entities dictionary with entities
+        of the current profile.
+        """
+        for entity in self._profile.user_entities():
+            self._entities[self.fmt_short_name(entity.short_name)] = entity
 
-        # if config file exists, check if registry key exists
-        if len(self.config_updated_dic) > 0:
-            config_updated_val = self.config_updated_dic[
-                CONFIG_UPDATED
-            ]
-            # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0' or config_updated_val == '-1':
-                self.upgradeButton.setEnabled(True)
+    def _populate_entities_combo(self):
+        """
+        Reads the entities dictionary and populate the entities
+        combobox.
+        """
+        for key, value in self._entities.items():
+            self._entity_combo.addItem(key)
 
-            # disable the button if any other value.
-            else:
-                self.upgradeButton.setEnabled(False)
-        else:
-            self.upgradeButton.setEnabled(False)
+    def make_sorting_record(self):
+        """
+        """
+        sort_record = self._make_record(self.selected_entity_name())
+        return sort_record
 
-    def populate_sort_order(self):
-        for k, v in self.sort_order.items():
-            self.cbSortOrder.addItem(v, k)
+    def _make_record(self, entity_name):
+        """
+        Creates and returns a four item tuple that represents
+        a single row in the table widget. A row contains:
+         - label - name of the entity
+         - columns - List of columns for a given entity
+         - order - Sorting order
+         - remove button - button to remove the row
+         :param entity_name: Name of the entity in row.
+         :type entity_name: str
+         
+         :rtype: tuple
+        """
+        if entity_name == '':
+            return None
+        label = QLabel(entity_name)
+        columns = self._make_columns_widget(entity_name)
+        order = self._make_order_widget()
+        action_btn = QPushButton('Remove')
+        return (label, columns, order, action_btn)
 
-    def set_current_sort_order(self, data):
-        self.cbSortOrder.setCurrentIndex(self.cbSortOrder.findData(data))
+    def _make_columns_widget(self, entity_name):
+        """
+        Creates and populates sorting column combobox.
+        Items of the combobox are column names of a
+        given entity.
+
+        :param entity_name: Name of the entity to 
+        extract columns from.
+        :type entity_name: str
+        """
+        entity = self.current_entity(entity_name)
+        geom_column_names = [column.name for column in entity.geometry_columns()]
+        cbox = QComboBox()
+        for name, column in entity.columns.items():
+            if name in geom_column_names:
+                continue
+            cbox.addItem(name)
+        return cbox
+
+    def _make_order_widget(self):
+        """
+        Create a combobox for sorting order.
+        """
+        cbox = QComboBox()
+        cbox.addItem("Ascending")
+        cbox.addItem("Descending")
+        return cbox
+
+    def selected_entity_name(self):
+        return self._entity_combo.currentText()
+
+    def fmt_short_name(self, short_name):
+        """
+        Replace spaces with underscore
+        """
+        name = short_name.replace(' ', "_")
+        return name
+
+    
+    def current_entity(self, entity_name):
+        return self._entities[entity_name]
+
+
+class SortRecordCache():
+    """
+    Class to manage existing records from the registry. The class
+    is responsible for reading, writing, updating, and deleting values
+    from the registry. 
+    Upon instantiation of this class, it will read any sorting records
+    for a given profile from the registry and place them into a working
+    cache in memory.
+    """
+    def __init__(self, current_profile, reg):
+        """
+        :param current_profile: Current profile.
+        :type current_profile: Profile
+        :param reg: Registry class for accessing the registry
+        :type reg: RegistryConfig
+        """
+        self.profile = current_profile
+        self.reg_config = reg
+        self._cache = {}
+        self.cache_name = 'Sorting/'+self.profile.name
+        self.trash_bin = []
+        self.fill_cache()
+
+    def fill_cache(self):
+        """
+        Read and cache values from registry.
+        """
+        group_keys = self.reg_config.group_keys(self.cache_name)
+        if group_keys is None:
+            return
+        if self.profile.name not in list(self._cache.keys()):
+            self._cache[self.profile.name] = []
+        for key in group_keys:
+            value = self.reg_config.get_value(self.cache_name, key)
+            values = value.split()
+            entity={key:(values[0], values[1])}
+            self._cache[self.profile.name].append(entity)
+
+    def profile_cache(self, profile_name):
+        """
+        Returns cached values of a given profile.
+
+        :param profile_name: Text name of a profile.
+        :type profile_name: str
+        """
+        return self._cache[profile_name]
+
+    def add(self, entity_name, value):
+        """
+        Adds an entry to the cache.
+
+        :param entity_name: Name of an entity to cache values for.
+        :type entity_name: str
+        :param value: Tuple of (sort column and sort order)
+        :type value: tuple
+        """
+        sort_column = value[0].currentText()
+        sort_order = value[1].currentText()
+        self._cache[self.profile.name].append({entity_name.text():(sort_column, sort_order)})
+
+    def remove(self, entity_name):
+        """
+        Finds and removes an item from local cache.
+        Removed entry is moved to trash bin temporarily. The items will be 
+        removed from the registry permanently onces the dialog is saved.
+
+        :param entity_name: Key to use when finding an item from the cache.
+        :type entity_name: str
+        """
+        entity = self.find_in_cache(entity_name)
+        if entity is None:
+            return
+        self.trash_bin.append(entity)
+        self._delete_from_cache(entity_name)
+
+    def remove_keys(self):
+        """
+        Removes values in trash bin permanently from
+        registry then clears the bin.
+        """
+        for entity in self.trash_bin:
+            key = list(entity.keys())[0]
+            self.reg_config.remove_key(self.cache_name, key)
+        self.trash_bin = []
+
+    def save(self):
+        """
+        Save cached entries permanently to registry.
+        But before saving, remove any deleted items.
+        """
+        self.remove_keys()
+        self.write_cache()
+
+    def write_cache(self):
+        """
+        Write cached values to registry.
+        """
+        for entity in self._cache[self.profile.name]:
+            entity_name = list(entity.keys())[0]
+            value = list(entity.values())[0]
+            self.reg_config.add_value(self.cache_name, {entity_name:value})
+
+    def _delete_from_cache(self, entity_name):
+        """
+        Delete an entity from the cache.
+
+        :param entity_name: Name of the entity to remove from cache.
+        :type entity_name: str
+        """
+        entities = self._cache[self.profile.name]
+        entities[:] = [entity for entity in entities if entity_name not in entity]
+
+    def find_in_cache(self, entity_name):
+        """
+        Finds and returns an entity from the cache.
+
+        :param entity_name: Name of the entity to find.
+        :type entity_name: str
+        """
+        entities = self._cache[self.profile.name]
+        entity = [entity for entity in entities if entity_name in list(entity.keys())]
+        return entity[0] if len(entity) > 0 else None
+
+class SortRecordWidget():
+    """
+    A class that contains a table widget for adding sorting details.
+    Sorting details includes:
+    - label - Name of the entity you are setting the sorting details
+    - Field - The column you are selecting for sorting
+    - Order - Order of sorting the field
+    - Action - Button to remove a row from the table widget
+    """
+    def __init__(self, table_widget, cache):
+        """
+        :param table_widget: Table for adding sorting details
+        :type table_widget: QTableWidget
+
+        :param cache: The class reads existing sorting details from the 
+           registry, temporary stores any additions of sorting details and
+           finally writting contents to registry.
+        :type cache: SortRecordCache
+        """
+        self._table_widget = table_widget 
+        self.cache = cache
+        self._header_labels = ["Entity", "Field", "Order", "Action"]
+        self.set_widget_header()
+        self.clear_table_widget()
+
+    def clear_table_widget(self):
+        for idx in range(self._table_widget.rowCount()):
+            self._table_widget.removeRow(idx)
+
+    def set_widget_header(self):
+        self._table_widget.setColumnCount(len(self._header_labels))
+        self._table_widget.setHorizontalHeaderLabels(self._header_labels)
+        self._table_widget.horizontalHeader().setStretchLastSection(True)
+        self._table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+    
+    def add_sort_record(self, sort_record):
+        entity_name, entity_columns, sort_order, delete_button = sort_record
+        
+        entity = self.cache.find_in_cache(entity_name.text())
+        if entity is not None:
+            return
+
+        entity_columns.setCurrentIndex(0)
+        sort_order.setCurrentIndex(0)
+
+        self._add_record(sort_record)
+
+        self.cache.add(entity_name, (entity_columns, sort_order))
+
+    def add_sort_record_cached(self, sort_record, value):
+        """ 
+        Method called once to add any sort details saved in the registry.
+        Creates a  single row of table widget items from the values in 
+        sort_record, then sets default values for comboboxes from the values 
+        read from the registry
+        :param sort_record: A tuple of (QLabel, QComboBox, QComboBox, QPushButton)
+        :type sort_record: tuple
+        :param value: A tuple of (sort_column, sort_order)
+        :type value: tuple
+        """
+        entity_name, entity_columns, sort_order, delete_button = sort_record
+
+        entity_columns.setCurrentIndex(0)
+        sort_order.setCurrentIndex(0)
+
+        idx = entity_columns.findText(value[0])
+        if idx > -1:
+            entity_columns.setCurrentIndex(idx)
+
+        idx = sort_order.findText(value[1])
+        if idx > -1:
+            sort_order.setCurrentIndex(idx)
+
+        self._add_record(sort_record)
+
+    def _add_record(self, sort_record):
+        """
+        Adds sorting widgets to a table widget
+        """
+        entity_name, entity_columns, sort_order, delete_button = sort_record
+
+        entity_columns.currentIndexChanged.connect(self.change_sort_column)
+        sort_order.currentIndexChanged.connect(self.change_sort_order)
+        delete_button.clicked.connect(self.delete_row)
+
+        self._table_widget.insertRow(self._table_widget.rowCount())
+        row = self._table_widget.rowCount()
+
+        self._table_widget.setCellWidget(row-1, 0, entity_name)
+        self._table_widget.setCellWidget(row-1, 1, entity_columns)
+        self._table_widget.setCellWidget(row-1, 2, sort_order)
+        self._table_widget.setCellWidget(row-1, 3, delete_button)
+
+    def current_row(self):
+        """ 
+        Returns current row from a table widget.
+        :rtype: int
+        """
+        return self._table_widget.currentRow()
+
+    def current_row_entity_name(self):
+        """
+        Returns an entity name from the first column (QLabel)
+        of the current row of the table widget.
+        :rtype: str
+        """ 
+        entity_name = ''
+        curr_row = self.current_row()
+        if curr_row > -1:
+            widget = self._table_widget.cellWidget(curr_row, 0)
+            if isinstance(widget, QLabel):
+                entity_name = widget.text()
+        return entity_name
+
+    def current_row_sort_column(self):
+        """
+        Returns a name of the sorting field from the second column
+        (QComboBox) of the current row of the table widget.
+        :rtype: str
+        """ 
+        sort_col_name = ''
+        curr_row = self.current_row()
+        if curr_row > -1:
+            widget = self._table_widget.cellWidget(curr_row, 1)
+            if isinstance(widget, QComboBox):
+                sort_col_name = widget.currentText()
+        return sort_col_name
+
+    def current_row_sort_order(self):
+        """
+        Returns a name of the sorting order from the third column
+        (QComboBox) of the current row of the table widget.
+        :rtype: str
+        """
+        sort_order = ''
+        curr_row = self.current_row()
+        if curr_row > -1:
+            widget = self._table_widget.cellWidget(curr_row, 2)
+            if isinstance(widget, QComboBox):
+                sort_order = widget.currentText()
+        return sort_order
+
+    def entity_value(self):
+        """
+        Returns sorting details (sorting column and sorting order) of
+        an entity from the cache.
+        :rtype: tuple
+        """
+        entity = self.cache.find_in_cache(self.current_row_entity_name())
+        return entity if entity is None else list(entity.values())[0]
+
+    def update_entity_at_current_row(self, value):
+        """
+        Updates the value of the current entity in cache
+        :param value: Tuple of (sorting column and sorting order).
+        :type value: tuple
+        """
+        entity_name = self.current_row_entity_name()
+        entity = self.cache.find_in_cache(entity_name)
+        entity[entity_name] = value
+
+    def change_sort_column(self):
+        """
+        Updates sorting column of an entity stored in the cache.
+        """
+        value = self.entity_value()
+        if value is not None:
+            sort_column = self.current_row_sort_column()
+            sort_order = value[1]
+            self.update_entity_at_current_row((sort_column, sort_order))
+
+    def change_sort_order(self):
+        """
+        Updates sorting order (Ascending or Descending) of an
+        entity stored in the cache.
+        """
+        value = self.entity_value()
+        if value is not None:
+            sort_column = value[0]
+            sort_order = self.current_row_sort_order()
+            self.update_entity_at_current_row((sort_column, sort_order))
+
+    def delete_row(self):
+        """
+        Removes the current row from the table widget
+        """
+        entity_name = self.current_row_entity_name()
+        if entity_name == '':
+            return
+        self._table_widget.removeRow(self.current_row())
+        self.cache.remove(entity_name)
+

@@ -466,7 +466,7 @@ class Entity(QObject, TableItem):
     def has_geometry_column(self):
         """
         :return: True if the entity contains a spatial column, else False.
-        :rtype: True
+        :rtype: bool
         """
         return True if len(self.geometry_columns()) > 0 else False
 

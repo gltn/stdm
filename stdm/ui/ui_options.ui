@@ -44,435 +44,563 @@
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="3" column="0" colspan="4">
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Database Properties</string>
+       <item row="0" column="0">
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="currentIndex">
+          <number>1</number>
          </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0" colspan="3">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
+         <widget class="QWidget" name="tabGeneral">
+          <attribute name="title">
+           <string>General</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="spacing">
+            <number>15</number>
+           </property>
+           <item>
+            <layout class="QGridLayout" name="gridLayout_7" rowstretch="0">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Current profile</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QComboBox" name="cbo_profiles">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox">
+             <property name="title">
+              <string>Database Properties</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_3">
+              <item row="0" column="0" colspan="3">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span
                                                         style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt;
                                                         Changes to the database connection properties will only take
                                                         effect upon the next login&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
                                                     </string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" rowspan="2" colspan="3">
-           <widget class="QFrame" name="frame">
-            <property name="frameShape">
-             <enum>QFrame::NoFrame</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_2">
-             <property name="margin">
-              <number>0</number>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" rowspan="2" colspan="3">
+               <widget class="QFrame" name="frame">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QGridLayout" name="gridLayout_2">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="0" rowspan="4">
+                  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0" columnstretch="0,0">
+                   <property name="rightMargin">
+                    <number>6</number>
+                   </property>
+                   <item row="3" column="0">
+                    <widget class="QCheckBox" name="chk_pg_connections">
+                     <property name="maximumSize">
+                      <size>
+                       <width>200</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Extract from existing connection                                                                        </string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_4">
+                     <property name="text">
+                      <string>Database</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="txtDatabase">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="maxLength">
+                      <number>100</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="txtPort">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="maxLength">
+                      <number>6</number>
+                     </property>
+                     <property name="echoMode">
+                      <enum>QLineEdit::Normal</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QComboBox" name="cbo_pg_connections">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_2">
+                     <property name="minimumSize">
+                      <size>
+                       <width>70</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Host</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_3">
+                     <property name="maximumSize">
+                      <size>
+                       <width>100</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Port</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="txtHost">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>30</height>
+                      </size>
+                     </property>
+                     <property name="maxLength">
+                      <number>200</number>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="0" column="1">
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>38</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QPushButton" name="btn_db_conn_clear">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Clear database connection properties</string>
+                   </property>
+                   <property name="text">
+                    <string>Clear</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="btn_test_db_connection">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Test database connection</string>
+                   </property>
+                   <property name="text">
+                    <string>Test connection...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <item row="0" column="0" rowspan="4">
-              <layout class="QGridLayout" name="gridLayout">
-               <property name="rightMargin">
-                <number>6</number>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>250</height>
+              </size>
+             </property>
+             <property name="title">
+              <string>Document Composer</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_2">
+              <item>
+               <layout class="QGridLayout" name="gridLayout_4">
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
+                   <string>Supporting documents folder</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_8">
+                  <property name="text">
+                   <string>Output folder</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QToolButton" name="btn_composer_out_folder">
+                  <property name="toolTip">
+                   <string>Choose output directory</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLineEdit" name="txt_output_dir">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maxLength">
+                   <number>500</number>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QToolButton" name="btn_template_folder">
+                  <property name="toolTip">
+                   <string>Choose templates directory</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string>Template folder</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="2">
+                 <widget class="QToolButton" name="btn_supporting_docs">
+                  <property name="toolTip">
+                   <string>Choose supporting documents directory</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                  <property name="iconSize">
+                   <size>
+                    <width>24</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="txt_template_dir">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maxLength">
+                   <number>500</number>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="txtRepoLocation">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maxLength">
+                   <number>500</number>
+                  </property>
+                  <property name="readOnly">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chk_logging">
+             <property name="text">
+              <string>Debug logging</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabEntity">
+          <attribute name="title">
+           <string>Entity</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="spacing">
+            <number>30</number>
+           </property>
+           <item>
+            <layout class="QGridLayout" name="gridLayout_6" columnstretch="0,0,1">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>Entity browser records limit:</string>
                </property>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_3">
-                 <property name="text">
-                  <string>Port</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="txtHost">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="maxLength">
-                  <number>200</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_2">
-                 <property name="minimumSize">
-                  <size>
-                   <width>70</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Host</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QComboBox" name="cbo_pg_connections">
-                 <property name="enabled">
-                  <bool>false</bool>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="txtDatabase">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="maxLength">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="chk_pg_connections">
-                 <property name="text">
-                  <string>Extract from existing connection                                                                        </string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_4">
-                 <property name="text">
-                  <string>Database</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="txtPort">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>30</height>
-                  </size>
-                 </property>
-                 <property name="maxLength">
-                  <number>6</number>
-                 </property>
-                 <property name="echoMode">
-                  <enum>QLineEdit::Normal</enum>
-                 </property>
-                </widget>
-               </item>
-              </layout>
+              </widget>
              </item>
              <item row="0" column="1">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+              <widget class="QSpinBox" name="edtEntityRecords">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>1</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>38</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="btn_db_conn_clear">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
                  <height>30</height>
                 </size>
                </property>
-               <property name="toolTip">
-                <string>Clear database connection properties</string>
+               <property name="maximum">
+                <number>100000</number>
                </property>
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QPushButton" name="btn_test_db_connection">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Test database connection</string>
-               </property>
-               <property name="text">
-                <string>Test connection...</string>
+               <property name="singleStep">
+                <number>10</number>
                </property>
               </widget>
              </item>
-             <item row="3" column="1">
-              <spacer name="verticalSpacer_2">
+             <item row="0" column="2">
+              <spacer name="horizontalSpacer_2">
                <property name="orientation">
-                <enum>Qt::Vertical</enum>
+                <enum>Qt::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>20</width>
-                 <height>40</height>
+                 <width>40</width>
+                 <height>20</height>
                 </size>
                </property>
               </spacer>
              </item>
             </layout>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="3">
-        <layout class="QGridLayout" name="gridLayout_7" rowstretch="0">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Current profile</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbo_profiles">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="6" column="0" colspan="4">
-        <layout class="QGridLayout" name="gridLayout_6">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_10">
-           <property name="text">
-            <string>Entity browser records limit:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_11">
-           <property name="text">
-            <string>Order of Sorting Records:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QComboBox" name="cbSortOrder"/>
-         </item>
-         <item row="0" column="1">
-          <widget class="QSpinBox" name="edtEntityRecords">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>1</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximum">
-            <number>100000</number>
-           </property>
-           <property name="singleStep">
-            <number>10</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="8" column="0">
-        <widget class="QCheckBox" name="chk_logging">
-         <property name="text">
-          <string>Debug logging</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Upgrade STDM Configuration to 1.4</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QPushButton" name="upgradeButton">
-         <property name="text">
-          <string>Upgrade</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="4">
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>250</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Document Composer</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Supporting documents folder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Output folder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QToolButton" name="btn_composer_out_folder">
-              <property name="toolTip">
-               <string>Choose output directory</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>24</width>
-                <height>24</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="txt_output_dir">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maxLength">
-               <number>500</number>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QToolButton" name="btn_template_folder">
-              <property name="toolTip">
-               <string>Choose templates directory</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>24</width>
-                <height>24</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Template folder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QToolButton" name="btn_supporting_docs">
-              <property name="toolTip">
-               <string>Choose supporting documents directory</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>24</width>
-                <height>24</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="txt_template_dir">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maxLength">
-               <number>500</number>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="txtRepoLocation">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maxLength">
-               <number>500</number>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Entity Record Sorting: </string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_6">
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0,0">
+                  <item>
+                   <widget class="QLabel" name="label_9">
+                    <property name="maximumSize">
+                     <size>
+                      <width>30</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Entity:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="cbEntities">
+                    <property name="maximumSize">
+                     <size>
+                      <width>300</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btnAdd">
+                    <property name="maximumSize">
+                     <size>
+                      <width>100</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Add Entity</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="twSorting">
+                  <property name="showGrid">
+                   <bool>true</bool>
+                  </property>
+                  <property name="columnCount">
+                   <number>4</number>
+                  </property>
+                  <column/>
+                  <column/>
+                  <column/>
+                  <column/>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>161</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
       </layout>

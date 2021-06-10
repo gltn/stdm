@@ -58,7 +58,6 @@ def registry_value(key_name):
 
     if len(key_value) == 0:
         return None
-
     else:
         return key_value[key_name]
 
@@ -206,7 +205,6 @@ class RegistryConfig:
     """
     Utility class for reading and writing STDM user settings in Windows Registry
     """
-
     def __init__(self):
         self.groupPath = "STDM"
 
@@ -279,6 +277,60 @@ class RegistryConfig:
         uSettings.endGroup()
         uSettings.sync()
 
+    def all_keys(self):
+        settings = QSettings()
+        settings.beginGroup(self.groupPath)
+        return settings.allKeys()
+
+    def group_keys(self, group_name):
+        settings = QSettings()
+        settings.beginGroup(self.groupPath+'/'+group_name)
+        keys = settings.childKeys()
+        settings.endGroup()
+        return keys
+
+    def add_value(self, group_name, vals):
+        """
+        Writes values to registry.
+        :param group_name: Name of the sorting group in the regristry.
+        Format: `Sorting/profile_name`
+        This is appended to the `groupPath` (STDM) defined in this class.
+        :type group_name: str
+
+        :param vals: Dictionary with entity name as key and a tuple of
+         sorting column and order of sorting (Ascending or Descending) as the 
+         value.
+        :type vals: dict  {entity_name:(sort_column, sort_order)}
+        """
+        settings = QSettings()
+        settings.beginGroup(self.groupPath+'/'+group_name)
+        entity_name = list(vals.keys())[0]
+        sort_column = list(vals.values())[0][0]
+        sort_order  = list(vals.values())[0][1]
+        value = sort_column+' '+sort_order
+        settings.setValue(entity_name, value)
+        settings.endGroup()
+
+    def remove_key(self, group_name, key):
+        settings = QSettings()
+        settings.beginGroup(self.groupPath+'/'+group_name)
+        settings.remove(key)
+        settings.endGroup()
+
+    def get_value(self, group_name, entity_name):
+        """
+        Finds and returns a value of a key from group `Sorting/profile_name`.
+        :param group_name: Name of the sorting group under the main STDM group
+          in the registry. The format of the group_name is `Sorting/profile_name`
+        :type group_name: str
+        :param entity_name:
+        :type entity_name: str
+        """
+        settings = QSettings()
+        settings.beginGroup(self.groupPath+'/'+group_name)
+        value = settings.value(entity_name)
+        settings.endGroup()
+        return value
 
 class QGISRegistryConfig(RegistryConfig):
     """
