@@ -105,6 +105,31 @@ def get_data_for_unique_column(table_name, column_name):
         data.append(record[column_name])
     return data
 
+def get_lookup_data(table_name):
+    """
+    Returns a dict of {id:value} from 
+    a given lookup table
+    """
+    sql = text("SELECT id, value FROM {} ORDER BY id ".format(table_name))
+    results = _execute(sql)
+    data = {}
+    for record in results:
+        data[int(record['id'])]=record['value']
+    return data
+
+def create_ms_record(target_table, target_table_id,
+        multi_select_id, multi_select_table, lookup_table):
+    """
+    """
+    lookup_column = lookup_table+'_id'
+    target_column = target_table+'_id'
+
+    sql= text("Insert into {} ({}, {}) values({},{})".format(
+        multi_select_table, 
+        lookup_column, target_column,
+        multi_select_id, target_table_id))
+    _execute(sql)
+
 def pg_create_supporting_document(document):
     sql = "INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
             " VALUES ('{}','{}','{}',{},'{}') RETURNING id ".format(

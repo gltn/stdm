@@ -46,7 +46,8 @@ from stdm.data.pg_utils import (
     get_value_by_column,
     pg_create_supporting_document,
     pg_create_parent_supporting_document,
-    get_data_for_unique_column
+    get_data_for_unique_column,
+    get_lookup_data
 )
 from stdm.data.importexport import (
     vectorFileDir,
@@ -132,6 +133,10 @@ class ImportData(QWizard, Ui_frmImport):
 
         # cache for unique data for current table
         self.unique_data = {}
+
+        # cache for lost documents lookup values
+        # {id:value}
+        self.lost_document = {}
 
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
@@ -529,6 +534,7 @@ class ImportData(QWizard, Ui_frmImport):
 
             self.cache_unique_data()
 
+            self.cache_lost_documents()
 
             self._enable_disable_trans_tools()
 
@@ -618,6 +624,17 @@ class ImportData(QWizard, Ui_frmImport):
             if value == 'unique':
                 data = get_data_for_unique_column(self.targetTab, key)
                 self.unique_data[key] = data
+
+    def cache_lost_documents(self):
+        """
+        Cache lookup values for lost documents locally
+        """
+        lookup_table_value = 'lookup_table'
+        multi_select = mapfile_section(self.targetTab[3:]+'-multiple_select')
+        if len(multi_select) > 0:
+            if lookup_table_value in multi_select.keys():
+                src_table = multi_select[lookup_table_value]
+                self.lost_documents = get_lookup_data(src_table)
 
     def get_virtual_columns(self):
         """
@@ -854,8 +871,9 @@ class ImportData(QWizard, Ui_frmImport):
 
                 if del_result == QMessageBox.Yes:
                     self.dataReader.featToDb(
-                        self.targetTab, matchCols, False, self, self.unique_data, geom_column,
-                        translator_manager=value_translator_manager
+                        self.targetTab, matchCols, False, self,
+                        self.unique_data, self.lost_documents,
+                        geom_column, translator_manager=value_translator_manager
                     )
                     # Update directory info in the registry
                     setVectorFileDir(self.field("srcFile"))
@@ -869,7 +887,8 @@ class ImportData(QWizard, Ui_frmImport):
                     success = False
         else:
             self.dataReader.featToDb(
-                self.targetTab, matchCols, True, self, self.unique_data, geom_column,
+                self.targetTab, matchCols, True, self, 
+                self.unique_data, self.lost_documents, geom_column,
                 update_geom_column_only=update_geom_column, translator_manager=value_translator_manager
             )
             self.InfoMessage(

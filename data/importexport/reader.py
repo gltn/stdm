@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import re
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -32,9 +33,15 @@ except:
 from stdm.data.pg_utils import (
     delete_table_data,
     geometryType,
-    execute_query
+    execute_query,
+    create_ms_record
 )
-from stdm.utils.util import getIndex
+
+from stdm.utils.util import (
+        getIndex, 
+        mapfile_section
+    )
+
 from stdm.settings import (
     current_profile
 )
@@ -311,12 +318,16 @@ class OGRReader(object):
                 if not isinstance(value, IgnoreType):
                     setattr(model_instance, col, value)
 
+        last_id = -1
         try:
             self._dbSession.add(model_instance)
+            self._dbSession.flush()
+            last_id = model_instance.id
             self._dbSession.commit()
         except:
             self._dbSession.rollback()
             raise
+        return last_id
 
     def auto_fix_geom_type(self, geom, source_geom_type, destination_geom_type):
         """
@@ -366,8 +377,9 @@ class OGRReader(object):
         geom_type = multi_geom.GetGeometryName()
         return geom_wkb, geom_type
 
-    def featToDb(self, targettable, columnmatch, append, parentdialog, unique_data={},
-            geomColumn=None, geomCode=-1, update_geom_column_only=False, translator_manager=None):
+    def featToDb(self, targettable, columnmatch, append, parentdialog, 
+            unique_data={}, lost_documents={}, geomColumn=None, geomCode=-1,
+            update_geom_column_only=False, translator_manager=None):
         """
         Performs the data import from the source layer to the STDM database.
         :param targettable: Destination table name
@@ -378,6 +390,16 @@ class OGRReader(object):
         containing value translators defined for the destination table columns.
         :type translator_manager: ValueTranslatorManager
         """
+        multi_select_src_column = ''
+        multi_select_dest_table = ''
+        multiple_selection = []
+        multi_select_lookup_table = ''
+        if len(lost_documents) > 0:
+            multi_select = mapfile_section(targettable[3:]+'-multiple_select')
+            multi_select_src_column = multi_select['src_column']
+            multi_select_dest_table = multi_select['dest_table']
+            multi_select_lookup_table = multi_select['lookup_table']
+            
         # Check current profile
         if self._current_profile is None:
             msg = QApplication.translate(
@@ -457,6 +479,10 @@ class OGRReader(object):
                             continue
                         else:
                             unique_data[dest_column].append(field_value)
+
+                    # Check if this is multiple select column
+                    if a_field_name == multi_select_src_column:
+                       multiple_selection = self.find_multi_select_id(field_value, lost_documents)
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
@@ -552,7 +578,12 @@ class OGRReader(object):
                 if update_geom_column_only:
                     self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
                 else:
-                    self._insertRow(targettable, column_value_mapping)
+                    last_id = self._insertRow(targettable, column_value_mapping)
+                    # process multiple selection
+                    if len(multiple_selection) > 0:
+                        self.create_multiple_select_records(targettable, last_id,
+                                multi_select_dest_table, multiple_selection,
+                                multi_select_lookup_table)
             except:
                 progress.close()
                 raise
@@ -560,6 +591,45 @@ class OGRReader(object):
             init_val += 1
 
         progress.setValue(numFeat)
+
+    def find_multi_select_id(self, field_value, lost_documents):
+        """
+        """
+        selection_ids = []
+        values = re.split('(\d+)', field_value)
+        if values[0].strip() == '':
+            values.pop(0)
+        sel_options = [i+j for i,j in zip(values[::2], values[1::2])]
+        for option in sel_options:
+            for id, value in lost_documents.items():
+                if option.strip() == value:
+                    selection_ids.append(id)
+        return selection_ids
+
+
+    def create_multiple_select_records(self, target_table, target_table_id,
+            multi_select_dest_table, multiple_selection, multi_select_lookup_table):
+        """
+        :param target_table: Parent table for the record that has done the selection
+        :type target_table: str
+
+        :param target_table_id: ID of the record that has done the selection - last id
+        :type target_table_id: int
+
+        :param multi_select_dest_table: Table to store selections - hl_lost_documents
+        :type multi_select_dest_table: str
+
+        :param multiple_selection: List with ids for the selected options
+        :type multiple_selection : list
+
+        :param multi_select_lookup_table: Multiple selection lookup table
+        :type multi_select_lookup_table: str
+
+        """
+        for multi_select_id in multiple_selection:
+            create_ms_record(target_table, target_table_id,
+                    multi_select_id, multi_select_dest_table,
+                    multi_select_lookup_table)
 
     def _enumeration_column_type(self, column_name, value):
         """
