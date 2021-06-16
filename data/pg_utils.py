@@ -96,6 +96,15 @@ def get_value_by_column(table_name, target_col, where_column, value):
         found = r[target_col]
     return found
 
+def get_data_for_unique_column(table_name, column_name):
+    sql = text("SELECT {} FROM {} ORDER BY {} ".format(
+        column_name, table_name, column_name))
+    results = _execute(sql)
+    data = []
+    for record in results:
+        data.append(record[column_name])
+    return data
+
 def pg_create_supporting_document(document):
     sql = "INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
             " VALUES ('{}','{}','{}',{},'{}') RETURNING id ".format(

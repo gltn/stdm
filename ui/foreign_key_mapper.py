@@ -135,7 +135,8 @@ class ForeignKeyMapper(QWidget):
     using an ExpressionBuilder for filtering records.
     """
     #Custom signals
-    beforeEntityAdded = pyqtSignal("PyQt_PyObject", QWidget)
+    #beforeEntityAdded = pyqtSignal("PyQt_PyObject", QWidget)
+    beforeEntityAdded = pyqtSignal("PyQt_PyObject")
     afterEntityAdded = pyqtSignal("PyQt_PyObject", int)
     entityRemoved = pyqtSignal("PyQt_PyObject")
     deletedRows = pyqtSignal(list)
@@ -619,7 +620,7 @@ class ForeignKeyMapper(QWidget):
 
         return modelInstances
         
-    def _onRecordSelectedEntityBrowser(self, rec, sender, row_number=-1):
+    def _onRecordSelectedEntityBrowser(self, rec, row_number=-1):
         '''
         Slot raised when the user has clicked the select button
         in the 'EntityBrowser' dialog
@@ -650,13 +651,16 @@ class ForeignKeyMapper(QWidget):
 
         if not modelObj is None:
             #Raise before entity added signal
-            self.beforeEntityAdded.emit(modelObj, self)
+            self.beforeEntityAdded.emit(modelObj)
             
             # set status - control if notification bar is shown on the 
             # entity browser
-            sender.selection_status = self.signal_status
+            #sender.selection_status = self.signal_status
 
             if not self.signal_status:
+                return
+
+            if not self._validate_unique_columns(modelObj, row_number):
                 return
 
             if not self._supportsLists and self._tableModel.rowCount() > 0:

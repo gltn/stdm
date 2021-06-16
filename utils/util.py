@@ -1253,7 +1253,9 @@ def is_ascii(s):
     return bool(re.match(r'[\x00-\x7F]+$', s))
 
 def mapfile_section(section):
-    """Return and ordered dict of an ini section"""
+    """
+    Returns an ordered dict of ini section
+    """
 
     from stdm.settings import get_import_mapfile
     mapfile = get_import_mapfile()

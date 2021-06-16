@@ -45,9 +45,9 @@ from stdm.data.pg_utils import (
     get_last_id,
     get_value_by_column,
     pg_create_supporting_document,
-    pg_create_parent_supporting_document
+    pg_create_parent_supporting_document,
+    get_data_for_unique_column
 )
-
 from stdm.data.importexport import (
     vectorFileDir,
     setVectorFileDir
@@ -130,6 +130,9 @@ class ImportData(QWizard, Ui_frmImport):
         #Geometry columns
         self.geomcols = []
 
+        # cache for unique data for current table
+        self.unique_data = {}
+
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
         #Initialize value translators from definitions
@@ -176,10 +179,16 @@ class ImportData(QWizard, Ui_frmImport):
         self.btn_delete_translator.clicked.connect(self._on_delete_translator)
 
     def auto_load_translators(self):
-        srclookups = mapfile_section('lookups')
-        dstlookups = mapfile_section('lookup-defaults')
+        lookups = self.target_table_shortname(self.targetTab)+'-lookups'
+        srclookups = mapfile_section(lookups)
+
+        dflt_lookups = self.target_table_shortname(self.targetTab)+'-lookup-defaults'
+
+        dstlookups = mapfile_section(dflt_lookups)
+
         trans_sec = self.target_table_shortname(self.targetTab)+'-translators'
         translators = mapfile_section(trans_sec)
+
 
         for dest_column, lookup_table in dstlookups.iteritems():
 
@@ -220,6 +229,7 @@ class ImportData(QWizard, Ui_frmImport):
                 trans_config = ValueTranslatorConfig.translators.get(config_key, None)
 
                 map_sec = self.targetTab[3:]+'-'+dest_column+'-relatedentity'
+
                 rel_values = mapfile_section(map_sec)
                 config_key ="Related table"
                 dest_table = rel_values['dest_table']
@@ -230,6 +240,8 @@ class ImportData(QWizard, Ui_frmImport):
 
                 col_pairs = {}
                 col_pairs[rel_values['src_table_field']] = rel_values['ref_table_field']
+
+                src_column = ''
 
                 #trans_config = ValueTranslatorConfig.translators.get(config_key, None)
                 trans_dlg = trans_config.create(
@@ -276,6 +288,7 @@ class ImportData(QWizard, Ui_frmImport):
                     src_column,
                     dest_column
                 )
+
                 trans_dlg.auto_src_translator.entity = trans_dlg.entity()
                 trans_dlg.auto_src_translator.document_type_id = trans_dlg._document_type_id
                 trans_dlg.auto_src_translator.document_type = dest_column
@@ -337,7 +350,10 @@ class ImportData(QWizard, Ui_frmImport):
 
                 try:
                     if trans_config.__name__ =='LookupTranslatorConfig':
-                        dlookups = mapfile_section('lookups')
+
+                        lookups = self.target_table_shortname(self.targetTab)+'-lookups'
+                        dlookups = mapfile_section(lookups)
+
                         trans_dlg = trans_config.create(
                             self,
                             self._source_columns(),
@@ -510,6 +526,10 @@ class ImportData(QWizard, Ui_frmImport):
             self.lstTargetFields.clear()
             self.assignCols()
             self.auto_load_translators()
+
+            self.cache_unique_data()
+
+
             self._enable_disable_trans_tools()
 
     def _source_columns(self):
@@ -528,6 +548,7 @@ class ImportData(QWizard, Ui_frmImport):
         for i,c in enumerate(cols):
             ucols[i] = unicode(c, 'utf-8').encode('ascii', 'ignore')
 
+        # create a temp dictionary for only columns in the mapfile
         temp = {}
         for i,f in enumerate(srcCols):
             col = f.encode('ascii', 'ignore').lstrip().lower()
@@ -535,7 +556,9 @@ class ImportData(QWizard, Ui_frmImport):
                 if v==col:
                     temp[k] = srcCols[srcCols.index(f)]
 
+        # Sort temp dictionary by key
         order_temp = OrderedDict(sorted(temp.items()))
+        
         for col in order_temp.values():
             srcCols.pop(srcCols.index(col))
 
@@ -545,6 +568,7 @@ class ImportData(QWizard, Ui_frmImport):
         for i, c in enumerate(srcCols):
             srcItem = QListWidgetItem(c,self.lstSrcFields)
             srcItem.setCheckState(Qt.Unchecked)
+            # select only columns in the mapfile
             if i<=len(cols)-1:
                 srcItem.setCheckState(Qt.Checked)
             srcItem.setIcon(QIcon(":/plugins/stdm/images/icons/column.png"))
@@ -561,13 +585,18 @@ class ImportData(QWizard, Ui_frmImport):
             if colIndex != -1:
                 targetCols.remove(gc)
 
-        #Remove 'id' column if there
+        #Remove 'id' column
         id_idx = getIndex(targetCols, 'id')
         if id_idx != -1:
             targetCols.remove('id')
 
         remove_list = mapfile_section(target_table+'-remove')
         targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
+
+        virtual_cols = mapfile_section(target_table+'-virtual')
+        if len(virtual_cols) > 0:
+            vc = self.get_virtual_columns() #self.chk_virtual.setChecked(True)
+            targetCols.extend(vc)
 
         # sort list according to the mapfile
         dest_cols = targetCols
@@ -576,9 +605,32 @@ class ImportData(QWizard, Ui_frmImport):
 
         self._add_target_table_columns(dest_cols)
 
-        virtual_cols = mapfile_section(target_table+'-virtual')
-        if len(virtual_cols) > 0:
-            self.chk_virtual.setChecked(True)
+
+    def cache_unique_data(self):
+        """
+        Check for unique constraint for the current table then
+        fetches the existing records from the database, and before
+        we insert a record, we look up if the record already exist
+        from the cache
+        """
+        constraints = mapfile_section(self.targetTab[3:]+'-constraints')
+        for key, value in constraints.iteritems():
+            if value == 'unique':
+                data = get_data_for_unique_column(self.targetTab, key)
+                self.unique_data[key] = data
+
+    def get_virtual_columns(self):
+        """
+        Returns a list of virtual columns
+        :rtype: list
+        """
+        virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
+
+        virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
+        remove_list = mapfile_section(self.targetTab[3:]+'-remove').values()
+        virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
+
+        return virtual_columns
 
     def sortable(self, target_table):
         """
@@ -802,7 +854,7 @@ class ImportData(QWizard, Ui_frmImport):
 
                 if del_result == QMessageBox.Yes:
                     self.dataReader.featToDb(
-                        self.targetTab, matchCols, False, self, geom_column,
+                        self.targetTab, matchCols, False, self, self.unique_data, geom_column,
                         translator_manager=value_translator_manager
                     )
                     # Update directory info in the registry
@@ -817,7 +869,7 @@ class ImportData(QWizard, Ui_frmImport):
                     success = False
         else:
             self.dataReader.featToDb(
-                self.targetTab, matchCols, True, self, geom_column,
+                self.targetTab, matchCols, True, self, self.unique_data, geom_column,
                 update_geom_column_only=update_geom_column, translator_manager=value_translator_manager
             )
             self.InfoMessage(

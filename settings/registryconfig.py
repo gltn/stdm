@@ -56,6 +56,7 @@ SCANNED_DOC='ScannedDoc'
 SCANNED_HSE_MAP='ScannedHseMap'
 SCANNED_HSE_PIC='ScannedHsePic'
 SCANNED_ID_DOC='ScannedIdDoc'
+ENTITY_SORT_ORDER='EntitySortOrder'
 
 def registry_value(key_name):
     """

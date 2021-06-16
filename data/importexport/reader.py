@@ -140,13 +140,13 @@ class OGRReader(object):
 
         return ent_model, doc_model
 
-    def auto_fix_percent(self, target_table, col_name, value):
+    def auto_fix_percent(self, target_table, col_a_name, value):
         """
         Fixes percent columns if empty and with a wrong format.
         :param target_table: The destination table name
         :type target_table: String
-        :param col_name: The destination column name
-        :type col_name: String
+        :param col_a_name: The destination column name
+        :type col_a_name: String
         :param value: Value to be saved to the DB
         :type value: Any
         :return: Converted value
@@ -154,7 +154,7 @@ class OGRReader(object):
         """
         entity = self._data_source_entity(target_table)
 
-        if entity.columns[col_name].TYPE_INFO == 'PERCENT':
+        if entity.columns[col_a_name].TYPE_INFO == 'PERCENT':
             if isinstance(value, str):
                 if not bool(value.strip()) or value.strip().lower() == 'null':
                     value = None
@@ -169,13 +169,13 @@ class OGRReader(object):
 
         return value
 
-    def auto_fix_float_integer(self, target_table, col_name, value):
+    def auto_fix_float_integer(self, target_table, col_a_name, value):
         """
         Fixes float and integer columns if empty and with a wrong format.
         :param target_table: The destination table name
         :type target_table: String
-        :param col_name: The destination column name
-        :type col_name: String
+        :param col_a_name: The destination column name
+        :type col_a_name: String
         :param value: Value to be saved to the DB
         :type value: Any
         :return: Converted value
@@ -188,12 +188,12 @@ class OGRReader(object):
         int_type = ['INT', 'LOOKUP', 'ADMIN_SPATIAL_UNIT',
                     'FOREIGN_KEY']
 
-        if col_name in entity.columns.keys():
-            if entity.columns[col_name].TYPE_INFO in integer_types:
+        if col_a_name in entity.columns.keys():
+            if entity.columns[col_a_name].TYPE_INFO in integer_types:
                 if isinstance(value, str):
                     if not bool(value.strip()) or value.strip().lower() == 'null':
                         value = None
-                if entity.columns[col_name].TYPE_INFO in float_type:
+                if entity.columns[col_a_name].TYPE_INFO in float_type:
                     try:
                         if value is not None:
                             value = float(value)
@@ -201,13 +201,13 @@ class OGRReader(object):
                     except ValueError:
                         value = None
 
-                elif entity.columns[col_name].TYPE_INFO in int_type:
+                elif entity.columns[col_a_name].TYPE_INFO in int_type:
                     try:
                         if value is not None:
                             value = int(value)
                             if isinstance(value, int):
                                 if value == 0:
-                                    if entity.columns[col_name].TYPE_INFO in \
+                                    if entity.columns[col_a_name].TYPE_INFO in \
                                         ['LOOKUP', 'ADMIN_SPATIAL_UNIT',
                                         'FOREIGN_KEY']:
                                         value = None
@@ -218,13 +218,13 @@ class OGRReader(object):
                     
         return value
 
-    def auto_fix_date(self, target_table, col_name, value):
+    def auto_fix_date(self, target_table, col_a_name, value):
         """
         Fixes date and datetime columns if empty and with a wrong format.
         :param target_table: The destination table name
         :type target_table: String
-        :param col_name: The destination column name
-        :type col_name: String
+        :param col_a_name: The destination column name
+        :type col_a_name: String
         :param value: Value to be saved to the DB
         :type value: Any
         :return: Converted value
@@ -234,19 +234,19 @@ class OGRReader(object):
 
         date_types = ['DATE', 'DATETIME']
 
-        if entity.columns[col_name].TYPE_INFO in date_types:
+        if entity.columns[col_a_name].TYPE_INFO in date_types:
             if not bool(value) or value.lower() == 'null':
                 value = None
 
         return value
 
-    def auto_fix_yes_no(self, target_table, col_name, value):
+    def auto_fix_yes_no(self, target_table, col_a_name, value):
         """
         Fixes Yes_NO columns if empty and with a wrong format.
         :param target_table: The destination table name
         :type target_table: String
-        :param col_name: The destination column name
-        :type col_name: String
+        :param col_a_name: The destination column name
+        :type col_a_name: String
         :param value: Value to be saved to the DB
         :type value: Any
         :return: Converted value
@@ -255,7 +255,7 @@ class OGRReader(object):
         entity = self._data_source_entity(target_table)
         yes_no_types = ['BOOL']
        
-        if entity.columns[col_name].TYPE_INFO in yes_no_types:
+        if entity.columns[col_a_name].TYPE_INFO in yes_no_types:
             if not bool(value.strip()) or value.strip().lower() == 'null':
                 value = None
             elif value.strip().lower() == 'yes':
@@ -294,9 +294,9 @@ class OGRReader(object):
             if hasattr(model_instance, col):
                 '''
                 #Check if column type is enumeration and transform accordingly
-                col_is_enum, enum_symbol = self._enumeration_column_type(col, value)
+                col_a_is_enum, enum_symbol = self._enumeration_column_type(col, value)
 
-                if col_is_enum:
+                if col_a_is_enum:
                     value = enum_symbol
                 '''
                 # documents is not a column so exclude it.
@@ -366,7 +366,7 @@ class OGRReader(object):
         geom_type = multi_geom.GetGeometryName()
         return geom_wkb, geom_type
 
-    def featToDb(self, targettable, columnmatch, append, parentdialog,
+    def featToDb(self, targettable, columnmatch, append, parentdialog, unique_data={},
             geomColumn=None, geomCode=-1, update_geom_column_only=False, translator_manager=None):
         """
         Performs the data import from the source layer to the STDM database.
@@ -415,7 +415,13 @@ class OGRReader(object):
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
 
+        # rows in the file
+        start_data_row = 2
+        row_count = 1
         for feat in lyr:
+            if row_count < start_data_row:
+                row_count += 1
+                continue
             column_value_mapping = {}
             column_count = 0
             progress.setValue(init_val)
@@ -430,6 +436,7 @@ class OGRReader(object):
                 if not self._source_doc_manager is None:
                     self._source_doc_manager.reset()
 
+            # columns in the file
             for f in range(feat_defn.GetFieldCount()):
                 field_defn = feat_defn.GetFieldDefn(f)
                 field_name = field_defn.GetNameRef()
@@ -442,6 +449,14 @@ class OGRReader(object):
                     dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
+
+                    # Check if the value already exists for unique columns
+                    if dest_column in unique_data:
+                        if field_value in unique_data[dest_column]:
+                            print "Record with same unique value already exists - ",field_value
+                            continue
+                        else:
+                            unique_data[dest_column].append(field_value)
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
@@ -486,15 +501,14 @@ class OGRReader(object):
                         # Set destination table entity
                         value_translator.entity = destination_entity
 
-                        source_col_names = value_translator.source_column_names()
+                        source_col_a_names = value_translator.source_column_names()
 
                         field_value_mappings = self._map_column_values(feat,
                                                                        feat_defn,
-                                                                       source_col_names)
+                                                                       source_col_a_names)
                         # Set source document manager if required
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
-
 
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
@@ -558,16 +572,16 @@ class OGRReader(object):
         """
         try:
             # Get column type of the enumeration
-            enum_col_type = self._mapped_cls.__mapper__.columns[
+            enum_col_a_type = self._mapped_cls.__mapper__.columns[
                 column_name].type
         except KeyError:
             return False, None
 
-        if not hasattr(enum_col_type, "enum"):
+        if not hasattr(enum_col_a_type, "enum"):
             return False, None
 
         else:
-            enum_obj = enum_col_type.enum
+            enum_obj = enum_col_a_type.enum
 
             try:
                 if not isinstance(value, str) or not isinstance(value,
@@ -595,10 +609,19 @@ class OGRReader(object):
         values.
         :rtype: dict
         """
-        col_values = {}
+
+        lookup_fields = [
+        'col_a_4', 'col_a_5', 'col_a_7', 'col_a_21', 'col_a_24', 'col_a_27' , 'col_a_28', 
+        'col_b_1', 'col_b_5', 'col_b_6', 'col_c_5', 'col_c_8', 'col_c_10', 'col_c_11',
+        'col_d_1', 'col_e_1', 'col_e_3', 'col_e_4', 'col_e_6', 'col_e_11' , 'col_e_12',
+        'col_e_13', 'col_e_15', 'col_e_16', 'col_e_18' , 'col_e_19', 'col_e_23' , 'col_e_72']
+        
+        related_ent_fields = [ 'col_b_10', 'col_c_16', 'col_d_7', 'col_e_76' ]
+        
+        col_a_values = {}
 
         if len(source_cols) == 0:
-            return col_values
+            return col_a_values
 
         for f in range(feature_defn.GetFieldCount()):
             field_defn = feature_defn.GetFieldDefn(f)
@@ -612,52 +635,138 @@ class OGRReader(object):
             if source_cols[0] is None:
                 continue
 
-            if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
+            #if source_cols[0].lower in lookup_fields and field_name.lower() in lookup_fields:
+                #match_idx = 1
+
+            #if source_cols[0].lower in related_ent_fields and field_name.lower() in related_ent_fields:
+                #match_idx = 1
+                #cast = 'int'
+
+            if source_cols[0].lower()=='col_a_4' and field_name.lower()=='col_a_4':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='soc' and field_name.lower()[:3]=='soc':
+            if source_cols[0].lower()=='col_a_5' and field_name.lower()=='col_a_5':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='cla' and field_name.lower()[:3]=='cla':
+            if source_cols[0].lower()=='col_a_7' and field_name.lower()=='col_a_7':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
+            if source_cols[0].lower()=='col_a_21' and field_name.lower()=='col_a_21':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='eth' and field_name.lower()[:3]=='eth':
+            if source_cols[0].lower()=='col_a_24' and field_name.lower()=='col_a_24':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='dis' and field_name.lower()[:3]=='dis':
+            if source_cols[0].lower()=='col_a_27' and field_name.lower()=='col_a_27':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='sin' and field_name.lower()[:3]=='sin':
+            if source_cols[0].lower()=='col_a_28' and field_name.lower()=='col_a_28':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='muj' and field_name.lower()[:3]=='muj':
+            if source_cols[0].lower()=='col_b_1' and field_name.lower()=='col_b_1':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='co-' and field_name.lower()[:3]=='co-':
+            if source_cols[0].lower()=='col_b_5' and field_name.lower()=='col_b_5':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='pro' and field_name.lower()[:3]=='pro':
+            if source_cols[0].lower()=='col_b_6' and field_name.lower()=='col_b_6':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='typ' and field_name.lower()[:3]=='typ':
+            if source_cols[0].lower()=='col_b_10' and field_name.lower()=='col_b_10':
+                match_idx = 1
+                cast = 'int'
+
+            if source_cols[0].lower()=='col_c_5' and field_name.lower()=='col_c_5':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='sta' and field_name.lower()[:3]=='sta':
+            if source_cols[0].lower()=='col_c_8' and field_name.lower()=='col_c_8':
                 match_idx = 1
 
-            if source_cols[0].lower()=='_submission__id' and field_name.lower()=='_submission__id':
+            if source_cols[0].lower()=='col_c_10' and field_name.lower()=='col_c_10':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_c_11' and field_name.lower()=='col_c_11':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_c_16' and field_name.lower()=='col_c_16':
+                match_idx = 1
+                cast = 'int'
+
+            if source_cols[0].lower()=='col_d_1' and field_name.lower()=='col_d_1':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_d_7' and field_name.lower()=='col_d_7':
+                match_idx = 1
+                cast = 'int'
+
+            if source_cols[0].lower()=='col_e_1' and field_name.lower()=='col_e_1':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_3' and field_name.lower()=='col_e_3':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_4' and field_name.lower()=='col_e_4':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_6' and field_name.lower()=='col_e_6':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_11' and field_name.lower()=='col_e_11':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_12' and field_name.lower()=='col_e_12':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_13' and field_name.lower()=='col_e_13':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_15' and field_name.lower()=='col_e_15':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_16' and field_name.lower()=='col_e_16':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_18' and field_name.lower()=='col_e_18':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_19' and field_name.lower()=='col_e_19':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_23' and field_name.lower()=='col_e_23':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_72' and field_name.lower()=='col_e_72':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_e_76' and field_name.lower()=='col_e_76':
+                match_idx = 1
+                cast = 'int'
+
+            if source_cols[0].lower()=='col_f_1' and field_name.lower()=='col_f_1':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_f_3' and field_name.lower()=='col_f_3':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_f_4' and field_name.lower()=='col_f_4':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_f_6' and field_name.lower()=='col_f_6':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_f_7' and field_name.lower()=='col_f_7':
+                match_idx = 1
+
+            if source_cols[0].lower()=='col_f_11' and field_name.lower()=='col_f_11':
                 match_idx = 1
                 cast = 'int'
 
             if match_idx != -1:
                 field_value = feature.GetField(f)
 
-                col_values[field_name] = field_value
+                col_a_values[field_name] = field_value.strip()
 
                 if cast == 'int' and field_value is not None:
-                    col_values[field_name] = int(field_value)
+                    col_a_values[field_name] = int(field_value)
 
-        return col_values
+        return col_a_values

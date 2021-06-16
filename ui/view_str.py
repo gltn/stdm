@@ -437,10 +437,18 @@ class ViewSTRWidget(QMainWindow, Ui_frmManageSTR):
 
             #Show error message
             if len(results) == 0:
-                noResultsMsg = QApplication.translate(
-                    'ViewSTR',
-                    'No results found for "{}"'.format(searchWord)
-                )
+                #noResultsMsg = QApplication.translate(
+                    #'ViewSTR',
+                    #'No results found for "{}"'.format(searchWord)
+                #)
+                try:
+                    noResultsMsg = QApplication.translate(
+                            'ViewSTR',
+                            'No results found for "{}"'.format(searchWord))
+                except:
+                    noResultsMsg = QApplication.translate(
+                            'ViewSTR', 'No results found.')
+
                 self._notif_search_config.clear()
                 self._notif_search_config.insertErrorNotification(
                     noResultsMsg

@@ -66,8 +66,8 @@ class ValueEditor(QDialog, Ui_LookupValue):
         initializes the form widgets
         """
         # Set character length constraints
-        self.edtValue.setMaxLength(50)
-        self.edtCode.setMaxLength(5)
+        self.edtValue.setMaxLength(255)
+        self.edtCode.setMaxLength(12)
 
         if self.code_value:
             if self.code_value.updated_value == '':

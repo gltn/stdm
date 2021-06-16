@@ -38,7 +38,8 @@ from PyQt4.QtGui import (
     QWidget,
     QApplication,
     QPushButton,
-    QMessageBox)
+    QMessageBox,
+    QMainWindow)
 
 from qgis.utils import (
     iface,
@@ -163,6 +164,10 @@ class EntityEditorDialog(QDialog, MapperMixin):
         self.collect_model = collect_model
 
         self.register_column_widgets()
+
+        if not isinstance(parent, QTabWidget):
+            if not isinstance(parent, QMainWindow) and parent.entity_browser is not None:
+                self.current_user = parent.entity_browser.current_user        
         try:
             if isinstance(parent._parent, EntityEditorDialog):
                 # hide collections form child editor
@@ -634,10 +639,19 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not hasattr(self._model, attr):
             return
 
-        table_content = TableContentGroup(self.plugin.current_user.UserName, child_entity.short_name)
+        table_content = TableContentGroup(self._parent.entity_browser.current_user.UserName, child_entity.short_name)
+
+        if self.edit_model is not None:
+            parent_id = self.edit_model.id
+        else:
+            parent_id = 0
+
+        #entity_browser = ContentGroupEntityBrowser(
+                #child_entity, table_content, self,  plugin=self.plugin)
 
         entity_browser = ContentGroupEntityBrowser(
-                child_entity, table_content, self,  plugin=self.plugin)
+                child_entity, table_content, rec_id=parent_id, parent=self,  plugin=self.plugin,
+                current_user=self.current_user, load_recs=False)
 
         #entity_browser = EntityBrowserWithEditor(
             #child_entity,
@@ -656,23 +670,29 @@ class EntityEditorDialog(QDialog, MapperMixin):
             # Split and join  to filter out entity name prefix
             # e.g. 'lo_parcel' to 'parcel'
             column_label = format_name(" ".join(child_entity.name.split("_", 1)[1:]))
+
+        self.set_filter(child_entity, entity_browser)
+
         self.entity_tab_widget.addTab(
             entity_browser,
             u'{0}'.format(
                 column_label
             )
         )
-        self.set_filter(child_entity, entity_browser)
 
     def set_filter(self, entity, browser):
         col = self.filter_col(entity)
         child_model = entity_model(entity)
         child_model_obj = child_model()
         col_obj = getattr(child_model, col.name)
+
+        browser.filtered_records = []
+
         if self.model() is not None:
-            if self.model().id is None:
-                browser.filtered_records = []
-            else:
+            #if self.model().id is None:
+                #browser.filtered_records = []
+            #else:
+            if self.model().id is not None:
                 browser.filtered_records = child_model_obj.queryObject().filter(
                     col_obj == self.model().id
                 ).all()
@@ -682,8 +702,8 @@ class EntityEditorDialog(QDialog, MapperMixin):
                 col_obj == self.edit_model.id
             ).all()
 
-        if self.edit_model is None and self.model() is None:
-            browser.filtered_records = []
+        #if self.edit_model is None and self.model() is None:
+            #browser.filtered_records = []
 
     def filter_col(self, child_entity):
         for col in child_entity.columns.values():

@@ -17,7 +17,8 @@ from stdm.settings.registryconfig import (
     SCANNED_DOC,
     SCANNED_HSE_MAP,
     SCANNED_HSE_PIC,
-    SCANNED_ID_DOC
+    SCANNED_ID_DOC,
+    ENTITY_SORT_ORDER
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -84,6 +85,16 @@ def get_import_mapfile():
     mapfile = reg_config.read([IMPORT_MAPFILE])
     import_mapfile = mapfile.get(IMPORT_MAPFILE, '')
     return import_mapfile
+
+def get_entity_sort_order():
+    reg_config = RegistryConfig()
+    rec_info = reg_config.read([ENTITY_SORT_ORDER])
+    sort_order = rec_info.get(ENTITY_SORT_ORDER, None)
+    return sort_order
+
+def save_entity_sort_order(sort_order):
+    reg_config = RegistryConfig()
+    reg_config.write({ENTITY_SORT_ORDER:sort_order})
 
 def save_import_mapfile(mapfile):
     reg_config = RegistryConfig()
