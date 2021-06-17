@@ -802,6 +802,9 @@ class OGRReader(object):
             if source_cols[0].lower()=='col_e_19' and field_name.lower()=='col_e_19':
                 match_idx = 1
 
+            if source_cols[0].lower()=='col_e_20' and field_name.lower()=='col_e_20':
+                match_idx = 1
+
             if source_cols[0].lower()=='col_e_23' and field_name.lower()=='col_e_23':
                 match_idx = 1
 

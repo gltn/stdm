@@ -136,7 +136,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         # cache for lost documents lookup values
         # {id:value}
-        self.lost_document = {}
+        self.lost_documents = {}
 
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
