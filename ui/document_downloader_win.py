@@ -175,7 +175,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             self.disable_download_button()
 
     def support_doc_clicked(self):
-        self.btnDownload.setText('Download')
+        lelf.btnDownload.setText('Download')
         if self.rbSupportDoc.isChecked():
             self.rbScannedDoc.setChecked(False)
             self.rbKoboMedia.setChecked(False)

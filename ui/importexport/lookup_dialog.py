@@ -35,7 +35,10 @@ from stdm.ui.notification import NotificationBar
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.importexport.ui_lookup_dialog import Ui_LookupTranslatorDialog
 
-from stdm.utils.util import mapfile_section
+from stdm.utils.util import (
+        mapfile_section,
+        get_working_mapfile
+        )
 
 class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
     """
@@ -61,7 +64,10 @@ class LookupDialog(QDialog, Ui_LookupTranslatorDialog, TranslatorDialogBase):
         # Populate controls
         self._load_lookup_tables()
 
-        sel_lookups = mapfile_section('lookup-defaults')
+        target_table = dest_table[3:]
+        working_mapfile = get_working_mapfile(target_table)
+
+        sel_lookups = mapfile_section(working_mapfile, 'lookup-defaults')
         curr_lookup = ''
         if len(sel_lookups)>0:
             if dest_col in sel_lookups:

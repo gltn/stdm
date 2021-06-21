@@ -42,7 +42,7 @@ from stdm.settings import (
     save_current_profile,
     get_entity_browser_record_limit,
     save_entity_browser_record_limit,
-    get_import_mapfile,
+    get_primary_mapfile,
     save_import_mapfile,
     get_trans_path,
     save_trans_path
@@ -161,7 +161,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.edtEntityRecords.setMaximum(MAX_LIMIT)
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
-        self.edtMapfile.setText(get_import_mapfile())
+        self.edtMapfile.setText(get_primary_mapfile())
         self.edtTransPath.setText(get_trans_path())
 
         # Debug logging

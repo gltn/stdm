@@ -18,6 +18,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import os
 import re
 
 from PyQt4.QtCore import *
@@ -34,12 +35,14 @@ from stdm.data.pg_utils import (
     delete_table_data,
     geometryType,
     execute_query,
-    create_ms_record
+    create_ms_record,
+    get_lookup_data
 )
 
 from stdm.utils.util import (
         getIndex, 
-        mapfile_section
+        mapfile_section,
+        get_working_mapfile
     )
 
 from stdm.settings import (
@@ -55,6 +58,8 @@ from stdm.data.importexport.value_translators import (
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
+
+from stdm.ui.support_doc_manager import SupportDocManager
 
 
 class OGRReader(object):
@@ -390,15 +395,20 @@ class OGRReader(object):
         containing value translators defined for the destination table columns.
         :type translator_manager: ValueTranslatorManager
         """
+        target_table = targettable[3:]
+        working_mapfile = get_working_mapfile(target_table)
+
         multi_select_src_column = ''
         multi_select_dest_table = ''
         multiple_selection = []
         multi_select_lookup_table = ''
         if len(lost_documents) > 0:
-            multi_select = mapfile_section(targettable[3:]+'-multiple_select')
+            multi_select = mapfile_section(working_mapfile, target_table+'-multiple_select')
             multi_select_src_column = multi_select['src_column']
             multi_select_dest_table = multi_select['dest_table']
             multi_select_lookup_table = multi_select['lookup_table']
+
+        sdoc_manager = SupportDocManager(target_table, working_mapfile)
             
         # Check current profile
         if self._current_profile is None:
@@ -472,6 +482,11 @@ class OGRReader(object):
 
                     field_value = feat.GetField(f)
 
+                    if sdoc_manager.download_docs:
+                        if sdoc_manager.support_doc_column(a_field_name) and field_value <> '':
+                            sdoc_manager.current_column_name = a_field_name
+                            sdoc_manager.current_doc_name = field_value
+
                     # Check if the value already exists for unique columns
                     if dest_column in unique_data:
                         if field_value in unique_data[dest_column]:
@@ -483,6 +498,7 @@ class OGRReader(object):
                     # Check if this is multiple select column
                     if a_field_name == multi_select_src_column:
                        multiple_selection = self.find_multi_select_id(field_value, lost_documents)
+
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
@@ -584,6 +600,10 @@ class OGRReader(object):
                         self.create_multiple_select_records(targettable, last_id,
                                 multi_select_dest_table, multiple_selection,
                                 multi_select_lookup_table)
+
+                    if sdoc_manager.download_docs and sdoc_manager.current_column_name <> '':
+                        sdoc_manager.current_parent_id = last_id
+                        sdoc_manager.append_doc()
             except:
                 progress.close()
                 raise
@@ -591,6 +611,7 @@ class OGRReader(object):
             init_val += 1
 
         progress.setValue(numFeat)
+        return sdoc_manager
 
     def find_multi_select_id(self, field_value, lost_documents):
         """
@@ -679,15 +700,6 @@ class OGRReader(object):
         values.
         :rtype: dict
         """
-
-        lookup_fields = [
-        'col_a_4', 'col_a_5', 'col_a_7', 'col_a_21', 'col_a_24', 'col_a_27' , 'col_a_28', 
-        'col_b_1', 'col_b_5', 'col_b_6', 'col_c_5', 'col_c_8', 'col_c_10', 'col_c_11',
-        'col_d_1', 'col_e_1', 'col_e_3', 'col_e_4', 'col_e_6', 'col_e_11' , 'col_e_12',
-        'col_e_13', 'col_e_15', 'col_e_16', 'col_e_18' , 'col_e_19', 'col_e_23' , 'col_e_72']
-        
-        related_ent_fields = [ 'col_b_10', 'col_c_16', 'col_d_7', 'col_e_76' ]
-        
         col_a_values = {}
 
         if len(source_cols) == 0:
@@ -843,3 +855,5 @@ class OGRReader(object):
                     col_a_values[field_name] = int(field_value)
 
         return col_a_values
+
+

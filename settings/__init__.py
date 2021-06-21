@@ -80,7 +80,7 @@ def save_entity_browser_record_limit(limit):
     reg_config = RegistryConfig()
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT:limit})
 
-def get_import_mapfile():
+def get_primary_mapfile():
     reg_config = RegistryConfig()
     mapfile = reg_config.read([IMPORT_MAPFILE])
     import_mapfile = mapfile.get(IMPORT_MAPFILE, '')

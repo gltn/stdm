@@ -1252,17 +1252,35 @@ def is_ascii(s):
     """Checks if a string contains non ASCII characters."""
     return bool(re.match(r'[\x00-\x7F]+$', s))
 
-def mapfile_section(section):
+def get_working_mapfile(target_table):
     """
-    Returns an ordered dict of ini section
+    Returns a mapfile for a given target table
+    :param target_table: Short name for the target table
+    e.g. `enumeration` if the table full name is `hl_enumeration`
+    :type target_table: str
+    :rtype: str
     """
+    from stdm.settings import get_primary_mapfile
 
-    from stdm.settings import get_import_mapfile
-    mapfile = get_import_mapfile()
+    primary_mapfile = get_primary_mapfile()
+    section_id = 'imports-mapfile'
+    section = mapfile_section(primary_mapfile, section_id)
+
+    if target_table in section.keys():
+        mapfile_path = os.path.dirname(os.path.abspath(primary_mapfile))
+        working_mapfile = mapfile_path+'\\'+section[target_table]+'.ini'
+        return working_mapfile
+    else:
+        return ''
+
+
+def mapfile_section(mapfile, section):
+    """
+    Returns an ordered dict of an ini block section
+    """
     map_section = OrderedDict()
-    if mapfile:
-        config = ConfigParser.ConfigParser()
-        config.readfp(open(mapfile))
-        if section in config.sections():
-            map_section = OrderedDict(config.items(section))
+    config = ConfigParser.ConfigParser()
+    config.readfp(open(mapfile))
+    if section in config.sections():
+        map_section = OrderedDict(config.items(section))
     return map_section

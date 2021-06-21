@@ -135,7 +135,7 @@ def pg_create_supporting_document(document):
             " VALUES ('{}','{}','{}',{},'{}') RETURNING id ".format(
                     document['support_doc_table'],
                     document['creation_date'],
-                    document['doc_identifier'],
+                    document['hashed_filename'],
                     document['source_entity'],
                     document['document_size'],
                     document['doc_filename'])
@@ -143,9 +143,10 @@ def pg_create_supporting_document(document):
     return _execute(sql_text)
 
 
-def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id):
-    sql = "INSERT INTO {} (supporting_doc_id, household_id, document_type) "\
-             "VALUES ({},{},{}) ".format(table_name, doc_id, household_id, doc_type_id)
+def pg_create_parent_supporting_document(table_name, doc_id, household_id,
+        doc_type_id, parent_column):
+    sql = "INSERT INTO {} (supporting_doc_id, {}, document_type) "\
+             "VALUES ({},{},{}) ".format(table_name, parent_column, doc_id, household_id, doc_type_id)
     sql_text = text(sql)
     _execute(sql_text)
 

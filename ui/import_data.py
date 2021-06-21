@@ -35,17 +35,25 @@ from PyQt4.QtCore import (
     QSignalMapper
 )
 
+from stdm.settings import get_primary_mapfile
+
 from stdm.utils import *
-from stdm.utils.util import getIndex, enable_drag_sort_widgets, mapfile_section
+
+from stdm.utils.util import (
+        getIndex, 
+        enable_drag_sort_widgets, 
+        mapfile_section,
+        get_working_mapfile
+        )
+
 from stdm.data.database import alchemy_table_relationships
+
 from stdm.data.pg_utils import (
     table_column_names,
     pg_tables,
     spatial_tables,
     get_last_id,
     get_value_by_column,
-    pg_create_supporting_document,
-    pg_create_parent_supporting_document,
     get_data_for_unique_column,
     get_lookup_data
 )
@@ -61,7 +69,9 @@ from stdm.data.importexport.value_translators import (
         SourceDocumentTranslator
         )
 
-from stdm.data.importexport.reader import OGRReader
+from stdm.data.importexport.reader import (
+        OGRReader
+        )
 
 from .importexport import (
     ValueTranslatorConfig,
@@ -89,6 +99,7 @@ from stdm.settings import (
         save_house_pic,
         save_id_pic
         )
+
 from stdm.settings.registryconfig import (
         RegistryConfig,
         NETWORK_DOC_RESOURCE
@@ -98,6 +109,9 @@ from stdm.utils.util import (
     profile_user_tables,
     profile_spatial_tables
 )
+
+from stdm.ui.support_doc_downloader import SupportDocDownloader
+
 from .ui_import_data import Ui_frmImport
 
 class ImportData(QWizard, Ui_frmImport):
@@ -127,6 +141,8 @@ class ImportData(QWizard, Ui_frmImport):
          
         #Init
         self.registerFields()
+
+        self.working_mapfile = ''
         
         #Geometry columns
         self.geomcols = []
@@ -138,10 +154,18 @@ class ImportData(QWizard, Ui_frmImport):
         # {id:value}
         self.lost_documents = {}
 
+        self.rbKoboMedia.setVisible(False)
+
+        self.read_kobo_defaults()
+
         self._trans_widget_mgr = TranslatorWidgetManager(self)
 
         #Initialize value translators from definitions
         self._init_translators()
+
+    def read_kobo_defaults(self):
+        self.edtMediaUrl.setText(get_media_url())
+        self.edtKoboUsername.setText(get_kobo_user())
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
@@ -185,15 +209,14 @@ class ImportData(QWizard, Ui_frmImport):
 
     def auto_load_translators(self):
         lookups = self.target_table_shortname(self.targetTab)+'-lookups'
-        srclookups = mapfile_section(lookups)
+        srclookups = mapfile_section(self.working_mapfile, lookups)
 
         dflt_lookups = self.target_table_shortname(self.targetTab)+'-lookup-defaults'
 
-        dstlookups = mapfile_section(dflt_lookups)
+        dstlookups = mapfile_section(self.working_mapfile, dflt_lookups)
 
         trans_sec = self.target_table_shortname(self.targetTab)+'-translators'
-        translators = mapfile_section(trans_sec)
-
+        translators = mapfile_section(self.working_mapfile, trans_sec)
 
         for dest_column, lookup_table in dstlookups.iteritems():
 
@@ -235,7 +258,7 @@ class ImportData(QWizard, Ui_frmImport):
 
                 map_sec = self.targetTab[3:]+'-'+dest_column+'-relatedentity'
 
-                rel_values = mapfile_section(map_sec)
+                rel_values = mapfile_section(self.working_mapfile, map_sec)
                 config_key ="Related table"
                 dest_table = rel_values['dest_table']
                 dest_column = rel_values['dest_column']
@@ -298,7 +321,7 @@ class ImportData(QWizard, Ui_frmImport):
                 trans_dlg.auto_src_translator.document_type_id = trans_dlg._document_type_id
                 trans_dlg.auto_src_translator.document_type = dest_column
 
-                support_docs = mapfile_section('support_docs-defaults')
+                support_docs = mapfile_section(self.working_mapfile, 'support_docs-path')
                 trans_dlg.auto_src_translator.source_directory = support_docs[dest_column]
 
                 self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
@@ -314,7 +337,7 @@ class ImportData(QWizard, Ui_frmImport):
 
     def _get_sd_src_column(self, target_table, dest_col):
         column = None
-        columns = mapfile_section(target_table[3:])
+        columns = mapfile_section(self.working_mapfile, target_table[3:])
         for s_col, d_col in columns.iteritems():
             if d_col == dest_col:
                 column = s_col
@@ -357,7 +380,7 @@ class ImportData(QWizard, Ui_frmImport):
                     if trans_config.__name__ =='LookupTranslatorConfig':
 
                         lookups = self.target_table_shortname(self.targetTab)+'-lookups'
-                        dlookups = mapfile_section(lookups)
+                        dlookups = mapfile_section(self.working_mapfile, lookups)
 
                         trans_dlg = trans_config.create(
                             self,
@@ -368,7 +391,7 @@ class ImportData(QWizard, Ui_frmImport):
                             dflt_lookups=dlookups.values()
                         )
                     elif trans_config.__name__=='RelatedTableTranslatorConfig':
-                        dlookups = mapfile_section('household_members-relatedentity')
+                        dlookups = mapfile_section(self.working_mapfile, 'household_members-relatedentity')
                         trans_dlg = trans_config.create(
                             self,
                             self._source_columns(),
@@ -508,28 +531,29 @@ class ImportData(QWizard, Ui_frmImport):
             if self.field("typeText"):
                 self.loadTables("textual")
                 self.geomClm.setEnabled(False)
-                #self.toggleKoboOptions(False)
-                #self.toggleSupportDoc(False)
                 
             elif self.field("typeSpatial"):
                 self.loadTables("spatial")
                 self.geomClm.setEnabled(True)
-                #self.toggleKoboOptions(False)
-                #self.toggleSupportDoc(False)
-
-            #elif self.field("koboMedia"):
-                #self.toggleKoboOptions(True)
-                #self.toggleSupportDoc(False)
-                
-            #elif self.field("supportdoc"):
-                #self.toggleKoboSettings(True)
-                ##self.toggleSupportDoc(True)
-                #self.toggleMediaFolders(False)
 
         if pageid == 2:
             self.lstSrcFields.clear()
             self.lstTargetFields.clear()
-            self.assignCols()
+
+            target_table = self.target_table_shortname(self.destCheckedItem.text())
+            self.working_mapfile = get_working_mapfile(target_table)
+
+            assign_result = self.assignCols(target_table)
+            #FIXME: Report about the false assign_results
+
+            #sdoc = SupportingDocDownloader(target_table, self.working_mapfile)
+            #print sdoc.doc_type_lookup_data
+            #sdoc.current_column_name = 'col_a_27'
+            #sdoc.current_doc_name = '283847348.jpg'
+            #sdoc.current_parent_id = 12
+            #sdoc.append_doc()
+            #print sdoc.docs
+
             self.auto_load_translators()
 
             self.cache_unique_data()
@@ -544,12 +568,14 @@ class ImportData(QWizard, Ui_frmImport):
         """
         return self.dataReader.getFields()
 
-    def assignCols(self):
+    def assignCols(self, target_table):
         #Load source and target columns respectively
         srcCols = self._source_columns()
 
-        target_table = self.target_table_shortname(self.destCheckedItem.text())
-        cols = mapfile_section(target_table).keys()
+        cols = mapfile_section(self.working_mapfile, target_table).keys()
+        if len(cols) == 0:
+            return False;
+
         ucols = {}
         for i,c in enumerate(cols):
             ucols[i] = unicode(c, 'utf-8').encode('ascii', 'ignore')
@@ -596,10 +622,10 @@ class ImportData(QWizard, Ui_frmImport):
         if id_idx != -1:
             targetCols.remove('id')
 
-        remove_list = mapfile_section(target_table+'-remove')
+        remove_list = mapfile_section(self.working_mapfile, target_table+'-remove')
         targetCols = [item for item in targetCols if str(item) not in remove_list.values()]
 
-        virtual_cols = mapfile_section(target_table+'-virtual')
+        virtual_cols = mapfile_section(self.working_mapfile, target_table+'-virtual')
         if len(virtual_cols) > 0:
             vc = self.get_virtual_columns() #self.chk_virtual.setChecked(True)
             targetCols.extend(vc)
@@ -611,15 +637,17 @@ class ImportData(QWizard, Ui_frmImport):
 
         self._add_target_table_columns(dest_cols)
 
+        return True
 
     def cache_unique_data(self):
         """
-        Check for unique constraint for the current table then
-        fetches the existing records from the database, and before
-        we insert a record, we look up if the record already exist
-        from the cache
+        Checks for a unique keyfield for the current table then
+        fetches and caches locally the existing records from the
+        database, and before we insert a record, we look up if the
+        record already exist from the local cache.
         """
-        constraints = mapfile_section(self.targetTab[3:]+'-constraints')
+        constraints = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-keyfield')
+        data = []
         for key, value in constraints.iteritems():
             if value == 'unique':
                 data = get_data_for_unique_column(self.targetTab, key)
@@ -630,7 +658,7 @@ class ImportData(QWizard, Ui_frmImport):
         Cache lookup values for lost documents locally
         """
         lookup_table_value = 'lookup_table'
-        multi_select = mapfile_section(self.targetTab[3:]+'-multiple_select')
+        multi_select = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-multiple_select')
         if len(multi_select) > 0:
             if lookup_table_value in multi_select.keys():
                 src_table = multi_select[lookup_table_value]
@@ -644,7 +672,7 @@ class ImportData(QWizard, Ui_frmImport):
         virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
 
         virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
-        remove_list = mapfile_section(self.targetTab[3:]+'-remove').values()
+        remove_list = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-remove').values()
         virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
 
         return virtual_columns
@@ -653,12 +681,12 @@ class ImportData(QWizard, Ui_frmImport):
         """
         :rtype: bool
         """
-        sortables = mapfile_section('sortables').values()
+        sortables = mapfile_section(self.working_mapfile, 'sortables').values()
         return True if target_table in sortables else False
 
     def sort_dest_cols_by_mapfile(self, dest_cols):
         target_table = self.target_table_shortname(self.destCheckedItem.text())
-        map_cols = mapfile_section(target_table).values()
+        map_cols = mapfile_section(self.working_mapfile, target_table).values()
         sorted_cols = []
         for col in map_cols:
             if col in dest_cols:
@@ -682,7 +710,7 @@ class ImportData(QWizard, Ui_frmImport):
         virtual_columns = self.dataReader.entity_virtual_columns(self.targetTab)
 
         virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
-        remove_list = mapfile_section(self.targetTab[3:]+'-remove').values()
+        remove_list = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-remove').values()
         virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
 
         if len(virtual_columns) == 0:
@@ -741,7 +769,8 @@ class ImportData(QWizard, Ui_frmImport):
         elif type == "spatial":
             tables = profile_spatial_tables(self.curr_profile)
 
-        dest_tables = mapfile_section('imports')
+        primary_mapfile = get_primary_mapfile()
+        dest_tables = mapfile_section(primary_mapfile, 'imports')
         if tables is not None:
             for t in tables:
                 if len(dest_tables) > 0:
@@ -805,7 +834,7 @@ class ImportData(QWizard, Ui_frmImport):
     def validate_translator(self, vtmanager, targetTab):
         success = True
         translator_section = self.target_table_shortname(targetTab)+'-translators'
-        translators = mapfile_section(translator_section)
+        translators = mapfile_section(self.working_mapfile, translator_section)
         vtmtrans = [trans.lower().replace(' ','_') for trans in vtmanager._translators]
         for translator in translators.keys():
             if translator not in vtmtrans:
@@ -870,7 +899,7 @@ class ImportData(QWizard, Ui_frmImport):
                 )
 
                 if del_result == QMessageBox.Yes:
-                    self.dataReader.featToDb(
+                    support_doc_manager = self.dataReader.featToDb(
                         self.targetTab, matchCols, False, self,
                         self.unique_data, self.lost_documents,
                         geom_column, translator_manager=value_translator_manager
@@ -886,7 +915,7 @@ class ImportData(QWizard, Ui_frmImport):
                 else:
                     success = False
         else:
-            self.dataReader.featToDb(
+            support_doc_manager = self.dataReader.featToDb(
                 self.targetTab, matchCols, True, self, 
                 self.unique_data, self.lost_documents, geom_column,
                 update_geom_column_only=update_geom_column, translator_manager=value_translator_manager
@@ -899,6 +928,16 @@ class ImportData(QWizard, Ui_frmImport):
             success = True
         # except:
         #     self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
+
+        self.edtKoboPassword.setText('Ha123456')
+
+        support_doc_manager.kobo_url = self.edtMediaUrl.text()
+        support_doc_manager.kobo_username = self.edtKoboUsername.text()
+        support_doc_manager.kobo_password = self.edtKoboPassword.text()
+
+        if len(support_doc_manager.docs) > 0:
+            doc_downloader = SupportDocDownloader(support_doc_manager)
+            doc_downloader.exec_()
 
         return success
 
