@@ -1007,8 +1007,8 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
 
-        self.downloadAct = QAction(QIcon(":/plugins/stdm/images/icons/docdownload.png"), \
-        QApplication.translate("DownloadAction","Download and Upload Documents"), self.iface.mainWindow())
+        #self.downloadAct = QAction(QIcon(":/plugins/stdm/images/icons/docdownload.png"), \
+        #QApplication.translate("DownloadAction","Download and Upload Documents"), self.iface.mainWindow())
 
         self.importAct = QAction(QIcon(":/plugins/stdm/images/icons/import.png"), \
         QApplication.translate("ImportAction","Import Data"), self.iface.mainWindow())
@@ -1061,7 +1061,7 @@ class STDMQGISLoader(object):
         self.options_act.triggered.connect(self.on_sys_options)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
-        self.downloadAct.triggered.connect(self.onDownload)
+        #self.downloadAct.triggered.connect(self.onDownload)
         self.importAct.triggered.connect(self.onImportData)
         self.docDesignerAct.triggered.connect(self.onDocumentDesigner)
         self.docGeneratorAct.triggered.connect(self.onDocumentGenerator)
@@ -1093,8 +1093,8 @@ class STDMQGISLoader(object):
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
 
-        downloadCnt = ContentGroup.contentItemFromQAction(self.downloadAct)
-        downloadCnt.code = "bc6e22b1abfd3185d16cd3ba71cd80011ea3186c"
+        #downloadCnt = ContentGroup.contentItemFromQAction(self.downloadAct)
+        #downloadCnt.code = "bc6e22b1abfd3185d16cd3ba71cd80011ea3186c"
 
         importCnt = ContentGroup.contentItemFromQAction(self.importAct)
         importCnt.code = "3BBD6347-4A37-45D0-9B41-36D68D2CA4DB"
@@ -1222,9 +1222,9 @@ class STDMQGISLoader(object):
         self.docGeneratorCntGroup.addContentItem(documentGeneratorCnt)
         self.docGeneratorCntGroup.register()
 
-        self.downloadCntGroup = ContentGroup(username, self.downloadAct)
-        self.downloadCntGroup.addContentItem(downloadCnt)
-        self.downloadCntGroup.register()
+        #self.downloadCntGroup = ContentGroup(username, self.downloadAct)
+        #self.downloadCntGroup.addContentItem(downloadCnt)
+        #self.downloadCntGroup.register()
 
         self.importCntGroup = ContentGroup(username, self.importAct)
         self.importCntGroup.addContentItem(importCnt)
@@ -1310,8 +1310,8 @@ class STDMQGISLoader(object):
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
 
-        self.toolbarLoader.addContent(self.downloadCntGroup)
-        self.menubarLoader.addContent(self.downloadCntGroup)
+        #self.toolbarLoader.addContent(self.downloadCntGroup)
+        #self.menubarLoader.addContent(self.downloadCntGroup)
 
         self.toolbarLoader.addContent(self.importCntGroup)
         self.menubarLoader.addContent(self.importCntGroup)
@@ -1998,7 +1998,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
             self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
-            self.stdmInitToolbar.removeAction(self.downloadAct)
+            #self.stdmInitToolbar.removeAction(self.downloadAct)
             self.stdmInitToolbar.removeAction(self.importAct)
             self.stdmInitToolbar.removeAction(self.exportAct)
             self.stdmInitToolbar.removeAction(self.docDesignerAct)
