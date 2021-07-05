@@ -83,6 +83,7 @@ from .importexport import (
 from stdm.settings import (
         current_profile,
         get_media_url,
+        get_enum_country,
         get_kobo_user,
         get_kobo_pass,
         get_family_photo,
@@ -133,6 +134,8 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
 
+        self.chk_virtual.setVisible(False)
+
         self.rbTextType.clicked.connect(self.text_type_clicked)
         self.rbSpType.clicked.connect(self.sptype_clicked)
 
@@ -166,6 +169,7 @@ class ImportData(QWizard, Ui_frmImport):
     def read_kobo_defaults(self):
         self.edtMediaUrl.setText(get_media_url())
         self.edtKoboUsername.setText(get_kobo_user())
+        self.edtKoboPassword.setText('Ha123456')
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
@@ -673,7 +677,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
         remove_list = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-remove').values()
-        virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
+        virtual_columns = [item for item in virtual_columns if unicode(item) not in remove_list]
 
         return virtual_columns
 
@@ -711,7 +715,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         virtual_columns = [vc.lower().replace(' ','_') for vc in virtual_columns]
         remove_list = mapfile_section(self.working_mapfile, self.targetTab[3:]+'-remove').values()
-        virtual_columns = [item for item in virtual_columns if str(item) not in remove_list]
+        virtual_columns = [item for item in virtual_columns if unicode(item, 'utf-8') not in remove_list]
 
         if len(virtual_columns) == 0:
             return
@@ -928,8 +932,6 @@ class ImportData(QWizard, Ui_frmImport):
             success = True
         # except:
         #     self.ErrorInfoMessage(unicode(sys.exc_info()[1]))
-
-        self.edtKoboPassword.setText('Ha123456')
 
         support_doc_manager.kobo_url = self.edtMediaUrl.text()
         support_doc_manager.kobo_username = self.edtKoboUsername.text()

@@ -44,8 +44,8 @@ from stdm.settings import (
     save_entity_browser_record_limit,
     get_primary_mapfile,
     save_import_mapfile,
-    get_trans_path,
-    save_trans_path
+    save_enum_country,
+    get_enum_country
 )
 
 from stdm.settings.registryconfig import (
@@ -101,9 +101,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
 
-        version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace('1.4', version)
-        self.label_9.setText(upgrade_label_text)
+        #version = version_from_metadata()
+        #upgrade_label_text = self.label_9.text().replace('1.4', version)
+        #self.label_9.setText(upgrade_label_text)
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
@@ -122,12 +122,14 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        self.upgradeButton.toggled.connect(
-            self.manage_upgrade
-        )
+
+        #self.upgradeButton.toggled.connect(
+            #self.manage_upgrade
+        #)
+
+        self.upgradeButton.setVisible(False)
 
         self.btnMapfile.clicked.connect(self.on_set_mapfile)
-        self.btnTransPath.clicked.connect(self.on_set_trans_path)
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
@@ -162,7 +164,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
         self.edtMapfile.setText(get_primary_mapfile())
-        self.edtTransPath.setText(get_trans_path())
 
         # Debug logging
         lvl = debug_logging()
@@ -170,6 +171,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.chk_logging.setCheckState(Qt.Checked)
         else:
             self.chk_logging.setCheckState(Qt.Unchecked)
+
+        self.populate_enum_country()
+        enum_country = get_enum_country()
+        self.cbCountry.setCurrentIndex(self.cbCountry.findText(enum_country))
 
     def load_profiles(self):
         """
@@ -180,6 +185,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.cbo_profiles.clear()
         self.cbo_profiles.addItem('')
         self.cbo_profiles.addItems(profile_names)
+
+    def populate_enum_country(self):
+        """
+        """
+        self.cbCountry.clear()
+        self.cbCountry.addItem('Iraq')
+        self.cbCountry.addItem('Lebanon')
 
     def _load_db_conn_properties(self):
         #Load database connection properties from the registry.
@@ -280,13 +292,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         mapfile = QFileDialog.getOpenFileName(self, title, def_path)
         if mapfile:
             self.edtMapfile.setText(mapfile)
-
-    def on_set_trans_path(self):
-        dflt_path = self.edtTransPath.text()
-        title = self.tr("Support docs folder for translations")
-        trans_path = QFileDialog.getExistingDirectory(self, title, dflt_path)
-        if trans_path:
-            self.edtTransPath.setText(trans_path)
 
     def _set_selected_directory(self, txt_box, title):
         def_path= txt_box.text()
@@ -545,7 +550,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         save_import_mapfile(self.edtMapfile.text())
 
-        save_trans_path(self.edtTransPath.text())
+        save_enum_country(self.cbCountry.currentText())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
@@ -574,16 +579,16 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         )
 
         # if config file exists, check if registry key exists
-        if len(self.config_updated_dic) > 0:
-            config_updated_val = self.config_updated_dic[
-                CONFIG_UPDATED
-            ]
+        #if len(self.config_updated_dic) > 0:
+            #config_updated_val = self.config_updated_dic[
+                #CONFIG_UPDATED
+            #]
             # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0' or config_updated_val == '-1':
-                self.upgradeButton.setEnabled(True)
+            #if config_updated_val == '0' or config_updated_val == '-1':
+                #self.upgradeButton.setEnabled(True)
 
-            # disable the button if any other value.
-            else:
-                self.upgradeButton.setEnabled(False)
-        else:
-            self.upgradeButton.setEnabled(False)
+            ## disable the button if any other value.
+            #else:
+                #self.upgradeButton.setEnabled(False)
+        #else:
+            #self.upgradeButton.setEnabled(False)

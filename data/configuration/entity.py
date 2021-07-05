@@ -525,7 +525,7 @@ class Entity(QObject, TableItem):
         if self.supports_documents:
             doc_types = self.document_types()
             for doc_type in doc_types:
-                u_doc_type = unicode(doc_type)
+                u_doc_type = unicode(doc_type, 'utf-8')
                 text_value = self.supporting_doc._doc_types_value_list.values[
                     u_doc_type
                 ]

@@ -43,6 +43,7 @@ STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 IMPORT_MAPFILE='ImportMapFile'
 TRANS_PATH='TransPath'
+ENUM_COUNTRY='EnumCountry'
 
 MEDIA_URL='MediaUrl'
 KOBO_USER='KoboUser'

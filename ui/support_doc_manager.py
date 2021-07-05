@@ -89,18 +89,35 @@ class SupportDocManager(QObject):
 
         self.setup()
 
-    def append_doc(self):
-        type_name = self.doc_type_columns[self.current_column_name] 
-        doc = {'filename': self.current_doc_name,
-                'parent_id': self.current_parent_id,
+    def append_doc(self, row_id, column_name, filename ):
+        """
+        :param row_id: Row count identifier
+        :param column_name: Current column of the current row
+        :param filename: Current value of the current column
+        """
+        type_name = self.doc_type_columns[column_name] 
+
+        doc = {
+                'row_id': row_id,
+                'filename': filename,
+                'parent_id': -1,
                 'type_name': type_name,
                 'doc_type_id':self.get_doc_id(type_name),
-                'doc_column': self.columns[self.current_column_name]
+                'doc_column': self.columns[column_name]
                 }
+
         self.docs.append(doc)
-        self.current_doc_name =''
-        self.current_column_name = ''
-        self.current_parent_id = -1
+
+    def update_parent_id(self, row_id, parent_id):
+        """
+        :param row_id: Current row count
+        :param parent_id: Last unique ID after a record is inserted 
+         into DB
+        """
+        for doc in self.docs:
+            if doc['row_id'] == row_id:
+                doc['parent_id'] = parent_id
+
 
     def get_mapfile_section(self, section):
         return mapfile_section(self.working_mapfile, section)
@@ -109,6 +126,12 @@ class SupportDocManager(QObject):
         return True if column_name in self.columns.keys() else False
 
     def get_doc_id(self, type_name):
+        """
+        Returns a lookup ID of a given document type
+        :param type_name: Document type name
+        :type type_name: str
+        :rtype: int
+        """
         doc_id = -1
         for id, type in self.doc_type_lookup_data.items():
             if type == type_name:
@@ -150,50 +173,61 @@ class SupportDocManager(QObject):
 
     def start_download(self):
         self.download_started.emit('Download')
-        self.download_files()
+        self.download_files(self.docs)
         self.download_completed.emit('Download')
-        self.upload_files()
+        self.upload_files(self.docs)
         #if self.upload_after:
             #self.upload_downloaded_files(downloaded_files)
         self.upload_completed.emit('Upload')
 
-    def download_files(self):
-        downloaded = []
-        for n, doc in enumerate(self.docs):
+    def download_files(self, docs):
+        """
+        """
+        for n, doc in enumerate(docs):
             if n == 10:
                 break
             short_filename = doc['filename']
             if short_filename == '':
                 continue
-            if short_filename in self.download_cache:
+            if short_filename in [log['filename'] for log in self.download_cache]:
                 continue
             self.download_progress.emit(SupportDocManager.INFORMATION, 'Downloading...'+short_filename)
             self.download_counter.emit(n+1)
-            src_url = self.kobo_url+short_filename
-            dest_filename = self.doc_path[doc['doc_column']]+'\\'+short_filename
+            src_url = self.get_kobo_url()+short_filename
+            doc_path = self.get_doc_path()
+            dest_filename = doc_path[doc['doc_column']]+'\\'+short_filename
 
             # First check if the file exists locally before downloading
             if not os.path.exists(dest_filename):
                 self.kobo_download(src_url, dest_filename, self.kobo_username, self.kobo_password)
 
-            downloaded.append({'doc_type':doc['type_name'], 'filename':short_filename})
-        self.write_log(downloaded, self.download_log_file)
-        return []
+            self.download_cache.append({'doc_type':doc['type_name'], 'filename':short_filename})
+        self.write_log(self.download_cache, self.download_log_file)
 
-    def upload_files(self):
+    def get_kobo_url(self):
+        return self.kobo_url
+
+    def get_doc_path(self):
+        return self.doc_path
+
+    def upload_files(self, docs):
+        """
+        :param docs: List of files to upload
+        :type docs: list
+        """
         self.upload_started.emit('Upload')
-        uploaded = []
-        for n, doc in enumerate(self.docs):
+        for n, doc in enumerate(docs):
             if n == 10:
                 break
             short_filename = doc['filename']
-            if short_filename in self.upload_cache:
+            if short_filename in [log['filename'] for log in self.upload_cache]:
                 continue
             self.upload_progress.emit(SupportDocManager.INFORMATION, 'Uploading...'+short_filename)
             self.upload_counter.emit(n+1)
 
             doc_type_id = doc['doc_type_id']
-            full_filepath = self.doc_path[doc['doc_column']]+'\\'+short_filename
+            doc_path = self.get_doc_path()
+            full_filepath = doc_path[doc['doc_column']]+'\\'+short_filename
             parent_id = doc['parent_id']
             doc_type_name = doc['type_name']
 
@@ -213,8 +247,8 @@ class SupportDocManager(QObject):
             self.create_new_support_doc_file(doc_type_id, doc_type_name, full_filepath, 
                     new_doc_filename, self.parent_table, self.current_profile)
 
-            uploaded.append({'doc_type':doc['type_name'], 'filename':short_filename})
-        self.write_log(uploaded, self.upload_log_file)
+            self.upload_cache.append({'doc_type':doc['type_name'], 'filename':short_filename})
+        self.write_log(self.upload_cache, self.upload_log_file)
 
     def create_new_support_doc_file(self, doc_type_id, doc_type_name, doc_filename,
             new_filename, parent_table, profile):
@@ -255,7 +289,7 @@ class SupportDocManager(QObject):
     def write_log(self, data, log_file):
         if len(data) == 0:
             return
-        with open(log_file, 'a') as f:
+        with open(log_file, 'w') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
     def read_log(self, log_file):
@@ -269,9 +303,7 @@ class SupportDocManager(QObject):
         if os.path.getsize(log_file) == 0:
             return logs
         with open(log_file) as data_file:
-            data = json.load(data_file)
-            for log in data:
-                logs.append(log['filename'])
+            logs = json.load(data_file)
         return logs
 
     def make_supporting_doc_dict(self, doc_name):
@@ -291,7 +323,7 @@ class SupportDocManager(QObject):
         try:
             return pg_create_supporting_document(support_doc)
         except:
-            msg = "ERROR: Unable to create record in table `{}`".support_doc['support_doc_table']
+            msg = "ERROR: Unable to create record in table `{}`".format(support_doc['support_doc_table'])
             self.download_progress.emit(SupportDocManager.ERROR, msg)
 
     def create_supporting_doc(self, table_name, new_doc_id, parent_id,
@@ -300,7 +332,7 @@ class SupportDocManager(QObject):
             pg_create_parent_supporting_document(table_name, new_doc_id, 
                     parent_id, doc_type_id, parent_column)
         except:
-            msg = "ERROR: Unable to create record in table `{}`!".table_name
+            msg = "ERROR: Unable to create record in table `{}`!".format(table_name)
             self.download_progress.emit(SupportDocManager.ERROR, msg)
 
     def kobo_download(self, src_url, dest_filename, username, password):
@@ -311,3 +343,58 @@ class SupportDocManager(QObject):
             f.write(req.content)
 
         return req.status_code
+
+
+class ImportLogger(QObject):
+    def __init__(self, logfile, entity_name):
+        self.log_file = logfile
+        self.logs = self.read_log(logfile)
+        self.batch_id = self.get_batch_id(self.logs);
+        self.dtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
+        self.entity = entity_name
+        self.min_row_id = -1
+        self.max_row_id = -1
+
+    def get_batch_id(self, logs):
+        batch_ids = []
+        next_batch_id = 0
+        for log in logs:
+            batch_ids.append(log['batch_id'])
+        if len(batch_ids) > 0:
+            next_batch_id = max(batch_ids)+1
+        if next_batch_id == 0:
+            next_batch_id = 1
+        return next_batch_id
+
+    def read_log(self, log_file):
+        """
+        Returns a list of logged filenames
+        :rtype: list
+        """
+        logs = [] 
+        if not os.path.exists(log_file):
+            return logs
+        if os.path.getsize(log_file) == 0:
+            return logs
+        with open(log_file) as data_file:
+            logs = json.load(data_file)
+        return logs
+
+    def write(self):
+        data = {
+                'batch_id': self.batch_id,
+                'dtime' : self.dtime,
+                'entity': self.entity,
+                'min_row_id': self.min_row_id,
+                'max_row_id': self.max_row_id
+                }
+
+        self.logs.append(data)
+        self.write_log(self.logs, self.log_file)
+
+    def write_log(self, data, log_file):
+        if len(data) == 0:
+            return
+        with open(log_file, 'w') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+

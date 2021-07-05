@@ -42,7 +42,8 @@ from stdm.data.pg_utils import (
 from stdm.utils.util import (
         getIndex, 
         mapfile_section,
-        get_working_mapfile
+        get_working_mapfile,
+        get_import_logfile
     )
 
 from stdm.settings import (
@@ -59,7 +60,10 @@ from stdm.data.configuration import entity_model
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
 
-from stdm.ui.support_doc_manager import SupportDocManager
+from stdm.ui.support_doc_manager import (
+        SupportDocManager,
+        ImportLogger
+        )
 
 
 class OGRReader(object):
@@ -436,7 +440,7 @@ class OGRReader(object):
         # Configure progress dialog
         init_val = 0
         progress = QProgressDialog("", "&Cancel", init_val, numFeat,
-                                   parentdialog)
+                parentdialog)
         progress.setWindowModality(Qt.WindowModal)
         lblMsgTemp = "Importing {0} of {1} to STDM..."
 
@@ -448,9 +452,13 @@ class OGRReader(object):
             acols[k.encode('ascii', 'ignore')]= v
 
         # rows in the file
+        import_logfile = get_import_logfile()
+        import_logger = ImportLogger(import_logfile, target_table);
+        row_ids = []
+
         start_data_row = 2
         row_count = 1
-        for feat in lyr:
+        for r_count, feat in enumerate(lyr):
             if row_count < start_data_row:
                 row_count += 1
                 continue
@@ -480,12 +488,12 @@ class OGRReader(object):
                 if a_field_name in acols:
                     dest_column = acols[a_field_name]
 
-                    field_value = feat.GetField(f)
+                    #field_value = feat.GetField(f)
+                    field_value = unicode(feat.GetField(f), 'utf-8')
 
                     if sdoc_manager.download_docs:
                         if sdoc_manager.support_doc_column(a_field_name) and field_value <> '':
-                            sdoc_manager.current_column_name = a_field_name
-                            sdoc_manager.current_doc_name = field_value
+                            sdoc_manager.append_doc(r_count, a_field_name, field_value)
 
                     # Check if the value already exists for unique columns
                     if dest_column in unique_data:
@@ -535,7 +543,6 @@ class OGRReader(object):
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
-
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -601,9 +608,9 @@ class OGRReader(object):
                                 multi_select_dest_table, multiple_selection,
                                 multi_select_lookup_table)
 
-                    if sdoc_manager.download_docs and sdoc_manager.current_column_name <> '':
-                        sdoc_manager.current_parent_id = last_id
-                        sdoc_manager.append_doc()
+                    row_ids.append(last_id) #
+                    if sdoc_manager.download_docs:
+                        sdoc_manager.update_parent_id(r_count, last_id)
             except:
                 progress.close()
                 raise
@@ -611,6 +618,11 @@ class OGRReader(object):
             init_val += 1
 
         progress.setValue(numFeat)
+
+        import_logger.min_row_id = min(row_ids)
+        import_logger.max_row_id = max(row_ids)
+        import_logger.write()
+
         return sdoc_manager
 
     def find_multi_select_id(self, field_value, lost_documents):
@@ -733,6 +745,9 @@ class OGRReader(object):
             if source_cols[0].lower()=='col_a_7' and field_name.lower()=='col_a_7':
                 match_idx = 1
 
+            if source_cols[0].lower()=='col_a_13' and field_name.lower()=='col_a_13':
+                match_idx = 1
+
             if source_cols[0].lower()=='col_a_21' and field_name.lower()=='col_a_21':
                 match_idx = 1
 
@@ -849,7 +864,7 @@ class OGRReader(object):
             if match_idx != -1:
                 field_value = feature.GetField(f)
 
-                col_a_values[field_name] = field_value.strip()
+                col_a_values[field_name] = unicode(feature.GetField(f), 'utf-8')  #.encode('ascii', 'ignore').strip()
 
                 if cast == 'int' and field_value is not None:
                     col_a_values[field_name] = int(field_value)

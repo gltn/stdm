@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '..\ui_import_data.ui'
+# Form implementation generated from reading ui file 'ui_import_data.ui'
 #
-# Created: Fri Jun 18 20:45:02 2021
+# Created: Mon Jul 05 20:45:45 2021
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -68,27 +68,27 @@ class Ui_frmImport(object):
         self.gbKobo.setObjectName(_fromUtf8("gbKobo"))
         self.gridLayout_4 = QtGui.QGridLayout(self.gbKobo)
         self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
-        self.label_4 = QtGui.QLabel(self.gbKobo)
-        self.label_4.setObjectName(_fromUtf8("label_4"))
-        self.gridLayout_4.addWidget(self.label_4, 0, 0, 1, 1)
         self.label_5 = QtGui.QLabel(self.gbKobo)
         self.label_5.setObjectName(_fromUtf8("label_5"))
         self.gridLayout_4.addWidget(self.label_5, 1, 0, 1, 1)
-        self.edtKoboUsername = QtGui.QLineEdit(self.gbKobo)
-        self.edtKoboUsername.setReadOnly(False)
-        self.edtKoboUsername.setObjectName(_fromUtf8("edtKoboUsername"))
-        self.gridLayout_4.addWidget(self.edtKoboUsername, 1, 1, 1, 1)
-        self.edtKoboPassword = QtGui.QLineEdit(self.gbKobo)
-        self.edtKoboPassword.setEchoMode(QtGui.QLineEdit.Password)
-        self.edtKoboPassword.setObjectName(_fromUtf8("edtKoboPassword"))
-        self.gridLayout_4.addWidget(self.edtKoboPassword, 2, 1, 1, 1)
         self.edtMediaUrl = QtGui.QLineEdit(self.gbKobo)
         self.edtMediaUrl.setReadOnly(False)
         self.edtMediaUrl.setObjectName(_fromUtf8("edtMediaUrl"))
         self.gridLayout_4.addWidget(self.edtMediaUrl, 0, 1, 1, 1)
+        self.edtKoboUsername = QtGui.QLineEdit(self.gbKobo)
+        self.edtKoboUsername.setReadOnly(False)
+        self.edtKoboUsername.setObjectName(_fromUtf8("edtKoboUsername"))
+        self.gridLayout_4.addWidget(self.edtKoboUsername, 1, 1, 1, 1)
         self.label_6 = QtGui.QLabel(self.gbKobo)
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.gridLayout_4.addWidget(self.label_6, 2, 0, 1, 1)
+        self.edtKoboPassword = QtGui.QLineEdit(self.gbKobo)
+        self.edtKoboPassword.setEchoMode(QtGui.QLineEdit.Password)
+        self.edtKoboPassword.setObjectName(_fromUtf8("edtKoboPassword"))
+        self.gridLayout_4.addWidget(self.edtKoboPassword, 2, 1, 1, 1)
+        self.label_4 = QtGui.QLabel(self.gbKobo)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.gridLayout_4.addWidget(self.label_4, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.gbKobo)
         frmImport.addPage(self.pgSource)
         self.destTable = QtGui.QWizardPage()
@@ -283,9 +283,9 @@ class Ui_frmImport(object):
         self.rbSpType.setText(_translate("frmImport", "Spatial Data", None))
         self.rbKoboMedia.setText(_translate("frmImport", "Kobo Images", None))
         self.gbKobo.setTitle(_translate("frmImport", "Kobo Settings", None))
-        self.label_4.setText(_translate("frmImport", "Media URL:", None))
         self.label_5.setText(_translate("frmImport", "Kobo Username:", None))
         self.label_6.setText(_translate("frmImport", "Kobo Password:", None))
+        self.label_4.setText(_translate("frmImport", "Media URL:", None))
         self.destTable.setTitle(_translate("frmImport", "Copy Table", None))
         self.destTable.setSubTitle(_translate("frmImport", "Destination table and import options.", None))
         self.groupBox_3.setTitle(_translate("frmImport", "Select Destination Table:", None))
@@ -307,3 +307,4 @@ class Ui_frmImport(object):
         self.btn_edit_translator.setToolTip(_translate("frmImport", "Edit value translator", None))
         self.btn_delete_translator.setToolTip(_translate("frmImport", "Delete value translator", None))
 
+import resources_rc

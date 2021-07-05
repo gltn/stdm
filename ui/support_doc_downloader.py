@@ -3,14 +3,16 @@ import os
 from PyQt4.QtGui import (
         QApplication,
         QDialog,
-        QColor
-        )
+        QColor,
+        QMessageBox
+     )
 
 from PyQt4.QtCore import (
     Qt,
     QObject,
     QThread
 )
+
 from stdm.ui.support_doc_manager import SupportDocManager
 
 from ui_downup_support_doc import Ui_SupportDocDownloader
@@ -23,7 +25,6 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         self.setWindowTitle('Download supporting documents')
 
         self.sdoc_manager = support_doc_manager
-        self.btnClose.clicked.connect(self.close)
         self.btnDownload.clicked.connect(self.start_download)
 
         self.download_thread = QThread(self)
@@ -45,8 +46,29 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         self.lblDcount.setText('{} of {}'.format(0, self.sdoc_manager.size()))
         self.lblUcount.setText('{} of {}'.format(0, self.sdoc_manager.size()))
 
-    def close(self):
-        self.done(1)
+        self.finished_upload = False
+
+    def closeEvent(self, event):
+        if self.finished_upload:
+            event.accept()
+        else:
+            result = QMessageBox.question(self, 'Download Files',
+                    'Are you sure you want to close without downloading files?',
+                    QMessageBox.Yes, QMessageBox.No)
+            if result == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+
+    def confirm_close(self, msg):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessage.Warning)
+        msg_box.setText(msg)
+        msg_box.setWindowTitle('Download Files')
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+        ret_val = msg_box.exec_()
+        return True if ret_val == QMessageBox.Yes else False
 
     def doc_download_started(self, msg):
         self.edtProgress.append(msg+" started...")
@@ -86,6 +108,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         self.edtProgress.setFontWeight(75)
         self.edtProgress.append(msg+" completed.")
         self.download_thread.quit()
+        self.finished_upload = True
 
     def download_thread_started(self):
         self.sdoc_manager.start_download()

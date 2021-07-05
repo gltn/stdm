@@ -57,6 +57,7 @@ from stdm.data.configuration import (
 from qgis.gui import QgsEncodingFileDialog
 
 
+
 PLUGIN_DIR = os.path.abspath(os.path.join(
     os.path.dirname( __file__ ), os.path.pardir)).replace("\\", "/")
 CURRENCY_CODE = "" #TODO: Put in the registry
@@ -1252,6 +1253,22 @@ def is_ascii(s):
     """Checks if a string contains non ASCII characters."""
     return bool(re.match(r'[\x00-\x7F]+$', s))
 
+def get_import_logfile():
+    """
+    Return the name of the import log file
+    :rtype: str
+    """
+    from stdm.settings import get_primary_mapfile
+
+    LOG_FILE = 'import_log.json'
+
+    primary_mapfile = get_primary_mapfile()
+    mapfile_path = os.path.dirname(os.path.abspath(primary_mapfile))
+    import_logfile = mapfile_path+'\\'+LOG_FILE
+
+    return import_logfile
+
+
 def get_working_mapfile(target_table):
     """
     Returns a mapfile for a given target table
@@ -1282,5 +1299,5 @@ def mapfile_section(mapfile, section):
     config = ConfigParser.ConfigParser()
     config.readfp(open(mapfile))
     if section in config.sections():
-        map_section = OrderedDict(config.items(section))
+        map_section = OrderedDict(config.items(unicode(section)))
     return map_section

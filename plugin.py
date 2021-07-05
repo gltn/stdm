@@ -829,7 +829,7 @@ class STDMQGISLoader(object):
         config_path = '{}/.stdm/configuration.stc'.format(home)
 
         if manual:
-            parent.upgradeButton.setEnabled(False)
+            #parent.upgradeButton.setEnabled(False)
             upgrade_status = self.configuration_file_updater.load(
                 self.progress, True
             )
@@ -885,7 +885,7 @@ class STDMQGISLoader(object):
                 # Upgrade from options behavior
                 first_profile = profile_details_dict.keys()[0]
                 if manual:
-                    parent.upgradeButton.setEnabled(True)
+                    #parent.upgradeButton.setEnabled(True)
                     parent.close()
                     self.reload_plugin(first_profile)
                 else:
@@ -905,7 +905,7 @@ class STDMQGISLoader(object):
 
         else:
             if manual:
-                parent.upgradeButton.setEnabled(False)
+                #parent.upgradeButton.setEnabled(False)
                 parent.manage_upgrade()
             self.configuration_file_updater.\
                 _copy_config_file_from_template()
@@ -1580,11 +1580,11 @@ class STDMQGISLoader(object):
             lambda: self.reload_plugin(None)
         )
 
-        opt_dlg.upgradeButton.clicked.connect(
-            lambda :self.load_configuration_from_file(
-                opt_dlg, True
-            )
-        )
+        #opt_dlg.upgradeButton.clicked.connect(
+            #lambda :self.load_configuration_from_file(
+                #opt_dlg, True
+            #)
+        #)
 
         opt_dlg.exec_()
 
