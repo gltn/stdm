@@ -1,5 +1,9 @@
 import os
-from os.path import isfile, join
+from os import path
+from os.path import (
+        isfile, 
+        join
+    )
 import fnmatch
 import shutil
 import sys
@@ -702,7 +706,7 @@ class KoboDownloader(QObject):
             self.upload_downloaded_files(dfiles)
 
         if self.ui.cbScannedHsePic.isChecked():
-            dfiles = self.fetch_scanned_docs('house pictures')
+            dfiles = self.fetch_scanned_docs('house photo')
             self.upload_downloaded_files(dfiles)
 
         if self.ui.cbScannedIdDoc.isChecked():
@@ -752,10 +756,10 @@ class KoboDownloader(QObject):
 
                 msg = 'Downloading File: {} '.format(field_value)
 
-                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
-
-                # download file
-                self.download(src_url, dest_url, self.credentials[0], self.credentials[1])
+                if not path.exists(dest_url):
+                    self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+                    # download file
+                    self.download(src_url, dest_url, self.credentials[0], self.credentials[1])
 
                 if a_field_name in self.doc_types:
                     doc_type_id = self.doc_types[a_field_name]
@@ -869,7 +873,6 @@ class KoboDownloader(QObject):
 
             for sfile in downloaded_files[key]:
 
-                try:
                     src_doc_type = sfile['doc_type_id'] 
                     short_filename = sfile['key_field_value'] 
                     full_filename = sfile['filename']  # full path of the source file
@@ -882,27 +885,46 @@ class KoboDownloader(QObject):
                     #pg_create_supporting_document(support_doc)
                     #next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
 
-                    result_obj = pg_create_supporting_document(support_doc)
-                    next_support_doc_id = result_obj.fetchone()[0]
-                    support_doc_table = self.support_doc_map['parent_support_table']
+                    found_error = False
 
-                    # Create a record in the parent table supporting document table (oc_household_supporting_document)
-                    # parent table is "oc_household"
-                    self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id, int(src_doc_type))
+                    try:
+                        result_obj = pg_create_supporting_document(support_doc)
+                        next_support_doc_id = result_obj.fetchone()[0]
+                        support_doc_table = self.support_doc_map['parent_support_table']
+                    except:
+                        msg = "ERROR: pg_create_supporting_document: "+support_doc['doc_filename']
+                        self.download_progress.emit(KoboDownloader.ERROR, msg)
+                        found_error = True
 
-                    # copy file to STDM supporting document path
-                    if src_doc_type in doc_type_cache:
-                        doc_type = doc_type_cache[src_doc_type]
-                    else:
-                        doc_type = get_value_by_column(
-                                self.support_doc_map['doc_type_table'], 'value', 'id', src_doc_type)
-                        doc_type_cache[src_doc_type] = doc_type
+                    if found_error:
+                        continue
 
-                    new_filename = support_doc['doc_identifier']
-                    self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
-                except:
-                    msg = "ERROR Uploading. File not found!: "+full_filename
-                    self.download_progress.emit(KoboDownloader.ERROR, msg)
+                    try:
+                        # Create a record in the parent table supporting document table (oc_household_supporting_document)
+                        # parent table is "oc_household"
+                        self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id, int(src_doc_type))
+                    except:
+                        msg = "ERROR: create_supporting_doc: "+str(parent_id)
+                        self.download_progress.emit(KoboDownloader.ERROR, msg)
+                        found_error = True
+
+                    if found_error:
+                        continue
+
+                    try:
+                        # copy file to STDM supporting document path
+                        if src_doc_type in doc_type_cache:
+                            doc_type = doc_type_cache[src_doc_type]
+                        else:
+                            doc_type = get_value_by_column(
+                                    self.support_doc_map['doc_type_table'], 'value', 'id', src_doc_type)
+                            doc_type_cache[src_doc_type] = doc_type
+
+                        new_filename = support_doc['doc_identifier']
+                        self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
+                    except:
+                        msg = "ERROR Copying File: "+full_filename
+                        self.download_progress.emit(KoboDownloader.ERROR, msg)
 
 
     def get_parent_id(self, parent_table, value, parent_ref_column):
