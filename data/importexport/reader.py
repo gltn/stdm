@@ -612,9 +612,11 @@ class OGRReader(object):
             if source_cols[0] is None:
                 continue
 
+            # gender
             if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
                 match_idx = 1
 
+            # marital status
             if source_cols[0].lower()[:3]=='soc' and field_name.lower()[:3]=='soc':
                 match_idx = 1
 
@@ -624,15 +626,22 @@ class OGRReader(object):
             if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
                 match_idx = 1
 
+            # ethnicity
             if source_cols[0].lower()[:3]=='eth' and field_name.lower()[:3]=='eth':
                 match_idx = 1
 
+            # district
             if source_cols[0].lower()[:3]=='dis' and field_name.lower()[:3]=='dis':
                 match_idx = 1
 
             if source_cols[0].lower()[:3]=='sin' and field_name.lower()[:3]=='sin':
                 match_idx = 1
 
+            # sub-district
+            if source_cols[0].lower()[:3]=='sub' and field_name.lower()[:3]=='sub':
+                match_idx = 1
+
+            # mujamat
             if source_cols[0].lower()[:3]=='muj' and field_name.lower()[:3]=='muj':
                 match_idx = 1
 
