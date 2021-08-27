@@ -100,6 +100,12 @@ class FKProperty(WIDGET, BASE):
         self.show_in_parent_chk.clicked.connect(self.on_show_in_parent_clicked)
         self.show_in_child_chk.clicked.connect(self.on_show_in_child_clicked)
 
+        self.hide_sub_form_lbl.setVisible(False)
+        self.show_in_parent_chk.setVisible(False)
+        self.label_5.setVisible(False)
+        self.show_in_child_chk.setVisible(False)
+
+
     def on_show_in_parent_clicked(self):
         """
         A slot raised when show in parent is clicked.
