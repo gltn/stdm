@@ -2408,18 +2408,22 @@ class ConfigWizard(WIDGET, BASE):
                                                      "No column selected for deletion!"))
             return
 
-        if self.check_column_dependencies(column):
-            ent_id, entity = self._get_entity(self.lvEntities)
+        if self.column_has_entity_relation(column):
+            results = self.check_column_dependencies(column)
+            if results == False:
+                return
 
-            # delete column from the entity
-            entity.remove_column(column.name)
+        ent_id, entity = self._get_entity(self.lvEntities)
 
-            model_item.delete_entity(column)
+        # delete column from the entity
+        entity.remove_column(column.name)
 
-            self.delete_entity_from_spatial_unit_model(entity)
+        model_item.delete_entity(column)
 
-            if self.column_has_entity_relation(column):
-                self.delete_privilege_cache(entity.short_name, column.name)
+        self.delete_entity_from_spatial_unit_model(entity)
+
+        if self.column_has_entity_relation(column):
+            self.delete_privilege_cache(entity.short_name, column.name)
 
     def check_column_dependencies(self, column):
         """
@@ -2552,10 +2556,13 @@ class ConfigWizard(WIDGET, BASE):
         depends = []
         # for profile in profiles:
         for entity in profile.entities.values():
-            if entity.action != DbItem.DROP:
-                for column in entity.columns.values():
-                    if column.action != DbItem.DROP:
-                        depends.append(column.dependencies())
+            if entity.action == DbItem.DROP:
+                continue
+            for column in entity.columns.values():
+                if column.action == DbItem.DROP:
+                    continue
+                if self.column_has_entity_relation(column):
+                    depends.append(column.dependencies())
         return depends
 
     def find_lookup(self, name, dependencies):

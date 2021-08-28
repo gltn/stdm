@@ -27,6 +27,7 @@ from qgis.PyQt.QtCore import (
     Qt,
     QRegExp,
     QSettings,
+    QEvent,
 )
 from qgis.PyQt.QtGui import (
     QRegExpValidator,
@@ -41,6 +42,7 @@ from qgis.PyQt.QtWidgets import (
 
 from stdm.exceptions import DummyException
 from stdm.data.configuration.columns import BaseColumn
+from stdm.data.configuration.columns import ForeignKeyColumn
 from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.data.pg_utils import vector_layer
 from stdm.ui.gui_utils import GuiUtils
@@ -129,6 +131,8 @@ class ColumnEditor(WIDGET, BASE):
         else:
             self.prop_set = True
 
+        self.prev_column = self.column
+
         # the current entity should not be part of the foreign key parent table,
         # add it to the exclusion list
         self.FK_EXCLUDE.append(self.entity.short_name)
@@ -137,6 +141,7 @@ class ColumnEditor(WIDGET, BASE):
             [str(name) for name in BaseColumn.types_by_display_name().keys()]
 
         self.cboDataType.currentIndexChanged.connect(self.change_data_type)
+
         self.btnColProp.clicked.connect(self.data_type_property)
         self.edtColName.textChanged.connect(self.validate_text)
 
@@ -839,7 +844,6 @@ class ColumnEditor(WIDGET, BASE):
             msg = self.tr('Column type attributes could not be found.')
             self.notice_bar.clear()
             self.notice_bar.insertErrorNotification(msg)
-
             return
 
         self.btnColProp.setEnabled('property' in self.type_attribs[ti])
@@ -942,6 +946,10 @@ class ColumnEditor(WIDGET, BASE):
             self.column = new_column
             self.done(1)
         else:  # editing a column
+            if isinstance(self.prev_column, ForeignKeyColumn):
+                if self.prev_column.display_name() != new_column.display_name():
+                    self.entity.remove_column(self.prev_column.name)
+                    self.entity.add_column(new_column)
             self.column = new_column
             self.done(1)
 
