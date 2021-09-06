@@ -48,7 +48,11 @@ class ColumnDepend(WIDGET, BASE):
     def init_gui(self):
         self.btnCancel.clicked.connect(self.cancel_dlg)
         self.btnDelete.clicked.connect(self.delete_entity)
-        self.qryLabel.setText(self.qryLabel.text().format(self.column.name))
+        msg = "The following items depend on the '{}' column;\n "\
+              " deleting it might affect the data stored in these dependent\n "\
+              " objects and in some cases, might also lead to their deletion.\n "\
+              " Click 'Delete column' to proceed.\n".format(self.column.name)                               
+        self.qryLabel.setText(msg);
         self.btnDelete.setStyleSheet('QPushButton {font-weight: bold; color: red;}')
         self.show_dependencies()
 

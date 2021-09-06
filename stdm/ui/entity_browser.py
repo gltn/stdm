@@ -838,7 +838,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         for col in range(self.tbEntity.horizontalHeader().count()):
             self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.Interactive)
 
-        self.tbEntity.resizeColumnsToContents()
+        self.tbEntity.horizontalHeader().setStretchLastSection(True)
+
+        #self.tbEntity.resizeColumnsToContents()
 
         # Connect signals
         self.cboFilterColumn.currentIndexChanged.connect(self.onFilterColumnChanged)

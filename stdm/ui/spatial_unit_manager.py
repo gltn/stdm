@@ -386,6 +386,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
             table, column = self._layer_table_column(
                 curr_layer
             )
+            
             if curr_layer.isSpatial() and table not in pg_views():
                 # Make sure digitizing toolbar is enabled
                 self.iface.digitizeToolBar().setEnabled(True)

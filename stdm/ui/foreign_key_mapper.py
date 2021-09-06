@@ -358,13 +358,14 @@ class ForeignKeyMapper(QWidget):
 
         self._tableModel = BaseSTDMTableModel([], self._headers, self)
         self._tbFKEntity.setModel(self._tableModel)
-        self._tbFKEntity.resizeColumnsToContents()
         # First (id) column will always be hidden
         self._tbFKEntity.hideColumn(0)
 
         self._tbFKEntity.horizontalHeader().setSectionResizeMode(
             QHeaderView.Interactive
         )
+        self._tbFKEntity.horizontalHeader().setStretchLastSection(True)
+
         self._tbFKEntity.verticalHeader().setVisible(True)
 
     def databaseModel(self):
@@ -740,6 +741,7 @@ class ForeignKeyMapper(QWidget):
 
             self._tableModel.setData(prop_idx, attr_val)
 
+
         # Raise signal once entity has been inserted
         self.afterEntityAdded.emit(model_obj, row_number)
 
@@ -778,7 +780,10 @@ class ForeignKeyMapper(QWidget):
 
             self._tableModel.setData(prop_idx, attr_val)
 
-        self._tbFKEntity.resizeColumnsToContents()
+        #self._tbFKEntity.resizeColumnsToContents()
+        self._tbFKEntity.horizontalHeader().setSectionResizeMode(
+            QHeaderView.Stretch
+        )
 
         return row_number
 

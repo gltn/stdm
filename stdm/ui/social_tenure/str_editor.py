@@ -1233,7 +1233,7 @@ class STREditor(WIDGET, BASE):
         else:
             self.top_description.hide()
 
-    def init_party_component(self, party: Entity = None):
+    def init_party_component(self, party=None):
         """
         Initializes the party component.
         :param party: Party entity object.
