@@ -33,13 +33,13 @@ from qgis.PyQt.QtCore import (
 # Load third party libraries
 third_party_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                "third_party"))
-font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                        "third_party/FontTools"))
+#font_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                        #"third_party/FontTools"))
 
 
 if third_party_dir not in sys.path:
     sys.path.append(third_party_dir)
-    sys.path.append(font_dir)
+    #sys.path.append(font_dir)
 
 # Root to the path plugin directory
 USER_PLUGIN_DIR = QStandardPaths.standardLocations(QStandardPaths.HomeLocation)[0] \

@@ -30,7 +30,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox
 )
 
-from stdm.data.reports.sys_fonts import SysFonts
+#from stdm.data.reports.sys_fonts import SysFonts
 from stdm.exceptions import DummyException
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.utils.util import PLUGIN_DIR
@@ -180,15 +180,16 @@ class FilePaths:
 
     def localFontPath(self, path):
         """ Create a path where fonts will be stored"""
-        if path is None:
-            if platform.system() == "Windows":
-                path = os.environ["USERPROFILE"]
-            else:
-                path = os.getenv("HOME")
-            fontPath = path + "/.stdm/font.cache"
-        else:
-            fontPath = str(path).replace("\\", "/") + "/font.cache"
-        SysFonts.register(fontPath)
+        return
+        #if path is None:
+            #if platform.system() == "Windows":
+                #path = os.environ["USERPROFILE"]
+            #else:
+                #path = os.getenv("HOME")
+            #fontPath = path + "/.stdm/font.cache"
+        #else:
+            #fontPath = str(path).replace("\\", "/") + "/font.cache"
+        #SysFonts.register(fontPath)
 
     def setUserXMLFile(self):
         """
