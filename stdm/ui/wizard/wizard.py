@@ -2243,7 +2243,7 @@ class ConfigWizard(WIDGET, BASE):
             self.show_message(self.tr("Please select a column to edit"))
             return
 
-        rid, column, model_item = self.get_column_data()
+        rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
 
         if column and column.action == DbItem.CREATE:
             row_id, entity = self._get_entity(self.lvEntities)
@@ -2376,24 +2376,16 @@ class ConfigWizard(WIDGET, BASE):
             entity_item = list(model_item.entities().values())[row_id]
         return row_id, entity_item
 
-    def _get_model(self, view):
-        row_id = -1
-        model_item, entity, row_id = self.get_model_entity(view)
-        column = None
-        if model_item:
-            column = list(model_item.entities().values())[row_id]
-        return row_id, column, model_item
-
     def _get_entity(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
         if entity:
             return row_id, entity
 
-    def get_column_data(self):
-        model_item = self.tbvColumns.model()
-        row_id = self.tbvColumns.selectedIndexes()[0].row()
-        col_name = self.tbvColumns.model().data(
-            self.tbvColumns.model().index(row_id, 0))
+    def get_selected_item_data(self, view):
+        model_item = view.model()
+        row_id = view.selectedIndexes()[0].row()
+        col_name = view.model().data(
+            view.model().index(row_id, 0))
         column = model_item.entities()[str(col_name)]
         return row_id, column, model_item
 
@@ -2402,7 +2394,7 @@ class ConfigWizard(WIDGET, BASE):
         Delete selected column but show warning dialog if a
         column has dependencies.
         """
-        row_id, column, model_item = self._get_model(self.tbvColumns)
+        row_id, column, model_item = self.get_selected_item_data(self.tbvColumns)
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                                                      "No column selected for deletion!"))
@@ -2481,7 +2473,7 @@ class ConfigWizard(WIDGET, BASE):
             self.show_message(self.tr("Please select a lookup to edit!"))
             return
 
-        row_id, lookup, model_item = self._get_model(self.lvLookups)
+        row_id, lookup, model_item = self.get_selected_item_data(self.lvLookups)
 
         tmp_short_name = copy.deepcopy(lookup.short_name)
         lookup.entity_in_database = pg_table_exists(lookup.name)
