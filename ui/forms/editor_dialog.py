@@ -39,7 +39,9 @@ from PyQt4.QtGui import (
     QApplication,
     QPushButton,
     QMessageBox,
-    QMainWindow)
+    QMainWindow,
+    QComboBox
+    )
 
 from qgis.utils import (
     iface,
@@ -363,9 +365,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         :param col: The child column object
         :type col: Object
         """
+        if isinstance(parent_widget, QComboBox):
+            self.filter_val = parent_widget.currentText()
+        else:
+            self.filter_val = parent_widget.text()
         local_widget = self.column_widgets[col]
         local_widget.show_clear_button()
-        self.filter_val = parent_widget.text()
         local_widget.setText(self.filter_val)
 
     def save_and_new(self):
