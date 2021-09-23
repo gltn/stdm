@@ -1811,13 +1811,13 @@ class STDMQGISLoader:
             self.current_profile.social_tenure
         )
 
-        if db_status:
-            if self.viewSTRWin is None:
-                self.viewSTRWin = ViewSTRWidget(self)
-                self.viewSTRWin.show()
-            else:
-                self.viewSTRWin.showNormal()
-                self.viewSTRWin.setFocus()
+        if self.viewSTRWin is not None:
+            del self.viewSTRWin
+            self.viewSTRWin = None
+
+        self.viewSTRWin = ViewSTRWidget(self)
+        self.viewSTRWin.show()
+
 
     def isSTDMLayer(self, layer):
         """
