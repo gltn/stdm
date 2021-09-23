@@ -302,16 +302,19 @@ class STRDBHandler():
             # Update custom tenure information
             if party_id in party_keys:
                 attrs_column = str_store.current_party.name[:2]+'_check_tenure_type_str_attrs_collection'
-                attrs = getattr(row, attrs_column)
-                for r in attrs:
-                    custom_tenure = str_store.custom_tenure
-                    if custom_tenure:
-                        if 'dispute_status' in custom_tenure:
-                            r.dispute_status = custom_tenure[party_id].dispute_status
-                        if 'dispute_type' in custom_tenure:
-                            r.dispute_type = custom_tenure[party_id].dispute_type
-                        if 'period_of_stay_in_years' in custom_tenure:
-                            r.period_of_stay_in_years = custom_tenure[party_id].period_of_stay_in_years
+                try:
+                    attrs = getattr(row, attrs_column)
+                    for r in attrs:
+                        custom_tenure = str_store.custom_tenure
+                        if custom_tenure:
+                            if 'dispute_status' in custom_tenure:
+                                r.dispute_status = custom_tenure[party_id].dispute_status
+                            if 'dispute_type' in custom_tenure:
+                                r.dispute_type = custom_tenure[party_id].dispute_type
+                            if 'period_of_stay_in_years' in custom_tenure:
+                                r.period_of_stay_in_years = custom_tenure[party_id].period_of_stay_in_years
+                except:
+                    pass
             row.update()  # Commit updates to DB
         return rows
 

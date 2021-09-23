@@ -1625,6 +1625,7 @@ class STDMQGISLoader(object):
             self.config_serializer.load()
         # Set current profile based on the selected
         # profile in the wizard
+
         if sel_profile is not None:
             if len(sel_profile) > 1:
                 save_current_profile(sel_profile)
@@ -1845,14 +1846,13 @@ class STDMQGISLoader(object):
         db_status = self.entity_table_checker(
             self.current_profile.social_tenure
         )
+        
+        if self.viewSTRWin is not None:
+            del self.viewSTRWin
+            self.viewSTRWin = None
 
-        if db_status:
-            if self.viewSTRWin is None:
-                self.viewSTRWin = ViewSTRWidget(self)
-                self.viewSTRWin.show()
-            else:
-                self.viewSTRWin.showNormal()
-                self.viewSTRWin.setFocus()
+        self.viewSTRWin = ViewSTRWidget(self)
+        self.viewSTRWin.show()
 
 
     def isSTDMLayer(self,layer):

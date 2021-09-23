@@ -647,8 +647,6 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
 
                     ordering = self.get_sorting_order(self._entity)
 
-                    print "ORDERING: ",ordering
-
                     if type(self.parent_record_id) == int and self.parent_record_id > 0:
                         col = self.filter_col(self._entity)
                         if col is None:
