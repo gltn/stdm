@@ -258,17 +258,17 @@ class Save2DB:
                 # try
                 list_val = list(attributes.values())[0]
                 prefix  = current_profile().prefix + '_'
-                full_party_ref_ = ''
+                full_party_ref_column = ''
                 full_spatial_ref_ = ''
                 if 'party' in list_val.keys():
-                    full_party_ref_ = list_val.get('party')
-                    party_ref_column = full_party_ref_ + '_id'
+                    full_party_ref_column = list_val.get('party')
+                    party_ref_column = full_party_ref_column + '_id'
 
                 else:
-                    full_party_ref_ = current_profile().social_tenure.parties[0].name
-                    party_ref_column = full_party_ref_.replace(prefix, '') + '_id'
+                    full_party_ref_column = current_profile().social_tenure.parties[0].name
+                    party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, party_ref_column, self.parents_ids.get(prefix+full_party_ref_)[0])
+                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column))
 
                 if 'spatial_unit' in list_val.keys():
                     full_spatial_ref_ = list_val.get('spatial_unit')
@@ -278,7 +278,7 @@ class Save2DB:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
                     spatial_ref_column = full_spatial_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(prefix+full_spatial_ref_)[0])
+                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
 
                 attributes = self.attributes['social_tenure']
 

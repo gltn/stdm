@@ -615,7 +615,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         log_timestamp = '=== parent table import  === : {0}'.format(entity)
                         cu_obj = entity
                         self.log_table_entry(log_timestamp)
-                        entity_add = Save2DB(entity, entity_data)
+                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_obj)
                         ref_id = entity_add.save_parent_to_db()
                         import_status = True
