@@ -37,7 +37,7 @@ WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('importexport/ui_multiple_enumeration_dialog.ui'))
 
 
-class MultipleEnumerationDialog(WIDGET, BASE, TranslatorDialogBase):
+class MultipleEnumerationDialog(TranslatorDialogBase, WIDGET, BASE):
     """
     Dialog for defining configuration settings for the MultipleEnumerationTranslator
     class implementation.

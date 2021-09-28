@@ -35,7 +35,7 @@ class TranslatorDialogBase(object):
     that an instance of a source value translator is returned.
     """
 
-    def __init__(self, source_cols, dest_table, dest_col, src_col):
+    def __init__(self,source_cols, dest_table, dest_col, src_col):
         self._source_cols = source_cols
         self._dest_table = dest_table
         self._dest_col = dest_col

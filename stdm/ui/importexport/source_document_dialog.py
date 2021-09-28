@@ -41,8 +41,7 @@ WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('importexport/ui_source_document_dialog.ui'))
 
 
-class SourceDocumentTranslatorDialog(WIDGET, BASE,
-                                     TranslatorDialogBase):
+class SourceDocumentTranslatorDialog(TranslatorDialogBase, WIDGET, BASE):
     """
     Dialog for defining configuration settings for the
     SourceDocumentTranslator implementation.

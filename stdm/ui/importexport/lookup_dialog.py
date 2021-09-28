@@ -29,20 +29,22 @@ from stdm.data.importexport.value_translators import LookupValueTranslator
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.importexport.translator_widget_base import TranslatorDialogBase
 from stdm.ui.notification import NotificationBar
+#from stdm.ui.importexport.ui_lookup_dialog import Ui_LookupTranslatorDialog
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('importexport/ui_lookup_dialog.ui'))
 
 
-class LookupDialog(WIDGET, BASE, TranslatorDialogBase):
+class LookupDialog(TranslatorDialogBase, WIDGET, BASE):
     """
     Dialog for defining configuration settings for the lookup translation
     implementation.
     """
-
     def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
         QDialog.__init__(self, parent)
+
         self.setupUi(self)
+
         TranslatorDialogBase.__init__(
             self,
             source_cols,

@@ -38,7 +38,7 @@ WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('importexport/ui_related_table_dialog.ui'))
 
 
-class RelatedTableDialog(WIDGET, BASE, TranslatorDialogBase):
+class RelatedTableDialog(TranslatorDialogBase, WIDGET, BASE):
     """
     Dialog for defining configuration settings for the
     RelatedTableTranslator class implementation.
