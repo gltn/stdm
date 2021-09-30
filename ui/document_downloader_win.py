@@ -195,18 +195,18 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             self.disable_download_button()
 
     def scanned_doc_clicked(self):
-        if self.rbScannedDoc.isChecked():
-            self.rbKoboMedia.setChecked(False)
-            self.rbSupportDoc.setChecked(False)
-            self.toggleSupportDoc(False)
-            self.toggleKoboSettings(False)
-            self.toggleMediaFolders(False)
-            self.toggleScannedDoc(True)
-            self.btnDownload.setEnabled(True)
-            self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
-        else:
-            self.disable_download_button()
-            self.toggleScannedDoc(False)
+        self.rbScannedDoc.setChecked(True)
+        self.rbKoboMedia.setChecked(False)
+        self.rbSupportDoc.setChecked(False)
+        self.toggleSupportDoc(False)
+        self.toggleKoboSettings(False)
+        self.toggleMediaFolders(False)
+        self.toggleScannedDoc(True)
+        self.btnDownload.setEnabled(True)
+        self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
+        #else:
+        #self.disable_download_button()
+        #self.toggleScannedDoc(False)
 
     def toggleScannedDoc(self, mode):
         self._toggleScannedDoc(mode)
@@ -537,12 +537,17 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def download_media(self):
         self.fix_auto_sequence()
 
+        # Uplaod documents
+
         if self.twDocument.currentIndex() == 1:
             if self.rbScannedDoc.isChecked():
                 self.process_scanned_docs()
             else:
                 self.ErrorInfoMessage("Please select document type.")
+
             return
+
+        # Download documents
 
         if self.txtDataSource.text() == "":
             self.ErrorInfoMessage("Please select a source file.")
@@ -570,8 +575,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         if not self.valid_credentials():
             return
 
-        credentials = (self.edtKoboUsername.text(),
-                 self.edtKoboPassword.text())
+        credentials = (self.edtKoboUsername.text(), self.edtKoboPassword.text())
         
         kobo_url = self.edtMediaUrl.text()
         save_media_url(kobo_url)
@@ -618,7 +622,8 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 ('',''), 
                 '', 
                 support_doc_map,
-                self.curr_profile, True,
+                self.curr_profile,
+                True,
                 parent_ref_column,
                 ref_type='str')
 

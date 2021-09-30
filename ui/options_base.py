@@ -98,15 +98,17 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.notif_bar = NotificationBar(self.vlNotification, 6000)
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
+        self.cancel_btn = self.buttonBox.button(QDialogButtonBox.Cancel)
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
 
         version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace('1.4', version)
-        self.label_9.setText(upgrade_label_text)
+        #upgrade_label_text = self.label_9.text().replace('1.4', version)
+        #self.label_9.setText(upgrade_label_text)
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
+        self.cancel_btn.clicked.connect(self.on_cancel)
         self.buttonBox.accepted.connect(self.on_accept)
         self.chk_pg_connections.toggled.connect(self._on_use_pg_connections)
         self.cbo_pg_connections.currentIndexChanged.connect(
@@ -122,17 +124,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        self.upgradeButton.toggled.connect(
-            self.manage_upgrade
-        )
-
         self.btnMapfile.clicked.connect(self.on_set_mapfile)
         self.btnTransPath.clicked.connect(self.on_set_trans_path)
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
-
-        self.manage_upgrade()
 
         self.init_gui()
 
@@ -562,28 +558,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.accept()
 
-    def manage_upgrade(self):
-        """
-        A slot raised when the upgrade button is clicked.
-        It disables or enables the upgrade
-        button based on the ConfigUpdated registry value.
-        """
+    def on_cancel(self):
+        self.reject()
 
-        self.config_updated_dic = self._reg_config.read(
-            [CONFIG_UPDATED]
-        )
-
-        # if config file exists, check if registry key exists
-        if len(self.config_updated_dic) > 0:
-            config_updated_val = self.config_updated_dic[
-                CONFIG_UPDATED
-            ]
-            # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0' or config_updated_val == '-1':
-                self.upgradeButton.setEnabled(True)
-
-            # disable the button if any other value.
-            else:
-                self.upgradeButton.setEnabled(False)
-        else:
-            self.upgradeButton.setEnabled(False)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_document_downloader_win.ui'
 #
-# Created: Thu Jun 18 14:34:47 2020
+# Created: Thu Sep 30 09:55:19 2021
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -298,7 +298,7 @@ class Ui_DocumentDownloader(object):
         DocumentDownloader.setStatusBar(self.statusbar)
 
         self.retranslateUi(DocumentDownloader)
-        self.twDocument.setCurrentIndex(0)
+        self.twDocument.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(DocumentDownloader)
 
     def retranslateUi(self, DocumentDownloader):
@@ -336,7 +336,7 @@ class Ui_DocumentDownloader(object):
         self.btnIdPic.setText(_translate("DocumentDownloader", "Browse ...", None))
         self.twDocument.setTabText(self.twDocument.indexOf(self.tbDownload), _translate("DocumentDownloader", "Download", None))
         self.groupBox_5.setTitle(_translate("DocumentDownloader", "Document Type:", None))
-        self.rbScannedDoc.setText(_translate("DocumentDownloader", "Scanned Documents", None))
+        self.rbScannedDoc.setText(_translate("DocumentDownloader", "Scanned Supporting Documents", None))
         self.groupBox_4.setTitle(_translate("DocumentDownloader", "Local Documents Folder:", None))
         self.tbScannedDoc.setText(_translate("DocumentDownloader", "...", None))
         self.label_2.setText(_translate("DocumentDownloader", "Certificate:", None))

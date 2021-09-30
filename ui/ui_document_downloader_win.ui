@@ -21,7 +21,7 @@
     <item>
      <widget class="QTabWidget" name="twDocument">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tbDownload">
        <attribute name="title">
@@ -334,7 +334,7 @@
            <item>
             <widget class="QRadioButton" name="rbScannedDoc">
              <property name="text">
-              <string>Scanned Documents</string>
+              <string>Scanned Supporting Documents</string>
              </property>
             </widget>
            </item>
