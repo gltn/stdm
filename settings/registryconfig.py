@@ -56,6 +56,8 @@ SCANNED_DOC='ScannedDoc'
 SCANNED_HSE_MAP='ScannedHseMap'
 SCANNED_HSE_PIC='ScannedHsePic'
 SCANNED_ID_DOC='ScannedIdDoc'
+SCANNED_FAMILY_PHOTO='ScannedFamilyPhoto'
+SCANNED_SIGNATURE='ScannedSignature'
 
 def registry_value(key_name):
     """

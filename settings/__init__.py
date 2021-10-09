@@ -17,7 +17,9 @@ from stdm.settings.registryconfig import (
     SCANNED_DOC,
     SCANNED_HSE_MAP,
     SCANNED_HSE_PIC,
-    SCANNED_ID_DOC
+    SCANNED_ID_DOC,
+    SCANNED_FAMILY_PHOTO,
+    SCANNED_SIGNATURE
 )
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 
@@ -147,6 +149,12 @@ def get_scanned_hse_pic():
 def get_scanned_id_doc():
     return get_key_value(SCANNED_ID_DOC)
 
+def get_scanned_family_photo():
+    return get_key_value(SCANNED_FAMILY_PHOTO)
+
+def get_scanned_signature():
+    return get_key_value(SCANNED_SIGNATURE)
+
 def save_media_url(value):
     save_key_value(MEDIA_URL, value)
 
@@ -182,4 +190,10 @@ def save_scanned_hse_pic(value):
 
 def save_scanned_id_doc(value):
     save_key_value(SCANNED_ID_DOC, value)
+
+def save_scanned_family_photo(value):
+    save_key_value(SCANNED_FAMILY_PHOTO, value)
+
+def save_scanned_signature(value):
+    save_key_value(SCANNED_SIGNATURE, value)
 
