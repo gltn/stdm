@@ -417,7 +417,11 @@ class DocumentGeneratorDialog(QDialog, Ui_DocumentGeneratorDialog):
 
         return fk_mapper
 
-    def check_record_str(self, model_obj, fk):
+    def check_record_str(self, model_obj):
+        '''
+        Checks if an Social Tenure Relationship (STR) record has
+        been created for the selected entity.
+        '''
         curr_entity = self.tabWidget.currentWidget()._entity.short_name 
         str_column = curr_entity.replace(' ','_').lower()+'_id'
 
