@@ -184,8 +184,6 @@ class SupportDocManager(QObject):
         """
         """
         for n, doc in enumerate(docs):
-            if n == 10:
-                break
             short_filename = doc['filename']
             if short_filename == '':
                 continue
@@ -217,8 +215,6 @@ class SupportDocManager(QObject):
         """
         self.upload_started.emit('Upload')
         for n, doc in enumerate(docs):
-            if n == 10:
-                break
             short_filename = doc['filename']
             if short_filename in [log['filename'] for log in self.upload_cache]:
                 continue
