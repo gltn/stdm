@@ -87,7 +87,10 @@ class LayoutUtils:
 
             # Load items into the composition and configure STDM data controls
             context = QgsReadWriteContext()
-            layout.loadFromTemplate(template_doc, context)
+            try:
+                layout.loadFromTemplate(template_doc, context)
+            except:
+                pass
 
             LayoutUtils.sync_ids_with_uuids(layout)
 

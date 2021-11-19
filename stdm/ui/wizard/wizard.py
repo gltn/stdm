@@ -66,7 +66,8 @@ from stdm.data.configuration.stdm_configuration import (
 from stdm.data.license_doc import LicenseDocument
 from stdm.data.pg_utils import (
     pg_table_exists,
-    table_column_names
+    table_column_names,
+    pg_table_record_count
 )
 from stdm.security.privilege_provider import MultiPrivilegeProvider
 from stdm.settings import (
@@ -606,6 +607,7 @@ class ConfigWizard(WIDGET, BASE):
         p = self.current_profile()
         if not p is None:
             party_entity = p.entity(party_name)
+            p.social_tenure.add_party(party_entity)
             self.dg_tenure.add_party_entity(party_entity)
 
     def _on_party_deselected(self, item):
@@ -1932,10 +1934,20 @@ class ConfigWizard(WIDGET, BASE):
         :rtype: boolean
         """
         cols = table_column_names(entity.name)
-        if column.name in cols:
-            return True
-        else:
+        return True if column.name in cols else False
+
+    def entity_has_records(self, entity):
+        """
+        Returns True if entity has records in the database else False.
+        :param entity: Entity instance
+        :type entity: Entity
+        :rtype: boolean
+        """
+        if not pg_table_exists(entity.name):
             return False
+
+        record_count = pg_table_record_count(entity.name)
+        return True if record_count > 0 else False
 
     def clear_view_model(self, view_model):
         rows = view_model.rowCount()
@@ -2208,6 +2220,7 @@ class ConfigWizard(WIDGET, BASE):
             params['profile'] = profile
 
             params['is_new'] = True
+            params['entity_has_records'] = self.entity_has_records(entity)
 
             editor = ColumnEditor(**params)
             result = editor.exec_()
@@ -2255,6 +2268,7 @@ class ConfigWizard(WIDGET, BASE):
             params['entity'] = entity
             params['profile'] = profile
             params['in_db'] = self.column_exist_in_entity(entity, column)
+            params['entity_has_records'] = self.entity_has_records(entity)
 
             params['is_new'] = False
 

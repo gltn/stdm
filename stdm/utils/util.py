@@ -1126,19 +1126,19 @@ def profile_and_user_views(profile, check_party=False):
     social_tenure = profile.social_tenure
 
     for view, entity in social_tenure.views.items():
+        source_tables.append(view)
 
         # For party views, if check party is true, add party views.
         # If multi-party is false. Otherwise, add all party views - this is not
         # recommended for composer data source.
-        if entity in social_tenure.parties:
-            if check_party:
-                if not social_tenure.multi_party:
-                    source_tables.append(view)
-            else:
-                source_tables.append(view)
-
-        else:
-            source_tables.append(view)
+        #if entity in social_tenure.parties:
+            #if check_party:
+                #if not social_tenure.multi_party:
+                    #source_tables.append(view)
+            #else:
+                #source_tables.append(view)
+        #else:
+            #source_tables.append(view)
 
     stdm_config = StdmConfiguration.instance()
     all_str_views = []
@@ -1147,9 +1147,10 @@ def profile_and_user_views(profile, check_party=False):
 
     for value in pg_views():
         # if value not in all_str_views:  #and value not in source_tables:
-        # if value[:2] == profile.prefix:
-        if value not in source_tables:
-            source_tables.append(value)
+         if value[:2] == profile.prefix:
+            if value not in source_tables:
+                source_tables.append(value)
+
     return source_tables
 
 

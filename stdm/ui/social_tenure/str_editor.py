@@ -50,7 +50,7 @@ from sqlalchemy import (
 )
 
 from stdm.data.configuration.entity import Entity
-from stdm.data.pg_utils import pg_table_count
+from stdm.data.pg_utils import pg_table_record_count
 from stdm.settings import current_profile
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.gui_utils import GuiUtils
@@ -997,7 +997,7 @@ class STREditor(WIDGET, BASE):
 
         self.social_tenure = self.current_profile.social_tenure
 
-        count = pg_table_count(self.social_tenure.name)
+        count = pg_table_record_count(self.social_tenure.name)
 
         self.setWindowTitle(self.tr('{}{}'.format(self.windowTitle(), '- ' + str(count) + ' rows')))
 

@@ -88,7 +88,8 @@ def load_table_layers(config_collection):
     registry.
     :rtype: list
     """
-    table_configs = list(config_collection.items()).values()
+    #table_configs = list(config_collection.items()).values()
+    table_configs = config_collection.items()
 
     v_layers = []
 
@@ -330,6 +331,7 @@ class ComposerWrapper(QObject):
                                  ))
 
         self._iface.openLayoutDesigner(layout)
+
 
     def xxxloadTemplate(self, filePath):
         """

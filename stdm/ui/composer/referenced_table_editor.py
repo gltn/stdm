@@ -179,7 +179,7 @@ class ReferencedTableEditor(QWidget):
         self._current_profile_tables = []
 
         if self._current_profile is not None:
-            self._current_profile_tables = self._current_profile.table_names()
+            self._current_profile_tables =self._current_profile.user_table_names()
 
         # Connect signals
         QMetaObject.connectSlotsByName(self)

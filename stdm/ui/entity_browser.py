@@ -60,7 +60,7 @@ from stdm.data.globals import ENTITY_TABLE_MODEL
 from stdm.data.configuration.entity import Entity
 from stdm.data.pg_utils import (
     table_column_names,
-    pg_table_count
+    pg_table_record_count
 )
 from stdm.data.qtmodels import (
     BaseSTDMTableModel,
@@ -300,7 +300,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
     def get_records_limit(self):
         records = get_entity_browser_record_limit()
         if records == 0:
-            records = pg_table_count(self.entity.name)
+            records = pg_table_record_count(self.entity.name)
         return records
 
     def children_entities(self):

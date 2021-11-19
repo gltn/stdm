@@ -98,6 +98,7 @@ class ColumnEditor(WIDGET, BASE):
         self.in_db = kwargs.get('in_db', False)
         self.is_new = kwargs.get('is_new', True)
         self.auto_entity_add = kwargs.get('auto_add', False)
+        self.entity_has_records = kwargs.get('entity_has_records', False)
 
         QDialog.__init__(self, self.form_parent)
 
@@ -220,6 +221,10 @@ class ColumnEditor(WIDGET, BASE):
             self.cbMandt.setEnabled(not self.in_db)
             self.cbUnique.setEnabled(not self.in_db)
             self.cbIndex.setEnabled(not self.in_db)
+
+        # Dont allow mandatory fields if an entity already has records.
+        if self.entity_has_records:
+            self.cbMandt.setEnabled(False)
 
     def validate_text(self, text):
         """
@@ -938,7 +943,6 @@ class ColumnEditor(WIDGET, BASE):
             if self.duplicate_check(col_name):
                 self.show_message(self.tr("Column with the same name already "
                                           "exist in this entity!"))
-
                 return False
             if self.auto_entity_add:
                 self.entity.add_column(new_column)

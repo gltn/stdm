@@ -36,6 +36,9 @@ class StdmTableLayoutItem(QgsLayoutItemAttributeTable):
     def icon(self):
         return GuiUtils.get_icon('composer_table.png')
 
+    def getTableContents(self, contents):
+        return True
+
 
 class StdmTableLayoutItemMetadata(QgsLayoutMultiFrameAbstractMetadata):
 

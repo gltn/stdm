@@ -218,7 +218,7 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
         return True
 
 
-def pg_table_count(table_name):
+def pg_table_record_count(table_name):
     """
     Returns a count of records in a table
     :param table_name: Table to get count of.

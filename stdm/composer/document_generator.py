@@ -49,6 +49,7 @@ from sqlalchemy.schema import (
     Table,
     MetaData
 )
+from sqlalchemy.sql.expression import text
 
 from stdm.composer.chart_configuration import ChartConfigurationCollection
 from stdm.composer.composer_data_source import ComposerDataSource
@@ -858,7 +859,7 @@ class DocumentGenerator(QObject):
                 if isinstance(queryValue, str):
                     queryValue = "'{0}'".format(queryValue)
                 sql = "{0} = :qvalue".format(queryField)
-                results = self._dbSession.query(dsTable).filter(sql).params(qvalue=queryValue).all()
+                results = self._dbSession.query(dsTable).filter(text(sql)).params(qvalue=queryValue).all()
 
             return dsTable, results
         except SQLAlchemyError as ex:

@@ -64,7 +64,7 @@ from sqlalchemy import (
 from stdm.data import globals
 from stdm.data.configuration import entity_model
 from stdm.data.database import Content
-from stdm.data.pg_utils import pg_table_count
+from stdm.data.pg_utils import pg_table_record_count
 from stdm.data.qtmodels import (
     BaseSTDMTableModel
 )
@@ -185,7 +185,7 @@ class ViewSTRWidget(WIDGET, BASE):
         self.details_tree_view.activate_feature_details(True)
         self.details_tree_view.model.clear()
 
-        count = pg_table_count(self.curr_profile.social_tenure.name)
+        count = pg_table_record_count(self.curr_profile.social_tenure.name)
         self.setWindowTitle(
             self.tr('{}{}'.format(
                 self.windowTitle(), '- ' + str(count) + ' rows'

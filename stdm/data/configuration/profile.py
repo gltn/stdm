@@ -583,6 +583,13 @@ class Profile(QObject):
         """
         return [e.name for e in self.entities.values()]
 
+    def user_table_names(self):
+        """
+        Returns a list of table names for entities that are user editable i.e. those
+        that have the attribute 'user_editable' set to True.
+        """
+        return [e.name for e in self.entities.values() if e.user_editable]
+
     def rename(self, original_name, new_name):
         """
         Renames the entity with the given short name to use the new name.
