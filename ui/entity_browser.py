@@ -725,8 +725,8 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self.tbEntity.setModel(self._proxyModel)
             #if numRecords < self.record_limit:
 
-            #self.tbEntity.setSortingEnabled(True)
-            #self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
+            self.tbEntity.setSortingEnabled(True)
+            self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
             self.tbEntity.hideColumn(0)
