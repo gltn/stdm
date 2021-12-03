@@ -729,7 +729,7 @@ class EntityBrowser(SupportsManageMixin, QDialog, Ui_EntityBrowser):
             self.tbEntity.sortByColumn(1, Qt.AscendingOrder)
 
             #First (ID) column will always be hidden
-            self.tbEntity.hideColumn(0)
+            #self.tbEntity.hideColumn(0)
 
             #self.tbEntity.horizontalHeader().setResizeMode(QHeaderView.Interactive)
             #self.tbEntity.horizontalHeader().resizeSections(QHeaderView.Stretch)
