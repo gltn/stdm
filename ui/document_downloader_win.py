@@ -213,7 +213,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.toggleSupportDoc(False)
         self.toggleKoboSettings(False)
         self.toggleMediaFolders(False)
-        #self.toggleScannedDoc(True)
+        self.toggleScannedDoc(True)
         self.btnDownload.setEnabled(True)
         self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
         #else:
@@ -307,10 +307,10 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbHousePic.setCheckState(Qt.Checked)
         self.cbIdPic.setCheckState(Qt.Checked)
 
-        self.cbScannedDoc.setCheckState(Qt.Unchecked)
-        self.cbScannedHseMap.setCheckState(Qt.Unchecked)
-        self.cbScannedHsePic.setCheckState(Qt.Unchecked)
-        self.cbScannedIdDoc.setCheckState(Qt.Unchecked)
+        self.cbScannedDoc.setCheckState(Qt.Checked)
+        self.cbScannedHseMap.setCheckState(Qt.Checked)
+        self.cbScannedHsePic.setCheckState(Qt.Checked)
+        self.cbScannedIdDoc.setCheckState(Qt.Checked)
         self.cbScannedFamilyPhoto.setCheckState(Qt.Checked)
         self.cbScannedSignature.setCheckState(Qt.Checked)
 
