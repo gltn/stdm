@@ -133,6 +133,8 @@ class ComposerWrapper(QObject):
         self._iface = iface
         self._config_items = []
 
+        self.variable_template_path = None
+
         # Container for custom editor widgets
         self._widgetMappings = {}
 
@@ -319,6 +321,8 @@ class ComposerWrapper(QObject):
 
         # Load template
         try:
+            self.composition().setCustomProperty('variable_template_path', file_path)
+            self.variable_template_path = file_path
             LayoutUtils.load_template_into_layout(layout, file_path)
         except IOError as e:
             QMessageBox.critical(self.mainWindow(),
@@ -406,6 +410,7 @@ class ComposerWrapper(QObject):
         """
         # Validate if the user has specified the data source
 
+
         if not LayoutUtils.get_stdm_data_source_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper", "Error"),
@@ -422,7 +427,8 @@ class ComposerWrapper(QObject):
             return
 
         # If it is a new unsaved document template then prompt for the document name.
-        template_path = self.composition().customProperty('variable_template_path', None)
+        #template_path = self.composition().customProperty('variable_template_path', None)
+        template_path = self.variable_template_path
 
         if template_path is None:
             docName, ok = QInputDialog.getText(self.mainWindow(),

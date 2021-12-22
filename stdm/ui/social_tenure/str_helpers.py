@@ -220,7 +220,7 @@ class FreezeTableWidget(QTableView):
         )
         # The user can not resize columns
         self.frozen_table_view.horizontalHeader(). \
-            setSectionResizeMode(QHeaderView.Fixed)
+            setSectionResizeMode(QHeaderView.ResizeToContents)  #Fixed
         self.frozen_table_view.setObjectName('frozen_table')
         self.setSelectionMode(QAbstractItemView.NoSelection)
         # Remove the scroll bar
@@ -296,6 +296,7 @@ class FreezeTableWidget(QTableView):
         self.frozen_table_view.resizeColumnsToContents()
         # set row height
         self.frozen_table_view.resizeRowsToContents()
+        self.frozen_table_view.horizontalHeader().setStretchLastSection(True)
 
     def signals(self):
         """
@@ -348,7 +349,7 @@ class FreezeTableWidget(QTableView):
                 )
             else:
                 self.horizontalHeader().resizeSection(
-                    col, 150
+                    col, 200
                 )
                 # Hide unnecessary columns in the
                 # widget fixed columns

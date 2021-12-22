@@ -535,7 +535,8 @@ class STRType(ComponentUtility):
 
         grid_layout = QGridLayout(self.container_widget)
         grid_layout.setHorizontalSpacing(5)
-        grid_layout.setColumnStretch(4, 5)
+        #grid_layout.setColumnStretch(4, 5)
+        grid_layout.setColumnStretch(0, 5)
         grid_layout.setMargin(5)
 
         grid_layout.addWidget(self.str_type_table)

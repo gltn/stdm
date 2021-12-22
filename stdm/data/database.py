@@ -116,6 +116,9 @@ class STDMDb:
 
     def __init__(self):
         # Initialize database engine
+        if globals.APP_DBCONN is None:
+            return
+
         self.engine = create_engine(globals.APP_DBCONN.toAlchemyConnection(), echo=False)
 
         # Check for PostGIS extension

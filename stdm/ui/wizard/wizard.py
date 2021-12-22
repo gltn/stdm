@@ -1780,7 +1780,7 @@ class ConfigWizard(WIDGET, BASE):
             copied_profile = self.current_profile()
             copied_profile.description = copy_profile_desc
             self.edtDesc.setText(copy_profile_desc)
-            new_prefix = self.stdm_config.prefix_from_profile_name(current_profile_name)
+            new_prefix = self.stdm_config.prefix_from_profile_name(copy_profile_name)
 
             copied_profile.set_prefix(new_prefix)
             copied_profile.str_table_exists = False
@@ -1962,7 +1962,10 @@ class ConfigWizard(WIDGET, BASE):
         :type view_model: EntitiesModel
         """
         self.pftableView.setModel(view_model)
+        self.pftableView.setColumnWidth(0, 200)
         self.lvEntities.setModel(view_model)
+
+        
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():

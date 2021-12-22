@@ -13,101 +13,126 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="1">
-    <widget class="QgsFilterLineEdit" name="txtFilterPattern">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>30</height>
-      </size>
-     </property>
-     <property name="maxLength">
-      <number>50</number>
-     </property>
-     <property name="placeholderText">
-      <string>Type the filter keyword here...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Look for</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="4">
-    <widget class="QTableView" name="tbEntity">
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Sunken</enum>
-     </property>
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>In column</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <widget class="QWidget" name="str_preview_container" native="true">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="3" colspan="2">
-    <widget class="QComboBox" name="cboFilterColumn">
-     <property name="minimumSize">
-      <size>
-       <width>150</width>
-       <height>30</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="5">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="5">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
     <layout class="QVBoxLayout" name="vlNotification">
      <property name="topMargin">
       <number>0</number>
      </property>
     </layout>
    </item>
-   <item row="1" column="0" colspan="5">
+   <item>
     <layout class="QVBoxLayout" name="vlActions">
      <property name="topMargin">
       <number>0</number>
      </property>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QTableView" name="tbEntity">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QWidget" name="str_preview_container" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Look for</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QgsFilterLineEdit" name="txtFilterPattern">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="maxLength">
+        <number>50</number>
+       </property>
+       <property name="placeholderText">
+        <string>Type the filter keyword here...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>In column</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="cboFilterColumn">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>30</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Close|QDialogButtonBox::Save</set>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

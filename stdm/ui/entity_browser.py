@@ -833,7 +833,10 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self.tbEntity.hideColumn(0)
 
         for col in range(self.tbEntity.horizontalHeader().count()):
-            self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeToContents)
+            header = self._headers[col]
+            header_size = 180+len(header)
+            self.tbEntity.horizontalHeader().resizeSection(col, header_size)
+            #self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeToContents)
 
         for col in range(self.tbEntity.horizontalHeader().count()):
             self.tbEntity.horizontalHeader().setSectionResizeMode(col, QHeaderView.Interactive)

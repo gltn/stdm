@@ -1228,6 +1228,9 @@ class DetailsTreeView(DetailsDBHandler):
         """
         parties = self.social_tenure.parties
 
+        if parties is None:
+            return
+
         for party in parties:
             party_name = party.short_name.lower().replace(' ', '_')
             party_id = '{}_id'.format(party_name)
@@ -1301,7 +1304,11 @@ class DetailsTreeView(DetailsDBHandler):
                 except RuntimeError:
                     pass
                 record_dict = record.__dict__
-                party, party_id = self.current_party(record_dict)
+                #party, party_id = self.current_party(record_dict)
+                results = self.current_party(record_dict)
+                if results is None:
+                    return
+                party, party_id = results
                 party_model = None
 
                 if party is not None:
