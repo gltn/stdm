@@ -66,6 +66,8 @@ from sqlalchemy.schema import (
     MetaData
 )
 
+from sqlalchemy.dialects import postgresql
+
 from stdm.settings.registryconfig import RegistryConfig
 from stdm.data.pg_utils import (
     geometryType,
@@ -467,7 +469,8 @@ class DocumentGenerator(QObject):
 
     def format_entity_field_name(self, composer_datasource, entity):
         if '_vw_' in composer_datasource:
-            return composer_datasource+'.'+entity[entity.find('_')+1:]+'_id'
+            ds = composer_datasource[composer_datasource.find('_vw_')+4:]
+            return ds+'_'+entity[entity.find('_')+1:]+'_id'
         else:
             return 'id'
 
