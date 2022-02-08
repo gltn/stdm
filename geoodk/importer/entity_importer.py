@@ -20,21 +20,26 @@ email                : stdm@unhabitat.org
 """
 import os
 from PyQt4.QtXml import QDomDocument
-from PyQt4.QtCore import QFile, QIODevice
+from PyQt4.QtGui import QVBoxLayout
+
+from PyQt4.QtCore import(
+    QUuid,
+    QDateTime,
+    QDir,
+    QFile,
+    QIODevice
+)
+
 from stdm.settings import current_profile
 from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
 from stdm.data.configuration import entity_model
 from stdm.geoodk.importer.geometry_provider import STDMGeometry
 from stdm.data.configuration.columns import GeometryColumn
 from stdm.ui.sourcedocument import SourceDocumentManager
-from PyQt4.QtCore import \
-    (
-    QUuid,
-    QDateTime,
-    QDir
-)
-
-from PyQt4.QtGui import QVBoxLayout
+from stdm.data.pg_utils import (
+        export_data,
+        run_query
+        )
 
 GEOMPARAM = 0
 GROUPCODE = 0
@@ -127,10 +132,12 @@ class Save2DB:
         self.parents_ids = ids
         self.geom = 4326
         self.entity_mapping = {}
+        self.multiple_select_columns = {}
+        self.ms_columns(self.entity.profile.prefix, self.entity,
+                self.multiple_select_columns)
 
     def object_from_entity_name(self, entity):
         """
-
         :return:
         """
         if entity == 'social_tenure':
@@ -322,6 +329,10 @@ class Save2DB:
         """
         self.column_info()
         for k, v in self.attributes.iteritems():
+            # check for multiple select column
+            if k in self.multiple_select_columns:
+                self.process_multiple_select_columns(k, v)
+                continue
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -329,8 +340,13 @@ class Save2DB:
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
+
         self.model.save()
         self.key = self.model.id
+
+        if len(self.multiple_select_columns) > 0:
+            self.save_multiple_selection(self.multiple_select_columns, self.key)
+
         return self.key
 
     def save_foreign_key_table(self):
@@ -507,11 +523,74 @@ class Save2DB:
         Reset all the model and entity data before we process
         the next entity data
         :return: None
-        z"""
+        """
         self.model = None
         self.entity = None
         self.attributes = None
         self._doc_manager = None
 
+    def ms_columns(self, prefix, entity, columns):
+        """
+        Find and cache all multiple select columns in a given entity.
 
+        :param prefix: Two character profile prefix
+        :type prefix: str
+        :param entity: Entity object
+        :type entity: Entity
+        :param columns: Dictionary to hold all multiple select columns
+        :type columns: Dict
+        """
+        for column in entity.columns.values():
+            if column.TYPE_INFO =='MULTIPLE_SELECT':
+                columns[column.name] = {
+                        'entity_name':self.form_entity,
+                        'multiple_select_table_name':prefix+'_'+column.name,
+                        'lookup_table_name': prefix+'_check_'+column.name
+                        }
+
+    def process_multiple_select_columns(self, field, selected_value):
+        """
+        Find the ID's of the multiple select values from the lookup tables.
+
+        :param field: Field name of the multiple select field in an entity
+        :type field: str
+        :param selected_value: A string with selected values in the multiple
+              select column. The values are separated with a space
+        :type selected_value: str
+        """
+        lookup_table = self.multiple_select_columns[field]['lookup_table_name']
+        lookup_data = export_data(lookup_table)
+        lookup_values = lookup_data.fetchall()
+
+        values = [f for f in lookup_values]
+        sel_list = selected_value.split(' ')
+        
+        results=[]
+        item=''
+        for i in range(len(sel_list)):
+            item = item+sel_list[i]+' '
+            found = False
+            id = -1
+            for val in values:
+                if item.strip() == val[2]:
+                    found = True
+                    id = val[0]
+                    break
+            if found:
+                results.append((id, item))
+                item=''
+
+        self.multiple_select_columns[field]['selection'] = results
+
+    def save_multiple_selection(self, ms_columns, parent_key):
+        for column_name, details in ms_columns.iteritems():
+            ms_table_name = details['multiple_select_table_name']
+            ms_lookup_column_name = details['lookup_table_name']+'_id'
+            ms_parent_column_name = details['entity_name']+'_id'
+
+            for lk_value in details['selection']:
+                insert_stmt = "Insert into {0} ({1},{2}) VALUES ( {3}, {4} )".format(
+                        ms_table_name, ms_lookup_column_name, ms_parent_column_name,
+                        lk_value[0], parent_key )
+                run_query(insert_stmt)
 

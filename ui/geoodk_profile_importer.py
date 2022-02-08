@@ -611,11 +611,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                         entity_add = Save2DB(entity, entity_data)
                         entity_add.objects_from_supporting_doc(instance_obj)
+
                         ref_id = entity_add.save_parent_to_db()
                         import_status = True
                         self.parent_ids[entity] = [ref_id, entity]
-                        #log_timestamp = ' --- import succeeded:    {0}' .format(str(import_status))
-
                         parents_info.append(entity)
                         single_occuring.pop(entity)
 

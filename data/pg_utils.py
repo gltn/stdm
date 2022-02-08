@@ -258,6 +258,10 @@ def export_data(table_name):
 
     return _execute(t)
 
+def run_query(query):
+    t = text(query)
+    _execute(t)
+
 
 def fetch_with_filter(sql_str):
     sql = unicode(sql_str)
