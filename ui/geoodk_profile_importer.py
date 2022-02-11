@@ -404,7 +404,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     has_relations = True
                 else:
                     continue
-            return has_relations
+        return has_relations
 
     def parent_table_isselected(self):
         """
@@ -599,53 +599,56 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
                     instance_obj_data[0])
 
-                for entity, entity_data in single_occuring.iteritems():
+                for entity_name, entity_data in single_occuring.iteritems():
                     import_status = False
-                    if entity in self.relations.keys():
-                        if entity in self.parent_ids:
+
+
+                    if entity_name in self.relations.keys():
+                        if entity_name in self.parent_ids:
                             continue
-                        self.count_import_file_step(counter, entity)
-                        log_timestamp = '=== parent table import  === : {0}'.format(entity)
-                        cu_obj = entity
+
+                        self.count_import_file_step(counter, entity_name)
+                        log_timestamp = '=== parent table import  === : {0}'.format(entity_name)
+                        cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
 
-                        entity_add = Save2DB(entity, entity_data)
+                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_obj)
 
                         ref_id = entity_add.save_parent_to_db()
                         import_status = True
-                        self.parent_ids[entity] = [ref_id, entity]
-                        parents_info.append(entity)
-                        single_occuring.pop(entity)
+                        self.parent_ids[entity_name] = [ref_id, entity_name]
+                        parents_info.append(entity_name)
+                        single_occuring.pop(entity_name)
 
-                    elif entity not in self.relations.keys():
+                    elif entity_name not in self.relations.keys():
                         import_status = False
 
                         for fk_table_name in self.relations.keys():
                             if fk_table_name not in self.parent_ids:
                                 in_relations = [_item for subitem in self.relations[fk_table_name]
                                                 for _item in subitem]
-                                if entity in in_relations:
+                                if entity_name in in_relations:
                                     fk_table_data = single_occuring[fk_table_name]
                                     entity_add = Save2DB(fk_table_name, fk_table_data)
                                     ref_id = entity_add.save_parent_to_db()
                                     self.parent_ids[fk_table_name] = [ref_id, fk_table_name]
                                     continue
 
-                        self.count_import_file_step(counter, entity)
-                        log_timestamp = '=== standalone table import  === : {0}'.format(entity)
-                        cu_obj = entity
+                        self.count_import_file_step(counter, entity_name)
+                        log_timestamp = '=== standalone table import  === : {0}'.format(entity_name)
+                        cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
-                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
+                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_obj)
                         child_id = entity_add.save_to_db()
-                        cu_obj = entity
+                        cu_obj = entity_name
                         import_status = True
-                        parents_info.append(entity)
-                        if entity in self.parent_ids:
+                        parents_info.append(entity_name)
+                        if entity_name in self.parent_ids:
                             continue
                         else:
-                            self.parent_ids[entity] = [child_id, entity]
+                            self.parent_ids[entity_name] = [child_id, entity_name]
                         entity_add.cleanup()
 
                 if repeated_entities:

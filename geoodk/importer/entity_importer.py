@@ -118,12 +118,12 @@ class Save2DB:
     """
     Class to insert entity data into db
     """
-    def __init__(self, entity, attributes, ids=None):
+    def __init__(self, entity_name, attributes, ids=None):
         """
         Initialize class and class variable
         """
         self.attributes = attributes
-        self.form_entity = entity
+        self.form_entity = entity_name
         self.doc_model = None
         self._doc_manager =None
         self.entity = self.object_from_entity_name(self.form_entity)
@@ -133,17 +133,18 @@ class Save2DB:
         self.geom = 4326
         self.entity_mapping = {}
         self.multiple_select_columns = {}
+
         self.ms_columns(self.entity.profile.prefix, self.entity,
                 self.multiple_select_columns)
 
-    def object_from_entity_name(self, entity):
+    def object_from_entity_name(self, entity_name):
         """
         :return:
         """
-        if entity == 'social_tenure':
+        if entity_name == 'social_tenure':
             return current_profile().social_tenure
         else:
-            user_entity = current_profile().entity_by_name(entity)
+            user_entity = current_profile().entity_by_name(entity_name)
             return user_entity
 
     def entity_has_supporting_docs(self):
@@ -186,7 +187,7 @@ class Save2DB:
             entity_object_model = entity_object()
         return entity_object_model
 
-    def objects_from_supporting_doc(self, instance_file = None):
+    def objects_from_supporting_doc(self, instance_file=None):
         """
         Create supporting doc path  instances based on the collected documents
         :return:paths
@@ -198,12 +199,15 @@ class Save2DB:
                 if str(document).endswith('supporting_document'):
                     if val != '':
                         doc = self.format_document_name_from_attribute(document)
-                        doc_path = os.path.normpath(f_dir+'/'+val)
+                        if len(f_dir) > 0:
+                            doc_path = os.path.normpath(f_dir+'/'+val)
+                        else:
+                            doc_path = val;
                         abs_path = doc_path.replace('\\','/').strip()
                         if QFile.exists(abs_path):
                             self.supporting_document_model(abs_path, doc)
 
-    def supporting_document_model(self,doc_path,doc):
+    def supporting_document_model(self, doc_path, doc):
         """
         :param doc_path: absolute document path
         :param doc: document name
@@ -329,15 +333,17 @@ class Save2DB:
         """
         self.column_info()
         for k, v in self.attributes.iteritems():
-            # check for multiple select column
+
             if k in self.multiple_select_columns:
                 self.process_multiple_select_columns(k, v)
                 continue
+
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
+
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
 
@@ -582,8 +588,8 @@ class Save2DB:
 
         self.multiple_select_columns[field]['selection'] = results
 
-    def save_multiple_selection(self, ms_columns, parent_key):
-        for column_name, details in ms_columns.iteritems():
+    def save_multiple_selection(self, ms_cols, parent_key):
+        for column_name, details in ms_cols.iteritems():
             ms_table_name = details['multiple_select_table_name']
             ms_lookup_column_name = details['lookup_table_name']+'_id'
             ms_parent_column_name = details['entity_name']+'_id'
