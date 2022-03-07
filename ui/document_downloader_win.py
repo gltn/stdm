@@ -115,6 +115,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.rbKoboMedia.clicked.connect(self.kobo_media_clicked)
         self.rbSupportDoc.clicked.connect(self.support_doc_clicked)
         self.rbScannedDoc.clicked.connect(self.scanned_doc_clicked)
+        self.rbCSV.clicked.connect(self.csv_clicked)
 
         self.tbFamilyFolder.clicked.connect(self.family_folder)
         self.tbSignFolder.clicked.connect(self.sign_folder)
@@ -213,18 +214,35 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.toggleSupportDoc(False)
         self.toggleKoboSettings(False)
         self.toggleMediaFolders(False)
+        self.toggle_csv_files(False)
         self.toggleScannedDoc(True)
         self.btnDownload.setEnabled(True)
         self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
-        #else:
-        #self.disable_download_button()
-        #self.toggleScannedDoc(False)
+
+    def csv_clicked(self):
+        self.rbScannedDoc.setChecked(False)
+        self.rbKoboMedia.setChecked(False)
+        self.rbSupportDoc.setChecked(False)
+        self.toggleSupportDoc(False)
+        self.toggleKoboSettings(False)
+        self.toggleMediaFolders(False)
+        self.toggleScannedDoc(False)
+        self.toggle_csv_files(True)
+        self.btnDownload.setEnabled(True)
+        self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
+
 
     def toggleScannedDoc(self, mode):
         self._toggleScannedDoc(mode)
         self._toggleScannedHseMap(mode)
         self._toggleScannedHsePic(mode)
         self._toggleScannedIdDoc(mode)
+
+    def toggle_csv_files(self, mode):
+        self.edtUploadFile.setEnabled(mode)
+        self.enable_scanned_family_photo(mode)
+        self.enable_scanned_signature(mode)
+
 
     def _toggleScannedDoc(self, mode):
         self.edtScannedDoc.setEnabled(mode)
@@ -311,8 +329,8 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbScannedHseMap.setCheckState(Qt.Checked)
         self.cbScannedHsePic.setCheckState(Qt.Checked)
         self.cbScannedIdDoc.setCheckState(Qt.Checked)
-        self.cbScannedFamilyPhoto.setCheckState(Qt.Checked)
-        self.cbScannedSignature.setCheckState(Qt.Checked)
+        #self.cbScannedFamilyPhoto.setCheckState(Qt.Checked)
+        #self.cbScannedSignature.setCheckState(Qt.Checked)
 
     def set_source_file(self):
         #Set the file path to the source file
@@ -578,6 +596,10 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.kobo_downloader.start_download()
 
     def _uploader_thread_started(self):
+        if self.rbScannedDoc.isChecked:
+            self.kobo_downloader.start_scanned_documents()
+            return
+        
         self.kobo_downloader.start_upload()
 
     def fix_auto_sequence(self):
@@ -587,23 +609,22 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.fix_auto_sequence()
 
         # Uplaod documents
-
         if self.twDocument.currentIndex() == 1:
+
+            if self.rbScannedDoc.isChecked():
+                self.process_scanned_docs()
+                self.ErrorInfoMessage("Done testing!")
+                return
+
+            # Download documents
 
             if self.edtUploadFile.text() == "":
                 if self.cbScannedFamilyPhoto.isChecked() or self.cbScannedSignature.isChecked():
                     self.ErrorInfoMessage('Please select a source file.')
                     return
-
-            if self.rbScannedDoc.isChecked():
-                self.process_scanned_docs()
-                self.ErrorInfoMessage("Done testing!")
             else:
-                self.ErrorInfoMessage("Please select document type.")
-
-            return
-
-        # Download documents
+                self.process_scanned_docs()
+                return
 
         if self.txtDataSource.text() == "":
             self.ErrorInfoMessage("Please select a source file.")
@@ -757,34 +778,32 @@ class KoboDownloader(QObject):
             self.upload_downloaded_files(downloaded_files)
         self.download_completed.emit('Download')
 
-    def start_upload_old(self):
+    def start_scanned_documents(self):
         self.download_started.emit('Upload')
-
-        if self.ui.cbScannedDoc.isChecked():
-            dfiles = self.fetch_scanned_certificates()
-            self.upload_downloaded_files(dfiles)
-
-        if self.ui.cbScannedHseMap.isChecked():
-            dfiles = self.fetch_scanned_docs('house plot map')
-            self.upload_downloaded_files(dfiles)
-
-        if self.ui.cbScannedHsePic.isChecked():
-            dfiles = self.fetch_scanned_docs('house photo')
-            self.upload_downloaded_files(dfiles)
-
-        if self.ui.cbScannedIdDoc.isChecked():
-            dfiles = self.fetch_scanned_docs('id document')
-            self.upload_downloaded_files(dfiles)
-
-        if self.ui.cbScannedFamilyPhoto.isChecked():
-            dfiles = self.fetch_scanned_docs('family photo')
-            self.upload_downloaded_files(dfiles)
-
-        if self.ui.cbScannedSign.isChecked():
-            dfiles = self.fetch_scanned_docs('signature')
-            self.upload_downloaded_files(dfiles)
-
+        dfiles = self.fetch_scanned_certificates()
+        self.upload_downloaded_files(dfiles)
         self.download_completed.emit('Upload')
+
+        #if self.ui.cbScannedHseMap.isChecked():
+            #dfiles = self.fetch_scanned_docs('house plot map')
+            #self.upload_downloaded_files(dfiles)
+
+        #if self.ui.cbScannedHsePic.isChecked():
+            #dfiles = self.fetch_scanned_docs('house photo')
+            #self.upload_downloaded_files(dfiles)
+
+        #if self.ui.cbScannedIdDoc.isChecked():
+            #dfiles = self.fetch_scanned_docs('id document')
+            #self.upload_downloaded_files(dfiles)
+
+        #if self.ui.cbScannedFamilyPhoto.isChecked():
+            #dfiles = self.fetch_scanned_docs('family photo')
+            #self.upload_downloaded_files(dfiles)
+
+        #if self.ui.cbScannedSign.isChecked():
+            #dfiles = self.fetch_scanned_docs('signature')
+            #self.upload_downloaded_files(dfiles)
+
 
 
     def start_upload(self):
@@ -828,10 +847,17 @@ class KoboDownloader(QObject):
                 if a_field_name == 'family photo':
                     if self.ui.cbScannedFamilyPhoto.isChecked():
                         file_names = self.make_upload_files(a_field_name, field_value, key_field_value)
+                    else:
+                        msg = 'Family photo - Not checked for upload!'
+                        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
                 if a_field_name == 'signature':
                     if self.ui.cbScannedSignature.isChecked():
                         file_names = self.make_upload_files(a_field_name, field_value, key_field_value)
+                    else:
+                        msg = 'Signature - Not checked for upload!'
+                        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
 
                 if key_field_value in self.downloaded_files:
                     self.downloaded_files[key_field_value].extend(file_names)
