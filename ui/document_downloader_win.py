@@ -591,8 +591,9 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         if self.twDocument.currentIndex() == 1:
 
             if self.edtUploadFile.text() == "":
-                self.ErrorInfoMessage('Pleae select a source file.')
-                return
+                if self.ui.cbScannedDoc.isChecked() or self.cbScannedSignature.isChecked():
+                    self.ErrorInfoMessage('Please select a source file.')
+                    return
 
             if self.rbScannedDoc.isChecked():
                 self.process_scanned_docs()
