@@ -325,10 +325,10 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbHousePic.setCheckState(Qt.Checked)
         self.cbIdPic.setCheckState(Qt.Checked)
 
-        self.cbScannedDoc.setCheckState(Qt.Checked)
-        self.cbScannedHseMap.setCheckState(Qt.Checked)
-        self.cbScannedHsePic.setCheckState(Qt.Checked)
-        self.cbScannedIdDoc.setCheckState(Qt.Checked)
+        #self.cbScannedDoc.setCheckState(Qt.Checked)
+        #self.cbScannedHseMap.setCheckState(Qt.Checked)
+        #self.cbScannedHsePic.setCheckState(Qt.Checked)
+        #self.cbScannedIdDoc.setCheckState(Qt.Checked)
         #self.cbScannedFamilyPhoto.setCheckState(Qt.Checked)
         #self.cbScannedSignature.setCheckState(Qt.Checked)
 
@@ -596,10 +596,10 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.kobo_downloader.start_download()
 
     def _uploader_thread_started(self):
-        if self.rbScannedDoc.isChecked:
+        if self.rbScannedDoc.isChecked():
             self.kobo_downloader.start_scanned_documents()
             return
-        
+
         self.kobo_downloader.start_upload()
 
     def fix_auto_sequence(self):
@@ -612,8 +612,8 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         if self.twDocument.currentIndex() == 1:
 
             if self.rbScannedDoc.isChecked():
-                self.process_scanned_docs()
-                self.ErrorInfoMessage("Done testing!")
+                self.process_scanned_docs('scan')
+                self.ErrorInfoMessage("Done uploading documents.")
                 return
 
             # Download documents
@@ -623,7 +623,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                     self.ErrorInfoMessage('Please select a source file.')
                     return
             else:
-                self.process_scanned_docs()
+                self.process_scanned_docs('csv')
                 return
 
         if self.txtDataSource.text() == "":
@@ -683,14 +683,23 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def close_window(self):
         self.close()
 
-    def process_scanned_docs(self):
+    def process_scanned_docs(self, filename_src):
+        """
+        filename_src: Where to extract the name of the scanned document
+        'scan' - Filename is extracted from the actual file.
+        'csv' - Filename is picked from the CSV file
+        """
         doc_types = mapfile_section('doc-types')
         src_cols = mapfile_section('scanned-doc-column')
         sel_cols = self.fetch_selected_cols(src_cols)
 
         key_field = self.get_key_field(src_cols);
         support_doc_map = mapfile_section('support-doc-map')
-        parent_ref_column = support_doc_map['supporting_docs']
+        
+        if filename_src == 'scan':
+            parent_ref_column = support_doc_map['scanned_certificate']
+        else:
+            parent_ref_column = support_doc_map['supporting_docs']
 
         self.kobo_downloader = KoboDownloader(
                 self,
@@ -964,7 +973,7 @@ class KoboDownloader(QObject):
         :doc_type_id: Id picked from lookup "oc_check_household_document_type"
         :src_dir : Path where the file is found in the disk
         """
-        dtype = 'Scanned certificate'  
+        dtype = 'scanned certificate'  
         dfiles = {}
 
         src_folder = self.selected_cols.get(dtype) # local folder with scanned certificates
