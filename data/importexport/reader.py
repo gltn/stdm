@@ -31,6 +31,8 @@ except:
     import gdal
     import ogr
 
+from sqlalchemy.exc import DataError, IntegrityError
+
 from stdm.data.pg_utils import (
     delete_table_data,
     geometryType,
@@ -49,9 +51,11 @@ from stdm.utils.util import (
 from stdm.settings import (
     current_profile
 )
+
 from stdm.data.database import (
     STDMDb
 )
+
 from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager
@@ -64,6 +68,11 @@ from stdm.ui.support_doc_manager import (
         SupportDocManager,
         ImportLogger
         )
+
+class ImportFeatureException(Exception):
+    """
+    Rasied when an error during feature import.
+    """
 
 
 class OGRReader(object):
@@ -333,9 +342,9 @@ class OGRReader(object):
             self._dbSession.flush()
             last_id = model_instance.id
             self._dbSession.commit()
-        except:
+        except (DataError, IntegrityError) as e:
             self._dbSession.rollback()
-            raise
+            raise ImportFeatureException(str(e))
         return last_id
 
     def auto_fix_geom_type(self, geom, source_geom_type, destination_geom_type):
@@ -506,7 +515,6 @@ class OGRReader(object):
                     # Check if this is multiple select column
                     if a_field_name == multi_select_src_column:
                        multiple_selection = self.find_multi_select_id(field_value, lost_documents)
-
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
