@@ -133,6 +133,7 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
+        self.cbSaveCredit.stateChanged.connect(self.onSaveCredit)
 
         self.chk_virtual.setVisible(False)
 
@@ -180,6 +181,10 @@ class ImportData(QWizard, Ui_frmImport):
         if self.rbSpType.isChecked():
             if self.txtDataSource.text() <> '':
                 self.button(QWizard.NextButton).setEnabled(True)
+
+    def onSaveCredit(self, state):
+        print "State: ", state
+
 
     def _init_translators(self):
         translator_menu = QMenu(self)
