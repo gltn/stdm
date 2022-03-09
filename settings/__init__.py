@@ -10,6 +10,7 @@ from stdm.settings.registryconfig import (
     MEDIA_URL,
     KOBO_USER,
     KOBO_PASS,
+    SAVE_CREDIT_OPTION,
     FAMILY_PHOTO,
     SIGN_PHOTO,
     HOUSE_PHOTO,
@@ -141,6 +142,9 @@ def get_kobo_user():
 def get_kobo_pass():
     return get_key_value(KOBO_PASS)
 
+def get_save_credit_option():
+    return get_key_value(SAVE_CREDIT_OPTION)
+
 def get_family_photo():
     return get_key_value(FAMILY_PHOTO)
 
@@ -176,6 +180,9 @@ def save_kobo_user(value):
 
 def save_kobo_pass(value):
     save_key_value(KOBO_PASS, value)
+
+def save_credit_option(value):
+    save_key_value(SAVE_CREDIT_OPTION, value)
 
 def save_family_photo(value):
     save_key_value(FAMILY_PHOTO, value)

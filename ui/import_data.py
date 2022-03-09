@@ -83,9 +83,10 @@ from .importexport import (
 from stdm.settings import (
         current_profile,
         get_media_url,
-        get_enum_country,
         get_kobo_user,
         get_kobo_pass,
+        get_save_credit_option,
+        get_enum_country,
         get_family_photo,
         get_sign_photo,
         get_house_photo,
@@ -94,6 +95,7 @@ from stdm.settings import (
         save_media_url,
         save_kobo_user,
         save_kobo_pass,
+        save_credit_option,
         save_family_photo,
         save_sign_photo,
         save_house_photo,
@@ -102,6 +104,8 @@ from stdm.settings import (
         )
 
 from stdm.settings.registryconfig import (
+        SAVE_CREDIT_OPTION,
+        registry_value,
         RegistryConfig,
         NETWORK_DOC_RESOURCE
 )
@@ -133,7 +137,6 @@ class ImportData(QWizard, Ui_frmImport):
         self.lstTargetFields.currentRowChanged[int].connect(self.destRowChanged)
         self.lstTargetFields.currentRowChanged[int].connect(self._enable_disable_trans_tools)
         self.chk_virtual.toggled.connect(self._on_load_virtual_columns)
-        self.cbSaveCredit.stateChanged.connect(self.onSaveCredit)
 
         self.chk_virtual.setVisible(False)
 
@@ -167,10 +170,17 @@ class ImportData(QWizard, Ui_frmImport):
         #Initialize value translators from definitions
         self._init_translators()
 
+
     def read_kobo_defaults(self):
+        if registry_value(SAVE_CREDIT_OPTION) is None:
+            save_credit_option(0)
+
         self.edtMediaUrl.setText(get_media_url())
         self.edtKoboUsername.setText(get_kobo_user())
-        self.edtKoboPassword.setText('Ha123456')
+        self.edtKoboPassword.setText(get_kobo_pass())
+        check_state = (Qt.Unchecked, Qt.PartiallyChecked, Qt.Checked)
+        self.cbSaveCredit.setCheckState(check_state[get_save_credit_option()])
+        
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
@@ -181,10 +191,6 @@ class ImportData(QWizard, Ui_frmImport):
         if self.rbSpType.isChecked():
             if self.txtDataSource.text() <> '':
                 self.button(QWizard.NextButton).setEnabled(True)
-
-    def onSaveCredit(self, state):
-        print "State: ", state
-
 
     def _init_translators(self):
         translator_menu = QMenu(self)
@@ -334,7 +340,6 @@ class ImportData(QWizard, Ui_frmImport):
                 trans_dlg.auto_src_translator.source_directory = support_docs[dest_column]
 
                 self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
-
 
     def _get_src_column(self, value, srclookups):
         column = None
@@ -818,6 +823,10 @@ class ImportData(QWizard, Ui_frmImport):
 
         return validPage
 
+    def reject(self):
+        self.save_kobo_credentials()
+        QWizard.reject(self)
+
     def setSourceFile(self):
         #Set the file path to the source file
         imageFilters = "Comma Separated Value (*.csv);;ESRI Shapefile (*.shp);;AutoCAD DXF (*.dxf)" 
@@ -945,8 +954,19 @@ class ImportData(QWizard, Ui_frmImport):
         if len(support_doc_manager.docs) > 0:
             doc_downloader = SupportDocDownloader(support_doc_manager)
             doc_downloader.exec_()
+        
+        self.save_kobo_credentials()
 
         return success
+
+    def save_kobo_credentials(self):
+        if self.cbSaveCredit.isChecked():
+            save_media_url(self.edtMediaUrl.text())
+            save_kobo_user(self.edtKoboUsername.text())
+            save_kobo_pass(self.edtKoboPassword.text())
+            save_credit_option(2)
+        else:
+            save_credit_option(0)
 
     def _clear_dest_table_selections(self, exclude=None):
         #Clears checked items in destination table list view
