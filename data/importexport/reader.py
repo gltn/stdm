@@ -397,7 +397,7 @@ class OGRReader(object):
 
     def featToDb(self, targettable, columnmatch, append, parentdialog, 
             unique_data={}, lost_documents={}, geomColumn=None, geomCode=-1,
-            update_geom_column_only=False, translator_manager=None):
+            update_geom_column_only=False, translator_manager=None, docs_only=False):
         """
         Performs the data import from the source layer to the STDM database.
         :param targettable: Destination table name
@@ -627,8 +627,12 @@ class OGRReader(object):
 
         progress.setValue(numFeat)
 
-        import_logger.min_row_id = min(row_ids)
-        import_logger.max_row_id = max(row_ids)
+        if len(row_ids) > 0:
+            import_logger.min_row_id = min(row_ids)
+            import_logger.max_row_id = max(row_ids)
+        else:
+            import_logger.min_row_id = 0
+            import_logger.max_row_id = 0
         import_logger.write()
 
         return sdoc_manager
