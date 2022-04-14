@@ -249,12 +249,13 @@ class ColumnEntitiesModel(QStandardItemModel):
             if k == old_key else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
-        brush = QBrush(QColor(255, 204, 204))
         entity_item = ColumnEntityModelItem(entity)
-        if entity.mandatory:
-            entity_item.setForeground(brush)
 
         name_item = entity_item._create_item(entity.name)
+        if entity.mandatory:
+            brush = QBrush(Qt.red)
+            name_item.setForeground(brush)
+
         col_data_type = entity_item._create_item(entity.display_name())
         description = entity_item._create_item(entity.description)
         self.appendRow([name_item, col_data_type, description])
