@@ -33,7 +33,10 @@ from qgis.PyQt.QtCore import (
     Qt
 )
 from qgis.PyQt.QtWidgets import (
-    QDialog
+    QDialog,
+    QAbstractItemView,
+    QHeaderView,
+    QTableView
 )
 
 from stdm.data.configuration.db_items import DbItem
@@ -41,6 +44,7 @@ from stdm.geoodk.geoodk_writer import GeoodkWriter
 from stdm.settings import current_profile
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.custom_item_model import EntitiesModel
+from stdm.utils.util import enable_drag_sort
 
 # from stdm.geoodk import  FormUploader
 
@@ -69,6 +73,21 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.chk_all.setCheckState(Qt.Checked)
         self.entity_model = EntitiesModel()
         self.set_entity_model_view(self.entity_model)
+
+        for col in range(self.tvEntities.horizontalHeader().count()):
+            self.tvEntities.horizontalHeader().setSectionResizeMode(col, QHeaderView.Interactive)
+        self.tvEntities.horizontalHeader().setStretchLastSection(True)
+
+        enable_drag_sort(self.tvEntities)
+
+        self.tvEntities.setDropIndicatorShown(True)
+        self.tvEntities.setDragEnabled(True)
+        self.tvEntities.setAcceptDrops(True)
+        self.tvEntities.setDragDropMode(QTableView.DragDrop)
+        self.tvEntities.setDefaultDropAction(Qt.MoveAction)
+
+        self.tvEntities.setColumnWidth(0, 200)
+
         self.stdm_config = None
         self.parent = parent
         self.load_profiles()
@@ -147,7 +166,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Set our list view to the default model
         :return:
         """
-        self.trentities.setModel(entity_model)
+        self.tvEntities.setModel(entity_model)
 
     def set_model_items_selectable(self):
         """

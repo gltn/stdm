@@ -19,7 +19,13 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
-from typing import List
+
+from typing import (
+        Dict,
+        List,
+        Tuple,
+        TypeVar
+        )
 
 from qgis.PyQt.QtCore import QFile, QIODevice
 from qgis.PyQt.QtXml import (
@@ -34,11 +40,22 @@ from collections import OrderedDict
 
 from stdm.exceptions import DummyException
 
+# Type annotations
+NodeName   = str
+NodeValue  = str
+EntityName = str
+DictWithOrder = Dict
+NodeData = DictWithOrder[NodeName, NodeValue]
+EntityInstances = DictWithOrder[EntityName, NodeData]  # a.k.a OrderedDict
+RepeatedEntityInstances = DictWithOrder[EntityName, NodeData]
 
-class DocumentEntityData:
+Profile = TypeVar('Profile')  # Profile instance
+ProfileName = str
+EntityName  = str
 
+class EntityNodeData:
     def __init__(self):
-        self.name_entity = ''
+        self.entity_name = ''
         self.entity_nodes = QDomNodeList()
 
 
@@ -107,10 +124,10 @@ class InstanceUUIDExtractor():
             self.node = node.text()
         return self.node
 
-    def document_entities(self, profile):
+    def document_entities(self, profile : Profile) ->List[ProfileName]:
         """
         Get entities in the document
-        :return:
+        :rtype: List of profile names
         """
         self.set_document()
         node_list = []
@@ -122,7 +139,7 @@ class InstanceUUIDExtractor():
                 node_list.append(node_val.nodeName())
         return node_list
 
-    def profile_entity_nodes(self, profile):
+    def profile_entity_nodes(self, profile : Profile) ->QDomNodeList:
         '''
         Fetch and return QDomNodeList for entities of a
         profile
@@ -132,53 +149,56 @@ class InstanceUUIDExtractor():
         nodes = self.doc.elementsByTagName(profile)
         return nodes.item(0).childNodes()
 
-    def document_entities_with_data(self, profile, selected_entities) -> List[DocumentEntityData]:
+    def document_entities_with_data(self, profile : ProfileName, selected_entities: List[EntityName] ) -> List[EntityNodeData]:
         """
         Get entities in the dom document matching user
         selected entities
         """
-        instance_data = []
+        e_nodes = []
         self.set_document()
         nodes = self.doc.elementsByTagName(profile)
         entity_nodes = nodes.item(0).childNodes()
         for attrs in range(entity_nodes.count()):
             if entity_nodes.item(attrs).nodeName() in selected_entities:
-                data = DocumentEntityData()
-                data.name_entity = entity_nodes.item(attrs).nodeName()
-                data.entity_nodes = self.doc.elementsByTagName(data.name_entity)
-                instance_data.append(data)
-        return instance_data
+                node_data = EntityNodeData()
+                node_data.entity_name = entity_nodes.item(attrs).nodeName()
+                node_data.entity_nodes = self.doc.elementsByTagName(node_data.entity_name)
+                e_nodes.append(node_data)
+        return e_nodes
 
-    def attribute_data_from_nodelist(self, args_list: List[DocumentEntityData]):
+
+    def instance_data_from_nodelist(self, nodes: List[EntityNodeData]) -> Tuple[EntityInstances, RepeatedEntityInstances]:
         """
-        process nodelist data before Importing  attribute data into db
+        Process nodelist data before importing attribute data into db
         """
-        repeat_instance_data = OrderedDict()
-        attribute_data = OrderedDict()
-        for item in args_list:
-            attr_nodes = item.entity_nodes
-            entity = item.name_entity
+        instances = OrderedDict()
+        repeated_instances = OrderedDict()
+
+        for node in nodes:
+            entity_nodes = node.entity_nodes
+            entity_name  = node.entity_name
 
             '''The assumption is that there are repeated entities from mobile sub forms. handle them separately'''
-            if attr_nodes.count() > 1:
-                for i in range(attr_nodes.count()):
-                    attrib_node = attr_nodes.at(i).childNodes()
-                    attr_list = OrderedDict()
-                    for j in range(attrib_node.count()):
-                        field_name = attrib_node.at(j).nodeName()
-                        field_value = attrib_node.at(j).toElement().text()
-                        attr_list[field_name] = field_value
-                    repeat_instance_data['{}'.format(i) + entity] = attr_list
+            if entity_nodes.count() > 1:
+                for i in range(entity_nodes.count()):
+                    entity_node = entity_nodes.at(i).childNodes()
+                    fields = OrderedDict()
+                    for j in range(entity_node.count()):
+                        field_name = entity_node.at(j).nodeName()
+                        field_value = entity_node.at(j).toElement().text()
+                        fields[field_name] = field_value
+                    repeated_instances['{}'.format(i) + entity_name] = fields
             else:
                 '''Entities must appear onces in the form'''
-                node_list_var = OrderedDict()
-                attr_node = attr_nodes.at(0).childNodes()
-                for j in range(attr_node.count()):
-                    field_name = attr_node.at(j).nodeName()
-                    field_value = attr_node.at(j).toElement().text()
-                    node_list_var[field_name] = field_value
-                attribute_data[entity] = node_list_var
-        return attribute_data, repeat_instance_data
+                e_nodes = entity_nodes.at(0).childNodes()
+                fields = OrderedDict()
+                for j in range(e_nodes.count()):
+                    field_name = e_nodes.at(j).nodeName()
+                    field_value = e_nodes.at(j).toElement().text()
+                    fields[field_name] = field_value
+                instances[entity_name] = fields
+
+        return instances, repeated_instances
 
     def read_attribute_data_from_node(self, node, entity_name):
         """Read attribute data from a node item"""
@@ -252,16 +272,15 @@ class InstanceUUIDExtractor():
         else:
             return
 
-    def file_list(self):
+    def file_list(self) -> List[str]:
         """
-        check through the list of document to ensure they are complete file path
+        Check through the list of document to ensure they are complete file path
+        Returns a list of filenames
         """
         complete_file = []
         for fi in self.new_list:
             if os.path.isfile(fi):
                 complete_file.append(fi)
-            else:
-                continue
         return complete_file
 
     def close_document(self):

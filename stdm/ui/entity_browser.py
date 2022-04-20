@@ -39,8 +39,12 @@ from qgis.PyQt.QtWidgets import (
     QToolBar,
     QAction,
     QHeaderView,
-    QVBoxLayout
+    QVBoxLayout,
+    QLabel
 )
+
+from qgis.PyQt.QtGui import QFont
+
 from qgis.core import (
     QgsProject
 )
@@ -286,9 +290,14 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         participates_in_str, _ = curr_profile.social_tenure.entity_participates_in_str(self.entity)
 
         if participates_in_str:
+            self.str_title = QLabel("Social Tenure Relationship Details")
+            f = QFont()
+            f.setBold(True)
+            self.str_title.setFont(f)
             self.details_tree_view = DetailsTreeView(parent=self, plugin=plugin)
             layout = QVBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self.str_title)
             layout.addWidget(self.details_tree_view)
             self.str_preview_container.setLayout(layout)
             self.details_tree_view.activate_feature_details(True, follow_layer_selection=False)

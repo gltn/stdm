@@ -66,14 +66,14 @@ class GeoODKReader:
         self.user_entity_name()
         return self.entity_name
 
-    def get_user_selected_entity(self):
+    def set_user_selected_entity(self):
         """
         Get user selected list of entities
         :param user_sel: string, list
         :return: string
         """
         self.entity_name = self.profile().entity(self.user_entity).name
-        return self.entity_name
+        #return self.entity_name
 
     def entity_object(self):
         """
@@ -101,7 +101,7 @@ class GeoODKReader:
         if self.entity_object().supports_documents:
             return self.entity_object().document_types_non_hex()
 
-    def profile_entity_attribute(self):
+    def entity_columns(self):
         """
         :param entity:
         :return:
@@ -137,16 +137,19 @@ class GeoODKReader:
         implemented on the dialog for user to make their own selection
         :param self:
         :return:dict of entity column and data type
+        if column.display_name() == 'Related Entity' or column.name == 'id':
         """
-        self.get_user_selected_entity()
+        self.set_user_selected_entity()
         self.entity_attributes = OrderedDict()
-        col_objs = list(self.profile_entity_attribute().values())
-        for obj in col_objs:
-            self.entity_attributes[obj.name] = obj.TYPE_INFO
-        del self.entity_attributes['id']
+        columns = list(self.entity_columns().values())
+        for column in columns:
+            # Don't include related entity columns and id columns
+            if column.display_name() == 'Related Entity' or column.name == 'id':
+                continue
+            self.entity_attributes[column.name] = column.TYPE_INFO
         return self.entity_attributes
 
-    def entity_columns(self):
+    def entity_columnsXX(self):
         """
         Entity attributes
         :return: dict
@@ -163,7 +166,7 @@ class GeoODKReader:
         """
         col_attributes = OrderedDict()
         if self.on_column_info(col):
-            col_obj = self.profile_entity_attribute().get(col)
+            col_obj = self.entity_columns().get(col)
             value_list = col_obj.value_list
             for val in value_list.values.values():
                 col_attributes[str(val.value)] = str(val.code)
@@ -189,7 +192,7 @@ class GeoODKReader:
         :return:
         """
         lk_attributes = OrderedDict()
-        col_objs = list(self.profile_entity_attribute().values())
+        col_objs = list(self.entity_columns().values())
         for col in col_objs:
             if col.TYPE_INFO == "LOOKUP" or col.TYPE_INFO == "MULTIPLE_SELECT":
                 value_list = col.value_list
@@ -224,7 +227,7 @@ class GeoODKReader:
         :param: column name
         :return: bool
         """
-        col_objs = list(self.profile_entity_attribute().values())
+        col_objs = list(self.entity_columns().values())
         for col in col_objs:
             if col.name == item_col:
                 return col.mandatory
@@ -236,7 +239,7 @@ class GeoODKReader:
         :return: label name
         :rtype: string
         """
-        col_objs = list(self.profile_entity_attribute().values())
+        col_objs = list(self.entity_columns().values())
         for obj in col_objs:
             if obj.name == item_col:
                 return [obj.label if obj.label else
@@ -301,7 +304,7 @@ class GeoODKReader:
         required to enable geoodk subform creation
         :return:
         """
-        cols_obj = list(self.profile_entity_attribute().values())
+        cols_obj = list(self.entity_columns().values())
         for col in cols_obj:
             if col.TYPE_INFO == 'FOREIGN_KEY':
                 relations = col.entity_relation

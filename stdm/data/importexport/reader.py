@@ -284,6 +284,8 @@ class OGRReader:
         Insert a new row using the mapped class instance then mapping column
         names to the corresponding column values.
         """
+        print(columnValueMapping)
+
         model_instance = self._mapped_cls()
         for col, value in columnValueMapping.items():
             if hasattr(model_instance, col):

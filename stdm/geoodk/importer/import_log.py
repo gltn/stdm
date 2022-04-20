@@ -120,8 +120,8 @@ class ImportLogger:
                 with open(raw_file, "r") as read_file:
                     data = json.load(read_file)
                     read_file.close()
-            except DummyException:
-                pass
+            except ValueError:
+                data = {}
         return data
 
     def log_data_name(self, full_name):

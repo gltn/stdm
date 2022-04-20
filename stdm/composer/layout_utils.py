@@ -28,6 +28,9 @@ class LayoutUtils:
     DATA_SOURCE_PROPERTY = 'variable_stdm_data_source'
     DATA_CATEGORY_PROPERTY = 'variable_stdm_data_category'
     REFERENCED_TABLE_PROPERTY = 'variable_stdm_referenced_table'
+    VARIABLE_TEMPLATE_PATH = 'variable_template_path'
+
+    path = None
 
     @staticmethod
     def get_stdm_data_source_for_layout(layout: QgsLayout) -> Optional[str]:
@@ -52,6 +55,14 @@ class LayoutUtils:
     @staticmethod
     def set_stdm_referenced_table_for_layout(layout: QgsLayout, table: Optional[str]):
         layout.setCustomProperty(LayoutUtils.REFERENCED_TABLE_PROPERTY, table)
+
+    @staticmethod
+    def set_variable_template_path(layout: QgsLayout, file_path: str) -> str:
+        LayoutUtils.path = file_path
+
+    @staticmethod
+    def get_variable_template_path(layout: QgsLayout) -> str:
+        return LayoutUtils.path
 
     @staticmethod
     def load_template_into_layout(layout: QgsLayout, file_path: str):

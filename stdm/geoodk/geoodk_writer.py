@@ -198,7 +198,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         :return:
         """
         self.entity_read = GeoODKReader(entity)
-        return self.entity_read
+        #return self.entity_read
 
     def prep_document_generators(self):
         """
@@ -546,7 +546,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         if isinstance(self.entities, list):
             for entity in self.entities:
                 self.initialize_entity_reader(entity)
-                self.entity_read.get_user_selected_entity()
+                self.entity_read.set_user_selected_entity()
 
                 entity_values = self.entity_read.read_attributes()
                 group_node, repeat_node = self.body_section_categories(
@@ -827,7 +827,8 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         lk_node.appendChild(lk_node_label)
 
         # create lookup element on the form
-        self.entity_read.get_user_selected_entity()
+        self.entity_read.set_user_selected_entity()
+
         col_obj = self.entity_read.entity_object().columns[col]
 
         lk_name_values = None

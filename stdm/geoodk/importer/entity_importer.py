@@ -35,6 +35,21 @@ from stdm.settings import current_profile
 from stdm.ui.sourcedocument import SourceDocumentManager
 from stdm.utils.util import entity_attr_to_id, entity_attr_to_model
 
+from typing import (
+        Dict,
+        Tuple
+        )
+
+#Typing annotations
+DictWithOrder = Dict  # a.ka. OrderedDict
+ParentEntityName = str
+EntityID = int  # can be parent or child entity id
+ParentEntityData = Dict[ParentEntityName, Tuple[EntityID, ParentEntityName]]
+
+FieldName = str
+FieldValue = str
+
+
 GEOMPARAM = 0
 GROUPCODE = 0
 HOME = QDir.home().path()
@@ -115,19 +130,18 @@ class Save2DB:
     """
     Class to insert entity data into db
     """
-
-    def __init__(self, entity, attributes, ids=None):
+    def __init__(self, entity_name:str, entity_data:DictWithOrder[FieldName, FieldValue], parent_data:ParentEntityData):
         """
         Initialize class and class variable
         """
-        self.attributes = attributes
-        self.form_entity = entity
+        self.entity_data = entity_data
+        #self.form_entity = entity_name
         self.doc_model = None
         self._doc_manager = None
-        self.entity = self.object_from_entity_name(self.form_entity)
+        self.entity = self.object_from_entity_name(entity_name)
         self.model = self.dbmodel_from_entity()
         self.key = 0
-        self.parents_ids = ids
+        self.parent_data = parent_data
         self.geom = 4326
         self.entity_mapping = {}
 
@@ -190,7 +204,7 @@ class Save2DB:
         """
         if instance_file:
             f_dir, file_name = os.path.split(instance_file)
-            for document, val in self.attributes.items():
+            for document, val in self.entity_data.items():
                 if str(document).endswith('supporting_document'):
                     if val != '':
                         doc = self.format_document_name_from_attribute(document)
@@ -252,11 +266,13 @@ class Save2DB:
         :return:
         """
         self.column_info()
-        attributes = self.attributes
+
+        attributes = self.entity_data
+
         try:
             if self.entity.short_name == 'social_tenure_relationship':
                 # try
-                list_val = list(attributes.values())[0]
+                list_val = list(self.entity_data.values())[0]
                 prefix  = current_profile().prefix + '_'
                 full_party_ref_column = ''
                 full_spatial_ref_ = ''
@@ -268,7 +284,7 @@ class Save2DB:
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
                     party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, party_ref_column, self.parents_ids.get(full_party_ref_column))
+                setattr(self.model, party_ref_column, self.parent_data.get(full_party_ref_column)[0])
 
                 if 'spatial_unit' in list_val.keys():
                     full_spatial_ref_ = list_val.get('spatial_unit')
@@ -278,9 +294,9 @@ class Save2DB:
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
                     spatial_ref_column = full_spatial_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, spatial_ref_column, self.parents_ids.get(full_spatial_ref_column)[0])
+                setattr(self.model, spatial_ref_column, self.parent_data.get(full_spatial_ref_column)[0])
 
-                attributes = self.attributes['social_tenure']
+                attributes = self.entity_data['social_tenure']
 
         except DummyException:
             pass
@@ -305,7 +321,7 @@ class Save2DB:
         :return:
         """
         self.column_info()
-        for k, v in self.attributes.items():
+        for k, v in self.entity_data.items():
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -314,6 +330,7 @@ class Save2DB:
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
+
         self.model.save()
         self.key = self.model.id
         return self.key
@@ -327,6 +344,7 @@ class Save2DB:
             col_prop = self.entity.columns[col]
             var = self.attribute_formatter(type_info, col_prop, None)
             setattr(self.model, col, var)
+
         self.model.save()
         self.cleanup()
 
@@ -430,7 +448,6 @@ class Save2DB:
                 pass
 
         elif col_type == 'MULTIPLE_SELECT':
-            print(('multiple select {}'.format(var)))
             if var == '' or var is None:
                 return None
             else:
@@ -465,9 +482,10 @@ class Save2DB:
 
         elif col_type == 'FOREIGN_KEY':
             ret_val = None
-            for code, val in self.parents_ids.items():
+            RECORD_ID = 0
+            for code, val in self.parent_data.items():
                 if col_prop.parent.name == code:
-                    ret_val = val[0]
+                    ret_val = val[RECORD_ID]
                     break
             return ret_val
 
@@ -493,5 +511,5 @@ class Save2DB:
         z"""
         self.model = None
         self.entity = None
-        self.attributes = None
+        self.entity_data = None
         self._doc_manager = None

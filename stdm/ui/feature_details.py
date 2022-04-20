@@ -1023,7 +1023,12 @@ class DetailsTreeView(DetailsDBHandler):
             self.add_root_children(db_model, root, str_records, True)
 
         if len(str_records) > 0 and self.layer_table is not None:
-            return getattr(str_records[0], self.layer_table).id  # Assuming we have an Id!!
+            if hasattr(str_records[0], 'id'):
+                record = getattr(str_records[0], self.layer_table)  # Assuming we have an Id!!
+                if record is not None:
+                    return record.id
+            else:
+                return -1
         else:
             return -1
 

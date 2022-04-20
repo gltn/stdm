@@ -196,6 +196,7 @@ class ComposerWrapper(QObject):
         composer_data_source = ComposerDataSource.from_layout(self.composition())
         self._configure_data_controls(composer_data_source)
 
+
     def _remove_composer_toolbar(self, object_name):
         """
         Removes toolbars from composer window.
@@ -323,7 +324,9 @@ class ComposerWrapper(QObject):
         try:
             self.composition().setCustomProperty('variable_template_path', file_path)
             self.variable_template_path = file_path
+            LayoutUtils.set_variable_template_path(layout, file_path)
             LayoutUtils.load_template_into_layout(layout, file_path)
+
         except IOError as e:
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper",
@@ -410,7 +413,6 @@ class ComposerWrapper(QObject):
         """
         # Validate if the user has specified the data source
 
-
         if not LayoutUtils.get_stdm_data_source_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper", "Error"),
@@ -427,8 +429,10 @@ class ComposerWrapper(QObject):
             return
 
         # If it is a new unsaved document template then prompt for the document name.
-        #template_path = self.composition().customProperty('variable_template_path', None)
-        template_path = self.variable_template_path
+        template_path = LayoutUtils.get_variable_template_path(self.composition())
+        # There should be a better way of doing this check instead of comparing the window title!
+        if self.mainWindow().windowTitle()[0:14] == "*STDM Document":
+            template_path = None
 
         if template_path is None:
             docName, ok = QInputDialog.getText(self.mainWindow(),

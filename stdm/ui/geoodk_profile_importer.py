@@ -22,7 +22,11 @@ import os
 import shutil
 # from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 from collections import OrderedDict
-from typing import Dict, List
+from typing import (
+        Dict, 
+        List,
+        TypeVar
+        )
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
@@ -51,7 +55,10 @@ from stdm.exceptions import DummyException
 from stdm.geoodk.importer.entity_importer import EntityImporter
 from stdm.geoodk.importer.entity_importer import Save2DB
 from stdm.geoodk.importer.import_log import ImportLogger
-from stdm.geoodk.importer.uuid_extractor import InstanceUUIDExtractor, DocumentEntityData
+from stdm.geoodk.importer.uuid_extractor import (
+        InstanceUUIDExtractor, 
+        EntityNodeData
+        )
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
@@ -68,10 +75,16 @@ CONFIG_FILE = HOME + '/.stdm/geoodk/'
 MSG = 'Error creating log'
 GEOODK_FORM_HOME = CONFIG_FILE + 'instances'
 
+# Type aliases
+QtCheckState = Qt.CheckState
+DictWithOrder = Dict  # OrderedDict
+Profile = TypeVar('Profile')
+ProfileName = str
+EntityName  = str
+FileName    = str
 
 class InstanceData:
-
-    def __init__(self, field_data_nodes: List[DocumentEntityData], str_data_nodes: List[DocumentEntityData]):
+    def __init__(self, field_data_nodes: List[EntityNodeData], str_data_nodes: List[EntityNodeData]):
         self.field_data_nodes = field_data_nodes
         self.str_data_nodes = str_data_nodes
 
@@ -118,12 +131,12 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.init_file_path()
         self.current_profile_changed()
         self.change_check_state(self.chk_all.checkState())
-        self.instance_dir()
+        self.set_imported_instance_folder()
 
-    def load_config(self):
+    def load_config(self) -> DictWithOrder[ProfileName, Profile]:
         """
         Load STDM configuration
-        :return:
+        Returns an ordered dict
         """
         stdm_config = None
         if QFile.exists(HOME + "/stdm/configuration.stc"):
@@ -132,14 +145,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         profiles = StdmConfiguration.instance().profiles
         return profiles
 
-    def profiles(self):
+    def profiles(self)-> List[Profile]:
         """
         Return a list of all profiles
         :rtype: list
         """
         return list(self.load_config().values())
 
-    def change_check_state(self, state):
+    def change_check_state(self, state: QtCheckState):
         """
         Change the check state of items in a list widget
         """
@@ -149,7 +162,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def current_profile_changed(self):
         """
         Get the current profile so that it is the one selected at the combo box
-        :return:
         """
         self.instance_list = []
         self.active_profile()
@@ -158,30 +170,21 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.on_dir_path()
         self.populate_entities_widget()
 
-    def active_profile(self):
+    def active_profile(self) -> str:
         """
-        get the user selected profile
-        :return:p
+        Return active profile name
         """
         self.profile = current_profile().name
         return self.profile
 
-    def instance_dir(self):
+    def set_imported_instance_folder(self):
         """
-        Create a path where imported instance will be kept
-        :return:
         """
         self.inst_path = CONFIG_FILE + "_imported"
         if not os.access(self.inst_path, os.F_OK):
             os.makedirs(str(self.inst_path))
-        else:
-            return self.inst_path
 
-    def imported_instance_path(self):
-        """
-        :return:
-        """
-        self.instance_dir()
+    def imported_instance_folder(self) -> str:
         return self.inst_path
 
     def init_file_path(self):
@@ -191,26 +194,24 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.path = self.geoODK_file_path(self.txt_directory.text())
         self.txt_directory.setText(self.path)
 
-    def geoODK_file_path(self, path=''):
+    def geoODK_file_path(self, path: str='') -> str:
         """
         Check if geoODK file path has been configured, if not configure default
         and return it.
-        :rtype: string
         """
         if not path.strip():
             path = self.make_path(GEOODK_FORM_HOME)
         return path
 
-    def make_path(self, path):
+    def make_path(self, path: str) -> str:
         """
         Create and return a file path if is not available.
-        :rtype: string
         """
         if not os.access(path, os.F_OK):
             os.makedirs(str(path))
         return path
 
-    def xform_xpaths(self):
+    def xform_xpaths(self) -> List[str]:
         """
         Return the full path to the default config path and filter geoodk
         instance that matches the current profile path
@@ -236,7 +237,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         # diff = inst_count - rm_count
         self.txt_count.setText(str(len(self.instance_list)))
 
-    def extract_guuid_and_rename_file(self, path):
+    def extract_guuid_and_rename_file(self, path: str):
         """
         Extract the unique Guuid and rename the file
         so that we can uniquely identify each file
@@ -249,19 +250,20 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     self.rename_file_to_UUID(file_instance)
 
     def read_instance_data(self) -> Dict[str, InstanceData]:
-        """Read all instance data once and store them in a dict
+        """
+        Read all instance data once and store them in a dict
+        :str is filename
         """
         mobile_data = OrderedDict()
         social_tenure_info = OrderedDict()
         self.uuid_extractor.unset_path()
-        for instance_p in self.instance_list:
-            if os.path.isfile(instance_p):
-                isntance_dir, instance = os.path.split(instance_p)
-            else:
-                instance = instance_p
-            self.uuid_extractor.set_file_path(instance)
 
-            mobile_data[instance] = InstanceData(
+        for full_filename in self.instance_list:
+            if os.path.isfile(full_filename):
+                filepath, filename = os.path.split(full_filename)
+                self.uuid_extractor.set_file_path(full_filename)
+
+            mobile_data[filename] = InstanceData(
                 field_data_nodes=self.uuid_extractor.document_entities_with_data(
                     self.active_profile().replace(' ', '_'),
                     self.user_selected_entities()),
@@ -272,25 +274,25 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.uuid_extractor.close_document()
         return mobile_data
 
-    def rename_file_to_UUID(self, file):
+    def rename_file_to_UUID(self, filename: str):
         """
         Extract the UUID from each folder and file
         :return:
         """
-        self.uuid_extractor.set_file_path(file)
+        self.uuid_extractor.set_file_path(filename)
         self.uuid_extractor.on_file_passed()
         self.instance_list = self.uuid_extractor.file_list()
 
-    def move_imported_file(self, file):
+    def move_imported_file(self, filename: str):
         """
         Moves the imported files to avoid repetition
         :return:
         """
-        instance_path = self.imported_instance_path()
+        instance_path = self.imported_instance_folder()
         try:
-            basename = os.path.basename(os.path.dirname(file))
-            if not os.path.isdir(os.path.join(self.imported_instance_path(), basename)):
-                shutil.move(os.path.dirname(file), instance_path)
+            basename = os.path.basename(os.path.dirname(filename))
+            if not os.path.isdir(os.path.join(self.imported_instance_folder(), basename)):
+                shutil.move(os.path.dirname(filename), instance_path)
         except DummyException as ex:
             return str(ex)
 
@@ -306,9 +308,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
                 list_widget.setCheckState(Qt.Checked)
 
-    def user_selected_entities(self):
+    def user_selected_entities(self) -> List[EntityName]:
         """
-        :rtype: list
         """
         entities = []
         count = self.lst_widget.count()
@@ -319,11 +320,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     entities.append(current_profile().entity(item.text()).name)
         return entities
 
-    def instance_entities(self):
+    def instance_entities(self) -> List[EntityName]:
         """
         Enumerate the entities that are in the current profile
          and also that are captured in the form so that we are only importing relevant entities to database
-        :return: entities
+        :return: List of enitity names
         """
         current_entities = []
         entity_collections = []
@@ -334,10 +335,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     current_entities.append(entity_name)
         return current_entities
 
-    def instance_collection(self):
+    def instance_collection(self) -> List[FileName]:
         """
         Enumerate all the instances found in the instance directory
-        rtype: list
+        rtype: list of xml file names
         """
         dirs = self.xform_xpaths()
         instance_collections = []
@@ -357,17 +358,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         mismatch_profile = 'Nothing found to import. \n' \
                            ' Ensure the current filter text or profile is correct'
         entity_attr = []
-        if self.txt_filter.text() != '':
-            for obj in self.profiles():
-                if obj.name.startswith(self.txt_filter.text()):
-                    if obj.name != current_profile().name:
-                        self._notif_bar_str.insertErrorNotification(mismatch_profile)
-                        return
+        if self.txt_filter.text() == '':
+            return
+        for obj in self.profiles():
+            if obj.name.startswith(self.txt_filter.text()):
+                if obj.name != current_profile().name:
+                    self._notif_bar_str.insertErrorNotification(mismatch_profile)
+                    return
         return self.uuid_extractor.document_entities(self.profile)
 
-    def profile_entities_names(self, profile):
+    def profile_entities_names(self, profile) ->List[str]:
         """
         Return names of all entities in a profile
+        :param profile: Profile
         :rtype: list
         """
         entities_names = []
@@ -375,7 +378,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             entities_names.append(entity.name)
         return entities_names
 
-    def has_foreign_keys_parent(self, select_entities):
+    def has_foreign_keys_parent(self, select_entities:List[str] ) -> bool:
         """
         Ensure we check that the table is not parent else
         import parent table first
@@ -413,7 +416,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     continue
             return has_relations
 
-    def parent_table_isselected(self):
+    def parent_table_isselected(self) -> List[str]:
         """
         Take note that the user selected tables may or may not be imported
         based on parent child table relationship.
@@ -431,7 +434,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         except DummyException as ex:
             self._notif_bar_str.insertErrorNotification(str(ex))
 
-    def archive_this_import_file(self, counter, instance):
+    def XXarchive_this_import_file(self, counter, instance):
         """
         Ensure that only import are done once
         :return:
@@ -444,7 +447,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
             pass
 
-    def log_table_entry(self, instance):
+    def log_table_entry(self, message : str):
         """
         Ensure that only import are done once
         :return:
@@ -452,7 +455,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         try:
             current_time = QDateTime()
             import_time = current_time.currentDateTime()
-            log_entry = instance + ' ' + str(import_time.toPyDateTime())
+            log_entry = message + ' ' + str(import_time.toPyDateTime())
             ImportLogger.log_action(log_entry)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
@@ -477,7 +480,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self._notif_bar_str.insertErrorNotification(msg)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
-            pass
 
     def available_records(self):
         """
@@ -487,19 +489,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         self.txt_count.setText(str(self.record_count()))
 
-    def record_count(self):
+    def record_count(self) -> int:
         """
-        get the count of instance dir in the selected directory
-        :return: integer
+        Get the count of instance dir in the selected directory
         """
         return len([name for name in os.listdir(self.path)
                     if os.path.isdir(os.path.join(self.path, name))
                     if name.startswith(self.profile_formater())])
 
-    def profile_formater(self):
+    def profile_formater(self) -> str:
         """
         Format the profile name by removing underscore character
-        :return:
         """
         if self.txt_filter.text() != '':
             filter_text = self.txt_filter.text()
@@ -543,7 +543,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.current_profile_changed()
         self.change_check_state(self.chk_all.checkState())
 
-    def feedback_message(self, msg):
+    def feedback_message(self, msg : str) -> QMessageBox:
         """
         Create a dialog box to capture and display errrors related to db
         while importing data
@@ -559,21 +559,22 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.show()
         return msgbox
 
-    def save_instance_data_to_db(self, entities):
+    def save_instance_data_to_db(self, entities : List[str]):
         """
         Get the user selected entities and insert them into database
-        params: selected entities
-        rtype: list
-        :return:Object
-        :type: dbObject
+        params entities: List of names for the selected entities.
         """
         cu_obj = ''
         import_status = False
+
         self.txt_feedback.clear()
         self.txt_feedback.append("Import started, please wait...\n")
+
         QCoreApplication.processEvents()
         self._notif_bar_str.clear()
+
         mobile_field_data = self.read_instance_data()
+
         self.has_foreign_keys_parent(entities)
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
@@ -587,56 +588,62 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         if not mobile_field_data:
             self.feedback_message('Not matching data in mobile files')
-            return
+            return 
+
         counter = 0
         try:
             self.pgbar.setRange(counter, len(self.instance_list))
             self.pgbar.setValue(0)
             ImportLogger.log_action("Import started ...\n")
 
-            for instance_obj, instance_obj_data in mobile_field_data.items():
+            for filename, instance_obj_data in mobile_field_data.items():
 
-                ImportLogger.log_action("File {} ...\n".format(instance_obj))
+                ImportLogger.log_action("File {} ...\n".format(filename))
                 parents_info = []
                 import_status = False
                 counter = counter + 1
                 self.parent_ids = {}
 
-                single_occuring, repeated_entities = self.uuid_extractor.attribute_data_from_nodelist(
+                single_occuring, repeated_entities = self.uuid_extractor.instance_data_from_nodelist(
                     instance_obj_data.field_data_nodes)
 
                 single_occurring_keys = list(single_occuring.keys())
-                for entity in single_occurring_keys:
-                    entity_data = single_occuring[entity]
-                    import_status = False
-                    if entity in self.relations:
-                        #if entity not in self.parent_ids.keys():
-                        self.count_import_file_step(counter, entity)
-                        log_timestamp = '=== parent table import  === : {0}'.format(entity)
-                        cu_obj = entity
-                        self.log_table_entry(log_timestamp)
-                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
-                        entity_add.objects_from_supporting_doc(instance_obj)
-                        ref_id = entity_add.save_parent_to_db()
-                        import_status = True
-                        self.parent_ids[entity] = [ref_id, entity]
-                        parents_info.append(entity)
-                        single_occuring.pop(entity)
 
-                    elif entity not in self.relations:
-                        import_status = False
-                        self.count_import_file_step(counter, entity)
-                        log_timestamp = '=== standalone table import  === : {0}'.format(entity)
-                        cu_obj = entity
+                for entity_name in single_occurring_keys:
+                    entity_data = single_occuring[entity_name]
+                    import_status = False
+                    if entity_name in self.relations:
+                        #if entity_name not in self.parent_ids.keys():
+                        self.count_import_file_step(counter, entity_name)
+                        log_timestamp = '=== parent table import  === : {0}'.format(entity_name)
+                        cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
-                        entity_add = Save2DB(entity, entity_data, self.parent_ids)
-                        entity_add.objects_from_supporting_doc(instance_obj)
-                        child_id = entity_add.save_to_db()
-                        cu_obj = entity
+
+                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
+
+                        entity_add.objects_from_supporting_doc(filename)
+
+                        ref_id = entity_add.save_parent_to_db()
+
                         import_status = True
-                        parents_info.append(entity)
-                        if entity not in self.parent_ids.keys():
-                            self.parent_ids[entity] = [child_id, entity]
+                        self.parent_ids[entity_name] = [ref_id, entity_name]
+                        parents_info.append(entity_name)
+                        single_occuring.pop(entity_name)
+
+                    elif entity_name not in self.relations:
+                        import_status = False
+                        self.count_import_file_step(counter, entity_name)
+                        log_timestamp = '=== standalone table import  === : {0}'.format(entity_name)
+                        cu_obj = entity_name
+                        self.log_table_entry(log_timestamp)
+                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
+                        entity_add.objects_from_supporting_doc(filename)
+                        child_id = entity_add.save_to_db()
+                        cu_obj = entity_name
+                        import_status = True
+                        parents_info.append(entity_name)
+                        if entity_name not in self.parent_ids.keys():
+                            self.parent_ids[entity_name] = [child_id, entity_name]
                         entity_add.cleanup()
                 if repeated_entities:
                     # self.log_table_entry(" ========== starting import of repeated tables ============")
@@ -655,7 +662,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         ImportLogger.log_action(log_timestamp)
                         if repeat_table in self.profile_entities_names(current_profile()):
                             entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
-                            entity_add.objects_from_supporting_doc(instance_obj)
+                            entity_add.objects_from_supporting_doc(filename)
                             child_id = entity_add.save_to_db()
                             self.parent_ids[repeat_table] = [child_id, repeat_table]
                             cu_obj = repeat_table
@@ -668,8 +675,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 if instance_obj_data.str_data_nodes:
                     '''We treat social tenure entities separately because of foreign key references'''
-                    entity_relation = EntityImporter(instance_obj)
-                    single_str, multiple_str = self.uuid_extractor.attribute_data_from_nodelist(
+                    entity_relation = EntityImporter(filename)
+                    single_str, multiple_str = self.uuid_extractor.instance_data_from_nodelist(
                         instance_obj_data.str_data_nodes)
                     if len(single_str) > 0:
                         entity_relation.process_social_tenure(single_str, self.parent_ids)
@@ -684,7 +691,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 self.txt_feedback.append('saving record "{0}" to database'.format(counter))
                 self.pgbar.setValue(counter)
-                self.log_instance(instance_obj)
+                self.log_instance(filename)
                 QCoreApplication.processEvents()
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
@@ -702,12 +709,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.log_table_entry(str(ae))
             return
 
-    def count_import_file_step(self, count=None, table=None):
+    def count_import_file_step(self, count:int=0, table: str=""):
         """
         Tracking method to record the current import activity
-        :param count: int
-        :param table: string
-        :return:
         """
         self.txt_feedback.append('      Table : {}'.format(table))
 
@@ -725,7 +729,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.buttonBox.setEnabled(True)
                 QApplication.restoreOverrideCursor()
                 return
+
             entities = self.user_selected_entities()
+
             if len(entities) < 1:
                 if QMessageBox.information(self,
                                            QApplication.translate('MobileForms', 'Import Warning'),
