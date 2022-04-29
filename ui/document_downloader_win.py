@@ -934,7 +934,7 @@ class KoboDownloader(QObject):
                 if field_value == '': continue
 
                 dest_url = dest_folder + '\\'+field_value
-                src_url = self.kobo_url+field_value
+                src_url = self.kobo_url.strip('\n')+field_value.strip('\n')
 
                 msg = 'Downloading File: {} '.format(field_value)
 
