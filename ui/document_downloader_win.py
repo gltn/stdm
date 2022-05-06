@@ -25,6 +25,8 @@ from PyQt4.QtGui import (
         QColor
   )
 
+from PyQt4 import QtNetwork
+
 from PyQt4.QtCore import (
     Qt,
     QObject,
@@ -33,7 +35,11 @@ from PyQt4.QtCore import (
     QFileInfo,
     SIGNAL,
     QSignalMapper,
-    QThread
+    QThread,
+    QUrl,
+    QFile,
+    QIODevice,
+    QByteArray
 )
 
 from stdm.data.importexport import (
@@ -94,6 +100,35 @@ from ui_document_downloader_win import Ui_DocumentDownloader
 
 DOWNLOAD_DOCS = 0
 UPLOAD_DOCS = 1
+
+class DownloadRequest(QtNetwork.QNetworkRequest):
+    def __init__(self, src_url, dest_url, parent):
+        self._src_url = src_url
+        self._dest_url = dest_url
+        self.parent = parent
+        QtNetwork.QNetworkRequest.__init__(self, QUrl(src_url))
+
+    @property
+    def src_url(self):
+        return self._src_url
+
+    @property
+    def dest_url(self):
+        return self._dest_url
+
+    def handle_download_response(self, reply):
+        err = reply.error()
+        if err == QtNetwork.QNetworkReply.NoError:
+            msg = 'Downloaded File: {}'.format(self.dest_url)
+            self.parent.download_progress.emit(KoboDownloader.INFORMATION, msg)
+            bytes = reply.readAll()
+            file = QFile(self.dest_url)
+            file.open(QIODevice.WriteOnly)
+            file.write(bytes)
+        else:
+            msg = "ERROR downloading file : {}".format(self.src_url)
+            self.parent.download_progress.emit(KoboDownloader.ERROR, msg)
+
 
 class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def __init__(self, plugin):
@@ -779,6 +814,8 @@ class KoboDownloader(QObject):
         self.upload_after = upload_after
         self.parent_ref_column = parent_ref_column
         self.ref_type = ref_type
+        self.net_requests = []
+        self.net_access_managers = []
 
     def start_download(self):
         self.download_started.emit('Download')
@@ -936,7 +973,7 @@ class KoboDownloader(QObject):
                 dest_url = dest_folder + '\\'+field_value
                 src_url = self.kobo_url.strip('\n')+field_value.strip('\n')
 
-                msg = 'Downloading File: {} '.format(field_value)
+                msg = 'Preparing File: {} '.format(field_value)
 
                 if not path.exists(dest_url):
                     self.download_progress.emit(KoboDownloader.INFORMATION, msg)
@@ -1166,6 +1203,22 @@ class KoboDownloader(QObject):
         shutil.copy(old_filename, dest_filename)
 
     def download(self, src_url, dest_url, username, password):
+        self.dest_url = dest_url
+
+        net_request = DownloadRequest(src_url, dest_url, self)
+        net_access_manager = QtNetwork.QNetworkAccessManager()
+        net_access_manager.finished.connect(net_request.handle_download_response)
+        header_data = QByteArray('{}:{}'.format(username, password)).toBase64()
+        net_request.setRawHeader('Authorization', 'Basic {}'.format(header_data))
+
+        self.net_requests.append(net_request)
+
+        net_access_manager.get(net_request)
+
+        self.net_access_managers.append(net_access_manager)
+
+
+    def download_request(self, src_url, dest_url, username, password):
 
         req = requests.get(src_url, auth=(username,password))
 
@@ -1176,4 +1229,10 @@ class KoboDownloader(QObject):
 
     def fake_download(self, src_url, dest_url, username, password):
         return 200
+        
+
+
+        
+
+
         
