@@ -25,10 +25,11 @@ from PyQt4.QtCore import (
     SIGNAL
 )
 
+from stdm.settings import get_primary_mapfile #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
 import sqlalchemy
 
 from stdm.utils import *
-from stdm.utils.util import getIndex
+#Edited By strabzounly 03-may-2022 >- Select Custom Tables (Textual) from stdm.utils.util import getIndex
 from stdm.ui.reports import SqlHighlighter
 from stdm.data.pg_utils import (
     process_report_filter,
@@ -36,6 +37,11 @@ from stdm.data.pg_utils import (
     unique_column_values,
     pg_tables
 )
+from stdm.utils.util import ( #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual)
+        getIndex, #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual)
+        mapfile_section, #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual)
+        ) #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual)
+
 from stdm.data.importexport.writer import OGRWriter
 
 from stdm.data.importexport import (
@@ -175,13 +181,22 @@ class ExportData(QWizard,Ui_frmExportWizard):
         #Load all STDM tables
         self.lstSrcTab.clear()
         # tables = pg_tables()
+        """Edited By strabzounly 03-may-2022 >- Select Custom Tables (Textual) >- Edit Start 
         tables = profile_user_tables(
             self.curr_profile, True, True, sort=True
         )
+        Edit End """
+        tables = profile_user_tables(self.curr_profile, False, True) #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
+        primary_mapfile = get_primary_mapfile() #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
+        dest_tables = mapfile_section(primary_mapfile, 'imports') #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
+
         for t in tables.keys():
+            if len(dest_tables) > 0: #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
+                if t not in dest_tables.values(): continue #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual) 
             tabItem = QListWidgetItem(t,self.lstSrcTab)
             tabItem.setIcon(QIcon(":/plugins/stdm/images/icons/table.png"))
             self.lstSrcTab.addItem(tabItem)
+        self.loadColumns("") #Added By strabzounly 03-may-2022 >- Select Custom Tables (Textual)
         
     def setDestFile(self):
         #Set the file path to the destination file

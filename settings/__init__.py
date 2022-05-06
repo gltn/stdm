@@ -5,7 +5,7 @@ from stdm.settings.registryconfig import (
     RegistryConfig,
     ENTITY_BROWSER_RECORD_LIMIT,
     IMPORT_MAPFILE,
-    ENUM_COUNTRY,
+    #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- ENUM_COUNTRY,
     TRANS_PATH,
     MEDIA_URL,
     KOBO_USER,
@@ -102,6 +102,7 @@ def save_import_mapfile(mapfile):
     reg_config = RegistryConfig()
     reg_config.write({IMPORT_MAPFILE:mapfile})
 
+"""Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- Edit Start
 def save_enum_country(country):
     reg_config = RegistryConfig()
     reg_config.write({ENUM_COUNTRY:country})
@@ -111,6 +112,7 @@ def get_enum_country():
     enum_country_key = reg_config.read([ENUM_COUNTRY])
     enum_country = enum_country_key.get(ENUM_COUNTRY, '')
     return enum_country
+Edit End """
 
 def get_trans_path():
     reg_config = RegistryConfig()

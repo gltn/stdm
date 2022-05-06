@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 612)
+        DlgOptions.resize(626, 525)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -123,9 +123,13 @@ class Ui_DlgOptions(object):
         self.label_9 = QtGui.QLabel(self.scrollAreaWidgetContents)
         self.label_9.setObjectName(_fromUtf8("label_9"))
         self.gridLayout_6.addWidget(self.label_9, 3, 0, 1, 1)
-        self.cbCountry = QtGui.QComboBox(self.scrollAreaWidgetContents)
-        self.cbCountry.setObjectName(_fromUtf8("cbCountry"))
-        self.gridLayout_6.addWidget(self.cbCountry, 3, 1, 1, 1)
+        
+        
+        """Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- Edit Start
+        #self.cbCountry = QtGui.QComboBox(self.scrollAreaWidgetContents)
+        #self.cbCountry.setObjectName(_fromUtf8("cbCountry"))
+        #self.gridLayout_6.addWidget(self.cbCountry, 3, 1, 1, 1)
+        Edit End """
         self.gridLayout_5.addLayout(self.gridLayout_6, 7, 0, 1, 5)
         self.gridLayout_7 = QtGui.QGridLayout()
         self.gridLayout_7.setHorizontalSpacing(6)
@@ -147,9 +151,11 @@ class Ui_DlgOptions(object):
         self.upgradeButton = QtGui.QPushButton(self.scrollAreaWidgetContents)
         self.upgradeButton.setObjectName(_fromUtf8("upgradeButton"))
         self.gridLayout_5.addWidget(self.upgradeButton, 10, 1, 1, 1)
+        """Edited By strabzounly 03-may-2022 >- Deleted chk_logging >- Edit Start
         self.chk_logging = QtGui.QCheckBox(self.scrollAreaWidgetContents)
         self.chk_logging.setObjectName(_fromUtf8("chk_logging"))
         self.gridLayout_5.addWidget(self.chk_logging, 9, 0, 1, 1)
+        Edit End """
         self.groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_3 = QtGui.QGridLayout(self.groupBox)
@@ -246,10 +252,10 @@ class Ui_DlgOptions(object):
         self.btn_supporting_docs.setToolTip(_translate("DlgOptions", "Choose supporting documents directory", None))
         self.btn_supporting_docs.setText(_translate("DlgOptions", "...", None))
         self.lblMapFile.setText(_translate("DlgOptions", "Root Import Map File:", None))
-        self.label_9.setText(_translate("DlgOptions", "Country of Enumeration:", None))
+        #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- self.label_9.setText(_translate("DlgOptions", "Country of Enumeration:", None))
         self.label.setText(_translate("DlgOptions", "Set current profile", None))
         self.upgradeButton.setText(_translate("DlgOptions", "Upgrade", None))
-        self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
+        #Edited By strabzounly 03-may-2022 >- Deleted chk_logging >- self.chk_logging.setText(_translate("DlgOptions", "Debug logging", None))
         self.groupBox.setTitle(_translate("DlgOptions", "Database Properties", None))
         self.label_5.setText(_translate("DlgOptions", "<html><head/><body><p><span style=\" font-weight:600;\">Note:</span> Changes to the database connection properties will only take effect upon the next login</p></body></html>", None))
         self.label_3.setText(_translate("DlgOptions", "Port", None))
