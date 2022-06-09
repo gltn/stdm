@@ -812,6 +812,10 @@ class ImportData(QWizard, Ui_frmImport):
                                       "\nPlease check is the given file type "
                                       "is supported")
                 validPage = False
+
+        #if self.currentId() == 0:
+            #if self.cbDownUp.isChecked():
+                #self.WarnMessage("You have selected to download and upload documents ONLY!")
                 
         if self.currentId()==1:
             if self.destCheckedItem == None:                                                        
@@ -871,6 +875,12 @@ class ImportData(QWizard, Ui_frmImport):
         geom_column=None
         
         update_geom_column = False
+
+        #if self.cbDownUp.isChecked():
+            #d_only = True
+        #else:
+            #d_only = False
+
         if self.field("typeSpatial"):
             geom_column = self.field("geomCol")
             update_geom_column = True
@@ -1074,6 +1084,13 @@ class ImportData(QWizard, Ui_frmImport):
         #Information message box        
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
+        msg.setText(message)
+        msg.exec_()
+
+    def WarnMessage(self, message):
+        #Information message box        
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
         msg.setText(message)
         msg.exec_()
                   
