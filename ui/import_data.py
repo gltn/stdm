@@ -86,7 +86,7 @@ from stdm.settings import (
         get_kobo_user,
         get_kobo_pass,
         get_save_credit_option,
-        get_enum_country,
+        #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- get_enum_country,
         get_family_photo,
         get_sign_photo,
         get_house_photo,
