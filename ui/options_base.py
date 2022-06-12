@@ -44,8 +44,6 @@ from stdm.settings import (
     save_entity_browser_record_limit,
     get_primary_mapfile,
     save_import_mapfile,
-    #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- save_enum_country,
-    #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- get_enum_country
 )
 
 from stdm.settings.registryconfig import (
@@ -165,21 +163,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.edtMapfile.setText(get_primary_mapfile())
 
-        """Edited By strabzounly 03-may-2022 >- Deleted chk_logging >- Edit Start
-        # Debug logging
-        lvl = debug_logging()
-        if lvl:
-            self.chk_logging.setCheckState(Qt.Checked)
-        else:
-            self.chk_logging.setCheckState(Qt.Unchecked)
-        Edit End """
-
-        """Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- Edit Start
-        self.populate_enum_country()
-        enum_country = get_enum_country()
-        self.cbCountry.setCurrentIndex(self.cbCountry.findText(enum_country))
-        Edit End """
-
     def load_profiles(self):
         """
         Load existing profiles into the combobox.
@@ -189,13 +172,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.cbo_profiles.clear()
         self.cbo_profiles.addItem('')
         self.cbo_profiles.addItems(profile_names)
-
-    """Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- Edit Start
-    def populate_enum_country(self):
-        self.cbCountry.clear()
-        self.cbCountry.addItem('Iraq')
-        self.cbCountry.addItem('Lebanon')
-    Edit End """
 
     def _load_db_conn_properties(self):
         #Load database connection properties from the registry.
@@ -509,19 +485,6 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not sender is None:
             sender.deleteLater()
 
-    """Edited By strabzounly 03-may-2022 >- Deleted chk_logging >- Edit Start
-    def apply_debug_logging(self):
-        # Save debug logging
-        logger = logging.getLogger('stdm')
-
-        if self.chk_logging.checkState() == Qt.Checked:
-            logger.setLevel(logging.DEBUG)
-            set_debug_logging(True)
-        else:
-            logger.setLevel(logging.ERROR)
-            set_debug_logging(False)
-    Edit End """        
-
     def apply_settings(self):
         """
         Save settings.
@@ -549,14 +512,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_document_output_path():
             return False
 
-        #Edited By strabzounly 03-may-2022 >- Deleted chk_logging >- self.apply_debug_logging()
-
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
         save_import_mapfile(self.edtMapfile.text())
-
-        #Edited By strabzounly 03-may-2022 >- Deleted cbCountry >- save_enum_country(self.cbCountry.currentText())
 
         msg = self.tr('Settings successfully saved.')
         self.notif_bar.insertSuccessNotification(msg)
