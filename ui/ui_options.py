@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
-        DlgOptions.resize(626, 540)
+        DlgOptions.resize(626, 575)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
