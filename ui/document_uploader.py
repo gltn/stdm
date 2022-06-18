@@ -1,4 +1,6 @@
+from distutils.log import error
 from gettext import gettext
+from msilib.schema import File
 from posixpath import splitext
 import sys
 import os
@@ -60,6 +62,7 @@ from ui_document_uploader import Ui_DocumentUploader
 
 
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
+
 class VLine(QFrame):
     def __init__(self):
         super(VLine, self).__init__()
@@ -95,17 +98,40 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         self.upload_thread = None
 
+        self.file_model.directoryLoaded.connect(self.directory_loaded)
         self.btnFolder.clicked.connect(self.get_folder)
         self.cbAll.stateChanged.connect(self.toggle_selection)
         self.btnUpload.clicked.connect(self.start_upload_worker)
 
         self.current_profile = current_profile()
         self.set_default_folder()
-        self.set_status_bar()
+        self.create_status_bar()
+        #self.set_status_bar()
 
-    def set_status_bar(self):
-        self.statusBar().showMessage("File Count: ")
-        self.lbl_selected_files = QLabel("Selected Files: ")
+    def create_status_bar(self):
+        self.lbl_files_count = QLabel()
+        self.statusBar().addWidget(VLine())
+        self.statusBar().addWidget(self.lbl_files_count)
+        self.lbl_selected_count = QLabel()
+        self.statusBar().addWidget(VLine())
+        self.statusBar().addWidget(self.lbl_selected_count)
+        self.lbl_uploaded_count = QLabel()
+        self.statusBar().addWidget(VLine())
+        self.statusBar().addWidget(self.lbl_uploaded_count)
+        
+
+    def set_status_bar(self, files_count, selected_count, uploaded_count):
+        #self.edtProgress.append("Files Count: " + files_count)
+        #self.edtProgress.append("Selection Count: " + selected_count)
+        #self.edtProgress.append("Uploaded Count: " + uploaded_count)
+        self.lbl_files_count.setText("Files Count: " + files_count)
+        self.lbl_selected_count.setText("Selection Count: " + selected_count)
+        self.lbl_uploaded_count.setText("Uploaded Count: " + uploaded_count)
+
+        
+        
+        #self.statusBar().showMessage("File Count: ")
+        #self.statusbar().clearMessage()
         #self.statusBar().addPermanentWidget(VLine())
         #self.statusBar().addPermanentWidget(self.lbl_selected_files)
 
@@ -117,6 +143,8 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
     def upload_progress(self, info_id, msg):
         if info_id == DocumentUploader.INFORMATION:
             self.edtProgress.setTextColor(QColor('black'))
+            self.uploaded_count = str(int(self.uploaded_count) + 1)
+            self.set_status_bar(self.files_count, self.selected_count, self.uploaded_count)
         if info_id == DocumentUploader.WARNING:
             self.edtProgress.setTextColor(QColor(225,170,0))
         if info_id == DocumentUploader.ERROR:
@@ -124,7 +152,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         self.edtProgress.append(msg)
         QApplication.processEvents()
-
+        
     def upload_completed(self, msg):
         self.btnUpload.setEnabled(True)
         self.edtProgress.setTextColor(QColor(51, 182, 45))
@@ -157,6 +185,24 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.edtFolder.setText(path)
         self.set_file_model_path(path)
 
+    def directory_loaded(self, loaded_path):
+        folder_index = self.file_model.index(self.edtFolder.text())
+        if self.file_model.canFetchMore(folder_index):
+            self.file_model.fetchMore(folder_index)
+            return
+        self.files_count = str( self.file_model.rowCount(folder_index) )
+        self.selected_count = "0"
+        self.uploaded_count = "0"
+        self.edtProgress.clear()
+        self.set_status_bar(self.files_count, self.selected_count, self.uploaded_count)
+
+    def selectedfiles_changed(self):
+        folder_index = self.file_model.index(self.edtFolder.text())
+        #self.selected_count = str(self.lvFiles.selectionModel().selectedRows().count(folder_index))
+        #self.selected_count = str(len(self.lvFiles.selectedIndexes().count(folder_index)))
+        self.selected_count = str(len(self.lvFiles.selectionModel().selectedRows()))
+        self.set_status_bar(self.files_count, self.selected_count, self.uploaded_count)
+
     def get_folder(self):
         dialog = QFileDialog()
         doc_folder =  dialog.getExistingDirectory(self, 'Select document directory',self.edtFolder.text())
@@ -168,6 +214,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
     def set_file_model_path(self, path):
         self.lvFiles.setModel(self.file_model)
         self.lvFiles.setRootIndex(self.file_model.setRootPath(path))
+        self.lvFiles.selectionModel().selectionChanged.connect(self.selectedfiles_changed)
 
     def toggle_selection(self, state):
         if state == Qt.Checked:
@@ -244,7 +291,7 @@ class UploadWorker(QObject):
                         pass
 
                 if support_doc_duplicated:
-                    msg = 'canceled uploading docoment due to duplication: `'+support_doc['doc_filename']+'`' 
+                    msg = 'Canceled uploading document due to duplication: `'+support_doc['doc_filename']+'`' 
                     self.upload_progress.emit(UploadWorker.ERROR, msg)
                     continue
 

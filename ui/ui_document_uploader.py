@@ -27,7 +27,7 @@ except AttributeError:
 class Ui_DocumentUploader(object):
     def setupUi(self, DocumentUploader):
         DocumentUploader.setObjectName(_fromUtf8("DocumentUploader"))
-        DocumentUploader.resize(688, 442)
+        DocumentUploader.resize(800, 442)
         self.centralwidget = QtGui.QWidget(DocumentUploader)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -67,11 +67,17 @@ class Ui_DocumentUploader(object):
 
         self.btnUpload = QtGui.QPushButton(self.centralwidget)
         self.btnUpload.setObjectName(_fromUtf8("btnUpload"))
-        self.gridLayout.addWidget(self.btnUpload, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.btnUpload, 3, 2, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         DocumentUploader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentUploader)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        self.lbl_statusbar_files_count = QtGui.QLabel()
+        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_files_count"))
+        self.lbl_statusbar_selectedfiles_count = QtGui.QLabel()
+        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_selectedfiles_count"))
+        self.lbl_statusbar_uploadedfiles_count = QtGui.QLabel()
+        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_uploadedfiles_count"))
         DocumentUploader.setStatusBar(self.statusbar)
 
         self.retranslateUi(DocumentUploader)
@@ -80,7 +86,7 @@ class Ui_DocumentUploader(object):
     def retranslateUi(self, DocumentUploader):
         DocumentUploader.setWindowTitle(_translate("DocumentUploader", "Scanned Document Uploader", None))
         self.btnFolder.setText(_translate("DocumentUploader", "Folder ...", None))
-        self.label.setText(_translate("DocumentUploader", "Doc Folder:", None))
+        self.label.setText(_translate("DocumentUploader", "Scanned Certificates Directory:", None))
         self.cbAll.setText(_translate("DocumentUploader", "All", None))
         self.btnUpload.setText(_translate("DocumentUploader", "Upload", None))
         self.cbAllowDuplicate.setText(_translate("DocumentUploader", "Allow Uploading Duplicates", None))
