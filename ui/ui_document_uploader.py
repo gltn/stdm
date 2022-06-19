@@ -72,12 +72,6 @@ class Ui_DocumentUploader(object):
         DocumentUploader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentUploader)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
-        self.lbl_statusbar_files_count = QtGui.QLabel()
-        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_files_count"))
-        self.lbl_statusbar_selectedfiles_count = QtGui.QLabel()
-        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_selectedfiles_count"))
-        self.lbl_statusbar_uploadedfiles_count = QtGui.QLabel()
-        self.statusbar.setObjectName(_fromUtf8("lbl_statusbar_uploadedfiles_count"))
         DocumentUploader.setStatusBar(self.statusbar)
 
         self.retranslateUi(DocumentUploader)

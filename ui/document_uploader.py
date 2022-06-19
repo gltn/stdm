@@ -106,8 +106,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.current_profile = current_profile()
         self.set_default_folder()
         self.create_status_bar()
-        #self.set_status_bar()
-
+        
     def create_status_bar(self):
         self.lbl_files_count = QLabel()
         self.statusBar().addWidget(VLine())
@@ -121,14 +120,9 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         
 
     def set_status_bar(self, files_count, selected_count, uploaded_count):
-        #self.edtProgress.append("Files Count: " + files_count)
-        #self.edtProgress.append("Selection Count: " + selected_count)
-        #self.edtProgress.append("Uploaded Count: " + uploaded_count)
         self.lbl_files_count.setText("Files Count: " + files_count)
         self.lbl_selected_count.setText("Selection Count: " + selected_count)
         self.lbl_uploaded_count.setText("Uploaded Count: " + uploaded_count)
-
-        
         
         #self.statusBar().showMessage("File Count: ")
         #self.statusbar().clearMessage()
@@ -197,9 +191,6 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.set_status_bar(self.files_count, self.selected_count, self.uploaded_count)
 
     def selectedfiles_changed(self):
-        folder_index = self.file_model.index(self.edtFolder.text())
-        #self.selected_count = str(self.lvFiles.selectionModel().selectedRows().count(folder_index))
-        #self.selected_count = str(len(self.lvFiles.selectedIndexes().count(folder_index)))
         self.selected_count = str(len(self.lvFiles.selectionModel().selectedRows()))
         self.set_status_bar(self.files_count, self.selected_count, self.uploaded_count)
 
