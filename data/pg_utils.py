@@ -150,6 +150,15 @@ def pg_create_parent_supporting_document(table_name, doc_id, household_id,
     sql_text = text(sql)
     _execute(sql_text)
 
+def pg_parent_supporting_document_exists(table_name, parent_col, doc_id, parent_id, doctype_id):
+    sql = text("SELECT {} FROM {} WHERE {} = {} AND {} = {} AND {} = {}".format(
+        'id', table_name, parent_col, parent_id, 'supporting_doc_id', doc_id, 'document_type', doctype_id ))
+    result = _execute(sql)
+    found = None
+    for r in result:
+        found = r["id"]
+    return found
+	
 def pg_fix_auto_sequence(table, seq_table):
     sql =  "SELECT setval('"+seq_table+"',COALESCE((SELECT MAX(id)+1 FROM "+table+"), 1), false)"
     sql_text = text(sql)

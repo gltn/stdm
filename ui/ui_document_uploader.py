@@ -8,6 +8,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtCore import Qt
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -26,7 +27,7 @@ except AttributeError:
 class Ui_DocumentUploader(object):
     def setupUi(self, DocumentUploader):
         DocumentUploader.setObjectName(_fromUtf8("DocumentUploader"))
-        DocumentUploader.resize(688, 442)
+        DocumentUploader.resize(800, 442)
         self.centralwidget = QtGui.QWidget(DocumentUploader)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
@@ -56,9 +57,17 @@ class Ui_DocumentUploader(object):
         self.cbAll = QtGui.QCheckBox(self.centralwidget)
         self.cbAll.setObjectName(_fromUtf8("cbAll"))
         self.gridLayout.addWidget(self.cbAll, 1, 0, 1, 1)
+
+        self.cbAllowDuplicate = QtGui.QCheckBox(self.centralwidget)
+        self.cbAllowDuplicate.setObjectName(_fromUtf8("cbAllowDuplicate"))
+        self.gridLayout.addWidget(self.cbAllowDuplicate, 3, 0, 1, 1)
+        self.cbDelAfterUpload = QtGui.QCheckBox(self.centralwidget)
+        self.cbDelAfterUpload.setObjectName(_fromUtf8("cbDelAfterUpload"))
+        self.gridLayout.addWidget(self.cbDelAfterUpload, 3, 1, 1, 1)
+
         self.btnUpload = QtGui.QPushButton(self.centralwidget)
         self.btnUpload.setObjectName(_fromUtf8("btnUpload"))
-        self.gridLayout.addWidget(self.btnUpload, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.btnUpload, 3, 2, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         DocumentUploader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentUploader)
@@ -71,7 +80,10 @@ class Ui_DocumentUploader(object):
     def retranslateUi(self, DocumentUploader):
         DocumentUploader.setWindowTitle(_translate("DocumentUploader", "Scanned Document Uploader", None))
         self.btnFolder.setText(_translate("DocumentUploader", "Folder ...", None))
-        self.label.setText(_translate("DocumentUploader", "Doc Folder:", None))
+        self.label.setText(_translate("DocumentUploader", "Scanned Certificates Directory:", None))
         self.cbAll.setText(_translate("DocumentUploader", "All", None))
         self.btnUpload.setText(_translate("DocumentUploader", "Upload", None))
+        self.cbAllowDuplicate.setText(_translate("DocumentUploader", "Allow Uploading Duplicates", None))
+        self.cbAllowDuplicate.setCheckState(Qt.Checked)
+        self.cbDelAfterUpload.setText(_translate("DocumentUploader", "Delete Documents After Upload", None))
 
