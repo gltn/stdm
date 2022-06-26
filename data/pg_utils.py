@@ -488,7 +488,11 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
 
 def pg_table_column_exists(tableName, columnNmae, spatialColumns=False,
         creation_order=False):
-    column_names = table_column_names(tableName, spatialColumns, creation_order)
+    column_names = table_column_names(
+        tableName,
+        spatialColumns,
+        creation_order
+    )
     if len(column_names) == 0:
         return False
     return columnNmae in column_names
