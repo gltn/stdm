@@ -1,6 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0" language="ar" sourcelanguage="en">
 <context>
+    <name>DocumentUploader</name>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Scanned Document Uploader</source>
+        <translation type="unfinished">نافذة رفع الشهادات الرقمية</translation>
+    </message>
+    <message>
+        <location filename="../ui/document_uploader.py" line="134"/>
+        <source>Files Count: {0}</source>
+        <translation type="unfinished">عدد الملفات: {0}</translation>
+    </message>
+    <message>
+        <location filename="../ui/document_uploader.py" line="134"/>
+        <source>Selection Count: {0}</source>
+        <translation type="unfinished">عدد الملفات المحددة: {0}</translation>
+    </message>
+    <message>
+        <location filename="../ui/document_uploader.py" line="134"/>
+        <source>Uploaded Count: {0}</source>
+        <translation type="unfinished">عدد الملفات المرفوعة: {0}</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Upload</source>
+        <translation type="unfinished">رفع الملفات</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Scanned Certificates Directory:</source>
+        <translation type="unfinished">مسار الشهادات الرقمية</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Folder ...</source>
+        <translation type="unfinished">اختيار مجلد</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>All</source>
+        <translation type="unfinished">تحديد الكل</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Allow Uploading Duplicates</source>
+        <translation type="unfinished">السماح بتكرار رفع الملفات</translation>
+    </message>
+    <message>
+        <location filename="../ui/ui_document_uploader.py" line="130"/>
+        <source>Delete Documents After Upload</source>
+        <translation type="unfinished">حذف الملفات الأصلية بعد رفعها</translation>
+    </message>
+</context>
+<context>
     <name>@default</name>
     <message>
         <location filename="../data/configuration/columns.py" line="452"/>
