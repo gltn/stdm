@@ -11,6 +11,8 @@
 *.zip
 
 docs/_build
+.vscode/
+
 
 # Bash scripts
 *.sh
@@ -19,6 +21,9 @@ docs/_build
 *.swp
 *.chm
 *.chw
+.*~*
+*~*
+*code-workspace*
 
 # My scripts
 ui.make.bat
