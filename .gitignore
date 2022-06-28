@@ -19,7 +19,10 @@ docs/_build
 *.swp
 *.chm
 *.chw
-
+.*~*
+*~*
+.vscode/
+*code-workspace*
 # My scripts
 ui.make.bat
 
