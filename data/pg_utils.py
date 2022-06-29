@@ -146,18 +146,27 @@ def pg_create_supporting_document(document):
 def pg_create_parent_supporting_document(table_name, doc_id, household_id,
         doc_type_id, parent_column):
     sql = "INSERT INTO {} (supporting_doc_id, {}, document_type) "\
-             "VALUES ({},{},{}) ".format(table_name, parent_column, doc_id, household_id, doc_type_id)
+             "VALUES ({},{},{}) RETURNING id ".format(table_name, parent_column, doc_id, household_id, doc_type_id)
     sql_text = text(sql)
-    _execute(sql_text)
+    return _execute(sql_text)
 
 def pg_parent_supporting_document_exists(table_name, parent_col, doc_id, parent_id, doctype_id):
     sql = text("SELECT {} FROM {} WHERE {} = {} AND {} = {} AND {} = {}".format(
-        'id', table_name, parent_col, parent_id, 'supporting_doc_id', doc_id, 'document_type', doctype_id ))
+               'id',
+               table_name,
+               parent_col,
+               parent_id,
+               'supporting_doc_id',
+               doc_id,
+               'document_type',
+               doctype_id)
+               )
     result = _execute(sql)
-    found = None
-    for r in result:
-        found = r["id"]
-    return found
+    if result is None:
+        return False
+    if len(result.fetchall()) == 0:
+        return False
+    return True        
 	
 def pg_fix_auto_sequence(table, seq_table):
     sql =  "SELECT setval('"+seq_table+"',COALESCE((SELECT MAX(id)+1 FROM "+table+"), 1), false)"
@@ -200,7 +209,7 @@ def pg_tables(schema="public", exclude_lookups=False):
         
         #Remove default PostGIS tables
         tableIndex = getIndex(_postGISTables, tableName)
-        if tableIndex <> -1:
+        if tableIndex != -1:
             continue
         if exclude_lookups:
             #Validate if table is a lookup table and if it is, then omit
@@ -476,6 +485,17 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False):
         columnNames.append(colName)
            
     return columnNames
+
+def pg_table_column_exists(tableName, columnNmae, spatialColumns=False,
+        creation_order=False):
+    column_names = table_column_names(
+        tableName,
+        spatialColumns,
+        creation_order
+    )
+    if len(column_names) == 0:
+        return False
+    return columnNmae in column_names
 
 def non_spatial_table_columns(table):
     """
