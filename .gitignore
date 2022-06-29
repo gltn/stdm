@@ -6,6 +6,12 @@
 #PyCharm files
 .idea
 
+#VsCode files
+.vscode/
+stdm.code-workspace
+*.un~
+*.py~
+
 #Compiled Python Files
 *.pyc
 *.zip
