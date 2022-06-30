@@ -28,6 +28,7 @@ from PyQt4.QtCore import (
     QObject,
     pyqtSignal,
     QByteArray,
+    QEventLoop,
     QFile,
     QFileInfo,
     SIGNAL,
@@ -35,6 +36,7 @@ from PyQt4.QtCore import (
     QThread
 )
 
+from qgis.core import QgsNetworkAccessManager
 from PyQt4.QtNetwork import (
     QNetworkAccessManager,
     QNetworkRequest
@@ -403,15 +405,11 @@ class SupportDocManager(QObject):
             self.download_progress.emit(SupportDocManager.ERROR, msg)
 
     def kobo_download(self, src_url, dest_filename, username, password):
-        #we can add to Within Kobo Connection Params Timeout & Number of Tries
-        self.wait_for_result_timeout = 6
         self.download_result = None
-
         self.dest_filename = dest_filename
 
-        self.manager = QNetworkAccessManager()
-        self.manager.finished.connect( self.handle_download)
-
+        self.manager = QgsNetworkAccessManager.instance()
+        self.manager.finished.connect(self.handle_download)
         request = QNetworkRequest(QUrl(src_url))
         header_data = QByteArray(
             '{}:{}'.format(username, password)
@@ -421,13 +419,8 @@ class SupportDocManager(QObject):
             'Basic {}'.format(header_data)
         )
         self.manager.get(request)
-        while self.wait_for_result_timeout > 0:
-            if not self.download_result is None:
-                return self.download_result
-            else:
-                sleep(10)
-                QApplication.processEvents()
-                self.wait_for_result_timeout -= 1
+        self.loop = QEventLoop()
+        self.loop.exec_()
         if self.download_result is None:
             return False
         return self.download_result
@@ -440,6 +433,7 @@ class SupportDocManager(QObject):
                 f.write(reply.readAll())
                 f.close()
             self.download_result = True
+        self.loop.quit()
 
 class ImportLogger(QObject):
     def __init__(self, logfile, entity_name):
