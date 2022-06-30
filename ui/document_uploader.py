@@ -58,7 +58,10 @@ from stdm.data.importexport import (
     setUploadFileDir
 )
 
-from ui_document_uploader import Ui_DocumentUploader
+from stdm.settings import (
+    get_primary_mapfile,
+    current_profile
+)
 
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 
@@ -79,7 +82,6 @@ except AttributeError:
             text,
             disambig
         )
-
 
 class VLine(QFrame):
     def __init__(self):
@@ -115,6 +117,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.upload_thread = None
 
         # Set Controls' Evenets
+
         self.file_model.directoryLoaded.connect(self.directory_loaded)
         self.btnFolder.clicked.connect(self.get_folder)
         self.cbAll.stateChanged.connect(self.toggle_selection)
@@ -172,7 +175,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             ).format(local_uploaded_count)
         )
 
-    def start_upload(self, msg):
+def start_upload(self, msg):
         self.btnUpload.setEnabled(False)
         self.edtProgress.append(msg + ' Started ...')
         QApplication.prcessEvents()
@@ -195,7 +198,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         self.edtProgress.append(msg)
         QApplication.processEvents()
-
+        
     def upload_completed(self, msg):
         self.btnUpload.setEnabled(True)
         self.edtProgress.setTextColor(QColor(51, 182, 45))
@@ -243,6 +246,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             return
         if not self.file_model is None:
             return
+
         folder_index = self.file_model.index(self.edtFolder.text())
         if self.file_model.canFetchMore(folder_index):
             self.file_model.fetchMore(folder_index)
@@ -312,7 +316,6 @@ class UploadWorker(QObject):
         self.selected_files = selected_files
         self.del_after_upload = del_after_upload
         self.allow_duplicates = allow_duplicates
-
         self.support_doc_map = None
         if not os.path.exists(get_primary_mapfile()):
             ErrMessage(
@@ -377,7 +380,6 @@ class UploadWorker(QObject):
                 )
             )
             return
-
         support_doc_table = self.support_doc_map_getvalue(
             'parent_support_table',
             '',
@@ -465,7 +467,7 @@ class UploadWorker(QObject):
                         ).format('`' + full_filename + '`')
                     self.upload_progress.emit(UploadWorker.ERROR, msg)
                     continue
-
+                
                 support_doc = self.make_supporting_doc(full_filename)
                 support_doc_duplicated = False
                 if not self.allow_duplicates:
@@ -576,6 +578,17 @@ class UploadWorker(QObject):
                     None
                     ).format( '`' + new_filename + '`')
                 self.upload_progress.emit(UploadWorker.INFORMATION, msg)
+                #Delete After Upload
+                if self.del_after_upload:
+                    try:
+                        old_filename=scanned_cert['full_filename']
+                        os.remove(old_filename)
+                        msg = "Removed file: `"+old_filename+"`"
+                        self.upload_progress.emit(UploadWorker.INFORMATION, msg)
+                    except:
+                        msg = "Failed to Removed file: `"+old_filename+"`"
+                        self.upload_progress.emit(UploadWorker.ERRORINFORMATION, msg)
+
 
                 # Delete After Upload
                 if self.del_after_upload:
@@ -623,7 +636,7 @@ class UploadWorker(QObject):
     def create_new_support_doc_file(self, old_file, new_filename, doc_type):
         reg_config = RegistryConfig()
         support_doc_path = reg_config.read([NETWORK_DOC_RESOURCE])
-
+        
         old_file_type = old_file['doc_type_id']
         old_filename = old_file['full_filename']
 
@@ -677,7 +690,6 @@ class UploadWorker(QObject):
         target_col = 'id'
         where_col = parent_ref_column
         value = "'" + value + "'"
-
         id = self.get_value_by_column(
             parent_table,
             target_col,
@@ -751,6 +763,12 @@ class UploadWorker(QObject):
             map_section = OrderedDict(config_parser.items(unicode(section)))
         return map_section
 
+def ErrMessage(message):
+        #Error Message Box
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setText(message)
+        msg.exec_()
 
 def ErrMessage(message):
     # Error Message Box
