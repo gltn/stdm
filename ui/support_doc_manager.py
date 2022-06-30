@@ -1,9 +1,16 @@
+from distutils.log import ERROR
+from email import header
+from email.mime import application
 import os
 import hashlib
 import shutil
+from time import sleep
 import requests
 import json
 from datetime import datetime
+
+from PyQt4 import QtGui
+from PyQt4.QtGui import QApplication
 
 from stdm.settings import (
         current_profile
@@ -17,13 +24,20 @@ from stdm.utils.util import (
 
 from PyQt4.QtCore import (
     Qt,
+    QUrl,
     QObject,
     pyqtSignal,
+    QByteArray,
     QFile,
     QFileInfo,
     SIGNAL,
     QSignalMapper,
     QThread
+)
+
+from PyQt4.QtNetwork import (
+    QNetworkAccessManager,
+    QNetworkRequest
 )
 
 from stdm.data.pg_utils import (
@@ -36,6 +50,24 @@ from stdm.settings.registryconfig import (
         RegistryConfig,
         NETWORK_DOC_RESOURCE
 )
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(
+            context,
+            text,
+            disambig,
+            _encoding
+        )
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(
+            context,
+            text,
+            disambig
+        )
 
 class SupportDocManager(QObject):
     download_started = pyqtSignal(unicode)
@@ -196,10 +228,46 @@ class SupportDocManager(QObject):
             dest_filename = doc_path[doc['doc_column']]+'\\'+short_filename
 
             # First check if the file exists locally before downloading
-            if not os.path.exists(dest_filename):
-                self.kobo_download(src_url, dest_filename, self.kobo_username, self.kobo_password)
-
-            self.download_cache.append({'doc_type':doc['type_name'], 'filename':short_filename})
+            if os.path.exists(dest_filename):
+                self.download_progress.emit(
+                    SupportDocManager.WARNING,
+                    _translate(
+                        'SUPPORTING_DOCUMENT_MANAGER',
+                        u'The is already esists {0}',
+                        None
+                    ).format(short_filename)
+                )  
+            else:
+                download_result = self.kobo_download(
+                    src_url,
+                    dest_filename,
+                    self.kobo_username,
+                    self.kobo_password
+                )
+                if download_result:
+                    self.download_progress.emit(
+                        SupportDocManager.INFORMATION,
+                        _translate(
+                            'SUPPORTING_DOCUMENT_MANAGER',
+                            u'Downloaded {0} Successfully.',
+                            None
+                        ).format(short_filename)
+                    )
+                    self.download_cache.append(
+                        {
+                            'doc_type':doc['type_name'],
+                            'filename':short_filename
+                        }
+                    )
+                else:
+                    self.download_progress.emit(
+                        SupportDocManager.ERROR,
+                        _translate(
+                            'SUPPORTING_DOCUMENT_MANAGER',
+                            u'Failed to download... {0}',
+                            None,
+                        ).format(short_filename)
+                    )
         self.write_log(self.download_cache, self.download_log_file)
 
     def get_kobo_url(self):
@@ -217,6 +285,9 @@ class SupportDocManager(QObject):
         for n, doc in enumerate(docs):
             short_filename = doc['filename']
             if short_filename in [log['filename'] for log in self.upload_cache]:
+                continue
+            if not short_filename in\
+                [log['filename'] for log in self.download_cache]:
                 continue
             self.upload_progress.emit(SupportDocManager.INFORMATION, 'Uploading...'+short_filename)
             self.upload_counter.emit(n+1)
@@ -332,14 +403,43 @@ class SupportDocManager(QObject):
             self.download_progress.emit(SupportDocManager.ERROR, msg)
 
     def kobo_download(self, src_url, dest_filename, username, password):
+        #we can add to Within Kobo Connection Params Timeout & Number of Tries
+        self.wait_for_result_timeout = 6
+        self.download_result = None
 
-        req = requests.get(src_url, auth=(username,password))
+        self.dest_filename = dest_filename
 
-        with open(dest_filename, 'wb') as f:
-            f.write(req.content)
+        self.manager = QNetworkAccessManager()
+        self.manager.finished.connect( self.handle_download)
 
-        return req.status_code
-
+        request = QNetworkRequest(QUrl(src_url))
+        header_data = QByteArray(
+            '{}:{}'.format(username, password)
+        ).toBase64()
+        request.setRawHeader(
+            'Authorization',
+            'Basic {}'.format(header_data)
+        )
+        self.manager.get(request)
+        while self.wait_for_result_timeout > 0:
+            if not self.download_result is None:
+                return self.download_result
+            else:
+                sleep(10)
+                QApplication.processEvents()
+                self.wait_for_result_timeout -= 1
+        if self.download_result is None:
+            return False
+        return self.download_result
+            
+    def handle_download(self, reply ):
+        if reply.errorString() != 'Unknown error':
+            self.download_result = False
+        else:
+            with open(self.dest_filename, 'wb') as f:
+                f.write(reply.readAll())
+                f.close()
+            self.download_result = True
 
 class ImportLogger(QObject):
     def __init__(self, logfile, entity_name):
