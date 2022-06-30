@@ -344,10 +344,12 @@ class UploadWorker(QObject):
             os.path.join(mapfile_path, 'property_mapfile.ini')
         )
         if not os.path.exists(self.support_doc_map_filename):
-            _translate(
-                'DocumentUploader',
-                'Mapfile does not exist',
-                None
+            ErrMessage(
+                _translate(
+                    'DocumentUploader',
+                    'Mapfile does not exist',
+                    None
+                )
             )
             return
 
@@ -356,6 +358,15 @@ class UploadWorker(QObject):
                 self.support_doc_map_filename,
                 'support_doc-map'
             )
+        if self.support_doc_map is None:
+            ErrMessage(
+                _translate(
+                    'DocumentUploader',
+                    'Can not Access Mapfile',
+                    None
+                )
+            )
+            return
 
     def start_upload(self):
         scanned_certs = self.fetch_scanned_certs()
@@ -766,10 +777,13 @@ class UploadWorker(QObject):
     def mapfile_section(self, mapfile, section):
         map_section = OrderedDict()
         config_parser = ConfigParser.ConfigParser()
-        config_parser.readfp(open(mapfile))
-        if section in config_parser.sections():
-            map_section = OrderedDict(config_parser.items(unicode(section)))
-        return map_section
+        try:
+            config_parser.readfp(open(mapfile))
+            if section in config_parser.sections():
+                map_section = OrderedDict(config_parser.items(unicode(section)))
+            return map_section
+        except:
+            return None
 
 def ErrMessage(message):
         #Error Message Box
