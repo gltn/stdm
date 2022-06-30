@@ -63,6 +63,8 @@ from stdm.settings import (
     current_profile
 )
 
+from ui_document_uploader import Ui_DocumentUploader
+
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 
 try:
@@ -175,7 +177,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             ).format(local_uploaded_count)
         )
 
-def start_upload(self, msg):
+    def start_upload(self, msg):
         self.btnUpload.setEnabled(False)
         self.edtProgress.append(msg + ' Started ...')
         QApplication.prcessEvents()
@@ -349,10 +351,11 @@ class UploadWorker(QObject):
             )
             return
 
-        self.support_doc_map = self.mapfile_section(
-            self.support_doc_map_filename,
-            'support_doc-map'
-        )
+        if os.path.exists(self.support_doc_map_filename):
+            self.support_doc_map = self.mapfile_section(
+                self.support_doc_map_filename,
+                'support_doc-map'
+            )
 
     def start_upload(self):
         scanned_certs = self.fetch_scanned_certs()
@@ -593,16 +596,19 @@ class UploadWorker(QObject):
                 # Delete After Upload
                 if self.del_after_upload:
                     old_filename = scanned_cert['full_filename']
-                    os.remove(old_filename)
-                    msg =  _translate(
-                        'DocumentUploader',
-                        u'Removed file: {0}',
-                        None
-                        ).format('`' + old_filename + '`')
-                    self.upload_progress.emit(
-                        UploadWorker.INFORMATION,
-                        msg
-                    )
+                    try:
+                        os.remove(old_filename)
+                        msg =  _translate(
+                            'DocumentUploader',
+                            u'Removed file: {0}',
+                            None
+                            ).format('`' + old_filename + '`')
+                        self.upload_progress.emit(
+                            UploadWorker.INFORMATION,
+                            msg
+                        )
+                    except:
+                        pass
                     if os.path.exists(old_filename):
                         msg = _translate('DocumentUploader',
                             'Failed to Removed file: {0}',
@@ -663,12 +669,14 @@ class UploadWorker(QObject):
                      + '/'
                      )
         dest_filename = dest_path + new_filename + file_ext
+        try:
+            if not os.path.exists(dest_path):
+                os.makedirs(dest_path)
 
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
-
-        shutil.copy(old_filename, dest_filename)
-        return True
+            shutil.copy(old_filename, dest_filename)
+            return True
+        except:
+            return False
 
     def make_supporting_doc(self, doc_name):
         doc_size = os.path.getsize(doc_name)
