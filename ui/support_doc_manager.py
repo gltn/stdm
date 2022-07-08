@@ -408,12 +408,10 @@ class SupportDocManager(QObject):
             self.download_progress.emit(SupportDocManager.ERROR, msg)
 
     def kobo_download(self, src_url, dest_filename, username, password):
-        self.wait_for_result_timeout = 12 #strab_temp
         self.download_result = None
         self.dest_filename = dest_filename
 
-        #strab_temp self.manager = QgsNetworkAccessManager.instance()
-        self.manager = QNetworkAccessManager()
+        self.manager = QgsNetworkAccessManager.instance()
         self.manager.finished.connect(self.handle_download)
         request = QNetworkRequest(QUrl(src_url))
         header_data = QByteArray(
@@ -424,27 +422,9 @@ class SupportDocManager(QObject):
             'Basic {}'.format(header_data)
         )
         self.manager.get(request)
-        """strab_temp self.loop = QEventLoop()
-        self.loop.exec_()"""
-        download_progress_timer = 0 #strab_temp
-        while self.wait_for_result_timeout > 0:
-            if not self.download_result is None:
-                return self.download_result
-            else:
-                sleep(5)
-                QApplication.processEvents()
-                download_progress_timer += 5
-                self.download_progress.emit(
-                    SupportDocManager.INFORMATION,
-                    str(download_progress_timer) + ' seconds'
-                )
-                self.wait_for_result_timeout -= 1
-        
+        self.loop = QEventLoop()
+        self.loop.exec_()
         if self.download_result is None:
-            self.download_progress.emit(
-                SupportDocManager.ERROR,
-                'Timeout'
-            )
             return False
         return self.download_result
             
@@ -456,7 +436,7 @@ class SupportDocManager(QObject):
                 f.write(reply.readAll())
                 f.close()
             self.download_result = True
-        #strab_tempself.loop.quit()
+        self.loop.quit()
 
 class ImportLogger(QObject):
     def __init__(self, logfile, entity_name):
