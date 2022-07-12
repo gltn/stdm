@@ -71,6 +71,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         return True if ret_val == QMessageBox.Yes else False
 
     def doc_download_started(self, msg):
+        self.btnDownload.setEnabled(False)
         self.edtProgress.append(msg+" started...")
         QApplication.processEvents()
 
@@ -109,6 +110,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         self.edtProgress.append(msg+" completed.")
         self.download_thread.quit()
         self.finished_upload = True
+        self.btnDownload.setEnabled(True)
 
     def download_thread_started(self):
         self.sdoc_manager.start_download()
