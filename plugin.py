@@ -1007,8 +1007,8 @@ class STDMQGISLoader(object):
             self.iface.mainWindow()
         )
 
-        self.uploadAct = QAction(QIcon(":/plugins/stdm/images/icons/docdownload.png"), \
-        QApplication.translate("DownloadAction","Upload Scanned Documents"), self.iface.mainWindow())
+        self.uploadAct = QAction(QIcon(":/plugins/stdm/images/icons/docupload.png"), \
+        QApplication.translate("UploadAction","Upload Scanned Documents"), self.iface.mainWindow())
 
         self.importAct = QAction(QIcon(":/plugins/stdm/images/icons/import.png"), \
         QApplication.translate("ImportAction","Import Data"), self.iface.mainWindow())
