@@ -254,13 +254,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 isntance_dir, instance = os.path.split(instance_p)
             else:
                 instance = instance_p
-            self.uuid_extractor.set_file_path(instance)
+            self.uuid_extractor.set_file_path(instance_p)
             field_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
                                                                          self.user_selected_entities())
 
             str_data_nodes = self.uuid_extractor.document_entities_with_data(self.active_profile().replace(' ', '_'),
                                                                        ['social_tenure'])
-            mobile_data[instance] = [field_data_nodes, str_data_nodes]
+            mobile_data[instance_p] = [field_data_nodes, str_data_nodes]
 
             self.uuid_extractor.close_document()
         return mobile_data
@@ -563,12 +563,18 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         cu_obj = ''
         import_status = False
+
         self.txt_feedback.clear()
         self.txt_feedback.append("Import started, please wait...\n")
+
         QCoreApplication.processEvents()
+
         self._notif_bar_str.clear()
+
         mobile_field_data = self.read_instance_data()
+
         self.has_foreign_keys_parent(entities)
+
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -613,6 +619,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.log_table_entry(log_timestamp)
 
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
+
                         entity_add.objects_from_supporting_doc(instance_obj)
 
                         ref_id = entity_add.save_parent_to_db()
@@ -639,8 +646,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         log_timestamp = '=== standalone table import  === : {0}'.format(entity_name)
                         cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
+
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_obj)
+
                         child_id = entity_add.save_to_db()
                         cu_obj = entity_name
                         import_status = True
@@ -666,8 +675,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                                 .format(repeat_table, enum_index)
                         self.count_import_file_step(counter, repeat_table)
                         self.importlogger.log_action(log_timestamp)
+
                         if repeat_table in self.profile_entities_names(current_profile()):
+
                             entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
+
                             entity_add.objects_from_supporting_doc(instance_obj)
                             child_id = entity_add.save_to_db()
                             cu_obj = repeat_table
@@ -751,6 +763,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     QApplication.restoreOverrideCursor()
                     return
             else:
+                print "Length: ",len(entities)
                 self.save_instance_data_to_db(entities)
                 self.buttonBox.setEnabled(True)
                 QApplication.restoreOverrideCursor()

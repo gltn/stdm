@@ -125,7 +125,6 @@ class InstanceUUIDExtractor():
         selected entities
         :rtype: OrderedDict
         """
-
         instance_data = OrderedDict()
         self.set_document()
         nodes = self.doc.elementsByTagName(profile)
@@ -144,7 +143,7 @@ class InstanceUUIDExtractor():
         repeat_instance_data = OrderedDict()
         attribute_data = OrderedDict()
         for attr_nodes, entity in args_list.iteritems():
-            '''The assuption is that there are repeated entities from mobile sub forms. handle them separately'''
+            '''The assumption is that there are repeated entities from mobile sub forms. handle them separately'''
             if attr_nodes.count()>1:
                 for i in range(attr_nodes.count()):
                     attrib_node = attr_nodes.at(i).childNodes()
