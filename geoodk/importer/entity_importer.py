@@ -313,6 +313,10 @@ class Save2DB:
             pass
 
         for k, v in attributes.iteritems():
+            if k in self.multiple_select_columns:
+                self.process_multiple_select_columns(k,v)
+                continue
+
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -323,7 +327,13 @@ class Save2DB:
             self.model.documents = self._doc_manager.model_objects()
 
         self.model.save()
-        return self.model.id
+        entity_key = self.model.id
+        
+        if len(self.multiple_select_columns) > 0:
+            self.save_multiple_selection(self.multiple_select_columns, entity_key)
+
+        return entity_key
+
 
     def save_parent_to_db(self):
         """
