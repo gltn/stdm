@@ -10,6 +10,7 @@ import json
 from datetime import datetime
 
 from PyQt4 import QtGui
+from PyQt4.Qt import QImage
 from PyQt4.QtGui import (
     QApplication,
     QProgressBar
@@ -410,8 +411,7 @@ class SupportDocManager(QObject):
     def kobo_download(self, src_url, dest_filename, username, password):
         self.download_result = None
         self.dest_filename = dest_filename
-
-        self.manager = QgsNetworkAccessManager.instance()
+        self.manager = QNetworkAccessManager()
         self.manager.finished.connect(self.handle_download)
         request = QNetworkRequest(QUrl(src_url))
         header_data = QByteArray(
@@ -421,21 +421,32 @@ class SupportDocManager(QObject):
             'Authorization',
             'Basic {}'.format(header_data)
         )
-        self.manager.get(request)
-        self.loop = QEventLoop()
-        self.loop.exec_()
+        try:
+            self.manager.get(request)
+            self.loop = QEventLoop()
+            self.loop.exec_()
+        except:
+            pass
+        
+        self.loop = None
+        self.manager = None
+        sleep(1)
+        QApplication.processEvents()
         if self.download_result is None:
             return False
         return self.download_result
             
-    def handle_download(self, reply ):
+    def handle_download(self, reply):
         if reply.errorString() != 'Unknown error':
             self.download_result = False
         else:
+            sleep(1)
+            QApplication.processEvents()
             with open(self.dest_filename, 'wb') as f:
                 f.write(reply.readAll())
                 f.close()
             self.download_result = True
+        reply = None
         self.loop.quit()
 
 class ImportLogger(QObject):
