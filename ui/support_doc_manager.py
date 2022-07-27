@@ -410,7 +410,6 @@ class SupportDocManager(QObject):
     def kobo_download(self, src_url, dest_filename, username, password):
         self.download_result = None
         self.dest_filename = dest_filename
-
         self.manager = QgsNetworkAccessManager.instance()
         self.manager.finished.connect(self.handle_download)
         request = QNetworkRequest(QUrl(src_url))
