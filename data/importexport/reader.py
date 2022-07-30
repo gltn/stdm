@@ -501,7 +501,7 @@ class OGRReader(object):
                     field_value = unicode(feat.GetField(f), 'utf-8')
 
                     if sdoc_manager.download_docs:
-                        if sdoc_manager.support_doc_column(a_field_name) and field_value <> '':
+                        if sdoc_manager.support_doc_column(a_field_name) and field_value != '':
                             sdoc_manager.append_doc(r_count, a_field_name, field_value)
 
                     # Check if the value already exists for unique columns

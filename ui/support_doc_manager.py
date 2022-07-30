@@ -10,7 +10,6 @@ import json
 from datetime import datetime
 
 from PyQt4 import QtGui
-from PyQt4.Qt import QImage
 from PyQt4.QtGui import (
     QApplication,
     QProgressBar
@@ -44,6 +43,9 @@ from qgis.core import QgsNetworkAccessManager
 from PyQt4.QtNetwork import (
     QNetworkAccessManager,
     QNetworkRequest
+)
+from stdm.data.importexport.document_downloader import (
+    Doc_Downloader
 )
 
 from stdm.data.pg_utils import (
@@ -221,6 +223,10 @@ class SupportDocManager(QObject):
     def download_files(self, docs):
         """
         """
+        kobo_downloader = Doc_Downloader(
+            self.kobo_username,
+            self.kobo_password  
+        )
         for n, doc in enumerate(docs):
             short_filename = doc['filename']
             if short_filename == '':
@@ -232,7 +238,7 @@ class SupportDocManager(QObject):
             src_url = self.get_kobo_url()+short_filename
             doc_path = self.get_doc_path()
             dest_filename = doc_path[doc['doc_column']]+'\\'+short_filename
-
+            
             # First check if the file exists locally before downloading
             if os.path.exists(dest_filename):
                 self.download_progress.emit(
@@ -244,11 +250,9 @@ class SupportDocManager(QObject):
                     ).format(short_filename)
                 )  
             else:
-                download_result = self.kobo_download(
-                    src_url,
-                    dest_filename,
-                    self.kobo_username,
-                    self.kobo_password
+                download_result = kobo_downloader.kobo_download(
+                  src_url,
+                  dest_filename
                 )
                 if download_result:
                     self.download_progress.emit(
@@ -407,47 +411,6 @@ class SupportDocManager(QObject):
         except:
             msg = "ERROR: Unable to create record in table `{}`!".format(table_name)
             self.download_progress.emit(SupportDocManager.ERROR, msg)
-
-    def kobo_download(self, src_url, dest_filename, username, password):
-        self.download_result = None
-        self.dest_filename = dest_filename
-        self.manager = QNetworkAccessManager()
-        self.manager.finished.connect(self.handle_download)
-        request = QNetworkRequest(QUrl(src_url))
-        header_data = QByteArray(
-            '{}:{}'.format(username, password)
-        ).toBase64()
-        request.setRawHeader(
-            'Authorization',
-            'Basic {}'.format(header_data)
-        )
-        try:
-            self.manager.get(request)
-            self.loop = QEventLoop()
-            self.loop.exec_()
-        except:
-            pass
-        
-        self.loop = None
-        self.manager = None
-        sleep(1)
-        QApplication.processEvents()
-        if self.download_result is None:
-            return False
-        return self.download_result
-            
-    def handle_download(self, reply):
-        if reply.errorString() != 'Unknown error':
-            self.download_result = False
-        else:
-            sleep(1)
-            QApplication.processEvents()
-            with open(self.dest_filename, 'wb') as f:
-                f.write(reply.readAll())
-                f.close()
-            self.download_result = True
-        reply = None
-        self.loop.quit()
 
 class ImportLogger(QObject):
     def __init__(self, logfile, entity_name):
