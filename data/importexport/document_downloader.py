@@ -14,7 +14,7 @@ from PyQt4.QtCore import (
     QEventLoop,
 )
 
-class Doc_Downloader(object):
+class DocumentDownloader(object):
     """
     this class 
     """
@@ -43,8 +43,6 @@ class Doc_Downloader(object):
             pass
         
         self.loop = None
-        sleep(1)
-        QApplication.processEvents()
         if self.download_result is None:
             return False
         return self.download_result
@@ -58,7 +56,6 @@ class Doc_Downloader(object):
             try:
                 with open(self.dest_filename, 'wb') as f:
                     f.write(reply.readAll())
-                    f.close()
                 self.download_result = True
             except:
                 self.download_result = False

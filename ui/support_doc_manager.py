@@ -45,7 +45,7 @@ from PyQt4.QtNetwork import (
     QNetworkRequest
 )
 from stdm.data.importexport.document_downloader import (
-    Doc_Downloader
+    DocumentDownloader
 )
 
 from stdm.data.pg_utils import (
@@ -223,7 +223,7 @@ class SupportDocManager(QObject):
     def download_files(self, docs):
         """
         """
-        kobo_downloader = Doc_Downloader(
+        kobo_downloader = DocumentDownloader(
             self.kobo_username,
             self.kobo_password  
         )
@@ -238,7 +238,7 @@ class SupportDocManager(QObject):
             src_url = self.get_kobo_url()+short_filename
             doc_path = self.get_doc_path()
             dest_filename = doc_path[doc['doc_column']]+'\\'+short_filename
-            
+
             # First check if the file exists locally before downloading
             if os.path.exists(dest_filename):
                 self.download_progress.emit(
