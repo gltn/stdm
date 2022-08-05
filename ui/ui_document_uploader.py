@@ -68,10 +68,7 @@ class Ui_DocumentUploader(object):
         self.btnUpload = QtGui.QPushButton(self.centralwidget)
         self.btnUpload.setObjectName(_fromUtf8("btnUpload"))
         self.gridLayout.addWidget(self.btnUpload, 3, 2, 1, 1)
-        self.btnImportMonitor = QtGui.QPushButton(self.centralwidget)
-        self.btnImportMonitor.setObjectName(_fromUtf8("btnImportMonitor"))
-        self.gridLayout.addWidget(self.btnImportMonitor, 4, 0, 1, 1)
-
+        
         self.verticalLayout.addLayout(self.gridLayout)
         DocumentUploader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentUploader)
@@ -87,7 +84,6 @@ class Ui_DocumentUploader(object):
         self.label.setText(_translate("DocumentUploader", "Scanned Certificates Directory:", None))
         self.cbAll.setText(_translate("DocumentUploader", "All", None))
         self.btnUpload.setText(_translate("DocumentUploader", "Upload", None))
-        self.btnImportMonitor.setText(_translate("DocumentUploader", "Import Monitor", None))
         self.cbAllowDuplicate.setText(_translate("DocumentUploader", "Allow Uploading Duplicates", None))
         self.cbAllowDuplicate.setCheckState(Qt.Checked)
         self.cbDelAfterUpload.setText(_translate("DocumentUploader", "Delete Documents After Upload", None))
