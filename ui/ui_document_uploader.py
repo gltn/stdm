@@ -87,4 +87,3 @@ class Ui_DocumentUploader(object):
         self.cbAllowDuplicate.setText(_translate("DocumentUploader", "Allow Uploading Duplicates", None))
         self.cbAllowDuplicate.setCheckState(Qt.Checked)
         self.cbDelAfterUpload.setText(_translate("DocumentUploader", "Delete Documents After Upload", None))
-

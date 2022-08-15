@@ -345,7 +345,11 @@ class UploadWorker(QObject):
             )
         if self.support_doc_map is None:
             ErrMessage(
-                self.tr('DocumentUploader')
+                self.tr(
+                    u'Can not read data from section : {0}'.format(
+                        'support_doc-map'
+                    )
+                )
             )
             return
 
@@ -578,26 +582,7 @@ class UploadWorker(QObject):
                     UploadWorker.INFORMATION,
                     msg
                 )
-                #Delete After Upload
-                if self.del_after_upload:
-                    try:
-                        old_filename=scanned_cert['full_filename']
-                        os.remove(old_filename)
-                        msg = 'Removed file: `'+ old_filename + '`'
-                        self.upload_progress.emit(
-                            UploadWorker.INFORMATION,
-                            msg
-                        )
-                    except:
-                        msg = ('Failed to Removed file: `'
-                            + old_filename
-                            + '`')
-                        self.upload_progress.emit(
-                            UploadWorker.ERRORINFORMATION,
-                            msg
-                        )
-
-
+                
                 # Delete After Upload
                 if self.del_after_upload:
                     old_filename = scanned_cert['full_filename']
@@ -612,9 +597,7 @@ class UploadWorker(QObject):
                             UploadWorker.INFORMATION,
                             msg
                         )
-                    except:
-                        pass
-                    if os.path.exists(old_filename):
+                    except OSError:
                         msg = self.tr(
                             'Failed to Removed file: {0}'.format(
                                 '`' + old_filename + '`'
@@ -784,8 +767,10 @@ class UploadWorker(QObject):
                 map_section = OrderedDict(
                     config_parser.items(unicode(section))
                 )
-            return map_section
-        except:
+                return map_section
+            else:
+                return None
+        except IOError:
             return None
 
 def ErrMessage(message):
@@ -794,17 +779,3 @@ def ErrMessage(message):
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
         msg.exec_()
-
-def ErrMessage(message):
-    # Error Message Box
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Critical)
-    msg.setText(message)
-    msg.exec_()
-
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    du = DocumentUploader()
-    du.showNormal()
-    sys.exit(app.exec_())
