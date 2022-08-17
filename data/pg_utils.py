@@ -131,14 +131,15 @@ def create_ms_record(target_table, target_table_id,
     _execute(sql)
 
 def pg_create_supporting_document(document):
-    sql = "INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
+    sql = u"INSERT INTO {} (creation_date, document_identifier, source_entity, document_size, filename) "\
             " VALUES ('{}','{}','{}',{},'{}') RETURNING id ".format(
                     document['support_doc_table'],
                     document['creation_date'],
                     document['hashed_filename'],
                     document['source_entity'],
                     document['document_size'],
-                    document['doc_filename'])
+                    unicode(document['doc_filename'])
+          )
     sql_text = text(sql)
     return _execute(sql_text)
 

@@ -67,24 +67,6 @@ from ui_document_uploader import Ui_DocumentUploader
 
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
 
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(
-            context,
-            text,
-            disambig,
-            _encoding
-        )
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(
-            context,
-            text,
-            disambig
-        )
-
 class VLine(QFrame):
     def __init__(self):
         super(VLine, self).__init__()
@@ -111,7 +93,9 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         # Create file_model/Filter=pdf documents
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        self.file_model.setFilter(
+            QDir.NoDotAndDotDot | QDir.Files
+        )
         filter = '*.pdf'
         self.file_model.setNameFilters([filter])
         self.file_model.setNameFilterDisables(False)
@@ -120,10 +104,18 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         # Set Controls' Evenets
 
-        self.file_model.directoryLoaded.connect(self.directory_loaded)
-        self.btnFolder.clicked.connect(self.get_folder)
-        self.cbAll.stateChanged.connect(self.toggle_selection)
-        self.btnUpload.clicked.connect(self.start_upload_worker)
+        self.file_model.directoryLoaded.connect(
+            self.directory_loaded
+        )
+        self.btnFolder.clicked.connect(
+            self.get_folder
+        )
+        self.cbAll.stateChanged.connect(
+            self.toggle_selection
+        )
+        self.btnUpload.clicked.connect(
+            self.start_upload_worker
+        )
 
         # Init Variables & Conrtols' Initial Attributes
         self.current_profile = current_profile()
@@ -141,7 +133,8 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.statusBar().addWidget(VLine())
         self.statusBar().addWidget(self.lbl_uploaded_count)
 
-    def set_status_bar(self, files_count, selected_count, uploaded_count):
+    def set_status_bar(self, files_count, selected_count,
+            uploaded_count):
         if files_count is None:
             local_files_count = 0
         else: 
@@ -156,25 +149,25 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             local_uploaded_count = uploaded_count    
         
         self.lbl_crtfiles_count.setText(
-            _translate(
-                'DocumentUploader',
-                u'Files Count: {0}',
-                None
-            ).format(local_files_count)
+            self.tr(
+                u'Files Count: {0}'.format(
+                    local_files_count
+                )
+            )
         )
         self.lbl_selected_count.setText(
-            _translate(
-                'DocumentUploader',
-                u'Selection Count: {0}',
-                None
-            ).format(local_selected_count)
+            self.tr(
+                u'Selection Count: {0}'.format(
+                    local_selected_count
+                )
+            )
         )
         self.lbl_uploaded_count.setText(
-            _translate(
-                'DocumentUploader',
-                u'Uploaded Count: {0}',
-                None
-            ).format(local_uploaded_count)
+            self.tr(
+                u'Uploaded Count: {0}'.format(
+                    local_uploaded_count
+                )
+            )
         )
 
     def start_upload(self, msg):
@@ -221,11 +214,19 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.upload_thread = QThread(self)
         self.upload_worker.moveToThread(self.upload_thread)
 
-        self.upload_worker.upload_started.connect(self.start_upload)
-        self.upload_worker.upload_progress.connect(self.upload_progress)
-        self.upload_worker.upload_completed.connect(self.upload_completed)
+        self.upload_worker.upload_started.connect(
+            self.start_upload
+        )
+        self.upload_worker.upload_progress.connect(
+            self.upload_progress
+        )
+        self.upload_worker.upload_completed.connect(
+            self.upload_completed
+        )
 
-        self.upload_thread.started.connect(self.uploader_thread_started)
+        self.upload_thread.started.connect(
+            self.uploader_thread_started
+        )
 
         self.upload_thread.start()
         setUploadFileDir(self.edtFolder.text())
@@ -274,11 +275,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         dialog = QFileDialog()
         doc_folder = dialog.getExistingDirectory(
             self,
-            _translate(
-                'DocumentUploader',
-                'Select document directory',
-                None
-            ),
+            self.tr('Select document directory'),
             self.edtFolder.text()
         )
         if doc_folder != '':
@@ -321,22 +318,14 @@ class UploadWorker(QObject):
         self.support_doc_map = None
         if not os.path.exists(get_primary_mapfile()):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'Primary mapfile not exists',
-                    None
-                )
+                self.tr('Primary mapfile not exists')
             )
             return
 
         mapfile_path = os.path.dirname(get_primary_mapfile())
         if not os.path.exists(mapfile_path):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'Mapfile Path does not exist',
-                    None
-                )
+                self.tr('Mapfile Path does not exist')
             )
             return
 
@@ -345,11 +334,7 @@ class UploadWorker(QObject):
         )
         if not os.path.exists(self.support_doc_map_filename):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'Mapfile does not exist',
-                    None
-                )
+                self.tr('Mapfile does not exist')
             )
             return
 
@@ -360,10 +345,10 @@ class UploadWorker(QObject):
             )
         if self.support_doc_map is None:
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'Can not Access Mapfile',
-                    None
+                self.tr(
+                    u'Can not read data from section : {0}'.format(
+                        'support_doc-map'
+                    )
                 )
             )
             return
@@ -379,36 +364,22 @@ class UploadWorker(QObject):
         parent_table = self.support_doc_map_getvalue(
             'parent_table',
             '',
-            _translate(
-                'DocumentUploader',
-                'Check mapfile Param parent_table',
-                None
-            )
+            self.tr('Check mapfile Param parent_table')
         )
         if not pg_table_exists(parent_table):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'DB: parent_table does not exists',
-                    None
-                )
+                self.tr('DB: parent_table does not exists')
             )
             return
         support_doc_table = self.support_doc_map_getvalue(
             'parent_support_table',
             '',
-            _translate(
-                'DocumentUploader',
-                'Check mapfile Param parent_support_table',
-                None
-            )
+            self.tr('Check mapfile Param parent_support_table')
         )
         if not pg_table_exists(support_doc_table):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'DB: parent_support_table does not exists',
-                    None
+                self.tr(
+                    'DB: parent_support_table does not exists'
                 )
             )
             return
@@ -416,55 +387,46 @@ class UploadWorker(QObject):
         ref_column = self.support_doc_map_getvalue(
             'scanned_cert_ref_column',
             '',
-            _translate(
-                'DocumentUploader',
-                'Check mapfile Param scanned_cert_ref_column',
-                None
+            self.tr(
+                'Check mapfile Param scanned_cert_ref_column'
             )
         )
         if not pg_table_column_exists(parent_table, ref_column):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'DB: scanned_cert_ref_column does not exists',
-                    None
+                self.tr(
+                    'DB: scanned_cert_ref_column does not exists'
                 )
             )
             return
 
         if len(parent_table) <= 3:
             ErrMessage(
-                _translate('DocumentUploader',
-                           'Invalid parent_table name',
-                           None)
+                self.tr('Invalid parent_table name')
             )
             return
         parent_column = parent_table[3:] + '_id'
-        if not pg_table_column_exists(support_doc_table, parent_column):
+        if not pg_table_column_exists(support_doc_table,
+                                      parent_column):
             ErrMessage(
-                _translate(
-                    'DocumentUploader',
-                    'DB: parent_column does not exist',
-                    None
-                )
+                self.tr('DB: parent_column does not exist')
             )
             return
 
         doc_type_cache = {}
 
         for key, value in scanned_certs.iteritems():
-            ref_code, value_file_ext = value[0]['key_field_value'].split('.')
+            ref_code, value_file_ext =\
+                value[0]['key_field_value'].split('.')
             parent_id = self.get_parent_id(
                 parent_table,
                 ref_code,
                 ref_column
             )
             if parent_id == -1:
-                msg = _translate(
-                    'DocumentUploader',
-                    u'No parent found for this docoment: {0}',
-                    None
-                    ).format('`' + ref_code + '`')
+                msg = self.tr(
+                    u'No parent found for this docoment: {0}'
+                    .format('`' + ref_code + '`')
+                )
                 self.upload_progress.emit(UploadWorker.ERROR, msg)
                 continue
 
@@ -474,12 +436,14 @@ class UploadWorker(QObject):
                 full_filename = scanned_cert['full_filename']
 
                 if not os.path.exists(full_filename):
-                    msg = _translate(
-                        'DocumentUploader',
-                        u'File not found: {0}',
-                        None
-                        ).format('`' + full_filename + '`')
-                    self.upload_progress.emit(UploadWorker.ERROR, msg)
+                    msg = self.tr(
+                        u'File not found: {0}'
+                        .format('`' + full_filename + '`')
+                    )
+                    self.upload_progress.emit(
+                        UploadWorker.ERROR,
+                        msg
+                    )
                     continue
                 
                 support_doc = self.make_supporting_doc(full_filename)
@@ -491,53 +455,70 @@ class UploadWorker(QObject):
                         'document_identifier',
                         "'" + support_doc['hashed_filename'] + "'"
                     )
-                    support_doc_duplicated = self.supporting_document_exists(
-                        support_doc_table,
-                        parent_column,
-                        support_doc_id,
-                        parent_id,
-                        int(src_doc_type_id)
-                    )
+                    support_doc_duplicated = \
+                        self.supporting_document_exists(
+                            support_doc_table,
+                            parent_column,
+                            support_doc_id,
+                            parent_id,
+                            int(src_doc_type_id)
+                        )
 
                 if support_doc_duplicated:
-                    msg = _translate(
-                        'DocumentUploader',
-                        u'Canceled uploading document due to duplication: {0}',
-                        None
-                        ).format( '`' + support_doc['doc_filename'] + '`')
-                    self.upload_progress.emit(UploadWorker.ERROR, msg)
+                    msg = self.tr(
+                        u'Canceled uploading document due'\
+                        ' to duplication: {0}'.format(
+                            '`' + support_doc['doc_filename'] + '`'
+                        )
+                    )
+                    self.upload_progress.emit(
+                        UploadWorker.ERROR,
+                        msg
+                    )
                     continue
 
                 found_error = True
-                result = self.pg_create_supporting_document(support_doc)
+                result = self.pg_create_supporting_document(
+                    support_doc
+                )
                 if result != None:
                     next_support_doc_id = result.fetchone()[0]
                     if next_support_doc_id != None:
                         found_error = False
 
                 if found_error:
-                    msg = _translate(
-                        'DocumentUploader',
-                        u'Error creating supporting document record: {0}',
-                        None
-                        ).format( '`' + support_doc['support_doc_table'] + '`')
-                    self.upload_progress.emit(UploadWorker.ERROR, msg)
+                    msg = self.tr(
+                        u'Error creating supporting document'\
+                        ' record: {0}'.format(
+                            '`' 
+                            + support_doc['support_doc_table']
+                            + '`'
+                        )
+                    )
+                    self.upload_progress.emit(
+                        UploadWorker.ERROR,
+                        msg
+                    )
                     continue
 
-                # Create a record in the parent supporting document table
-                parent_supporting_doc_id = self.create_parent_supporting_doc(
-                    support_doc_table,
-                    next_support_doc_id,
-                    parent_id,
-                    int(src_doc_type_id), parent_column
-                )
+                # Create a record in the parent
+                # supporting document table
+                parent_supporting_doc_id = \
+                    self.create_parent_supporting_doc(
+                        support_doc_table,
+                        next_support_doc_id,
+                        parent_id,
+                        int(src_doc_type_id), parent_column
+                    )
                 if parent_supporting_doc_id is None:
-                    msg = _translate(
-                        'DocumentUploader',
+                    msg = self.tr(
                         u'Error creating parent supporting document '\
-                            'record: {0}',
-                        None
-                        ).format( '`' + support_doc['support_doc_table'] + '`')
+                        'record: {0}'.format(
+                            '`'
+                            + support_doc['support_doc_table']
+                            + '`'
+                        )
+                    )
                     self.upload_progress.emit(UploadWorker.ERROR, msg)
                     continue
 
@@ -546,11 +527,12 @@ class UploadWorker(QObject):
                 if src_doc_type_id in doc_type_cache:
                     doc_type = doc_type_cache[src_doc_type_id]
                 else:
-                    doc_type_lookup_table = self.support_doc_map_getvalue(
-                        'doc_type_lookup_table',
-                        '',
-                        ''
-                    )
+                    doc_type_lookup_table =\
+                        self.support_doc_map_getvalue(
+                            'doc_type_lookup_table',
+                            '',
+                            ''
+                        )
                     if doc_type_lookup_table == '':
                         doc_copy_error = 'doctype: Mapfile Param Missed'
                     else:
@@ -564,72 +546,70 @@ class UploadWorker(QObject):
 
                 new_filename = ''
                 if not 'hashed_filename' in support_doc:
-                    doc_copy_error = doc_copy_error + ' Key hashed_filename'
+                    doc_copy_error = (doc_copy_error
+                                     + ' Key hashed_filename')
                 else:
                     new_filename = support_doc['hashed_filename']
 
                 doc_copy_result = False
                 if doc_copy_error == '':
                     doc_type_cache[src_doc_type_id] = doc_type
-                    doc_copy_result = self.create_new_support_doc_file(
-                        scanned_cert,
-                        new_filename,
-                        doc_type
-                    )
+                    doc_copy_result =\
+                        self.create_new_support_doc_file(
+                            scanned_cert,
+                            new_filename,
+                            doc_type
+                        )
 
                 if not doc_copy_result:
-                    msg = _translate(
-                        'DocumentUploader',
-                        u'Error creating file: {0}',
-                        None
-                        ).format( '`' + new_filename + '`')
-                    self.upload_progress.emit(UploadWorker.ERROR, msg)
+                    msg = self.tr(
+                        u'Error creating file: {0}'.format(
+                            '`' + new_filename + '`'
+                        )
+                    )
+                    self.upload_progress.emit(
+                        UploadWorker.ERROR,
+                        msg
+                    )
                     continue
 
-                msg = _translate(
-                    'DocumentUploader',
-                    u'Finished creating file: {0}',
-                    None
-                    ).format( '`' + new_filename + '`')
-                self.upload_progress.emit(UploadWorker.INFORMATION, msg)
-                #Delete After Upload
-                if self.del_after_upload:
-                    try:
-                        old_filename=scanned_cert['full_filename']
-                        os.remove(old_filename)
-                        msg = "Removed file: `"+old_filename+"`"
-                        self.upload_progress.emit(UploadWorker.INFORMATION, msg)
-                    except:
-                        msg = "Failed to Removed file: `"+old_filename+"`"
-                        self.upload_progress.emit(UploadWorker.ERRORINFORMATION, msg)
-
-
+                msg = self.tr(
+                    u'Finished creating file: {0}'.format(
+                        '`' + new_filename + '`'
+                    )
+                )
+                self.upload_progress.emit(
+                    UploadWorker.INFORMATION,
+                    msg
+                )
+                
                 # Delete After Upload
                 if self.del_after_upload:
                     old_filename = scanned_cert['full_filename']
                     try:
                         os.remove(old_filename)
-                        msg =  _translate(
-                            'DocumentUploader',
-                            u'Removed file: {0}',
-                            None
-                            ).format('`' + old_filename + '`')
+                        msg =  self.tr(
+                            u'Removed file: {0}'.format(
+                                '`' + old_filename + '`'
+                            )
+                        )
                         self.upload_progress.emit(
                             UploadWorker.INFORMATION,
                             msg
                         )
-                    except:
-                        pass
-                    if os.path.exists(old_filename):
-                        msg = _translate('DocumentUploader',
-                            'Failed to Removed file: {0}',
-                            None).format( '`' + old_filename + '`')
+                    except OSError:
+                        msg = self.tr(
+                            'Failed to Removed file: {0}'.format(
+                                '`' + old_filename + '`'
+                            )
+                        )
                         self.upload_progress.emit(
                             UploadWorker.ERRORINFORMATION,
                             msg
                         )
 
-    def support_doc_map_getvalue(self, key, notexists_value, notexists_msg):
+    def support_doc_map_getvalue(self, key, notexists_value,
+            notexists_msg):
         result = notexists_value
         if self.support_doc_map is None:
             return result
@@ -650,7 +630,8 @@ class UploadWorker(QObject):
             parent_column
         )
 
-    def create_new_support_doc_file(self, old_file, new_filename, doc_type):
+    def create_new_support_doc_file(self, old_file, new_filename,
+            doc_type):
         reg_config = RegistryConfig()
         support_doc_path = reg_config.read([NETWORK_DOC_RESOURCE])
         
@@ -695,11 +676,14 @@ class UploadWorker(QObject):
         ht = hashlib.sha1(filename.encode('utf-8'))
         document = {}
 
-        document['support_doc_table'] = self.support_doc_map['main_table']
+        document['support_doc_table'] = \
+            self.support_doc_map['main_table']
         document['creation_date'] = datetime.now().strftime(
-            '%Y-%m-%d %H:%M:%S')
+            '%Y-%m-%d %H:%M:%S'
+        )
         document['hashed_filename'] = ht.hexdigest()
-        document['source_entity'] = self.support_doc_map['parent_table']
+        document['source_entity'] =\
+            self.support_doc_map['parent_table']
         document['doc_filename'] = filename
         document['document_size'] = doc_size
 
@@ -780,9 +764,13 @@ class UploadWorker(QObject):
         try:
             config_parser.readfp(open(mapfile))
             if section in config_parser.sections():
-                map_section = OrderedDict(config_parser.items(unicode(section)))
-            return map_section
-        except:
+                map_section = OrderedDict(
+                    config_parser.items(unicode(section))
+                )
+                return map_section
+            else:
+                return None
+        except IOError:
             return None
 
 def ErrMessage(message):
@@ -791,17 +779,3 @@ def ErrMessage(message):
         msg.setIcon(QMessageBox.Critical)
         msg.setText(message)
         msg.exec_()
-
-def ErrMessage(message):
-    # Error Message Box
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Critical)
-    msg.setText(message)
-    msg.exec_()
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    du = DocumentUploader()
-    du.showNormal()
-    sys.exit(app.exec_())

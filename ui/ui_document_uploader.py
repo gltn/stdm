@@ -68,6 +68,7 @@ class Ui_DocumentUploader(object):
         self.btnUpload = QtGui.QPushButton(self.centralwidget)
         self.btnUpload.setObjectName(_fromUtf8("btnUpload"))
         self.gridLayout.addWidget(self.btnUpload, 3, 2, 1, 1)
+        
         self.verticalLayout.addLayout(self.gridLayout)
         DocumentUploader.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(DocumentUploader)
@@ -86,4 +87,3 @@ class Ui_DocumentUploader(object):
         self.cbAllowDuplicate.setText(_translate("DocumentUploader", "Allow Uploading Duplicates", None))
         self.cbAllowDuplicate.setCheckState(Qt.Checked)
         self.cbDelAfterUpload.setText(_translate("DocumentUploader", "Delete Documents After Upload", None))
-
