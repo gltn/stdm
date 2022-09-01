@@ -84,7 +84,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         self.btnCancel.setText(self.tr('Cancel'))
         self.edt_progress_update(
             QColor(51, 182, 45),
-            75,
+            None,
             msg + ' Started...'
         )
         QApplication.processEvents()
@@ -109,37 +109,37 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         if DNLD_Status_id == 0: # Success
             self.edt_progress_update(
                 QColor(51, 182, 45),
-                75,
-                '(Success)',
+                None,
+                'Success',
                 False
             )
 
         if DNLD_Status_id == 1: # Failed
             self.edt_progress_update(
                 QColor('red'),
-                75,
-                '(Failed)',
+                None,
+                'Failed',
                 False
             )
 
         if DNLD_Status_id == 2: # File Already Exists
             self.edt_progress_update(
                 QColor(255,170,0),
-                75,
-                '(Already Exists)',
+                None,
+                'Already Exists',
                 False
             )
 
     def doc_download_completed(self, msg):
         self.edt_progress_update(
             QColor(51, 182, 45),
-            75,
+            None,
             msg + ' completed.',
             True
         )
         self.edt_progress_update(
             QColor('black'),
-            75,
+            None,
             '----------------------------',
             True
         )
@@ -148,7 +148,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
     def doc_upload_started(self, msg):
         self.edt_progress_update(
             QColor(51, 182, 45),
-            75,
+            None,
             msg + ' started...',
             True
         )
@@ -159,7 +159,6 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
 
     def doc_upload_completed(self, msg):
         self.edtProgress.setTextColor(QColor(51, 182, 45))
-        self.edtProgress.setFontWeight(75)
         self.edtProgress.append(msg+" completed.")
         self.download_thread.quit()
         self.finished_upload = True

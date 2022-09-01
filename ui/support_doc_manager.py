@@ -240,7 +240,7 @@ class SupportDocManager(QObject):
                 continue
             self.download_progress.emit(
                 SupportDocManager.INFORMATION,
-                u'Downloading...{} ...'.format(short_filename)
+                u'Downloading {} ...'.format(short_filename)
             )
             self.download_counter.emit(n+1)
             src_url = self.get_kobo_url()+short_filename
