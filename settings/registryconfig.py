@@ -18,6 +18,7 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings
+from PyQt4.QtCore import QDir
 from PyQt4.QtGui import QColor
 
 #Names of registry keys
@@ -29,6 +30,8 @@ LOCAL_SOURCE_DOC = NETWORK_DOC_RESOURCE
 COMPOSER_OUTPUT = 'ComposerOutputs'
 COMPOSER_TEMPLATE = 'ComposerTemplates'
 CURRENT_PROFILE = 'CurrentProfile'
+BACKUP_PATH = 'BackupPath'
+PG_BIN_PATH = 'PGBinPath'
 LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
 SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
@@ -116,6 +119,27 @@ def source_documents_path():
     """
     return registry_value(NETWORK_DOC_RESOURCE)
 
+def backup_path():
+    """
+    :return: Returns the root path of Backup.
+    :rtype: str
+    """
+    return registry_value(BACKUP_PATH)
+
+def pg_bin_path():
+    """
+    :return: Returns the root path of PostgreSQL Bin Folder.
+    :rtype: str
+    """
+    return registry_value(PG_BIN_PATH)
+
+def config_file_name():
+    """
+    :return: Returns the configuration.stc full name.
+    :rtype: str
+    """
+    return QDir.home().path()+ '/.stdm/configuration.stc'
+    
 def last_document_path():
     """
     :return: Returns the latest path used for uploading supporting documents.
