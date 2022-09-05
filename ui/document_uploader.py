@@ -240,51 +240,51 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         if info_id == DocumentUploader.ERR_PNT:
             status = self.tr(
-                'Failed -DB- No Parent has same ref-code'
+                'Failed -DB Error- No Parent has same ref-code'
             )
             status_color = QColor('red')
 
         if info_id == DocumentUploader.ERR_DPL:
             status = self.tr(
-                'Failed -DB- Certificate Already Exists'
+                'Failed -DB Error- Certificate Already Exists'
             )
             status_color = QColor(225, 170, 0)
             
         if info_id == DocumentUploader.ERR_FIL:
             status = self.tr(
-                'Failed -os- Can not find source Certificate'
+                'Failed -OS Error- Can not find source Certificate'
             )
             status_color = QColor('red')
 
         if info_id == DocumentUploader.ERR_SUP:
             status = self.tr(
-                'Failed -DB- Can not create support document'
+                'Failed -DB Error- Can not create support document'
             )
             status_color = QColor('red')
 
         if info_id == DocumentUploader.ERR_CFL:
             status = self.tr(
-                'Failed -os- Can not create file'
+                'Failed -OS Error- Can not create file'
             )
             status_color = QColor('red')
 
         if info_id == DocumentUploader.ERR_PSP:
             status = self.tr(
-                'Failed -DB- Can not create parent support document'
+                'Failed -DB Error- Can not create parent support document'
             )
             status_color = QColor('red')
 
         if info_id == DocumentUploader.DEL_OK:
             msg = ''
             status = self.tr(
-                '(Removed After Saving)'
+                '-(Removed After Saving)'
             )
             status_color = QColor(51,182,45)
 
         if info_id == DocumentUploader.DEL_ERR:
             msg = ''
             status = self.tr(
-                '(Can not Remove After Saving)'
+                '-(Can not Remove After Saving)'
             )
             status_color = QColor('red')
 
@@ -312,7 +312,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             )
         self.edt_progress_update(
                 QColor('black'),
-                '------------------------------',
+                '------------------------------------',
                 True
             )
         self.upload_thread.quit()
