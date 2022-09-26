@@ -76,7 +76,8 @@ class VLine(QFrame):
 
 class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
-    INFORMATION, WARNING, ERROR = range(0, 3)
+    ERR_PNT, ERR_FIL, ERR_DPL, ERR_SUP, ERR_PSP,\
+        ERR_CFL, OK, DEL_OK, DEL_ERR = range(0,9)
 
     def __init__(self, plugin):
         QMainWindow.__init__(self, plugin.iface.mainWindow())
@@ -88,6 +89,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             Qt.WindowCloseButtonHint |
             Qt.CustomizeWindowHint
         )
+        self.no_uploadprocess = True
         self.dir_model = None
         self.setupUi(self)
 
@@ -102,7 +104,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
 
         self.upload_thread = None
 
-        # Set Controls' Evenets
+        # Set Controls' Events
 
         self.file_model.directoryLoaded.connect(
             self.directory_loaded
@@ -115,6 +117,9 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         )
         self.btnUpload.clicked.connect(
             self.start_upload_worker
+        )
+        self.btnCancel.clicked.connect(
+            self.cancel_upload
         )
 
         # Init Variables & Conrtols' Initial Attributes
@@ -171,13 +176,61 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         )
 
     def start_upload(self, msg):
+        self.no_uploadprocess = False
         self.btnUpload.setEnabled(False)
-        self.edtProgress.append(msg + ' Started ...')
-        QApplication.prcessEvents()
+        self.btnCancel.setText(self.tr('Cancel'))
+        self.edt_progress_update(
+                QColor('black'),
+                msg + ' Started ...',
+                True
+            )
 
-    def upload_progress(self, info_id, msg):
-        if info_id == DocumentUploader.INFORMATION:
-            self.edtProgress.setTextColor(QColor('black'))
+    def cancel_upload(self):
+        self.close()
+
+    def closeEvent(self, event):
+        if self.no_uploadprocess:
+            event.accept()
+        else:
+            result = QMessageBox.question(
+                self,
+                'Save Scanned Certificates to Database',
+                self.tr(
+                    'Are you sure you want to cancel'\
+                       ' the process?'
+                ),
+                QMessageBox.Yes,
+                QMessageBox.No
+            )
+            if result == QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
+
+    def confirm_close(self, msg):
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessage.Warning)
+        msg_box.setText(msg)
+        msg_box.setWindowTitle('Save Scanned Certificates to Database')
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+        ret_val = msg_box.exec_()
+        return True if ret_val == QMessageBox.Yes else False
+
+    def edt_progress_update(self, textcolor, msg, newline=False):
+        if not textcolor is None:
+            self.edtProgress.setTextColor(textcolor)
+        if not newline:
+            self.edtProgress.textCursor().insertText(msg)
+        else:
+            self.edtProgress.append(msg)
+
+    def upload_progress(self, info_id, filename):
+        msg = self.tr('Saving Document {} ...'.format(filename))
+
+        if info_id == DocumentUploader.OK:
+            status = self.tr('Success')
+            status_color = QColor(51, 182, 45)
             self.uploaded_count = self.uploaded_count + 1
             self.set_status_bar(
                 self.files_count,
@@ -185,20 +238,83 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
                 self.uploaded_count
             )
 
-        if info_id == DocumentUploader.WARNING:
-            self.edtProgress.setTextColor(QColor(225, 170, 0))
+        if info_id == DocumentUploader.ERR_PNT:
+            status = self.tr(
+                'Failed -DB Error- No Parent has same ref-code'
+            )
+            status_color = QColor('red')
 
-        if info_id == DocumentUploader.ERROR:
-            self.edtProgress.setTextColor(QColor('red'))
+        if info_id == DocumentUploader.ERR_DPL:
+            status = self.tr(
+                'Failed -DB Error- Certificate Already Exists'
+            )
+            status_color = QColor(225, 170, 0)
+            
+        if info_id == DocumentUploader.ERR_FIL:
+            status = self.tr(
+                'Failed -OS Error- Can not find source Certificate'
+            )
+            status_color = QColor('red')
 
-        self.edtProgress.append(msg)
+        if info_id == DocumentUploader.ERR_SUP:
+            status = self.tr(
+                'Failed -DB Error- Can not create support document'
+            )
+            status_color = QColor('red')
+
+        if info_id == DocumentUploader.ERR_CFL:
+            status = self.tr(
+                'Failed -OS Error- Can not create file'
+            )
+            status_color = QColor('red')
+
+        if info_id == DocumentUploader.ERR_PSP:
+            status = self.tr(
+                'Failed -DB Error- Can not create parent support document'
+            )
+            status_color = QColor('red')
+
+        if info_id == DocumentUploader.DEL_OK:
+            msg = ''
+            status = self.tr(
+                '-(Removed After Saving)'
+            )
+            status_color = QColor(51,182,45)
+
+        if info_id == DocumentUploader.DEL_ERR:
+            msg = ''
+            status = self.tr(
+                '-(Can not Remove After Saving)'
+            )
+            status_color = QColor('red')
+
+        if msg != '':
+            self.edt_progress_update(
+                QColor('black'),
+                msg,
+                True
+            )
+        self.edt_progress_update(
+            status_color,
+            status,
+            False
+        )
         QApplication.processEvents()
         
     def upload_completed(self, msg):
+        self.no_uploadprocess = True
         self.btnUpload.setEnabled(True)
-        self.edtProgress.setTextColor(QColor(51, 182, 45))
-        self.edtProgress.setFontWeight(75)
-        self.edtProgress.append(msg + ' completed.')
+        self.btnCancel.setText('Close')
+        self.edt_progress_update(
+                QColor('black'),
+                msg + ' completed.',
+                True
+            )
+        self.edt_progress_update(
+                QColor('black'),
+                '------------------------------------',
+                True
+            )
         self.upload_thread.quit()
 
     def uploader_thread_started(self):
@@ -227,7 +343,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
         self.upload_thread.started.connect(
             self.uploader_thread_started
         )
-
+        self.start_upload('Saving Certificates to Database')
         self.upload_thread.start()
         setUploadFileDir(self.edtFolder.text())
 
@@ -247,7 +363,7 @@ class DocumentUploader(QMainWindow, Ui_DocumentUploader):
             return
         if not os.path.exists(self.edtFolder.text()):
             return
-        if not self.file_model is None:
+        if self.file_model is None:
             return
 
         folder_index = self.file_model.index(self.edtFolder.text())
@@ -303,7 +419,8 @@ class UploadWorker(QObject):
     upload_progress = pyqtSignal(int, unicode)
     upload_completed = pyqtSignal(unicode)
 
-    INFORMATION, WARNINING, ERROR = range(0, 3)
+    ERR_PNT, ERR_FIL, ERR_DPL, ERR_SUP, ERR_PSP,\
+        ERR_CFL, OK, DEL_OK, DEL_ERR = range(0,9)
 
     def __init__(self, file_path, selected_files, del_after_upload,
             allow_duplicates, parent=None):
@@ -356,6 +473,7 @@ class UploadWorker(QObject):
     def start_upload(self):
         scanned_certs = self.fetch_scanned_certs()
         self.upload_scanned_certs(scanned_certs)
+        self.upload_completed.emit('Saving Certificates')
 
     def upload_scanned_certs(self, scanned_certs):
         if len(scanned_certs) == 0:
@@ -423,11 +541,10 @@ class UploadWorker(QObject):
                 ref_column
             )
             if parent_id == -1:
-                msg = self.tr(
-                    u'No parent found for this docoment: {0}'
-                    .format('`' + ref_code + '`')
+                self.upload_progress.emit(
+                    UploadWorker.ERR_PNT,
+                    ref_code
                 )
-                self.upload_progress.emit(UploadWorker.ERROR, msg)
                 continue
 
             for scanned_cert in scanned_certs[key]:
@@ -436,13 +553,9 @@ class UploadWorker(QObject):
                 full_filename = scanned_cert['full_filename']
 
                 if not os.path.exists(full_filename):
-                    msg = self.tr(
-                        u'File not found: {0}'
-                        .format('`' + full_filename + '`')
-                    )
                     self.upload_progress.emit(
-                        UploadWorker.ERROR,
-                        msg
+                        UploadWorker.ERR_FIL,
+                        short_filename
                     )
                     continue
                 
@@ -465,15 +578,9 @@ class UploadWorker(QObject):
                         )
 
                 if support_doc_duplicated:
-                    msg = self.tr(
-                        u'Canceled uploading document due'\
-                        ' to duplication: {0}'.format(
-                            '`' + support_doc['doc_filename'] + '`'
-                        )
-                    )
                     self.upload_progress.emit(
-                        UploadWorker.ERROR,
-                        msg
+                        UploadWorker.ERR_DPL,
+                        short_filename
                     )
                     continue
 
@@ -487,17 +594,9 @@ class UploadWorker(QObject):
                         found_error = False
 
                 if found_error:
-                    msg = self.tr(
-                        u'Error creating supporting document'\
-                        ' record: {0}'.format(
-                            '`' 
-                            + support_doc['support_doc_table']
-                            + '`'
-                        )
-                    )
                     self.upload_progress.emit(
-                        UploadWorker.ERROR,
-                        msg
+                        UploadWorker.ERR_SUP,
+                        short_filename
                     )
                     continue
 
@@ -511,15 +610,10 @@ class UploadWorker(QObject):
                         int(src_doc_type_id), parent_column
                     )
                 if parent_supporting_doc_id is None:
-                    msg = self.tr(
-                        u'Error creating parent supporting document '\
-                        'record: {0}'.format(
-                            '`'
-                            + support_doc['support_doc_table']
-                            + '`'
-                        )
+                    self.upload_progress.emit(
+                        UploadWorker.ERR_PSP,
+                        short_filename
                     )
-                    self.upload_progress.emit(UploadWorker.ERROR, msg)
                     continue
 
                 # copy file to STDM supporting document folder
@@ -562,25 +656,15 @@ class UploadWorker(QObject):
                         )
 
                 if not doc_copy_result:
-                    msg = self.tr(
-                        u'Error creating file: {0}'.format(
-                            '`' + new_filename + '`'
-                        )
-                    )
                     self.upload_progress.emit(
-                        UploadWorker.ERROR,
-                        msg
+                        UploadWorker.ERR_CFL,
+                        short_filename
                     )
                     continue
 
-                msg = self.tr(
-                    u'Finished creating file: {0}'.format(
-                        '`' + new_filename + '`'
-                    )
-                )
                 self.upload_progress.emit(
-                    UploadWorker.INFORMATION,
-                    msg
+                    UploadWorker.OK,
+                    short_filename
                 )
                 
                 # Delete After Upload
@@ -588,24 +672,14 @@ class UploadWorker(QObject):
                     old_filename = scanned_cert['full_filename']
                     try:
                         os.remove(old_filename)
-                        msg =  self.tr(
-                            u'Removed file: {0}'.format(
-                                '`' + old_filename + '`'
-                            )
-                        )
                         self.upload_progress.emit(
-                            UploadWorker.INFORMATION,
-                            msg
+                            UploadWorker.DEL_OK,
+                            ''
                         )
                     except OSError:
-                        msg = self.tr(
-                            'Failed to Removed file: {0}'.format(
-                                '`' + old_filename + '`'
-                            )
-                        )
                         self.upload_progress.emit(
-                            UploadWorker.ERRORINFORMATION,
-                            msg
+                            UploadWorker.DEL_ERR,
+                            ''
                         )
 
     def support_doc_map_getvalue(self, key, notexists_value,

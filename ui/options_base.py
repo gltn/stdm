@@ -49,6 +49,11 @@ from stdm.settings import (
 from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
+    config_file_name,
+    BACKUP_PATH,
+    backup_path,
+    PG_BIN_PATH,
+    pg_bin_path,
     debug_logging,
     set_debug_logging,
     source_documents_path,
@@ -66,6 +71,15 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
+
+#to be moved later to seperate window - start
+from datetime import datetime
+import gzip
+import os
+import shutil
+import subprocess
+
+#to be moved later to seperate window - end
 
 MAX_LIMIT = 500 # Maximum records in a entity browser
 
@@ -113,6 +127,15 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_test_db_connection.clicked.connect(self._on_test_connection)
         self.btn_supporting_docs.clicked.connect(
             self._on_choose_supporting_docs_path
+        )
+        self.btn_backup.clicked.connect(
+            self._on_run_backup
+        )
+        self.btn_backup_folder.clicked.connect(
+            self._on_choose_backup_path
+        )
+        self.btn_pgbin_folder.clicked.connect(
+            self._on_choose_pgbin_path
         )
         self.btn_template_folder.clicked.connect(
             self._on_choose_doc_designer_template_path
@@ -197,6 +220,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         comp_out_path = composer_output_path()
         comp_temp_path = composer_template_path()
         source_doc_path = source_documents_path()
+        backup_out_path = backup_path()
+        pgbin_path = pg_bin_path()
 
         if not source_doc_path is None:
             self.txtRepoLocation.setText(source_doc_path)
@@ -206,6 +231,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         if not comp_temp_path is None:
             self.txt_template_dir.setText(comp_temp_path)
+
+        if not backup_out_path is None:
+            self.edt_backup_folder.setText(backup_out_path)
+
+        if not pgbin_path is None:
+            self.edt_pgbin_folder.setText(pgbin_path)
 
     def _on_use_pg_connections(self, state):
         #Slot raised when to (not) use existing pg connections
@@ -259,6 +290,133 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._set_selected_directory(self.txt_template_dir, self.tr(
             'Document Designer Templates Directory')
         )
+
+    #To move this part of code to new window later - start
+    def _on_choose_backup_path(self):
+        #Slot raised to select directory for backup.
+        self._set_selected_directory(
+            self.edt_backup_folder,
+            self.tr('Backup Directory')
+        )
+    
+    def _on_choose_pgbin_path(self):
+        #Slot raised to select PostgreSQL/bin directory.
+        self._set_selected_directory(
+            self.edt_pgbin_folder,
+            self.tr('PostgreSQL/bin Directory')
+        )
+
+    def _on_run_backup(self):
+        #in case want to save multi backup files / different dates
+        datetime_prfx = datetime.now().strftime('%Y%m%d%H%M%S%f_')
+        config_file = config_file_name()
+        if not os.path.exists(self.edt_pgbin_folder.text()):
+            ErrMessage(
+                self.tr('Can not find PostgreSQL/bin Directory')
+            )
+            return
+        cmd_dump = self.edt_pgbin_folder.text() + '/pg_dump'
+        if not self.txtHost.text():
+            ErrMessage(
+                self.tr('Please specify the database host address.')
+            )
+            return
+        if not self.txtPort.text():
+            ErrMessage(
+                self.tr('Please specify the port number.')
+            )
+            return
+        if not self.txtDatabase.text():
+            ErrMessage(
+                self.tr('Please specify the database name.')
+            )
+            return
+        p_host = self.txtHost.text()
+        p_port = self.txtPort.text()
+        p_database = self.txtDatabase.text()
+        dest_db_filename = (self.edt_backup_folder.text()
+                           + '//bkup_' 
+                           + datetime_prfx 
+                           + p_database 
+                           + '.backup')
+        dest_config_file = (self.edt_backup_folder.text()
+                           + '//bkup_' 
+                           + datetime_prfx 
+                           + 'configuration.stc')
+
+        if not os.path.exists(self.edt_backup_folder.text()):
+            os.makedirs(self.edt_backup_folder.text())
+        shutil.copy(config_file, dest_config_file)
+
+        cmd = cmd_dump + ' -f {} -F c -h {} -U {} -p {} {}'.format(
+            dest_db_filename,
+            p_host,
+            'postgres',
+            p_port,
+            p_database
+        )
+        
+        with gzip.open(dest_db_filename, 'wb') as f:
+            popen = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                universal_newlines=True
+            )
+        for stdout_line in iter(popen.stdout.readline, ''):
+            f.write(stdout_line.encode('utf-8'))
+        popen.stdout.close()
+        popen.wait()
+        popen = None
+
+        self.set_backup_path()
+        self.set_pgbin_path()
+        return
+
+    def set_backup_path(self):
+        """
+        Set the directory of backup output.
+        :return: True if the directory was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        path = self.edt_backup_folder.text()
+
+        if not path:
+            msg = self.tr('Please set the backup output directory.')
+            self.notif_bar.insertErrorNotification(msg)
+            return False
+
+        #Validate path
+        if not self._check_path_exists(path, self.edt_backup_folder):
+            return False
+
+        #Commit to registry
+        self._reg_config.write({BACKUP_PATH: path})
+        return True
+
+    def set_pgbin_path(self):
+        """
+        Set the PostgreSQl/bin directory.
+        :return: True if the directory was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        path = self.edt_pgbin_folder.text()
+
+        if not path:
+            msg = self.tr('Please set the PostgreSQL/bin directory.')
+            self.notif_bar.insertErrorNotification(msg)
+            return False
+
+        #Validate path
+        if not self._check_path_exists(path, self.edt_pgbin_folder):
+            return False
+
+        #Commit to registry
+        self._reg_config.write({PG_BIN_PATH: path})
+        return True
+
+# To move this part of code to new window later - end
 
     def _on_choose_doc_generator_output_path(self):
         #Slot raised to select directory for doc generator outputs.
@@ -512,6 +670,14 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_document_output_path():
             return False
 
+        #Set backup output path
+        if not self.set_backup_path():
+            return False
+
+        #Set PostgreSQL/bin path
+        if not self.set_pgbin_path():
+            return False
+
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
 
@@ -557,3 +723,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 #self.upgradeButton.setEnabled(False)
         #else:
             #self.upgradeButton.setEnabled(False)
+
+def ErrMessage(message):
+    #Error Message Box
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(message)
+    msg.exec_()

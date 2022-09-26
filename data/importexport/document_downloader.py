@@ -46,6 +46,9 @@ class DocumentDownloader(object):
         if reply.errorString() != 'Unknown error':
             self.download_result = False
         else:
+            dest_path = os.path.dirname(self.dest_filename)
+            if not os.path.exists(dest_path):
+                os.makedirs(dest_path)
             with open(self.dest_filename, 'wb') as f:
                 f.write(reply.readAll())
             self.download_result = True
