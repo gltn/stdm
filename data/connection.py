@@ -26,10 +26,12 @@ class DatabaseConnection(object):
     '''
     Class for capturing the minimum database connection properties
     '''
-    def __init__(self,Host,Port,Database):
+    def __init__(self, Host, Port, Database, user='postgres', password=''):
         self.Host = Host
         self.Port = Port
         self.Database = Database
+        self._user = user
+        self._password = password
         self.User = None
         
     def toAlchemyConnection(self):
@@ -37,9 +39,14 @@ class DatabaseConnection(object):
         Returns the corresponding connection string in SQLAlchemy format
         '''
         if self.User:
-            return "postgresql+psycopg2://%s:%s@%s:%s/%s"%(self.User.UserName,self.User.Password,self.Host,self.Port,self.Database)
+            user = self.User.UserName
+            password = self.User.Password
         else:
-            return None
+            user = self._user
+            password = self._password
+
+        return "postgresql+psycopg2://{}:{}@{}:{}/{}".format(
+                user, password, self.Host, self.Port, self.Database)
     
     def toPsycopg2Connection(self):
         '''

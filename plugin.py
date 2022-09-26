@@ -51,6 +51,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.content_auth_dlg import contentAuthDlg
 from stdm.ui.options_base import OptionsDialog
+from stdm.ui.db_profile_backup import DBProfileBackupDialog
 
 from stdm.ui.view_str import ViewSTRWidget
 from stdm.ui.admin_unit_selector import AdminUnitSelector
@@ -996,6 +997,10 @@ class STDMQGISLoader(object):
                            QApplication.translate("OptionsToolbarAction", "Options"),
                            self.iface.mainWindow())
 
+        self.profile_db_backup_act = QAction(QIcon(":/plugins/stdm/images/icons/export.png"), \
+                                 QApplication.translate("ProfileBackupAction", "Profile & Database Backup"),
+                                 self.iface.mainWindow())
+
         self.manageAdminUnitsAct = QAction(
             QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"),
             QApplication.translate(
@@ -1054,6 +1059,7 @@ class STDMQGISLoader(object):
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
         self.usersAct.triggered.connect(self.manageAccounts)
         self.options_act.triggered.connect(self.on_sys_options)
+        self.profile_db_backup_act.triggered.connect(self.on_profile_db_backup)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
@@ -1083,6 +1089,9 @@ class STDMQGISLoader(object):
 
         options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
         options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
+
+        profile_db_backup_cnt = ContentGroup.contentItemFromQAction(self.profile_db_backup_act)
+        profile_db_backup_cnt.code = "9660f5ab-2ac5-44df-881d-4f2d21ce0632"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -1173,11 +1182,17 @@ class STDMQGISLoader(object):
         self.options_content_group.setContainerItem(self.options_act)
         self.options_content_group.register()
 
+        self.profile_db_backup_group = ContentGroup(username)
+        self.profile_db_backup_group.addContentItem(profile_db_backup_cnt)
+        self.profile_db_backup_group.setContainerItem(self.profile_db_backup_act)
+        self.profile_db_backup_group.register()
+
         #Group admin settings content groups
         adminSettingsCntGroups = []
         adminSettingsCntGroups.append(self.contentAuthCntGroup)
         adminSettingsCntGroups.append(self.userRoleCntGroup)
         adminSettingsCntGroups.append(self.options_content_group)
+        adminSettingsCntGroups.append(self.profile_db_backup_group)
 
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -1269,10 +1284,17 @@ class STDMQGISLoader(object):
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
-        self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
-        self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
-        self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
-                                                                   adminBtn])
+        self.toolbarLoader.addContent(self.contentAuthCntGroup,
+                                                           [adminMenu, adminBtn])
+
+        self.toolbarLoader.addContent(self.userRoleCntGroup,
+                                                           [adminMenu, adminBtn])
+
+        self.toolbarLoader.addContent(self.options_content_group,
+                                                           [adminMenu, adminBtn])
+
+        self.toolbarLoader.addContent(self.profile_db_backup_group,
+                                                           [adminMenu, adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
@@ -1561,13 +1583,22 @@ class STDMQGISLoader(object):
             lambda: self.reload_plugin(None)
         )
 
-        opt_dlg.upgradeButton.clicked.connect(
-            lambda :self.load_configuration_from_file(
-                opt_dlg, True
-            )
-        )
+
+        #opt_dlg.upgradeButton.clicked.connect(
+            #lambda :self.load_configuration_from_file(
+                #opt_dlg, True
+           #)
+        #)
 
         opt_dlg.exec_()
+
+    def on_profile_db_backup(self):
+        """
+        Opens a dialog for making current profile
+        and DB backups.
+        """
+        db_profile_backup_dlg = DBProfileBackupDialog(self.iface)
+        db_profile_backup_dlg.exec_()
 
     def profile_status_message(self):
         """
@@ -1978,6 +2009,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
+            self.stdmInitToolbar.removeAction(self.profile_db_backup_act)
             self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
             self.stdmInitToolbar.removeAction(self.importAct)
             self.stdmInitToolbar.removeAction(self.exportAct)

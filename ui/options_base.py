@@ -19,6 +19,9 @@ email                : stdm@unhabitat.org
 """
 import logging
 from collections import OrderedDict
+import os
+import subprocess
+import shutil
 
 from PyQt4.QtGui import (
     QDialog,
@@ -27,12 +30,14 @@ from PyQt4.QtGui import (
     QIntValidator,
     QMessageBox,
     QApplication)
+
 from PyQt4.QtCore import(
     Qt,
     QDir,
     QTimer,
     SIGNAL,
-    QSettings
+    QSettings,
+    QDateTime
 )
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -51,7 +56,7 @@ from stdm.settings import (
 from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
-    debug_logging,
+    #debug_logging,
     set_debug_logging,
     source_documents_path,
     QGISRegistryConfig,
@@ -63,7 +68,12 @@ from stdm.settings.registryconfig import (
     WIZARD_RUN
 )
 
-from stdm.utils.util import setComboCurrentIndexWithText, version_from_metadata
+from stdm.utils.util import (
+        setComboCurrentIndexWithText, 
+        version_from_metadata,
+        PLUGIN_DIR
+)
+
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
@@ -102,8 +112,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._db_config = DatabaseConfig()
 
         version = version_from_metadata()
-        upgrade_label_text = self.label_9.text().replace('1.4', version)
-        self.label_9.setText(upgrade_label_text)
+
+        #upgrade_label_text = self.label_9.text().replace('1.4', version)
 
         #Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)
@@ -122,9 +132,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_composer_out_folder.clicked.connect(
             self._on_choose_doc_generator_output_path
         )
-        self.upgradeButton.toggled.connect(
-            self.manage_upgrade
-        )
+
+        self.tbBackupFolder.clicked.connect(self.backup_folder_clicked )
+        self.btnBackup.clicked.connect(self.do_backup)
+
+        #self.upgradeButton.toggled.connect(
+        #    self.manage_upgrade
+        #)
 
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
@@ -169,11 +183,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.set_current_sort_order(get_entity_sort_order())
 
         # Debug logging
-        lvl = debug_logging()
-        if lvl:
-            self.chk_logging.setCheckState(Qt.Checked)
-        else:
-            self.chk_logging.setCheckState(Qt.Unchecked)
+        #lvl = debug_logging()
+        #if lvl:
+            #self.chk_logging.setCheckState(Qt.Checked)
+        #else:
+            #self.chk_logging.setCheckState(Qt.Unchecked)
 
     def load_profiles(self):
         """
@@ -277,6 +291,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._set_selected_directory(self.txt_output_dir, self.tr(
             'Document Generator Output Directory')
         )
+
+    def backup_folder_clicked(self):
+        self._set_selected_directory(self.edtBackupFolder, self.tr(
+            'Configuration file and DB backup folder')
+            )
 
     def _set_selected_directory(self, txt_box, title):
         def_path= txt_box.text()
@@ -490,16 +509,16 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not sender is None:
             sender.deleteLater()
 
-    def apply_debug_logging(self):
+    #def apply_debug_logging(self):
         # Save debug logging
-        logger = logging.getLogger('stdm')
+        #logger = logging.getLogger('stdm')
 
-        if self.chk_logging.checkState() == Qt.Checked:
-            logger.setLevel(logging.DEBUG)
-            set_debug_logging(True)
-        else:
-            logger.setLevel(logging.ERROR)
-            set_debug_logging(False)
+        #if self.chk_logging.checkState() == Qt.Checked:
+            #logger.setLevel(logging.DEBUG)
+            #set_debug_logging(True)
+        #else:
+            #logger.setLevel(logging.ERROR)
+            #set_debug_logging(False)
 
     def apply_settings(self):
         """
@@ -528,7 +547,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_document_output_path():
             return False
 
-        self.apply_debug_logging()
+        #self.apply_debug_logging()
 
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
@@ -566,15 +585,16 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             config_updated_val = self.config_updated_dic[
                 CONFIG_UPDATED
             ]
+
             # If failed to upgrade, enable the upgrade button
-            if config_updated_val == '0' or config_updated_val == '-1':
-                self.upgradeButton.setEnabled(True)
+            #if config_updated_val == '0' or config_updated_val == '-1':
+            #    self.upgradeButton.setEnabled(True)
 
             # disable the button if any other value.
-            else:
-                self.upgradeButton.setEnabled(False)
-        else:
-            self.upgradeButton.setEnabled(False)
+            #else:
+            #    self.upgradeButton.setEnabled(False)
+        #else:
+            #self.upgradeButton.setEnabled(False)
 
     def populate_sort_order(self):
         for k, v in self.sort_order.iteritems():
@@ -582,4 +602,35 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         
     def set_current_sort_order(self, data):
         self.cbSortOrder.setCurrentIndex(self.cbSortOrder.findData(data))
+
+    def do_backup(self):
+        self.backup_database()
+        self.backup_config_file()
+
+    def backup_database(self):
+        date_str = QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
+        backup_file = self.txtDatabase.text()+'_'+date_str
+
+        database_name = self.txtDatabase.text()
+        pg_server = self.txtHost.text()
+        pg_port = self.txtPort.text()
+        pg_user = 'postgres'
+        pg_password = 'abc123'
+        pg_backup_folder = self.edtBackupFolder.text()+'/'
+
+        backup_script = PLUGIN_DIR + '/scripts/dbbackup.bat {} {} {} {} {}'.format(
+                database_name, pg_server, pg_port, pg_user, pg_backup_folder)
+        print backup_script
+
+        os.system(backup_script)
+
+        #subprocess.call([backup_script, database_name, pg_server, pg_port, pg_user,
+           # pg_backup_folder])
+
+
+    def backup_config_file(self):
+        con_file = QDir.home().path()+ '/.stdm/configuration.stc'
+        config_backup = self.edtBackupFolder.text()+'/configuration.stc'
+        shutil.copyfile(config_file, config_backup)
+        
 
