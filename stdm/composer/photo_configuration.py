@@ -71,6 +71,8 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         document_type = dom_element.attribute('documentType', '')
         document_type_id = dom_element.attribute('documentTypeId', '-1')
 
+
+
         return PhotoConfiguration(
             linked_table=ph_table,
             source_field=source_col,

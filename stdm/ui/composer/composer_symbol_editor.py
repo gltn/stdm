@@ -41,7 +41,10 @@ from stdm.data.pg_utils import (
     table_column_names,
     geometryType
 )
-from stdm.ui.composer.composer_spcolumn_styler import ComposerSpatialColumnEditor
+from stdm.ui.composer.composer_spcolumn_styler import (
+        ComposerSpatialColumnEditor,
+        SpatialFieldMapping
+)
 from stdm.ui.gui_utils import GuiUtils
 
 WIDGET, BASE = uic.loadUiType(
@@ -136,7 +139,6 @@ class ComposerSymbolEditor(WIDGET, BASE):
     """
     Widget for defining symbology properties for the selected spatial field.
     """
-
     def __init__(self, item: StdmMapLayoutItem, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -151,11 +153,25 @@ class ComposerSymbolEditor(WIDGET, BASE):
 
         # Load fields if the data source has been specified
         self._ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+
         if self._ds_name is not None:
-            self._loadFields()
+            self._load_fields()
 
         # Connect signals
         self._layout.variablesChanged.connect(self.layout_variables_changed)
+
+        if item.name != '':
+            idx = self.cboSpatialFields.findText(item.name)
+            self.cboSpatialFields.setCurrentIndex(idx)
+
+            sfm = SpatialFieldMapping(item.name, item.label_field)
+            sfm.setGeometryType(item.geom_type)
+            sfm.setZoomLevel(float(item.zoom))
+            sfm.setSRID(item.srid)
+            sfm.zoom_type = item.zoom_type
+
+            self.add_styling_widget(sfm)  #(item.name)
+            self.on_add_column_styler_widget()
 
         self.btnAddField.clicked.connect(self.on_add_column_styler_widget)
         self.btnClear.clicked.connect(self.on_clear_tabs)
@@ -250,6 +266,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
         else:
             sp_column_name = sp_field_mapping.spatialField()
             apply_mapping = True
+
         if not self._build_symbol_widget(sp_field_mapping) is None:
             symbolEditor, geomType, srid = self._build_symbol_widget(
                 sp_field_mapping

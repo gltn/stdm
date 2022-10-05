@@ -66,9 +66,12 @@ class TableConfiguration(PhotoConfiguration):
         linked_table_props = TableConfiguration.linked_table_properties(dom_element)
 
         item_id = dom_element.attribute("itemid")
+
         link_table = linked_table_props.linked_table
         source_col = linked_table_props.source_field
         ref_col = linked_table_props.linked_field
+
+        print('TableConfiguration - Linked: ', link_table)
 
         return TableConfiguration(linked_table=link_table,
                                   source_field=source_col,

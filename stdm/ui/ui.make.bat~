@@ -1,0 +1,15 @@
+@echo off
+if [%1]==[] goto usage
+
+set src="%1"
+set ext=.py
+
+call set out=%%src:.ui=%ext%%%
+call "C:\Program Files\QGIS 3.22.7\apps\Python39\python" "C:\Program Files\QGIS 3.22.7\apps\Python39\Lib\site-packages\PyQt5\uic\pyuic.py" %src% -o %out%
+REM call pyuic4.bat %src% -o %out%
+REM copy /Y %out% ..\..\..\..\sandbox\
+goto :eof
+
+:usage
+@echo Usage: %0 ^<ui_file.ui^>
+exit /B 1

@@ -370,6 +370,7 @@ class ChartConfiguration:
         else:
             self._replace_none_by_zero = True
 
+
     @staticmethod
     def create(dom_element: QDomElement):
         """

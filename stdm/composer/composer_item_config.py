@@ -87,6 +87,8 @@ class SaveTemplateConfig(ComposerItemConfig):
     def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self.itemAction.setCheckable(False)
+        count = self.itemAction.receivers(self.itemAction.triggered)
+        print('Triggered Count: ',count)
 
     def action(self):
         saveTemplateAct = QAction(GuiUtils.get_icon("save_tb.png"),
@@ -99,6 +101,7 @@ class SaveTemplateConfig(ComposerItemConfig):
         """
         Save document template.
         """
+        print('** on_action_triggered **')
         self.composerWrapper().saveTemplate()
 
 

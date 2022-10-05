@@ -33,7 +33,9 @@ from qgis.PyQt.QtCore import (
     QThread,
     QCoreApplication,
     QEvent,
-    QIODevice
+    QIODevice,
+    QPointF,
+    QSizeF
 )
 from qgis.PyQt.QtGui import (
     QStandardItemModel,
@@ -52,6 +54,13 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtXml import QDomDocument
 
+from qgis.core import (
+    QgsApplication,
+    QgsProject,
+    QgsPrintLayout,
+    QgsReadWriteContext
+)
+
 from stdm.data.configuration.columns import (
     AdministrativeSpatialUnitColumn,
     MultipleSelectColumn
@@ -69,6 +78,7 @@ from stdm.data.pg_utils import (
     table_column_names,
     pg_table_record_count
 )
+
 from stdm.security.privilege_provider import MultiPrivilegeProvider
 from stdm.settings import (
     current_profile,
@@ -81,6 +91,7 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE
 )
+
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.column_depend import ColumnDepend
@@ -95,6 +106,7 @@ from stdm.ui.wizard.custom_item_model import (
     STRColumnEntitiesModel,
     LookupEntitiesModel
 )
+
 from stdm.ui.wizard.entity_attributes_editor import (
     TenureCustomAttributesEditor
 )
@@ -104,6 +116,40 @@ from stdm.ui.wizard.spatial_tenure_types_dialog import (
     SpatialUnitTenureTypeDialog
 )
 from stdm.utils.util import enable_drag_sort
+
+# ---- Testing Layout converter ------- #
+from stdm.composer.converter import (
+    get_templates
+    #TemplateConverter
+)
+
+from stdm.composer.template_converter import (
+        TemplateConverter
+ )
+
+from stdm.composer.custom_items.label import (
+    STDM_DATA_LABEL_ITEM_TYPE
+)
+from stdm.composer.custom_items.photo import (
+    STDM_PHOTO_ITEM_TYPE
+)
+from stdm.composer.custom_items.table import (
+    STDM_DATA_TABLE_ITEM_TYPE
+)
+from stdm.composer.custom_items.qrcode import (
+   STDM_QR_ITEM_TYPE
+)
+
+from stdm.composer.layout_utils import LayoutUtils
+
+from qgis.core import (
+    QgsLayoutPoint,
+    QgsLayoutSize,
+    QgsUnitTypes,
+    QgsLayoutItemPicture,
+    QgsLayoutFrame
+)
+# ---- Testing Layout converter ------- #
 
 # create logger
 LOGGER = logging.getLogger('stdm')

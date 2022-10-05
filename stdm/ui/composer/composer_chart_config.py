@@ -45,6 +45,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         self.setupUi(self)
 
         self._item = item
+
         self._layout = item.layout()
 
         self._notif_bar = NotificationBar(self.vl_notification)
@@ -73,6 +74,8 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         self.ref_table.set_layout(self._layout)
 
         self.set_from_item()
+
+        print('XXXXXXXXXXXXXXXXXXXx')
 
         # Connect signals
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
@@ -150,6 +153,8 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         :param table: Current table name.
         :type table: str
         """
+        print('on_referenced_table_changed->', table)
+
         curr_editor = self.series_type_container.currentWidget()
         if curr_editor is not None:
             if isinstance(curr_editor, DataSourceNotifier):
@@ -212,6 +217,11 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                 self.ref_table.set_properties(table_props)
                 self.on_referenced_table_changed(table_props.linked_table)
 
+                idx = self.ref_table.cbo_referencing_col.findText(self._item.referencing_field())
+                if idx != -1:
+                    self.ref_table.cbo_referencing_col.setCurrentIndex(idx)
+                    self.ref_table.cbo_referencing_col.currentIndexChanged[str].connect(self.set_referencing_field)
+
                 # Set series editor properties
                 curr_editor = self.series_type_container.currentWidget()
                 if curr_editor is not None:
@@ -230,3 +240,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
                                          "Configuration failed to load. Plot type cannot be determined.")
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(msg)
+
+    def set_referencing_field(self, field: str):
+        self._item.set_referencing_field(field)
+        self._item.update()

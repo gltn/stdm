@@ -222,10 +222,13 @@ class ConfigurationFileSerializer(QObject):
 
         schema_updater.exec_()
 
-        db_updater.upgrade_database()
+        #db_updater.upgrade_database()
+
         # Restore lost views that may have been lost during drop cascade.
         # TODO second time exec_ needs to be removed when schema updater is refactored
-        schema_updater.exec_()
+
+        #schema_updater.exec_()
+        
         # TODO emit update_complete here when the schema updater is refactored
 
     def on_update_progress(self, message):
@@ -279,6 +282,9 @@ class ConfigurationFileSerializer(QObject):
             raise ConfigurationException('Error extracting version '
                                          'number from the '
                                          'configuration file.')
+
+        print("Version: ",StdmConfiguration.instance().VERSION)
+        print("Config Version: ", config_version)
 
         if config_version < StdmConfiguration.instance().VERSION:
             # Upgrade configuration

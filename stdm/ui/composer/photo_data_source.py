@@ -74,6 +74,9 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
             self.update_document_types
         )
 
+        self.ref_table._load_source_table_fields(
+                self._item.linked_table())
+
         self.set_from_item()
 
         self.ref_table.changed.connect(self._item_changed)
@@ -117,6 +120,9 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
         )
         self._item.set_document_type_id(doc_type_id)
 
+        self._item.set_referencing_field(self.ref_table.cbo_referencing_col.currentText())
+        self._item.update()
+
     def set_from_item(self):
         # Load referenced table editor with item configuration settings.
         photo_props = LinkedTableProps(linked_table=self._item.linked_table(),
@@ -129,3 +135,16 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
             self.cbo_document_type,
             self._item.document_type()
         )
+
+        GuiUtils.set_combo_current_index_by_text(
+                self.ref_table.cbo_ref_table,
+                self._item.linked_table()
+                )
+
+
+        GuiUtils.set_combo_current_index_by_text(
+                self.ref_table.cbo_referencing_col,
+                self._item.referencing_field()
+                )
+
+

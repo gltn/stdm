@@ -108,6 +108,7 @@ class ReferencedTableEditor(QWidget):
 
         self._layout = None
 
+
     def _on_changed(self):
         if not self._block_changed:
             self.changed.emit()
@@ -282,8 +283,8 @@ class ReferencedTableEditor(QWidget):
 
             for t in ref_tables:
                 # Ensure we are dealing with tables in the current profile
-                if not t in self._current_profile_tables:
-                    continue
+                #if not t in self._current_profile_tables:
+                    #continue
 
                 # Assert if the table is in the list of omitted tables
                 if t in self._omit_ref_tables:
@@ -300,9 +301,11 @@ class ReferencedTableEditor(QWidget):
             profile_user_views = profile_and_user_views(self._current_profile)
             source_tables = source_tables + profile_user_views
 
+
         self.cbo_ref_table.addItems(source_tables)
 
     def _load_source_table_fields(self, sel):
+
         self.cbo_referencing_col.clear()
         data_source_index = self.cbo_source_field.currentIndex()
         # self.on_data_source_changed(

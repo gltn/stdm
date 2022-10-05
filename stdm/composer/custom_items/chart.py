@@ -43,6 +43,8 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
         self._source_field = None
         self._linked_field = None
 
+        self._referencing_field = None
+
         self._chart_configuration = VerticalBarConfiguration()
 
     def type(self):
@@ -95,6 +97,12 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
         """
         self._linked_field = field
 
+    def referencing_field(self) -> str:
+        return self._referencing_field
+
+    def set_referencing_field(self, value: str):
+        self._referencing_field = value
+
     def chart_configuration(self) -> ChartConfiguration:
         return self._chart_configuration
 
@@ -111,6 +119,11 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
         if self._linked_table:
             element.setAttribute('linked_table', self._linked_table)
 
+        print('< writePropertiesToElemeent: > ',self._referencing_field)
+
+        if self._referencing_field:
+            element.setAttribute('referencing_field', self._referencing_field)
+
         config_element = self._chart_configuration.to_dom_element(document)
         element.appendChild(config_element)
 
@@ -122,6 +135,8 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
         self._linked_field = element.attribute('linked_field') or None
         self._source_field = element.attribute('source_field') or None
         self._linked_table = element.attribute('linked_table') or None
+        self._referencing_field = element.attribute('referencing_field') or None
+
 
         self._chart_configuration = VerticalBarConfiguration.create(element.firstChildElement('Plot'))
 

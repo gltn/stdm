@@ -249,8 +249,8 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
     """
     Updates the configuration version 1.2 to version 1.3.
     """
-    FROM_VERSION = 1.2
-    TO_VERSION = 1.3
+    FROM_VERSION = 1.3
+    TO_VERSION = 1.8
 
     VALIDITY_TAG = 'Validity'
     START_TAG = 'Start'
@@ -421,7 +421,8 @@ class ConfigVersionUpdater13(ConfigurationVersionUpdater):
             self._add_validity(
                 str_element, self.END_TAG, self.MAXIMUM, sql_max
             )
-            parent_node.appendChild(str_element)
+            print(parent_node)
+            #parent_node.appendChild(str_element)
 
 
 ConfigVersionUpdater13.register()

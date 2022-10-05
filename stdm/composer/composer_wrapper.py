@@ -394,6 +394,7 @@ class ComposerWrapper(QObject):
 
             # Load symbol editors
             spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
+
             self._configureSpatialSymbolEditor(spatialFieldsConfig)
 
             # Load table editors
@@ -412,6 +413,8 @@ class ComposerWrapper(QObject):
         Creates and saves a new document template.
         """
         # Validate if the user has specified the data source
+
+        print('** SAVING TMPL **')
 
         if not LayoutUtils.get_stdm_data_source_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
@@ -518,6 +521,7 @@ class ComposerWrapper(QObject):
 
         # Catch exception raised when writing items' elements
         try:
+
             self._writeXML(templateDoc, template_name)
         except DummyException as exc:
             msg = str(exc)

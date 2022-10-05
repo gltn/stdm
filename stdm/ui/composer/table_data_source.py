@@ -57,21 +57,41 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
         # Load fields if the data source has been specified
         ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+
         self.ref_table.load_data_source_fields(ds_name)
+
+        table_name = self._composer_table_item.table
+        datasource_field = self._composer_table_item.datasource_field
+        referencing_field = self._composer_table_item.referencing_field
 
         # Load source tables
         self.ref_table.load_link_tables()
-
         self.ref_table.set_layout(self._layout)
-
-        # self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(self.set_table_vector_layer)
+        if table_name:
+            self.set_table_vector_layer(table_name)
 
         self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
-            self.set_table_vector_layer)
+                self.set_table_vector_layer)
 
         layer_name = self.current_table_layer_name()
+
         idx = self.ref_table.cbo_ref_table.findText(layer_name)
-        self.ref_table.cbo_ref_table.setCurrentIndex(idx)
+        if idx != -1:
+            self.ref_table.cbo_ref_table.setCurrentIndex(idx)
+
+        idx = self.ref_table.cbo_source_field.findText(datasource_field)
+        if idx != -1:
+            self.ref_table.cbo_source_field.setCurrentIndex(idx)
+            self.ref_table.cbo_source_field.currentIndexChanged[str].connect(
+                    self.set_datasource_field
+                    )
+
+        idx = self.ref_table.cbo_referencing_col.findText(referencing_field)
+        if idx != -1:
+            self.ref_table.cbo_referencing_col.setCurrentIndex(idx)
+            self.ref_table.cbo_referencing_col.currentIndexChanged[str].connect(
+                    self.set_referencing_field
+                    )
 
     def composer_item(self):
         return self._composer_table_item
@@ -111,6 +131,15 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
         if len(self.composer_item().columns()) > 0:
             self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
+
+        self._composer_table_item.update()
+
+    def set_datasource_field(self, field: str):
+        self._composer_table_item.set_datasource_field(field)
+        self._composer_table_item.update()
+
+    def set_referencing_field(self, field: str):
+        self._composer_table_item.set_referencing_field(field)
         self._composer_table_item.update()
 
     def configuration(self):
@@ -119,6 +148,7 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
         linked_table_props = self.ref_table.properties()
 
         table_config = TableConfiguration()
+
         table_config.set_linked_table(linked_table_props.linked_table)
         table_config.set_source_field(linked_table_props.source_field)
         table_config.set_linked_column(linked_table_props.linked_field)
