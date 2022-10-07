@@ -1,6 +1,7 @@
 """
 """
 import os
+import sys
 import shutil
 import subprocess
 import json
@@ -70,6 +71,9 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
         self.btnOpenFolder.clicked.connect(self.open_backup_folder)
         self.btnClose.clicked.connect(self.close_dialog)
 
+        self.btnOpenFolder.setEnabled(False)
+        self.edtBackupFolder.textChanged.connect(self.folder_backup_changed)
+
         self.db_config = DatabaseConfig();
 
         self.conn_prop = self.db_config.read()
@@ -77,9 +81,6 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
         self.txtAdmin.setText('postgres')
         self.stdm_config = StdmConfiguration.instance()
         self.load_profiles()
-
-        self.edtAdminPassword.setText('abc123')
-        self.edtBackupFolder.setText('D:/TestBackup')
 
         self.msg_logger = MessageLogger(StdOutHandler)
 
@@ -162,8 +163,24 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
             
             self.show_message('Backup completed successfully.')
 
+    def folder_backup_changed(self, text):
+        self.btnOpenFolder.setEnabled(False if self.edtBackupFolder.text() == '' else True)
+
     def open_backup_folder(self):
-        pass
+        backup_folder = self.edtBackupFolder.text();
+
+        # windows
+        if sys.platform.startswith('win32'):
+            os.startfile(backup_folder)
+
+        # *nix systems
+        if sys.platform.startswith('linux'):
+            subprocess.Popen(['xdg-open', backup_folder])
+
+        # macOS
+        if sys.platform.startswith('darwin'):
+            subprocess.Popen(['open', backup_folder])
+
 
     def close_dialog(self):
         self.done(0)
