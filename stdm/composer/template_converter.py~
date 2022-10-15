@@ -78,7 +78,7 @@ class FileHandler(StreamHandler):
             lf.write('\n')
 
 class MessageLogger:
-    def __init__(self, handler: StreamHandler=StdOutHandler):
+    def __init__(self, handler: StreamHandler):
         self.stream_handler = handler()
 
     def log_error(self, msg: str):
@@ -93,12 +93,14 @@ class TemplateConversionError(Exception):
     pass
 
 # TODO: Let the task class handle exceptions raised by the converter
+
 class TemplateConverterTask(QgsTask):
     def __init__(self, template_path : str): 
         super().__init__('Template Converter Task')
         self.msg_logger = MessageLogger(handler=FileHandler)
         self.template_converter = TemplateConverter(folder=template_path, 
                 ignore_converted=False, logger=self.msg_logger)
+        print('TemplateConverterTask ...  ctor')
 
     def run(self):
         try:
@@ -146,7 +148,7 @@ class TemplateConverter(QObject):
 
         dom_doc = QDomDocument()
         result = dom_doc.setContent(xml_file)
-        return (result, dom_doc)
+        return result, dom_doc
 
     def _file_already_converted(self, file: str) -> bool:
         filename =  self._format_template_filename(file)
@@ -166,10 +168,10 @@ class TemplateConverter(QObject):
                         continue
 
                 filename = '{}{}'.format(self._template_folder, file)
-                status, dom_doc = self._xml_to_domdoc(filename)
-                if status == False:
-                    err_msg = self.tr('Failed to convert template `{}` to DomDocument.')
-                    self.msg_logger.log_error(err_msg.format(file))
+                result, dom_doc = self._xml_to_domdoc(filename)
+                if not result[0]:
+                    err_msg = self.tr('Failed to read the DomDocument `{}`. Error: {}')
+                    self.msg_logger.log_error(err_msg.format(file, result[1]))
                     continue
                 
                 dom_list = dom_doc.elementsByTagName('Composer')  #type: QDomNodeList
@@ -178,6 +180,7 @@ class TemplateConverter(QObject):
 
 
     def convert(self):
+        #TODO Return boolean value
 
         for file_name, dom_doc in self._dom_templates.items():
 
@@ -191,7 +194,13 @@ class TemplateConverter(QObject):
 
             load_tmpl_msg = self.tr('Loading V2 template to layout')
             self.msg_logger.log_info(f'{load_tmpl_msg}...')
-            v2_layout_items = layout.loadFromTemplate(dom_doc, rw_ctx)
+
+            is_template_loaded = True
+            v2_layout_items = layout.loadFromTemplate(dom_doc, rw_ctx, True, is_template_loaded)
+
+            if not is_template_loaded:
+                # log error
+                continue
 
             ds_nodes = dom_doc.elementsByTagName('DataSource')  # QDomNodeList
             node_count = ds_nodes.count()
@@ -371,7 +380,7 @@ class DataLabelItemConverter(BaseLayoutItemConverter):
             return label_items
 
         field_name = element.attribute('name', '')
-        if field_name == '':
+        if not field_name:
             name_msg = self.tr('Missing field name for STDM label item')
             self.log_info(name_msg)
  

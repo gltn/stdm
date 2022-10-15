@@ -30,7 +30,8 @@ from qgis.PyQt.QtCore import (
     QTranslator,
     QCoreApplication,
     Qt,
-    QStandardPaths
+    QStandardPaths,
+    QDir
 )
 from qgis.PyQt.QtGui import (
     QKeySequence
@@ -48,7 +49,8 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     QgsProject,
     QgsMapLayer,
-    QgsApplication
+    QgsApplication,
+    QgsTask
 )
 from qgis.gui import (
     QgsLayoutDesignerInterface
@@ -141,7 +143,6 @@ from stdm.utils.util import (
 from stdm.utils.util import simple_dialog
 
 from stdm.composer.template_converter import (
-        TemplateConverter,
         TemplateConverterTask
 )
 
@@ -455,24 +456,39 @@ class STDMQGISLoader:
 
     def start_q2toq3_template_conversion(self):
         template_path = '{}{}'.format(composer_template_path(),'/')
-        template_converter = TemplateConverter(folder=template_path, ignore_converted=False)
         template_conversion_task = TemplateConverterTask(template_path)
-        template_conversion_task.taskCompleted.connect(
-                self.template_conversion_completed)
 
         qgs_app = QgsApplication.instance()
         task_manager = qgs_app.taskManager()
         task_manager.addTask(template_conversion_task)
 
-        print('Start ...')
+        template_conversion_task.statusChanged.connect(
+                self.template_conversion_status_changed)
 
-    def template_conversion_completed(self):
+        QgsApplication.processEvents()
+
+
+    def template_conversion_status_changed(self, status):
         # Show message in the status bar
-        message = QApplication.translate(
-                'STDMQGISLoader',
-                'Template conversion completed.')
-        two_seconds = 2000;
-        self.iface.statusBarIface().showMessage(message, two_seconds)
+        title = QApplication.translate(
+                'STDMQGISLoader', 'Template Conversion')
+
+        message_bar = self.iface.messageBar()
+        message_bar.clearWidgets()
+        if status == QgsTask.Running:
+            message_bar.pushInfo(title, 
+                    QApplication.translate('STDMQGISLoader',
+                        'Process started...'))
+
+        elif status == QgsTask.Terminated:
+            message_bar.pushWarning(title, 
+                    QApplication.translate('STDMQGISLoader',
+                        'Process terminated due to an error.'))
+
+        elif status == QgsTask.Complete:
+            message_bar.pushSuccess(title, 
+                    QApplication.translate('STDMQGISLoader',
+                        'Process completed successfully'))
 
 
     def create_custom_tenure_dummy_col(self):
