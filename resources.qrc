@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/data_backup.png</file>
     <file>images/icons/mobile_collect.png</file>
     <file>images/icons/mobile_data_management.png</file>
     <file>images/icons/mobile_import.png</file>
@@ -107,7 +108,7 @@
     <file>images/icons/custom_tenure.png</file>
     <file>images/icons/advanced_search.png</file>
     <file>images/icons/expression.png</file>
-	<file>images/icons/qrcode.png</file>
-	<file>images/icons/qrcode_512.png</file>
+    <file>images/icons/qrcode.png</file>
+    <file>images/icons/qrcode_512.png</file>
   </qresource>
 </RCC>

@@ -1,11 +1,15 @@
 """
+- Add standard header here!!
+- Modify the message box after completing the process (open backup folder ...)
 """
 import os
 import sys
 import shutil
-import subprocess
 import json
 from zipfile import ZipFile
+
+import subprocess
+from subprocess import Popen
 
 from PyQt4.QtGui import (
         QDialog,
@@ -68,11 +72,7 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
 
         self.tbBackupFolder.clicked.connect(self.backup_folder_clicked)
         self.btnBackup.clicked.connect(self.do_backup)
-        self.btnOpenFolder.clicked.connect(self.open_backup_folder)
         self.btnClose.clicked.connect(self.close_dialog)
-
-        self.btnOpenFolder.setEnabled(False)
-        self.edtBackupFolder.textChanged.connect(self.folder_backup_changed)
 
         self.db_config = DatabaseConfig();
 
@@ -105,12 +105,12 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
     def do_backup(self):
         if self.edtAdminPassword.text() == '':
             msg = self.tr('Please enter password for user `postgres`')
-            self.show_message(msg)
+            self.show_message(msg, QMessageBox.Critical)
             return False
 
         if self.edtBackupFolder.text() == '':
             msg = self.tr('Please select a backup folder')
-            self.show_message(msg)
+            self.show_message(msg, QMessageBox.Critical)
             return False
 
         db_con = DatabaseConnection(self.conn_prop.Host, self.conn_prop.Port,
@@ -161,10 +161,21 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
 
                     self._remove_compressed_files(compressed_files)
             
-            self.show_message('Backup completed successfully.')
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Information)
+            msg_box.setText(self.tr('Backup completed successfully.'))
+            msg_box.setInformativeText(self.tr('Do you want to open the backup folder?'))
+            msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Close)
+            msg_box.setDefaultButton(QMessageBox.Close)
+            save_btn = msg_box.button(QMessageBox.Save)
+            save_btn.setText('Open Backup Folder')
+            close_btn = msg_box.button(QMessageBox.Close)
 
-    def folder_backup_changed(self, text):
-        self.btnOpenFolder.setEnabled(False if self.edtBackupFolder.text() == '' else True)
+            msg_box.exec_()
+            if msg_box.clickedButton() == save_btn:
+                self.open_backup_folder()
+            if msg_box.clickedButton() == close_btn:
+                self.close_dialog()
 
     def open_backup_folder(self):
         backup_folder = self.edtBackupFolder.text();
@@ -181,7 +192,6 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
         if sys.platform.startswith('darwin'):
             subprocess.Popen(['open', backup_folder])
 
-
     def close_dialog(self):
         self.done(0)
 
@@ -191,17 +201,19 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
         return backup_file
 
     def backup_database(self, database, user, password, backup_filepath):
-        backup_script = PLUGIN_DIR + '/scripts/dbbackup.bat {} {} {} {} {}'.format(
-                database.Database, database.Host, database.Port, user,
-                backup_filepath)
-        #os.system(backup_script)
-        try:
-            subprocess.check_call(backup_script)
-        except subprocess.CallProcessError:
-            self.log_error('DB Backup Failed!')
-            return False
+        script_name = PLUGIN_DIR + '/scripts/dbbackup.bat'
 
-        return True
+        startup_info = subprocess.STARTUPINFO()
+        startup_info.dwFlags |=subprocess.STARTF_USESHOWWINDOW
+        process = subprocess.Popen([script_name, database.Database, 
+            database.Host, database.Port, user, backup_filepath], startupinfo=startup_info)
+
+        stdout, stderr = process.communicate()
+        process.wait()
+
+        result_code = process.returncode
+
+        return True if result_code == 0 else False
 
 
     def backup_config_file(self, config_filepath, backup_filepath):
@@ -209,13 +221,12 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
 
     def compress_backup(self, compressed_filename, backup_folder, files):
         """
-        type files: list
+        param: files
+        type: list
         """
         dtime =QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
         zip_filepath = '{}{}{}{}{}{}'.format(backup_folder, '/', 
                 compressed_filename, '_',dtime,'.zip')
-
-        print zip_filepath
 
         try:
             self.write_zip_file(files, zip_filepath)
@@ -255,9 +266,10 @@ class DBProfileBackupDialog(QDialog, Ui_dlgDBProfileBackup):
             for file in file_list:
                 zf.write(file)
 
-    def show_message(self, msg):
+    def show_message(self, msg, icon_type):
         msg_box = QMessageBox()
         msg_box.setText(msg)
+        msg_box.setIcon(icon_type)
         msg_box.exec_()
 
 
