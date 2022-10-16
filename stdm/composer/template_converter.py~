@@ -80,38 +80,43 @@ class FileHandler(StreamHandler):
 class MessageLogger:
     def __init__(self, handler: StreamHandler):
         self.stream_handler = handler()
+        self._tag_name = ''
 
     def log_error(self, msg: str):
-        log_msg = f'ERROR: {msg}'
+        #log_msg = f'{msg}'
+        log_msg = '{} [{}]: {}'.format('ERROR', self.tag_name(), msg)
         self.stream_handler.log(log_msg)
 
     def log_info(self, msg: str):
-        log_msg = f'INFO: {msg}'
+        #log_msg = f'{msg}'
+        log_msg = '{} [{}]: {}'.format('INFO', self.tag_name(), msg)
         self.stream_handler.log(log_msg)
+
+    def set_tag_name(self, tag):
+        self._tag_name = tag
+
+    def tag_name(self):
+        return self._tag_name
 
 class TemplateConversionError(Exception):
     pass
-
-# TODO: Let the task class handle exceptions raised by the converter
 
 class TemplateConverterTask(QgsTask):
     def __init__(self, template_path : str): 
         super().__init__('Template Converter Task')
         self.msg_logger = MessageLogger(handler=FileHandler)
+        self.msg_logger.set_tag_name('Task')
         self.template_converter = TemplateConverter(folder=template_path, 
                 ignore_converted=False, logger=self.msg_logger)
-        print('TemplateConverterTask ...  ctor')
 
     def run(self):
-        try:
-            self.template_converter.convert()
+        is_clean_conversion = self.template_converter.convert()
+        if is_clean_conversion:
             msg = self.tr('Template conversion task completed successfully.')
-            self.msg_logger.log_info(msg)
-            return True
-        except TemplateConversionError:
-            msg = self.tr('Error converting templates! See log files for details')
-            self.msg_logger.log_error(msg)
-            return False
+        else:
+            msg = self.tr('Template conversion completed but with errors. This log file has details')
+        self.msg_logger.log_info(msg)
+        return is_clean_conversion
 
 
 class TemplateConverter(QObject):
@@ -124,6 +129,8 @@ class TemplateConverter(QObject):
         self.msg_logger = logger
         
         self._dom_templates = {}
+
+        self.is_clean_conversion = True
 
         if self._template_folder:
             self._load_templates()
@@ -172,17 +179,18 @@ class TemplateConverter(QObject):
                 if not result[0]:
                     err_msg = self.tr('Failed to read the DomDocument `{}`. Error: {}')
                     self.msg_logger.log_error(err_msg.format(file, result[1]))
+                    self.is_clean_conversion = False
                     continue
                 
                 dom_list = dom_doc.elementsByTagName('Composer')  #type: QDomNodeList
                 if dom_list.count() > 0:
                     self._dom_templates[file] = dom_doc
 
-
-    def convert(self):
-        #TODO Return boolean value
+    def convert(self) -> bool:
+        template_conversion_errors = {}
 
         for file_name, dom_doc in self._dom_templates.items():
+            self.msg_logger.set_tag_name('TemplateConverter')
 
             init_msg = self.tr('Preparing to convert template')
             self.msg_logger.log_info(f'{init_msg} {file_name}...')
@@ -195,22 +203,29 @@ class TemplateConverter(QObject):
             load_tmpl_msg = self.tr('Loading V2 template to layout')
             self.msg_logger.log_info(f'{load_tmpl_msg}...')
 
-            is_template_loaded = True
-            v2_layout_items = layout.loadFromTemplate(dom_doc, rw_ctx, True, is_template_loaded)
+            template_loaded_ok = True
+            v2_layout_items, template_loaded_ok = layout.loadFromTemplate(dom_doc, rw_ctx)
 
-            if not is_template_loaded:
-                # log error
+            if not template_loaded_ok:
+                err_msg = f'Error loading template `{file_name}`. File skipped.'
+                self.msg_logger.log_error(err_msg)
+                template_conversion_errors[file_name] = 'Error loading template'
+                self.is_clean_conversion = 'False'
                 continue
 
             ds_nodes = dom_doc.elementsByTagName('DataSource')  # QDomNodeList
             node_count = ds_nodes.count()
             if node_count == 0:
-                msg = self.tr('STDM data source node not found')
+                msg = self.tr(f'Template data source for file `{file_name}` not found. File skipped.')
                 self.msg_logger.log_error(msg)
+                template_conversion_errors[file_name] = 'Error template missing data source'
+                self.is_clean_conversion = 'False'
                 continue
 
             ds_first_node = ds_nodes.at(0)
             stdm_item_nodes = ds_first_node.childNodes()
+
+            converter_errors = {}
 
             for n in range(stdm_item_nodes.count()):
                 stdm_node = stdm_item_nodes.item(n)
@@ -225,8 +240,15 @@ class TemplateConverter(QObject):
 
                 if converter_cls:
                     converter = converter_cls(layout, stdm_node, dom_doc, self.msg_logger)
+                    layout_items, conversion_succeded = converter.convert()
 
-                    layout_items = converter.convert()
+                    if not conversion_succeded:
+                        if node_name in converter_errors:
+                            converter_errors[node_name] += 1
+                        else:
+                            converter_errors[node_name] = 1
+
+                    self.msg_logger.set_tag_name('TemplateConverter')
                     if len(layout_items) == 0:
                         self.msg_logger.log_info('No {} items to convert.'.format(node_name))
                         continue
@@ -234,6 +256,7 @@ class TemplateConverter(QObject):
                     for layout_item in layout_items:
                         layout.addLayoutItem(layout_item)
                 else:
+                    self.msg_logger.set_tag_name('TemplateConverter')
                     # Multi-frame converter
                     converter_cls = BaseLayoutItemConverter.multiframe_cls_by_node_name(node_name)
 
@@ -243,8 +266,15 @@ class TemplateConverter(QObject):
                         continue
 
                     converter = converter_cls(layout, stdm_node, dom_doc, self.msg_logger)
+                    multiframe_items, conversion_succeded = converter.convert()
 
-                    multiframe_items = converter.convert()
+                    if not conversion_succeded:
+                        if node_name in converter_errors:
+                            converter_errors[node_name] += 1
+                        else:
+                            converter_errors[node_name] = 1
+
+                    self.msg_logger.set_tag_name('TemplateConverter')
                     if len(multiframe_items) == 0:
                             self.msg_logger.log_info('No {} items to convert.'.format(node_name))
                             continue
@@ -260,6 +290,7 @@ class TemplateConverter(QObject):
 
                 new_filename = self._format_template_filename(file_name)
 
+            self.msg_logger.set_tag_name('TemplateConverter')
             full_filename = '{}{}'.format(self._template_folder, new_filename)
 
             if self.write_file(layout, rw_ctx, full_filename):
@@ -268,6 +299,11 @@ class TemplateConverter(QObject):
             else:
                 file_created_msg = self.tr('Failed to create file `{}`'.format(new_filename))
                 self.msg_logger.log_error(file_created_msg)
+
+            if len(converter_errors) > 0:
+                self.is_clean_conversion = False
+
+        return self.is_clean_conversion
 
     def _format_template_filename(self, filename: str) -> str:
         name, ext = (*filename.rsplit('.', maxsplit=1),)
@@ -312,11 +348,20 @@ class BaseLayoutItemConverter(QObject):
     def  document(self) -> QDomDocument:
         return self._source_document
 
+    @property
+    def node_name(self) -> str:
+        return BaseLayoutItemConverter.NODE_NAME
+
     def log_info(self, msg: str):
+        #info_msg = '{} [{}]: {}'.format('INFO', self._logger.tag_name(), msg)
         self._logger.log_info(msg)
 
     def log_error(self, msg: str):
+        #error_msg = '{} [{}]: {}'.format('INFO', self._logger.tag_name(), msg)
         self._logger.log_error(msg)
+
+    def set_logger_tag_name(self, tag: str):
+        self._logger.set_tag_name(tag)
 
     @classmethod
     def register(cls):
@@ -359,7 +404,10 @@ class DataLabelItemConverter(BaseLayoutItemConverter):
     NODE_NAME = 'DataField'
 
     def convert(self) -> List[QgsLayoutItemLabel]:
-        conv_msg = self.tr(f'Converting Data Label item...{STDM_DATA_LABEL_ITEM_TYPE}')
+        self.set_logger_tag_name(DataLabelItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'Data Label Converter... {STDM_DATA_LABEL_ITEM_TYPE}')
         self.log_info(conv_msg)
 
         label_items = []
@@ -377,12 +425,13 @@ class DataLabelItemConverter(BaseLayoutItemConverter):
             id_msg = self.tr('Previous data label Item with id {} not found.'.format(
                 element_id))
             self.log_error(id_msg)
-            return label_items
+            return label_items, False
 
         field_name = element.attribute('name', '')
         if not field_name:
             name_msg = self.tr('Missing field name for STDM label item')
-            self.log_info(name_msg)
+            self.log_error(name_msg)
+            is_clean_conversion = False
  
         stdm_label_item.set_linked_field(field_name)
         stdm_label_item.setText(prev_v2_item.text())
@@ -397,7 +446,7 @@ class DataLabelItemConverter(BaseLayoutItemConverter):
 
         label_items.append(stdm_label_item)
 
-        return label_items
+        return label_items, is_clean_conversion
 
 DataLabelItemConverter.register()
 
@@ -405,7 +454,10 @@ class PhotoItemConverter(BaseLayoutItemConverter):
     NODE_NAME = 'Photos'
 
     def convert(self) -> List[QgsLayoutItemPicture]:
-        conv_msg = self.tr(f'Converting Photo item...{STDM_PHOTO_ITEM_TYPE}')
+        self.set_logger_tag_name(PhotoItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'Photo item Converter... {STDM_PHOTO_ITEM_TYPE}')
         self.log_info(conv_msg)
         photo_items = []
 
@@ -434,6 +486,7 @@ class PhotoItemConverter(BaseLayoutItemConverter):
                 id_msg = self.tr('Previous photo item with id {} not found.'.format(
                     item_id))
                 self.log_error(id_msg)
+                is_clean_conversion = False
                 continue
 
             stdm_photo_item.attemptMove(prev_v2_item.positionWithUnits())
@@ -448,7 +501,7 @@ class PhotoItemConverter(BaseLayoutItemConverter):
 
             self.layout.removeLayoutItem(prev_v2_item)
 
-        return photo_items
+        return photo_items, is_clean_conversion
  
 PhotoItemConverter.register()
 
@@ -456,7 +509,10 @@ class ChartItemConverter(BaseLayoutItemConverter):
     NODE_NAME  = 'Charts'
 
     def convert(self) -> List[QgsLayoutItemPicture]:
-        conv_msg = self.tr(f'Converting Chart item...{STDM_CHART_ITEM_TYPE}')
+        self.set_logger_tag_name(ChartItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'Chart item Converter... {STDM_CHART_ITEM_TYPE}')
         self.log_info(conv_msg)
         chart_items = []
 
@@ -484,6 +540,7 @@ class ChartItemConverter(BaseLayoutItemConverter):
                 id_msg = self.tr('Previous chart item with id {} not found.'.format(
                     item_id))
                 self.log_error(id_msg)
+                is_clean_conversion = False
                 continue
 
             stdm_chart_item.attemptMove(prev_v2_item.positionWithUnits())
@@ -498,7 +555,7 @@ class ChartItemConverter(BaseLayoutItemConverter):
 
             self.layout.removeLayoutItem(prev_v2_item)
 
-        return chart_items
+        return chart_items, is_clean_conversion
     
 ChartItemConverter.register()
 
@@ -506,7 +563,10 @@ class TableItemConverter(BaseLayoutItemConverter):
     NODE_NAME  = 'Tables'
 
     def convert(self) -> QgsLayoutItemAttributeTable:
-        conv_msg = self.tr(f'Converting Table item...{STDM_DATA_TABLE_ITEM_TYPE}')
+        self.set_logger_tag_name(TableItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'Table item Converter... {STDM_DATA_TABLE_ITEM_TYPE}')
         self.log_info(conv_msg)
         table_items = []
 
@@ -538,6 +598,10 @@ class TableItemConverter(BaseLayoutItemConverter):
             item_id = element.attribute('itemid')
 
             if item_id is None:
+                id_msg = self.tr('Previous map item with id {} not found.'.format(
+                    item_id))
+                self.log_error(id_msg)
+                is_clean_conversion = False
                 continue
 
             prev_v2_frame = qgis_v2_frames[item_id]
@@ -557,7 +621,7 @@ class TableItemConverter(BaseLayoutItemConverter):
 
             self.layout.removeLayoutItem(prev_v2_frame)
 
-        return table_items
+        return table_items, is_clean_conversion
     
 TableItemConverter.register_multiframe()
 
@@ -566,7 +630,10 @@ class MapItemConverter(BaseLayoutItemConverter):
     NODE_NAME = 'SpatialFields'
     
     def convert(self)-> List[QgsLayoutItemMap]:
-        conv_msg = self.tr(f'Converting Map item... {STDM_MAP_ITEM_TYPE}')
+        self.set_logger_tag_name(MapItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'Map item Converter... {STDM_MAP_ITEM_TYPE}')
         self.log_info(conv_msg)
 
         map_items = []
@@ -595,6 +662,7 @@ class MapItemConverter(BaseLayoutItemConverter):
                 msg = self.tr('Previous map item with id {} not found.'.format(
                         item_id))
                 self.log_error(msg)
+                is_clean_conversion = False
                 continue
 
             stdm_map_item.attemptMove(prev_v2_item.positionWithUnits())
@@ -607,7 +675,7 @@ class MapItemConverter(BaseLayoutItemConverter):
 
             self.layout.removeLayoutItem(prev_v2_item)
 
-        return map_items
+        return map_items, is_clean_conversion
 
 MapItemConverter.register()
 
@@ -616,7 +684,10 @@ class QRCodeItemConverter(BaseLayoutItemConverter):
     NODE_NAME  = 'QRCodes'
 
     def convert(self) -> List[QgsLayoutItemPicture]:
-        conv_msg = self.tr(f'Converting QRCode item...{STDM_QR_ITEM_TYPE}')
+        self.set_logger_tag_name(QRCodeItemConverter.NODE_NAME)
+        is_clean_conversion = True
+
+        conv_msg = self.tr(f'QRCode item Converter QRCode... {STDM_QR_ITEM_TYPE}')
         self.log_info(conv_msg)
         qrcode_items = []
 
@@ -632,6 +703,7 @@ class QRCodeItemConverter(BaseLayoutItemConverter):
             if prev_v2_item is None:
                 id_msg = self.tr('Previous QRCode item with id {} not found.'.format(item_id))
                 self.log_error(id_msg)
+                is_clean_conversion = False
                 continue
 
             stdm_qr_metadata = layout_item_registry.itemMetadata(STDM_QR_ITEM_TYPE)
@@ -647,6 +719,6 @@ class QRCodeItemConverter(BaseLayoutItemConverter):
 
             self.layout.removeLayoutItem(prev_v2_item)
 
-        return qrcode_items
+        return qrcode_items, is_clean_conversion
     
 QRCodeItemConverter.register()
