@@ -1,3 +1,22 @@
+"""
+/***************************************************************************
+Name                 : TemplateConverter
+Description          : Class to convert STDM templates for QGIS2 to QGIS3
+Date                 : 01/10/2022
+copyright            : (C) 2016 by UN-Habitat and implementing partners.
+                       See the accompanying file CONTRIBUTORS.txt in the root
+email                : stdm@unhabitat.org
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+"""
 import os
 
 from typing import (
@@ -6,7 +25,7 @@ from typing import (
         Dict
  )
 
-from PyQt5.QtCore import (
+from qgis.PyQt.QtCore import (
         QObject,
         QFile,
         QIODevice,

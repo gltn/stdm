@@ -6,7 +6,7 @@ from typing import (
         Dict
  )
 
-from PyQt5.QtCore import (
+from qgis.PyQt.QtCore import (
         QObject,
         QFile,
         QIODevice,

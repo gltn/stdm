@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>710</width>
-    <height>631</height>
+    <width>777</width>
+    <height>706</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,15 +39,15 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>692</width>
-        <height>576</height>
+        <width>755</width>
+        <height>640</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5">
        <item row="0" column="0">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="tabGeneral">
           <attribute name="title">
@@ -434,6 +434,13 @@
             <widget class="QCheckBox" name="chk_logging">
              <property name="text">
               <string>Debug logging</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="cbTempConv">
+             <property name="text">
+              <string>Run template converter on start-up</string>
              </property>
             </widget>
            </item>

@@ -42,6 +42,7 @@ STDM_PLUGIN = 'stdm'
 STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 ENTITY_SORT_ORDER = 'EntitySortOrder'
+RUN_TEMPLATE_CONVERTER = 'RunTemplateConverter'
 
 
 def registry_value(key_name):
@@ -132,6 +133,13 @@ def set_debug_logging(state):
 
     set_registry_value(DEBUG_LOG, lvl)
 
+def set_run_template_converter_on_startup(state: bool):
+    value = 'True' if state else 'False'
+    set_registry_value(RUN_TEMPLATE_CONVERTER, value) 
+
+def run_template_converter_on_startup() -> bool:
+    value = registry_value(RUN_TEMPLATE_CONVERTER)
+    return True if value == 'True' else False
 
 def set_last_document_path(path):
     """

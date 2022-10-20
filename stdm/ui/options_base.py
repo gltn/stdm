@@ -64,7 +64,9 @@ from stdm.settings.registryconfig import (
     COMPOSER_OUTPUT,
     COMPOSER_TEMPLATE,
     NETWORK_DOC_RESOURCE,
-    CONFIG_UPDATED
+    CONFIG_UPDATED,
+    set_run_template_converter_on_startup,
+    run_template_converter_on_startup
 )
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.gui_utils import GuiUtils
@@ -192,6 +194,12 @@ class OptionsDialog(WIDGET, BASE):
         else:
             self.chk_logging.setCheckState(Qt.Unchecked)
 
+        # Template converter
+        value = run_template_converter_on_startup()
+        if value:
+            self.cbTempConv.setCheckState(Qt.Checked)
+        else:
+            self.cbTempConv.setCheckState(Qt.Unchecked)
 
     def profile_changed(self):
         self.init_sorting_widgets(self.cbo_profiles.currentText())
@@ -556,6 +564,11 @@ class OptionsDialog(WIDGET, BASE):
         if not self.set_document_output_path():
             return False
 
+        if self.cbTempConv.checkState() == Qt.Checked:
+            set_run_template_converter_on_startup(True)
+        else:
+            set_run_template_converter_on_startup(False)
+
         self.apply_debug_logging()
 
         # Set Entity browser record limit
@@ -577,33 +590,6 @@ class OptionsDialog(WIDGET, BASE):
             return
 
         self.accept()
-
-    #def manage_upgrade(self):
-        #"""
-        #A slot raised when the upgrade button is clicked.
-        #It disables or enables the upgrade
-        #button based on the ConfigUpdated registry value.
-        #txt = 'Upgrade STDM Configuration to 1.4'
-        #"""
-
-        #self.config_updated_dic = self._reg_config.read(
-            #[CONFIG_UPDATED]
-        #)
-
-        ## if config file exists, check if registry key exists
-        #if len(self.config_updated_dic) > 0:
-            #config_updated_val = self.config_updated_dic[
-                #CONFIG_UPDATED
-            #]
-            ## If failed to upgrade, enable the upgrade button
-            #if config_updated_val == '0' or config_updated_val == '-1':
-                #self.upgradeButton.setEnabled(True)
-
-            ## disable the button if any other value.
-            #else:
-                #self.upgradeButton.setEnabled(False)
-        #else:
-            #self.upgradeButton.setEnabled(False)
 
     def add_sorting_column(self):
         sort_record = self.profile_entity_widget.make_sorting_record()
