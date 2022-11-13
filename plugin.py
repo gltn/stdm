@@ -1594,8 +1594,7 @@ class STDMQGISLoader(object):
 
     def on_profile_db_backup(self):
         """
-        Opens a dialog for making current profile
-        and DB backups.
+        Opens a backup dialog.
         """
         db_profile_backup_dlg = DBProfileBackupDialog(self.iface)
         db_profile_backup_dlg.exec_()
