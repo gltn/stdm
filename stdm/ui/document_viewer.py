@@ -537,7 +537,7 @@ class DocumentViewManager(QMainWindow):
             win_action.triggered.connect(self._viewer_mapper.map)
             self._viewer_mapper.setMapping(win_action, window)
 
-    def load_viewer(self, document_widget, visible=True):
+    def load_viewer(self, document_widget, visible=True) -> bool:
         """
         Open a new instance of the viewer or activate an existing one if the
         document had been previously loaded.

@@ -20,6 +20,7 @@ import logging
 import uuid
 from datetime import date, datetime
 from numbers import Number
+from enum import Enum
 
 from qgis.PyQt.QtCore import (
     QObject,
@@ -42,7 +43,8 @@ from qgis.core import (
     QgsProject,
     QgsVectorLayer,
     QgsWkbTypes,
-    QgsReadWriteContext
+    QgsReadWriteContext,
+    QgsLayoutExporter
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.schema import (
@@ -77,6 +79,14 @@ from stdm.utils.util import PLUGIN_DIR
 
 LOGGER = logging.getLogger('stdm')
 
+class LayoutExportResult(Enum):
+    Success = 0
+    Canceled = 1
+    MemoryError = 2
+    FileError = 3
+    PrintError = 4
+    SvgLayerError = 5
+    IteratorError = 6
 
 class DocumentGenerator(QObject):
     """
@@ -302,28 +312,36 @@ class DocumentGenerator(QObject):
             Iterate through records where a single file output will be generated for each matching record.
             """
 
+            project = QgsProject().instance()
+
             for rec in records:
-                composition = QgsPrintLayout(self._map_settings)
+                #composition = QgsPrintLayout(self._map_settings)
+                print_layout = QgsPrintLayout(project)
+                print_layout.initializeDefaults()
+
                 context = QgsReadWriteContext()
-                composition.loadFromTemplate(templateDoc, context)
+                print_layout.loadFromTemplate(templateDoc, context)
                 ref_layer = None
                 # Set value of composer items based on the corresponding db values
                 for composerId in composerDS.dataFieldMappings().reverse:
                     # Use composer item id since the uuid is stripped off
-                    composerItem = composition.itemById(composerId)
+                    composerItem = print_layout.itemById(composerId)
+
                     if composerItem is not None:
                         fieldName = composerDS.dataFieldName(composerId)
+                        if fieldName == '':
+                            continue
                         fieldValue = getattr(rec, fieldName)
                         self._composeritem_value_handler(composerItem, fieldValue)
 
                 # Extract photo information
-                self._extract_photo_info(composition, ph_config_collection, rec)
+                self._extract_photo_info(print_layout, ph_config_collection, rec)
 
                 # Set table item values based on configuration information
-                self._set_table_data(composition, table_config_collection, rec)
+                self._set_table_data(print_layout, table_config_collection, rec)
 
                 # Refresh non-custom map composer items
-                self._refresh_composer_maps(composition,
+                self._refresh_composer_maps(print_layout,
                                             list(spatialFieldsConfig.spatialFieldsMapping().keys()))
 
                 # Set use fixed scale to false i.e. relative zoom
@@ -332,7 +350,7 @@ class DocumentGenerator(QObject):
                 # Create memory layers for spatial features and add them to the map
                 for mapId, spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
 
-                    map_item = composition.itemById(mapId)
+                    map_item = print_layout.itemById(mapId)
 
                     if map_item is not None:
                         # Clear any previous map memory layer
@@ -411,14 +429,14 @@ class DocumentGenerator(QObject):
                         self._refresh_map_item(map_item, use_fixed_scale)
 
                 # Extract chart information and generate chart
-                self._generate_charts(composition, chart_config_collection, rec)
+                self._generate_charts(print_layout, chart_config_collection, rec)
 
                 # Extract QR code information in order to generate QR codes
-                self._generate_qr_codes(composition, qrc_config_collection, rec)
+                self._generate_qr_codes(print_layout, qrc_config_collection, rec)
 
-                # Build output path and generate composition
+                # Build output path and generate print_layout
                 if filePath is not None and len(dataFields) == 0:
-                    self._write_output(composition, outputMode, filePath)
+                    self._write_output(print_layout, outputMode, filePath)
 
                 elif filePath is None and len(dataFields) > 0:
                     entityFieldName = 'id'
@@ -443,11 +461,19 @@ class DocumentGenerator(QObject):
                                                               "Output directory does not exist"))
 
                     absDocPath = "{0}/{1}".format(outputDir, docFileName)
-                    self._write_output(composition, outputMode, absDocPath)
+
+                    write_result = self._write_output(print_layout, outputMode, absDocPath)
+
+                    if write_result == LayoutExporterResult.MemoryError:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                              "Unable to allocate memory required to export"))
+                    if write_result == LayoutExportResult.FileError:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                              "Could not write to destination file, likely due to a lock held by anther application"))
 
             return True, "Success"
 
-        return False, "Document composition could not be generated"
+        return False, "Document Print Layout could not be generated"
 
     def format_entity_field_name(self, composer_datasource, entity):
         if '_vw_' in composer_datasource:
@@ -549,7 +575,7 @@ class DocumentGenerator(QObject):
         the template file.
         :type config_collection: TableConfigurationCollection
         """
-        table_configs = list(config_collection.items()).values()
+        table_configs = list(config_collection.items().values())
 
         v_layers = []
 
@@ -584,7 +610,7 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
-        table_configs = list(config_collection.items()).values()
+        table_configs = list(config_collection.items().values())
 
         for conf in table_configs:
             table_handler = conf.create_handler(composition, self._exec_query)
@@ -603,7 +629,7 @@ class DocumentGenerator(QObject):
         :type record: object
         """
 
-        chart_configs = list(config_collection.items()).values()
+        chart_configs = list(config_collection.items().values())
 
         for cc in chart_configs:
             chart_handler = cc.create_handler(composition, self._exec_query)
@@ -622,25 +648,26 @@ class DocumentGenerator(QObject):
         :type record: object
         """
 
-        qrc_configs = list(config_collection.items()).values()
+        qrc_configs = list(config_collection.items().values())
 
         for qrc in qrc_configs:
             qrc_handler = qrc.create_handler(composition, self._exec_query)
             qrc_handler.set_data_source_record(record)
 
-    def _extract_photo_info(self, composition, config_collection, record):
+    def _extract_photo_info(self, composition: QgsPrintLayout,
+            config_collection: PhotoConfigurationCollection, record):
         """
         Extracts the photo information from the config using the record value
         and builds an absolute path for use by the picture composer item.
         :param composition: Map composition.
-        :type composition: QgsComposition
+        :type composition: QgsPrintLayout
         :param config_collection: Photo configuration collection specified in
         template file.
         :type config_collection: PhotoConfigurationCollection
         :param record: Matching record from the result set.
         :type record: object
         """
-        ph_configs = list(config_collection.items()).values()
+        ph_configs = list(config_collection.items().values())
 
         for conf in ph_configs:
             photo_tb = conf.linked_table()
@@ -764,20 +791,22 @@ class DocumentGenerator(QObject):
 
         return g.boundingBox()
 
-    def _write_output(self, composition, outputMode, filePath):
+    def _write_output(self, print_layout: QgsPrintLayout, output_mode:int, file_path:str) -> LayoutExportResult:
         """
-        Write composition to file based on the output type (PDF or IMAGE).
+        Write layout to file based on the output type (PDF or IMAGE).
         """
-        if outputMode == DocumentGenerator.Image:
-            self._export_composition_as_image(composition, filePath)
+        if output_mode == DocumentGenerator.Image:
+            export_result = self._export_composition_as_image(print_layout, file_path)
 
-        elif outputMode == DocumentGenerator.PDF:
-            self._export_composition_as_pdf(composition, filePath)
+        elif output_mode == DocumentGenerator.PDF:
+            export_result = self._export_composition_as_pdf(print_layout, file_path)
 
     def _export_composition_as_image(self, composition, file_path):
         """
         Export the composition as a raster image.
         """
+        exporter = QgsLayoutExporter(print_layout)
+
         num_pages = composition.numPages()
 
         for p in range(num_pages):
@@ -804,16 +833,19 @@ class DocumentGenerator(QObject):
                                              "Error creating {0}.".format(file_path))
                 raise Exception(msg)
 
-    def _export_composition_as_pdf(self, composition, file_path):
+    def _export_composition_as_pdf(self, print_layout: QgsPrintLayout, file_path:str) -> LayoutExportResult:
         """
-        Render the composition as a PDF file.
+        Render the layout as a PDF file.
         """
-        status = composition.exportAsPDF(file_path)
-        if not status:
-            msg = QApplication.translate("DocumentGenerator",
-                                         "Error creating {0}".format(file_path))
+        exporter = QgsLayoutExporter(print_layout)
+        export_result = exporter.exportToPdf(file_path, QgsLayoutExporter.PdfExportSettings())
+        return  export_result
 
-            raise Exception(msg)
+        # status = print_layout.exportAsPDF(file_path)
+        # if not status:
+            # msg = QApplication.translate("DocumentGenerator",
+                                         # "Error creating {0}".format(file_path))
+            # raise Exception(msg)
 
     def _build_file_name(self, data_source, fieldName, fieldValue, data_fields,
                          fileExtension):

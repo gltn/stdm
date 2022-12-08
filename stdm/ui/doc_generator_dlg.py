@@ -715,6 +715,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         del progressDlg
 
         # Reset UI
+        QApplication.restoreOverrideCursor()
         self.reset(success_status)
 
     def _dummy_template_records(self):

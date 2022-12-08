@@ -54,8 +54,6 @@ class StdmDataLabelLayoutItem(QgsLayoutItemLabel):
                                  context: QgsReadWriteContext) -> bool:
         super().writePropertiesToElement(element, document, context)
 
-        print('LABEL WRITE: ',self._linked_field)
-
         if self._linked_field:
             element.setAttribute('linked_field', self._linked_field)
         return True
