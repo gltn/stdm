@@ -54,12 +54,13 @@ class STRDataStore:
         self.party = OrderedDict()
         self.spatial_unit = OrderedDict()
         self.str_type = OrderedDict()
-        # key, value - party_id, custom_attr model
         self.custom_tenure = OrderedDict()
         self.share = OrderedDict()
+
         self.validity_period = OrderedDict()
         self.validity_period['from_date'] = None
         self.validity_period['to_date'] = None
+
         self.supporting_document = []
         self.source_doc_manager = None
         self.current_spatial_unit = None

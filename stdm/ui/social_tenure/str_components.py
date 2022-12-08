@@ -116,7 +116,7 @@ class ComponentUtility(QObject):
     def _create_fk_mapper(
             self, config, parent, notif_bar, multi_row=True,
             is_party=False, is_spatial_unit=False
-    ):
+    ) -> ForeignKeyMapper:
         """
         Creates the foreign key mapper object.
         :param config: Entity configuration
@@ -888,7 +888,7 @@ class SupportingDocuments(ComponentUtility):
         """
         widget.setHidden(visibility)
 
-    def update_container(self, str_number):
+    def update_container(self, str_number: int):
         """
         Update the current supporting document widget container to be used.
         :param str_number: The STR node number

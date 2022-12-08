@@ -27,7 +27,8 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
     QMessageBox,
     QSpinBox,
-    QDoubleSpinBox
+    QDoubleSpinBox,
+    QDateEdit
 )
 from qgis.gui import (
     QgsDateEdit,
@@ -353,7 +354,7 @@ class DateEditValueHandler(ControlValueHandler):
                 pass
 
     def default(self):
-        return QDate.currentDate()
+        return QDate()
 
     def supportsMandatory(self):
         return False
@@ -393,6 +394,7 @@ class DateTimeEditValueHandler(ControlValueHandler):
             pass
 
     def default(self):
+        print(QDateTime.minimumDateTime())
         return QDateTime.currentDateTime()
 
     def supportsMandatory(self):

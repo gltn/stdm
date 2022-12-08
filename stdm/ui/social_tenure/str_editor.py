@@ -21,12 +21,16 @@ email                : stdm@unhabitat.org
 from collections import OrderedDict
 
 from qgis.PyQt import uic
+
 from qgis.PyQt.QtCore import (
     pyqtSignal,
     QTimer,
     Qt,
     QItemSelectionModel,
+    QModelIndex,
+    QDate
 )
+
 from qgis.PyQt.QtGui import (
     QStandardItemModel,
     QStandardItem,
@@ -258,7 +262,7 @@ class SyncSTREditorData(object):
             self.sync_data
         )
 
-    def sync_data(self, current, previous):
+    def sync_data(self, current: QModelIndex, previous: QModelIndex):
         """
         Synchronizes all components data store to the tree
         view component items.
@@ -307,11 +311,10 @@ class SyncSTREditorData(object):
         if selected_item.text() == self.editor.custom_tenure_info_text:
             self.load_custom_tenure_data(data_store, str_number)
 
-    def load_custom_tenure_data(self, data_store, str_number):
+    def load_custom_tenure_data(self, data_store: STRDataStore, str_number: int):
         """
         Loads custom tenure data by adding tabs and associated editor with model.
         :param data_store: The current data store object
-        :type data_store: Object
         :param str_number: The STR number
         :type str_number: Integer
         """
@@ -332,13 +335,12 @@ class SyncSTREditorData(object):
                     data_store.party[party_id], i
                 )
 
-    def save_custom_tenure_info(self, prev_data_store, prev_str_number):
+    def save_custom_tenure_info(self, prev_data_store: STRDataStore, prev_str_number: int):
         """
         When a custom tenure node is unselected, saves the changes in the tab
         forms.
         :param prev_data_store: The data store object of the unselected custom
         tenure nodes.
-        :type prev_data_store: Object
         :param prev_str_number: The STR number of the unselected custom tenure
         node.
         :type prev_str_number: Integer
@@ -352,14 +354,12 @@ class SyncSTREditorData(object):
                 ].model()
             prev_data_store.custom_tenure[party_id] = custom_model
 
-    def toggle_party_models(self, fk_mapper, data_store):
+    def toggle_party_models(self, fk_mapper: ForeignKeyMapper, data_store: STRDataStore):
         """
         Toggles party data store and insert it to foreign key mapper
         of party entity.
         :param fk_mapper: The foreign key mapper object
-        :type fk_mapper: Object
-        :param data_store: The current STR data store
-        :type data_store: Object
+        :param data_store: The current STR data store object
         """
         fk_mapper.remove_rows()
         for i, model_obj in enumerate(data_store.party.values()):
@@ -367,14 +367,12 @@ class SyncSTREditorData(object):
                 model_obj
             )
 
-    def toggle_spatial_unit_models(self, fk_mapper, data_store):
+    def toggle_spatial_unit_models(self, fk_mapper: ForeignKeyMapper, data_store: STRDataStore):
         """
         Toggles spatial  data store and insert it to foreign key mapper
         of party entity.
         :param fk_mapper: The foreign key mapper object
-        :type fk_mapper: Object
         :param data_store: The current STR data store
-        :type data_store: Object
         """
         if fk_mapper is None:
             return
@@ -385,12 +383,11 @@ class SyncSTREditorData(object):
                 model_obj
             )
 
-    def toggle_str_type_models(self, data_store, str_number):
+    def toggle_str_type_models(self, data_store: STRDataStore, str_number: int):
         """
         Toggles the STR type component data store when the tenure information
         treeview item is clicked.
         :param data_store: The current data store.
-        :type data_store: Object
         :param str_number: The current STR root number.
         :type str_number: Integer
         """
@@ -422,12 +419,11 @@ class SyncSTREditorData(object):
                     data_store, party_id, str_type_id, str_number
                 )
 
-    def toggle_supporting_doc(self, data_store, str_number):
+    def toggle_supporting_doc(self, data_store: STRDataStore, str_number: int):
         """
         Toggles the supporting document component data store
         when the supporting documents treeview item is clicked.
         :param data_store: The current data store.
-        :type data_store: Object
         :param str_number: The current STR root number.
         :type str_number: Integer
         """
@@ -437,7 +433,7 @@ class SyncSTREditorData(object):
         # update the current widget container to be used.
         self.editor.supporting_doc_component.update_container(str_number)
 
-    def toggle_validity_period(self, data_store, str_number):
+    def toggle_validity_period(self, data_store: STRDataStore, str_number: int):
         """
         Toggles the validity period component data store
         when the validity period treeview item is clicked.
@@ -482,7 +478,7 @@ class ValidateSTREditor(object):
                                  'this component.'
         )
 
-    def validate_page(self, current, previous):
+    def validate_page(self, current: QModelIndex, previous: QModelIndex):
         """
         Validates str components pages when tree item is clicked.
         :param current: The newly clicked item index
@@ -1030,7 +1026,6 @@ class STREditor(WIDGET, BASE):
         self._init_str_editor()
         self.init_party_component()
         self.init_custom_tenure_info_component()
-        # QTimer.singleShot(33, self._party_signals)
         self._party_signals()
         self.copied_party_row = OrderedDict()
 
@@ -1100,15 +1095,16 @@ class STREditor(WIDGET, BASE):
         """
         Creates the STR node with its children.
         """
-        str_icon = GuiUtils.get_icon(
-            'new_str.png'
-        )
+        str_icon = GuiUtils.get_icon('new_str.png')
+
         str_label = QApplication.translate(
-            'STRTreeView', 'Social Tenure Relationship'
-        )
+            'STRTreeView', 'Social Tenure Relationship')
+
         str_root = QStandardItem(
-            str_icon, '{} {}'.format(str_label, self.str_number)
-        )
+            str_icon, '{} {}'.format(str_label, self.str_number))
+
+        self.str_number = self.str_number + 1
+
         str_root.setData(self.str_number)
         self.tree_view_model.appendRow(str_root)
         self.populate_children_for_str_node(str_root)
@@ -1186,7 +1182,6 @@ class STREditor(WIDGET, BASE):
         """
         Adds the first STR tree node.
         """
-        self.str_number = self.str_number + 1
         self.create_new_str_node()
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
 
@@ -1201,7 +1196,7 @@ class STREditor(WIDGET, BASE):
         item = self.str_items['%s%s' % (text, str_number)]
         return item
 
-    def current_item(self):
+    def current_item(self) -> QStandardItem:
         """
         Gets the currently selected tree_view item.
         :return: The currently selected item
@@ -1211,7 +1206,7 @@ class STREditor(WIDGET, BASE):
         item = self.tree_view_model.itemFromIndex(index)
         return item
 
-    def current_str_number(self):
+    def current_str_number(self) -> int:
         """
         Gets the currently selected str_number.
         :return: The currently selected str_number
@@ -1221,19 +1216,18 @@ class STREditor(WIDGET, BASE):
         str_number = item.data()
         return str_number
 
-    def top_description_visibility(self, set_visible):
+    def top_description_visibility(self, is_visible: bool):
         """
         Sets the visibility of top description.
-        :param set_visible: A boolean that shows or
+        :param is_visible: A boolean that shows or
         hides top description.
-        :type set_visible:
         """
-        if set_visible:
+        if is_visible:
             self.top_description.show()
         else:
             self.top_description.hide()
 
-    def init_party_component(self, party=None):
+    def init_party_component(self, party: Entity=None):
         """
         Initializes the party component.
         :param party: Party entity object.
@@ -1256,7 +1250,7 @@ class STREditor(WIDGET, BASE):
         self.str_model, self.str_doc_model = \
             self.party_component.str_doc_models()
 
-    def init_str_type_component(self, party=None):
+    def init_str_type_component(self, party: Entity=None):
         """
         Initializes the str type component.
         :param party: Party entity object.
@@ -1283,7 +1277,7 @@ class STREditor(WIDGET, BASE):
 
         self.custom_tenure_info_init.emit()
 
-    def init_spatial_unit_component(self, spatial_unit=None):
+    def init_spatial_unit_component(self, spatial_unit: Entity=None):
         """
         Initializes the spatial unit component.
         :param spatial_unit: The current spatial_unit entity.
@@ -1335,7 +1329,7 @@ class STREditor(WIDGET, BASE):
         self.validity_period_signals()
         self.validity_init.emit()
 
-    def init_tenure_data(self, data_store, party_id, str_type_id, str_number):
+    def init_tenure_data(self, data_store: STRDataStore, party_id, str_type_id, str_number):
         """
         Connects str type combobox signals to a slot.
         :param data_store: Current data store
@@ -1526,13 +1520,12 @@ class STREditor(WIDGET, BASE):
                 self.blockSignals(False)
                 data_store.share[party_id] = 100.00 / row_count
 
-    def init_share_spinboxes(self, data_store, str_no):
+    def init_share_spinboxes(self, data_store: STRDataStore, str_no):
         """
         Initialize the share spinboxes by setting equal
         value to all spinboxes or by picking values
         from the data store.
         :param data_store: The current data store.
-        :type data_store: Object
         """
         row_count = len(data_store.party)
         spinboxes = self.str_type_component.ownership_share()
@@ -1749,7 +1742,7 @@ class STREditor(WIDGET, BASE):
             current_store, self.current_item()
         )
 
-    def update_str_type_data(self, index, data_store, party_id):
+    def update_str_type_data(self, index: QModelIndex, data_store: STRDataStore, party_id: int):
         """
         Gets str_type date from the comboboxes and set it to
         the current data store.
@@ -1765,7 +1758,7 @@ class STREditor(WIDGET, BASE):
         data_store.str_type[party_id] = str_type_id
         self.str_type_updated.emit()
 
-    def current_data_store(self):
+    def current_data_store(self) -> STRDataStore:
         """
         Gets the current data_store object for the selected STR tree.
         :return: The current data store object
@@ -1841,7 +1834,7 @@ class STREditor(WIDGET, BASE):
         current_store.spatial_unit[model.id] = model
         current_store.current_spatial_unit = self.spatial_unit
 
-    def set_str_type_data(self, str_type_id, party_id, row_number):
+    def set_str_type_data(self, str_type_id: int, party_id: int, row_number: int):
         """
         Adds STR type rows using party records selected.
         :param str_type_id: The STR type id
@@ -1873,7 +1866,7 @@ class STREditor(WIDGET, BASE):
             self.set_validity_period_data
         )
 
-    def set_validity_period_data(self, date):
+    def set_validity_period_data(self, date: QDate):
         """
         Sets the validity period data to the data store validity
         period dictionary.
@@ -1886,7 +1879,7 @@ class STREditor(WIDGET, BASE):
         else:
             store.validity_period['to_date'] = date
 
-    def supporting_doc_signals(self, str_number):
+    def supporting_doc_signals(self, str_number: int):
         """
         Supporting document component signals.
         :param str_number: The STR node number
@@ -1902,7 +1895,7 @@ class STREditor(WIDGET, BASE):
             )
         )
 
-    def set_supporting_documents(self, model_objs):
+    def set_supporting_documents(self, model_objs: list):
         """
         Sets the supporting document model object list into the current store
         supporting document object.
@@ -1912,7 +1905,7 @@ class STREditor(WIDGET, BASE):
         current_store = self.current_data_store()
         current_store.supporting_document = model_objs
 
-    def validate_str_delete(self, selected_str):
+    def validate_str_delete(self, selected_str: list[QModelIndex]) -> bool:
         """
         Validates the deletion of the STR nodes.
         :param selected_str: Selected STR node index list.
@@ -1944,10 +1937,8 @@ class STREditor(WIDGET, BASE):
             result = self.message(
                 title, question, 'warning', True
             )
-            if result == QMessageBox.No:
-                return False
-            else:
-                return True
+
+            return False if result == QMessageBox.No else True
 
     def remove_str_tree_node(self):
         """
@@ -2122,7 +2113,7 @@ class EditSTREditor(STREditor):
             for attr in args:
                 getattr(store, attr).clear()
 
-    def current_str_detail(self):
+    def current_str_detail(self) -> list:
         """
         Gets the current STR party and spatial unit entity details
         :return str_edits: A list of current party and spatial unit STR details
@@ -2381,9 +2372,7 @@ class EditSTREditor(STREditor):
         if not result:
             return
         if self.current_item().text() == self.custom_tenure_info_text:
-            self.sync.save_custom_tenure_info(
-                current_store, self.str_number
-            )
+            self.sync.save_custom_tenure_info(current_store, self.str_number)
 
         db_handler = STRDBHandler(
             self.data_store, self.str_model, self.str_edit_node
