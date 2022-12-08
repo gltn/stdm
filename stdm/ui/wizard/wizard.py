@@ -1018,7 +1018,7 @@ class ConfigWizard(WIDGET, BASE):
         rpath = r''.join(str(path))
         return rpath.replace("\\", "/")
 
-    def read_settings_path(self, reg_keys, os_path):
+    def read_settings_path(self, reg_keys: list[str], os_path: str) ->str:
         """
         Returns path settings from the registry or an os folder path
         :param reg_key: list of registry keys to read the path setting
@@ -1045,7 +1045,7 @@ class ConfigWizard(WIDGET, BASE):
 
         return doc_path
 
-    def verify_path(self, path):
+    def verify_path(self, path: str) ->str:
         """
         Returns a path after verifying that it exists in the os.
         The path is created if it does not exist.
@@ -1060,7 +1060,7 @@ class ConfigWizard(WIDGET, BASE):
             doc_path = path
         return doc_path
 
-    def make_os_path(self, path):
+    def make_os_path(self, path: str) ->str:
         """
         Creates and returns an os path
         :param path: path to create
@@ -2234,6 +2234,16 @@ class ConfigWizard(WIDGET, BASE):
             self.addColumns(self.col_view_model, columns)
 
             self.tbvColumns.setModel(self.col_view_model)
+        self.size_columns_viewer()
+
+    def size_columns_viewer(self):
+        NAME = 0
+        TYPE = 1
+        DESC = 2
+
+        self.tbvColumns.setColumnWidth(NAME, 200)
+        self.tbvColumns.setColumnWidth(TYPE, 180)
+        self.tbvColumns.setColumnWidth(DESC, 200)
 
     def spatial_unit_changed(self, row_id):
         """

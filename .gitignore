@@ -6,11 +6,19 @@
 #PyCharm files
 .idea
 
+#Vim backup files
+*~
+.*~
+
+#VS Code files
+.vscode
+
 #Compiled Python Files
 *.pyc
 *.zip
 
 docs/_build
+third_party/
 
 # Bash scripts
 *.sh

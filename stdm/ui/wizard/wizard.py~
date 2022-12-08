@@ -308,15 +308,6 @@ class ConfigWizard(WIDGET, BASE):
         self.pftableView.installEventFilter(self)
         self.tbvColumns.installEventFilter(self)
 
-        #self.btnConvert.clicked.connect(self.test_layout_convertion)
-        self.btnConvert.clicked.connect(self.test_template_converter_class)
-
-
-    def test_template_converter_class(self):
-        TMPL_DIR = "D:/Home/Lab/Python/tempconvert/templates/"
-        template_converter = TemplateConverter(folder=TMPL_DIR, ignore_converted=False)
-        template_converter.convert()
-
     def set_window_title(self):
         if self.draft_config:
             self.setWindowTitle('')
@@ -1027,7 +1018,7 @@ class ConfigWizard(WIDGET, BASE):
         rpath = r''.join(str(path))
         return rpath.replace("\\", "/")
 
-    def read_settings_path(self, reg_keys, os_path):
+    def read_settings_path(self, reg_keys: list[str], os_path: str) ->str:
         """
         Returns path settings from the registry or an os folder path
         :param reg_key: list of registry keys to read the path setting
@@ -2243,6 +2234,16 @@ class ConfigWizard(WIDGET, BASE):
             self.addColumns(self.col_view_model, columns)
 
             self.tbvColumns.setModel(self.col_view_model)
+        self.size_columns_viewer()
+
+    def size_columns_viewer(self):
+        NAME = 0
+        TYPE = 1
+        DESC = 2
+
+        self.tbvColumns.setColumnWidth(NAME, 200)
+        self.tbvColumns.setColumnWidth(TYPE, 180)
+        self.tbvColumns.setColumnWidth(DESC, 200)
 
     def spatial_unit_changed(self, row_id):
         """
