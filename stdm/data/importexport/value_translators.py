@@ -157,7 +157,7 @@ class SourceValueTranslator:
         """
         return self._input_referenced_columns
 
-    def add_source_reference_column(self, source_column, ref_table_column):
+    def add_source_reference_column(self, source_column: str, ref_table_column: str):
         """
         Append the source column name and the matched reference table name
         whose value will participate in deducing the value for the
@@ -169,7 +169,7 @@ class SourceValueTranslator:
         """
         self._input_referenced_columns[source_column] = ref_table_column
 
-    def set_input_referenced_columns(self, columns):
+    def set_input_referenced_columns(self, columns: dict):
         """
         Set column names whose respective values will be used in deducing
         the value for the referencing column.
@@ -181,13 +181,10 @@ class SourceValueTranslator:
         if isinstance(columns, dict):
             self._input_referenced_columns = columns
 
-    def name(self):
-        if self._name:
-            return self._name
-        else:
-            return self._referencing_column
+    def name(self) ->str:
+        return self._name if self._name else self._referencing_column
 
-    def set_name(self, name):
+    def set_name(self, name: str):
         """
         Set the name for identifying this translator.
         :param name: Name of an instance of this class.
@@ -195,7 +192,7 @@ class SourceValueTranslator:
         """
         self._name = name
 
-    def source_column_names(self):
+    def source_column_names(self) ->list[str]:
         """
         :return: List containing names of the mapped source table columns.
         :rtype: list
@@ -332,7 +329,7 @@ class ValueTranslatorManager:
         """
         return len(self._translators)
 
-    def translator(self, name):
+    def translator(self, name: str) ->SourceValueTranslator:
         """
         :param name: Name of the translator or the name of the referencing column
         depending on the one that was specified for a given translator.

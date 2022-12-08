@@ -18,7 +18,11 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from winreg import *
+from datetime import datetime
+
 from qgis.PyQt.QtCore import Qt
+
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QProgressDialog
@@ -41,15 +45,15 @@ from stdm.settings import (
 )
 
 from sqlalchemy.exc import DataError, IntegrityError
+from stdm.data.database import STDMDb
 
-from stdm.data.database import (
-    STDMDb
-)
 from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager
 )
+
 from stdm.data.configuration import entity_model
+from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
 
@@ -61,7 +65,7 @@ class ImportFeatureException(Exception):
 
 
 class OGRReader:
-    def __init__(self, source_file):
+    def __init__(self, source_file: str):
         self._ds = ogr.Open(source_file)
         self._targetGeomColSRID = -1
         self._geomType = ''
@@ -71,34 +75,31 @@ class OGRReader:
         self._current_profile = current_profile()
         self._source_doc_manager = None
 
+        self.system_date_format = self.machine_date_format()
+
     def getLayer(self):
         # Return the first layer in the data source
         if self.isValid():
             numLayers = self._ds.GetLayerCount()
             if numLayers > 0:
                 return self._ds.GetLayer(0)
-
             else:
                 return None
 
-    def getSpatialRefCode(self):
+    def getSpatialRefCode(self) -> int:
         # Get the EPSG code (More work required)
         if self.getLayer() is not None:
             spRef = self.getLayer().GetSpatialRef()
             refCode = spRef.GetAttrValue("PRIMEM|AUTHORITY", 1)
-
         else:
             # Fallback to WGS84
             refCode = 4326
 
         return refCode
 
-    def isValid(self):
+    def isValid(self) -> bool:
         # Whether the open process succeeded or failed
-        if self._ds is None:
-            return False
-        else:
-            return True
+        return False if self._ds is None else True
 
     def reset(self):
         # Destroy
@@ -106,7 +107,7 @@ class OGRReader:
         self._geomType = ""
         self._targetGeomColSRID = -1
 
-    def getFields(self):
+    def getFields(self) -> list[str]:
         # Return the data source's fields in a list
         fields = []
         lyr = self.getLayer()
@@ -119,7 +120,7 @@ class OGRReader:
 
         return fields
 
-    def _data_source_entity(self, table_name):
+    def _data_source_entity(self, table_name: str) ->Entity:
         entity = self._current_profile.entity_by_name(table_name)
 
         return entity
@@ -455,8 +456,7 @@ class OGRReader:
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
-                    value_translator = translator_manager.translator(
-                        dest_column)
+                    value_translator = translator_manager.translator(dest_column)
 
                     if value_translator is not None:
                         # Set destination table entity
@@ -483,6 +483,12 @@ class OGRReader:
                         if col_obj.TYPE_INFO == 'MULTIPLE_SELECT':
                             lk_name = col_obj.value_list.name
                             dest_column = '{0}_collection'.format(lk_name)
+
+                        if col_obj.TYPE_INFO == 'DATE':
+                            if not self.check_date_format(field_value, self.system_date_format):
+                                raise ImportFeatureException(
+                                        "Date format on your CSV should match system date format."
+                                        )
 
                         column_value_mapping[dest_column] = field_value
 
@@ -596,3 +602,34 @@ class OGRReader:
                 col_values[field_name] = field_value
 
         return col_values
+
+    def machine_date_format(self) -> str:
+        """
+        Windows specific!
+        TODO: Add the linux version to get date format
+        """
+        key = r".DEFAULT\\Control Panel\\International"
+        reg = ConnectRegistry(None, HKEY_USERS)
+        keys = OpenKey(reg, key)
+        date_format = QueryValueEx(keys, "sShortDate")
+
+        tokens = date_format[0].lower().split('/')
+        tok_order = {}
+
+        for i, tok in enumerate(tokens):
+            date_tok = tok[0].lower()
+            if date_tok == 'y':
+                date_tok = 'Y'
+            tok_order[i] = date_tok
+
+        new_format = "%{}/%{}/%{}".format(tok_order[0], tok_order[1], tok_order[2])
+
+        return new_format
+
+    def check_date_format(self, str_date: str, date_format: str) ->bool:
+        try:
+            f_date = datetime.strptime(str_date, date_format).date()
+            return True
+        except:
+            return False
+

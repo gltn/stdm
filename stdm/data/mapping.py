@@ -55,7 +55,7 @@ class _AttributeMapper:
     and the corresponding UI widget.
     """
 
-    def __init__(self, attributeName, qtControl, model, pseudoname="", isMandatory=False,
+    def __init__(self, attributeName:str, qtControl, model, pseudoname="", isMandatory=False,
                  customValueHandler=None, bindControlOnly=False):
         """
         :param attributeName: Property name of the database model that is to be mapped.
@@ -186,23 +186,61 @@ class MapperMixin(QDialog):
     """
     Mixin class for use in a dialog or widget, and manages attribute mapping.
     """
-
     def __init__(self, model=None, entity=None, parent=None):
         """
         :param model: Callable (new instances) or instance (existing instance
         for updating) of STDM model.
         """
         super().__init__(parent)
+
         if callable(model):
             self._model = model()
             self._mode = SAVE
         else:
             self._model = model
             self._mode = UPDATE
+
         self.entity = entity
         self._attrMappers = []
         self._attr_mapper_collection = {}
+
         self._dirtyTracker = ControlDirtyTrackerCollection()
+
+        self._notifBar = None
+        self.is_valid = False
+        self.saved_model = None
+
+        # Get document objects
+
+        self.entity_model = entity_model(entity)
+
+        self.entity_model_obj = self.entity_model()
+
+        # Flag to indicate whether to close the widget or dialog once model has been submitted
+        # self.closeOnSubmit = True
+
+        # Initialize notification bar
+        if hasattr(self, "vlNotification"):
+            self._notifBar = NotificationBar(self.vlNotification)
+
+    def init_mapper_mixin(self, model=None, entity=None, parent=None):
+        """
+        :param model: Callable (new instances) or instance (existing instance
+        for updating) of STDM model.
+        """
+        if callable(model):
+            self._model = model()
+            self._mode = SAVE
+        else:
+            self._model = model
+            self._mode = UPDATE
+
+        self.entity = entity
+        self._attrMappers = []
+        self._attr_mapper_collection = {}
+
+        self._dirtyTracker = ControlDirtyTrackerCollection()
+
         self._notifBar = None
         self.is_valid = False
         self.saved_model = None
@@ -392,7 +430,7 @@ class MapperMixin(QDialog):
                 errors.append(error)
         return errors
 
-    def validate(self, attrMapper, update=False):
+    def validate(self, attrMapper:_AttributeMapper, update=False):
         """
         Validate attribute.
         :param attrMapper: The attribute
@@ -409,7 +447,7 @@ class MapperMixin(QDialog):
         if column_name in self.entity.columns.keys():
             column = self.entity.columns[column_name]
         else:
-            return
+            return error
 
         if column.unique:
             column_obj = getattr(self.entity_model, column_name, None)
@@ -419,8 +457,8 @@ class MapperMixin(QDialog):
             else:
                 id_obj = getattr(self.entity_model, 'id', None)
                 result = self.entity_model_obj.queryObject().filter(
-                    column_obj == attrMapper.valueHandler().value()).filter(
-                    id_obj != self.model().id).first()
+                        column_obj == attrMapper.valueHandler().value()).filter(
+                        id_obj != self.model().id).first()
 
             if result is not None:
                 msg = QApplication.translate("MappedDialog",
@@ -494,7 +532,7 @@ class MapperMixin(QDialog):
         if not collect_model:
             self._persistModel(save_and_new)
 
-    def _persistModel(self, save_and_new):
+    def _persistModel(self, save_and_new:bool):
         """
         Saves the model to the database and shows a success message.
         :param save_and_new: A Boolean indicating it is triggered by save and
