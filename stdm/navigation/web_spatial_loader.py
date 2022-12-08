@@ -303,9 +303,9 @@ class WebSpatialLoader(QObject):
             lbl_val = getattr(sp_unit, labelfield)
             label_js_object = "{'%s':'%s'}" % (labelfield, str(lbl_val))
 
-        # Reproject to web mercator
+        # Reproject to web mercator - 900913
         geom = getattr(sp_unit, geometry_col)
-        sp_unit_wkb = self.dbSession.scalar(geom.ST_Transform(900913))
+        sp_unit_wkb = self.dbSession.scalar(geom.ST_Transform(3857))
 
         web_geom = WKBElement(sp_unit_wkb)
         sp_unit_geo_json = self.dbSession.scalar(web_geom.ST_AsGeoJSON())
