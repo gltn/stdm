@@ -253,6 +253,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
 
         self._entity = entity
         self._dbmodel = entity_model(entity)
+
         self._state = state
         self._tableModel = None
         self._parent = parent
@@ -1234,6 +1235,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             self._notifBar.insertErrorNotification(msg)
 
             return
+
         if self.tbEntity.selectionModel() is None:
             return
 
@@ -1259,9 +1261,9 @@ class EntityBrowserWithEditor(EntityBrowser):
             return
 
         rowIndex = self._proxyModel.mapToSource(selRowIndices[0])
-        recordid = rowIndex.data()
+        record_id = rowIndex.data()
 
-        self._load_editor_dialog(recordid, rowIndex.row())
+        self._load_editor_dialog(record_id, rowIndex.row())
 
     def set_child_model(self, model, row_position):
         """
@@ -1375,32 +1377,35 @@ class EntityBrowserWithEditor(EntityBrowser):
             edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
                                                parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
 
+
             result = edit_entity_dlg.exec_()
 
-        if result == QDialog.Accepted:
+            if result == QDialog.Accepted:
 
-            if self._entity.has_geometry_column():
-                edit_entity_dlg = gps_tool.entity_editor
+                if self._entity.has_geometry_column():
+                    edit_entity_dlg = gps_tool.entity_editor
 
-            updated_model_obj = edit_entity_dlg.model()
-            if not edit_entity_dlg.is_valid:
-                return
-            for i, attr in enumerate(self._entity_attrs):
-                prop_idx = self._tableModel.index(rownumber, i)
-                raw_val = getattr(updated_model_obj, attr)
+                updated_model_obj = edit_entity_dlg.model()
 
-                """
-                Check if there are display formatters and apply if
-                one exists for the given attribute.
-                """
-                if attr in self._cell_formatters:
-                    formatter = self._cell_formatters[attr]
-                    attr_val = formatter.format_column_value(raw_val)
-                else:
-                    attr_val = raw_val
+                if not edit_entity_dlg.is_valid:
+                    return
 
-                self._tableModel.setData(prop_idx, attr_val)
-                self._tableModel.setData(prop_idx, raw_val, BaseSTDMTableModel.ROLE_RAW_VALUE)
+                for i, attr in enumerate(self._entity_attrs):
+                    prop_idx = self._tableModel.index(rownumber, i)
+                    raw_val = getattr(updated_model_obj, attr)
+
+                    """
+                    Check if there are display formatters and apply if
+                    one exists for the given attribute.
+                    """
+                    if attr in self._cell_formatters:
+                        formatter = self._cell_formatters[attr]
+                        attr_val = formatter.format_column_value(raw_val)
+                    else:
+                        attr_val = raw_val
+
+                    self._tableModel.setData(prop_idx, attr_val)
+                    self._tableModel.setData(prop_idx, raw_val, BaseSTDMTableModel.ROLE_RAW_VALUE)
 
     def _delete_record(self, rec_id, row_number):
         """

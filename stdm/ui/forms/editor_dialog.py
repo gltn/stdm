@@ -74,7 +74,7 @@ class EntityEditorDialog(MapperMixin):
 
     def __init__(
             self,
-            entity,
+            entity: Entity,
             model=None,
             parent=None,
             manage_documents=True,
@@ -107,7 +107,17 @@ class EntityEditorDialog(MapperMixin):
         :type exclude_columns: List
         :return: If collect_model, returns SQLAlchemy Model
         """
-        super().__init__(parent=parent, model=model, entity=entity)
+        self._ent_document_model = None
+
+        if entity.supports_documents:
+            self.ent_model, self._ent_document_model = entity_model(
+                entity,
+                with_supporting_document=True
+            )
+        else:
+            self.ent_model = entity_model(entity)
+
+        super().__init__(parent=parent, model=self.ent_model, entity=entity)
 
         QgsGui.enableAutoGeometryRestore(self)
 
@@ -140,25 +150,17 @@ class EntityEditorDialog(MapperMixin):
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
         self.do_not_check_dirty = False
+
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
             self._manage_documents = manage_documents
         else:
             self._manage_documents = False
 
-        # Setup entity model
-        self._ent_document_model = None
-        if self._entity.supports_documents:
-            self.ent_model, self._ent_document_model = entity_model(
-                self._entity,
-                with_supporting_document=True
-            )
-        else:
-            self.ent_model = entity_model(self._entity)
         if model is not None:
             self.ent_model = model
 
-        MapperMixin.__init__(self, self.ent_model, entity)
+        self.init_mapper_mixin(self.ent_model, entity)
 
         self.collect_model = collect_model
 
@@ -301,7 +303,6 @@ class EntityEditorDialog(MapperMixin):
                 self.save_new_button.clicked.connect(
                     lambda: self.on_child_saved(True)
                 )
-
             else:
                 # When updating an existing child editor save to the db
                 self.buttonBox.accepted.connect(
@@ -325,6 +326,8 @@ class EntityEditorDialog(MapperMixin):
         """
         self.submit()
         self.save_children()
+
+        self.accept()
 
     def set_parent_values(self):
         """
@@ -379,7 +382,11 @@ class EntityEditorDialog(MapperMixin):
         from stdm.ui.entity_browser import (
             EntityBrowserWithEditor
         )
-        self.submit(False, True)
+
+        save_model_todb=False
+        save_and_new=True
+
+        self.submit(save_model_todb, save_and_new)
         self.save_children()
 
         if self.is_valid:

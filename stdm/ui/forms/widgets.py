@@ -218,7 +218,7 @@ class EntityValueFormatter(object):
 
         return True
 
-    def register_columns(self, columns):
+    def register_columns(self, columns: list):
         """
         Registers multiple columns based on their name.
         :param columns: Column names

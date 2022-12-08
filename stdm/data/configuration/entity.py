@@ -139,7 +139,7 @@ class Entity(QObject, TableItem):
 
         LOGGER.debug('%s entity created.', self.name)
 
-    def _shortname_to_name(self, name):
+    def _shortname_to_name(self, name: str) -> str:
         # Append profile prefix if not global
         if not self.is_global:
             # format the internal name, replace spaces between words

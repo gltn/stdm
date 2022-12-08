@@ -443,6 +443,7 @@ class STDMQGISLoader:
                 self.loadModules()
                 self.default_profile()
                 self.run_wizard()
+
                 self.copy_designer_template()
 
                 # Start QGIS2 to QGIS3 template converter
@@ -466,7 +467,8 @@ class STDMQGISLoader:
         task_manager.addTask(template_conversion_task)
 
         template_conversion_task.statusChanged.connect(
-                self.template_conversion_status_changed)
+                self.template_conversion_status_changed
+                )
 
         QgsApplication.processEvents()
 
@@ -860,10 +862,16 @@ class STDMQGISLoader:
         template_files = glob.glob('{}*.sdt'.format(
             FilePaths().defaultConfigPath()
         ))
+
         templates_path = composer_template_path()
+
+        if templates_path is None:
+            return
+
         for temp_file in template_files:
             destination_file = os.path.join(
                 templates_path, os.path.basename(temp_file))
+
             if not os.path.isfile(destination_file):
                 try:
                     shutil.copyfile(temp_file, destination_file)
@@ -871,12 +879,10 @@ class STDMQGISLoader:
                     os.makedirs(templates_path)
                     shutil.copyfile(temp_file, destination_file)
 
-    def load_configuration_from_file(self, parent, manual=False):
+    def load_configuration_from_file(self, parent, manual=False) -> bool:
         """
         Load configuration object from the file.
-        :return: True if the file was successfully
-        loaded. Otherwise, False.
-        :rtype: bool
+        :return: True if the file was successfully loaded. Otherwise, False.
         """
         if self.progress is not None:
             self.progress.deleteLater()
@@ -972,7 +978,8 @@ class STDMQGISLoader:
                 _copy_config_file_from_template()
 
             result = self.load_configuration_to_serializer()
-            self.progress.deleteLater()
+            if self.progress is not None:
+                self.progress.deleteLater()
             self.progress = None
             return result
 
@@ -1061,7 +1068,7 @@ class STDMQGISLoader:
                                    self.iface.mainWindow())
 
         self.profile_db_backup_act = QAction(GuiUtils.get_icon("export.png"),
-                                 QApplication.translate("ProfileBackupAction", "Profile & Database Backup"),
+                                 QApplication.translate("ProfileBackupAction", "Profile && Database Backup"),
                                  self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
@@ -1253,8 +1260,8 @@ class STDMQGISLoader:
 
         # Group admin settings content groups
         adminSettingsCntGroups = []
-        adminSettingsCntGroups.append(self.contentAuthCntGroup)
-        adminSettingsCntGroups.append(self.userRoleCntGroup)
+        #adminSettingsCntGroups.append(self.contentAuthCntGroup)
+        #adminSettingsCntGroups.append(self.userRoleCntGroup)
         adminSettingsCntGroups.append(self.options_content_group)
         adminSettingsCntGroups.append(self.profile_db_backup_group)
 
@@ -1347,8 +1354,8 @@ class STDMQGISLoader:
         self.toolbarLoader.addContent(self.wzdConfigCntGroup)
         self.menubarLoader.addContent(self.wzdConfigCntGroup)
 
-        self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
-        self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
+        #self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
+        #self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
 
         self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
                                                                    adminBtn])

@@ -97,7 +97,7 @@ class Profile(QObject):
         self.add_entity(self._auto_generate_code)
         self.add_entity(self.social_tenure)
 
-    def _prefix(self):
+    def _prefix(self) -> str:
         prefixes = self.configuration.prefixes()
 
         prefix = self.name
@@ -116,10 +116,10 @@ class Profile(QObject):
         return prefix.lower()
 
     # Added in v1.5
-    def set_prefix(self, prefix):
+    def set_prefix(self, prefix: str):
         self.prefix = prefix
 
-    def _create_social_tenure(self):
+    def _create_social_tenure(self) ->SocialTenure:
         """
         :return: Returns an instance of a social tenure object.
         :rtype: SocialTenure
@@ -201,7 +201,7 @@ class Profile(QObject):
                 attr
             )
 
-    def entity(self, name):
+    def entity(self, name: str) ->Entity:
         """
         Get table item using its short name.
         :param name: Short name of the table item.
@@ -230,7 +230,7 @@ class Profile(QObject):
 
         return True
 
-    def entity_by_name(self, name):
+    def entity_by_name(self, name: str) -> Entity:
         """
         :param name: Name of the entity i.e. table name in the database.
         :type name: str
@@ -239,13 +239,9 @@ class Profile(QObject):
         :rtype: Entity
         """
         items = [e for e in self.entities.values() if e.name == name]
+        return None if len(items) == 0 else items[0]
 
-        if len(items) == 0:
-            return None
-        else:
-            return items[0]
-
-    def relation(self, name):
+    def relation(self, name: str):
         """
         :param name: Name of the relation.
         :type name: str

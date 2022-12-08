@@ -59,6 +59,7 @@ def entity_model(entity, entity_only=False, with_supporting_document=False):
     :return: An SQLAlchemy model reflected from the table in the database
     corresponding to the specified entity object.
     """
+
     if entity.TYPE_INFO == 'ENTITY_SUPPORTING_DOCUMENT':
         raise TypeError('<EntitySupportingDocument> type not supported. '
                         'Please use the parent entity.')

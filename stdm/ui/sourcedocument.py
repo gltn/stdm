@@ -39,7 +39,8 @@ from qgis.PyQt.QtGui import (
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QWidget,
-    QMessageBox
+    QMessageBox,
+    QLayout
 )
 
 from stdm.data.configuration import entity_model
@@ -120,6 +121,7 @@ class SourceDocumentManager(QObject):
 
         self.doc_type_mapping = OrderedDict()
 
+
         for id, value in self.doc_types.items():
             self.doc_type_mapping[id] = value
 
@@ -160,7 +162,7 @@ class SourceDocumentManager(QObject):
         '''
         self._canEdit = state
 
-    def registerContainer(self, container, id):
+    def registerContainer(self, container: QLayout, id):
         '''
         Register a container for displaying the document widget
         '''
@@ -393,7 +395,7 @@ class SourceDocumentManager(QObject):
 
         return srcDocMapping
 
-    def model_objects(self, dtype=None):
+    def model_objects(self, dtype=None) -> list[QLayout]:
         """
         Returns all supporting document models based on
         the file uploads contained in the document manager.
@@ -560,6 +562,9 @@ class DocumentWidget(WIDGET, BASE):
         self.fileNameColor = "#5555ff"
         self.fileMetaColor = "#8f8f8f"
 
+        self.workerThread = QThread(self)  # ******
+        self.docWorker = None
+
     def eventFilter(self, watched, e):
         """
         Capture label mouse release events
@@ -714,7 +719,9 @@ class DocumentWidget(WIDGET, BASE):
             self._source_entity = source_entity
             self._doc_type = doc_type
             self._doc_type_id = doc_type_id
+
             self.uploadDoc()
+
             self.buildDisplay()
 
     def setModel(self, sourcedoc):
@@ -865,6 +872,9 @@ class DocumentWidget(WIDGET, BASE):
 
         self.set_thumbnail()
 
+    def print_thread(self):
+        print('** Document transfer thread finished **')
+
     def uploadDoc(self):
         """
         Upload the file to the central repository in a separate thread using the specified file manager
@@ -877,26 +887,29 @@ class DocumentWidget(WIDGET, BASE):
             Use of queued connections will guarantee that signals and slots are captured
             in any thread.
             '''
-            workerThread = QThread(self)
-            docWorker = DocumentTransferWorker(
+            #self.workerThread = QThread(self)
+
+            self.docWorker = DocumentTransferWorker(
                 self.fileManager,
                 self.fileInfo,
                 "%s" % (self._source_entity),
                 "%s" % (self._doc_type),
-                self
             )
-            docWorker.moveToThread(workerThread)
+            self.docWorker.moveToThread(self.workerThread)
 
-            workerThread.started.connect(docWorker.transfer)
-            docWorker.blockWrite.connect(self.onBlockWritten)
-            docWorker.complete.connect(self.onCompleteTransfer)
-            workerThread.finished.connect(docWorker.deleteLater)
-            workerThread.finished.connect(workerThread.deleteLater)
+            self.workerThread.started.connect(self.docWorker.transfer)
 
-            workerThread.start()
+            self.docWorker.blockWrite.connect(self.onBlockWritten)
+            self.docWorker.complete.connect(self.onCompleteTransfer)
+
+            self.workerThread.finished.connect(self.docWorker.deleteLater)
+            self.workerThread.finished.connect(self.workerThread.deleteLater)
+
+            self.workerThread.start()
             # Call transfer() to get fileUUID early
-            # docWorker.transfer()
-            self.fileUUID = docWorker.file_uuid
+            # self.docWorker.transfer()
+            self.fileUUID = self.docWorker.file_uuid
+
 
     def onBlockWritten(self, size):
         """
@@ -906,7 +919,7 @@ class DocumentWidget(WIDGET, BASE):
         progress = (size * 100) / self._docSize
 
         self.pgBar.setValue(progress)
-        QApplication.processEvents()
+        #QgsApplication.processEvents()
 
     def onCompleteTransfer(self, fileid):
         """
@@ -916,6 +929,9 @@ class DocumentWidget(WIDGET, BASE):
         self.fileUUID = str(fileid)
         self.fileUploadComplete.emit()
 
+        if self.workerThread:
+            if self.workerThread.isRunning():
+                self.workerThread.quit()
 
 def source_document_location(default="/home"):
     """
@@ -935,7 +951,6 @@ def source_document_location(default="/home"):
             source_doc_dir = doc_path_info
 
     return source_doc_dir
-
 
 def set_source_document_location(doc_path):
     """
@@ -959,7 +974,6 @@ def set_source_document_location(doc_path):
     if len(doc_dir_path) > 0:
         reg_config = RegistryConfig()
         reg_config.write({LOCAL_SOURCE_DOC: doc_dir_path})
-
 
 def network_document_path():
     """

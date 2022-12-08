@@ -57,6 +57,7 @@ class NetworkFileManager(QObject):
         """
         Upload document in central repository
         """
+
         self._entity_source = entity_source
         self._doc_type = doc_type
         self.fileID = self.generateFileID()
@@ -97,6 +98,7 @@ class NetworkFileManager(QObject):
         srcFile = open(self.sourcePath, 'rb')
         destinationFile = open(self.destinationPath, 'wb')
 
+
         # srcLen = self.sourceFile.bytesAvailable()
         totalRead = 0
         while True:
@@ -114,6 +116,7 @@ class NetworkFileManager(QObject):
         destinationFile.close()
 
         return self.fileID
+
 
     def downloadDocument(self, documentid):
         """
@@ -177,8 +180,8 @@ class DocumentTransferWorker(QObject):
     """
     Worker thread for copying source documents to central repository.
     """
-    blockWrite = pyqtSignal("int")
-    complete = pyqtSignal("QString")
+    blockWrite = pyqtSignal(int)
+    complete = pyqtSignal(str)
 
     def __init__(
             self, file_manager, file_info, entity_source='', doc_type='', parent=None):
