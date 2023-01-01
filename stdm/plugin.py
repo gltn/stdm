@@ -194,6 +194,8 @@ class STDMQGISLoader:
 
         self.profile_templates = []
 
+        self.action_cache = {}
+
         # Profile status label showing the current profile
         self.profile_status_label = None
         LOGGER.debug('STDM plugin has been initialized.')
@@ -1812,7 +1814,6 @@ class STDMQGISLoader:
 
     def onDocumentGenerator(self):
         """
-        Document generator by person dialog.
         """
         if self.current_profile is None:
             self.default_profile()
@@ -1833,6 +1834,7 @@ class STDMQGISLoader:
             self.iface.mainWindow(),
             plugin=self
         )
+
         doc_gen_wrapper.exec_()
 
     def onImportData(self):

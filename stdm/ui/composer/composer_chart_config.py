@@ -75,8 +75,6 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
         self.set_from_item()
 
-        print('XXXXXXXXXXXXXXXXXXXx')
-
         # Connect signals
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
 

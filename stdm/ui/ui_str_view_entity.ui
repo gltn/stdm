@@ -1,122 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>frmSTRViewEntity</class>
-    <widget class="QWidget" name="frmSTRViewEntity">
-        <property name="geometry">
-            <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>293</width>
-                <height>172</height>
-            </rect>
-        </property>
-        <property name="windowTitle">
-            <string>Form</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-            <item row="0" column="0">
-                <widget class="QTabWidget" name="tbSTRViewEntity">
-                    <property name="tabPosition">
-                        <enum>QTabWidget::South</enum>
-                    </property>
-                    <property name="currentIndex">
-                        <number>0</number>
-                    </property>
-                    <property name="documentMode">
-                        <bool>false</bool>
-                    </property>
-                    <property name="tabsClosable">
-                        <bool>false</bool>
-                    </property>
-                    <property name="movable">
-                        <bool>false</bool>
-                    </property>
-                    <widget class="QWidget" name="filter">
-                        <attribute name="title">
-                            <string>Filter</string>
-                        </attribute>
-                        <layout class="QGridLayout" name="gridLayout_2">
-                            <item row="1" column="0" colspan="2">
-                                <widget class="QLabel" name="label">
-                                    <property name="text">
-                                        <string>in column</string>
-                                    </property>
-                                    <property name="alignment">
-                                        <set>Qt::AlignCenter</set>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="0" column="0" colspan="2">
-                                <widget class="QLineEdit" name="txtFilterPattern">
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                    <property name="placeholderText">
-                                        <string>Look for</string>
-                                    </property>
-                                </widget>
-                            </item>
-                            <item row="2" column="0" colspan="2">
-                                <widget class="QComboBox" name="cboFilterCol">
-                                    <property name="minimumSize">
-                                        <size>
-                                            <width>0</width>
-                                            <height>30</height>
-                                        </size>
-                                    </property>
-                                </widget>
-                            </item>
-                        </layout>
-                    </widget>
-                    <widget class="QWidget" name="validity">
-                        <attribute name="title">
-                            <string>Validity Period</string>
-                        </attribute>
-                        <layout class="QVBoxLayout" name="verticalLayout">
-                            <item>
-                                <layout class="QHBoxLayout" name="horizontalLayout">
-                                    <item>
-                                        <widget class="QLabel" name="label_2">
-                                            <property name="text">
-                                                <string>Validity from</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item>
-                                        <widget class="QDateEdit" name="validity_from_date">
-                                            <property name="calendarPopup">
-                                                <bool>true</bool>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </item>
-                            <item>
-                                <layout class="QHBoxLayout" name="horizontalLayout_2">
-                                    <item>
-                                        <widget class="QLabel" name="lable_3">
-                                            <property name="text">
-                                                <string>to</string>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                    <item>
-                                        <widget class="QDateEdit" name="validity_to_date">
-                                            <property name="calendarPopup">
-                                                <bool>true</bool>
-                                            </property>
-                                        </widget>
-                                    </item>
-                                </layout>
-                            </item>
-                        </layout>
-                    </widget>
-                </widget>
-            </item>
+ <class>frmSTRViewEntity</class>
+ <widget class="QWidget" name="frmSTRViewEntity">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>384</width>
+    <height>166</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QTabWidget" name="tbSTRViewEntity">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="tabPosition">
+      <enum>QTabWidget::South</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="documentMode">
+      <bool>false</bool>
+     </property>
+     <property name="tabsClosable">
+      <bool>false</bool>
+     </property>
+     <property name="movable">
+      <bool>false</bool>
+     </property>
+     <widget class="QWidget" name="filter">
+      <attribute name="title">
+       <string>Filter</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0" colspan="2">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>in column</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2">
+        <widget class="QLineEdit" name="txtFilterPattern">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="placeholderText">
+          <string>Look for</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QComboBox" name="cboFilterCol">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="validity">
+      <attribute name="title">
+       <string>Validity Period</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Validity from</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="validity_from_date">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="lable_3">
+           <property name="text">
+            <string>to</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDateEdit" name="validity_to_date">
+           <property name="calendarPopup">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
     </widget>
-    <connections/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
 </ui>

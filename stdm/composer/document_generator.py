@@ -138,7 +138,7 @@ class DocumentGenerator(QObject):
         """
         self._link_field = field
 
-    def set_attr_value_formatters(self, formattermapping):
+    def set_attr_value_formatters(self, formattermapping: dict):
         """
         Dictionary of attribute mappings and corresponding functions for
         formatting the attribute value when naming an output file using
@@ -207,7 +207,7 @@ class DocumentGenerator(QObject):
         return None, QApplication.translate("DocumentGenerator",
                                             "Cannot read document template contents")
 
-    def composer_data_source(self, template_document: QDomDocument):
+    def composer_data_source(self, template_document: QDomDocument) ->tuple[ComposerDataSource, str]:
         """
         :param template_document: Document containing document composition
         information.
@@ -464,10 +464,15 @@ class DocumentGenerator(QObject):
 
                     write_result = self._write_output(print_layout, outputMode, absDocPath)
 
-                    if write_result == LayoutExporterResult.MemoryError:
+                    if write_result == QgsLayoutExporter.Canceled:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                               "Document generation canceled"))
+
+                    if write_result == QgsLayoutExporter.MemoryError:
                         return (False, QApplication.translate("DocumentGenerator",
                                                               "Unable to allocate memory required to export"))
-                    if write_result == LayoutExportResult.FileError:
+
+                    if write_result == QgsLayoutExporter.FileError:
                         return (False, QApplication.translate("DocumentGenerator",
                                                               "Could not write to destination file, likely due to a lock held by anther application"))
 
@@ -795,43 +800,25 @@ class DocumentGenerator(QObject):
         """
         Write layout to file based on the output type (PDF or IMAGE).
         """
+        export_result = QgsLayoutExporter.Canceled
+
         if output_mode == DocumentGenerator.Image:
             export_result = self._export_composition_as_image(print_layout, file_path)
 
         elif output_mode == DocumentGenerator.PDF:
             export_result = self._export_composition_as_pdf(print_layout, file_path)
 
-    def _export_composition_as_image(self, composition, file_path):
+        return export_result
+
+    def _export_composition_as_image(self, print_layout:QgsPrintLayout, file_path: str) -> LayoutExportResult:
         """
         Export the composition as a raster image.
         """
+        # TODO: check file_path extension to allow other image file formats (png, jpg...)
         exporter = QgsLayoutExporter(print_layout)
+        export_result = exporter.exportToImage(file_path, QgsLayoutExporter.ImageExportSettings())
 
-        num_pages = composition.numPages()
-
-        for p in range(num_pages):
-            img = composition.printPageAsRaster(p)
-
-            if img.isNull():
-                msg = QApplication.translate("DocumentGenerator",
-                                             "Memory allocation error. Please try "
-                                             "a lower resolution or a smaller paper size.")
-                raise Exception(msg)
-
-            if p == 0:
-                state = img.save(file_path)
-
-            else:
-                fi = QFileInfo(file_path)
-                file_path = "{0}/{1}_{2}.{3}".format(fi.absolutePath(),
-                                                     fi.baseName(),
-                                                     (p + 1), fi.suffix())
-                state = img.save(file_path)
-
-            if not state:
-                msg = QApplication.translate("DocumentGenerator",
-                                             "Error creating {0}.".format(file_path))
-                raise Exception(msg)
+        return export_result
 
     def _export_composition_as_pdf(self, print_layout: QgsPrintLayout, file_path:str) -> LayoutExportResult:
         """
@@ -891,6 +878,7 @@ class DocumentGenerator(QObject):
                 if isinstance(queryValue, str):
                     queryValue = "'{0}'".format(queryValue)
                 sql = "{0} = :qvalue".format(queryField)
+
                 results = self._dbSession.query(dsTable).filter(text(sql)).params(qvalue=queryValue).all()
 
             return dsTable, results
@@ -898,7 +886,7 @@ class DocumentGenerator(QObject):
             self._dbSession.rollback()
             raise ex
 
-    def _composer_output_path(self):
+    def _composer_output_path(self) -> str:
         """
         Returns the directory name of the composer output directory.
         """
@@ -909,7 +897,6 @@ class DocumentGenerator(QObject):
 
         if len(valueCollection) == 0:
             return None
-
         else:
             return valueCollection[keyName]
 

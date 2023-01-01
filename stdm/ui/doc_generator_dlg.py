@@ -56,7 +56,10 @@ from stdm.ui.composer.composer_doc_selector import TemplateDocumentSelector
 from stdm.ui.foreign_key_mapper import ForeignKeyMapper
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
-from stdm.ui.sourcedocument import source_document_location
+from stdm.ui.sourcedocument import (
+    source_document_location,
+    output_document_location
+)
 from stdm.utils.util import (
     format_name,
     entity_display_columns,
@@ -289,6 +292,12 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
         self.btnShowOutputFolder.clicked.connect(self.onShowOutputFolder)
 
+        prev_doc_path = self.plugin.action_cache.get('prev_document_template_path', "")
+        prev_doc_name = self.plugin.action_cache.get('prev_document_template_name', "")
+        self.lblTemplateName.setText(prev_doc_name)
+        self._docTemplatePath = prev_doc_path
+        self.datasource_fields_loaded = False
+
     def _init_progress_dialog(self):
         """
         Initializes the progress dialog.
@@ -457,9 +466,14 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
             self.lblTemplateName.setText(docName)
             self._docTemplatePath = docPath
+            # Cache this selection
+            self.plugin.action_cache['prev_document_template_name'] = docName
+            self.plugin.action_cache['prev_document_template_path'] = docPath
+
             if filter_table != self.last_data_source:
                 # Load template data source fields
                 self._load_template_datasource_fields()
+                self.datasource_fields_loaded = True
 
     def _load_template_datasource_fields(self):
         # If using template data source
@@ -506,10 +520,11 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         Clears/resets the dialog from user-defined options.
         """
         self._docTemplatePath = ""
-
         self._data_source = ""
 
-        self.lblTemplateName.setText("")
+        self.datasource_fields_loaded = False
+
+        #self.lblTemplateName.setText("")
         # reset form only if generation is successful
         if success_status:
             fk_table_view = self.tabWidget.currentWidget(). \
@@ -542,6 +557,8 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         self._notif_bar.clear()
         success_status = True
         config = self.current_config()
+        self._docTemplatePath = self.plugin.action_cache.get('prev_document_template_path', "")
+
         self.last_data_source = config.data_source()
         if config is None:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
@@ -585,7 +602,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
         # Show save file dialog if not using output folder
         if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
-            docDir = source_document_location()
+            docDir = output_document_location()
 
             if self._outputFilePath:
                 fileInfo = QFileInfo(self._outputFilePath)
@@ -613,6 +630,9 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         # else:
         # Multiple files to be generated.
         # pass
+
+        if not self.datasource_fields_loaded:
+            self._load_template_datasource_fields()
 
         self._doc_generator.set_link_field(config.link_field())
 
@@ -669,8 +689,6 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
                         # Restore cursor
                         QApplication.restoreOverrideCursor()
-
-                        return
 
                     # If its the last record and user has selected to ignore
                     if i + 1 == len(records):

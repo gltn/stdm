@@ -54,7 +54,8 @@ from stdm.settings import (
 from stdm.settings.registryconfig import (
     RegistryConfig,
     NETWORK_DOC_RESOURCE,
-    LOCAL_SOURCE_DOC
+    LOCAL_SOURCE_DOC,
+    COMPOSER_OUTPUT
 )
 from stdm.ui.document_viewer import DocumentViewManager
 from stdm.ui.gui_utils import GuiUtils
@@ -951,6 +952,24 @@ def source_document_location(default="/home"):
             source_doc_dir = doc_path_info
 
     return source_doc_dir
+
+def output_document_location(default:str='/home'):
+    """
+    Returns the output document location
+    """
+    output_doc_dir = default
+
+    reg_config = RegistryConfig()
+    doc_path_info = reg_config.read([COMPOSER_OUTPUT])
+
+    if len(doc_path_info) > 0:
+        doc_path_info = doc_path_info[COMPOSER_OUTPUT]
+
+        if len(doc_path_info.strip()) > 0:
+            output_doc_dir = doc_path_info
+
+    return output_doc_dir
+
 
 def set_source_document_location(doc_path):
     """

@@ -212,6 +212,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
+
         QgsGui.enableAutoGeometryRestore(self)
 
         self.txtFilterPattern.setShowSearchIcon(True)

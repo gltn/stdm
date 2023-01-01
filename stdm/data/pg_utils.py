@@ -592,8 +592,12 @@ def _execute(sql, **kwargs):
         #if engine is None:
             #print('>> Engine is None << ')
 
-    conn = STDMDb.instance().engine.connect()
-    trans = conn.begin()
+    try:
+        conn = STDMDb.instance().engine.connect()
+        trans = conn.begin()
+    except AttributeError as attr_error:
+        return {}
+
     try:
         result = conn.execute(sql, **kwargs)
         trans.commit()
