@@ -938,7 +938,16 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         Slot raised upon double clicking the table view.
         To be implemented by subclasses.
         """
-        pass
+        if self._mode == SELECT:
+            selIDs = self._selected_record_ids()
+            if len(selIDs) == 0:
+                return
+                # Get all selected records
+            for sel_id in selIDs:
+                self.recordSelected.emit(sel_id)
+                self.done(1)
+                
+        #pass
 
     def _current_row_changed(self, current: QModelIndex, _):
         """
@@ -996,7 +1005,6 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         selIDs = self._selected_record_ids()
         if len(selIDs) == 0:
             return
-
         if self._mode == SELECT:
             # Get all selected records
             for sel_id in selIDs:
