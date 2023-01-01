@@ -500,9 +500,6 @@ class ComposerWrapper(QObject):
         else:
             docFile = QFile(template_path)
 
-            # else:
-            # return
-
         docFileInfo = QFileInfo(docFile)
 
         if not docFile.open(QIODevice.WriteOnly):
@@ -515,6 +512,7 @@ class ComposerWrapper(QObject):
                                                    ))
 
             return
+
 
         templateDoc = QDomDocument()
         template_name = docFileInfo.completeBaseName()
@@ -541,7 +539,6 @@ class ComposerWrapper(QObject):
                                  QApplication.translate("ComposerWrapper", "Could not save template file."))
 
             return
-
         else:
             self.mainWindow().setWindowTitle(template_name)
 
@@ -562,27 +559,25 @@ class ComposerWrapper(QObject):
 
         return
 
-        # TODO!!!!!!
-
         # Write spatial field configurations
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
-        dataSourceElement.appendChild(spatialColumnsElement)
+        xml_doc.appendChild(spatialColumnsElement)
 
         # Write photo configuration
         photos_element = PhotoConfigurationCollection.dom_element(self, xml_doc)
-        dataSourceElement.appendChild(photos_element)
+        xml_doc.appendChild(photos_element)
 
         # Write table configuration
         tables_element = TableConfigurationCollection.dom_element(self, xml_doc)
-        dataSourceElement.appendChild(tables_element)
+        xml_doc.appendChild(tables_element)
 
         # Write chart configuration
         charts_element = ChartConfigurationCollection.dom_element(self, xml_doc)
-        dataSourceElement.appendChild(charts_element)
+        xml_doc.appendChild(charts_element)
 
         # Write QRCode configuration
         qr_codes_element = QRCodeConfigurationCollection.dom_element(self, xml_doc)
-        dataSourceElement.appendChild(qr_codes_element)
+        xml_doc.appendChild(qr_codes_element)
 
     def _configure_data_controls(self, composer_data_source):
         """

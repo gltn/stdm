@@ -403,10 +403,10 @@ class ChartConfigurationCollection(ConfigurationCollectionBase):
     """
     Class for managing a collection of ChartConfiguration objects.
     """
-    # from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
+    #from stdm.ui.composer.composer_chart_config import ComposerChartConfigEditor
 
     collection_root = "Charts"
-    # editor_type = ComposerChartConfigEditor
+    #editor_type = ComposerChartConfigEditor
     config_root = ChartConfiguration.tag_name
     item_config = ChartConfiguration
 

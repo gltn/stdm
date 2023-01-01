@@ -100,6 +100,7 @@ class ReferencedTableEditor(QWidget):
         self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
 
         self.cbo_source_field.currentTextChanged.connect(self._on_changed)
+        self.cbo_source_field.currentIndexChanged.connect(self._on_source_field_changed)
         self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
         self.cbo_referencing_col.currentTextChanged.connect(self._on_changed)
 
@@ -108,10 +109,15 @@ class ReferencedTableEditor(QWidget):
 
         self._layout = None
 
+        self.prev_source_field_index = -1
+
 
     def _on_changed(self):
         if not self._block_changed:
             self.changed.emit()
+
+    def _on_source_field_changed(self, index: int):
+        self.prev_source_field_index = index
 
     def add_omit_table(self, table):
         """
@@ -244,7 +250,6 @@ class ReferencedTableEditor(QWidget):
         """
         if data_source_name == "":
             self.clear()
-
             return
 
         columns_names = table_column_names(data_source_name)
@@ -252,9 +257,16 @@ class ReferencedTableEditor(QWidget):
         if len(columns_names) == 0:
             return
 
+        self.cbo_source_field.blockSignals(True)
+
         self.cbo_source_field.clear()
         self.cbo_source_field.addItem("")
         self.cbo_source_field.addItems(columns_names)
+
+        self.cbo_source_field.blockSignals(False)
+
+        if self.prev_source_field_index != -1:
+            self.cbo_source_field.setCurrentIndex(self.prev_source_field_index)
 
     def clear(self):
         """
@@ -283,8 +295,8 @@ class ReferencedTableEditor(QWidget):
 
             for t in ref_tables:
                 # Ensure we are dealing with tables in the current profile
-                #if not t in self._current_profile_tables:
-                    #continue
+                if not t in self._current_profile_tables:
+                    continue
 
                 # Assert if the table is in the list of omitted tables
                 if t in self._omit_ref_tables:
@@ -300,7 +312,6 @@ class ReferencedTableEditor(QWidget):
         if (VIEWS & source) == VIEWS:
             profile_user_views = profile_and_user_views(self._current_profile)
             source_tables = source_tables + profile_user_views
-
 
         self.cbo_ref_table.addItems(source_tables)
 

@@ -38,7 +38,7 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
         super().__init__(layout)
 
         self._geom_type = None
-        self._zoom = None
+        self._zoom = 4
         self._zoom_type = None
         self._srid = None
         self._label_field = None

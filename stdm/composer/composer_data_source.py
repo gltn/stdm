@@ -180,11 +180,13 @@ class ComposerDataSource:
         )
 
         data_field_list = document.elementsByTagName('LayoutItem')
+
         for n in range(data_field_list.count()):
             layout_node = data_field_list.item(n)
             element = layout_node.toElement()
             field_name = element.attribute('linked_field', None)
             item_id = element.attribute('id', None)
+
             if field_name is not None:
                 data_source.addDataFieldMapping(field_name, item_id)
 
