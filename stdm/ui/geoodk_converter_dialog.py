@@ -71,6 +71,9 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.chk_all.setCheckState(Qt.Checked)
+        self.chk_all.setVisible(False)
+        self.ck_social_tenure.setVisible(False)
+
         self.entity_model = EntitiesModel()
         self.set_entity_model_view(self.entity_model)
 
@@ -91,7 +94,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         self.stdm_config = None
         self.parent = parent
         self.load_profiles()
-        self.check_state_on()
+        #self.check_state_on()
 
         self.check_geoODK_path_exist()
 
@@ -177,7 +180,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             for row in range(self.entity_model.rowCount()):
                 index = self.entity_model.index(row, 0)
                 item_index = self.entity_model.itemFromIndex(index)
-                item_index.setCheckable(True)
+                #item_index.setCheckable(True)
 
     def selected_entities_from_Model(self):
         """

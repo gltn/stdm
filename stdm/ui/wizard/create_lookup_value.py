@@ -89,6 +89,9 @@ class ValueEditor(WIDGET, BASE):
 
         self.edtValue.setFocus()
 
+        self.lblCode.setVisible(False)
+        self.edtCode.setVisible(False)
+
     def show_notification(self, message):
         self.notice_bar.clear()
         self.notice_bar.insertErrorNotification(message)
