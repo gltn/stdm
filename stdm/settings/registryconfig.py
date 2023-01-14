@@ -325,7 +325,7 @@ class RegistryConfig:
         settings.remove(key)
         settings.endGroup()
 
-    def get_value(self, group_name, entity_name):
+    def get_value(self, group_name: str, entity_name: str) ->str:
         """
         Finds and returns a value of a key from group `Sorting/profile_name`.
         :param group_name: Name of the sorting group under the main STDM group

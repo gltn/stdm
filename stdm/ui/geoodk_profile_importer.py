@@ -98,7 +98,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     and return the count. It will also rename all the file based on instance
     unique GUUID for easier management and future updates.
     """
-
     def __init__(self, parent=None):
         """
         initailize class variables here
@@ -131,7 +130,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.init_file_path()
         self.current_profile_changed()
         self.change_check_state(self.chk_all.checkState())
+        self.change_check_state(Qt.Checked)
         self.set_imported_instance_folder()
+
+        self.chk_all.setVisible(False)
+        self.txt_filter.setVisible(False)
+        self.label_14.setVisible(False)
+        self.btn_refresh.setVisible(False)
 
     def load_config(self) -> DictWithOrder[ProfileName, Profile]:
         """
@@ -157,7 +162,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Change the check state of items in a list widget
         """
         for i in range(self.lst_widget.count()):
-            self.lst_widget.item(i).setCheckState(state)
+            #self.lst_widget.item(i).setCheckState(state)
+            self.lst_widget.item(i).setFlags(Qt.ItemIsEnabled)
 
     def current_profile_changed(self):
         """
@@ -306,7 +312,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for entity in entities:
                 list_widget = QListWidgetItem(
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
-                list_widget.setCheckState(Qt.Checked)
+                #list_widget.setCheckState(Qt.Checked)
 
     def user_selected_entities(self) -> List[EntityName]:
         """

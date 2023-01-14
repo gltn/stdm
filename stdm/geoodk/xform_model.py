@@ -10,12 +10,12 @@ class EntityFormatter:
     and various XForm attributes.
     """
 
-    def __init__(self, profile):
+    def __init__(self, profile_name: str):
         """
         :param entity: string
         """
         self._haslookup = False
-        self._profile = profile
+        self._profile = profile_name
 
         self._child_entity = None
 
@@ -234,7 +234,7 @@ class EntityFormatter:
             geometry_type = col_obj.geometry_type()
             return geometry_type
 
-    def geom_selector(self, geom_type):
+    def geom_selector(self, geom_type: str):
         """
         Get the geometry type supported by Geoodk based on column geomtype
         :param geom_type:

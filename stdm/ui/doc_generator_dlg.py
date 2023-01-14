@@ -298,6 +298,8 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         self._docTemplatePath = prev_doc_path
         self.datasource_fields_loaded = False
 
+        self.onToggleExportImage(False)
+
     def _init_progress_dialog(self):
         """
         Initializes the progress dialog.
@@ -540,15 +542,11 @@ class DocumentGeneratorDialog(WIDGET, BASE):
             if self.cboImageType.count() > 0:
                 self.cboImageType.setCurrentIndex(0)
 
-    def onToggleExportImage(self, state):
+    def onToggleExportImage(self, state: bool):
         """
         Slot raised to enable/disable the image formats combobox.
         """
-        if state:
-            self.cboImageType.setEnabled(True)
-
-        else:
-            self.cboImageType.setEnabled(False)
+        self.cboImageType.setEnabled(state)
 
     def onGenerate(self):
         """
@@ -594,7 +592,6 @@ class DocumentGeneratorDialog(WIDGET, BASE):
             outputMode = DocumentGenerator.Image
             fileExtension = self.cboImageType.currentText()
             saveAsText = "Image File"
-
         else:
             outputMode = DocumentGenerator.PDF
             fileExtension = "pdf"

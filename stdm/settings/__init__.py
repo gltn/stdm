@@ -1,5 +1,6 @@
 from qgis.PyQt.QtCore import QStandardPaths
 
+from stdm.data.configuration.profile import Profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
@@ -9,10 +10,10 @@ from stdm.settings.registryconfig import (
 )
 
 
-def current_profile():
+
+def current_profile() -> Profile:
     """
-    :return: Returns text on current profile in the configuration currently
-    being used.
+    :returns current Profile object in the configuration currently being used.
     :rtype: Profile
     """
     from stdm.data.configuration.stdm_configuration import StdmConfiguration
@@ -30,7 +31,7 @@ def current_profile():
     return profiles.get(str(profile_name), None)
 
 
-def save_current_profile(name):
+def save_current_profile(name: str):
     """
     Save the profile with the given name as the current profile.
     :param name: Name of the current profile.
@@ -55,14 +56,14 @@ def save_configuration():
     conf_serializer.save()
 
 
-def get_entity_browser_record_limit():
+def get_entity_browser_record_limit() -> int:
     reg_config = RegistryConfig()
     rec_info = reg_config.read([ENTITY_BROWSER_RECORD_LIMIT])
     rec_limit = int(rec_info.get(ENTITY_BROWSER_RECORD_LIMIT, 10000))
     return rec_limit
 
 
-def save_entity_browser_record_limit(limit):
+def save_entity_browser_record_limit(limit: int):
     """
     type limit:int
     """
@@ -70,15 +71,13 @@ def save_entity_browser_record_limit(limit):
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT: limit})
 
 
-def get_entity_sort_details(group_name, entity_name):
+def get_entity_sort_details(group_name: str, entity_name: str) -> str:
     reg_config = RegistryConfig()
     sort_details = reg_config.get_value(group_name, entity_name)
-    #rec_info = reg_config.read([ENTITY_SORT_ORDER])
-    #sort_order = rec_info.get(ENTITY_SORT_ORDER, None)
     return sort_details
 
 
-def save_entity_sort_order(sort_order):
+def save_entity_sort_order(sort_order: str):
     """
     :type sort_order: str
     """

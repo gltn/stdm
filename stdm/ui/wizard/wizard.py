@@ -170,7 +170,6 @@ EXCL_ENTITIES = ['SUPPORTING_DOCUMENT', 'SOCIAL_TENURE',
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('wizard/ui_stdm_config.ui'))
 
-
 class ConfigWizard(WIDGET, BASE):
     """
     STDM configuration wizard editor

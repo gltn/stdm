@@ -52,16 +52,7 @@
         <enum>QFrame::Raised</enum>
        </property>
        <layout class="QGridLayout" name="gridLayout_5">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>1</number>
         </property>
         <item row="0" column="0">
@@ -69,7 +60,7 @@
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>250</height>
+            <height>280</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -149,16 +140,7 @@
         <enum>QFrame::Raised</enum>
        </property>
        <layout class="QGridLayout" name="gridLayout_3">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>1</number>
         </property>
         <property name="spacing">
@@ -202,8 +184,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>492</width>
-             <height>316</height>
+             <width>486</width>
+             <height>278</height>
             </rect>
            </property>
            <attribute name="label">
@@ -220,8 +202,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>492</width>
-             <height>316</height>
+             <width>486</width>
+             <height>298</height>
             </rect>
            </property>
            <attribute name="label">

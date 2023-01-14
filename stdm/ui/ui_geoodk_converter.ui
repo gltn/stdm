@@ -17,25 +17,18 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>GeoODK Form Generator</string>
+   <string>Mobile Form Generator</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QVBoxLayout" name="vlnotification"/>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Select entities that will be exported to generated GeoODK form</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="chk_all">
+      <widget class="QLabel" name="lblTitle">
        <property name="text">
-        <string>Check all</string>
+        <string>Entities:</string>
        </property>
       </widget>
      </item>
@@ -90,6 +83,13 @@
      </property>
      <property name="checked">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chk_all">
+     <property name="text">
+      <string>Check all</string>
      </property>
     </widget>
    </item>

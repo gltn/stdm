@@ -36,7 +36,8 @@ from qgis.PyQt.QtWidgets import (
     QDialog,
     QAbstractItemView,
     QHeaderView,
-    QTableView
+    QTableView,
+    QDialogButtonBox
 )
 
 from stdm.data.configuration.db_items import DbItem
@@ -45,6 +46,8 @@ from stdm.settings import current_profile
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.custom_item_model import EntitiesModel
 from stdm.utils.util import enable_drag_sort
+
+from stdm.exceptions import DummyException
 
 # from stdm.geoodk import  FormUploader
 
@@ -103,6 +106,10 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         # self.btn_upload.clicked.connect(self.upload_generated_form)
 
         self._notif_bar_str = NotificationBar(self.vlnotification)
+
+        self.buttonBox.button(QDialogButtonBox.Save).setText('Generate')
+        title = self.windowTitle()+'- {} Profile'.format(current_profile().name)
+        self.setWindowTitle(title)
 
     def onShowOutputFolder(self):
         output_path = FORM_HOME
@@ -182,18 +189,16 @@ class GeoODKConverter(QDialog, FORM_CLASS):
                 item_index = self.entity_model.itemFromIndex(index)
                 #item_index.setCheckable(True)
 
-    def selected_entities_from_Model(self):
+    def selected_entities_from_model(self) ->list[str]:
         """
-        Get selected entities for conversion
-        to Xform from the user selection
-        :return:
+        Get selected entities for conversion to Xform.
         """
         entity_list = []
         if self.entity_model.rowCount() > 0:
             for row in range(self.entity_model.rowCount()):
                 item = self.entity_model.item(row)
-                if item.isCheckable() and item.checkState() == Qt.Checked:
-                    entity_list.append(item.text())
+                #if item.isCheckable() and item.checkState() == Qt.Checked:
+                entity_list.append(item.text())
         return entity_list
 
     def check_geoODK_path_exist(self):
@@ -216,27 +221,31 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         form_uploader = FormUploader(self)
         form_uploader.exec_()
 
-    def generate_mobile_form(self, selected_entities):
+    def generate_mobile_form(self, profile_entities: list[str]):
         """
-        Generate mobile form based on the selected entities.
-        :return:
+        Generate mobile form for entities of the current profile.
         """
-        # try:
-        self._notif_bar_str.clear()
-        if len(selected_entities) == 0:
-            self._notif_bar_str.insertErrorNotification(
-                'No entity selected. Please select at least one entity...'
-            )
-            return
-        if len(selected_entities) > 0:
-            geoodk_writer = GeoodkWriter(selected_entities, self.str_supported)
-            geoodk_writer.write_data_to_xform()
+        try:
+            self._notif_bar_str.clear()
+            geoodk_writer = GeoodkWriter(profile_entities, self.str_supported)
+
+            created, create_msg = geoodk_writer.create_xml_file()
+            if not created:
+                self._notify_bar_str.insertErrorNotification(create_msg)
+                return
+
+            data_written, write_msg = geoodk_writer.write_data_to_xform()
+            if not data_written:
+                self._notify_bar_str.insertErrorNotification(write_msg)
+                return
+
             msg = 'File saved in: {}'
+            self._notif_bar_str.insertInformationNotification(write_msg)
             self._notif_bar_str.insertInformationNotification(msg.format(FORM_HOME))
-        # except DummyException as ex:
-        #    self._notif_bar_str.insertErrorNotification(ex.message +
-        #                                                ': Unable to generate Mobile Form')
-        #   return
+
+        except DummyException as ex:
+            self._notif_bar_str.insertErrorNotification(ex.message +
+                                                        ': Unable to generate Mobile Form')
 
     def accept(self):
         """
@@ -244,19 +253,23 @@ class GeoODKConverter(QDialog, FORM_CLASS):
         Check if str is enabled, then ensure str tables are enabled.
         :return:
         """
-        user_entities = self.selected_entities_from_Model()
+        entities = self.selected_entities_from_model()
+        if len(entities) == 0:
+            self._notif_bar_str.insertErrorNotification(
+                'No entity selected. Please select at least one entity...'
+            )
+            return
+
         self.str_supported = False
         if self.ck_social_tenure.isChecked():
             self.str_supported = True
             str_definition = current_profile().social_tenure
             str_definition_party = str_definition.parties[0].short_name
             str_definition_spatial = str_definition.spatial_units[0].short_name
-            if str_definition_party not in user_entities or str_definition_spatial not in user_entities:
+            if str_definition_party not in entities or str_definition_spatial not in entities:
                 self._notif_bar_str.insertErrorNotification(
                     'One of the entities required to define str is not selected. Form not saved'
                 )
                 return
-            # else:
-            # self.generate_mobile_form(user_entities)
-        # else:
-        self.generate_mobile_form(user_entities)
+
+        self.generate_mobile_form(entities)

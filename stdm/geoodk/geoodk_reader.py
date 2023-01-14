@@ -27,44 +27,36 @@ class GeoODKReader:
     Class to read entity info from profile and return the entity data
     """
 
-    def __init__(self, entity):
+    def __init__(self, entity: str):
         """
         Iniatialize the class variables
         """
-
         self.entity_name = None
         self.user_entity = entity
         self.entity_attributes = OrderedDict()
         self.lookup_attributes = OrderedDict()
         self.lookup = []
-        self.profile()
+        #self.profile()
 
     def profile(self):
         """
-
         :return:profile object
         :rtype: Object
         """
         return current_profile()
 
-    def user_entity_name(self):
-        """
-        :return: Entity
-        :rtype: str
-        """
+    def user_entity_name(self) ->str:
         return self.user_entity
 
-    def set_user_entity_name(self, ent_name):
+    def set_user_entity_name(self, ent_name: str):
         """
-        :param name:
-        :type: string
         :return:entity
         :return entity_name
         :rtype:str
         """
         self.entity_name = self.profile().entity(ent_name).name
-        self.user_entity_name()
-        return self.entity_name
+        # self.user_entity_name()
+        # return self.entity_name
 
     def set_user_selected_entity(self):
         """
@@ -83,13 +75,12 @@ class GeoODKReader:
         """
         return self.profile().entity(self.user_entity)
 
-    def entity_has_supporting_documents(self):
+    def entity_has_supporting_documents(self)->bool:
         """
-        Check if supporting documents are enabled for this entity and
-        include them in the form
-        :return: bool
+        Check if supporting documents are enabled for this entity
         """
         entity = self.entity_object()
+        # entity = current_profile().entity(entity_obj.name)
         return entity.supports_documents
 
     def entity_supported_document_types(self):
@@ -101,10 +92,9 @@ class GeoODKReader:
         if self.entity_object().supports_documents:
             return self.entity_object().document_types_non_hex()
 
-    def entity_columns(self):
+    def entity_columns(self) ->dict[str, object]:
         """
         :param entity:
-        :return:
         """
         cols = current_profile().entity_by_name(self.entity_name).columns
         return cols

@@ -78,7 +78,11 @@ from stdm.settings import (
     get_entity_sort_details,
     current_profile
 )
-from stdm.ui.admin_unit_manager import VIEW, MANAGE, SELECT
+from stdm.ui.admin_unit_manager import (
+    VIEW, 
+    MANAGE, 
+    SELECT
+)
 from stdm.ui.document_viewer import DocumentViewManager
 from stdm.ui.feature_details import DetailsTreeView
 from stdm.ui.forms.advanced_search import AdvancedSearch
