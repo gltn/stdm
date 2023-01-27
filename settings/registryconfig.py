@@ -32,6 +32,9 @@ COMPOSER_TEMPLATE = 'ComposerTemplates'
 CURRENT_PROFILE = 'CurrentProfile'
 BACKUP_PATH = 'BackupPath'
 PG_BIN_PATH = 'PGBinPath'
+AUTOBACKUP_DATE = 'AutoBackupDate'
+AUTOBACKUP_NEXT = 'AutoBackupNext'
+AUTOBACKUP_KEY = 'AutoBackupKey'
 LAST_SUPPORTING_DOC_PATH = 'LastDocumentPath'
 SHOW_LICENSE = 'ShowLicense'
 WIZARD_RUN = 'wizardRun'
@@ -132,6 +135,27 @@ def pg_bin_path():
     :rtype: str
     """
     return registry_value(PG_BIN_PATH)
+
+def autobackup_date():
+    """
+    :return: Returns the date of Last Backup.
+    :rtype: str
+    """
+    return registry_value(AUTOBACKUP_DATE)
+
+def autobackup_next():
+    """
+    :return: Returns the date of Next Backup Date.
+    :rtype: str
+    """
+    return registry_value(AUTOBACKUP_NEXT)
+
+def autobackup_key():
+    """
+    :return: Returns the date of Auto Backup Key.
+    :rtype: str
+    """
+    return registry_value(AUTOBACKUP_KEY)
 
 def config_file_name():
     """

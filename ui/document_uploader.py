@@ -62,7 +62,7 @@ from stdm.settings import (
     get_primary_mapfile,
     current_profile
 )
-
+from stdm.data.stdm_reqs_sy_ir import fix_auto_sequences
 from ui_document_uploader import Ui_DocumentUploader
 
 NETWORK_DOC_RESOURCE = 'NetDocumentResource'
@@ -494,6 +494,12 @@ class UploadWorker(QObject):
             '',
             self.tr('Check mapfile Param parent_support_table')
         )
+        fix_auto_sequences(support_doc_table, 'id')
+        if not self.support_doc_map is None:
+            fix_auto_sequences(
+                self.support_doc_map['main_table'],
+                'id'
+            )
         if not pg_table_exists(support_doc_table):
             ErrMessage(
                 self.tr(

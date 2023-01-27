@@ -133,6 +133,10 @@ from stdm.ui.geoodk_profile_importer import ProfileInstanceRecords
 from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 
+from stdm.data.backup_utils import (
+    perform_autobackup
+)
+from stdm.data.stdm_reqs_sy_ir import autochange_profile_configfile
 LOGGER = logging.getLogger('stdm')
 
 class _DocumentTemplate(object):
@@ -436,6 +440,7 @@ class STDMQGISLoader(object):
                 )
 
                 self.reset_content_modules_id( title, pe)
+            perform_autobackup()
 
     def create_custom_tenure_dummy_col(self):
         """
@@ -1648,6 +1653,15 @@ class STDMQGISLoader(object):
         # profile in the wizard
         if sel_profile is not None:
             if len(sel_profile) > 1:
+                if not sel_profile is None:
+                    new_profile_name = sel_profile
+                current_profile_name = ''
+                if not self.current_profile is None:
+                    current_profile_name = self.current_profile.name 
+                autochange_profile_configfile(
+                    new_profile_name,
+                    current_profile_name
+                )
                 save_current_profile(sel_profile)
 
         self.current_profile = current_profile()

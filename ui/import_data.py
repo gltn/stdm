@@ -183,12 +183,12 @@ class ImportData(QWizard, Ui_frmImport):
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def sptype_clicked(self):
         if self.rbSpType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def _init_translators(self):
@@ -587,7 +587,7 @@ class ImportData(QWizard, Ui_frmImport):
 
         cols = mapfile_section(self.working_mapfile, target_table).keys()
         if len(cols) == 0:
-            return False;
+            return False
 
         ucols = {}
         for i,c in enumerate(cols):
