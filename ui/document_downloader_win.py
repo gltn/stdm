@@ -105,7 +105,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 Qt.WindowMinimizeButtonHint|
                 Qt.WindowSystemMenuHint|
                 Qt.WindowCloseButtonHint|
-                Qt.CustomizeWindowHint);
+                Qt.CustomizeWindowHint)
 
         self.setupUi(self)
 
@@ -273,15 +273,15 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.toggleMediaFolders(mode)
 
     def toggleSupportDoc(self, mode):
-        self.edtHousePic.setEnabled(mode);
-        self.cbHousePic.setEnabled(mode);
-        self.tbHousePic.setEnabled(mode);
-        self.btnHousePic.setEnabled(mode);
+        self.edtHousePic.setEnabled(mode)
+        self.cbHousePic.setEnabled(mode)
+        self.tbHousePic.setEnabled(mode)
+        self.btnHousePic.setEnabled(mode)
 
-        self.edtIdPic.setEnabled(mode);
-        self.cbIdPic.setEnabled(mode);
-        self.tbIdPic.setEnabled(mode);
-        self.btnIdPic.setEnabled(mode);
+        self.edtIdPic.setEnabled(mode)
+        self.cbIdPic.setEnabled(mode)
+        self.tbIdPic.setEnabled(mode)
+        self.btnIdPic.setEnabled(mode)
 
     def toggleMediaFolders(self, mode):
         self.edtFamilyFolder.setEnabled(mode)
@@ -348,77 +348,77 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def family_folder(self):
         dflt_folder = self.edtFamilyFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtFamilyFolder.setText(folder)
             save_family_photo(folder)
 
     def sign_folder(self):
         dflt_folder = self.edtSignFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtSignFolder.setText(folder)
             save_sign_photo(folder)
 
     def house_folder(self):
         dflt_folder = self.edtHouseFolder.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtHouseFolder.setText(folder)
             save_house_photo(folder)
 
     def house_pic_folder(self):
         dflt_folder = self.edtHousePic.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtHousePic.setText(folder)
             save_house_pic(folder)
 
     def id_pic_folder(self):
         dflt_folder = self.edtIdPic.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtIdPic.setText(folder)
             save_id_pic(folder)
 
     def scanned_doc_folder(self):
         dflt_folder = self.edtScannedDoc.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedDoc.setText(folder)
             save_scanned_doc(folder)
 
     def scanned_hse_map_folder(self):
         dflt_folder = self.edtScannedHseMap.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedHseMap.setText(folder)
             save_scanned_hse_map(folder)
 
     def scanned_hse_pic_folder(self):
         dflt_folder = self.edtScannedHsePic.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedHsePic.setText(folder)
             save_scanned_hse_pic(folder)
 
     def scanned_id_doc_folder(self):
         dflt_folder = self.edtScannedIdDoc.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedIdDoc.setText(folder)
             save_scanned_id_doc(folder)
 
     def scanned_family_photo(self):
         dflt_folder = self.edtScannedFamilyPhoto.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedFamilyPhoto.setText(folder)
             save_scanned_family_photo(folder)
 
     def scanned_signature(self):
         dflt_folder = self.edtScannedSignature.text()
         folder = self.select_media_folder(dflt_folder)
-        if folder <> '':
+        if folder != '':
             self.edtScannedSignature.setText(folder)
             save_scanned_signature(folder)
 
@@ -579,18 +579,51 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.downloader_thread.quit()
 
     def kobo_download_progress(self, info_id, msg):
-        if info_id == 0: # information
-            self.edtProgress.setTextColor(QColor('black'))
+        clr = QColor('black')
+        if info_id == 0: clr = QColor('black') #information
+        if info_id == 1: clr = QColor(255, 170, 0) #Warning
+        if info_id == 2: clr = QColor('red') #Error
 
-        if info_id == 1: # Warning
-            self.edtProgress.setTextColor(QColor(255, 170, 0))
-
-        if info_id == 2: # Error
-            self.edtProgress.setTextColor(QColor('red'))
-
-        self.edtProgress.append(msg)
+        if info_id in [3,4,5]:
+            self.update_progress_status(info_id)
+            return
+        self.edt_progress_update(clr,None,msg,True)
         QApplication.processEvents()
 
+    def edt_progress_update(self, textcolor, textweight, msg, newline=False):
+        if not textcolor is None:
+            self.edtProgress.setTextColor(textcolor)
+        if not textweight is None:
+            self.edtProgress.setFontWeight(textweight)
+        if not newline:
+            self.edtProgress.textCursor().insertText(msg)
+        else:
+            self.edtProgress.append(msg)
+
+    def update_progress_status(self, DNLD_Status_id):
+        if DNLD_Status_id == 3: # Success
+            self.edt_progress_update(
+                QColor(51, 182, 45),
+                None,
+                'Success',
+                False
+            )
+
+        if DNLD_Status_id == 4: # Failed
+            self.edt_progress_update(
+                QColor('red'),
+                None,
+                'Failed',
+                False
+            )
+
+        if DNLD_Status_id == 5: # File Already Exists
+            self.edt_progress_update(
+                QColor(255,170,0),
+                None,
+                'Already Exists',
+                False
+            )
         
     def _downloader_thread_started(self):
         self.kobo_downloader.start_download()
@@ -647,7 +680,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         media_columns = mapfile_section(save_location)
         doc_cols =self.fetch_doc_cols(media_columns)
         sel_cols = self.fetch_selected_cols(doc_cols)
-        key_field = self.get_key_field(doc_cols);
+        key_field = self.get_key_field(doc_cols)
 
         if not self.valid_credentials():
             return
@@ -758,7 +791,7 @@ class KoboDownloader(QObject):
     #Signal indicates True if the update succeeded, else False.
     download_completed = pyqtSignal(unicode)
 
-    INFORMATION, WARNING, ERROR = range(0, 3)
+    INFORMATION, WARNING, ERROR, SUCCESS, FAILED, EXISTS = range(0, 6)
     
     def __init__(self, ui, data_reader, sel_cols, key_field, 
             doc_types, credentials, kobo_url, support_doc_map, 
@@ -932,16 +965,25 @@ class KoboDownloader(QObject):
                 field_value = feat.GetField(f)
 
                 if field_value == '': continue
+                asc_field_value = unicode(
+                    field_value, 'utf-8').encode('ascii', 'ignore') #to fix arabic filename issue
+                dest_url = dest_folder + '\\'+asc_field_value
+                src_url = self.kobo_url+asc_field_value
 
-                dest_url = dest_folder + '\\'+field_value
-                src_url = self.kobo_url+field_value
-
-                msg = 'Downloading File: {} '.format(field_value)
-
+                msg = u'Downloading File: {}... '.format(asc_field_value)
+                status_code = -1
                 if not path.exists(dest_url):
                     self.download_progress.emit(KoboDownloader.INFORMATION, msg)
                     # download file
-                    self.download(src_url, dest_url, self.credentials[0], self.credentials[1])
+                    if self.download(
+                            src_url,
+                            dest_url,
+                            self.credentials[0],
+                            self.credentials[1]
+                        ): status_code = KoboDownloader.SUCCESS
+                    else: status_code = KoboDownloader.FAILED
+                else: status_code = KoboDownloader.EXISTS
+                if status_code != -1: self.download_progress.emit(status_code, '')
 
                 if a_field_name in self.doc_types:
                     doc_type_id = self.doc_types[a_field_name]
@@ -1063,7 +1105,7 @@ class KoboDownloader(QObject):
                     self.download_progress.emit(KoboDownloader.ERROR, msg)
                     continue
 
-                msg = "Uploading file: "+short_filename
+                msg = 'Uploading file: {}...'.format(short_filename)
                 self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
                 support_doc = self.make_supporting_doc_dict(full_filename, self.support_doc_map)
@@ -1105,6 +1147,7 @@ class KoboDownloader(QObject):
 
                     new_filename = support_doc['doc_identifier']
                     self.create_new_support_doc_file(sfile, new_filename, doc_type, self.support_doc_map)
+                    self.download_progress.emit(KoboDownloader.SUCCESS, '')
                 except:
                     msg = "ERROR Copying File: "+full_filename
                     self.download_progress.emit(KoboDownloader.ERROR, msg)
@@ -1121,7 +1164,7 @@ class KoboDownloader(QObject):
         table_name = parent_table
         target_col = 'id'
         where_col = parent_ref_column
-        if self.ref_type <> 'int':
+        if self.ref_type != 'int':
             value = "'"+value+"'"
         id = get_value_by_column(table_name, target_col, where_col, value)
         return id
@@ -1172,8 +1215,14 @@ class KoboDownloader(QObject):
         with open(dest_url, 'wb') as f:
             f.write(req.content)
 
-        return req.status_code
+        return req.status_code=200
 
     def fake_download(self, src_url, dest_url, username, password):
         return 200
         
+def ErrMessage(message):
+    #Error Message Box
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(message)
+    msg.exec_()
