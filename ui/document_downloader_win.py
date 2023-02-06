@@ -1215,7 +1215,7 @@ class KoboDownloader(QObject):
         with open(dest_url, 'wb') as f:
             f.write(req.content)
 
-        return req.status_code=200
+        return req.status_code==200
 
     def fake_download(self, src_url, dest_url, username, password):
         return 200
