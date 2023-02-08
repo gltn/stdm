@@ -147,9 +147,6 @@ class OptionsDialog(WIDGET, BASE):
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
-        #self.upgradeButton.toggled.connect(self.manage_upgrade)
-        #self.manage_upgrade()
-
         self.init_gui()
 
         self.profile_entity_widget = None
@@ -160,6 +157,9 @@ class OptionsDialog(WIDGET, BASE):
         self.btnAdd.clicked.connect(self.add_sorting_column)
         self.init_sorting_widgets(self.cbo_profiles.currentText())
         self.cbo_profiles.currentIndexChanged.connect(self.profile_changed)
+
+        self.chk_pg_connections.setVisible(False)
+        self.cbo_pg_connections.setVisible(False)
 
 
     def init_gui(self):

@@ -56,7 +56,6 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
 
     def set_geom_type(self, g_type: str):
         self._geom_type = g_type
-        print('<< set_geom_type >>', g_type)
 
     @property
     def zoom(self) -> str:

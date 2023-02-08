@@ -127,7 +127,7 @@ class ComposerWrapper(QObject):
         QObject.__init__(self, layout_interface)
 
         self._layout_interface = layout_interface
-        # self._compView = composerView
+        # self._compView = composerView()
         self._stdmTB = layout_interface.window().addToolBar("STDM Document Designer")
         self._stdmTB.setObjectName('stdmDocumentDesigner')
         self._iface = iface
@@ -231,6 +231,7 @@ class ComposerWrapper(QObject):
         # Create instances of custom STDM composer item configurations
         for ciConfig in ComposerItemConfig.itemConfigurations:
             self._config_items.append(ciConfig(self))
+        self.composerView().zoomActual()
 
     def addWidgetMapping(self, uniqueIdentifier, widget):
         """
