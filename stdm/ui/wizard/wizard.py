@@ -619,6 +619,7 @@ class ConfigWizard(WIDGET, BASE):
         self.edtDesc.setText("")
 
         self.pftableView.setColumnWidth(0, 250)
+        self.pftableView.doubleClicked.connect(self.edit_entity)
 
         # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
@@ -626,11 +627,15 @@ class ConfigWizard(WIDGET, BASE):
         # disable editing of view widgets
         self.pftableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tbvColumns.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tbvColumns.doubleClicked.connect(self.edit_column)
+
         self.lvEntities.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.lvLookups.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.lvLookupValues.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvLookupValues.doubleClicked.connect(self.edit_lookup_value)
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0, 0))
+        self.lvLookups.doubleClicked.connect(self.edit_lookup)
 
     def _on_party_selected(self, item):
         # Handle selection of a party entity.
@@ -1219,7 +1224,7 @@ class ConfigWizard(WIDGET, BASE):
 
         return True, "Ok."
 
-    def set_str_controls(self, str_table):
+    def set_str_controls(self, str_table: str):
         """
         Disable STR UI widgets if Social Tenure Relationship has
         been set and saved in the database
@@ -2590,6 +2595,7 @@ class ConfigWizard(WIDGET, BASE):
         # get dependencies for all the columns in all entities for
         # the current profile
         dependencies = self.all_column_dependencies(profile)
+
         if self.find_lookup(lookup.name, dependencies):
             self.show_message(self.tr("Cannot delete '{0}' lookup!\n "
                                       "Lookup is been used by existing columns."
@@ -2688,6 +2694,23 @@ class ConfigWizard(WIDGET, BASE):
         self.lookup_value_view_model.clear()
         self.addValues_byEntity(view_model.entity_byId(row_id))
         self.lvLookupValues.setModel(self.lookup_value_view_model)
+
+        lookup_entity = list(view_model.entities().values())[row_id]
+        
+        self.toggle_lookup_toolbuttons(lookup_entity.name)
+
+    def toggle_lookup_toolbuttons(self, lookup_name: str):
+        """"
+        Disable edit and delete buttons if the lookup is used by
+        a column in any of the entities in the current profile,  
+        and the lookup is already saved in database.
+        """
+        profile_dependencies = self.all_column_dependencies(self.current_profile())
+        is_found = self.find_lookup(lookup_name, profile_dependencies)
+        in_database = pg_table_exists(lookup_name)
+
+        self.btnEditLookup.setEnabled(not (is_found and in_database))
+        self.btnDeleteLookup.setEnabled(not (is_found and in_database))
 
     def add_lookup_value(self):
         """
