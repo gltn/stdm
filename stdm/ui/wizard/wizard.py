@@ -72,6 +72,9 @@ from stdm.data.configuration.social_tenure import *
 from stdm.data.configuration.stdm_configuration import (
     StdmConfiguration
 )
+
+from stdm.data.configuration.profile import Profile
+
 from stdm.data.license_doc import LicenseDocument
 from stdm.data.pg_utils import (
     pg_table_exists,
@@ -120,7 +123,6 @@ from stdm.utils.util import enable_drag_sort
 # ---- Testing Layout converter ------- #
 from stdm.composer.converter import (
     get_templates
-    #TemplateConverter
 )
 
 from stdm.composer.template_converter import (
@@ -1762,11 +1764,10 @@ class ConfigWizard(WIDGET, BASE):
         profile.entity_added.connect(self.add_entity_item)
         profile.entity_removed.connect(self.delete_entity_item)
 
-    def current_profile(self):
+    def current_profile(self) -> Profile:
         """
         Returns an instance of the selected profile in the
         profile combobox
-        rtype: Profile
         """
         profile = None
         prof_name = self.cboProfile.currentText()
@@ -2451,7 +2452,7 @@ class ConfigWizard(WIDGET, BASE):
         entity_item = None
         if model_item:
             entity_item = list(model_item.entities().values())[row_id]
-        return row_id, entity_item
+        return row_id, entity_item, model_item
 
     def _get_entity(self, view):
         model_item, entity, row_id = self.get_model_entity(view)
@@ -2553,7 +2554,7 @@ class ConfigWizard(WIDGET, BASE):
         row_id, lookup, model_item = self.get_selected_item_data(self.lvLookups)
 
         tmp_short_name = copy.deepcopy(lookup.short_name)
-        lookup.entity_in_database = pg_table_exists(lookup.name)
+        lookup.entity_in_database = False  # pg_table_exists(lookup.name)
 
         editor = LookupEditor(self, profile, lookup)
         result = editor.exec_()
@@ -2566,6 +2567,8 @@ class ConfigWizard(WIDGET, BASE):
             profile.entities[tmp_short_name] = editor.lookup
             profile.entities[editor.lookup.short_name] = \
                 profile.entities.pop(tmp_short_name)
+
+            profile.remove_entity(tmp_short_name)
 
         self.lvLookups.setFocus()
 
@@ -2591,7 +2594,7 @@ class ConfigWizard(WIDGET, BASE):
             self.show_message(self.tr("Select a lookup to delete!"))
             return
 
-        row_id, lookup = self._get_entity_item(self.lvLookups)
+        row_id, lookup, model_item = self._get_entity_item(self.lvLookups)
         # get dependencies for all the columns in all entities for
         # the current profile
         dependencies = self.all_column_dependencies(profile)
@@ -2721,11 +2724,12 @@ class ConfigWizard(WIDGET, BASE):
                                                      "No lookup selected to add value!"))
             return
 
-        row_id, lookup = self._get_entity_item(self.lvLookups)
+        row_id, lookup, model_items = self._get_entity_item(self.lvLookups)
         if lookup:
             value_editor = ValueEditor(self, lookup)
             result = value_editor.exec_()
             if result == 1:
+                model_items.model_item(row_id).set_default_bg_color()
                 self.add_values(list(value_editor.lookup.values.values()))
                 self.lvLookupValues.setModel(self.lookup_value_view_model)
 
@@ -2744,7 +2748,7 @@ class ConfigWizard(WIDGET, BASE):
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
 
         # get selected lookup
-        row_id, lookup = self._get_entity_item(self.lvLookups)
+        row_id, lookup, model_item = self._get_entity_item(self.lvLookups)
         lookup = self.lookup_item_model.currentIndex().model().entity_byId(row_id)
 
         # Hack to rename a lookup value
@@ -2776,10 +2780,14 @@ class ConfigWizard(WIDGET, BASE):
                                                      "Select value to delete"))
             return
 
-        row_id, lookup = self._get_entity_item(self.lvLookups)
+        row_id, lookup, model_items = self._get_entity_item(self.lvLookups)
         model_index = self.lvLookupValues.selectedIndexes()[0]
         value_text = self.lookup_value_view_model.itemFromIndex(model_index).text()
         lookup.remove_value(str(value_text))
+
+        if lookup.is_empty():
+            model_items.model_item(row_id).indicate_as_empty()
+        
         self.add_values(list(lookup.values.values()))
 
     def show_message(self, message, msg_icon=QMessageBox.Critical):

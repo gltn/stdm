@@ -271,9 +271,10 @@ class ColumnEntitiesModel(QStandardItemModel):
                                       if k == old_key else (k, v) for k, v in self._entities.items()])
 
     def _add_row(self, entity):
-        brush = QBrush(QColor(255, 204, 204))
         entity_item = ColumnEntityModelItem(entity)
+
         if entity.mandatory:
+            brush = QBrush(Qt.red)
             entity_item.setForeground(brush)
 
         name_item = entity_item._create_item(entity.name)
@@ -316,6 +317,13 @@ class LookupEntityModelItem(QStandardItem):
         self._entity = entity
         self._set_entity_properties()
 
+    def set_default_bg_color(self):
+        brush = QBrush(Qt.black)
+        self.setForeground(brush)
+
+    def indicate_as_empty(self):
+        brush = QBrush(Qt.red)
+        self.setForeground(brush)
 
 class LookupEntitiesModel(QStandardItemModel):
     def __init__(self, parent=None):
@@ -360,7 +368,15 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def _add_row(self, entity):
         entity_item = LookupEntityModelItem(entity)
+        if entity.is_empty():
+            brush = QBrush(Qt.red)
+            entity_item.setForeground(brush)
         self.appendRow(entity_item)
+
+    def model_item(self, row: int) -> LookupEntityModelItem:
+        return self.item(row)
+
+
 
 
 ################
