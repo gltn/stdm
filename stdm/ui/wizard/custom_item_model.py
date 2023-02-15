@@ -21,45 +21,44 @@ LOGGER = logging.getLogger('stdm')
 
 
 class EntityModelItem(QStandardItem):
-    headers_labels = ["Name", "Description"]
-
-    def __init__(self, entity=None):
+    def __init__(self, entity_name):
         self._entity = None
 
-        super(EntityModelItem, self).__init__(entity.short_name)
+        super(EntityModelItem, self).__init__(entity_name)
 
-        self.setColumnCount(len(self.headers_labels))
+        #self.setColumnCount(len(self.headers_labels))
 
-        if not entity is None:
-            self.set_entity(entity)
+    #     if not entity is None:
+    #         self.set_entity(entity)
 
-    def entity(self):
-        return self._entity
+    # def entity(self):
+    #     return self._entity
 
-    def _create_item(self, text):
-        item = QStandardItem(text)
+    # def _create_item(self, text):
+    #     item = QStandardItem(text)
 
-        return item
+    #     return item
 
-    def _set_entity_properties(self):
-        name_item = self._create_item(self._entity.short_name)
-        description = self._create_item(str(self._entity.description))
+    # def _set_entity_properties(self):
+    #     name_item = self._create_item(self._entity.short_name)
+    #     description = self._create_item(str(self._entity.description))
 
-        self.appendRow([name_item, description])
+    #     self.appendRow([name_item, description])
 
-    def set_entity(self, entity):
-        self._entity = entity
-        self._set_entity_properties()
+    # def set_entity(self, entity):
+    #     self._entity = entity
+    #     self._set_entity_properties()
 
 
 class EntitiesModel(QStandardItemModel):
+    headers_labels = ["Name", "Has Supporting Document?", "Description"]
 
     def __init__(self, parent=None):
         super(EntitiesModel, self).__init__(parent)
 
         self._entities = OrderedDict()
 
-        self.setHorizontalHeaderLabels(EntityModelItem.headers_labels)
+        self.setHorizontalHeaderLabels(EntitiesModel.headers_labels)
 
     def supportedDragActions(self):
         return Qt.MoveAction
@@ -104,11 +103,17 @@ class EntitiesModel(QStandardItemModel):
         mandatory_item = QStandardItem(str(entity.mandatory()))
         self.appendRow([name_item, mandatory_item])
         '''
-        entity_item = EntityModelItem(entity)
-        name_item = entity_item._create_item(entity.short_name)
-        description = entity_item._create_item(entity.description)
+        # entity_item = EntityModelItem(entity)
+        name_item = EntityModelItem(entity.short_name)
+        support_doc = EntityModelItem(self.bool_to_yesno(entity.supports_documents))
+        support_doc.setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
+        description = EntityModelItem(entity.description)
 
-        self.appendRow([name_item, description])
+        self.appendRow([name_item, support_doc, description])
+
+    def bool_to_yesno(self, state: bool) -> str:
+        CHECK_STATE = {True: 'Yes', False: 'No'}
+        return CHECK_STATE[state]
 
 
 class BaseEntitySelectionMixin(object):
@@ -182,43 +187,36 @@ class EntitiesComboView(QComboBox, EntityComboBoxSelectionMixin):
 ############
 
 class ColumnEntityModelItem(QStandardItem):
-    headers_labels = ["Name", "Data Type", "Description"]
-
-    def __init__(self, entity=None):
-        self._entity = None
-
-        super(ColumnEntityModelItem, self).__init__(entity.name)
-
-        self.setColumnCount(len(self.headers_labels))
-
-        if not entity is None:
-            self.set_entity(entity)
-
-    def entity(self):
-        return self._entity
-
-    def _create_item(self, text):
-        item = QStandardItem(text)
-        return item
-
-    def _set_entity_properties(self):
-        name_item = self._create_item(self._entity.name)
-        col_data_type = self._create_item(self._entity.display_name())
-        description = self._create_item(str(self._entity.description))
-
-        self.appendRow([name_item, col_data_type, description])
-
-    def set_entity(self, entity):
-        self._entity = entity
-        self._set_entity_properties()
-
+    def __init__(self, column_name: str =""):
+        self._column_name = column_name
+        super(ColumnEntityModelItem, self).__init__(column_name)
 
 class ColumnEntitiesModel(QStandardItemModel):
+    headers_labels = ["Name", "Data Type", "Description"]
+
     def __init__(self, parent=None):
         super(ColumnEntitiesModel, self).__init__(parent)
         self._entities = OrderedDict()
 
-        self.setHorizontalHeaderLabels(ColumnEntityModelItem.headers_labels)
+        self.setHorizontalHeaderLabels(ColumnEntitiesModel.headers_labels)
+
+    def _add_row(self, entity):
+        name_column = ColumnEntityModelItem(entity.name)
+
+        data_type_name = entity.display_name()
+
+        if entity.TYPE_INFO == 'VARCHAR':
+            data_type_name = f'{data_type_name} ({entity.maximum})'
+
+        data_type_column = ColumnEntityModelItem(data_type_name)
+
+        description_column = ColumnEntityModelItem(entity.description)
+
+        if entity.mandatory:
+            brush = QBrush(Qt.red)
+            name_column.setForeground(brush)
+
+        self.appendRow([name_column, data_type_column, description_column])
 
     def supportedDragActions(self):
         return Qt.MoveAction
@@ -226,7 +224,6 @@ class ColumnEntitiesModel(QStandardItemModel):
     def entity(self, name):
         if name in self._entities:
             return self._entities[name]
-
         return None
 
     def entity_byId(self, id):
@@ -269,18 +266,6 @@ class ColumnEntitiesModel(QStandardItemModel):
         """
         self._entities = OrderedDict([(new_key, v)
                                       if k == old_key else (k, v) for k, v in self._entities.items()])
-
-    def _add_row(self, entity):
-        entity_item = ColumnEntityModelItem(entity)
-
-        if entity.mandatory:
-            brush = QBrush(Qt.red)
-            entity_item.setForeground(brush)
-
-        name_item = entity_item._create_item(entity.name)
-        col_data_type = entity_item._create_item(entity.display_name())
-        description = entity_item._create_item(entity.description)
-        self.appendRow([name_item, col_data_type, description])
 
 
 ######
@@ -358,7 +343,7 @@ class LookupEntitiesModel(QStandardItemModel):
     def delete_entity(self, entity):
         if entity.short_name in self._entities:
             name = entity.short_name
-            del self._entities[short_name]
+            del self._entities[name]
             LOGGER.debug('%s model entity removed.', name)
 
     def delete_entity_byname(self, short_name):

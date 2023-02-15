@@ -35,12 +35,15 @@ from qgis.PyQt.QtCore import (
     QEvent,
     QIODevice,
     QPointF,
-    QSizeF
+    QSizeF,
+    QItemSelectionModel,
+    QModelIndex
 )
 from qgis.PyQt.QtGui import (
     QStandardItemModel,
     QStandardItem,
-    QColor
+    QColor,
+    QFont
 )
 from qgis.PyQt.QtWidgets import (
     QWizard,
@@ -286,11 +289,11 @@ class ConfigWizard(WIDGET, BASE):
         self.splitter.setStretchFactor(1, 1)
 
         self.splitter_3.setStretchFactor(0, 11)
-        self.splitter_3.setStretchFactor(1, 0)
+        self.splitter_3.setStretchFactor(1, 1)
         self.splitter.isCollapsible(False)
         self.splitter_2.isCollapsible(False)
         self.splitter_3.isCollapsible(False)
-        self.splitter_3.setSizes([330, 150])
+        self.splitter_3.setSizes([330, 300])
 
         cp = current_profile()
         if not cp is None:
@@ -308,6 +311,8 @@ class ConfigWizard(WIDGET, BASE):
 
         self.pftableView.installEventFilter(self)
         self.tbvColumns.installEventFilter(self)
+
+        self.selected_index = None
 
     def set_window_title(self):
         if self.draft_config:
@@ -621,23 +626,28 @@ class ConfigWizard(WIDGET, BASE):
         self.edtDesc.setText("")
 
         self.pftableView.setColumnWidth(0, 250)
+        self.pftableView.setColumnWidth(1, 260)
         self.pftableView.doubleClicked.connect(self.edit_entity)
+        # disable editing of view widgets
+        self.pftableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
 
-        # disable editing of view widgets
-        self.pftableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tbvColumns.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tbvColumns.doubleClicked.connect(self.edit_column)
+        self.tbvColumns.clicked.connect(self.column_clicked)
 
         self.lvEntities.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
         self.lvLookups.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0, 0))
+        self.lvLookups.doubleClicked.connect(self.edit_lookup)
+        self.lvLookups.clicked.connect(self.lookup_clicked)
+
         self.lvLookupValues.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.lvLookupValues.doubleClicked.connect(self.edit_lookup_value)
 
-        self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0, 0))
-        self.lvLookups.doubleClicked.connect(self.edit_lookup)
 
     def _on_party_selected(self, item):
         # Handle selection of a party entity.
@@ -2014,9 +2024,8 @@ class ConfigWizard(WIDGET, BASE):
         """
         self.pftableView.setModel(view_model)
         self.pftableView.setColumnWidth(0, 200)
+        self.pftableView.setColumnWidth(1, 260)
         self.lvEntities.setModel(view_model)
-
-        
 
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
@@ -2312,6 +2321,52 @@ class ConfigWizard(WIDGET, BASE):
                 if pg_table_exists(entity.name):
                     self.process_privilege(entity, editor.column)
 
+    def clear_previous_selection(self):
+        if self.selected_index == None:
+            return
+        font = QFont()
+        font.setBold(False)
+        self.lvLookups.selectionModel().model().setData(
+            self.selected_index,
+            font,
+            Qt.FontRole
+        )
+
+
+    def column_clicked(self, model_index):
+        rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
+        if column.TYPE_INFO == 'LOOKUP':
+            self.lvLookups.clearSelection()
+            start = self.lvLookups.model().index(0, 0)
+            matches = self.lvLookups.model().match(
+                start,
+                Qt.DisplayRole,
+                column.entity_relation.parent.short_name,
+                hits=1,
+                flags=Qt.MatchContains
+            )
+            if matches:
+                index = matches[0]
+                self.lvLookups.selectionModel().select(
+                    index, QItemSelectionModel.Select
+                )
+
+                self.lookup_item_model.setCurrentIndex(index, QItemSelectionModel.Select)
+                self.lvLookups.clicked.emit(index)
+
+                self.clear_previous_selection()
+                font = QFont()
+                font.setBold(True)
+                self.lvLookups.selectionModel().model().setData(
+                    index,
+                    font,
+                    Qt.FontRole
+                )
+
+
+                self.selected_index = index
+
+
     def edit_column(self):
         """
         Event handler for editing a column.
@@ -2534,6 +2589,19 @@ class ConfigWizard(WIDGET, BASE):
         else:
             self.show_message(QApplication.translate("Configuration Wizard", \
                                                      "No profile selected to add lookup!"))
+
+    def lookup_selection_changed(self, current_index: QModelIndex, prev_index: QModelIndex):
+        font = QFont()
+        font.setBold(False)
+        self.lvLookups.selectionModel().model().setData(
+            prev_index,
+            font,
+            Qt.FontRole
+        )
+
+    def lookup_clicked(self, model_index: QModelIndex):
+        self.clear_previous_selection()
+        self.lookup_changed(None, None)
 
     def edit_lookup(self):
         """

@@ -48,12 +48,13 @@ class EntityEditor(WIDGET, BASE):
     Dialog to add and edit entities
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: dict):
         """
-        :param parent: Owner of this dialog
-        :param profile : current profile
-        :param entity : current entity
-        :param in_db : Boolean flag to check if entity exist in database
+        kwargs keys:
+        -parent  : Owner of this dialog
+        -profile : current profile
+        -entity  : current entity
+        -in_db   : Boolean flag to check if entity exist in database
         """
         self.form_parent = kwargs.get('parent', self)
         self.profile = kwargs.get('profile', None)
@@ -68,6 +69,7 @@ class EntityEditor(WIDGET, BASE):
     def init_gui_controls(self):
         self.edtTable.setFocus()
         self.setTabOrder(self.edtTable, self.edtDesc)
+        self.cbSupportDoc.setCheckState(self.bool_to_check(True))
         if self.entity:
             self.edtTable.setText(self.entity.short_name)
             self.edtDesc.setText(self.entity.description)
@@ -137,16 +139,8 @@ class EntityEditor(WIDGET, BASE):
         self.blockSignals(False)
         text_edit.setValidator(None)
 
-    def bool_to_check(self, state):
-        """
-        Returns a check state given a boolean value
-        :param state : Boolean value
-        :type state: Boolean
-        """
-        if state:
-            return Qt.Checked
-        else:
-            return Qt.Unchecked
+    def bool_to_check(self, state: bool) -> Qt.CheckState:
+        return Qt.Checked if state else Qt.Unchecked
 
     def accept(self):
         if self.edtTable.text() == '' or self.edtTable.text() == ' ':
@@ -212,7 +206,7 @@ class EntityEditor(WIDGET, BASE):
         """
         return name in self.profile.entities
 
-    def support_doc(self):
+    def support_doc(self) -> bool:
         """
         Return boolean value representing the check state of supporting
         document checkbox

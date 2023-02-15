@@ -125,6 +125,8 @@ class Entity(QObject, TableItem):
             self._create_serial_column()
 
         self.supporting_doc = None
+
+        # FIXME: Refactor the following supports_documents assignments
         self._supports_documents = supports_documents
 
         if self._supports_documents:
@@ -596,10 +598,10 @@ class EntitySupportingDocument(Entity):
             self._doc_types_value_list = self.profile.create_value_list(
                 vl_name
             )
-            self.profile.add_entity(self._doc_types_value_list)
-
             # Add a default type
             self._doc_types_value_list.add_value(self.tr('General'))
+
+            self.profile.add_entity(self._doc_types_value_list)
 
         # Document type column
         self.doc_type = LookupColumn('document_type', self)
@@ -628,7 +630,7 @@ class EntitySupportingDocument(Entity):
 
         return vl_name
 
-    def _doc_type_vl(self, name):
+    def _doc_type_vl(self, name: str) ->list:
         # Search for the document type value list based on the given name
         value_lists = self.profile.value_lists()
 

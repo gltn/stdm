@@ -505,7 +505,7 @@ class Profile(QObject):
         return [entity for entity in self.entities.values()
                 if entity.TYPE_INFO == type_info]
 
-    def value_lists(self):
+    def value_lists(self) -> list:
         """
         :return: A list of lookup entities contained in this profile.
         :rtype: list

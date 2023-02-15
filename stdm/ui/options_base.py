@@ -20,6 +20,8 @@ email                : stdm@unhabitat.org
 import logging
 from collections import OrderedDict
 
+from typing import Tuple
+
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     Qt,
@@ -38,7 +40,9 @@ from qgis.PyQt.QtWidgets import (
     QTableWidgetItem,
     QComboBox,
     QPushButton,
-    QLabel
+    QLabel,
+    QComboBox,
+    QPushButton
     )
 
 from qgis.gui import QgsGui
@@ -639,13 +643,13 @@ class ProfileEntityWidget():
         for key, value in self._entities.items():
             self._entity_combo.addItem(key)
 
-    def make_sorting_record(self):
+    def make_sorting_record(self) -> Tuple[QLabel, QComboBox, QComboBox, QPushButton]:
         """
         """
         sort_record = self._make_record(self.selected_entity_name())
         return sort_record
 
-    def _make_record(self, entity_name):
+    def _make_record(self, entity_name: str) -> Tuple[QLabel, QComboBox, QComboBox, QPushButton]:
         """
         Creates and returns a four item tuple that represents
         a single row in the table widget. A row contains:
@@ -660,21 +664,18 @@ class ProfileEntityWidget():
         """
         if entity_name == '':
             return None
+
         label = QLabel(entity_name)
         columns = self._make_columns_widget(entity_name)
         order = self._make_order_widget()
         action_btn = QPushButton('Remove')
         return (label, columns, order, action_btn)
 
-    def _make_columns_widget(self, entity_name):
+    def _make_columns_widget(self, entity_name: str) -> QComboBox:
         """
         Creates and populates sorting column combobox.
         Items of the combobox are column names of a
         given entity.
-
-        :param entity_name: Name of the entity to 
-        extract columns from.
-        :type entity_name: str
         """
         entity = self.current_entity(entity_name)
         geom_column_names = [column.name for column in entity.geometry_columns()]
@@ -685,7 +686,7 @@ class ProfileEntityWidget():
             cbox.addItem(name)
         return cbox
 
-    def _make_order_widget(self):
+    def _make_order_widget(self) -> QComboBox:
         """
         Create a combobox for sorting order.
         """
@@ -881,7 +882,7 @@ class SortRecordWidget():
 
         self.cache.add(entity_name, (entity_columns, sort_order))
 
-    def add_sort_record_cached(self, sort_record, value):
+    def add_sort_record_cached(self, sort_record: tuple, value):
         """ 
         Method called once to add any sort details saved in the registry.
         Creates a  single row of table widget items from the values in 
@@ -907,7 +908,7 @@ class SortRecordWidget():
 
         self._add_record(sort_record)
 
-    def _add_record(self, sort_record):
+    def _add_record(self, sort_record: Tuple[QLabel, QComboBox, QComboBox, QPushButton]):
         """
         Adds sorting widgets to a table widget
         """
