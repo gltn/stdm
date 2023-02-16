@@ -171,7 +171,7 @@ class ColumnEditor(WIDGET, BASE):
         # Re-enable signals
         self.cboDataType.blockSignals(False)
 
-    def show_notification(self, message):
+    def show_notification(self, message: str):
         """
         Shows a warning notification bar message.
         :param message: The message of the notification.
@@ -226,6 +226,8 @@ class ColumnEditor(WIDGET, BASE):
         if self.entity_has_records:
             self.cbMandt.setEnabled(False)
 
+        self.cbIndex.setVisible(False)
+
     def validate_text(self, text):
         """
         Validates and updates the entered text if necessary.
@@ -270,7 +272,7 @@ class ColumnEditor(WIDGET, BASE):
         self.blockSignals(False)
         text_edit.setValidator(None)
 
-    def column_to_form(self, column):
+    def column_to_form(self, column: BaseColumn):
         """
         Initializes form controls with Column data.
         :param column: BaseColumn instance

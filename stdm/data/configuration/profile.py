@@ -91,11 +91,15 @@ class Profile(QObject):
         self._auto_generate_code = AutoGenerateCode(self)
         self.removed_entities = []
 
+        # Create default Gender lookup
+        self._gender_lookup = self._create_gender_lookup()
+
         # Add default entities to the entity collection
         self.add_entity(self.supporting_document)
         self.add_entity(self._admin_spatial_unit)
         self.add_entity(self._auto_generate_code)
         self.add_entity(self.social_tenure)
+        self.add_entity(self._gender_lookup)
 
     def _prefix(self) -> str:
         prefixes = self.configuration.prefixes()
@@ -125,6 +129,12 @@ class Profile(QObject):
         :rtype: SocialTenure
         """
         return SocialTenure('social_tenure_relationship', self)
+
+    def _create_gender_lookup(self):
+        gender_lookup = self.create_value_list('gender')
+        gender_lookup.add_value('Female')
+        gender_lookup.add_value('Male')
+        return gender_lookup
 
     @property
     def administrative_spatial_unit(self):
