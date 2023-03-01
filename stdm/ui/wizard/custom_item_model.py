@@ -8,7 +8,8 @@ from qgis.PyQt.QtGui import (
     QStandardItem,
     QStandardItemModel,
     QBrush,
-    QColor
+    QColor,
+    QIcon
 )
 from qgis.PyQt.QtWidgets import (
     QTableView,
@@ -16,6 +17,8 @@ from qgis.PyQt.QtWidgets import (
     QComboBox,
     QListView
 )
+
+from stdm.ui.gui_utils import GuiUtils
 
 LOGGER = logging.getLogger('stdm')
 
@@ -105,6 +108,8 @@ class EntitiesModel(QStandardItemModel):
         '''
         # entity_item = EntityModelItem(entity)
         name_item = EntityModelItem(entity.short_name)
+        name_item.setData(GuiUtils.get_icon_pixmap("table02.png"), Qt.DecorationRole)
+
         support_doc = EntityModelItem(self.bool_to_yesno(entity.supports_documents))
         support_doc.setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
         description = EntityModelItem(entity.description)
@@ -192,7 +197,7 @@ class ColumnEntityModelItem(QStandardItem):
         super(ColumnEntityModelItem, self).__init__(column_name)
 
 class ColumnEntitiesModel(QStandardItemModel):
-    headers_labels = ["Name", "Data Type", "Description"]
+    headers_labels = ["Name", "Data Type", "Mandatory", "Unique", "Description"]
 
     def __init__(self, parent=None):
         super(ColumnEntitiesModel, self).__init__(parent)
@@ -210,13 +215,27 @@ class ColumnEntitiesModel(QStandardItemModel):
 
         data_type_column = ColumnEntityModelItem(data_type_name)
 
-        description_column = ColumnEntityModelItem(entity.description)
-
+        mandt_column = ColumnEntityModelItem(
+            self.bool_to_yesno(entity.mandatory))
+        mandt_column.setTextAlignment(Qt.AlignHCenter| Qt.AlignVCenter)
         if entity.mandatory:
             brush = QBrush(Qt.red)
-            name_column.setForeground(brush)
+            mandt_column.setForeground(brush)
 
-        self.appendRow([name_column, data_type_column, description_column])
+        unique_column = ColumnEntityModelItem(
+            self.bool_to_yesno(entity.unique)
+        )
+        unique_column.setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
+
+        description_column = ColumnEntityModelItem(entity.description)
+
+
+        self.appendRow([name_column, data_type_column, 
+                     mandt_column, unique_column, description_column])
+
+    def bool_to_yesno(self, state: bool) -> str:
+        CHECK_STATE = {True: 'Yes', False: 'No'}
+        return CHECK_STATE[state]
 
     def supportedDragActions(self):
         return Qt.MoveAction
@@ -273,14 +292,12 @@ class ColumnEntitiesModel(QStandardItemModel):
 #########
 
 class LookupEntityModelItem(QStandardItem):
-    headers_labels = ["Name"]
-
     def __init__(self, entity=None):
         self._entity = None
 
         super(LookupEntityModelItem, self).__init__(entity.short_name)
 
-        self.setColumnCount(len(self.headers_labels))
+        #self.setColumnCount(len(self.headers_labels))
 
         if not entity is None:
             self.set_entity(entity)
@@ -311,11 +328,12 @@ class LookupEntityModelItem(QStandardItem):
         self.setForeground(brush)
 
 class LookupEntitiesModel(QStandardItemModel):
+    headers_labels = ["Name"]
     def __init__(self, parent=None):
         super(LookupEntitiesModel, self).__init__(parent)
         self._entities = OrderedDict()
 
-        self.setHorizontalHeaderLabels(LookupEntityModelItem.headers_labels)
+        self.setHorizontalHeaderLabels(LookupEntitiesModel.headers_labels)
 
     def entity(self, name):
         if name in self._entities:
@@ -353,6 +371,7 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def _add_row(self, entity):
         entity_item = LookupEntityModelItem(entity)
+        entity_item.setData(GuiUtils.get_icon_pixmap("lookup02.png"), Qt.DecorationRole)
         if entity.is_empty():
             brush = QBrush(Qt.red)
             entity_item.setForeground(brush)

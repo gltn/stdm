@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1038</width>
-    <height>787</height>
+    <height>786</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -270,10 +270,7 @@
     <string>Profile</string>
    </property>
    <property name="subTitle">
-    <string>Manage profile and related entities. A profile represents a collection of logically related
-                    entities, some of which represent the party and spatial unit. Examples of profiles include
-                    individual, household, neighbourhood or even city-wide profiles.
-                </string>
+    <string>Manage profile and related entities. A profile represents a collection of logically related  entities, some of which represent the party and spatial unit. Examples of profiles include individual, household, neighbourhood or even city-wide profiles.</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_7">
     <item>

@@ -75,7 +75,7 @@ class OGRReader:
         self._current_profile = current_profile()
         self._source_doc_manager = None
 
-        self.system_date_format = self.machine_date_format()
+        self.date_formatter = DateFormatter()
 
     def getLayer(self):
         # Return the first layer in the data source
@@ -485,10 +485,18 @@ class OGRReader:
                             dest_column = '{0}_collection'.format(lk_name)
 
                         if col_obj.TYPE_INFO == 'DATE':
-                            if not self.check_date_format(field_value, self.system_date_format):
+                            if not self.date_formatter.compare_date_format(field_value):
                                 raise ImportFeatureException(
-                                        "Date format on your CSV should match system date format."
+                                        (f"Date format on your CSV should match system date format."
+                                         f"`{self.date_formatter.system_date_format}`")
                                         )
+                            else:
+                                # d_tokens = field_value.split("/")
+                                # print(d_tokens)
+                                # raise ImportFeatureException("Debug")
+                                # fv =  datetime.strptime(field_value, "%Y/%m/%d").date()
+                                # print(f"PostgreSQL Data FMT: {fv}")
+                                field_value = self.date_formatter.to_postgres_format(field_value)
 
                         column_value_mapping[dest_column] = field_value
 
@@ -603,17 +611,39 @@ class OGRReader:
 
         return col_values
 
-    def machine_date_format(self) -> str:
+
+class DateFormatter:
+    def __init__(self):
+        self.system_date_format = ''
+        self.python_date_format = ''
+        self.system_date_separator = ''
+        self.day =  ''
+        self.month = ''
+        self.year = -1
+        self.read_system_date_format()
+
+    def read_system_date_format(self):
+        reg = ConnectRegistry(None, HKEY_CURRENT_USER)
+        key = r"Control Panel\\International"
+        keys = OpenKey(reg, key)
+        self.system_date_format = QueryValueEx(keys, "sShortDate")[0]
+        self.system_date_separator = QueryValueEx(keys, "sDate")[0]
+        self.python_date_format = self.make_python_date_format()
+
+    def compare_date_format(self, date_val: str) ->bool:
+        try:
+            f_date = datetime.strptime(date_val, self.python_date_format).date()
+            return True
+        except:
+            return False
+
+    def make_python_date_format(self) -> str:
         """
         Windows specific!
         TODO: Add the linux version to get date format
         """
-        key = r".DEFAULT\\Control Panel\\International"
-        reg = ConnectRegistry(None, HKEY_USERS)
-        keys = OpenKey(reg, key)
-        date_format = QueryValueEx(keys, "sShortDate")
-
-        tokens = date_format[0].lower().split('/')
+        sep = self.system_date_separator
+        tokens = self.system_date_format.lower().split(sep)
         tok_order = {}
 
         for i, tok in enumerate(tokens):
@@ -622,14 +652,37 @@ class OGRReader:
                 date_tok = 'Y'
             tok_order[i] = date_tok
 
-        new_format = "%{}/%{}/%{}".format(tok_order[0], tok_order[1], tok_order[2])
-
+        new_format = f"%{tok_order[0]}{sep}%{tok_order[1]}{sep}%{tok_order[2]}"
         return new_format
 
-    def check_date_format(self, str_date: str, date_format: str) ->bool:
-        try:
-            f_date = datetime.strptime(str_date, date_format).date()
-            return True
-        except:
-            return False
+    def find_token_index(self, tokens: dict, token: str) -> int:
+        for k, v in tokens.items():
+            if v[0].lower() == token:
+                return k
+        return -1
+
+    def to_postgres_format(self, date_value: str)-> str:
+        """
+        Takes a date value and returns a PostgreSQL formatted
+        date: `YYYY-MM-dd`
+        """
+        PG_DATE_SEP = '-'
+        sf = self.system_date_format.replace('%', '')
+        tokens = sf.split(self.system_date_separator)
+        tokens_order = {}
+        for i, token in enumerate(tokens):
+            tokens_order[i] = token
+
+        yr_index = self.find_token_index(tokens_order, 'y')
+        mon_index = self.find_token_index(tokens_order, 'm')
+        day_index = self.find_token_index(tokens_order, 'd')
+
+        date_tokens = date_value.split(self.system_date_separator)
+
+        pg_date = (f"{date_tokens[yr_index]}{PG_DATE_SEP}{date_tokens[mon_index]}"
+                   f"{PG_DATE_SEP}{date_tokens[day_index]}")
+
+        return pg_date
+
+
 

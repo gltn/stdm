@@ -37,7 +37,8 @@ from qgis.PyQt.QtCore import (
     QPointF,
     QSizeF,
     QItemSelectionModel,
-    QModelIndex
+    QModelIndex,
+    QSortFilterProxyModel
 )
 from qgis.PyQt.QtGui import (
     QStandardItemModel,
@@ -313,6 +314,7 @@ class ConfigWizard(WIDGET, BASE):
         self.tbvColumns.installEventFilter(self)
 
         self.selected_index = None
+
 
     def set_window_title(self):
         if self.draft_config:
@@ -631,6 +633,7 @@ class ConfigWizard(WIDGET, BASE):
         # disable editing of view widgets
         self.pftableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+
         # Attach multi party checkbox state change event handler
         self.cbMultiParty.stateChanged.connect(self.multi_party_state_change)
 
@@ -638,7 +641,14 @@ class ConfigWizard(WIDGET, BASE):
         self.tbvColumns.doubleClicked.connect(self.edit_column)
         self.tbvColumns.clicked.connect(self.column_clicked)
 
+        self.columns_proxy_model = QSortFilterProxyModel(self.col_view_model)
+        self.columns_proxy_model.setSourceModel(self.col_view_model)
+        self.columns_proxy_model.setFilterKeyColumn(0)
+        self.tbvColumns.setModel(self.columns_proxy_model)
+        self.tbvColumns.setSortingEnabled(True)
+
         self.lvEntities.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.lvEntities.clicked.connect(self.entity_clicked)
 
         self.lvLookups.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0, 0))
@@ -2027,6 +2037,7 @@ class ConfigWizard(WIDGET, BASE):
         self.pftableView.setColumnWidth(1, 260)
         self.lvEntities.setModel(view_model)
 
+
     def populate_view_models(self, profile):
         for entity in profile.entities.values():
             # if item is "deleted", don't show it
@@ -2179,7 +2190,8 @@ class ConfigWizard(WIDGET, BASE):
         """
         self.clear_view_model(self.col_view_model)
         self.col_view_model = ColumnEntitiesModel()
-        self.tbvColumns.setModel(self.col_view_model)
+        #self.tbvColumns.setModel(self.col_view_model)
+        self.tbvColumns.setModel(self.columns_proxy_model)
         self.populate_columns_view(entity)
 
     def profile_changed(self, row_id):
@@ -2249,6 +2261,40 @@ class ConfigWizard(WIDGET, BASE):
 
             self.tbvColumns.setModel(self.col_view_model)
         self.size_columns_viewer()
+
+    def entity_clicked(self, model_index: QModelIndex):
+        _ ,entity, _ = self.get_selected_item_data(self.lvEntities)
+        entity_name = entity.name.replace(f'{current_profile().prefix}_', '')
+        s_doc = f'check_{entity_name}_document_type'
+        self.highlight_lookup(s_doc)
+
+    def highlight_lookup(self, lookup_name: str):
+        self.lvLookups.clearSelection()
+        start_index = self.lvLookups.model().index(0, 0)
+        matches = self.lvLookups.model().match(
+            start_index,
+            Qt.DisplayRole,
+            lookup_name,
+            hits=1,
+            flags=Qt.MatchContains
+        )
+        if matches:
+            current_index = matches[0]
+            self.lvLookups.selectionModel().select(
+                current_index, QItemSelectionModel.Select
+            )
+            self.lookup_item_model.setCurrentIndex(current_index, QItemSelectionModel.Select)
+            self.lvLookups.clicked.emit(current_index)
+
+            self.clear_previous_selection()
+            font = QFont()
+            font.setBold(True)
+            self.lvLookups.selectionModel().model().setData(
+                current_index,
+                font, 
+                Qt.FontRole
+            )
+            self.selected_index = current_index
 
     def size_columns_viewer(self):
         NAME = 0
@@ -2332,40 +2378,11 @@ class ConfigWizard(WIDGET, BASE):
             Qt.FontRole
         )
 
-
-    def column_clicked(self, model_index):
-        rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
+    def column_clicked(self, model_index: QModelIndex):
+        _ ,column, _ = self.get_selected_item_data(self.tbvColumns)
         if column.TYPE_INFO == 'LOOKUP':
-            self.lvLookups.clearSelection()
-            start = self.lvLookups.model().index(0, 0)
-            matches = self.lvLookups.model().match(
-                start,
-                Qt.DisplayRole,
-                column.entity_relation.parent.short_name,
-                hits=1,
-                flags=Qt.MatchContains
-            )
-            if matches:
-                index = matches[0]
-                self.lvLookups.selectionModel().select(
-                    index, QItemSelectionModel.Select
-                )
-
-                self.lookup_item_model.setCurrentIndex(index, QItemSelectionModel.Select)
-                self.lvLookups.clicked.emit(index)
-
-                self.clear_previous_selection()
-                font = QFont()
-                font.setBold(True)
-                self.lvLookups.selectionModel().model().setData(
-                    index,
-                    font,
-                    Qt.FontRole
-                )
-
-
-                self.selected_index = index
-
+            lookup_name = column.entity_relation.parent.short_name
+            self.highlight_lookup(lookup_name)
 
     def edit_column(self):
         """
@@ -2378,7 +2395,7 @@ class ConfigWizard(WIDGET, BASE):
         rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
 
         if column and column.action == DbItem.CREATE:
-            row_id, entity = self._get_entity(self.lvEntities)
+            _, entity = self._get_entity(self.lvEntities)
 
             profile = self.current_profile()
             params = {}
@@ -2733,6 +2750,7 @@ class ConfigWizard(WIDGET, BASE):
             else:
                 txt = cv.updated_value
             val = QStandardItem(txt)
+            val.setData(GuiUtils.get_icon_pixmap("record02.png"), Qt.DecorationRole)
             self.lookup_value_view_model.appendRow(val)
 
     def add_values(self, values):
@@ -2747,6 +2765,7 @@ class ConfigWizard(WIDGET, BASE):
                 v.value = v.updated_value
 
             val = QStandardItem(v.value)
+            val.setData(GuiUtils.get_icon_pixmap("record02.png"), Qt.DecorationRole)
             self.lookup_value_view_model.appendRow(val)
 
     def lookup_changed(self, selected, diselected):

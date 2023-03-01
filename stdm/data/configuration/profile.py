@@ -130,7 +130,7 @@ class Profile(QObject):
         """
         return SocialTenure('social_tenure_relationship', self)
 
-    def _create_gender_lookup(self):
+    def _create_gender_lookup(self) ->ValueList:
         gender_lookup = self.create_value_list('gender')
         gender_lookup.add_value('Female')
         gender_lookup.add_value('Male')
@@ -313,7 +313,7 @@ class Profile(QObject):
         return [er for er in self.relations.values()
                 if er.child.name == name]
 
-    def add_entity_relation(self, entity_relation):
+    def add_entity_relation(self, entity_relation: EntityRelation):
         """
         Add an EntityRelation object to the collection
         :param entity_relation: EntityRelation object
@@ -350,7 +350,7 @@ class Profile(QObject):
 
         return True
 
-    def remove_relation(self, name):
+    def remove_relation(self, name: str):
         """
         Remove the EntityRelation with the given name from the collection.
         :param name: Name of the EntityRelation object.
@@ -399,7 +399,7 @@ class Profile(QObject):
         if not suppress_signal:
             self.entity_added.emit(item)
 
-    def remove_entity(self, name):
+    def remove_entity(self, name: str):
         """
         Removes an entity with the given short name from the collection.
         :param name: Name of the entity. Should include the prefix that
@@ -451,7 +451,7 @@ class Profile(QObject):
 
         return True
 
-    def remove_association_entities(self, entity):
+    def remove_association_entities(self, entity: Entity):
         """
         Removes association entities related to the specified primary
         entity. Searches for primary entity in both first and second
@@ -504,7 +504,7 @@ class Profile(QObject):
         """
         return self.create_entity(name, association_entity_factory, **kwargs)
 
-    def entities_by_type_info(self, type_info):
+    def entities_by_type_info(self, type_info: str) ->list[Entity]:
         """
         :param type_info: Entity TYPE_INFO
         :type type_info: str
