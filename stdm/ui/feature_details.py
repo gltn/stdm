@@ -59,8 +59,10 @@ from qgis.gui import (
 from qgis.utils import iface
 
 from stdm.data.configuration import (
-    entity_model
+    entity_model,
 )
+from stdm.data.configuration.entity import Entity
+
 from stdm.data.globals import ENTITY_FORMATTERS
 from stdm.data.pg_utils import pg_table_exists
 from stdm.data.pg_utils import (
@@ -84,7 +86,6 @@ from stdm.utils.util import (
     format_name,
     entity_attr_to_model
 )
-
 
 # TODO: the base class here shouldn't really be QWidget, but
 # the levels of inheritance here prohibit us to make the subclass
@@ -391,7 +392,7 @@ class DetailsDBHandler(LayerSelectionHandler):
             ]
         ]
 
-    def feature_model(self, entity, id):
+    def feature_model(self, entity: Entity, id: int):
         """
         Gets the model of an entity based on an id and the entity.
         :param entity: Entity
@@ -409,16 +410,15 @@ class DetailsDBHandler(LayerSelectionHandler):
 
         # result = model_obj.queryObject().filter(model.id == id).all()
         result = model_obj.queryObject().all()
-        if len(result) > 0:
-            for r in result:
-                if r.id == id:
-                    result = r
-                    break
-            return result
-        else:
+        if len(result) == 0:
             return None
 
-    def feature_str_link(self, feature_id, entity=None):
+        for r in result:
+            if int(r.id) == int(id):
+                return r
+        return result[0]
+
+    def feature_str_link(self, feature_id: int, entity=None) -> list:
         """
         Gets all STR records linked to a feature, if the layer is a
         spatial unit layer.
@@ -446,7 +446,7 @@ class DetailsDBHandler(LayerSelectionHandler):
 
         return result
 
-    def party_str_link(self, party_entity, party_id):
+    def party_str_link(self, party_entity: Entity, party_id: int):
         """
         Gets all STR records linked to a party, if the record is party record.
         :param party_id: The party id/id of the spatial unit
@@ -459,8 +459,8 @@ class DetailsDBHandler(LayerSelectionHandler):
         )
         model_obj = str_model()
         party_name = party_entity.name
-        party_entity_id = '{}_id'.format(
-            party_name.split(self.current_profile.prefix)[1]).lstrip('_')
+
+        party_entity_id = '{}_id'.format(party_entity.short_name.lower())
 
         party_col_obj = getattr(str_model, party_entity_id)
 
@@ -933,6 +933,8 @@ class DetailsTreeView(DetailsDBHandler):
 
             for feature, root in roots.items():
 
+                self.spatial_unit_items[root.data()] = self.entity
+
                 if isinstance(feature, QgsFeature):
                     id = feature.id()
 
@@ -941,19 +943,17 @@ class DetailsTreeView(DetailsDBHandler):
 
                 if self.entity in self.social_tenure.spatial_units:
                     str_records = self.feature_str_link(id)
-
-                self.spatial_unit_items[root.data()] = self.entity
-
+ 
                 if len(str_records) > 0:
-                    db_model = getattr(str_records[0], self.entity.name)
+                    db_model = getattr(str_records[0], self.entity.name) # SQLAlchemy Object
                 else:
                     data = self.features_data(id)
 
                     # if len(self.features_data(id)) > 0:
                     if len(data[0]) > 0:
-                        db_model = data[0]
+                        db_model = data[0]  # OrderedDict
                     else:
-                        db_model = self.feature_model(self.entity, id)
+                        db_model = self.feature_model(self.entity, id) # SQLAlchemy Object
 
                 self.add_root_children(db_model, root, str_records)
 
@@ -972,7 +972,6 @@ class DetailsTreeView(DetailsDBHandler):
         # add non entity layer for views.
 
         # self.reset_tree_view(selected_features)
-
         for spu_id in spatial_unit_ids:
 
             root = QStandardItem(layer_icon, str(entity.short_name))
@@ -984,17 +983,16 @@ class DetailsTreeView(DetailsDBHandler):
             str_records = self.feature_str_link(spu_id, entity)
 
             if len(str_records) > 0:
-                db_model = getattr(str_records[0], entity.name)
-
+                db_model = getattr(str_records[list(str_records.keys())[0]], entity.name)
             else:
                 db_model = self.feature_model(entity, spu_id)
 
             self.add_root_children(db_model, root, str_records)
 
         if select_matching_features:
-            self.layer.selectByIds(
-                list(self.feature_models.keys())
-            )
+            #self.layer.selectByIds( list(self.feature_models.keys()))
+            self.layer.selectByIds([spu_id])
+
         # self.zoom_to_selected(self.layer)
 
     def search_party(self, entity, party_ids):
@@ -1058,14 +1056,13 @@ class DetailsTreeView(DetailsDBHandler):
             self.set_bold(parent)
             self.expand_node(parent)
 
-    def features_data(self, feature_id=-1):
+    def features_data(self, feature_id: int=-1) -> list:
         """
         Gets data column and value of a feature from
         the selected layer and features.
         :param feature_id: The feature id
         :type feature_id: Integer
         :return: List of feature data with column and value
-        :rtype: List
         """
         selected_features = self.layer.selectedFeatures()
 
@@ -1152,10 +1149,10 @@ class DetailsTreeView(DetailsDBHandler):
             return
 
         if isinstance(model, OrderedDict):
-            # if len(model) == 0: return
             feature_id = model['id']
         else:
             feature_id = model.id
+
         self.feature_models[feature_id] = model
 
         if not isinstance(model, OrderedDict):
@@ -1952,8 +1949,8 @@ class DetailsTreeView(DetailsDBHandler):
         elif item.data() in self.party_items:
             db_model = self.feature_model(self.party_items[item.data()], id)
         else:
-
             db_model = self.feature_model(entity, id)
+
         if db_model is not None:
             if not hasattr(db_model, 'documents'):
                 docs = []

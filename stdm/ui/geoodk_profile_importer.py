@@ -22,43 +22,20 @@ import os
 import shutil
 # from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 from collections import OrderedDict
-from typing import (
-        Dict, 
-        List,
-        TypeVar
-        )
+from typing import Dict, List, TypeVar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import (
-    QDir,
-    QFile,
-    QDateTime
-)
-from qgis.PyQt.QtCore import (
-    Qt,
-    QCoreApplication
-)
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QMessageBox,
-    QListWidgetItem,
-    QFileDialog,
-    QDialogButtonBox,
-    QApplication
-)
+from qgis.PyQt.QtCore import QCoreApplication, QDateTime, QDir, QFile, Qt
+from qgis.PyQt.QtWidgets import (QApplication, QDialog, QDialogButtonBox,
+                                 QFileDialog, QListWidgetItem, QMessageBox)
 from sqlalchemy.exc import SQLAlchemyError
 
-from stdm.data.configuration.stdm_configuration import (
-    StdmConfiguration
-)
+from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.exceptions import DummyException
-from stdm.geoodk.importer.entity_importer import EntityImporter
-from stdm.geoodk.importer.entity_importer import Save2DB
+from stdm.geoodk.importer.entity_importer import EntityImporter, Save2DB
 from stdm.geoodk.importer.import_log import ImportLogger
-from stdm.geoodk.importer.uuid_extractor import (
-        InstanceUUIDExtractor, 
-        EntityNodeData
-        )
+from stdm.geoodk.importer.uuid_extractor import (EntityNodeData,
+                                                 InstanceUUIDExtractor)
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
@@ -77,7 +54,6 @@ GEOODK_FORM_HOME = CONFIG_FILE + 'instances'
 
 # Type aliases
 QtCheckState = Qt.CheckState
-DictWithOrder = Dict  # OrderedDict
 Profile = TypeVar('Profile')
 ProfileName = str
 EntityName  = str
@@ -138,7 +114,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.label_14.setVisible(False)
         self.btn_refresh.setVisible(False)
 
-    def load_config(self) -> DictWithOrder[ProfileName, Profile]:
+    def load_config(self) -> Dict[ProfileName, Profile]:
         """
         Load STDM configuration
         Returns an ordered dict
@@ -240,7 +216,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.extract_guuid_and_rename_file(directory)
         self.importlogger.start_json_file()
         self.previous_import_instances()
-        # diff = inst_count - rm_count
         self.txt_count.setText(str(len(self.instance_list)))
 
     def extract_guuid_and_rename_file(self, path: str):
@@ -312,7 +287,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             for entity in entities:
                 list_widget = QListWidgetItem(
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
-                #list_widget.setCheckState(Qt.Checked)
+                list_widget.setIcon(GuiUtils.get_icon("table02.png"))
+                #list_widget.setCheckState(Qt.Checked
 
     def user_selected_entities(self) -> List[EntityName]:
         """

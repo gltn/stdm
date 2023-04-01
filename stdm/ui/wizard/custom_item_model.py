@@ -371,7 +371,7 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def _add_row(self, entity):
         entity_item = LookupEntityModelItem(entity)
-        entity_item.setData(GuiUtils.get_icon_pixmap("lookup02.png"), Qt.DecorationRole)
+        entity_item.setData(GuiUtils.get_icon_pixmap("bullets_sm.png"), Qt.DecorationRole)
         if entity.is_empty():
             brush = QBrush(Qt.red)
             entity_item.setForeground(brush)

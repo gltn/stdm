@@ -604,7 +604,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
                 geom_col_obj = entity.columns[spatial_column]
 
                 srid = None
-                if geom_col_obj.srid >= 100000:
+                if int(geom_col_obj.srid) >= 100000:
                     srid = geom_col_obj.srid
 
                 curr_layer = vector_layer(

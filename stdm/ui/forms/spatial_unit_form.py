@@ -28,6 +28,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel,
     QHBoxLayout,
     QMessageBox)
+
 from qgis.core import (
     NULL,
     QgsFeatureRequest,
@@ -35,12 +36,14 @@ from qgis.core import (
     QgsField,
     QgsEditorWidgetSetup,
     QgsEditFormConfig)
+
 from qgis.gui import (
     QgsEditorWidgetWrapper,
     QgsEditorConfigWidget,
     QgsEditorWidgetFactory,
     QgsGui
 )
+
 from qgis.utils import (
     iface
 )
@@ -59,7 +62,6 @@ from stdm.ui.forms.widgets import ColumnWidgetRegistry
 from stdm.ui.helpers import valueHandler
 
 LOGGER = logging.getLogger('stdm')
-
 
 class WidgetWrapper(QgsEditorWidgetWrapper):
     def __init__(self, layer, fieldIdx, editor, parent):
@@ -248,10 +250,10 @@ class STDMFieldWidget:
         curr_layer.setEditFormConfig(form_config)
 
         curr_layer.featureAdded.connect(
-            lambda feature_id: self.load_stdm_form(
-                feature_id, spatial_column
-            )
-        )
+             lambda feature_id: self.load_stdm_form(
+                 feature_id, spatial_column
+             )
+         )
 
         curr_layer.featureDeleted.connect(
             self.on_feature_deleted
@@ -369,7 +371,7 @@ class STDMFieldWidget:
                 layer, col, widget_id_name[0]
             )
 
-    def feature_to_model(self, feature_id):
+    def feature_to_model(self, feature_id: int) -> tuple:
         """
         Converts feature to db model.
         :param feature_id: The feature id
@@ -380,25 +382,42 @@ class STDMFieldWidget:
         ent_model = entity_model(self.entity)
         model_obj = ent_model()
 
-        iterator = self.layer.getFeatures(
-            QgsFeatureRequest().setFilterFid(feature_id))
-        feature = next(iterator)
+        # iterator = self.layer.getFeatures(
+        #      QgsFeatureRequest().setFilterFid(feature_id))
+        # print(f'>> feature_to_model::iterator : {iterator}')
+        # feature = next(iterator)
+
+        feature = self.layer.getFeature(feature_id)
+
         field_names = [field.name() for field in self.layer.fields()]
-        attribute = feature.attributes()
-        if isinstance(attribute[0], QgsField):
+
+        attributes = feature.attributes()
+
+        if isinstance(attributes[0], QgsField):
             return None, 0
+
         mapped_data = OrderedDict(list(zip(field_names, feature.attributes())))
+
         col_with_data = []
 
         for col, value in mapped_data.items():
             if col == 'id':
                 continue
-            if value is None:
-                continue
-            if value == NULL:
-                continue
+            # if value is None:
+            #     continue
+            # if value == NULL:
+            #     continue
             setattr(model_obj, col, value)
             col_with_data.append(col)
+
+        # ------------------------------------------------------
+        # FIXME: Remove this work-around.
+        # For new features, we temporarily set the model ID 
+        # with feature ID to allow us select the new model
+        # correctly.
+        if model_obj.id is None:
+            setattr(model_obj, 'id', feature_id)
+        # -----------------------------------------------------
 
         return model_obj, len(col_with_data)
 
@@ -415,7 +434,6 @@ class STDMFieldWidget:
         :return: None
         :rtype:NoneType
         """
-
         srid = None
 
         self.current_feature = feature_id
@@ -469,11 +487,13 @@ class STDMFieldWidget:
                 msg
             )
             return
+        
         # init form
         feature_model, col_with_data = self.feature_to_model(feature_id)
-
+        
         if col_with_data == 0:
             feature_model = None
+
         self.editor = EntityEditorDialog(
             self.entity,
             model=feature_model,
@@ -482,8 +502,18 @@ class STDMFieldWidget:
             collect_model=True,
             plugin=self.plugin
         )
+
         self.model = self.editor.model()
         self.editor.addedModel.connect(self.on_form_saved)
+
+        # -----------------------------------------------------
+        # FIXME: Remove this work-around for new features
+        # The model ID was added to allow correct selection
+        # after digitizing
+        # New models should not have an ID
+        if self.model.id < 0:
+            setattr(self.model, "id", None)
+        # ---------------------------------------------------
 
         # get srid with EPSG text
         full_srid = self.layer.crs().authid().split(':')
@@ -590,7 +620,6 @@ class STDMFieldWidget:
                 control = attrMapper.valueHandler().control
                 if isinstance(control, ExpressionLineEdit):
                     value = control.on_expression_triggered(model)
-                    print(attrMapper._attrName, value)
                     setattr(model, attrMapper._attrName, value)
             model.update()
 

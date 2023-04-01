@@ -1162,8 +1162,11 @@ class ConfigWizard(WIDGET, BASE):
                 self._custom_attr_entities[tt] = ent
 
             # check if social tenure relationship has been setup
-            str_table = '{}_social_tenure_relationship'.format(c_profile.prefix)
-            self.set_str_controls(str_table)
+            if len(self.lst_parties.social_tenure.parties) > 0:
+                entity = self.lst_parties.social_tenure.parties[0]
+                self.set_str_controls(entity.name)
+            else:
+                self.enable_str_setup()
 
             # Set validity date ranges
             self._set_str_validity_ranges()
@@ -2264,7 +2267,12 @@ class ConfigWizard(WIDGET, BASE):
 
     def entity_clicked(self, model_index: QModelIndex):
         _ ,entity, _ = self.get_selected_item_data(self.lvEntities)
-        entity_name = entity.name.replace(f'{current_profile().prefix}_', '')
+        if entity is None:
+            return
+        profile = current_profile()
+        if profile is None:
+            return
+        entity_name = entity.name.replace(f'{profile.prefix}_', '')
         s_doc = f'check_{entity_name}_document_type'
         self.highlight_lookup(s_doc)
 
@@ -2337,7 +2345,6 @@ class ConfigWizard(WIDGET, BASE):
             params['parent'] = self
             params['entity'] = entity
             params['profile'] = profile
-
             params['is_new'] = True
             params['entity_has_records'] = self.entity_has_records(entity)
 
@@ -2393,7 +2400,8 @@ class ConfigWizard(WIDGET, BASE):
             return
 
         rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
-
+        if rid == -1:
+            return
         if column and column.action == DbItem.CREATE:
             _, entity = self._get_entity(self.lvEntities)
 
@@ -2532,6 +2540,8 @@ class ConfigWizard(WIDGET, BASE):
             return row_id, entity
 
     def get_selected_item_data(self, view):
+        if len(view.selectedIndexes()) == 0:
+            return -1, None, None
         model_item = view.model()
         row_id = view.selectedIndexes()[0].row()
         col_name = view.model().data(
@@ -2544,7 +2554,9 @@ class ConfigWizard(WIDGET, BASE):
         Delete selected column but show warning dialog if a
         column has dependencies.
         """
-        row_id, column, model_item = self.get_selected_item_data(self.tbvColumns)
+        _, column, model_item = self.get_selected_item_data(self.tbvColumns)
+        if column is None:
+            return
         if not column:
             self.show_message(QApplication.translate("Configuration Wizard", \
                                                      "No column selected for deletion!"))
@@ -2637,7 +2649,8 @@ class ConfigWizard(WIDGET, BASE):
             return
 
         row_id, lookup, model_item = self.get_selected_item_data(self.lvLookups)
-
+        if row_id == -1:
+            return
         tmp_short_name = copy.deepcopy(lookup.short_name)
         lookup.entity_in_database = False  # pg_table_exists(lookup.name)
 
@@ -2750,7 +2763,7 @@ class ConfigWizard(WIDGET, BASE):
             else:
                 txt = cv.updated_value
             val = QStandardItem(txt)
-            val.setData(GuiUtils.get_icon_pixmap("record02.png"), Qt.DecorationRole)
+            val.setData(GuiUtils.get_icon_pixmap("text_sm.png"), Qt.DecorationRole)
             self.lookup_value_view_model.appendRow(val)
 
     def add_values(self, values):
@@ -2765,7 +2778,7 @@ class ConfigWizard(WIDGET, BASE):
                 v.value = v.updated_value
 
             val = QStandardItem(v.value)
-            val.setData(GuiUtils.get_icon_pixmap("record02.png"), Qt.DecorationRole)
+            val.setData(GuiUtils.get_icon_pixmap("text_sm.png"), Qt.DecorationRole)
             self.lookup_value_view_model.appendRow(val)
 
     def lookup_changed(self, selected, diselected):
