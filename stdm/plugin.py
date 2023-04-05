@@ -144,6 +144,8 @@ from stdm.utils.util import (
 )
 from stdm.utils.util import simple_dialog
 
+from stdm.ui.mobile_data_provider.base_mobile_provider import BaseMobileProvider
+
 from stdm.composer.template_converter import (
         TemplateConverterTask
 )
@@ -206,6 +208,10 @@ class STDMQGISLoader:
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
         copy_startup()
+
+        self.mobile_provider_registry = {}
+        self.providers_menu = []
+        self.providers_toolbox = []
 
     def initGui(self):
         # Initial actions on starting up the application
@@ -1039,6 +1045,26 @@ class STDMQGISLoader:
         geoodk_mobile_dataMenu.setIcon(GuiUtils.get_icon("mobile_data_management.png"))
         geoodk_mobile_dataMenu.setTitle(QApplication.translate("GeoODKMobileSettings", "Mobile Data Forms"))
 
+        # Mobile provider menu container
+        # Mobile provider content menu container
+        mobile_data_provider_data_menu = QMenu(self.stdmMenu)
+        mobile_data_provider_data_menu.setObjectName("MobileProviderMenu")
+        mobile_data_provider_data_menu.setIcon(GuiUtils.get_icon("mobile_data_management.png"))
+        mobile_data_provider_data_menu.setTitle(QApplication.translate("MobileProviderSettings", "Mobile Data Provider"))
+
+        self.mobile_provider_registry = {
+            "ODK": {"icon": "mobile_data_management.png", "title": "ODK"},
+            "Kobo": {"icon": "mobile_data_management.png", "title": "Kobo"},
+            "QFields": {"icon": "mobile_data_management.png", "title": "QFields"}
+        }
+
+        for k, v in self.mobile_provider_registry.items():
+            provider_menu = mobile_data_provider_data_menu.addMenu(k)
+            provider_menu.setObjectName(k)
+            provider_menu.setIcon(GuiUtils.get_icon(v["icon"]))
+            provider_menu.setTitle(v["title"])
+            self.providers_menu.append(provider_menu)
+
         geoodkBtn = QToolButton()
         adminObjName = QApplication.translate("MobileToolbarSettings", "Mobile Data Forms")
         # Required by module loader for those widgets that need to be inserted into the container
@@ -1049,6 +1075,27 @@ class STDMQGISLoader:
 
         geoodkMenu = QMenu(geoodkBtn)
         geoodkBtn.setMenu(geoodkMenu)
+
+        mobile_provider_button = QToolButton()
+        mobile_provider_object_name = QApplication.translate("MobileToolbarSettings", "Mobile Data Provider")
+        # Required by module loader for those widgets that need to be inserted into the container
+        mobile_provider_button.setObjectName(mobile_provider_object_name)
+        mobile_provider_button.setToolTip(mobile_provider_object_name)
+        mobile_provider_button.setIcon(GuiUtils.get_icon("mobile_data_management.png"))
+        mobile_provider_button.setPopupMode(QToolButton.InstantPopup)
+
+        mobile_provider_menu = QMenu(mobile_provider_button)
+
+        for k, v in self.mobile_provider_registry.items():
+            provider_toolbox = mobile_provider_menu.addMenu(k)
+            provider_toolbox.setObjectName(k)
+            provider_toolbox.setIcon(GuiUtils.get_icon(v["icon"]))
+            provider_toolbox.setTitle(v["title"])
+            self.providers_toolbox.append(provider_toolbox)
+
+        mobile_provider_button.setMenu(mobile_provider_menu)
+
+
         # Define actions
 
         self.contentAuthAct = QAction(
@@ -1124,6 +1171,15 @@ class STDMQGISLoader:
                                           QApplication.translate("MobileFormGenerator", "Import Mobile Data"),
                                           self.iface.mainWindow())
 
+        self.mobile_provider_export_action = QAction(GuiUtils.get_icon("mobile_collect.png"),
+                                       QApplication.translate("MobileProviderExportAction",
+                                                              "Mobile Provider Export Form"),
+                                       self.iface.mainWindow())
+        self.mobile_provider_import_action = QAction(GuiUtils.get_icon("mobile_import.png"),
+                                          QApplication.translate("MobileProviderImportAction",
+                                                                 "Mobile Provider Import Form"),
+                                          self.iface.mainWindow())
+
         self.details_dock_widget = DetailsDockWidget(map_canvas=self.iface.mapCanvas(), plugin=self)
         self.details_dock_widget.setToggleVisibilityAction(self.feature_details_act)
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.details_dock_widget)
@@ -1147,6 +1203,9 @@ class STDMQGISLoader:
 
         self.mobile_form_act.triggered.connect(self.mobile_form_generator)
         self.mobile_form_import.triggered.connect(self.mobile_form_importer)
+
+        self.mobile_provider_export_action.triggered.connect(lambda: self.mobile_provider_export_form_generator("ODK"))
+        self.mobile_provider_import_action.triggered.connect(self.mobile_provider_import_form_generator)
 
         contentMenu.triggered.connect(self.widgetLoader)
         self.wzdAct.triggered.connect(self.load_config_wizard)
@@ -1197,6 +1256,12 @@ class STDMQGISLoader:
 
         mobileFormImportCnt = ContentGroup.contentItemFromQAction(self.mobile_form_import)
         mobileFormImportCnt.code = "1394547d-fb6c-4f6e-80d2-53407cf7b7d4"
+
+        mobile_provider_form_export_content = ContentGroup.contentItemFromQAction(self.mobile_provider_export_action)
+        mobile_provider_form_export_content.code = "b3b99492-a895-4513-a456-0fc9083fe11d"
+
+        mobile_provider_form_import_content = ContentGroup.contentItemFromQAction(self.mobile_provider_import_action)
+        mobile_provider_form_import_content.code = "9eff43f1-3ed5-4db7-8fe3-628b2cc53d01"
 
         username = globals.APP_DBCONN.User.UserName
 
@@ -1322,6 +1387,19 @@ class STDMQGISLoader:
         geoodkSettingsCntGroup.append(self.mobileXformgenCntGroup)
         geoodkSettingsCntGroup.append(self.mobileXFormImportCntGroup)
 
+        # Mobile provider group
+        self.mobile_provider_export_content_group = ContentGroup(username, self.mobile_provider_export_action)
+        self.mobile_provider_export_content_group.addContentItem(mobile_provider_form_export_content)
+        self.mobile_provider_export_content_group.register()
+
+        self.mobile_provider_import_content_group = ContentGroup(username, self.mobile_provider_import_action)
+        self.mobile_provider_import_content_group.addContentItem(mobile_provider_form_import_content)
+        self.mobile_provider_import_content_group.register()
+
+        # Group mobile provider actions to one menu
+        mobile_provider_action_content_group = [self.mobile_provider_export_content_group,
+                                                self.mobile_provider_import_content_group]
+
         # Register document templates
         # Get templates for the current profile
         templates = documentTemplates()
@@ -1393,6 +1471,15 @@ class STDMQGISLoader:
         # Add mobile content to tool bar and menu
         self.menubarLoader.addContents(geoodkSettingsCntGroup, [geoodk_mobile_dataMenu, geoodk_mobile_dataMenu])
         self.toolbarLoader.addContents(geoodkSettingsCntGroup, [geoodkMenu, geoodkBtn])
+
+        # Adding mobile provider to toolbar and menu
+        for p in self.providers_menu:
+            self.menubarLoader.addContents(mobile_provider_action_content_group,
+                                           [p, mobile_data_provider_data_menu])
+
+        for p in self.providers_toolbox:
+            self.toolbarLoader.addContents(mobile_provider_action_content_group,
+                                           [p, mobile_provider_button])
 
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
@@ -2196,6 +2283,12 @@ class STDMQGISLoader:
         """
         importer_dialog = ProfileInstanceRecords(self.iface.mainWindow())
         importer_dialog.exec_()
+
+    def mobile_provider_export_form_generator(self, provider):
+        BaseMobileProvider(self.iface.mainWindow(), provider)
+
+    def mobile_provider_import_form_generator(self):
+        pass
 
     def default_config_version(self):
         handler = self.config_loader()
