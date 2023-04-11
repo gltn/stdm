@@ -2285,7 +2285,8 @@ class STDMQGISLoader:
         importer_dialog.exec_()
 
     def mobile_provider_export_form_generator(self, provider):
-        BaseMobileProvider(self.iface.mainWindow(), provider)
+        base_mobile_provider_wizard = BaseMobileProvider(self.iface.mainWindow(), provider)
+        base_mobile_provider_wizard.exec_()
 
     def mobile_provider_import_form_generator(self):
         pass
