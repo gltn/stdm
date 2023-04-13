@@ -94,12 +94,12 @@ p, li { white-space: pre-wrap; }
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="wpEntityCustom">
+  <widget class="QWizardPage" name="mobileProviderAppearanceCustomization">
    <property name="title">
-    <string>Entity Customization</string>
+    <string>Mobile Provider Appearance Customization</string>
    </property>
    <property name="subTitle">
-    <string>Add or edit entity columns, lookups and lookup values</string>
+    <string>Edit column appearance before export</string>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_9">
     <item>
@@ -261,7 +261,7 @@ p, li { white-space: pre-wrap; }
             <widget class="QPushButton" name="btnEditApperance">
              <property name="minimumSize">
               <size>
-               <width>30</width>
+               <width>100</width>
                <height>25</height>
               </size>
              </property>
@@ -272,7 +272,7 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="text">
-              <string/>
+              <string>Edit Appearance</string>
              </property>
              <property name="iconSize">
               <size>
@@ -291,12 +291,12 @@ p, li { white-space: pre-wrap; }
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="wpSaveProfile">
+  <widget class="QWizardPage" name="mobileProviderExport">
    <property name="title">
-    <string>Save configuration</string>
+    <string>Export STDM Profile Data to Mobile Provider</string>
    </property>
    <property name="subTitle">
-    <string>Click finish to save changes in your configuration to the database.</string>
+    <string>Click finish to start the export process</string>
    </property>
    <layout class="QFormLayout" name="formLayout_10">
     <item row="0" column="0">

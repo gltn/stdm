@@ -32,12 +32,13 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.profile import Profile
 from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
-from stdm.ui.wizard.column_editor import ColumnEditor
+from .column_editor import ColumnEditor
 from .custom_item_model import (
     EntitiesModel,
     ColumnEntitiesModel,
 )
 from stdm.utils.util import enable_drag_sort
+from ...data.pg_utils import pg_table_exists, pg_table_record_count
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('mobile_data_provider/ui_mobile_provider_wizard.ui'))
@@ -61,7 +62,7 @@ class BaseMobileProvider(WIDGET, BASE):
         )
 
         self.register_fields()
-        self.txtMobileProviderIntroduction.setText(self.current_profile().name)
+        # self.txtMobileProviderIntroduction.setText(self.current_profile().name)
         self.entity_model = EntitiesModel()
         self.set_views_entity_model(self.entity_model)
         self.init_entity_item_model()
@@ -258,3 +259,43 @@ class BaseMobileProvider(WIDGET, BASE):
                 index = self.entity_model.index(row, 0)
                 item_index = self.entity_model.itemFromIndex(index)
                 #item_index.setCheckable(True)
+
+    def _get_entity(self, view):
+        model_item, entity, row_id = self.get_model_entity(view)
+        if entity:
+            return row_id, entity
+
+    def get_model_entity(self, view):
+        """
+        Extracts and returns an entitymodel, entity and the
+        current selected item ID from QAbstractItemView of a
+        given view widget
+        param view: Widget that inherits QAbstractItemView
+        type view: QAbstractitemView
+        rtype: tuple - (QStandardItemModel, Entity, int)
+        """
+        sel_id = -1
+        entity = None
+        model_indexes = view.selectedIndexes()
+        if len(model_indexes) == 0:
+            return (None, None, None)
+        model_index = model_indexes[0]
+        model_item = model_index.model()
+        name = model_item.data(model_index)
+        entity = model_item.entity(name)
+        row = model_index.row()
+
+        return (model_item, entity, row)
+
+    def entity_has_records(self, entity):
+        """
+        Returns True if entity has records in the database else False.
+        :param entity: Entity instance
+        :type entity: Entity
+        :rtype: boolean
+        """
+        if not pg_table_exists(entity.name):
+            return False
+
+        record_count = pg_table_record_count(entity.name)
+        return True if record_count > 0 else False
