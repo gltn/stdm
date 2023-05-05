@@ -1085,7 +1085,7 @@ def simple_dialog(parent, title, message, checkbox_text=None, yes_no=True):
         return result, False
 
 
-def file_text(path):
+def file_text(path: str) -> str:
     """
     Read any readable file.
     :param path: The file path
@@ -1094,7 +1094,7 @@ def file_text(path):
     :rtype: String
     """
     try:
-        with open(path, 'r') as inf:
+        with open(path, 'r', encoding='windows=1252') as inf:
             text = inf.read()
         return text
     except IOError as ex:

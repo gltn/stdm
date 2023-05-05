@@ -21,6 +21,8 @@ from collections import OrderedDict
 
 from stdm.settings import current_profile
 
+ColumnName = str
+ColumnDataType = str
 
 class GeoODKReader:
     """
@@ -121,7 +123,7 @@ class GeoODKReader:
         """
         return current_profile().name
 
-    def read_attributes(self):
+    def read_attributes(self) ->dict[ColumnName, ColumnDataType]:
         """
         Test implementation hand codes the entity but would need to be
         implemented on the dialog for user to make their own selection
@@ -155,7 +157,7 @@ class GeoODKReader:
         :return:
         """
         col_attributes = OrderedDict()
-        if self.on_column_info(col):
+        if self.is_lookup_column(col):
             col_obj = self.entity_columns().get(col)
             value_list = col_obj.value_list
             for val in value_list.values.values():
@@ -164,15 +166,13 @@ class GeoODKReader:
         else:
             return None
 
-    def on_column_info(self, item_col):
+    def is_lookup_column(self, column_name: str) ->bool:
         """
-        get lookup associated with the column
-        :param item_col:
-        :return:bool
+        Checks if a column type is a lookup
         """
         is_lookup = False
-        lk_val = self.entity_attributes.get(item_col)
-        if lk_val == "MULTIPLE_SELECT" or lk_val == "LOOKUP" or lk_val == "BOOL":
+        column_type = self.entity_attributes.get(column_name)
+        if column_type == "MULTIPLE_SELECT" or column_type == "LOOKUP" or column_type == "BOOL":
             is_lookup = True
         return is_lookup
 

@@ -304,6 +304,7 @@ class DocumentGenerator(QObject):
             # Execute query
             dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
 
+
             if records is None or len(records) == 0:
                 return False, QApplication.translate("DocumentGenerator",
                                                      "No matching records in the database")
@@ -494,10 +495,13 @@ class DocumentGenerator(QObject):
         Updates the map item with the current extents and layer set in the
         map canvas.
         """
+        return
 
         tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
-        map_item.setLayers(tree_layers)
-        map_item.zoomToExtent(self._iface.mapCanvas().extent())
+        if len(tree_layers) > 0:
+            print(tree_layers[0].layer())
+            map_item.setLayers(tree_layers[0].layer())
+            map_item.zoomToExtent(self._iface.mapCanvas().extent())
 
         # If use_scale is True then set NewScale based on that of the
         # map renderer.

@@ -498,6 +498,7 @@ class ComposerWrapper(QObject):
 
                 docFile = QFile(absPath)
                 template_path = absPath
+                LayoutUtils.set_variable_template_path(self.composition(), template_path)
         else:
             docFile = QFile(template_path)
 
@@ -520,6 +521,7 @@ class ComposerWrapper(QObject):
 
         # Catch exception raised when writing items' elements
         try:
+            print('**** WRITE XML ****')
 
             self._writeXML(templateDoc, template_name)
         except DummyException as exc:
@@ -558,8 +560,6 @@ class ComposerWrapper(QObject):
 
         xml_doc.appendChild(composer_element)
 
-        return
-
         # Write spatial field configurations
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
         xml_doc.appendChild(spatialColumnsElement)
@@ -593,7 +593,9 @@ class ComposerWrapper(QObject):
                 # Use composer item id since the uuid is stripped off
                 composerItem = self.composition().itemById(composerId)
 
+
                 if composerItem is not None:
+                    print('Composer ID: ', composerId)
                     compFieldSelector = ComposerFieldSelector(self, composerItem, self.mainWindow())
                     compFieldSelector.selectFieldName(composer_data_source.dataFieldName(composerId))
 

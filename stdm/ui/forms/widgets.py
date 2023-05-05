@@ -496,12 +496,21 @@ class IntegerWidgetFactory(ColumnWidgetRegistry):
     COLUMN_TYPE_INFO = IntegerColumn.TYPE_INFO
     _TYPE_PREFIX = 'sb_'
 
+    MINIMUM = -2147483648
+    MAXIMUM = 2147483647
+
     @classmethod
     def _create_widget(cls, c, parent, host=None):
         sb = QSpinBox(parent)
         sb.setObjectName('{0}_{1}'.format(cls._TYPE_PREFIX, c.name))
 
         # Set ranges
+        if c.minimum < IntegerWidgetFactory.MINIMUM:
+            c.minimum = IntegerWidgetFactory.MINIMUM
+        
+        if c.maximum > IntegerWidgetFactory.MAXIMUM:
+            c.maximum = IntegerWidgetFactory.MAXIMUM
+
         c_min = sb.valueFromText(str(c.minimum))
         c_max = sb.valueFromText(str(c.maximum))
         sb.setMinimum(c.minimum)

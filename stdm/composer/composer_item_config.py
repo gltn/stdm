@@ -88,7 +88,6 @@ class SaveTemplateConfig(ComposerItemConfig):
         ComposerItemConfig.__init__(self, composerWrapper)
         self.itemAction.setCheckable(False)
         count = self.itemAction.receivers(self.itemAction.triggered)
-        print('Triggered Count: ',count)
 
     def action(self):
         saveTemplateAct = QAction(GuiUtils.get_icon("save_tb.png"),

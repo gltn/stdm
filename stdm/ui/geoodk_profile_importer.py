@@ -288,11 +288,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 list_widget = QListWidgetItem(
                     current_profile().entity_by_name(entity).short_name, self.lst_widget)
                 list_widget.setIcon(GuiUtils.get_icon("table02.png"))
-                #list_widget.setCheckState(Qt.Checked
+                # list_widget.setCheckState(Qt.Checked)
 
     def user_selected_entities(self) -> List[EntityName]:
         """
         """
+        # Returna all the entities
+        return self.instance_entities()
+
         entities = []
         count = self.lst_widget.count()
         if count > 0:
@@ -309,7 +312,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         :return: List of enitity names
         """
         current_entities = []
-        entity_collections = []
         instance_collections = self.instance_collection()
         if len(instance_collections) > 0:
             for entity_name in self.profile_entities_names(current_profile()):
@@ -407,7 +409,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         try:
             silent_list = []
-            entities = self.user_selected_entities()
+            # entities = self.user_selected_entities()
+            entities = self.instance_entities()
             if len(entities) > 0:
                 for table in self.relations.keys():
                     if table not in entities:
@@ -573,6 +576,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             return 
 
         counter = 0
+
         try:
             self.pgbar.setRange(counter, len(self.instance_list))
             self.pgbar.setValue(0)
@@ -582,9 +586,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 ImportLogger.log_action("File {} ...\n".format(filename))
                 parents_info = []
+                self.parent_ids = {}
                 import_status = False
                 counter = counter + 1
-                self.parent_ids = {}
 
                 single_occuring, repeated_entities = self.uuid_extractor.instance_data_from_nodelist(
                     instance_obj_data.field_data_nodes)
@@ -612,7 +616,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         parents_info.append(entity_name)
                         single_occuring.pop(entity_name)
 
-                    elif entity_name not in self.relations:
+                    else: #entity_name not in self.relations:
                         import_status = False
                         self.count_import_file_step(counter, entity_name)
                         log_timestamp = '=== standalone table import  === : {0}'.format(entity_name)
@@ -627,6 +631,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         if entity_name not in self.parent_ids.keys():
                             self.parent_ids[entity_name] = [child_id, entity_name]
                         entity_add.cleanup()
+
                 if repeated_entities:
                     # self.log_table_entry(" ========== starting import of repeated tables ============")
                     import_status = False
@@ -675,6 +680,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.pgbar.setValue(counter)
                 self.log_instance(filename)
                 QCoreApplication.processEvents()
+
             self.txt_feedback.append('Number of records successfully imported:  {}'
                                      .format(counter))
         except DummyException as ex:
@@ -712,26 +718,29 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 QApplication.restoreOverrideCursor()
                 return
 
-            entities = self.user_selected_entities()
+            # entities = self.user_selected_entities()
+            entities = self.instance_entities()
+            
 
-            if len(entities) < 1:
-                if QMessageBox.information(self,
-                                           QApplication.translate('MobileForms', 'Import Warning'),
-                                           QApplication.translate('MobileForms',
-                                                                  'You have not '
-                                                                  'selected any entity for import. All entities '
-                                                                  'will be imported'), QMessageBox.Ok |
-                                                                                       QMessageBox.No) == QMessageBox.Ok:
-                    entities = self.instance_entities()
-                    QApplication.restoreOverrideCursor()
-                else:
-                    self.buttonBox.setEnabled(True)
-                    QApplication.restoreOverrideCursor()
-                    return
-            else:
-                self.save_instance_data_to_db(entities)
-                self.buttonBox.setEnabled(True)
-                QApplication.restoreOverrideCursor()
+            # if len(entities) == 0:
+            #     if QMessageBox.information(self,
+            #                                QApplication.translate('MobileForms', 'Import Warning'),
+            #                                QApplication.translate('MobileForms',
+            #                                                       'You have not '
+            #                                                       'selected any entity for import. All entities '
+            #                                                       'will be imported'), QMessageBox.Ok |
+            #                                                                            QMessageBox.No) == QMessageBox.Ok:
+            #         entities = self.instance_entities()
+            #         QApplication.restoreOverrideCursor()
+            #     else:
+            #         self.buttonBox.setEnabled(True)
+            #         QApplication.restoreOverrideCursor()
+            #         return
+            # else:
+
+            self.save_instance_data_to_db(entities)
+            self.buttonBox.setEnabled(True)
+            QApplication.restoreOverrideCursor()
         except DummyException as ex:
             QApplication.restoreOverrideCursor()
             self.feedback_message(str(ex))

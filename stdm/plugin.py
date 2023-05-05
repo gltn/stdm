@@ -324,7 +324,7 @@ class STDMQGISLoader:
                 if first_char:
                     # Reset cursor position
                     bf.seek(0)
-                    branch_name = '(' + [line.strip() for line in open(branch_file)][0] + ')'
+                    branch_name = ' [' + [line.strip() for line in open(branch_file)][0] + ']'
 
         return branch_name
 
@@ -368,13 +368,13 @@ class STDMQGISLoader:
         retstatus = frmLogin.exec_()
 
         if retstatus == QDialog.Accepted:
+
             # Assign the connection object
             globals.APP_DBCONN = frmLogin.dbConn
 
             User.CURRENT_USER = frmLogin.dbConn.User
 
             # Initialize the whole STDM database
-
             db = STDMDb.instance()
 
             if not db.postgis_state:
@@ -428,7 +428,6 @@ class STDMQGISLoader:
             # Exit if the load failed
             if not config_load_status:
                 return
-
             try:
                 self.show_change_log()
                 # Set current profile
@@ -2133,19 +2132,18 @@ class STDMQGISLoader:
         Load and open documentation manual
         """
         help_manual = '{0}/stdm.chm'.format(self.plugin_dir)
+
         try:
             os.startfile(
                 help_manual, 'open'
             )
-        except DummyException as ex:
+        except FileNotFoundError as ex:
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 QApplication.translate(
                     "STDMQGISLoader",
-                    'Open Error'
-                ),
-                str(ex)
-            )
+                    'Open File Error'
+                ), str("Error trying to open help file (stdm.chm), file is missing."))
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(

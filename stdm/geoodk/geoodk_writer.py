@@ -29,7 +29,8 @@ from qgis.PyQt.QtCore import (
 )
 from qgis.PyQt.QtXml import (
     QDomDocument,
-    QDomElement
+    QDomElement,
+    QDomText
 )
 
 from stdm.data.configfile_paths import FilePaths
@@ -144,7 +145,7 @@ class XFORMDocument:
         """
         return self.doc.createElement(node_name)
 
-    def create_text_node(self, text):
+    def create_text_node(self, text) ->QDomText:
         """
         Create an XML text node
         :param text:
@@ -279,23 +280,61 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         Create a header model that GeoODK writer requires to create form
         :return:
         """
-        profile_node = self.create_node(self.profile_name)
-        if self.supports_str:
-            self.include_social_tenure(profile_node)
-        profile_node.setAttribute("id", self.profile_name.replace('_', ' ').title())
-        entity_nodes = self.create_entity_nodes()
-        self._append_nodes(profile_node, entity_nodes)
-        instance_node = self.create_node("instance")
-        instance_node.appendChild(profile_node)
-        instance_node.appendChild(self._doc_meta_instance())
+        # profile_node = self.create_node(self.profile_name)
+        # if self.supports_str:
+        #     self.include_social_tenure(profile_node)
+        # profile_node.setAttribute("id", self.profile_name.replace('_', ' ').title())
+        # entity_nodes = self.create_entity_nodes()
+        # self._append_nodes(profile_node, entity_nodes)
+        # instance_node = self.create_node("instance")
+        # instance_node.appendChild(profile_node)
+        # instance_node.appendChild(self._doc_meta_instance())
 
         model_node = self.create_node("model")
-        model_node.appendChild(instance_node)
+        model_node.appendChild(self._create_model_props())
+        # model_node.appendChild(instance_node)
 
         self.bind_default_parameters(model_node)
         self.create_model_bind_attributes(model_node)
         model_node.appendChild(self.model_unique_id_generator())
         return model_node
+
+    def _create_model_props(self):
+        instance = self.create_node("instance")
+        return self.on_instance_id_set_columns(instance)
+
+    def initialize_entity_reader(self, entity):
+        self.entity_read = GeoODKReader(entity)
+        return self.entity_read
+
+    def on_instance_id_set_columns(self, instance):
+        """
+        Create an instance that will hold entity columns in Xform list
+        :param instance: str
+        :return:
+        """
+        instance_id = self.create_node(self.profile_name)
+        instance_id.setAttribute("id", self.profile_name.replace('_',' ').title())
+        """ add entity data into the instance node as form fields,
+        language translation aspect of the instance child 
+        has not been considered
+        """
+        if isinstance(self.entities, list):
+            for entity in self.entities:
+                self.initialize_entity_reader(entity)
+                entity_values = self.entity_read.read_attributes()
+                field_group = self.create_node(self.entity_read.default_entity())
+                if self.entity_read.on_column_show_in_parent():
+                    field_group.setAttribute('jr:template', '')
+                entity_group = self.entity_supports_documents(field_group, entity_values)
+                instance_id.appendChild(entity_group)
+
+                instance.appendChild(instance_id)
+            if self.supports_str:
+                self.include_social_tenure(instance_id)
+            instance_id.appendChild(self._doc_meta_instance())
+            return instance
+
 
     def create_entity_nodes(self):
         """
@@ -308,7 +347,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         for entity_name in self.entities:
             reader = self.create_entity_reader(entity_name)
             entity_values = reader.read_attributes()
-            entity_node = self.create_node(entity_name)
+            entity_node = self.create_node(entity_name.replace(' ','_'))
             if reader.on_column_show_in_parent():
                 entity_node.setAttribute('jr:template', '')
             entity_node_with_support_docs = self.entity_supports_documents(entity_node, entity_values)
@@ -435,8 +474,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             entity_values.pop("id")
         for key, val in entity_values.items():
             bind_node = self.create_node("bind")
+            entity_name = self.entity_read.default_entity()
             bind_node.setAttribute("nodeset",
-                                   self.set_model_xpath(key, self.entity_read.default_entity()))
+                                   self.set_model_xpath(key, entity_name))
             if self.entity_read.col_is_mandatory(key):
                 bind_node.setAttribute("required", "true()")
             if val == 'GEOMETRY':
@@ -549,7 +589,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             parent_node.appendChild(bind_node)
         return parent_node
 
-    def _body_section(self):
+    def _body_section(self) -> QDomElement:
         """
         Method to read and populate the body node in the Xform document is created
         :return: Dom element
@@ -560,10 +600,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             self.social_tenure_label(body_section_node)
         return body_section_node
 
-    def create_nested_entity_data(self, parent_node):
+    def create_nested_entity_data(self, parent_node: QDomElement):
         """
         Format each entity into groups so that each holds only one entity information
-        :return:
         """
         if isinstance(self.entities, list):
             for entity in self.entities:
@@ -581,7 +620,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 parent_node.appendChild(group_node)
             return parent_node
 
-    def body_section_categories(self, entity):
+    def body_section_categories(self, entity) ->tuple[QDomElement, QDomElement]:
         """
         Create groups that will contain each entity information
         :param item:
@@ -590,8 +629,9 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         repeat_node = None
         ref = 'ref'
 
-        label_txt = self.create_text_node(
-            self.entity_read.user_entity_name())
+        title = self.entity_read.user_entity_name().replace(' ', '_')
+        dom_text = self.create_text_node(title)
+
         cate_name = self.model_category_group(self.profile_name,
                                               entity)
 
@@ -604,18 +644,16 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             repeat_node.setAttribute("appearance", "field-list")
             repeat_node.setAttribute(ref, cate_name)
             repeat_label = self.create_node("label")
-            repeat_label.appendChild(label_txt)
+            repeat_label.appendChild(dom_text)
             repeat_node.appendChild(repeat_label)
-            group_label.appendChild(self.create_text_node(
-                self.entity_read.user_entity_name()
-            ))
+            group_label.appendChild(self.create_text_node(title))
             group_node.appendChild(group_label)
             group_node.appendChild(repeat_node)
 
         else:
             group_node.setAttribute("appearance", "field-list")
             group_node.setAttribute(ref, cate_name)
-            group_label.appendChild(label_txt)
+            group_label.appendChild(dom_text)
             group_node.appendChild(group_label)
         # label_txt = self.create_text_node(
         #     self.profile_name + ": "+entity.replace("_", " ").title())
@@ -673,7 +711,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
             has_multiple = True
         return has_multiple
 
-    def _body_section_data(self, reader: GeoODKReader, entity_values, parent_node):
+    def _body_section_data(self, reader: GeoODKReader, entity_values: dict, parent_node: QDomElement):
         """
         Add entity attributes to the body section as labels to the Xform file
         Create label fields to the input fields
@@ -682,7 +720,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         #parent_path = self.profile_name + "/" + self.entity_read.default_entity()
         parent_path = self.profile_name + "/" + reader.default_entity()
         for key in entity_values.keys():
-            if reader.on_column_info(key):
+            if reader.is_lookup_column(key):
                 self.format_lookup_data(key, parent_node)
             else:
                 body_node = self.create_node("input")

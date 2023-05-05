@@ -70,7 +70,7 @@ class Entity(QObject, TableItem):
     column_added = pyqtSignal(BaseColumn)
     column_removed = pyqtSignal(str)
 
-    def __init__(self, name, profile, create_id_column=True, supports_documents=True,
+    def __init__(self, name, profile, create_id_column=True, supports_documents: bool=True,
                  is_global=False, is_proxy=False):
         """
         :param name: Name of the entity. The profile prefix will be appended

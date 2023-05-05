@@ -44,6 +44,8 @@ from qgis.PyQt.QtWidgets import (
     QTableView
 )
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from stdm.exceptions import DummyException
 from stdm.composer.document_generator import DocumentGenerator
 from stdm.data.configuration import entity_model
@@ -657,11 +659,14 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
                 # User-defined location
                 if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
+
                     status, msg = self._doc_generator.run(self._docTemplatePath, entity_field_name,
-                                                          record.id, outputMode,
-                                                          data_source=self.ds_entity.name,
-                                                          filePath=self._outputFilePath)
+                                                        record.id, outputMode,
+                                                        data_source=self.ds_entity.name,
+                                                        filePath=self._outputFilePath)
                     self._doc_generator.clear_temporary_layers()
+
+
                 # Output folder location using custom naming
                 else:
 
@@ -710,6 +715,22 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                                     QApplication.translate("DocumentGeneratorDialog",
                                                            "Document generation has successfully completed.")
                                     )
+
+        except SQLAlchemyError as sqlerr:
+            LOGGER.debug(str(sqlerr))
+            err_msg = QApplication.translate("DocumentGeneratorDialog",
+                                             "Database error occured, check QGIS logs.")
+            QApplication.restoreOverrideCursor()
+
+            QMessageBox.critical(
+                self,
+                "STDM",
+                QApplication.translate(
+                    "DocumentGeneratorDialog",
+                    "Error Generating documents - %s" % (err_msg)
+                )
+            )
+            success_status = False
 
         except DummyException as ex:
             LOGGER.debug(str(ex))

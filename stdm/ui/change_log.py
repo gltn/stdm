@@ -2,8 +2,7 @@
 """
 /***************************************************************************
 Name                 : Change Log
-Description          : Handles the display of license agreements.
-                       documents.
+Description          : Handles the display of change log HTML document.
 Date                 : 20/April/2016
 copyright            : (C) 2016 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
@@ -72,13 +71,9 @@ class ChangeLog(WIDGET, BASE):
         :return: None
         :rtype: NoneType
         """
-        change_log_path = '{}/html/change_log.htm'.format(path)
-        change_log_url = QUrl()
-        change_log_url.setPath(change_log_path)
-        change_log_html = file_text(change_log_path)
-
-        self.webView.setHtml(
-            change_log_html, change_log_url
-        )
+        change_log_file = '{}/html/change_log.htm'.format(path)
+        change_log_url = QUrl.fromLocalFile(change_log_file)
+        change_log_html = file_text(change_log_file)
+        self.webView.setHtml( change_log_html, change_log_url)
 
         self.exec_()

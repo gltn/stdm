@@ -75,6 +75,7 @@ class GeoODKConverter(QDialog, FORM_CLASS):
 
         self.chk_all.setCheckState(Qt.Checked)
         self.chk_all.setVisible(False)
+        self.ck_social_tenure.setChecked(True)
         self.ck_social_tenure.setVisible(False)
 
         self.entity_model = EntitiesModel()

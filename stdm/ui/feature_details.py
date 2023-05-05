@@ -982,8 +982,10 @@ class DetailsTreeView(DetailsDBHandler):
 
             str_records = self.feature_str_link(spu_id, entity)
 
+
             if len(str_records) > 0:
-                db_model = getattr(str_records[list(str_records.keys())[0]], entity.name)
+                #db_model = getattr(str_records[list(str_records.keys())[0]], entity.name)
+                db_model = getattr(str_records[0], entity.name)
             else:
                 db_model = self.feature_model(entity, spu_id)
 
