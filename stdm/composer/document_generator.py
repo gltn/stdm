@@ -21,6 +21,7 @@ import uuid
 from datetime import date, datetime
 from numbers import Number
 from enum import Enum
+from timeit import default_timer as tm
 
 from qgis.PyQt.QtCore import (
     QObject,
@@ -254,6 +255,7 @@ class DocumentGenerator(QObject):
         if data_source is None:
             data_source = ''
 
+
         templateFile = QFile(templatePath)
 
         if not templateFile.open(QIODevice.ReadOnly):
@@ -266,6 +268,7 @@ class DocumentGenerator(QObject):
             composerDS = ComposerDataSource.create(templateDoc)
             spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
             composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
+
 
             # Check if data source exists and return if it doesn't
             if not self.data_source_exists(composerDS):
@@ -304,7 +307,6 @@ class DocumentGenerator(QObject):
             # Execute query
             dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
 
-
             if records is None or len(records) == 0:
                 return False, QApplication.translate("DocumentGenerator",
                                                      "No matching records in the database")
@@ -312,8 +314,8 @@ class DocumentGenerator(QObject):
             """
             Iterate through records where a single file output will be generated for each matching record.
             """
-
             project = QgsProject().instance()
+
 
             for rec in records:
                 #composition = QgsPrintLayout(self._map_settings)
@@ -324,6 +326,7 @@ class DocumentGenerator(QObject):
                 print_layout.loadFromTemplate(templateDoc, context)
                 ref_layer = None
                 # Set value of composer items based on the corresponding db values
+
                 for composerId in composerDS.dataFieldMappings().reverse:
                     # Use composer item id since the uuid is stripped off
                     composerItem = print_layout.itemById(composerId)
@@ -476,7 +479,6 @@ class DocumentGenerator(QObject):
                     if write_result == QgsLayoutExporter.FileError:
                         return (False, QApplication.translate("DocumentGenerator",
                                                               "Could not write to destination file, likely due to a lock held by anther application"))
-
             return True, "Success"
 
         return False, "Document Print Layout could not be generated"
@@ -495,11 +497,8 @@ class DocumentGenerator(QObject):
         Updates the map item with the current extents and layer set in the
         map canvas.
         """
-        return
-
         tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
         if len(tree_layers) > 0:
-            print(tree_layers[0].layer())
             map_item.setLayers(tree_layers[0].layer())
             map_item.zoomToExtent(self._iface.mapCanvas().extent())
 
@@ -832,12 +831,6 @@ class DocumentGenerator(QObject):
         export_result = exporter.exportToPdf(file_path, QgsLayoutExporter.PdfExportSettings())
         return  export_result
 
-        # status = print_layout.exportAsPDF(file_path)
-        # if not status:
-            # msg = QApplication.translate("DocumentGenerator",
-                                         # "Error creating {0}".format(file_path))
-            # raise Exception(msg)
-
     def _build_file_name(self, data_source, fieldName, fieldValue, data_fields,
                          fileExtension):
         """
@@ -961,4 +954,4 @@ class DocumentGenerator(QObject):
         # Composer picture requires the absolute file path
         elif isinstance(composer_item, QgsLayoutItemPicture):
             if value:
-                composer_item.setPictureFile(value)
+                composer_item.setPicturePath(value)

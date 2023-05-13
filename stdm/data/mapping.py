@@ -570,7 +570,6 @@ class MapperMixin(QDialog):
                 control = attrMapper.valueHandler().control
                 if isinstance(control, ExpressionLineEdit):
                     value = control.on_expression_triggered()
-                    print((attrMapper._attrName, value))
                     setattr(self.model(), attrMapper._attrName, value)
             self._model.update()
             # STDMDb.instance().session.flush()

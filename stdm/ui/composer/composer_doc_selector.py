@@ -135,9 +135,6 @@ class TemplateDocumentSelector(WIDGET, BASE):
         # Get templates for the current profile
         for name, path in templates.items():
             doc_temp = DocumentTemplate.build_from_path(name, path)
-
-            print(doc_temp.name)
-            print(doc_temp.data_source)
             
             if doc_temp.data_source is None:
                 continue
@@ -154,6 +151,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
             if template.name == doc_temp.name:
                 found = True
                 break
+
         if not found:
             self._profile_templates.append(doc_temp)
 

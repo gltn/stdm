@@ -169,10 +169,6 @@ class ConfigurationUtils():
             profile_child = profile_node.firstChildElement(
                 tag_name
             )
-            print("profile_node: ", profile_node)
-            print("profile_child: ", profile_child)
-
-            #first_child[profile_node] = profile_child
             first_child[tag_name] = profile_child
         return first_child
 

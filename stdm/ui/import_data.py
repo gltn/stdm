@@ -456,7 +456,7 @@ class ImportData(WIDGET, BASE):
 
             if style:
                 color = QColor(0, 128, 255)
-                list_item.setTextColor(color)
+                list_item.setForeground(color)
 
             self.lstTargetFields.addItem(list_item)
 

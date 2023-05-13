@@ -576,22 +576,6 @@ def _execute(sql, **kwargs):
     """
     Execute the passed in sql statement
     """
-    #engine = STDMDb.instance().engine
-    #if engine is None:
-        #print("** Engine is None **")
-    #else:
-        #print("ENGINE NOT NONE")
-
-    #if globals.APP_DBCONN is None:
-        #print('APP_DBCONN IS NONE*')
-
-    #db = STDMDb.instance()
-
-    #if db:
-        #engine = db.engine
-        #if engine is None:
-            #print('>> Engine is None << ')
-
     try:
         conn = STDMDb.instance().engine.connect()
         trans = conn.begin()

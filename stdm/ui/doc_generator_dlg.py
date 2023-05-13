@@ -556,6 +556,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         """
         self._notif_bar.clear()
         success_status = True
+
         config = self.current_config()
         self._docTemplatePath = self.plugin.action_cache.get('prev_document_template_path', "")
 
@@ -586,7 +587,6 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         if self.chkUseOutputFolder.checkState() == Qt.Checked and len(documentNamingAttrs) == 0:
             self._notif_bar.insertErrorNotification(QApplication.translate("DocumentGeneratorDialog", \
                                                                            "Please select at least one field for naming the output document"))
-
             return
 
         # Set output file properties
@@ -647,6 +647,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
         progressDlg = QProgressDialog(self)
         progressDlg.setMaximum(len(records))
 
+
         try:
             QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
 
@@ -656,7 +657,6 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                 if progressDlg.wasCanceled():
                     success_status = False
                     break
-
                 # User-defined location
                 if self.chkUseOutputFolder.checkState() == Qt.Unchecked:
 
@@ -715,6 +715,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                                     QApplication.translate("DocumentGeneratorDialog",
                                                            "Document generation has successfully completed.")
                                     )
+
 
         except SQLAlchemyError as sqlerr:
             LOGGER.debug(str(sqlerr))

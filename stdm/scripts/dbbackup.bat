@@ -18,15 +18,19 @@
    set PG_SERVER=%2
    set PG_PORT=%3
    set PG_USER=%4
-   set PGPASSWORD=abc123
-   set BACKUP_FOLDER=%5
+   set PGPASSWORD=%5
+   set BACKUP_FOLDER=%6
+   set PG_BASE_FOLDER=%7
 
-   REM set BACKUP_FILE="%BACKUP_FOLDER%%DATABASE_NAME%_%datestr%.backup"
-   set BACKUP_FILE=%BACKUP_FOLDER%
+   REM set log_file=%BACKUP_FOLDER%\backit.log
+
+   set BACKUP_FILE="%BACKUP_FOLDER%\%DATABASE_NAME%_%datestr%.backup"
    echo backup file name is %BACKUP_FILE%
    echo on
 
    REM PAUSE
 
-   "C:\Program Files\PostgreSQL\14\bin\pg_dump.exe" -h %PG_SERVER% -p %PG_PORT% -U %PG_USER% -F c -b -v -f %BACKUP_FILE% %DATABASE_NAME%
+   %PG_BASE_FOLDER% -h %PG_SERVER% -p %PG_PORT% -U %PG_USER% -F c -b -v -f %BACKUP_FILE% %DATABASE_NAME%
+
+   timeout /t 3
 

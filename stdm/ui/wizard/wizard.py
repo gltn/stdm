@@ -1604,7 +1604,6 @@ class ConfigWizard(WIDGET, BASE):
         '''
         self.save_current_configuration(DRAFT_CONFIG_FILE)
         current_profile_name = self.cboProfile.currentText()
-        # config_file = self.get_config_file()
         self.load_stdm_config(DRAFT_CONFIG_FILE)
         self.refresh_config(current_profile_name)
 

@@ -62,7 +62,6 @@ class BaseComposerFieldSelector(WIDGET, BASE):
         When the user changes the data source then update the fields.
         """
         data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
-        print('SELECTOR DS: ', data_source_name)
         self._loadFields(data_source_name)
 
     def onFieldNameChanged(self, fieldName):

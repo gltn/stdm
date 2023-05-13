@@ -285,8 +285,6 @@ class OGRReader:
         Insert a new row using the mapped class instance then mapping column
         names to the corresponding column values.
         """
-        print(columnValueMapping)
-
         model_instance = self._mapped_cls()
         for col, value in columnValueMapping.items():
             if hasattr(model_instance, col):
@@ -491,11 +489,6 @@ class OGRReader:
                                          f"`{self.date_formatter.system_date_format}`")
                                         )
                             else:
-                                # d_tokens = field_value.split("/")
-                                # print(d_tokens)
-                                # raise ImportFeatureException("Debug")
-                                # fv =  datetime.strptime(field_value, "%Y/%m/%d").date()
-                                # print(f"PostgreSQL Data FMT: {fv}")
                                 field_value = self.date_formatter.to_postgres_format(field_value)
 
                         column_value_mapping[dest_column] = field_value

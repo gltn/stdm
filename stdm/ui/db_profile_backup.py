@@ -21,6 +21,7 @@ import os
 import sys
 import shutil
 import json
+import winreg
 from zipfile import ZipFile
 
 import subprocess
@@ -32,7 +33,8 @@ from qgis.PyQt.QtWidgets import (
         QDialog,
         QMessageBox,
         QFileDialog,
-        QLineEdit
+        QLineEdit,
+        QTreeWidgetItem
 )
 
 from qgis.PyQt.QtCore import (
@@ -47,9 +49,15 @@ from stdm.ui.gui_utils import GuiUtils
 from stdm.data.config import DatabaseConfig
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.data.connection import DatabaseConnection
+from stdm.data.configuration.profile import Profile
 from stdm.security.user import User
+from stdm.composer.document_template import DocumentTemplate
 
-from stdm.utils.util import PLUGIN_DIR 
+from stdm.utils.util import (
+    PLUGIN_DIR,
+    documentTemplates,
+    user_non_profile_views
+)
 
 class StreamHandler:
     def log(self, msg: str):
@@ -95,19 +103,74 @@ class DBProfileBackupDialog(WIDGET, BASE):
         self.btnBackup.clicked.connect(self.do_backup)
         self.btnClose.clicked.connect(self.close_dialog)
 
-        self.db_config = DatabaseConfig();
+        self.db_config = DatabaseConfig()
 
-        self.conn_prop = self.db_config.read()
-        self.txtDBName.setText(self.conn_prop.Database)
+        self.db_conn = self.db_config.read()  # DatabaseConnection
+        self.txtDBName.setText(self.db_conn.Database)
         self.txtAdmin.setText('postgres')
+
+        self.config_templates = []
+
         self.stdm_config = StdmConfiguration.instance()
-        self.load_profiles()
+        self.twProfiles.setColumnCount(1)
+        self.load_profiles_tree()
+        pg_base_folder = self.get_pg_base_folder()
 
         self.msg_logger = MessageLogger(StdOutHandler)
 
-    def load_profiles(self):
-        profiles = self.stdm_config.profiles.keys()
-        self.lwProfiles.addItems(profiles)
+    def load_profiles_tree(self):
+        profiles = self.stdm_config.profiles
+        for profile in profiles.values():
+            profile_item = QTreeWidgetItem()
+            profile_item.setText(0, profile.key)
+            profile_item.setIcon(0, GuiUtils.get_icon("folder.png"))
+
+            entity_node = QTreeWidgetItem()
+            entity_node.setText(0, "Entities")
+            profile_item.addChild(entity_node)
+
+            entity_items =  self._profile_entities(profile)
+            entity_node.addChildren(entity_items)
+
+            template_node = QTreeWidgetItem()
+            template_node.setText(0, "Templates")
+            profile_item.addChild(template_node)
+            
+            templates = self._profile_templates(profile)
+            template_node.addChildren(templates)
+
+            self.twProfiles.insertTopLevelItem(0, profile_item)
+
+
+    def _profile_entities(self, profile: Profile) ->list[QTreeWidgetItem]:
+        entity_items = []
+        for entity in profile.entities.values():
+            if not entity.user_editable:
+                continue
+            entity_item = QTreeWidgetItem()
+            entity_item.setText(0, entity.short_name)
+            entity_item.setIcon(0, GuiUtils.get_icon("Table02.png"))
+            entity_items.append(entity_item)
+        return entity_items
+
+    def _profile_templates(self, profile: Profile) ->list[QTreeWidgetItem]:
+        template_items = []
+        templates = documentTemplates()
+        profile_tables = profile.table_names()
+        for name, filepath in templates.items():
+            doc_temp = DocumentTemplate.build_from_path(name, filepath)
+            if doc_temp.data_source is None:
+                continue
+            if doc_temp.data_source.referenced_table_name in profile_tables or \
+                 doc_temp.data_source.name() in user_non_profile_views():
+                template_item = QTreeWidgetItem()
+                template_item.setText(0, doc_temp.name)
+                template_item.setIcon(0, GuiUtils.get_icon("record02.png"))
+                template_items.append(template_item)
+                self.config_templates.append(filepath)
+        return template_items
+
+    # ---------------------------------------------------------------------------
 
     def backup_folder_clicked(self):
         self._set_selected_directory(self.edtBackupFolder, 
@@ -119,7 +182,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
         sel_doc_path = QFileDialog.getExistingDirectory(self, title, def_path)
 
         if sel_doc_path:
-            normalized_path = QDir.fromNativeSeparators(sel_doc_path)
+            normalized_path = f"{QDir.fromNativeSeparators(sel_doc_path)}/{self.db_conn.Database}"
             txt_box.clear()
             txt_box.setText(normalized_path)
 
@@ -134,8 +197,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
             self.show_message(msg, QMessageBox.Critical)
             return False
 
-        db_con = DatabaseConnection(self.conn_prop.Host, self.conn_prop.Port,
-                self.conn_prop.Database)
+        db_con = DatabaseConnection(self.db_conn.Host, self.db_conn.Port,
+                self.db_conn.Database)
 
         user = User('postgres', self.edtAdminPassword.text())
         db_con.User = user
@@ -151,58 +214,71 @@ class DBProfileBackupDialog(WIDGET, BASE):
             self.msg_logger.log_error(error_msg)
             return False
 
-        db_name = self.conn_prop.Database
+        db_name = self.db_conn.Database
         db_backup_filename = self._make_backup_filename(db_name)
 
-        db_backup_filepath ='{}{}{}'.format(self.edtBackupFolder.text(),
-                '/', db_backup_filename)
+        path_sep = "/"
+        backup_folder = f"{self.edtBackupFolder.text()}"
+        db_backup_filepath =f"{backup_folder}{path_sep}{db_backup_filename}"
 
-        if self.backup_database(self.conn_prop, 'postgres',
+        if not os.path.exists(backup_folder):
+            os.makedirs(backup_folder)
+
+        if not self.backup_database(self.db_conn, 'postgres',
                 self.edtAdminPassword.text(), db_backup_filepath):
+                return
 
-            config_filepath = QDir.home().path()+ '/.stdm/configuration.stc'
-            config_backup_filepath = self.edtBackupFolder.text()+'/configuration.stc'
+        stdm_folder = ".stdm"
+        config_file ='configuration.stc'
+        home_folder = QDir.home().path()
+        config_filepath = f"{home_folder}{path_sep}{stdm_folder}{path_sep}{config_file}"
+        config_backup_filepath = f"{backup_folder}{path_sep}{config_file}"
 
-            self.backup_config_file(config_filepath, config_backup_filepath)
+        self.backup_config_file(config_filepath, config_backup_filepath)
 
-            log_dtime = self._dtime()
-            log_filename = 'backuplog_{}{}'.format(log_dtime,'.json')
-            log_filepath = '{}{}{}'.format(self.edtBackupFolder.text(), '/', log_filename)
+        self.backup_templates(self.config_templates, backup_folder)
+        
+        template_file_names = self._get_template_file_names(self.config_templates)
 
-            backup_log = self._make_log(self.stdm_config.profiles.keys(), db_name,
-                    db_backup_filename, log_dtime, self.cbCompress.isChecked())
+        log_dtime = self._dtime()
+        json_ext = ".json"
+        log_filename = f"backuplog_{log_dtime}{json_ext}"
+        log_filepath = f"{backup_folder}{path_sep}{log_filename}"
 
-            self.create_backup_log(backup_log, log_filepath)
+        backup_log = self._make_log(self.stdm_config.profiles.keys(), db_name,
+                db_backup_filename, template_file_names, log_dtime, self.cbCompress.isChecked())
 
-            if self.cbCompress.isChecked():
-                if self.compress_backup(db_name, self.edtBackupFolder.text(),
-                        [db_backup_filepath, config_backup_filepath, log_filepath]):
+        self.create_backup_log(backup_log, log_filepath)
 
-                    compressed_files  = []
-                    compressed_files.append(db_backup_filepath)
-                    compressed_files.append(config_backup_filepath)
-                    compressed_files.append(log_filepath)
+        if self.cbCompress.isChecked():
+            compressed_files = []
+            compressed_files.append(db_backup_filepath)
+            compressed_files.append(config_backup_filepath)
+            compressed_files.append(log_filepath)
+            backed_templates = self._backed_template_files(template_file_names, backup_folder)
+            compressed_files += backed_templates
 
-                    self._remove_compressed_files(compressed_files)
-            
-            msg_box = QMessageBox()
-            msg_box.setIcon(QMessageBox.Information)
-            msg_box.setText(self.tr('Backup completed successfully.'))
-            msg_box.setInformativeText(self.tr('Do you want to open the backup folder?'))
-            msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Close)
-            msg_box.setDefaultButton(QMessageBox.Close)
-            save_btn = msg_box.button(QMessageBox.Save)
-            save_btn.setText('Open Backup Folder')
-            close_btn = msg_box.button(QMessageBox.Close)
+            if self.compress_backup(db_name, backup_folder, compressed_files):
+                self._remove_compressed_files(compressed_files)
+        
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setText(self.tr('Backup completed successfully.'))
+        msg_box.setInformativeText(self.tr('Do you want to open the backup folder?'))
+        msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Close)
+        msg_box.setDefaultButton(QMessageBox.Close)
+        save_btn = msg_box.button(QMessageBox.Save)
+        save_btn.setText('Open Backup Folder')
+        close_btn = msg_box.button(QMessageBox.Close)
 
-            msg_box.exec_()
-            if msg_box.clickedButton() == save_btn:
-                self.open_backup_folder()
-            if msg_box.clickedButton() == close_btn:
-                self.close_dialog()
+        msg_box.exec_()
+        if msg_box.clickedButton() == save_btn:
+            self.open_backup_folder()
+        if msg_box.clickedButton() == close_btn:
+            self.close_dialog()
 
     def open_backup_folder(self):
-        backup_folder = self.edtBackupFolder.text();
+        backup_folder = self.edtBackupFolder.text()
 
         # windows
         if sys.platform.startswith('win32'):
@@ -224,13 +300,22 @@ class DBProfileBackupDialog(WIDGET, BASE):
         backup_file = '{}{}{}{}'.format(database_name, '_', date_str,'.backup')
         return backup_file
 
-    def backup_database(self, database, user, password, backup_filepath) -> bool:
-        script_name = PLUGIN_DIR + '/scripts/dbbackup.bat'
+    def backup_database(self, db_conn: DatabaseConnection, user: str,
+                         password: str, backup_filepath: str) -> bool:
+
+        backup_util = self.get_pg_base_folder()+"\\bin\\pg_dump.exe"
+        if backup_util == "":
+            return False
+
+
+        script_file = "/scripts/dbbackup.bat"
+        script_filepath = f"{PLUGIN_DIR}{script_file}"
+        backup_folder = f"{self.edtBackupFolder.text()}"
 
         startup_info = subprocess.STARTUPINFO()
         startup_info.dwFlags |=subprocess.STARTF_USESHOWWINDOW
-        process = subprocess.Popen([script_name, database.Database, 
-            database.Host, str(database.Port), user, backup_filepath], startupinfo=startup_info)
+        process = subprocess.Popen([script_filepath, db_conn.Database, 
+            db_conn.Host, str(db_conn.Port), user, password, backup_folder, backup_util], startupinfo=startup_info)
 
         stdout, stderr = process.communicate()
         process.wait()
@@ -240,17 +325,42 @@ class DBProfileBackupDialog(WIDGET, BASE):
         return True if result_code == 0 else False
 
 
-    def backup_config_file(self, config_filepath, backup_filepath):
+    def backup_config_file(self, config_filepath:str, backup_filepath: str):
         shutil.copyfile(config_filepath, backup_filepath)
 
-    def compress_backup(self, compressed_filename, backup_folder, files) -> bool:
+    def backup_templates(self, template_files:list[str], backup_folder: str):
+        path_sep = "/"
+        for template_filepath in template_files:
+            filename = os.path.basename(template_filepath)
+            backup_filepath = f"{backup_folder}{path_sep}{filename}"
+            shutil.copyfile(template_filepath, backup_filepath)
+
+    def _get_template_file_names(self, templates: list[str]):
+        template_file_names = []
+        for template_filepath in templates:
+            template_file_names.append(os.path.basename(template_filepath))
+        return template_file_names
+
+    def _backed_template_files(self, template_file_names: str, backup_folder: str) -> list[str]:
+        temp_files = []
+        path_sep = "/"
+        for template_name in template_file_names:
+            filename = f"{backup_folder}{path_sep}{template_name}"
+            temp_files.append(filename)
+        return temp_files
+
+
+    def compress_backup(self, compressed_filename:str, backup_folder: str, files:list[str]) -> bool:
         """
         param: files
         type: list
         """
+        path_sep = "/"
+        name_sep = "_"
+        file_ext = ".zip"
+        
         dtime =QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
-        zip_filepath = '{}{}{}{}{}{}'.format(backup_folder, '/', 
-                compressed_filename, '_',dtime,'.zip')
+        zip_filepath = f"{backup_folder}{path_sep}{compressed_filename}{name_sep}{dtime}{file_ext}"
 
         try:
             self.write_zip_file(files, zip_filepath)
@@ -264,17 +374,17 @@ class DBProfileBackupDialog(WIDGET, BASE):
             if os.path.isfile(file):
                 os.remove(file)
 
-
     def _dtime(self):
         return QDateTime.currentDateTime().toString('dd-MM-yyyy HH.mm')
 
     def _make_log(self, profiles: list, db_name: str, db_backup_filename: str,
-            log_dtime: str, is_compressed: bool) -> dict:
+            template_file_names: list[str], log_dtime: str, is_compressed: bool) -> dict:
 
         backup_log = {'configuration':{'filename':'configuration.stc',
-                                       'profiles':profiles,
+                                       'profiles':list(profiles),
+                                       'templates': template_file_names,
                'database':{'name':db_name,
-                           'backup':db_backup_filename},
+                           'backup_file':db_backup_filename},
                'created_on':log_dtime,
                'compressed':is_compressed
               }}
@@ -283,18 +393,45 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
     def create_backup_log(self, log: dict, log_file: str):
         with open(log_file, 'w') as lf:
-            json.dump(list(log), lf, indent=4)
+            json.dump(log, lf, indent=4)
 
     def write_zip_file(self, file_list: list, zip_file: str):
         with ZipFile(zip_file, 'w') as zf:
             for file in file_list:
-                zf.write(file)
+                basename = os.path.basename(file)
+                zf.write(file, arcname=basename)
 
     def show_message(self, msg: str, icon_type):
         msg_box = QMessageBox()
         msg_box.setText(msg)
         msg_box.setIcon(icon_type)
         msg_box.exec_()
+
+    def get_pg_base_folder(self):
+        """
+        PostgrSQL base folder
+        """
+        reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\PostgreSQL\\Installations\\")
+        pg_base_value = ""
+        for i in range(winreg.QueryInfoKey(reg_key)[0]):
+            try:
+                subkey_name = winreg.EnumKey(reg_key, i)
+                subkey = winreg.OpenKey(reg_key, subkey_name)
+
+                for j in range(winreg.QueryInfoKey(subkey)[1]):
+                    name, value,_ = winreg.EnumValue(subkey, j)
+                    if name == "Base Directory":
+                        pg_base_value = value
+                        break
+                if not pg_base_value == "":
+                    break
+                winreg.CloseKey(subkey)
+            except OSError:
+                pass
+        winreg.CloseKey(reg_key)
+
+        return pg_base_value
+
 
 
 

@@ -414,9 +414,6 @@ class ComposerWrapper(QObject):
         Creates and saves a new document template.
         """
         # Validate if the user has specified the data source
-
-        print('** SAVING TMPL **')
-
         if not LayoutUtils.get_stdm_data_source_for_layout(self.composition()):
             QMessageBox.critical(self.mainWindow(),
                                  QApplication.translate("ComposerWrapper", "Error"),
@@ -521,8 +518,6 @@ class ComposerWrapper(QObject):
 
         # Catch exception raised when writing items' elements
         try:
-            print('**** WRITE XML ****')
-
             self._writeXML(templateDoc, template_name)
         except DummyException as exc:
             msg = str(exc)
@@ -595,7 +590,6 @@ class ComposerWrapper(QObject):
 
 
                 if composerItem is not None:
-                    print('Composer ID: ', composerId)
                     compFieldSelector = ComposerFieldSelector(self, composerItem, self.mainWindow())
                     compFieldSelector.selectFieldName(composer_data_source.dataFieldName(composerId))
 

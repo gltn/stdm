@@ -38,12 +38,8 @@ class LookupProperty(WIDGET, BASE):
     Editor to create/edit Lookup column property
     """
 
-    def __init__(self, parent, form_fields, profile=None):
+    def __init__(self, parent, form_fields: dict, profile=None):
         """
-        :param parent: Owner of this form
-        :type parent: QWidget
-        :param entity_relation: EntityRelation object
-        :type entity_relation: EntityRelation
         :param profile: Current configuration profile
         :type profile: Profile
         """

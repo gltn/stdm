@@ -100,7 +100,6 @@ class SaveTemplateConfig(ComposerItemConfig):
         """
         Save document template.
         """
-        print('** on_action_triggered **')
         self.composerWrapper().saveTemplate()
 
 
