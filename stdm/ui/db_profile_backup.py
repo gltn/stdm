@@ -40,7 +40,8 @@ from qgis.PyQt.QtWidgets import (
 from qgis.PyQt.QtCore import (
         Qt,
         QDir,
-        QDateTime
+        QDateTime,
+        QCoreApplication
 )
 
 from qgis.gui import QgsGui
@@ -108,6 +109,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
         self.db_conn = self.db_config.read()  # DatabaseConnection
         self.txtDBName.setText(self.db_conn.Database)
         self.txtAdmin.setText('postgres')
+        self.lblStatus.setText('')
 
         self.config_templates = []
 
@@ -170,8 +172,6 @@ class DBProfileBackupDialog(WIDGET, BASE):
                 self.config_templates.append(filepath)
         return template_items
 
-    # ---------------------------------------------------------------------------
-
     def backup_folder_clicked(self):
         self._set_selected_directory(self.edtBackupFolder, 
                 self.tr('Configuration file and DB backup folder')
@@ -217,6 +217,9 @@ class DBProfileBackupDialog(WIDGET, BASE):
         db_name = self.db_conn.Database
         db_backup_filename = self._make_backup_filename(db_name)
 
+        self.lblStatus.setText('Backup started, please wait...')
+        QCoreApplication.processEvents()
+
         path_sep = "/"
         backup_folder = f"{self.edtBackupFolder.text()}"
         db_backup_filepath =f"{backup_folder}{path_sep}{db_backup_filename}"
@@ -260,6 +263,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
             if self.compress_backup(db_name, backup_folder, compressed_files):
                 self._remove_compressed_files(compressed_files)
+        
+        self.lblStatus.setText('Backup completed.')
         
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Information)
@@ -307,7 +312,6 @@ class DBProfileBackupDialog(WIDGET, BASE):
         if backup_util == "":
             return False
 
-
         script_file = "/scripts/dbbackup.bat"
         script_filepath = f"{PLUGIN_DIR}{script_file}"
         backup_folder = f"{self.edtBackupFolder.text()}"
@@ -315,7 +319,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
         startup_info = subprocess.STARTUPINFO()
         startup_info.dwFlags |=subprocess.STARTF_USESHOWWINDOW
         process = subprocess.Popen([script_filepath, db_conn.Database, 
-            db_conn.Host, str(db_conn.Port), user, password, backup_folder, backup_util], startupinfo=startup_info)
+            db_conn.Host, str(db_conn.Port), user, password, backup_folder, backup_util,
+            backup_filepath], startupinfo=startup_info)
 
         stdout, stderr = process.communicate()
         process.wait()

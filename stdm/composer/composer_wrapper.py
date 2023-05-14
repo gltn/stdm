@@ -588,7 +588,6 @@ class ComposerWrapper(QObject):
                 # Use composer item id since the uuid is stripped off
                 composerItem = self.composition().itemById(composerId)
 
-
                 if composerItem is not None:
                     compFieldSelector = ComposerFieldSelector(self, composerItem, self.mainWindow())
                     compFieldSelector.selectFieldName(composer_data_source.dataFieldName(composerId))
