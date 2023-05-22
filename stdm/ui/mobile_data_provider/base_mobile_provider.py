@@ -19,29 +19,58 @@ email                : stdm@unhabitat.org
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    pyqtSignal,
     Qt,
+    QDir,
+    pyqtSignal,
+    QDate,
+    QFile,
+    QThread,
+    QCoreApplication,
+    QEvent,
+    QIODevice,
+    QPointF,
+    QSizeF,
+    QItemSelectionModel,
+    QModelIndex,
     QSortFilterProxyModel
+)
+from qgis.PyQt.QtGui import (
+    QStandardItemModel,
+    QStandardItem,
+    QColor,
+    QFont
 )
 from qgis.PyQt.QtWidgets import (
     QWizard,
+    QMessageBox,
     QAbstractItemView,
+    QDialog,
+    QApplication,
+    QMenu,
+    QFileDialog,
+    QTableView
 )
+from qgis._core import QgsMessageLog
 
 from stdm.data.configuration.db_items import DbItem
 from stdm.data.configuration.profile import Profile
 from stdm.settings import current_profile
 from stdm.ui.gui_utils import GuiUtils
-from .column_editor import ColumnEditor
+from .column_editor import AppearanceColumnEditor
 from .custom_item_model import (
     EntitiesModel,
     ColumnEntitiesModel,
 )
 from stdm.utils.util import enable_drag_sort
-from ...data.pg_utils import pg_table_exists, pg_table_record_count
+from .mobile_provider_export import ProviderWriter
+from ...data.pg_utils import pg_table_exists, pg_table_record_count, table_column_names
+from ...exceptions import DummyException
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('mobile_data_provider/ui_mobile_provider_wizard.ui'))
+
+HOME = QDir.home().path()
+PROVIDER_HOME = HOME + '/.stdm/ui/mobile_data_provider'
 
 
 class BaseMobileProvider(WIDGET, BASE):
@@ -135,36 +164,43 @@ class BaseMobileProvider(WIDGET, BASE):
         rid, column, model_item = self.get_selected_item_data(self.providerEntityColumns)
         if rid == -1:
             return
-        _, entity = self._get_entity(self.providerEntities)
+        if column and column.action == DbItem.CREATE:
+            _, entity = self._get_entity(self.providerEntities)
 
-        profile = self.current_profile()
-        params = {}
-        params['parent'] = self
-        params['column'] = column
-        params['entity'] = entity
-        params['profile'] = profile
-        params['entity_has_records'] = self.entity_has_records(entity)
-        params['is_new'] = False
+            profile = self.current_profile()
+            params = {}
+            params['parent'] = self
+            params['column'] = column
+            params['entity'] = entity
+            params['profile'] = profile
+            params['in_db'] = self.column_exist_in_entity(entity, column)
+            params['entity_has_records'] = self.entity_has_records(entity)
 
-        original_column = column
+            params['is_new'] = False
 
-        editor = ColumnEditor(**params)
-        result = editor.exec_()
+            original_column = column  # model_item.entity(column.name)
 
-        if result == 1:
+            editor = AppearanceColumnEditor(**params)
+            result = editor.exec_()
 
-            model_index_name = model_item.index(rid, 0)
-            model_index_dtype = model_item.index(rid, 1)
-            model_index_desc = model_item.index(rid, 2)
+            if result == 1:
 
-            model_item.setData(model_index_name, editor.column.name)
-            model_item.setData(model_index_dtype, editor.column.display_name())
-            model_item.setData(model_index_desc, editor.column.description)
+                model_index_name = model_item.index(rid, 0)
+                model_index_dtype = model_item.index(rid, 1)
+                model_index_desc = model_item.index(rid, 2)
 
-            model_item.edit_entity(original_column, editor.column)
+                model_item.setData(model_index_name, editor.column.name)
+                model_item.setData(model_index_dtype, editor.column.display_name())
+                model_item.setData(model_index_desc, editor.column.description)
 
-            entity.columns[original_column.name] = editor.column
-            entity.rename_column(original_column.name, editor.column.name)
+                model_item.edit_entity(original_column, editor.column)
+
+                entity.columns[original_column.name] = editor.column
+                entity.rename_column(original_column.name, editor.column.name)
+
+        else:
+            self.show_message(QApplication.translate("Configuration Wizard", \
+                                                     "No column selected for edit!"))
 
     def entity_changed(self):
         """
@@ -299,3 +335,86 @@ class BaseMobileProvider(WIDGET, BASE):
 
         record_count = pg_table_record_count(entity.name)
         return True if record_count > 0 else False
+
+    def column_exist_in_entity(self, entity, column):
+        """
+        Returns True if a column exists in a given entity in DB
+        :param entity: Entity instance to check if column exist
+        :type entity: Entity
+        :param column: Column instance to check its existance
+        :type entity: BaseColumn
+        :rtype: boolean
+        """
+        cols = table_column_names(entity.name)
+        return True if column.name in cols else False
+
+    def validateCurrentPage(self):
+        validPage = True
+
+        if self.nextId() == 1:
+            return validPage
+
+        if self.currentId() == 1:
+            QgsMessageLog.logMessage("Page 1", "STDM dev")
+            validPage = True
+
+        elif self.currentId() == 2:
+            QgsMessageLog.logMessage("Page 2", "STDM dev")
+
+            entities = self.selected_entities_from_model()
+            QgsMessageLog.logMessage("Entities {entities}".format(entities=str(entities)), "STDM dev")
+            if len(entities) == 0:
+                QgsMessageLog.logMessage("No entity selected. Please select at least one entity...", "STDM dev")
+                self._notif_bar_str.insertErrorNotification(
+                    'No entity selected. Please select at least one entity...'
+                )
+                return
+
+            else:
+                QgsMessageLog.logMessage("Created", "STDM dev")
+                self.generate_mobile_form(entities)
+
+            validPage = False
+
+        return validPage
+
+    def generate_provider_output(self, profile):
+        pass
+
+    def selected_entities_from_model(self) ->list[str]:
+        """
+        Get selected entities for conversion to Xform.
+        """
+        entity_list = []
+        if self.entity_model.rowCount() > 0:
+            for row in range(self.entity_model.rowCount()):
+                item = self.entity_model.item(row)
+                entity_list.append(item.text())
+        return entity_list
+
+    def generate_mobile_form(self, profile_entities: list[str]):
+        """
+        Generate mobile form for entities of the current profile.
+        """
+        try:
+
+            profile = self.current_profile()
+
+            provider_writer = ProviderWriter(profile, profile_entities)
+
+            created, create_msg = provider_writer.create_xsl_file()
+            if not created:
+                QgsMessageLog.logMessage("Message {msg}".format(msg=create_msg), "STDM dev")
+                return
+
+            data_written, write_msg = provider_writer.write_data_to_xlsform()
+            if not data_written:
+                QgsMessageLog.logMessage("Message {msg}".format(msg=write_msg), "STDM dev")
+                return
+            else:
+                QgsMessageLog.logMessage("Message {msg}".format(msg=write_msg), "STDM dev")
+
+        except DummyException as ex:
+            QgsMessageLog.logMessage("Message {msg}".format(msg=ex.message +
+                                                        ': Unable to generate Mobile Form'), "STDM dev")
+

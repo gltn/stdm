@@ -210,7 +210,11 @@ class ColumnEntitiesModel(QStandardItemModel):
             'Single Select Lookup': ['select_one', 'none'],
             'Date': ['date', 'none'],
             'Multiple Select Lookup': ['select_multiple', 'none'],
-            'Geometry': ['geoshape', 'none']
+            'Geometry': ['geoshape', 'none'],
+            'Administrative Spatial Unit': ['select_one', 'none'],
+            'Auto Generated Code': ['integer', 'none'],
+            'Whole Number': ['integer', 'none'],
+            'Decimal Number': ['integer', 'none']
         }
 
         self.setHorizontalHeaderLabels(ColumnEntitiesModel.headers_labels)
@@ -228,6 +232,54 @@ class ColumnEntitiesModel(QStandardItemModel):
         if entity.TYPE_INFO == 'VARCHAR':
             data_type_name_info = data_type_name
             data_type_name = f'{data_type_name} ({entity.maximum})'
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'INT':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'DOUBLE':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'LOOKUP':
+            data_type_name_info = data_type_name
+            data_type_name = f'{data_type_name} ({entity.maximum})'
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'DATE':
+            data_type_name_info = data_type_name
+            data_type_name = f'{data_type_name} ({entity.maximum})'
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'MULTIPLE_SELECT':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'GEOMETRY':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'ADMIN_SPATIAL_UNIT':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
+            odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
+            odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
+
+        elif entity.TYPE_INFO == 'AUTO_GENERATED':
+            data_type_name_info = data_type_name
+            data_type_name = data_type_name
             odk_data_type_name = self.odk_data_type_and_appearance[data_type_name_info][0]
             odk_data_type_appearance = self.odk_data_type_and_appearance[data_type_name_info][1]
 
@@ -406,8 +458,6 @@ class LookupEntitiesModel(QStandardItemModel):
 
     def model_item(self, row: int) -> LookupEntityModelItem:
         return self.item(row)
-
-
 
 
 ################
