@@ -2394,6 +2394,7 @@ class ConfigWizard(WIDGET, BASE):
         """
         Event handler for editing a column.
         """
+        CHECK_STATE = {True: 'Yes', False: 'No'}
         if len(self.tbvColumns.selectedIndexes()) == 0:
             self.show_message(self.tr("Please select a column to edit"))
             return
@@ -2424,10 +2425,14 @@ class ConfigWizard(WIDGET, BASE):
 
                 model_index_name = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
-                model_index_desc = model_item.index(rid, 2)
+                model_index_mandt = model_item.index(rid, 2)
+                model_index_unique = model_item.index(rid, 3)
+                model_index_desc = model_item.index(rid, 4)
 
                 model_item.setData(model_index_name, editor.column.name)
                 model_item.setData(model_index_dtype, editor.column.display_name())
+                model_item.setData(model_index_mandt, CHECK_STATE[editor.column.mandatory] )
+                model_item.setData(model_index_dtype, editor.column.unique)
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(original_column, editor.column)
