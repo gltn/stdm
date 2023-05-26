@@ -136,7 +136,8 @@ class GeoODKReader:
         columns = list(self.entity_columns().values())
         for column in columns:
             # Don't include related entity columns and id columns
-            if column.display_name() == 'Related Entity' or column.name == 'id':
+            # if column.display_name() == 'Related Entity' or column.name == 'id':
+            if column.name == 'id':
                 continue
             self.entity_attributes[column.name] = column.TYPE_INFO
         return self.entity_attributes

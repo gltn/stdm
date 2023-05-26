@@ -19,6 +19,9 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import time
+
+from qgis.PyQt import QtCore 
 
 from qgis.PyQt.QtCore import (
     QDir
@@ -126,7 +129,7 @@ class EntityImporter():
             entity_add.save_to_db()
 
 
-class Save2DB:
+class Save2DB():
     """
     Class to insert entity data into db
     """
@@ -181,6 +184,8 @@ class Save2DB:
         """
         if self.entity_has_supporting_docs():
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
+            if entity_object is None:
+                return
             entity_object_model = entity_object()
             if hasattr(entity_object_model, 'documents'):
                 if self.entity.TYPE_INFO == 'SOCIAL_TENURE':
@@ -218,7 +223,7 @@ class Save2DB:
         :param doc_path: absolute document path
         :param doc: document name
         :type: str
-        Construct supporting document model instance to add into the db
+         Construct supporting document model instance to add into the db
         :return:
         """
         # Create document container
@@ -234,7 +239,8 @@ class Save2DB:
         self._doc_manager.insertDocumentFromFile(
             doc_path,
             document_type_id,
-            self.entity
+            self.entity,
+            upload_mode="SERIAL"
         )
 
     def format_document_name_from_attribute(self, doc):
@@ -309,7 +315,8 @@ class Save2DB:
                 setattr(self.model, k, var)
 
         if self.entity_has_supporting_docs():
-            self.model.documents = self._doc_manager.model_objects()
+            if self._doc_manager:
+                self.model.documents = self._doc_manager.model_objects()
 
         self.model.save()
         return self.model.id
@@ -325,7 +332,6 @@ class Save2DB:
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
-                # print("property{0}....  and type.{1}".format(col_prop, col_type))
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
         if self.entity_has_supporting_docs():

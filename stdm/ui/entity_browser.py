@@ -150,7 +150,7 @@ class _EntityDocumentViewerHandler(object):
 
         # Configure progress bar
         num_docs = len(documents)
-        prog_dlg = QProgressDialog('', None, 0, num_docs, parent=self)
+        prog_dlg = QProgressDialog('', '', 0, num_docs, parent=None)
         prog_dlg.setWindowModality(Qt.WindowModal)
         prog_msg = QApplication.translate(
             'EntityBrowser',

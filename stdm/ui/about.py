@@ -32,7 +32,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from stdm.ui.gui_utils import GuiUtils
-from stdm.utils.util import version_from_metadata
+from stdm.utils.util import value_from_metadata
 
 WIDGET, BASE = uic.loadUiType(
     GuiUtils.get_ui_file_path('ui_about_stdm.ui'))
@@ -58,8 +58,10 @@ class AboutSTDMDialog(WIDGET, BASE):
         # Insert version and build numbers respectively.
         if not self._metadata is None:
             installed_version = self._metadata.get('version_installed', None)
+            build_number = value_from_metadata('build_number')
         else:
-            installed_version = version_from_metadata()
+            installed_version = value_from_metadata('version')
+            build_number = value_from_metadata('build_number')
 
         if installed_version is None:
             return
@@ -72,13 +74,26 @@ class AboutSTDMDialog(WIDGET, BASE):
         # Insert installed version text
         version_msg = QApplication.translate(
             'AboutSTDMDialog',
-            'STDM version'
+            'STDM Version:'
         )
         version_text = '{0} {1}'.format(version_msg, installed_version)
         char_format = cursor.blockCharFormat()
         text_format = QTextCharFormat(char_format)
         text_format.setFontWeight(75)
         cursor.insertText(version_text, text_format)
+
+        # Build number
+        build_msg = QApplication.translate('AboutSTDMDialog', 'Build Number:')
+        build_text = f'{build_msg} {build_number}'
+
+        cursor = self.txtAbout.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertBlock()
+
+        char_format = cursor.blockCharFormat()
+        text_format = QTextCharFormat(char_format)
+        text_format.setFontWeight(75)
+        cursor.insertText(build_text, text_format)
 
     def onSTDMHome(self):
         """

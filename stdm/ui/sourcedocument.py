@@ -114,6 +114,7 @@ class SourceDocumentManager(QObject):
 
         for id in self.doc_types.keys():
             document_type_class[id] = self.document_model
+
         # Container for document references based on their unique IDs
         self._docRefs = []
 
@@ -121,7 +122,6 @@ class SourceDocumentManager(QObject):
         self._doc_view_manager = DocumentViewManager(self.parent_widget())
 
         self.doc_type_mapping = OrderedDict()
-
 
         for id, value in self.doc_types.items():
             self.doc_type_mapping[id] = value
@@ -195,7 +195,7 @@ class SourceDocumentManager(QObject):
         '''
         return list(self.containers.keys())
 
-    def insertDocumentFromFile(self, path, doc_type_id, entity, record_count=1):
+    def insertDocumentFromFile(self, path: str, doc_type_id: int, entity, record_count=1, upload_mode=""):
         """
         Insert a new document into one of the registered containers with the
         document type id. This document is registered
@@ -223,7 +223,6 @@ class SourceDocumentManager(QObject):
 
                     if not network_location:
                         self._doc_repository_error()
-
                         return
 
                     # Check if the directory exists
@@ -276,8 +275,9 @@ class SourceDocumentManager(QObject):
                         )
 
                         docWidg.setFile(
-                            path, entity.name, doc_type_value, doc_type_id
+                            path, entity.name, doc_type_value, doc_type_id, upload_mode=upload_mode
                         )
+
                         container.addWidget(docWidg)
 
     def onFileUploadComplete(self, documenttype):
@@ -289,7 +289,8 @@ class SourceDocumentManager(QObject):
         """
         docWidget = self.sender()
         if isinstance(docWidget, DocumentWidget):
-            self.fileUploaded.emit(docWidget.sourceDocument(documenttype))
+            doc_source = docWidget.sourceDocument(documenttype)
+            self.fileUploaded.emit(doc_source)
             self._docRefs.append(docWidget.fileUUID)
 
     def set_source_documents(self, source_docs):
@@ -563,7 +564,7 @@ class DocumentWidget(WIDGET, BASE):
         self.fileNameColor = "#5555ff"
         self.fileMetaColor = "#8f8f8f"
 
-        self.workerThread = QThread(self)  # ******
+        self.workerThread = QThread(self) 
         self.docWorker = None
 
     def eventFilter(self, watched, e):
@@ -708,7 +709,7 @@ class DocumentWidget(WIDGET, BASE):
         """
         self.lblClose.setVisible(state)
 
-    def setFile(self, dfile, source_entity, doc_type, doc_type_id):
+    def setFile(self, dfile, source_entity, doc_type, doc_type_id, upload_mode=""):
         """
         Set the absolute file path including the name, that is to be associated
         with the document widget.
@@ -721,9 +722,11 @@ class DocumentWidget(WIDGET, BASE):
             self._doc_type = doc_type
             self._doc_type_id = doc_type_id
 
-            self.uploadDoc()
-
-            self.buildDisplay()
+            if upload_mode == "SERIAL":
+                self.upload_doc_sequential()
+            else:
+                self.uploadDoc()
+                self.buildDisplay()
 
     def setModel(self, sourcedoc):
         """
@@ -808,7 +811,7 @@ class DocumentWidget(WIDGET, BASE):
         extension = self._displayName[self._displayName.rfind('.'):]
 
         QApplication.processEvents()
-        doc_path = '{}/{}/{}/{}/{}{}'.format(
+        doc_path = '{}{}/{}/{}/{}{}'.format(
             source_document_location(),
             str(self.curr_profile.name),
             str(self._source_entity),
@@ -911,6 +914,23 @@ class DocumentWidget(WIDGET, BASE):
             # self.docWorker.transfer()
             self.fileUUID = self.docWorker.file_uuid
 
+    def upload_doc_sequential(self):
+        """
+        Upload the file to central repository on the SAME thread using specified file manager
+        """
+        if isinstance(self.fileManager, NetworkFileManager):
+            self._docSize = self.fileInfo.size()
+
+            self.docWorker = DocumentTransferWorker(
+                self.fileManager,
+                self.fileInfo,
+                "%s" % (self._source_entity),
+                "%s" % (self._doc_type)
+            )
+
+            self.docWorker.transfer_serial()
+            self.fileUUID = self.docWorker.file_uuid
+
 
     def onBlockWritten(self, size):
         """
@@ -934,11 +954,10 @@ class DocumentWidget(WIDGET, BASE):
             if self.workerThread.isRunning():
                 self.workerThread.quit()
 
-def source_document_location(default="/home"):
+def source_document_location(default="/home") ->str:
     """
     :return: Last used source directory for
     source documents prior to uploading.
-    :rtype: str
     """
     source_doc_dir = default
 

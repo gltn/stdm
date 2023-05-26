@@ -138,7 +138,7 @@ from stdm.utils.util import (
     getIndex,
     db_user_tables,
     format_name,
-    version_from_metadata,
+    value_from_metadata,
     documentTemplates,
     user_non_profile_views
 )
@@ -828,7 +828,7 @@ class STDMQGISLoader:
         """
         Shows the change log the new version of STDM.
         """
-        version = version_from_metadata()
+        version = value_from_metadata('version')
         # Get the big releases only not minor ones.
         major_version = version.rsplit('.', 1)[0]
         result = self.stdm_reg_version(version)

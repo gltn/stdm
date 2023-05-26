@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import glob
 import shutil
 # from stdm.geoodk.importer.geoodkserver import JSONEXTRACTOR
 from collections import OrderedDict
@@ -103,8 +104,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.buttonBox.button(QDialogButtonBox.Save).setText('Import')
 
         # self.load_config()
+        self.active_profile()
         self.init_file_path()
-        self.current_profile_changed()
+        #self.current_profile_changed()
         self.change_check_state(self.chk_all.checkState())
         self.change_check_state(Qt.Checked)
         self.set_imported_instance_folder()
@@ -113,6 +115,41 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.txt_filter.setVisible(False)
         self.label_14.setVisible(False)
         self.btn_refresh.setVisible(False)
+
+    def showEvent(self, event):
+        # Make sure we ONLY have one xml file in the instance folder
+        super(ProfileInstanceRecords, self).showEvent(event)
+        instances = self.check_instances_with_bad_count_xml_files()
+        if len(instances) == 0:
+            self.current_profile_changed()
+            return
+
+        self.txt_feedback.append('Errors found in data files, import failed.')
+        self.txt_feedback.append('')
+        for instance, count in instances.items():
+            self.txt_feedback.append(f'{instance}: =>  {count}')
+
+        self.txt_feedback.append('')
+        self.txt_feedback.append('Fix the errors then try again.')
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
+
+
+    def check_instances_with_bad_count_xml_files(self):
+        """
+        Returns the number of xml files in the instance folder.
+        """
+        instances = {}
+
+        instance_folders = self.xform_xpaths()
+        for instance_folder in instance_folders:
+            xml_folder = os.path.join(instance_folder, '*.xml')
+            xml_files = glob.glob(xml_folder)
+            if len(xml_files) == 0:
+                instances[instance_folder] = 0
+            if len(xml_files) > 1:
+                instances[instance_folder] = len(xml_files)
+
+        return instances
 
     def load_config(self) -> Dict[ProfileName, Profile]:
         """
@@ -146,7 +183,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Get the current profile so that it is the one selected at the combo box
         """
         self.instance_list = []
-        self.active_profile()
+        #self.active_profile()
         self.init_file_path()
         self.available_records()
         self.on_dir_path()
@@ -230,13 +267,13 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if os.path.isfile(file_instance):
                     self.rename_file_to_UUID(file_instance)
 
-    def read_instance_data(self) -> Dict[str, InstanceData]:
+    def read_instance_data(self) -> Dict[str, tuple[str, InstanceData]]:
         """
         Read all instance data once and store them in a dict
         :str is filename
         """
         mobile_data = OrderedDict()
-        social_tenure_info = OrderedDict()
+        #social_tenure_info = OrderedDict()
         self.uuid_extractor.unset_path()
 
         for full_filename in self.instance_list:
@@ -244,15 +281,16 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 filepath, filename = os.path.split(full_filename)
                 self.uuid_extractor.set_file_path(full_filename)
 
-            mobile_data[filename] = InstanceData(
+            mobile_data[filename] = (full_filename, InstanceData(
                 field_data_nodes=self.uuid_extractor.document_entities_with_data(
                     self.active_profile().replace(' ', '_'),
                     self.user_selected_entities()),
                 str_data_nodes=self.uuid_extractor.document_entities_with_data(
                     self.active_profile().replace(' ', '_'),
-                    ['social_tenure']))
+                    ['social_tenure'])))
 
             self.uuid_extractor.close_document()
+
         return mobile_data
 
     def rename_file_to_UUID(self, filename: str):
@@ -398,7 +436,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     has_relations = True
                 else:
                     continue
-            return has_relations
+        return has_relations
 
     def parent_table_isselected(self) -> List[str]:
         """
@@ -560,7 +598,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         mobile_field_data = self.read_instance_data()
 
-        self.has_foreign_keys_parent(entities)
+        has_fk = self.has_foreign_keys_parent(entities)
+
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
                                        QApplication.translate('GeoODKMobileSettings',
@@ -582,7 +621,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.pgbar.setValue(0)
             ImportLogger.log_action("Import started ...\n")
 
-            for filename, instance_obj_data in mobile_field_data.items():
+            for filename, instance_data in mobile_field_data.items():
+
+                instance_full_filename = instance_data[0]
+                instance_obj_data = instance_data[1]
 
                 ImportLogger.log_action("File {} ...\n".format(filename))
                 parents_info = []
@@ -607,7 +649,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
 
-                        entity_add.objects_from_supporting_doc(filename)
+                        entity_add.objects_from_supporting_doc(instance_full_filename)
 
                         ref_id = entity_add.save_parent_to_db()
 
@@ -623,7 +665,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
-                        entity_add.objects_from_supporting_doc(filename)
+                        entity_add.objects_from_supporting_doc(instance_full_filename)
                         child_id = entity_add.save_to_db()
                         cu_obj = entity_name
                         import_status = True
@@ -649,7 +691,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         ImportLogger.log_action(log_timestamp)
                         if repeat_table in self.profile_entities_names(current_profile()):
                             entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
-                            entity_add.objects_from_supporting_doc(filename)
+                            entity_add.objects_from_supporting_doc(instance_full_filename)
                             child_id = entity_add.save_to_db()
                             self.parent_ids[repeat_table] = [child_id, repeat_table]
                             cu_obj = repeat_table

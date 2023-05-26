@@ -76,7 +76,7 @@ from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
-from stdm.utils.util import version_from_metadata
+from stdm.utils.util import value_from_metadata
 
 MAX_LIMIT = 100000  # Maximum records in a entity browser
 
@@ -124,7 +124,7 @@ class OptionsDialog(WIDGET, BASE):
         self._reg_config = RegistryConfig()
         self._db_config = DatabaseConfig()
 
-        version = version_from_metadata()
+        version = value_from_metadata('version')
         #upgrade_label_text = self.label_9.text().replace(
             #'1.4', version.strip()
         #)

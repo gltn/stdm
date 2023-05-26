@@ -57,22 +57,25 @@ class NetworkFileManager(QObject):
         """
         Upload document in central repository
         """
-
         self._entity_source = entity_source
         self._doc_type = doc_type
         self.fileID = self.generateFileID()
         self.sourcePath = str(fileinfo.filePath())
         profile_name = self.curr_profile.name
+
+        net_path = self.networkPath.rstrip('/')
         root_dir = QDir(self.networkPath)
+
         doc_dir = QDir('{}/{}/{}/{}'.format(
-            self.networkPath,
+            net_path,
             profile_name.lower(),
             self._entity_source,
             self._doc_type.lower().replace(' ', '_')
         )
         )
+
         doc_path_str = '{}/{}/{}/{}'.format(
-            self.networkPath,
+            net_path,
             profile_name.lower(),
             self._entity_source,
             self._doc_type.lower().replace(' ', '_')
@@ -82,10 +85,8 @@ class NetworkFileManager(QObject):
             res = root_dir.mkpath(doc_path_str)
             if res:
                 root_doc_type_path = doc_path_str
-
             else:
                 root_doc_type_path = self.networkPath
-
         else:
             root_doc_type_path = doc_path_str
 
@@ -97,7 +98,6 @@ class NetworkFileManager(QObject):
 
         srcFile = open(self.sourcePath, 'rb')
         destinationFile = open(self.destinationPath, 'wb')
-
 
         # srcLen = self.sourceFile.bytesAvailable()
         totalRead = 0
@@ -215,3 +215,9 @@ class DocumentTransferWorker(QObject):
         Propagate event.
         """
         self.complete.emit(file_uuid)
+
+    def transfer_serial(self):
+        self._file_manager.uploadDocument(
+            self._entity_source, self._doc_type, self._file_info
+        )
+        self.file_uuid = self._file_manager.fileID

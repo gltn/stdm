@@ -553,7 +553,6 @@ class MapperMixin(QDialog):
                             "New record has been successfully saved."
                         )
                     )
-
             else:
                 self._model.update()
                 QMessageBox.information(

@@ -1178,19 +1178,19 @@ def user_non_profile_views():
     return source_tables
 
 
-def version_from_metadata():
+def value_from_metadata(key: string) ->str:
     """
-    Gets the version from a metadata file.
-    :return: Meta data.
-    :rtype: String
+    Returns a value from the metadata file.
     """
     with open('{}/metadata.txt'.format(PLUGIN_DIR)) as meta:
         lines = meta.readlines()
+        value = ""
         for line in lines:
-            if 'version' in line:
-                version_line = line.split('=')
-                version = version_line[1]
-                return version
+            if key in line:
+                key_line = line.split('=')
+                value = key_line[1]
+                break
+        return value
 
 
 def code_columns(entity, current_column_name):

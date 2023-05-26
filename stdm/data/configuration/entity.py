@@ -126,7 +126,7 @@ class Entity(QObject, TableItem):
 
         self.supporting_doc = None
 
-        # FIXME: Refactor the following supports_documents assignments
+        # FIXME: Refactor the names for following supports_documents assignments
         self._supports_documents = supports_documents
 
         if self._supports_documents:
