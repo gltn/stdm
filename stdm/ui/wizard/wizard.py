@@ -2429,10 +2429,14 @@ class ConfigWizard(WIDGET, BASE):
                 model_index_unique = model_item.index(rid, 3)
                 model_index_desc = model_item.index(rid, 4)
 
+                data_type_name = editor.column.display_name()
+                if editor.column.TYPE_INFO == 'VARCHAR':
+                    data_type_name = f'{data_type_name} ({editor.column.maximum})'
+
                 model_item.setData(model_index_name, editor.column.name)
-                model_item.setData(model_index_dtype, editor.column.display_name())
+                model_item.setData(model_index_dtype, data_type_name)
                 model_item.setData(model_index_mandt, CHECK_STATE[editor.column.mandatory] )
-                model_item.setData(model_index_dtype, editor.column.unique)
+                model_item.setData(model_index_unique, CHECK_STATE[editor.column.unique])
                 model_item.setData(model_index_desc, editor.column.description)
 
                 model_item.edit_entity(original_column, editor.column)
