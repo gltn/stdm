@@ -265,6 +265,9 @@ def export_data(table_name):
 
     return _execute(t)
 
+def run_query(query: str):
+    t = text(query)
+    _execute(t)
 
 def fetch_with_filter(sql_str):
     sql = str(sql_str)
