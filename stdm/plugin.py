@@ -127,6 +127,7 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.options_base import OptionsDialog
 from stdm.ui.db_profile_backup import DBProfileBackupDialog
+from stdm.ui.profile_backup_restore import ProfileBackupRestoreDialog
 from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.ui.social_tenure.str_editor import STREditor
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
@@ -1014,6 +1015,15 @@ class STDMQGISLoader:
         stdmAdminMenu.setObjectName("STDMAdminSettings")
         stdmAdminMenu.setTitle(QApplication.translate("ToolbarAdminSettings", "Admin Settings"))
 
+        # Configuration Manager
+        config_managmt_menu = QMenu(self.stdmMenu)
+        config_managmt_menu.setIcon(GuiUtils.get_icon("settings.png"))
+        config_managmt_menu.setObjectName("ConfigManagmt")
+        config_managmt_menu.setTitle(QApplication.translate("TollbarConfigManagmt", "Configuration Management"))
+
+        adminMenu.addMenu(config_managmt_menu)
+        stdmAdminMenu.addMenu(config_managmt_menu)
+
         # Create content menu container
         contentBtn = QToolButton()
 
@@ -1069,7 +1079,11 @@ class STDMQGISLoader:
                                    self.iface.mainWindow())
 
         self.profile_db_backup_act = QAction(GuiUtils.get_icon("export.png"),
-                                 QApplication.translate("ProfileBackupAction", "Profile && Database Backup"),
+                                 QApplication.translate("ProfileBackupAction", "Backup"),
+                                 self.iface.mainWindow())
+
+        self.profile_backup_restore_act = QAction(GuiUtils.get_icon("import.png"),
+                                 QApplication.translate("ProfileBackupRestoreAction", "Restore"),
                                  self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
@@ -1138,6 +1152,7 @@ class STDMQGISLoader:
         self.usersAct.triggered.connect(self.manageAccounts)
         self.options_act.triggered.connect(self.on_sys_options)
         self.profile_db_backup_act.triggered.connect(self.on_profile_db_backup)
+        self.profile_backup_restore_act.triggered.connect(self.on_profile_backup_restore)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
@@ -1164,6 +1179,9 @@ class STDMQGISLoader:
 
         profile_db_backup_cnt = ContentGroup.contentItemFromQAction(self.profile_db_backup_act)
         profile_db_backup_cnt.code = "9660f5ab-2ac5-44df-881d-4f2d21ce0632"
+
+        profile_backup_restore_cnt = ContentGroup.contentItemFromQAction(self.profile_backup_restore_act)
+        profile_backup_restore_cnt.code = "845699c9-0b3b-9524-ccb7-779efd7a30e8"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -1259,12 +1277,20 @@ class STDMQGISLoader:
         self.profile_db_backup_group.setContainerItem(self.profile_db_backup_act)
         self.profile_db_backup_group.register()
 
+        self.profile_backup_restore_group = ContentGroup(username)
+        self.profile_backup_restore_group.addContentItem(profile_backup_restore_cnt)
+        self.profile_backup_restore_group.setContainerItem(self.profile_backup_restore_act)
+        self.profile_backup_restore_group.register()
+
+        config_managmt_group = []
+        config_managmt_group.append(self.profile_db_backup_group)
+        config_managmt_group.append(self.profile_backup_restore_group)
+
         # Group admin settings content groups
         adminSettingsCntGroups = []
         #adminSettingsCntGroups.append(self.contentAuthCntGroup)
         #adminSettingsCntGroups.append(self.userRoleCntGroup)
         adminSettingsCntGroups.append(self.options_content_group)
-        adminSettingsCntGroups.append(self.profile_db_backup_group)
 
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -1361,10 +1387,13 @@ class STDMQGISLoader:
         self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
                                                                    adminBtn])
 
-        self.toolbarLoader.addContent(self.profile_db_backup_group, [adminMenu,
-                                                                   adminBtn])
+        self.toolbarLoader.addContent(self.profile_db_backup_group, [config_managmt_menu,
+                                                                      adminBtn])
+        self.toolbarLoader.addContent(self.profile_backup_restore_group, [config_managmt_menu,
+                                                                    adminBtn])
 
-        self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
+        self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu,
+                                                                stdmAdminMenu])
 
         self.menubarLoader.addContent(self._action_separator())
         self.toolbarLoader.addContent(self._action_separator())
@@ -1611,6 +1640,9 @@ class STDMQGISLoader:
         db_profile_backup_dlg = DBProfileBackupDialog(self.iface)
         db_profile_backup_dlg.exec_()
 
+    def on_profile_backup_restore(self):
+        profile_backup_restore_dlg = ProfileBackupRestoreDialog(self.iface)
+        profile_backup_restore_dlg.exec_()
 
     def profile_status_message(self):
         """
@@ -2020,6 +2052,7 @@ class STDMQGISLoader:
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
             self.stdmInitToolbar.removeAction(self.profile_db_backup_act)
+            self.stdmInitToolbar.removeAction(self.profile_backup_restore_act)
             self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
             self.stdmInitToolbar.removeAction(self.importAct)
             self.stdmInitToolbar.removeAction(self.exportAct)

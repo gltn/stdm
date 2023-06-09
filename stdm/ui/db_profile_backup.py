@@ -3,7 +3,7 @@
 Name                 : DBProfileBackupDialog
 Description          : Dialog for doing profile and database backup
 Date                 : 01/10/2022
-copyright            : (C) 2016 by UN-Habitat and implementing partners.
+copyright            : (C) 2022 by UN-Habitat and implementing partners.
                        See the accompanying file CONTRIBUTORS.txt in the root
 email                : stdm@unhabitat.org
  ***************************************************************************/
@@ -54,42 +54,18 @@ from stdm.data.configuration.profile import Profile
 from stdm.security.user import User
 from stdm.composer.document_template import DocumentTemplate
 
+from stdm.utils.logging_handlers import (
+    StreamHandler,
+    StdOutHandler,
+    FileHandler,
+    MessageLogger
+)
+
 from stdm.utils.util import (
     PLUGIN_DIR,
     documentTemplates,
     user_non_profile_views
 )
-
-class StreamHandler:
-    def log(self, msg: str):
-        raise NotImplementedError
-
-class StdOutHandler(StreamHandler):
-    def log(self, msg: str):
-        print(msg)
-
-class FileHandler(StreamHandler):
-    def __init__(self, msg: str):
-        dtime = QDateTime.currentDataTime().toString('ddMMyyyy_HH.mm')
-        filename ='/.stdm/logs/template_converter_{}.log'.format(dtime)
-        self.log_file = '{}{}'.format(QDir.home().path(),  filename)
-
-    def log(self, msg: str):
-        with open(self.log_file, 'a') as lf:
-            lf.write(msg)
-            lf.write('\n')
-
-class MessageLogger:
-    def __init__(self, handler:StreamHandler=StdOutHandler):
-        self.stream_handler =  handler()
-
-    def log_error(self, msg: str):
-        log_msg = 'ERROR: {}'.format(msg)
-        self.stream_handler.log(log_msg)
-
-    def log_info(self, msg: str):
-        log_msg = 'INFO: {}'.format(msg)
-        self.stream_handler.log(log_msg)
 
 WIDGET, BASE = uic.loadUiType(
         GuiUtils.get_ui_file_path('ui_db_profile_backup.ui'))
