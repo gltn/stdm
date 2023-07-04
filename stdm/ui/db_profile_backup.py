@@ -49,6 +49,7 @@ from qgis.gui import QgsGui
 from stdm.ui.gui_utils import GuiUtils
 from stdm.data.config import DatabaseConfig
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
+from stdm.data.configuration.entity import Entity
 from stdm.data.connection import DatabaseConnection
 from stdm.data.configuration.profile import Profile
 from stdm.security.user import User
@@ -107,45 +108,69 @@ class DBProfileBackupDialog(WIDGET, BASE):
             entity_node.setText(0, "Entities")
             profile_item.addChild(entity_node)
 
-            entity_items =  self._profile_entities(profile)
+            entity_items =  self._entity_items(self._profile_entities(profile))
             entity_node.addChildren(entity_items)
 
             template_node = QTreeWidgetItem()
             template_node.setText(0, "Templates")
             profile_item.addChild(template_node)
             
-            templates = self._profile_templates(profile)
-            template_node.addChildren(templates)
+            profile_templates = self._profile_templates(profile)
+
+            if len(profile_templates) > 0:
+                templates = self._template_items(list(profile_templates.values())[0])
+                template_node.addChildren(templates)
+
+            self.config_templates.append(profile_templates)
 
             self.twProfiles.insertTopLevelItem(0, profile_item)
 
 
-    def _profile_entities(self, profile: Profile) ->list[QTreeWidgetItem]:
-        entity_items = []
+    def _profile_entities(self, profile: Profile) ->list[Entity]:
+        entities = []
         for entity in profile.entities.values():
             if not entity.user_editable:
                 continue
-            entity_item = QTreeWidgetItem()
-            entity_item.setText(0, entity.short_name)
-            entity_item.setIcon(0, GuiUtils.get_icon("Table02.png"))
-            entity_items.append(entity_item)
-        return entity_items
+            entities.append(entity)
+        return entities
 
-    def _profile_templates(self, profile: Profile) ->list[QTreeWidgetItem]:
-        template_items = []
+    def _entity_items(self, entities: list[Entity]) ->list[QTreeWidgetItem]:
+            entity_items = []
+            for entity in entities:
+                entity_item = QTreeWidgetItem()
+                entity_item.setText(0, entity.short_name)
+                entity_item.setIcon(0, GuiUtils.get_icon("Table02.png"))
+                entity_items.append(entity_item)
+            return entity_items
+
+
+    def _profile_templates(self, profile: Profile) ->dict:
         templates = documentTemplates()
         profile_tables = profile.table_names()
+        profile_templates = {}
         for name, filepath in templates.items():
             doc_temp = DocumentTemplate.build_from_path(name, filepath)
             if doc_temp.data_source is None:
                 continue
             if doc_temp.data_source.referenced_table_name in profile_tables or \
                  doc_temp.data_source.name() in user_non_profile_views():
-                template_item = QTreeWidgetItem()
-                template_item.setText(0, doc_temp.name)
-                template_item.setIcon(0, GuiUtils.get_icon("record02.png"))
-                template_items.append(template_item)
-                self.config_templates.append(filepath)
+                if profile.name in profile_templates:
+                    profile_templates[profile.name].append((doc_temp.name, filepath))
+                else:
+                    profile_templates[profile.name] = []
+                    profile_templates[profile.name].append((doc_temp.name, filepath))
+        return profile_templates
+
+
+    def _template_items(self, templates: list[tuple[str, str]]) ->list[QTreeWidgetItem]:
+        template_items = []
+        TEMPLATE_NAME = 0
+        for template in templates:
+            template_item = QTreeWidgetItem()
+            template_item.setText(0, template[TEMPLATE_NAME])
+            template_item.setIcon(0, GuiUtils.get_icon("record02.png"))
+            template_items.append(template_item)
+
         return template_items
 
     def backup_folder_clicked(self):
@@ -179,9 +204,9 @@ class DBProfileBackupDialog(WIDGET, BASE):
         user = User('postgres', self.edtAdminPassword.text())
         db_con.User = user
 
-        validity, msg = db_con.validateConnection()
+        valid, msg = db_con.validateConnection()
 
-        if validity == False:
+        if not valid:
             error_type = self.tr('Authentication Failed!')
             error_msg = '{}: `{}`'.format(error_type, msg)
             QMessageBox.critical(self, self.tr('BackupDialog', error_type),
@@ -217,15 +242,26 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
         self.backup_templates(self.config_templates, backup_folder)
         
-        template_file_names = self._get_template_file_names(self.config_templates)
+        #template_file_names = self._get_template_file_names(self.config_templates)
 
         log_dtime = self._dtime()
         json_ext = ".json"
         log_filename = f"backuplog_{log_dtime}{json_ext}"
         log_filepath = f"{backup_folder}{path_sep}{log_filename}"
 
-        backup_log = self._make_log(self.stdm_config.profiles.keys(), db_name,
-                db_backup_filename, template_file_names, log_dtime, self.cbCompress.isChecked())
+        profiles = []
+        for profile in self.stdm_config.profiles.values():
+            entities = [e.short_name for e in self._profile_entities(profile)]
+
+            for profile_templates in self.config_templates:
+                templates = []
+                for profile_name, template_names in profile_templates.items():
+                    if profile_name == profile.name:
+                        templates = [template[0] for template in template_names]
+
+            profiles.append({'name':profile.name, 'entities': entities, 'templates': templates})
+
+        backup_log = self._make_log(profiles, db_name, db_backup_filename, log_dtime, self.cbCompress.isChecked())
 
         self.create_backup_log(backup_log, log_filepath)
 
@@ -284,9 +320,12 @@ class DBProfileBackupDialog(WIDGET, BASE):
     def backup_database(self, db_conn: DatabaseConnection, user: str,
                          password: str, backup_filepath: str) -> bool:
 
-        backup_util = self.get_pg_base_folder()+"\\bin\\pg_dump.exe"
-        if backup_util == "":
+        base_folder = self.get_pg_base_folder()
+        if base_folder == "":
             return False
+
+        dump_tool = "\\bin\\pg_dump.exe"
+        backup_util = f"{base_folder}{dump_tool}"
 
         script_file = "/scripts/dbbackup.bat"
         script_filepath = f"{PLUGIN_DIR}{script_file}"
@@ -309,12 +348,16 @@ class DBProfileBackupDialog(WIDGET, BASE):
     def backup_config_file(self, config_filepath:str, backup_filepath: str):
         shutil.copyfile(config_filepath, backup_filepath)
 
-    def backup_templates(self, template_files:list[str], backup_folder: str):
+    def backup_templates(self, config_templates:list[dict[str, list[tuple[str,str]]]], backup_folder: str):
         path_sep = "/"
-        for template_filepath in template_files:
-            filename = os.path.basename(template_filepath)
-            backup_filepath = f"{backup_folder}{path_sep}{filename}"
-            shutil.copyfile(template_filepath, backup_filepath)
+        for profile_templates in config_templates:
+            if len(profile_templates) == 0:
+                return
+            for template in list(profile_templates.values())[0]:
+                template_filepath = template[1]
+                filename = os.path.basename(template_filepath)
+                backup_filepath = f"{backup_folder}{path_sep}{filename}"
+                shutil.copyfile(template_filepath, backup_filepath)
 
     def _get_template_file_names(self, templates: list[str]):
         template_file_names = []
@@ -359,11 +402,10 @@ class DBProfileBackupDialog(WIDGET, BASE):
         return QDateTime.currentDateTime().toString('dd-MM-yyyy HH.mm')
 
     def _make_log(self, profiles: list, db_name: str, db_backup_filename: str,
-            template_file_names: list[str], log_dtime: str, is_compressed: bool) -> dict:
+            log_dtime: str, is_compressed: bool) -> dict:
 
         backup_log = {'configuration':{'filename':'configuration.stc',
-                                       'profiles':list(profiles),
-                                       'templates': template_file_names,
+                                       'profiles':profiles,
                'database':{'name':db_name,
                            'backup_file':db_backup_filename},
                'created_on':log_dtime,
@@ -388,7 +430,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
         msg_box.setIcon(icon_type)
         msg_box.exec_()
 
-    def get_pg_base_folder(self):
+    def get_pg_base_folder(self) ->str:
         """
         PostgrSQL base folder
         """

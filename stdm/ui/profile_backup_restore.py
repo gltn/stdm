@@ -20,30 +20,38 @@ email                : stdm@unhabitat.org
 """
 
 import os
+import glob
 import json
 from zipfile import ZipFile
 
-import subprocess
-from subprocess import Popen
+from qgis.PyQt.QtCore import(
+     QFile,
+     QDir
+)
 
 from qgis.PyQt import uic
 
 from qgis.PyQt.QtWidgets import (
     QDialog,
-    QFileDialog
+    QFileDialog,
+    QTreeWidgetItem,
+    QMessageBox
 )
 
 from stdm.ui.gui_utils import GuiUtils
-from stdm.data.config import DatabaseConfig
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
-from stdm.data.connection import DatabaseConnection
 from stdm.data.configuration.profile import Profile
+from stdm.data.connection import DatabaseConnection
 from stdm.security.user import User
 
-from stdm.utils.logging_handlers import (
-    StreamHandler,
-    FileHandler,
-    StdOutHandler
+from stdm.ui.backup_restore_handler import BackupRestoreHandler
+
+from stdm.utils.util import (
+    PLUGIN_DIR
+)
+from stdm.settings.registryconfig import (
+    RegistryConfig,
+    COMPOSER_TEMPLATE
 )
 
 WIDGET, BASE = uic.loadUiType(
@@ -54,4 +62,130 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
+        self.setWindowTitle("Restore Backup")
         self.iface = iface
+        self.backup_info_file = ""
+        self.backup_restore_handler = BackupRestoreHandler()
+        self.connect_signals()
+        self.initialize_ui_controls()
+
+    def initialize_ui_controls(self):
+        self.rbBackupFolder.setChecked(True)
+        self.lblDBName.setText("")
+        self.lblDBAdmin.setText("postgres")
+        self.edtPassword.setText("")
+        self.edtBackupFolder.setEnabled(False)
+        self.btnRestore.setEnabled(False)
+        self.lblBackupFile.setText("")
+        self.lblDateCreated.setText("")
+        self.lblStatus.setText("")
+
+    def connect_signals(self):
+        self.tbBackupFolder.clicked.connect(self.open_backup_folder)
+        self.rbBackupFolder.toggled.connect(self.select_backup_folder)
+        self.rbZipFile.toggled.connect(self.select_zip_file)
+
+        self.btnClose.clicked.connect(self.close_window)
+        self.btnRestore.clicked.connect(self.restore_backup)
+
+    def close_window(self):
+        self.done(0)
+
+    def open_backup_folder(self) ->str:
+        folder = QFileDialog.getExistingDirectory(self, "Backup Folder", "")
+        self.edtBackupFolder.setText(folder)
+
+        # find backup instruction file
+        backup_folder = os.path.join(folder, '*.json')
+        json_files = glob.glob(backup_folder)
+
+        if len(json_files) == 0:
+            msg = self.tr("Invalid backup folder! Backup info file missing.")
+            self.show_message(msg, QMessageBox.Critical)
+            return
+
+        self.backup_info_file = json_files[0]
+        
+        if self.backup_restore_handler.read_backup_info_file(self.backup_info_file):
+            self.show_backup_info()
+            self.btnRestore.setEnabled(True)
+        else:
+            msg = self.tr("Error reading backup info file. Check log file for details.")
+            self.show_message(msg, QMessageBox.Critical)
+
+    def select_backup_folder(self, is_selected:bool):
+        if is_selected:
+            self.tbBackupFolder.setEnabled(is_selected)
+            self.edtZipFile.setEnabled(not is_selected)
+            self.tbZipFile.setEnabled(not is_selected)
+
+    def select_zip_file(self, is_selected:bool):
+        if is_selected:
+            self.edtZipFile.setEnabled(is_selected)
+            self.tbZipFile.setEnabled(is_selected)
+            self.tbBackupFolder.setEnabled(not is_selected)
+
+    def show_backup_info(self):
+        self.lblDBName.setText(self.backup_restore_handler.db_name)
+        self.lblBackupFile.setText(self.backup_restore_handler.db_backup_file)
+        self.lblDateCreated.setText(self.backup_restore_handler.backup_date)
+        self.lblStatus.setText(self.backup_restore_handler.backup_info_file)
+
+        self._display_profiles(self.backup_restore_handler.profiles)
+
+    def _display_profiles(self, profiles:list):
+        self.twProfiles.clear()
+        for profile in profiles:
+            profile_item = QTreeWidgetItem()
+            profile_item.setText(0, profile['name'])
+            profile_item.setIcon(0, GuiUtils.get_icon("folder.png"))
+
+            entity_node = QTreeWidgetItem()
+            entity_node.setText(0, "Entities")
+            profile_item.addChild(entity_node)
+            entity_node.addChildren(self._entity_items(profile['entities']))
+
+            template_node = QTreeWidgetItem()
+            template_node.setText(0, "Templates")
+            profile_item.addChild(template_node)
+            template_node.addChildren(self._template_items(profile['templates']))
+
+            self.twProfiles.insertTopLevelItem(0, profile_item)
+
+    def _entity_items(self, entities: list[str]) -> list[QTreeWidgetItem]:
+        entity_items = []
+        for entity in entities:
+            entity_item = QTreeWidgetItem()
+            entity_item.setText(0, entity)
+            entity_item.setIcon(0, GuiUtils.get_icon("Table02.png"))
+            entity_items.append(entity_item)
+        return entity_items
+
+    def _template_items(self, templates: list[str]) ->list[QTreeWidgetItem]:
+        template_items = []
+        for template in templates:
+            template_item = QTreeWidgetItem()
+            template_item.setText(0, template)
+            template_item.setIcon(0, GuiUtils.get_icon("record02.png"))
+            template_items.append(template_item)
+        return template_items
+    
+    def restore_backup(self):
+        if self.edtPassword.text() == '':
+            msg = self.tr('Please enter password for user `postgres` ')
+            self.show_message(msg, QMessageBox.Critical)
+            return 
+
+        msg, status = self.backup_restore_handler.restore_backup('postgres',
+                                                                 self.edtPassword.text())
+        if not status:
+            self.show_message(msg, QMessageBox.Critical)
+        else:
+            print(msg)
+
+    def show_message(self, msg: str, icon_type):
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("STDM")
+        msg_box.setText(msg)
+        msg_box.setIcon(icon_type)
+        msg_box.exec_()

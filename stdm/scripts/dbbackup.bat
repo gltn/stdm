@@ -1,9 +1,15 @@
  @echo off
+
+ REM **************************
+ REM DB Backup Script
+ REM **************************
+
    for /f "tokens=1-4 delims=/-" %%i in ("%date%") do (
      set dow=%%i
      set month=%%j
      set year=%%k
    )
+
    echo DOW:%dow%
    echo DAY:%day%
    echo MONTH:%month%
@@ -20,7 +26,7 @@
    set PG_USER=%4
    set PGPASSWORD=%5
    set BACKUP_FOLDER=%6
-   set PG_BASE_FOLDER=%7
+   set PG_DB_DUMP_TOOL=%7
    set BACKUP_FILENAME=%8
 
    REM set log_file=%BACKUP_FOLDER%\backit.log
@@ -31,7 +37,7 @@
 
    REM PAUSE
 
-   %PG_BASE_FOLDER% -h %PG_SERVER% -p %PG_PORT% -U %PG_USER% -F c -b -v -f %BACKUP_FILENAME% %DATABASE_NAME%
+   %PG_DB_DUMP_TOOL% -h %PG_SERVER% -p %PG_PORT% -U %PG_USER% -F c -b -v -f %BACKUP_FILENAME% %DATABASE_NAME%
 
    timeout /t 3
 

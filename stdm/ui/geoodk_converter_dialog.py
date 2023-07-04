@@ -24,14 +24,13 @@ import subprocess
 import sys
 
 from qgis.PyQt import uic
+
 from qgis.PyQt.QtCore import (
+    Qt,
     QDir,
     pyqtSignal,
+)
 
-)
-from qgis.PyQt.QtCore import (
-    Qt
-)
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QAbstractItemView,
@@ -56,7 +55,6 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_converter.ui'))
 
 HOME = QDir.home().path()
-
 FORM_HOME = HOME + '/.stdm/geoodk/forms'
 
 
