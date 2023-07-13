@@ -128,6 +128,7 @@ from stdm.ui.manage_accounts_dlg import manageAccountsDlg
 from stdm.ui.options_base import OptionsDialog
 from stdm.ui.db_profile_backup import DBProfileBackupDialog
 from stdm.ui.profile_backup_restore import ProfileBackupRestoreDialog
+from stdm.ui.switch_config import SwitchConfiguration
 from stdm.ui.progress_dialog import STDMProgressDialog
 from stdm.ui.social_tenure.str_editor import STREditor
 from stdm.ui.spatial_unit_manager import SpatialUnitManagerDockWidget
@@ -1020,9 +1021,12 @@ class STDMQGISLoader:
         config_managmt_menu.setIcon(GuiUtils.get_icon("settings.png"))
         config_managmt_menu.setObjectName("ConfigManagmt")
         config_managmt_menu.setTitle(QApplication.translate("TollbarConfigManagmt", "Configuration Management"))
+        
+        config_managmt_menu.addSeparator()
 
         adminMenu.addMenu(config_managmt_menu)
         stdmAdminMenu.addMenu(config_managmt_menu)
+        
 
         # Create content menu container
         contentBtn = QToolButton()
@@ -1085,6 +1089,10 @@ class STDMQGISLoader:
         self.profile_backup_restore_act = QAction(GuiUtils.get_icon("import.png"),
                                  QApplication.translate("ProfileBackupRestoreAction", "Restore"),
                                  self.iface.mainWindow())
+
+        self.switch_config_act = QAction(GuiUtils.get_icon("switch.png"),
+                                         QApplication.translate("ProfileBackupRestoreAction", "Switch Configuration"),
+                                         self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
             GuiUtils.get_icon("manage_admin_units.png"),
@@ -1153,6 +1161,7 @@ class STDMQGISLoader:
         self.options_act.triggered.connect(self.on_sys_options)
         self.profile_db_backup_act.triggered.connect(self.on_profile_db_backup)
         self.profile_backup_restore_act.triggered.connect(self.on_profile_backup_restore)
+        self.switch_config_act.triggered.connect(self.on_switch_config)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.importAct.triggered.connect(self.onImportData)
@@ -1182,6 +1191,9 @@ class STDMQGISLoader:
 
         profile_backup_restore_cnt = ContentGroup.contentItemFromQAction(self.profile_backup_restore_act)
         profile_backup_restore_cnt.code = "845699c9-0b3b-9524-ccb7-779efd7a30e8"
+
+        switch_config_cnt = ContentGroup.contentItemFromQAction(self.switch_config_act)
+        switch_config_cnt.code = "895bdad0-2dbc-42b6-9d07-9025b32318f6"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -1282,9 +1294,19 @@ class STDMQGISLoader:
         self.profile_backup_restore_group.setContainerItem(self.profile_backup_restore_act)
         self.profile_backup_restore_group.register()
 
+        self.config_separator = ContentGroup(username)
+        self.config_separator.addContentItem(self._action_separator())
+
+        self.switch_config_group = ContentGroup(username)
+        self.switch_config_group.addContentItem(switch_config_cnt)
+        self.switch_config_group.setContainerItem(self.switch_config_act)
+        self.switch_config_group.register()
+
         config_managmt_group = []
         config_managmt_group.append(self.profile_db_backup_group)
         config_managmt_group.append(self.profile_backup_restore_group)
+        config_managmt_group.append(self.config_separator)
+        config_managmt_group.append(self.switch_config_group)
 
         # Group admin settings content groups
         adminSettingsCntGroups = []
@@ -1389,8 +1411,12 @@ class STDMQGISLoader:
 
         self.toolbarLoader.addContent(self.profile_db_backup_group, [config_managmt_menu,
                                                                       adminBtn])
+
         self.toolbarLoader.addContent(self.profile_backup_restore_group, [config_managmt_menu,
                                                                     adminBtn])
+
+        self.toolbarLoader.addContent(self.switch_config_group, [config_managmt_menu,
+                                                                  adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu,
                                                                 stdmAdminMenu])
@@ -1644,6 +1670,11 @@ class STDMQGISLoader:
         profile_backup_restore_dlg = ProfileBackupRestoreDialog(self.iface)
         profile_backup_restore_dlg.exec_()
 
+    def on_switch_config(self):
+        switch_config_dlg = SwitchConfiguration(self.iface)
+        if switch_config_dlg.exec_() == 1:
+            self.logoutAct.activate(QAction.Trigger)
+
     def profile_status_message(self):
         """
         Shows the name of the loaded profile in QGIS status bar.
@@ -1685,8 +1716,9 @@ class STDMQGISLoader:
         if self.toolbarLoader is not None:
             self.toolbarLoader.unloadContent()
             # Clear current profile combobox
-            self.profiles_combobox.deleteLater()
-            self.profiles_combobox = None
+            if self.profiles_combobox:
+                self.profiles_combobox.deleteLater()
+                self.profiles_combobox = None
 
         if self.menubarLoader is not None:
             self.menubarLoader.unloadContent()
@@ -2053,6 +2085,7 @@ class STDMQGISLoader:
             self.stdmInitToolbar.removeAction(self.options_act)
             self.stdmInitToolbar.removeAction(self.profile_db_backup_act)
             self.stdmInitToolbar.removeAction(self.profile_backup_restore_act)
+            self.stdmInitToolbar.removeAction(self.switch_config_act)
             self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
             self.stdmInitToolbar.removeAction(self.importAct)
             self.stdmInitToolbar.removeAction(self.exportAct)
@@ -2187,10 +2220,9 @@ class STDMQGISLoader:
             )
         )
 
-    def _action_separator(self):
+    def _action_separator(self) ->QAction:
         """
         :return: Toolbar or menu separator
-        :rtype: QAction
         """
         separator = QAction(self.iface.mainWindow())
         separator.setSeparator(True)

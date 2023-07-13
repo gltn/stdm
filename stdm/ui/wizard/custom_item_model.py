@@ -29,30 +29,6 @@ class EntityModelItem(QStandardItem):
 
         super(EntityModelItem, self).__init__(entity_name)
 
-        #self.setColumnCount(len(self.headers_labels))
-
-    #     if not entity is None:
-    #         self.set_entity(entity)
-
-    # def entity(self):
-    #     return self._entity
-
-    # def _create_item(self, text):
-    #     item = QStandardItem(text)
-
-    #     return item
-
-    # def _set_entity_properties(self):
-    #     name_item = self._create_item(self._entity.short_name)
-    #     description = self._create_item(str(self._entity.description))
-
-    #     self.appendRow([name_item, description])
-
-    # def set_entity(self, entity):
-    #     self._entity = entity
-    #     self._set_entity_properties()
-
-
 class EntitiesModel(QStandardItemModel):
     headers_labels = ["Name", "Has Supporting Document?", "Description"]
 

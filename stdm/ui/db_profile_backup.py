@@ -71,37 +71,39 @@ from stdm.utils.util import (
 WIDGET, BASE = uic.loadUiType(
         GuiUtils.get_ui_file_path('ui_db_profile_backup.ui'))
 
+PG_ADMIN = 'postgres'
+
 class DBProfileBackupDialog(WIDGET, BASE):
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
 
+        self.db_config   = DatabaseConfig()
+        self.stdm_config = StdmConfiguration.instance()
+        self.msg_logger  = MessageLogger(StdOutHandler)
+
         self.tbBackupFolder.clicked.connect(self.backup_folder_clicked)
         self.btnBackup.clicked.connect(self.do_backup)
         self.btnClose.clicked.connect(self.close_dialog)
 
-        self.db_config = DatabaseConfig()
-
-        self.db_conn = self.db_config.read()  # DatabaseConnection
+        self.db_conn = self.db_config.read() 
         self.txtDBName.setText(self.db_conn.Database)
-        self.txtAdmin.setText('postgres')
+        self.txtAdmin.setText(PG_ADMIN)
         self.lblStatus.setText('')
+        self.edtBackupFolder.setEnabled(False)
 
         self.config_templates = []
 
-        self.stdm_config = StdmConfiguration.instance()
         self.twProfiles.setColumnCount(1)
         self.load_profiles_tree()
-        pg_base_folder = self.get_pg_base_folder()
 
-        self.msg_logger = MessageLogger(StdOutHandler)
 
     def load_profiles_tree(self):
         profiles = self.stdm_config.profiles
         for profile in profiles.values():
             profile_item = QTreeWidgetItem()
-            profile_item.setText(0, profile.key)
+            profile_item.setText(0, profile.key.capitalize())
             profile_item.setIcon(0, GuiUtils.get_icon("folder.png"))
 
             entity_node = QTreeWidgetItem()
@@ -183,13 +185,13 @@ class DBProfileBackupDialog(WIDGET, BASE):
         sel_doc_path = QFileDialog.getExistingDirectory(self, title, def_path)
 
         if sel_doc_path:
-            normalized_path = f"{QDir.fromNativeSeparators(sel_doc_path)}/{self.db_conn.Database}"
+            normalized_path = f"{QDir.fromNativeSeparators(sel_doc_path)}/{self.db_conn.Database}_{self._dtime_str()}"
             txt_box.clear()
             txt_box.setText(normalized_path)
 
     def do_backup(self):
         if self.edtAdminPassword.text() == '':
-            msg = self.tr('Please enter password for user `postgres`')
+            msg = self.tr('Please enter password for user `{PG_ADMIN}`')
             self.show_message(msg, QMessageBox.Critical)
             return False
 
@@ -201,7 +203,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
         db_con = DatabaseConnection(self.db_conn.Host, self.db_conn.Port,
                 self.db_conn.Database)
 
-        user = User('postgres', self.edtAdminPassword.text())
+        user = User(PG_ADMIN, self.edtAdminPassword.text())
         db_con.User = user
 
         valid, msg = db_con.validateConnection()
@@ -228,7 +230,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
 
-        if not self.backup_database(self.db_conn, 'postgres',
+        if not self.backup_database(self.db_conn, PG_ADMIN,
                 self.edtAdminPassword.text(), db_backup_filepath):
                 return
 
@@ -244,12 +246,12 @@ class DBProfileBackupDialog(WIDGET, BASE):
         
         #template_file_names = self._get_template_file_names(self.config_templates)
 
-        log_dtime = self._dtime()
-        json_ext = ".json"
-        log_filename = f"backuplog_{log_dtime}{json_ext}"
+        log_dtime = self._dtime_str()
+        log_filename = f"backuplog_{log_dtime}.json"
         log_filepath = f"{backup_folder}{path_sep}{log_filename}"
 
         profiles = []
+        all_templates = []
         for profile in self.stdm_config.profiles.values():
             entities = [e.short_name for e in self._profile_entities(profile)]
 
@@ -261,6 +263,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
             profiles.append({'name':profile.name, 'entities': entities, 'templates': templates})
 
+            all_templates  += templates
+
         backup_log = self._make_log(profiles, db_name, db_backup_filename, log_dtime, self.cbCompress.isChecked())
 
         self.create_backup_log(backup_log, log_filepath)
@@ -270,7 +274,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
             compressed_files.append(db_backup_filepath)
             compressed_files.append(config_backup_filepath)
             compressed_files.append(log_filepath)
-            backed_templates = self._backed_template_files(template_file_names, backup_folder)
+            backed_templates = self._backed_template_files(all_templates, backup_folder)
             compressed_files += backed_templates
 
             if self.compress_backup(db_name, backup_folder, compressed_files):
@@ -282,16 +286,18 @@ class DBProfileBackupDialog(WIDGET, BASE):
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setText(self.tr('Backup completed successfully.'))
         msg_box.setInformativeText(self.tr('Do you want to open the backup folder?'))
-        msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Close)
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         msg_box.setDefaultButton(QMessageBox.Close)
-        save_btn = msg_box.button(QMessageBox.Save)
-        save_btn.setText('Open Backup Folder')
-        close_btn = msg_box.button(QMessageBox.Close)
+
+        yes_btn = msg_box.button(QMessageBox.Yes)
+        no_btn = msg_box.button(QMessageBox.No)
 
         msg_box.exec_()
-        if msg_box.clickedButton() == save_btn:
+        if msg_box.clickedButton() == yes_btn:
             self.open_backup_folder()
-        if msg_box.clickedButton() == close_btn:
+            self.close_dialog()
+
+        if msg_box.clickedButton() == no_btn:
             self.close_dialog()
 
     def open_backup_folder(self):
@@ -313,8 +319,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
         self.done(0)
 
     def _make_backup_filename(self, database_name) -> str:
-        date_str = QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
-        backup_file = '{}{}{}{}'.format(database_name, '_', date_str,'.backup')
+        date_str = self._dtime_str() 
+        backup_file = f'{database_name}_{date_str}.backup'
         return backup_file
 
     def backup_database(self, db_conn: DatabaseConnection, user: str,
@@ -398,8 +404,8 @@ class DBProfileBackupDialog(WIDGET, BASE):
             if os.path.isfile(file):
                 os.remove(file)
 
-    def _dtime(self):
-        return QDateTime.currentDateTime().toString('dd-MM-yyyy HH.mm')
+    def _dtime_str(self):
+        return QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
 
     def _make_log(self, profiles: list, db_name: str, db_backup_filename: str,
             log_dtime: str, is_compressed: bool) -> dict:
@@ -454,7 +460,6 @@ class DBProfileBackupDialog(WIDGET, BASE):
         winreg.CloseKey(reg_key)
 
         return pg_base_value
-
 
 
 

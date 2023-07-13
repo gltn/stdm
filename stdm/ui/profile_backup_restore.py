@@ -1,4 +1,3 @@
-
 """
 /***************************************************************************
 Name                 : ProfileBackupRestoreDialog
@@ -20,13 +19,16 @@ email                : stdm@unhabitat.org
 """
 
 import os
+import shutil
 import glob
 import json
 from zipfile import ZipFile
 
 from qgis.PyQt.QtCore import(
+     Qt,
      QFile,
-     QDir
+     QDir,
+     QTime
 )
 
 from qgis.PyQt import uic
@@ -59,6 +61,7 @@ WIDGET, BASE = uic.loadUiType(
 )
 
 class ProfileBackupRestoreDialog(WIDGET, BASE):
+    total_restore_steps = 8
     def __init__(self, iface):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
@@ -71,37 +74,49 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
 
     def initialize_ui_controls(self):
         self.rbBackupFolder.setChecked(True)
-        self.lblDBName.setText("")
+        self.lblLogFile.setText("")
+        self.edtDBName.setText("")
         self.lblDBAdmin.setText("postgres")
         self.edtPassword.setText("")
-        self.edtBackupFolder.setEnabled(False)
+        self.edtBackupMedia.setEnabled(False)
         self.btnRestore.setEnabled(False)
         self.lblBackupFile.setText("")
         self.lblDateCreated.setText("")
         self.lblStatus.setText("")
+        self.pbStatus.setAlignment(Qt.AlignCenter)
 
     def connect_signals(self):
-        self.tbBackupFolder.clicked.connect(self.open_backup_folder)
-        self.rbBackupFolder.toggled.connect(self.select_backup_folder)
-        self.rbZipFile.toggled.connect(self.select_zip_file)
-
+        self.tbBackupFolder.clicked.connect(self.open_backup_media)
         self.btnClose.clicked.connect(self.close_window)
         self.btnRestore.clicked.connect(self.restore_backup)
+        self.rbBackupFolder.toggled.connect(self.folder_selected)
+        self.rbZipFile.toggled.connect(self.zip_selected)
+        self.backup_restore_handler.update_status.connect(self.update_status)
 
     def close_window(self):
         self.done(0)
 
-    def open_backup_folder(self) ->str:
-        folder = QFileDialog.getExistingDirectory(self, "Backup Folder", "")
-        self.edtBackupFolder.setText(folder)
+    def open_backup_media(self) ->str:
+        if self.rbBackupFolder.isChecked():
+            self._open_backup_folder()
+        
+        if self.rbZipFile.isChecked():
+            self._open_zipfile()
 
-        # find backup instruction file
+    def _open_backup_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Backup Folder", "")
+        if not folder:
+            return
+
+        self.edtBackupMedia.setText(folder)
+
+        # find backup log file
         backup_folder = os.path.join(folder, '*.json')
         json_files = glob.glob(backup_folder)
 
         if len(json_files) == 0:
             msg = self.tr("Invalid backup folder! Backup info file missing.")
-            self.show_message(msg, QMessageBox.Critical)
+            self.show_popup_message(msg, QMessageBox.Critical)
             return
 
         self.backup_info_file = json_files[0]
@@ -111,25 +126,14 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
             self.btnRestore.setEnabled(True)
         else:
             msg = self.tr("Error reading backup info file. Check log file for details.")
-            self.show_message(msg, QMessageBox.Critical)
-
-    def select_backup_folder(self, is_selected:bool):
-        if is_selected:
-            self.tbBackupFolder.setEnabled(is_selected)
-            self.edtZipFile.setEnabled(not is_selected)
-            self.tbZipFile.setEnabled(not is_selected)
-
-    def select_zip_file(self, is_selected:bool):
-        if is_selected:
-            self.edtZipFile.setEnabled(is_selected)
-            self.tbZipFile.setEnabled(is_selected)
-            self.tbBackupFolder.setEnabled(not is_selected)
+            self.show_popup_message(msg, QMessageBox.Critical)
 
     def show_backup_info(self):
-        self.lblDBName.setText(self.backup_restore_handler.db_name)
+        self.edtDBName.setText(self.backup_restore_handler.db_name)
         self.lblBackupFile.setText(self.backup_restore_handler.db_backup_file)
         self.lblDateCreated.setText(self.backup_restore_handler.backup_date)
-        self.lblStatus.setText(self.backup_restore_handler.backup_info_file)
+        self.lblLogFile.setText(os.path.basename(self.backup_restore_handler.backup_info_file))
+        # self.lblStatus.setText(self.backup_restore_handler.backup_info_file)
 
         self._display_profiles(self.backup_restore_handler.profiles)
 
@@ -144,11 +148,13 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
             entity_node.setText(0, "Entities")
             profile_item.addChild(entity_node)
             entity_node.addChildren(self._entity_items(profile['entities']))
-
-            template_node = QTreeWidgetItem()
-            template_node.setText(0, "Templates")
-            profile_item.addChild(template_node)
-            template_node.addChildren(self._template_items(profile['templates']))
+            
+            templates = self._template_items(profile['templates'])
+            if len(templates) > 0:
+                template_node = QTreeWidgetItem()
+                template_node.setText(0, "Templates")
+                profile_item.addChild(template_node)
+                template_node.addChildren(templates)
 
             self.twProfiles.insertTopLevelItem(0, profile_item)
 
@@ -169,23 +175,97 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
             template_item.setIcon(0, GuiUtils.get_icon("record02.png"))
             template_items.append(template_item)
         return template_items
-    
+
+    def folder_selected(self, is_selected: bool):
+        if is_selected:
+            self.lblMedia.setText('Folder: ')
+
+    def zip_selected(self, is_selected: bool):
+        if is_selected:
+            self.lblMedia.setText('Zip File: ')
+
+    def _open_zipfile(self):
+        filename = QFileDialog.getOpenFileName(self, self.tr("Open Zip File"),
+                                               "", self.tr("Zip File (*.zip)" ))
+        if filename[0] == '':
+            return
+
+        zip_filepath = filename[0]
+
+        self.edtBackupMedia.setText(zip_filepath)
+        # STEP 0: Decompress the Zip File
+
+        # Make name for the temp folder
+        base_filename = os.path.basename(zip_filepath).split('.')[0]
+        hr = QTime.currentTime().hour()
+        min = QTime.currentTime().minute()
+        sec = QTime.currentTime().second()
+
+        temp_base_folder_name =f'stdm_{base_filename}_{hr}{min}{sec}'
+        temp_dir_path = f'{QDir.tempPath()}/{temp_base_folder_name}'
+        temp_dir = QDir(temp_dir_path)
+        if temp_dir.exists():
+            shutil.rmtree(temp_dir_path)
+        temp_dir.mkpath(temp_dir_path)
+
+        with ZipFile(zip_filepath) as zf:
+             zf.extractall(temp_dir_path)
+
+        # find backup instruction file
+        backup_folder = os.path.join(temp_dir_path, '*.json')
+
+        json_files = glob.glob(backup_folder)
+
+        if len(json_files) == 0:
+            msg = self.tr("Invalid backup folder! Backup info file missing.")
+            self.show_popup_message(msg, QMessageBox.Critical)
+            return
+
+        self.backup_info_file = json_files[0]
+
+        if self.backup_restore_handler.read_backup_info_file(self.backup_info_file):
+            self.show_backup_info()
+            self.btnRestore.setEnabled(True)
+        else:
+            msg = self.tr("Error reading backup info file. Check log file for details.")
+            self.show_popup_message(msg, QMessageBox.Critical)
+
     def restore_backup(self):
         if self.edtPassword.text() == '':
             msg = self.tr('Please enter password for user `postgres` ')
-            self.show_message(msg, QMessageBox.Critical)
+            self.show_popup_message(msg, QMessageBox.Critical)
             return 
 
+        if self.edtDBName.text() == '':
+            msg = self.tr('Please enter database name.')
+            self.show_popup_message(msg, QMessageBox.Critical)
+            return
+
+        db_name = self.edtDBName.text()
+        if len(db_name) < 4:
+            msg = self.tr('Database name should be greater than four characters!')
+            self.show_popup_message(msg, QMessageBox.Critical)
+            return
+
+        self.btnRestore.setEnabled(False)
         msg, status = self.backup_restore_handler.restore_backup('postgres',
-                                                                 self.edtPassword.text())
+                                                                 self.edtPassword.text(),
+                                                                 self.edtDBName.text().lower())
+        self.btnRestore.setEnabled(True)
+
         if not status:
-            self.show_message(msg, QMessageBox.Critical)
+            self.show_popup_message(msg, QMessageBox.Critical)
         else:
             print(msg)
 
-    def show_message(self, msg: str, icon_type):
+    def show_popup_message(self, msg: str, icon_type):
         msg_box = QMessageBox()
         msg_box.setWindowTitle("STDM")
         msg_box.setText(msg)
         msg_box.setIcon(icon_type)
         msg_box.exec_()
+
+    def update_status(self, msg: str, step: int):
+        percent = ((step + 1)/(self.total_restore_steps))*100
+        self.pbStatus.setValue(percent)
+        self.lblStatus.setText(msg)
