@@ -55,19 +55,6 @@ from stdm.data.configuration.profile import Profile
 from stdm.security.user import User
 from stdm.composer.document_template import DocumentTemplate
 
-from stdm.utils.logging_handlers import (
-    StreamHandler,
-    StdOutHandler,
-    FileHandler,
-    MessageLogger
-)
-
-from stdm.utils.util import (
-    PLUGIN_DIR,
-    documentTemplates,
-    user_non_profile_views
-)
-
 from stdm.ui.config_backup_handler import ConfigBackupHandler
 
 WIDGET, BASE = uic.loadUiType(
