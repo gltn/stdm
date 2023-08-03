@@ -137,12 +137,12 @@ class ImportData(QWizard, Ui_frmImport):
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def sptype_clicked(self):
         if self.rbSpType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def _init_translators(self):
