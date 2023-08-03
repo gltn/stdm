@@ -772,6 +772,11 @@ class OGRReader(object):
             if source_cols[0].lower()=='col_a_28' and field_name.lower()=='col_a_28':
                 match_idx = 1
 
+            #To fix Respondent.enumeration(FK) -> Enumeration.id(PK) Relation   
+            if source_cols[0].lower()=='col_a_29' and field_name.lower()=='col_a_29':
+                match_idx = 1
+                cast = 'int'
+
             if source_cols[0].lower()=='col_b_1' and field_name.lower()=='col_b_1':
                 match_idx = 1
 

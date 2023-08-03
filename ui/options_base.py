@@ -54,6 +54,15 @@ from stdm.settings.registryconfig import (
     backup_path,
     PG_BIN_PATH,
     pg_bin_path,
+
+    AUTOBACKUP_DATE,
+    autobackup_date,
+    AUTOBACKUP_NEXT,
+    autobackup_next,
+    AUTOBACKUP_KEY,
+    autobackup_key,
+
+
     debug_logging,
     set_debug_logging,
     source_documents_path,
@@ -73,7 +82,20 @@ from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
 #to be moved later to seperate window - start
+
+from datetime import (
+    datetime,
+    timedelta
+)
+from stdm.data.backup_utils import (
+    backup_config,
+    backup_database,
+    AUTOBACKUP_KEYS
+)    
+from stdm.data.stdm_reqs_sy_ir import autochange_profile_configfile
+
 from datetime import datetime
+
 import gzip
 import os
 import shutil
@@ -137,6 +159,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_pgbin_folder.clicked.connect(
             self._on_choose_pgbin_path
         )
+
+        self.cbo_autobackup.currentIndexChanged.connect(
+            self._on_autobackup_changed)
+
+
         self.btn_template_folder.clicked.connect(
             self._on_choose_doc_designer_template_path
         )
@@ -185,6 +212,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.edtEntityRecords.setValue(get_entity_browser_record_limit())
 
         self.edtMapfile.setText(get_primary_mapfile())
+        self.load_autoback_info()
 
     def load_profiles(self):
         """
@@ -307,7 +335,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         )
 
     def _on_run_backup(self):
+
+
         #in case want to save multi backup files / different dates
+
         datetime_prfx = datetime.now().strftime('%Y%m%d%H%M%S%f_')
         config_file = config_file_name()
         if not os.path.exists(self.edt_pgbin_folder.text()):
@@ -315,7 +346,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.tr('Can not find PostgreSQL/bin Directory')
             )
             return
+
+
         cmd_dump = self.edt_pgbin_folder.text() + '/pg_dump'
+
         if not self.txtHost.text():
             ErrMessage(
                 self.tr('Please specify the database host address.')
@@ -331,6 +365,95 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.tr('Please specify the database name.')
             )
             return
+
+        backup_config(  
+            datetime_prfx, 
+            config_file, 
+            self.edt_backup_folder.text()
+        )
+        p_host = self.txtHost.text()
+        p_port = self.txtPort.text()
+        p_database = self.txtDatabase.text()
+        backup_database(
+            datetime_prfx,
+            self.edt_pgbin_folder.text(),
+            p_host,
+            p_port,
+            p_database,
+            self.edt_backup_folder.text()
+        )
+
+    def set_autobackup_comment(self):
+        txt = '<NOT SET>'
+        combobox_txt = self.cbo_autobackup.currentText()
+        if combobox_txt in ['Never', 'Each Login']: 
+            pass
+        else:
+            abd = autobackup_date()
+            abn = autobackup_next()
+            if abd is None:
+                abd = 'Last backup: <NOT SET>'
+            if abn is None:
+                if combobox_txt == 'Daily': 
+                    abn = (datetime.now() + timedelta(days=1)).strftime('%d-%m-%Y')
+                if combobox_txt == 'Weekly': 
+                    abn = (datetime.now() + timedelta(days=7)).strftime('%d-%m-%Y')
+                if combobox_txt == 'Monthly': 
+                    abn = (datetime.now() + timedelta(days=30)).strftime('%d-%m-%Y')
+            txt = '{}, Next Backup: <{}>'.format(
+                abd, 
+                abn
+            )
+
+        self.lbl_autobackup_comment.setText(txt)
+
+    def load_autoback_info(self):
+        self.cbo_autobackup.clear()
+        self.cbo_autobackup.addItems(AUTOBACKUP_KEYS) 
+        self.set_autobackup_comment()
+
+    def load_autoback_info(self):
+        self.cbo_autobackup.clear()
+        self.cbo_autobackup.addItems(AUTOBACKUP_KEYS) 
+        txt = autobackup_key()
+        if not (txt is None):
+            self.cbo_autobackup.setCurrentIndex(
+                self.cbo_autobackup.findText(txt)
+            )
+
+    def set_autobackup_key(self):
+        """
+        Set the AutoBackup Parameters.
+        :return: True if the key was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        key = self.cbo_autobackup.currentText()
+        #Commit Key to registry
+        self._reg_config.write({AUTOBACKUP_KEY: key})
+
+        if key in ['Never', 'Each Login']:
+            self._reg_config.write({AUTOBACKUP_NEXT: None})
+            return True
+
+        abn = autobackup_next()
+        if not(abn is None):
+            return True
+        if key == 'Daily': 
+            abn = (datetime.now() + timedelta(days=1)).strftime('%d-%m-%Y')
+        if key == 'Weekly': 
+            abn = (datetime.now() + timedelta(days=7)).strftime('%d-%m-%Y')
+        if key == 'Monthly': 
+            abn = (datetime.now() + timedelta(days=30)).strftime('%d-%m-%Y')
+
+        if not (abn is None):
+            #Commit Next AutoBackup Date to registry
+            self._reg_config.write({AUTOBACKUP_NEXT: abn})
+            return True
+
+    def _on_autobackup_changed(self):
+        self.set_autobackup_comment()
+
         p_host = self.txtHost.text()
         p_port = self.txtPort.text()
         p_database = self.txtDatabase.text()
@@ -370,6 +493,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         self.set_backup_path()
         self.set_pgbin_path()
+
         return
 
     def set_backup_path(self):
@@ -496,6 +620,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                           "successful.".format(db_conn.Database))
             QMessageBox.information(self, self.tr('Database Connection'), msg)
 
+    def autochange_profile_configfile(self, new_profilename):
+        autochange_profile_configfile(
+            new_profilename,
+            current_profile().name
+        )
+            
     def set_current_profile(self):
         """
         Saves the given profile name as the current profile.
@@ -511,6 +641,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
             return False
 
+        self.autochange_profile_configfile(profile_name)
         save_current_profile(profile_name)
 
         return True
@@ -677,6 +808,13 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         #Set PostgreSQL/bin path
         if not self.set_pgbin_path():
             return False
+
+
+        #Set AutoBackup Key
+        if not self.set_autobackup_key():
+            return False
+
+
 
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())

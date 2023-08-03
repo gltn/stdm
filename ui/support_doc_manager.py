@@ -59,6 +59,7 @@ from stdm.settings.registryconfig import (
         RegistryConfig,
         NETWORK_DOC_RESOURCE
 )
+from stdm.data.stdm_reqs_sy_ir import fix_auto_sequences
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -198,6 +199,8 @@ class SupportDocManager(QObject):
         self.parent_table = doc_map['parent_table']
         self.parent_ref_column = doc_map['parent_ref_column']
         self.parent_support_table = doc_map['parent_support_table']
+        fix_auto_sequences(self.parent_support_table, 'id')
+        fix_auto_sequences(self.main_table, 'id')
         self.doc_type_lookup_table = doc_map['doc_type_lookup_table']
         self.src_key_field_name = doc_map['src_key_field_column']
 
