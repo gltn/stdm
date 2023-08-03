@@ -54,12 +54,15 @@ from stdm.settings.registryconfig import (
     backup_path,
     PG_BIN_PATH,
     pg_bin_path,
+
     AUTOBACKUP_DATE,
     autobackup_date,
     AUTOBACKUP_NEXT,
     autobackup_next,
     AUTOBACKUP_KEY,
     autobackup_key,
+
+
     debug_logging,
     set_debug_logging,
     source_documents_path,
@@ -79,6 +82,7 @@ from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
 
 #to be moved later to seperate window - start
+
 from datetime import (
     datetime,
     timedelta
@@ -89,6 +93,9 @@ from stdm.data.backup_utils import (
     AUTOBACKUP_KEYS
 )    
 from stdm.data.stdm_reqs_sy_ir import autochange_profile_configfile
+
+from datetime import datetime
+
 import gzip
 import os
 import shutil
@@ -152,8 +159,11 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_pgbin_folder.clicked.connect(
             self._on_choose_pgbin_path
         )
+
         self.cbo_autobackup.currentIndexChanged.connect(
             self._on_autobackup_changed)
+
+
         self.btn_template_folder.clicked.connect(
             self._on_choose_doc_designer_template_path
         )
@@ -325,6 +335,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         )
 
     def _on_run_backup(self):
+
+
+        #in case want to save multi backup files / different dates
+
         datetime_prfx = datetime.now().strftime('%Y%m%d%H%M%S%f_')
         config_file = config_file_name()
         if not os.path.exists(self.edt_pgbin_folder.text()):
@@ -332,6 +346,10 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.tr('Can not find PostgreSQL/bin Directory')
             )
             return
+
+
+        cmd_dump = self.edt_pgbin_folder.text() + '/pg_dump'
+
         if not self.txtHost.text():
             ErrMessage(
                 self.tr('Please specify the database host address.')
@@ -347,6 +365,7 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                 self.tr('Please specify the database name.')
             )
             return
+
         backup_config(  
             datetime_prfx, 
             config_file, 
@@ -434,6 +453,47 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
     def _on_autobackup_changed(self):
         self.set_autobackup_comment()
+
+        p_host = self.txtHost.text()
+        p_port = self.txtPort.text()
+        p_database = self.txtDatabase.text()
+        dest_db_filename = (self.edt_backup_folder.text()
+                           + '//bkup_' 
+                           + datetime_prfx 
+                           + p_database 
+                           + '.backup')
+        dest_config_file = (self.edt_backup_folder.text()
+                           + '//bkup_' 
+                           + datetime_prfx 
+                           + 'configuration.stc')
+
+        if not os.path.exists(self.edt_backup_folder.text()):
+            os.makedirs(self.edt_backup_folder.text())
+        shutil.copy(config_file, dest_config_file)
+
+        cmd = cmd_dump + ' -f {} -F c -h {} -U {} -p {} {}'.format(
+            dest_db_filename,
+            p_host,
+            'postgres',
+            p_port,
+            p_database
+        )
+        
+        with gzip.open(dest_db_filename, 'wb') as f:
+            popen = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                universal_newlines=True
+            )
+        for stdout_line in iter(popen.stdout.readline, ''):
+            f.write(stdout_line.encode('utf-8'))
+        popen.stdout.close()
+        popen.wait()
+        popen = None
+
+        self.set_backup_path()
+        self.set_pgbin_path()
+
         return
 
     def set_backup_path(self):
@@ -749,9 +809,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_pgbin_path():
             return False
 
+
         #Set AutoBackup Key
         if not self.set_autobackup_key():
             return False
+
+
 
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())

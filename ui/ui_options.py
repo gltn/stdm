@@ -26,7 +26,11 @@ except AttributeError:
 class Ui_DlgOptions(object):
     def setupUi(self, DlgOptions):
         DlgOptions.setObjectName(_fromUtf8("DlgOptions"))
+
         DlgOptions.resize(626, 650)
+
+        DlgOptions.resize(626, 625)
+
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -86,7 +90,11 @@ class Ui_DlgOptions(object):
         self.gridLayout_4.addWidget(self.btn_composer_out_folder, 1, 2, 1, 1)
         self.gridLayout_5.addWidget(self.groupBox_3, 6, 0, 1, 5)
         self.groupBox_4 = QtGui.QGroupBox(self.scrollAreaWidgetContents)
+
         self.groupBox_4.setMaximumSize(QtCore.QSize(16777215, 165))
+
+        self.groupBox_4.setMaximumSize(QtCore.QSize(16777215, 135))
+
         self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
         
         self.gridLayout_8 = QtGui.QGridLayout(self.groupBox_4)
@@ -103,7 +111,11 @@ class Ui_DlgOptions(object):
         self.edt_backup_folder.setMaxLength(500)
         self.edt_backup_folder.setReadOnly(True)
         self.edt_backup_folder.setObjectName(_fromUtf8("edt_backup_folder"))
+
         self.gridLayout_8.addWidget(self.edt_backup_folder, 0, 1, 1, 1)
+
+        self.gridLayout_8.addWidget(self.edt_backup_folder, 0, 1, 1, 3)
+
         self.lbl_backup_folder = QtGui.QLabel(self.groupBox_4)
         self.lbl_backup_folder.setObjectName(_fromUtf8("lbl_backup_folder"))
         self.gridLayout_8.addWidget(self.lbl_backup_folder, 0, 0, 1, 1)
@@ -118,6 +130,7 @@ class Ui_DlgOptions(object):
         self.edt_pgbin_folder.setMaxLength(500)
         self.edt_pgbin_folder.setReadOnly(True)
         self.edt_pgbin_folder.setObjectName(_fromUtf8("edt_pgbin_folder"))
+
         self.gridLayout_8.addWidget(self.edt_pgbin_folder, 1, 1, 1, 1)
         self.lbl_pgbin_folder = QtGui.QLabel(self.groupBox_4)
         self.lbl_pgbin_folder.setObjectName(_fromUtf8("lbl_pgbin_folder"))
@@ -132,6 +145,12 @@ class Ui_DlgOptions(object):
         self.lbl_autobackup = QtGui.QLabel(self.groupBox_4)
         self.lbl_autobackup.setObjectName(_fromUtf8("lbl_pgbin_folder"))
         self.gridLayout_8.addWidget(self.lbl_autobackup, 2, 0, 1, 1)
+
+        self.gridLayout_8.addWidget(self.edt_pgbin_folder, 1, 1, 1, 3)
+        self.lbl_pgbin_folder = QtGui.QLabel(self.groupBox_4)
+        self.lbl_pgbin_folder.setObjectName(_fromUtf8("lbl_pgbin_folder"))
+        self.gridLayout_8.addWidget(self.lbl_pgbin_folder, 1, 0, 1, 1)
+
         self.btn_backup = QtGui.QToolButton(self.groupBox_4)
         self.btn_backup.setObjectName(_fromUtf8("btn_backup"))
         self.btn_backup.setMinimumSize(QtCore.QSize(0, 30))
@@ -284,9 +303,13 @@ class Ui_DlgOptions(object):
         self.groupBox_4.setTitle(_translate("DlgOptions", "Configuration File and DB Backup:", None))
         self.lbl_backup_folder.setText(_translate("DlgOptions", "Backup Folder:", None))
         self.lbl_pgbin_folder.setText(_translate("DlgOptions", "PostgreSQL/bin Folder:", None))
+
         self.lbl_autobackup.setText(_translate("DlgOptions", "Schedule Auto-Backup", None))
         self.lbl_autobackup_comment.setText(_translate("DlgOptions", "<Not SET>", None))
         self.btn_backup.setText(_translate("DlgOptions", "Backup Now", None))
+
+        self.btn_backup.setText(_translate("DlgOptions", "Run Backup", None))
+
         self.btn_template_folder.setToolTip(_translate("DlgOptions", "Choose templates directory", None))
         self.btn_template_folder.setText(_translate("DlgOptions", "...", None))
         self.label_8.setText(_translate("DlgOptions", "Output folder", None))
