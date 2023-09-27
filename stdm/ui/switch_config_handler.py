@@ -1,6 +1,5 @@
 import os
 import json
-import winreg
 import glob
 import time
 import hashlib
