@@ -2275,7 +2275,10 @@ class ConfigWizard(WIDGET, BASE):
         s_doc = f'check_{entity_name}_document_type'
         self.highlight_lookup(s_doc)
 
-    def highlight_lookup(self, lookup_name: str):
+    def highlight_lookup(self, lookup_name: str = ''):
+        if lookup_name == '':
+            return
+
         self.lvLookups.clearSelection()
         start_index = self.lvLookups.model().index(0, 0)
         matches = self.lvLookups.model().match(
@@ -2386,9 +2389,14 @@ class ConfigWizard(WIDGET, BASE):
 
     def column_clicked(self, model_index: QModelIndex):
         _ ,column, _ = self.get_selected_item_data(self.tbvColumns)
-        if column.TYPE_INFO == 'LOOKUP':
-            lookup_name = column.entity_relation.parent.short_name
-            self.highlight_lookup(lookup_name)
+        lookup_name = ''
+        if column.TYPE_INFO == 'LOOKUP': 
+            lookup_name = column.parent.short_name
+
+        if column.TYPE_INFO == 'MULTIPLE_SELECT':
+            lookup_name = column.value_list.short_name
+
+        self.highlight_lookup(lookup_name)
 
     def edit_column(self):
         """

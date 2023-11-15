@@ -51,7 +51,7 @@ from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager
 )
-
+ 
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.exception import ConfigurationException
@@ -62,7 +62,6 @@ class ImportFeatureException(Exception):
     """
     Raised when an error occurs during feature import
     """
-
 
 class OGRReader:
     def __init__(self, source_file: str):
