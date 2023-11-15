@@ -18,7 +18,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
-from collections import MutableMapping
+from collections.abc import MutableMapping
 
 
 class RenameableKeyDict(MutableMapping):

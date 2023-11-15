@@ -21,7 +21,6 @@ import os
 import sys
 import shutil
 import json
-import winreg
 from zipfile import ZipFile
 
 import subprocess
