@@ -38,8 +38,6 @@ from stdm.settings.registryconfig import (
     COMPOSER_TEMPLATE
 )
 
-from stdm.ui.config_backup_handler import _get_pg_base_folder
-
 from stdm.utils.util import (
     PLUGIN_DIR
 )
