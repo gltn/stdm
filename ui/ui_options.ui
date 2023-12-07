@@ -497,6 +497,13 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="4">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>BIG BUTTON</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
