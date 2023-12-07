@@ -265,4 +265,3 @@ class Ui_DlgOptions(object):
         self.btn_test_db_connection.setText(_translate("DlgOptions", "Test connection...", None))
         self.pushButton.setText(_translate("DlgOptions", "BIG BUTTON", None))
 
-import resources_rc
