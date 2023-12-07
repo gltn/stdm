@@ -12,6 +12,7 @@ from .value_translators import (
 _UIGroup = "UI"
 _lastVectorDirKey = "lastVectorFileFilterDir"
 _lastUploadDirKey = "lastUploadFilterDir"
+_lastKoboCertDirKey = "lastKoboCertDir"
 
 def vectorFileDir():
     """
@@ -51,3 +52,21 @@ def setUploadFileDir(dir):
     qgisReg = QGISRegistryConfig(_UIGroup)
     qgisReg.write({_lastUploadDirKey:dir})
     
+def kobo_outpath():
+    """
+    Returns the directory of the last Kobo certificates output accessed by QGIS.
+    """
+    qgisReg = QGISRegistryConfig(_UIGroup)
+    regValues = qgisReg.read([_lastKoboCertDirKey])
+    
+    if len(regValues) == 0:
+        return ""
+    else:
+        return regValues[_lastKoboCertDirKey]
+    
+def set_kobo_outpath(dir):
+    """
+    Update the last Kobo certificates output directory.
+    """
+    qgisReg = QGISRegistryConfig(_UIGroup)
+    qgisReg.write({_lastKoboCertDirKey:dir})

@@ -249,6 +249,7 @@ class SupportDocManager(QObject):
             src_url = self.get_kobo_url()+short_filename
             doc_path = self.get_doc_path()
             dest_filename = doc_path[doc['doc_column']]+'\\'+short_filename
+            src_url = self.get_kobo_url()+'1669887425606.jpg'
 
             # First check if the file exists locally before downloading
             if os.path.exists(dest_filename):

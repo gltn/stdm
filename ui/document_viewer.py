@@ -546,6 +546,8 @@ class DocumentViewManager(QMainWindow):
         """
         doc_identifier = document_widget.file_identifier()
 
+        print(doc_identifier)
+
         if doc_identifier in self._doc_viewers:
 
             doc_sw = self._doc_viewers[doc_identifier]
