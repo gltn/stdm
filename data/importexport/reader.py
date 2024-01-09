@@ -417,10 +417,6 @@ class OGRReader(object):
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
 
-        print('---------------------------------------------------------------')
-        print(acols)
-        print('---------------------------------------------------------------')
-
         for feat in lyr:
             column_value_mapping = {}
             column_count = 0
