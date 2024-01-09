@@ -49,8 +49,19 @@ from stdm.settings import (
 )
 
 from stdm.settings.registryconfig import (
+    config_file_name,
     composer_output_path,
     composer_template_path,
+    BACKUP_PATH,
+    backup_path,
+    PG_BIN_PATH,
+    pg_bin_path,
+    AUTOBACKUP_DATE,
+    autobackup_date,
+    AUTOBACKUP_NEXT,
+    autobackup_next,
+    AUTOBACKUP_KEY,
+    autobackup_key,
     debug_logging,
     set_debug_logging,
     source_documents_path,
@@ -68,6 +79,24 @@ from stdm.ui.login_dlg import loginDlg
 from stdm.ui.notification import NotificationBar
 from stdm.ui.customcontrols.validating_line_edit import INVALIDATESTYLESHEET
 from stdm.ui.ui_options import Ui_DlgOptions
+
+#to be moved later to seperate window - start
+from datetime import (
+    datetime,
+    timedelta
+)
+from stdm.data.backup_utils import (
+    backup_config,
+    backup_database,
+    AUTOBACKUP_KEYS
+)    
+from stdm.data.stdm_reqs_sy_ir import autochange_profile_configfile
+import gzip
+import os
+import shutil
+import subprocess
+
+#to be moved later to seperate window - end
 
 MAX_LIMIT = 500 # Maximum records in a entity browser
 
@@ -118,6 +147,17 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.btn_supporting_docs.clicked.connect(
             self._on_choose_supporting_docs_path
         )
+        self.btn_backup.clicked.connect(
+            self._on_run_backup
+        )
+        self.btn_backup_folder.clicked.connect(
+            self._on_choose_backup_path
+        )
+        self.btn_pgbin_folder.clicked.connect(
+            self._on_choose_pgbin_path
+        )
+        self.cbo_autobackup.currentIndexChanged.connect(
+            self._on_autobackup_changed)
         self.btn_template_folder.clicked.connect(
             self._on_choose_doc_designer_template_path
         )
@@ -160,6 +200,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self.edtMapfile.setText(get_import_mapfile())
         self.edtTransPath.setText(get_trans_path())
 
+        self.load_autoback_info()
+
         # Debug logging
         lvl = debug_logging()
         if lvl:
@@ -201,6 +243,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         comp_out_path = composer_output_path()
         comp_temp_path = composer_template_path()
         source_doc_path = source_documents_path()
+        backup_out_path = backup_path()
+        pgbin_path = pg_bin_path()
 
         if not source_doc_path is None:
             self.txtRepoLocation.setText(source_doc_path)
@@ -210,6 +254,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
 
         if not comp_temp_path is None:
             self.txt_template_dir.setText(comp_temp_path)
+
+        if not backup_out_path is None:
+            self.edt_backup_folder.setText(backup_out_path)
+
+        if not pgbin_path is None:
+            self.edt_pgbin_folder.setText(pgbin_path)
 
     def _on_use_pg_connections(self, state):
         #Slot raised when to (not) use existing pg connections
@@ -263,6 +313,175 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         self._set_selected_directory(self.txt_template_dir, self.tr(
             'Document Designer Templates Directory')
         )
+
+    #To move this part of code to new window later - start
+    def _on_choose_backup_path(self):
+        #Slot raised to select directory for backup.
+        self._set_selected_directory(
+            self.edt_backup_folder,
+            self.tr('Backup Directory')
+        )
+    
+    def _on_choose_pgbin_path(self):
+        #Slot raised to select PostgreSQL/bin directory.
+        self._set_selected_directory(
+            self.edt_pgbin_folder,
+            self.tr('PostgreSQL/bin Directory')
+        )
+
+    def _on_run_backup(self):
+        datetime_prfx = datetime.now().strftime('%Y%m%d%H%M%S%f_')
+        config_file = config_file_name()
+        if not os.path.exists(self.edt_pgbin_folder.text()):
+            ErrMessage(
+                self.tr('Can not find PostgreSQL/bin Directory')
+            )
+            return
+        if not self.txtHost.text():
+            ErrMessage(
+                self.tr('Please specify the database host address.')
+            )
+            return
+        if not self.txtPort.text():
+            ErrMessage(
+                self.tr('Please specify the port number.')
+            )
+            return
+        if not self.txtDatabase.text():
+            ErrMessage(
+                self.tr('Please specify the database name.')
+            )
+            return
+        backup_config(  
+            datetime_prfx, 
+            config_file, 
+            self.edt_backup_folder.text()
+        )
+        p_host = self.txtHost.text()
+        p_port = self.txtPort.text()
+        p_database = self.txtDatabase.text()
+        backup_database(
+            datetime_prfx,
+            self.edt_pgbin_folder.text(),
+            p_host,
+            p_port,
+            p_database,
+            self.edt_backup_folder.text()
+        )
+
+    def set_autobackup_comment(self):
+        txt = '<NOT SET>'
+        combobox_txt = self.cbo_autobackup.currentText()
+        if combobox_txt in ['Never', 'Each Login']: 
+            pass
+        else:
+            abd = autobackup_date()
+            abn = autobackup_next()
+            if abd is None:
+                abd = 'Last backup: <NOT SET>'
+            if abn is None:
+                if combobox_txt == 'Daily': 
+                    abn = (datetime.now() + timedelta(days=1)).strftime('%d-%m-%Y')
+                if combobox_txt == 'Weekly': 
+                    abn = (datetime.now() + timedelta(days=7)).strftime('%d-%m-%Y')
+                if combobox_txt == 'Monthly': 
+                    abn = (datetime.now() + timedelta(days=30)).strftime('%d-%m-%Y')
+            txt = '{}, Next Backup: <{}>'.format(
+                abd, 
+                abn
+            )
+
+        self.lbl_autobackup_comment.setText(txt)
+
+    def load_autoback_info(self):
+        self.cbo_autobackup.clear()
+        self.cbo_autobackup.addItems(AUTOBACKUP_KEYS) 
+        txt = autobackup_key()
+        if not (txt is None):
+            self.cbo_autobackup.setCurrentIndex(
+                self.cbo_autobackup.findText(txt)
+            )
+        self.set_autobackup_comment()
+
+    def set_autobackup_key(self):
+        """
+        Set the AutoBackup Parameters.
+        :return: True if the key was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        key = self.cbo_autobackup.currentText()
+        #Commit Key to registry
+        self._reg_config.write({AUTOBACKUP_KEY: key})
+
+        if key in ['Never', 'Each Login']:
+            self._reg_config.write({AUTOBACKUP_NEXT: None})
+            return True
+
+        abn = autobackup_next()
+        if not(abn is None):
+            return True
+        if key == 'Daily': 
+            abn = (datetime.now() + timedelta(days=1)).strftime('%d-%m-%Y')
+        if key == 'Weekly': 
+            abn = (datetime.now() + timedelta(days=7)).strftime('%d-%m-%Y')
+        if key == 'Monthly': 
+            abn = (datetime.now() + timedelta(days=30)).strftime('%d-%m-%Y')
+
+        if not (abn is None):
+            #Commit Next AutoBackup Date to registry
+            self._reg_config.write({AUTOBACKUP_NEXT: abn})
+            return True
+
+    def _on_autobackup_changed(self):
+        self.set_autobackup_comment()
+        return
+
+    def set_backup_path(self):
+        """
+        Set the directory of backup output.
+        :return: True if the directory was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        path = self.edt_backup_folder.text()
+
+        if not path:
+            msg = self.tr('Please set the backup output directory.')
+            self.notif_bar.insertErrorNotification(msg)
+            return False
+
+        #Validate path
+        if not self._check_path_exists(path, self.edt_backup_folder):
+            return False
+
+        #Commit to registry
+        self._reg_config.write({BACKUP_PATH: path})
+        return True
+
+    def set_pgbin_path(self):
+        """
+        Set the PostgreSQl/bin directory.
+        :return: True if the directory was set in the registry,
+        otherwise False.
+        :rtype: bool
+        """
+        path = self.edt_pgbin_folder.text()
+
+        if not path:
+            msg = self.tr('Please set the PostgreSQL/bin directory.')
+            self.notif_bar.insertErrorNotification(msg)
+            return False
+
+        #Validate path
+        if not self._check_path_exists(path, self.edt_pgbin_folder):
+            return False
+
+        #Commit to registry
+        self._reg_config.write({PG_BIN_PATH: path})
+        return True
+
+# To move this part of code to new window later - end
 
     def _on_choose_doc_generator_output_path(self):
         #Slot raised to select directory for doc generator outputs.
@@ -349,6 +568,12 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
                           "successful.".format(db_conn.Database))
             QMessageBox.information(self, self.tr('Database Connection'), msg)
 
+    def autochange_profile_configfile(self, new_profilename):
+        autochange_profile_configfile(
+            new_profilename,
+            current_profile().name
+        )
+
     def set_current_profile(self):
         """
         Saves the given profile name as the current profile.
@@ -363,7 +588,8 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
             self.notif_bar.insertErrorNotification(msg)
 
             return False
-
+            
+        self.autochange_profile_configfile(profile_name)
         save_current_profile(profile_name)
 
         return True
@@ -534,6 +760,18 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
         if not self.set_document_output_path():
             return False
 
+        #Set backup output path
+        if not self.set_backup_path():
+            return False
+
+        #Set PostgreSQL/bin path
+        if not self.set_pgbin_path():
+            return False
+
+        #Set AutoBackup Key
+        if not self.set_autobackup_key():
+            return False
+
         self.apply_debug_logging()
 
         # Set Entity browser record limit
@@ -561,3 +799,9 @@ class OptionsDialog(QDialog, Ui_DlgOptions):
     def on_cancel(self):
         self.reject()
 
+def ErrMessage(message):
+    #Error Message Box
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(message)
+    msg.exec_()
