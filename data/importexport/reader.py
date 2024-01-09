@@ -19,6 +19,8 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 
+from collections import OrderedDict
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -415,6 +417,10 @@ class OGRReader(object):
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
 
+        print('---------------------------------------------------------------')
+        print(acols)
+        print('---------------------------------------------------------------')
+
         for feat in lyr:
             column_value_mapping = {}
             column_count = 0
@@ -430,6 +436,8 @@ class OGRReader(object):
                 if not self._source_doc_manager is None:
                     self._source_doc_manager.reset()
 
+            lookup_keys = []
+
             for f in range(feat_defn.GetFieldCount()):
                 field_defn = feat_defn.GetFieldDefn(f)
                 field_name = field_defn.GetNameRef()
@@ -438,6 +446,7 @@ class OGRReader(object):
                 #if field_name in columnmatch:
                     #dest_column = columnmatch[field_name]
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
+
                 if a_field_name in acols:
                     dest_column = acols[a_field_name]
 
@@ -478,7 +487,6 @@ class OGRReader(object):
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
-
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -490,12 +498,27 @@ class OGRReader(object):
 
                         field_value_mappings = self._map_column_values(feat,
                                                                        feat_defn,
-                                                                       source_col_names)
+                                                                       source_col_names,
+                                                                       dest_column)
+
+                        if len(lookup_keys) > 0:
+                            # print('FMAP: ',field_value_mappings)
+                            for lookup_key in lookup_keys:
+                                if lookup_key in field_value_mappings:
+                                    del field_value_mappings[lookup_key]
+
+                        try:
+                            lookup_keys.append(next(iter(field_value_mappings)))
+                        except StopIteration:
+                            pass
+
+                        # print('Lookup Keys: ', lookup_keys)
+
                         # Set source document manager if required
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
 
-
+                        # print('FM>>', field_value_mappings)
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
                         )
@@ -538,6 +561,7 @@ class OGRReader(object):
                 if update_geom_column_only:
                     self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
                 else:
+                    #print(column_value_mapping)
                     self._insertRow(targettable, column_value_mapping)
             except:
                 progress.close()
@@ -581,7 +605,7 @@ class OGRReader(object):
 
             return True, enum_symbol
 
-    def _map_column_values(self, feature, feature_defn, source_cols):
+    def _map_column_values(self, feature, feature_defn, source_cols, dest_col=""):
         """
         Retrieves values for specific columns from the specified feature.
         :param feature: Input feature.
@@ -595,7 +619,7 @@ class OGRReader(object):
         values.
         :rtype: dict
         """
-        col_values = {}
+        col_values = OrderedDict()
 
         if len(source_cols) == 0:
             return col_values
@@ -614,7 +638,10 @@ class OGRReader(object):
 
             # gender
             if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
-                match_idx = 1
+                 match_idx = 1
+
+            if source_cols[0].lower()[:18]=='hhold_head_marital' and field_name.lower()[:14]=='marital status':
+                 match_idx = 1
 
             # marital status
             if source_cols[0].lower()[:3]=='soc' and field_name.lower()[:3]=='soc':
@@ -645,7 +672,7 @@ class OGRReader(object):
             if source_cols[0].lower()[:3]=='muj' and field_name.lower()[:3]=='muj':
                 match_idx = 1
 
-            if source_cols[0].lower()[:3]=='co-' and field_name.lower()[:3]=='co-':
+            if source_cols[0].lower()[:8]=='gender of' and field_name.lower()[:8]=='gender of':
                 match_idx = 1
 
             if source_cols[0].lower()[:3]=='pro' and field_name.lower()[:3]=='pro':
@@ -664,9 +691,10 @@ class OGRReader(object):
             if match_idx != -1:
                 field_value = feature.GetField(f)
 
-                col_values[field_name] = field_value
+                uni_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
+                col_values[uni_field_name] = field_value
 
                 if cast == 'int' and field_value is not None:
-                    col_values[field_name] = int(field_value)
+                    col_values[uni_field_name] = int(field_value)
 
         return col_values

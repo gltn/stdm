@@ -121,6 +121,10 @@ class ImportData(QWizard, Ui_frmImport):
         self.rbTextType.clicked.connect(self.text_type_clicked)
         self.rbSpType.clicked.connect(self.sptype_clicked)
 
+        bg_color = "QListWidget::item:selected{background-color: rgba(0, 170, 255, 255)};"    
+        self.lstTargetFields.setStyleSheet(bg_color)
+        self.lstSrcFields.setStyleSheet(bg_color)
+
         #Data Reader
         self.dataReader = None
          
@@ -137,12 +141,12 @@ class ImportData(QWizard, Ui_frmImport):
 
     def text_type_clicked(self):
         if self.rbTextType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def sptype_clicked(self):
         if self.rbSpType.isChecked():
-            if self.txtDataSource.text() <> '':
+            if self.txtDataSource.text() != '':
                 self.button(QWizard.NextButton).setEnabled(True)
 
     def _init_translators(self):

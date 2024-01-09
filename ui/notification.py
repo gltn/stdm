@@ -176,7 +176,7 @@ class NotificationItem(QWidget,Ui_frmNotificationItem):
         self.lblClose.installEventFilter(self)
         
         #Set labels to maximum transparency so that they do not inherit the background color of the frame
-        clearBGStyle = "background-color: rgba(255, 255, 255, 0);"    
+        clearBGStyle = "QListWidget::item:selected{background-color: rgba(255, 255, 255, 0)};"    
         self.lblNotifIcon.setStyleSheet(clearBGStyle)
         self.lblNotifMessage.setStyleSheet("color: rgb(255, 255, 255);" + clearBGStyle)
         

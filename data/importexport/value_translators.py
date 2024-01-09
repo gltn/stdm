@@ -466,7 +466,7 @@ class LookupValueTranslator(RelatedTableTranslator):
 
         flv = []
         for f in field_values.values():
-            if f <>'':
+            if f !='':
                 flv.append(f)
 
         field_values[source_column] = flv
