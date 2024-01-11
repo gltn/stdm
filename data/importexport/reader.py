@@ -405,8 +405,7 @@ class OGRReader(object):
 
         # Configure progress dialog
         init_val = 0
-        progress = QProgressDialog("", "&Cancel", init_val, numFeat,
-                                   parentdialog)
+        progress = QProgressDialog("", "&Cancel", init_val, numFeat, parentdialog)
         progress.setWindowModality(Qt.WindowModal)
         lblMsgTemp = "Importing {0} of {1} to STDM..."
 
@@ -416,6 +415,8 @@ class OGRReader(object):
         acols = {}
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
+
+        print('acols: ', acols)
 
         for feat in lyr:
             column_value_mapping = {}
@@ -443,10 +444,13 @@ class OGRReader(object):
                     #dest_column = columnmatch[field_name]
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
 
+
                 if a_field_name in acols:
                     dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
+
+                    print(a_field_name,' = ', field_value)
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
@@ -490,12 +494,20 @@ class OGRReader(object):
                         # Set destination table entity
                         value_translator.entity = destination_entity
 
-                        source_col_names = value_translator.source_column_names()
+                        source_columns = value_translator.source_column_names()
+
+                        # print('SRC: ', source_columns)
+
+                        c_name = source_columns[0]
+
+                        source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
+
+                        # print('Source Col:', source_col_names)
+                        # print('Dest Column:', dest_column)
 
                         field_value_mappings = self._map_column_values(feat,
                                                                        feat_defn,
-                                                                       source_col_names,
-                                                                       dest_column)
+                                                                       source_col_names)
 
                         if len(lookup_keys) > 0:
                             # print('FMAP: ',field_value_mappings)
@@ -519,7 +531,6 @@ class OGRReader(object):
                             field_value_mappings
                         )
 
-
                     if not isinstance(field_value, IgnoreType):
                         column_value_mapping[dest_column] = field_value
 
@@ -529,6 +540,8 @@ class OGRReader(object):
                             self._source_doc_manager.model_objects()
 
                     column_count += 1
+
+                    # print('COL MAP: ', column_value_mapping)
 
             # Only insert geometry if it has been defined by the user
             if geomColumn is not None:
@@ -557,7 +570,7 @@ class OGRReader(object):
                 if update_geom_column_only:
                     self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
                 else:
-                    #print(column_value_mapping)
+                    # print(column_value_mapping)
                     self._insertRow(targettable, column_value_mapping)
             except:
                 progress.close()
@@ -601,7 +614,7 @@ class OGRReader(object):
 
             return True, enum_symbol
 
-    def _map_column_values(self, feature, feature_defn, source_cols, dest_col=""):
+    def _map_column_values(self, feature, feature_defn, source_cols):
         """
         Retrieves values for specific columns from the specified feature.
         :param feature: Input feature.
@@ -624,65 +637,11 @@ class OGRReader(object):
             field_defn = feature_defn.GetFieldDefn(f)
             field_name = field_defn.GetNameRef()
 
-            #match_idx = getIndex(source_cols, field_name)
+            f_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
+
+            match_idx = getIndex(source_cols, f_name)
 
             cast = ''
-
-            match_idx = -1
-            if source_cols[0] is None:
-                continue
-
-            # gender
-            if source_cols[0].lower()[:3]=='gen' and field_name.lower()[:3]=='gen':
-                 match_idx = 1
-
-            if source_cols[0].lower()[:18]=='hhold_head_marital' and field_name.lower()[:14]=='marital status':
-                 match_idx = 1
-
-            # marital status
-            if source_cols[0].lower()[:3]=='soc' and field_name.lower()[:3]=='soc':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='cla' and field_name.lower()[:3]=='cla':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='tak' and field_name.lower()[:3]=='tak':
-                match_idx = 1
-
-            # ethnicity
-            if source_cols[0].lower()[:3]=='eth' and field_name.lower()[:3]=='eth':
-                match_idx = 1
-
-            # district
-            if source_cols[0].lower()[:3]=='dis' and field_name.lower()[:3]=='dis':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='sin' and field_name.lower()[:3]=='sin':
-                match_idx = 1
-
-            # sub-district
-            if source_cols[0].lower()[:3]=='sub' and field_name.lower()[:3]=='sub':
-                match_idx = 1
-
-            # mujamat
-            if source_cols[0].lower()[:3]=='muj' and field_name.lower()[:3]=='muj':
-                match_idx = 1
-
-            if source_cols[0].lower()[:8]=='gender of' and field_name.lower()[:8]=='gender of':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='pro' and field_name.lower()[:3]=='pro':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='typ' and field_name.lower()[:3]=='typ':
-                match_idx = 1
-
-            if source_cols[0].lower()[:3]=='sta' and field_name.lower()[:3]=='sta':
-                match_idx = 1
-
-            if source_cols[0].lower()=='_submission__id' and field_name.lower()=='_submission__id':
-                match_idx = 1
-                cast = 'int'
 
             if match_idx != -1:
                 field_value = feature.GetField(f)

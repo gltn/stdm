@@ -186,7 +186,6 @@ class ImportData(QWizard, Ui_frmImport):
         translators = mapfile_section(trans_sec)
 
         for dest_column, lookup_table in dstlookups.iteritems():
-
             lookup_type = translators.get(dest_column)
             if lookup_type is None: continue
             # Single Select Lookups
@@ -194,7 +193,11 @@ class ImportData(QWizard, Ui_frmImport):
 
                 config_key ="Lookup values"
                 trans_config = ValueTranslatorConfig.translators.get(config_key, None)
-                src_column = self._get_src_column(lookup_table, srclookups)
+                source_names = [src_field for src_field, table in srclookups.items() if src_field == dest_column]
+                if len(source_names) == 0: continue
+
+                src_column = source_names[0]
+                #src_column = self._get_src_column(lookup_table, srclookups)
                 if src_column is None:
                     continue
 
