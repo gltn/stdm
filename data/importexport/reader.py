@@ -416,8 +416,6 @@ class OGRReader(object):
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
 
-        print('acols: ', acols)
-
         for feat in lyr:
             column_value_mapping = {}
             column_count = 0
@@ -449,8 +447,6 @@ class OGRReader(object):
                     dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
-
-                    print(a_field_name,' = ', field_value)
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
