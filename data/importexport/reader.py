@@ -45,8 +45,10 @@ from stdm.data.database import (
 )
 from stdm.data.importexport.value_translators import (
     IgnoreType,
-    ValueTranslatorManager
+    ValueTranslatorManager,
+    RelatedTableTranslator
 )
+
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.exception import ConfigurationException
 from stdm.ui.sourcedocument import SourceDocumentManager
@@ -492,11 +494,12 @@ class OGRReader(object):
 
                         source_columns = value_translator.source_column_names()
 
-                        # print('SRC: ', source_columns)
-
                         c_name = source_columns[0]
 
                         source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
+
+                        if isinstance(value_translator, RelatedTableTranslator):
+                            source_col_names = acols.keys()
 
                         # print('Source Col:', source_col_names)
                         # print('Dest Column:', dest_column)
@@ -523,9 +526,14 @@ class OGRReader(object):
                             value_translator.source_document_manager = self._source_doc_manager
 
                         # print('FM>>', field_value_mappings)
+
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
                         )
+
+                    if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
+                        if not isinstance(field_value, IgnoreType):
+                            field_value = int(field_value)
 
                     if not isinstance(field_value, IgnoreType):
                         column_value_mapping[dest_column] = field_value
@@ -566,7 +574,7 @@ class OGRReader(object):
                 if update_geom_column_only:
                     self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
                 else:
-                    # print(column_value_mapping)
+                    #print(column_value_mapping)
                     self._insertRow(targettable, column_value_mapping)
             except:
                 progress.close()

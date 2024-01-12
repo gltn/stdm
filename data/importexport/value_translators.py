@@ -404,6 +404,9 @@ class RelatedTableTranslator(SourceValueTranslator):
         for source_col, val in field_values.iteritems():
             ref_table_col = self._input_referenced_columns.get(source_col, None)
 
+            if ref_table_col is not None:
+                val = int(val)
+
             if not ref_table_col is None:
                 col_idx = getIndex(link_table_columns, ref_table_col)
 
@@ -423,7 +426,6 @@ class RelatedTableTranslator(SourceValueTranslator):
 
         if link_table_rec is None:
             return IgnoreType()
-
         else:
             return getattr(link_table_rec, self._output_referenced_column, IgnoreType())
 
