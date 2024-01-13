@@ -72,6 +72,8 @@ class SourceValueTranslator(object):
     using the expression builder or new values (such as timestamps) that
     are not dependent on the any value from the source table.
     """
+    TYPE_INFO = "BASE_TRANSLATOR"
+
     def __init__(self, parent=None):
         self._parent = None
         self._db_session = STDMDb.instance().session
@@ -384,6 +386,8 @@ class RelatedTableTranslator(SourceValueTranslator):
     This class translates values from one or more columns in the referenced
     table to the specified column in the referencing table.
     """
+    TYPE_INFO = "RELATED_TABLE_TRANSLATOR"
+
     def __init__(self):
         SourceValueTranslator.__init__(self)
 
@@ -434,6 +438,8 @@ class LookupValueTranslator(RelatedTableTranslator):
     """
     Translator for lookup values.
     """
+    TYPE_INFO = "LOOKUP_VALUE_TRANSLATOR"
+
     def __init__(self, **kwargs):
         super(LookupValueTranslator, self).__init__()
 
@@ -508,6 +514,7 @@ class MultipleEnumerationTranslator(SourceValueTranslator):
     This class translates enumeration values from a source column separated by
     a delimiter specified by the user..
     """
+    TYPE_INFO = "MULTI_VALUE_TRANSLATOR"
 
     def __init__(self):
         SourceValueTranslator.__init__(self)
@@ -654,6 +661,8 @@ class SourceDocumentTranslator(SourceValueTranslator):
     Reads document paths from the source table and uploads them to the
     application document repository.
     """
+    TYPE_INFO = "SOURCE_DOC_TRANSLATOR"
+
     def __init__(self):
         SourceValueTranslator.__init__(self)
 

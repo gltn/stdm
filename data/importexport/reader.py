@@ -46,7 +46,8 @@ from stdm.data.database import (
 from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager,
-    RelatedTableTranslator
+    RelatedTableTranslator,
+    LookupValueTranslator
 )
 
 from stdm.data.configuration import entity_model
@@ -444,7 +445,6 @@ class OGRReader(object):
                     #dest_column = columnmatch[field_name]
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
 
-
                 if a_field_name in acols:
                     dest_column = acols[a_field_name]
 
@@ -498,42 +498,39 @@ class OGRReader(object):
 
                         source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
 
-                        if isinstance(value_translator, RelatedTableTranslator):
+                        if value_translator.TYPE_INFO == "RELATED_TABLE_TRANSLATOR":
                             source_col_names = acols.keys()
 
-                        # print('Source Col:', source_col_names)
-                        # print('Dest Column:', dest_column)
+                        #print('Source Col:', source_col_names)
 
                         field_value_mappings = self._map_column_values(feat,
                                                                        feat_defn,
                                                                        source_col_names)
 
+                        #if isinstance(value_translator, LookupValueTranslator):
                         if len(lookup_keys) > 0:
-                            # print('FMAP: ',field_value_mappings)
                             for lookup_key in lookup_keys:
                                 if lookup_key in field_value_mappings:
                                     del field_value_mappings[lookup_key]
-
                         try:
                             lookup_keys.append(next(iter(field_value_mappings)))
                         except StopIteration:
                             pass
 
-                        # print('Lookup Keys: ', lookup_keys)
-
                         # Set source document manager if required
+
+                        #print('FM>>', field_value_mappings)
+
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
-
-                        # print('FM>>', field_value_mappings)
 
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
                         )
 
-                    if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
-                        if not isinstance(field_value, IgnoreType):
-                            field_value = int(field_value)
+                        if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
+                            if not isinstance(field_value, IgnoreType):
+                                field_value = int(field_value)
 
                     if not isinstance(field_value, IgnoreType):
                         column_value_mapping[dest_column] = field_value
@@ -545,7 +542,7 @@ class OGRReader(object):
 
                     column_count += 1
 
-                    # print('COL MAP: ', column_value_mapping)
+                    #print('COL MAP: ', column_value_mapping)
 
             # Only insert geometry if it has been defined by the user
             if geomColumn is not None:
