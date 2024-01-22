@@ -47,7 +47,9 @@ from stdm.data.importexport.value_translators import (
     IgnoreType,
     ValueTranslatorManager,
     RelatedTableTranslator,
-    LookupValueTranslator
+    LookupValueTranslator,
+    SourceDocumentTranslator
+
 )
 
 from stdm.data.configuration import entity_model
@@ -496,9 +498,17 @@ class OGRReader(object):
 
                         c_name = source_columns[0]
 
+                        c_name = unicode(c_name, 'utf-8').encode('ascii', 'ignore')
+
+                        # print('c_name: ', c_name)
+                        # print('TYPE-INFO: ',value_translator.TYPE_INFO)
+
                         source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
 
                         if value_translator.TYPE_INFO == "RELATED_TABLE_TRANSLATOR":
+                            source_col_names = acols.keys()
+
+                        if value_translator.TYPE_INFO == "SOURCE_DOC_TRANSLATOR":
                             source_col_names = acols.keys()
 
                         #print('Source Col:', source_col_names)
@@ -507,26 +517,34 @@ class OGRReader(object):
                                                                        feat_defn,
                                                                        source_col_names)
 
-                        #if isinstance(value_translator, LookupValueTranslator):
-                        if len(lookup_keys) > 0:
-                            for lookup_key in lookup_keys:
-                                if lookup_key in field_value_mappings:
-                                    del field_value_mappings[lookup_key]
-                        try:
-                            lookup_keys.append(next(iter(field_value_mappings)))
-                        except StopIteration:
-                            pass
+                        if isinstance(value_translator, LookupValueTranslator):
+                            if len(lookup_keys) > 0:
+                                for lookup_key in lookup_keys:
+                                    if lookup_key in field_value_mappings:
+                                        del field_value_mappings[lookup_key]
+                            try:
+                                lookup_keys.append(next(iter(field_value_mappings)))
+                            except StopIteration:
+                                pass
 
                         # Set source document manager if required
-
-                        #print('FM>>', field_value_mappings)
 
                         if value_translator.requires_source_document_manager:
                             value_translator.source_document_manager = self._source_doc_manager
 
+                        temp_d = {}
+                        if isinstance(value_translator, SourceDocumentTranslator):
+                            fv_map = {a_field_name:field_value}
+                            temp_d = field_value_mappings 
+                            field_value_mappings = fv_map
+
                         field_value = value_translator.referencing_column_value(
                             field_value_mappings
                         )
+
+                        if len(temp_d) > 0:
+                            field_value_mappings = temp_d
+                            temp_d = {}
 
                         if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
                             if not isinstance(field_value, IgnoreType):
@@ -633,6 +651,8 @@ class OGRReader(object):
 
         if len(source_cols) == 0:
             return col_values
+
+        #print('source_cols: ', source_cols)
 
         for f in range(feature_defn.GetFieldCount()):
             field_defn = feature_defn.GetFieldDefn(f)

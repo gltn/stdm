@@ -272,7 +272,6 @@ class ImportData(QWizard, Ui_frmImport):
                     src_column
                 )
 
-
                 trans_dlg.auto_src_translator = SourceDocumentTranslator()
                 trans_dlg.auto_src_translator.set_referencing_table(self.targetTab)
                 trans_dlg.auto_src_translator.set_referencing_column(dest_column)
