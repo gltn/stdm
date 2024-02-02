@@ -49,6 +49,7 @@ class BaseComposerFieldSelector(WIDGET, BASE):
 
         # Load fields if the data source has been specified
         ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+
         if ds_name is not None:
             self._loadFields(ds_name)
 
@@ -98,10 +99,14 @@ class BaseComposerFieldSelector(WIDGET, BASE):
         if len(columnsNames) == 0:
             return
 
+        current_text = self.cboDataField.currentText()
+
         self.cboDataField.clear()
         self.cboDataField.addItem("")
 
         self.cboDataField.addItems(columnsNames)
+
+        self.selectFieldName(current_text)
 
 
 class ComposerFieldSelector(BaseComposerFieldSelector):

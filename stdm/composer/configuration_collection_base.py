@@ -435,11 +435,9 @@ class ConfigurationCollectionBase:
             raise NotImplementedError("Item editor widget type cannot be None.")
 
         collection_element = dom_document.createElement(cls.collection_root)
-
         # Get configuration items
         for uuid, item_editor in composer_wrapper.widgetMappings().items():
             composerItem = composer_wrapper.composition().itemByUuid(uuid)
-
             if composerItem is not None:
                 if isinstance(item_editor, cls.editor_type):
                     item_config = item_editor.configuration()

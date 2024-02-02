@@ -1870,10 +1870,10 @@ class STDMQGISLoader:
             return
 
         # Embed STDM customizations
-        composerWrapper = ComposerWrapper(
+        composer_wrapper = ComposerWrapper(
             designer_interface, self.iface
         )
-        composerWrapper.configure()
+        composer_wrapper.configure()
 
     def onDocumentGenerator(self):
         """

@@ -649,6 +649,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
 
+                        print(instance_full_filename)
                         entity_add.objects_from_supporting_doc(instance_full_filename)
 
                         ref_id = entity_add.save_parent_to_db()
@@ -720,7 +721,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 self.txt_feedback.append('saving record "{0}" to database'.format(counter))
                 self.pgbar.setValue(counter)
-                self.log_instance(filename)
+                #self.log_instance(filename)
                 QCoreApplication.processEvents()
 
             self.txt_feedback.append('Number of records successfully imported:  {}'

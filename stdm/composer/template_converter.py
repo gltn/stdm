@@ -87,7 +87,7 @@ class StdOutHandler(StreamHandler):
 
 class FileHandler(StreamHandler):
     def __init__(self):
-        dtime = QDateTime.currentDateTime().toString('ddMMyyyy_HH.MM.ss')
+        dtime = QDateTime.currentDateTime().toString('ddMMyyyy_HH.mm.ss')
         filename =f'/.stdm/logs/template_converter_{dtime}.log' 
         self.log_file ='{}{}'.format(QDir.home().path(), filename)
 

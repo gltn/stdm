@@ -51,22 +51,40 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
             self._composer_table_item = frame_item.multiFrame()
         else:
             self._composer_table_item = frame_item
+
         self._layout = self._composer_table_item.layout()
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
+        self.ref_table.load_link_tables()
+
         # Load fields if the data source has been specified
         ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
-
         self.ref_table.load_data_source_fields(ds_name)
+
+        referenced_table_name = LayoutUtils.get_stdm_referenced_table_for_layout(self._layout)
+        self.ref_table.load_referencing_fields(referenced_table_name)
 
         table_name = self._composer_table_item.table
         datasource_field = self._composer_table_item.datasource_field
         referencing_field = self._composer_table_item.referencing_field
 
         # Load source tables
-        self.ref_table.load_link_tables()
+        #self.ref_table.load_link_tables()
         self.ref_table.set_layout(self._layout)
+
+        if table_name:
+            self.set_table_vector_layer(table_name)
+
+        # self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
+        #          self.set_table_vector_layer)
+
+        layer_name = self.current_table_layer_name()
+
+        # Load source tables
+        #self.ref_table.load_link_tables()
+        self.ref_table.set_layout(self._layout)
+
         if table_name:
             self.set_table_vector_layer(table_name)
 
@@ -79,19 +97,27 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
         if idx != -1:
             self.ref_table.cbo_ref_table.setCurrentIndex(idx)
 
+        idx = self.ref_table.cbo_ref_table.findText(referenced_table_name)
+        if idx != -1:
+            self.ref_table.cbo_ref_table.setCurrentIndex(idx)
+
         idx = self.ref_table.cbo_source_field.findText(datasource_field)
         if idx != -1:
             self.ref_table.cbo_source_field.setCurrentIndex(idx)
-            self.ref_table.cbo_source_field.currentIndexChanged[str].connect(
-                    self.set_datasource_field
-                    )
+
+        self.ref_table.cbo_source_field.currentIndexChanged[str].connect(
+                self.set_datasource_field
+                )
 
         idx = self.ref_table.cbo_referencing_col.findText(referencing_field)
         if idx != -1:
             self.ref_table.cbo_referencing_col.setCurrentIndex(idx)
-            self.ref_table.cbo_referencing_col.currentIndexChanged[str].connect(
-                    self.set_referencing_field
-                    )
+        self.ref_table.cbo_referencing_col.currentIndexChanged[str].connect(
+                self.set_referencing_field
+                )
+
+        print('ComposerTableDataSourceEditor.__init__')
+
 
     def composer_item(self):
         return self._composer_table_item
@@ -126,13 +152,16 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
             return
 
+        #FIXME: When the following three lines are enabled they cause the Table Widget to become squishy!
+
         # No need to add the layer in the legend
-        QgsProject.instance().addMapLayer(v_layer, False)
+        #QgsProject.instance().addMapLayer(v_layer, False)
 
-        if len(self.composer_item().columns()) > 0:
-            self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
 
-        self._composer_table_item.update()
+        # if len(self.composer_item().columns()) > 0:
+        #     self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
+
+        #self._composer_table_item.update()
 
     def set_datasource_field(self, field: str):
         self._composer_table_item.set_datasource_field(field)

@@ -95,13 +95,13 @@ class ReferencedTableEditor(QWidget):
 
         self._block_changed = False
 
-        self.cbo_ref_table.setInsertPolicy(QComboBox.InsertAlphabetically)
+        #self.cbo_ref_table.setInsertPolicy(QComboBox.InsertAlphabetically)
 
-        self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
+        #self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
 
         self.cbo_source_field.currentTextChanged.connect(self._on_changed)
         self.cbo_source_field.currentIndexChanged.connect(self._on_source_field_changed)
-        self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
+        #self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
         self.cbo_referencing_col.currentTextChanged.connect(self._on_changed)
 
         # Tables that will be omitted from the referenced table list
@@ -190,7 +190,9 @@ class ReferencedTableEditor(QWidget):
 
         # Connect signals
         QMetaObject.connectSlotsByName(self)
-        self.cbo_ref_table.currentIndexChanged[str].connect(self._load_source_table_fields)
+        self.cbo_ref_table.currentIndexChanged[str].connect(self.load_referencing_fields)
+
+        print('reference_table_editor::setupUI >>> ')
 
     def set_layout(self, layout):
         self._layout = layout
@@ -202,6 +204,9 @@ class ReferencedTableEditor(QWidget):
         """
         data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         self.load_data_source_fields(data_source_name)
+
+        referenced_table_name = LayoutUtils.get_stdm_referenced_table_for_layout(self._layout)
+        self.load_referencing_fields(referenced_table_name)
 
     def on_data_source_changed(self, data_source_name):
         """
@@ -252,6 +257,8 @@ class ReferencedTableEditor(QWidget):
             self.clear()
             return
 
+        current_text = self.cbo_source_field.currentText()
+
         columns_names = table_column_names(data_source_name)
 
         if len(columns_names) == 0:
@@ -265,8 +272,33 @@ class ReferencedTableEditor(QWidget):
 
         self.cbo_source_field.blockSignals(False)
 
-        if self.prev_source_field_index != -1:
-            self.cbo_source_field.setCurrentIndex(self.prev_source_field_index)
+        self._set_selected_text(self.cbo_source_field, current_text)
+
+        # if self.prev_source_field_index != -1:
+        #     self.cbo_source_field.setCurrentIndex(self.prev_source_field_index)
+
+    def load_referencing_fields(self, ref_table_name: str):
+
+        current_text = self.cbo_referencing_col.currentText()
+
+        self.cbo_referencing_col.clear()
+
+        #data_source_index = self.cbo_source_field.currentIndex()
+        # self.on_data_source_changed(
+        #     self.cbo_source_field.itemData(data_source_index)
+        # )
+
+        if not ref_table_name:
+            return
+
+        column_names = table_column_names(ref_table_name)
+
+        self.cbo_referencing_col.clear()
+        self.cbo_referencing_col.addItem("")
+        self.cbo_referencing_col.addItems(column_names)
+
+        if current_text:
+            self._set_selected_text(self.cbo_referencing_col, current_text)
 
     def clear(self):
         """
@@ -315,19 +347,12 @@ class ReferencedTableEditor(QWidget):
 
         self.cbo_ref_table.addItems(source_tables)
 
-    def _load_source_table_fields(self, sel):
 
-        self.cbo_referencing_col.clear()
-        data_source_index = self.cbo_source_field.currentIndex()
-        # self.on_data_source_changed(
-        #     self.cbo_source_field.itemData(data_source_index)
-        # )
+    def _set_selected_text(self, cbox: QComboBox, text:str):
+        """
+        Select the specified field name from the items in the combobox.
+        """
+        text_index = cbox.findText(text)
 
-        if not sel:
-            return
-
-        columns_names = table_column_names(sel)
-
-        self.cbo_referencing_col.clear()
-        self.cbo_referencing_col.addItem("")
-        self.cbo_referencing_col.addItems(columns_names)
+        if text_index != -1:
+            cbox.setCurrentIndex(text_index)

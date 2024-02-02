@@ -212,73 +212,80 @@ class SourceDocumentManager(QObject):
         :return: None
         :rtype: NoneType
         """
-        if len(self.containers) > 0:
-            if doc_type_id in self.containers:
-                container = self.containers[doc_type_id]
 
-                # Check if the file exists
-                if QFile.exists(path):
+        if len(self.containers) == 0:
+            return
 
-                    network_location = network_document_path()
+        if doc_type_id in self.containers:
+            container = self.containers[doc_type_id]
 
-                    if not network_location:
-                        self._doc_repository_error()
-                        return
+            # Check if the file exists
+            if QFile.exists(path):
 
-                    # Check if the directory exists
-                    doc_dir = QDir(network_location)
+                network_location = network_document_path()
 
-                    if not doc_dir.exists():
-                        msg = QApplication.translate(
+                if not network_location:
+                    self._doc_repository_error()
+                    return
+
+                # Check if the directory exists
+                doc_dir = QDir(network_location)
+
+                if not doc_dir.exists():
+                    msg = QApplication.translate(
+                        "sourceDocumentManager",
+                        "The root document "
+                        "repository '{0}' does "
+                        "not exist.\nPlease "
+                        "check the path settings."
+                    )
+                    parent = self.parent()
+                    if not isinstance(parent, QWidget):
+                        parent = None
+
+                    QMessageBox.critical(
+                        parent,
+                        QApplication.translate(
                             "sourceDocumentManager",
-                            "The root document "
-                            "repository '{0}' does "
-                            "not exist.\nPlease "
-                            "check the path settings."
-                        )
-                        parent = self.parent()
-                        if not isinstance(parent, QWidget):
-                            parent = None
+                            "Document Manager"
+                        ),
+                        msg.format(network_location)
+                    )
+                    return
 
-                        QMessageBox.critical(
-                            parent,
-                            QApplication.translate(
-                                "sourceDocumentManager",
-                                "Document Manager"
-                            ),
-                            msg.format(network_location)
-                        )
-                        return
 
-                    for i in range(record_count):
-                        # Use the default network file manager
-                        networkManager = NetworkFileManager(
-                            network_location, self.parent()
-                        )
-                        # Add document widget
-                        docWidg = DocumentWidget(
-                            self.document_model,
-                            networkManager,
-                            parent=self.parent(),
-                            view_manager=self._doc_view_manager
-                        )
-                        # Connect slot once the document
-                        # has been successfully uploaded.
-                        docWidg.fileUploadComplete.connect(
-                            lambda: self.onFileUploadComplete(doc_type_id)
-                        )
-                        self._linkWidgetRemovedSignal(docWidg)
+                for i in range(record_count):
+                    # Use the default network file manager
+                    networkManager = NetworkFileManager(
+                        network_location, self.parent()
+                    )
 
-                        doc_type_entity = entity.supporting_doc.document_type_entity
-                        doc_type_value = entity_id_to_attr(
-                            doc_type_entity, 'value', doc_type_id
-                        )
+                    # Add document widget
+                    docWidg = DocumentWidget(
+                        self.document_model,
+                        networkManager,
+                        parent=self.parent(),
+                        view_manager=self._doc_view_manager
+                    )
 
-                        docWidg.setFile(
-                            path, entity.name, doc_type_value, doc_type_id, upload_mode=upload_mode
-                        )
+                    # Connect slot once the document
+                    # has been successfully uploaded.
+                    docWidg.fileUploadComplete.connect(
+                        lambda: self.onFileUploadComplete(doc_type_id)
+                    )
 
-                        container.addWidget(docWidg)
+                    self._linkWidgetRemovedSignal(docWidg)
+
+                    doc_type_entity = entity.supporting_doc.document_type_entity
+                    doc_type_value = entity_id_to_attr(
+                        doc_type_entity, 'value', doc_type_id
+                    )
+
+                    docWidg.setFile(
+                        path, entity.name, doc_type_value, doc_type_id, upload_mode=upload_mode
+                    )
+
+                    container.addWidget(docWidg)
 
     def onFileUploadComplete(self, documenttype):
         """

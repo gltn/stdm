@@ -41,7 +41,9 @@ from qgis.core import (
     QgsReadWriteContext
 )
 from qgis.gui import (
-    QgsLayoutView
+    QgsLayoutView,
+    QgisInterface,
+    QgsLayoutDesignerInterface
 )
 
 from stdm.composer.chart_configuration import ChartConfigurationCollection
@@ -123,7 +125,7 @@ class ComposerWrapper(QObject):
         for a in stdm_actions:
             a.setEnabled(False)
 
-    def __init__(self, layout_interface, iface):
+    def __init__(self, layout_interface:QgsLayoutDesignerInterface, iface: QgisInterface):
         QObject.__init__(self, layout_interface)
 
         self._layout_interface = layout_interface
@@ -301,9 +303,7 @@ class ComposerWrapper(QObject):
 
     def create_new_document_designer(self, file_path):
         """
-        Creates a new document designer and loads the document template
-        defined in file path.
-        :param file_path: Path to document template
+        Creates a new document designer and loads the document template defined in file path.  :param file_path: Path to document template
         :type file_path: str
         """
         if not QFile.exists(file_path):
@@ -327,6 +327,13 @@ class ComposerWrapper(QObject):
             self.variable_template_path = file_path
             LayoutUtils.set_variable_template_path(layout, file_path)
             LayoutUtils.load_template_into_layout(layout, file_path)
+
+            # template_doc = QDomDocument()
+            # template_doc.setContent(file_path)
+            # collection_elements = template_doc.createElement(TableConfigurationCollection.collection_root)
+
+            # print(collection_elements)
+
 
         except IOError as e:
             QMessageBox.critical(self.mainWindow(),
@@ -468,15 +475,12 @@ class ComposerWrapper(QObject):
                 # Check if there is an existing document with the same name
                 caseInsenDic = CaseInsensitiveDict(documentTemplates())
                 if docName in caseInsenDic:
+                    msg = (f'`{docName}` {QApplication.translate("ComposerWrapper", "already exists")}.\n '
+                           ' Do you want to replace the existing templates?')
                     result = QMessageBox.warning(self.mainWindow(),
-                                                 QApplication.translate("ComposerWrapper",
-                                                                        "Existing Template"),
-                                                 "'{0}' {1}.\nDo you want to replace the "
-                                                 "existing template?".format(docName,
-                                                                             QApplication.translate("ComposerWrapper",
-                                                                                                    "already exists")),
-                                                 QMessageBox.Yes | QMessageBox.No)
-
+                                                  QApplication.translate("ComposerWrapper",
+                                                                        "Existing Template"), msg,
+                                                                          QMessageBox.Yes | QMessageBox.No)
                     if result != QMessageBox.Yes:
                         return
                     else:
@@ -484,13 +488,14 @@ class ComposerWrapper(QObject):
                         delFile = QFile(absPath)
                         remove_status = delFile.remove()
                         if not remove_status:
+                            msg_text = ('template could not be removed by the system,'
+                                        ' please remove it manually from the document templates directory.')
+                            msg = f'`{docName}` {QApplication.translate("ComposerWrapper",f"{msg_text}")}'
+
                             QMessageBox.critical(self.mainWindow(),
-                                                 QApplication.translate("ComposerWrapper",
-                                                                        "Delete Error"),
-                                                 "'{0}' {1}.".format(docName,
-                                                                     QApplication.translate("ComposerWrapper",
-                                                                                            "template could not be removed by the system,"
-                                                                                            " please remove it manually from the document templates directory.")))
+                                                 QApplication.translate("ComposerWrapper", 
+                                                                        "Delete Error"), msg)
+
                             return
 
                 docFile = QFile(absPath)
@@ -550,6 +555,7 @@ class ComposerWrapper(QObject):
         """
         # Write default composer configuration
         context = QgsReadWriteContext()
+
         composer_element = self.composition().writeXml(xml_doc, context)
         composer_element.setAttribute("name", doc_name)
 

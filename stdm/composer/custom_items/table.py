@@ -80,12 +80,17 @@ class StdmTableLayoutItem(QgsLayoutItemAttributeTable):
     def writePropertiesToElement(self, element: QDomElement, document:QDomDocument,
                                  context: QgsReadWriteContext) -> bool:
         super().writePropertiesToElement(element, document, context)
+        
         if self._table:
             element.setAttribute('table', self._table)
+
         if self._datasource_field:
             element.setAttribute('datasource_field', self._datasource_field)
+
         if self._referencing_field:
             element.setAttribute('referencing_field', self._referencing_field)
+
+        self.recalculateFrameSizes()
 
         return True
 

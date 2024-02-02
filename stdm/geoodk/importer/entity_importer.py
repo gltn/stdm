@@ -171,15 +171,12 @@ class Save2DB():
             user_entity = current_profile().entity_by_name(entity)
             return user_entity
 
-    def entity_has_supporting_docs(self):
+    def entity_has_supporting_docs(self) ->bool:
         """
         Check if the entity has supporting document before importing
         :return: Bool
         """
-        if self.entity.supports_documents:
-            return self.entity.supports_documents
-        else:
-            return None
+        return True if self.entity.supports_documents else False
 
     def entity_supported_document_types(self):
         """
@@ -198,7 +195,9 @@ class Save2DB():
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
             if entity_object is None:
                 return
+
             entity_object_model = entity_object()
+
             if hasattr(entity_object_model, 'documents'):
                 if self.entity.TYPE_INFO == 'SOCIAL_TENURE':
                     obj_doc_col = current_profile().social_tenure.supporting_doc
@@ -219,6 +218,8 @@ class Save2DB():
         :return:paths
         :rtype: document object instance
         """
+        entity_supports_docs = False
+
         if instance_file:
             f_dir, file_name = os.path.split(instance_file)
             for document, val in self.entity_data.items():
@@ -229,6 +230,9 @@ class Save2DB():
                         abs_path = doc_path.replace('\\', '/').strip()
                         if QFile.exists(abs_path):
                             self.supporting_document_model(abs_path, doc)
+                            entity_supports_docs = True
+
+        self.entity.supports_documents = entity_supports_docs
 
     def supporting_document_model(self, doc_path, doc):
         """
@@ -356,6 +360,7 @@ class Save2DB():
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
+
         if self.entity_has_supporting_docs():
             self.model.documents = self._doc_manager.model_objects()
 
