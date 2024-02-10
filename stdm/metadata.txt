@@ -6,6 +6,7 @@ version=1.8.2
 qgisversion=3.28
 build_number=0254806
 
+icon=images/icons/stdm.png
 tags=land administration, tenure security, continuum of land rights, fit for purpose land administration, gltn, stdm, cadastre
 
 homepage=http://www.stdm.gltn.net/
