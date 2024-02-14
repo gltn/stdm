@@ -355,6 +355,11 @@ class Save2DB():
         """
         self.column_info()
         for k, v in self.entity_data.items():
+
+            if k in self.multiple_select_columns:
+                self.process_multiple_select_columns(k, v)
+                continue
+
             if hasattr(self.model, k):
                 col_type = self.entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
@@ -366,6 +371,10 @@ class Save2DB():
 
         self.model.save()
         self.key = self.model.id
+
+        if len(self.multiple_select_columns) > 0:
+            self.save_multiple_selection(self.multiple_select_columns, self.key)
+
         return self.key
 
     def save_foreign_key_table(self):
