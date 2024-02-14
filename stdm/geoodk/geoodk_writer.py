@@ -459,6 +459,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                 reader = self.create_entity_reader(entity)
                 entity_values = reader.read_attributes()
                 self.bind_model_attributes(base_node, entity_values)
+
             if self.supports_str:
                 self.social_tenure_bind_to_node(base_node)
 
@@ -472,6 +473,7 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
         """
         if hasattr(entity_values, "id"):
             entity_values.pop("id")
+
         for key, val in entity_values.items():
             bind_node = self.create_node("bind")
             entity_name = self.entity_read.default_entity()
@@ -479,11 +481,19 @@ class GeoodkWriter(EntityFormatter, XFORMDocument):
                                    self.set_model_xpath(key, entity_name))
             if self.entity_read.col_is_mandatory(key):
                 bind_node.setAttribute("required", "true()")
+
             if val == 'GEOMETRY':
                 geoshape_type = self.geometry_types(self.entity_read.entity_object(), key)
                 bind_node.setAttribute("type", self.geom_selector(geoshape_type))
             else:
                 bind_node.setAttribute("type", self.set_model_data_type(val))
+
+            if val == 'FOREIGN_KEY':
+                bind_node.setAttribute("readonly", "true()")
+        
+            if val == 'ADMIN_SPATIAL_UNIT':
+                bind_node.setAttribute("readonly", "true()")
+
             base_node.appendChild(bind_node)
 
         if self.entity_read.entity_has_supporting_documents():

@@ -33,10 +33,18 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.exceptions import DummyException
-from stdm.geoodk.importer.entity_importer import EntityImporter, Save2DB
+from stdm.geoodk.importer.entity_importer import (
+    EntityImporter, 
+    Save2DB
+)
+
 from stdm.geoodk.importer.import_log import ImportLogger
-from stdm.geoodk.importer.uuid_extractor import (EntityNodeData,
-                                                 InstanceUUIDExtractor)
+
+from stdm.geoodk.importer.uuid_extractor import (
+    EntityNodeData,
+    InstanceUUIDExtractor
+)
+
 from stdm.settings import current_profile
 from stdm.settings.config_serializer import ConfigurationFileSerializer
 from stdm.settings.projectionSelector import ProjectionSelector
@@ -282,10 +290,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 self.uuid_extractor.set_file_path(full_filename)
 
             mobile_data[filename] = (full_filename, InstanceData(
-                field_data_nodes=self.uuid_extractor.document_entities_with_data(
+                    field_data_nodes=self.uuid_extractor.document_entities_with_data(
                     self.active_profile().replace(' ', '_'),
                     self.user_selected_entities()),
-                str_data_nodes=self.uuid_extractor.document_entities_with_data(
+                    str_data_nodes=self.uuid_extractor.document_entities_with_data(
                     self.active_profile().replace(' ', '_'),
                     ['social_tenure'])))
 
@@ -346,7 +354,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def instance_entities(self) -> List[EntityName]:
         """
         Enumerate the entities that are in the current profile
-         and also that are captured in the form so that we are only importing relevant entities to database
+        and also that are captured in the form so that we are only
+        importing relevant entities to database
         :return: List of enitity names
         """
         current_entities = []
@@ -389,7 +398,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     return
         return self.uuid_extractor.document_entities(self.profile)
 
-    def profile_entities_names(self, profile) ->List[str]:
+    def profile_entities_names(self, profile: 'Profile') ->List[str]:
         """
         Return names of all entities in a profile
         :param profile: Profile
@@ -432,7 +441,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                             self.relations[parent_object.parent.name].append([table, col.name])
                         else:
                             self.relations[parent_object.parent.name] = [table, col.name]
-                            # self.relations[parent_object.parent.name].append([table, col.name])
                     has_relations = True
                 else:
                     continue
@@ -598,7 +606,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         mobile_field_data = self.read_instance_data()
 
-        has_fk = self.has_foreign_keys_parent(entities)
+        has_fk = self.has_foreign_keys_parent(entities)  # populates self.relations list
 
         if len(self.parent_table_isselected()) > 0:
             if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
@@ -640,13 +648,14 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 for entity_name in single_occurring_keys:
                     entity_data = single_occuring[entity_name]
                     import_status = False
+
                     if entity_name in self.relations:
                         #if entity_name not in self.parent_ids.keys():
                         self.count_import_file_step(counter, entity_name)
                         log_timestamp = '=== parent table import  === : {0}'.format(entity_name)
-                        cu_obj = entity_name
                         self.log_table_entry(log_timestamp)
 
+                        cu_obj = entity_name
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
 
                         entity_add.objects_from_supporting_doc(instance_full_filename)
