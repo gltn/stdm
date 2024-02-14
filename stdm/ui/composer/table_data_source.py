@@ -93,14 +93,21 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
         layer_name = self.current_table_layer_name()
 
+        # Referenced table
         idx = self.ref_table.cbo_ref_table.findText(layer_name)
         if idx != -1:
             self.ref_table.cbo_ref_table.setCurrentIndex(idx)
 
-        idx = self.ref_table.cbo_ref_table.findText(referenced_table_name)
+        # FIXME: There is confusion between "referenced" and "References" table name
+        idx = self.ref_table.cbo_ref_table.findText(table_name)   
         if idx != -1:
             self.ref_table.cbo_ref_table.setCurrentIndex(idx)
+        
+        self.ref_table.cbo_ref_table.currentIndexChanged[str].connect(
+                self.set_references_field
+                )
 
+        # Datasource field
         idx = self.ref_table.cbo_source_field.findText(datasource_field)
         if idx != -1:
             self.ref_table.cbo_source_field.setCurrentIndex(idx)
@@ -109,15 +116,14 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
                 self.set_datasource_field
                 )
 
+        # Referencing field
         idx = self.ref_table.cbo_referencing_col.findText(referencing_field)
         if idx != -1:
             self.ref_table.cbo_referencing_col.setCurrentIndex(idx)
+
         self.ref_table.cbo_referencing_col.currentIndexChanged[str].connect(
                 self.set_referencing_field
                 )
-
-        print('ComposerTableDataSourceEditor.__init__')
-
 
     def composer_item(self):
         return self._composer_table_item
@@ -152,16 +158,15 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
 
             return
 
-        #FIXME: When the following three lines are enabled they cause the Table Widget to become squishy!
-
         # No need to add the layer in the legend
-        #QgsProject.instance().addMapLayer(v_layer, False)
-
+        QgsProject.instance().addMapLayer(v_layer, False)
 
         # if len(self.composer_item().columns()) > 0:
-        #     self._composer_table_item.setVectorLayer(v_layer)  # _composer_table_item is QgsComposerAttributeTable
+        #     self._composer_table_item.setVectorLayer(v_layer) 
 
-        #self._composer_table_item.update()
+    def set_references_field(self, field: str):
+        self._composer_table_item.set_table(field)
+        self._composer_table_item.update()
 
     def set_datasource_field(self, field: str):
         self._composer_table_item.set_datasource_field(field)
@@ -177,7 +182,6 @@ class ComposerTableDataSourceEditor(WIDGET, BASE):
         linked_table_props = self.ref_table.properties()
 
         table_config = TableConfiguration()
-
         table_config.set_linked_table(linked_table_props.linked_table)
         table_config.set_source_field(linked_table_props.source_field)
         table_config.set_linked_column(linked_table_props.linked_field)

@@ -97,11 +97,11 @@ class ReferencedTableEditor(QWidget):
 
         #self.cbo_ref_table.setInsertPolicy(QComboBox.InsertAlphabetically)
 
-        #self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
-
+        self.cbo_ref_table.currentIndexChanged[str].connect(self._on_ref_table_changed)
         self.cbo_source_field.currentTextChanged.connect(self._on_changed)
         self.cbo_source_field.currentIndexChanged.connect(self._on_source_field_changed)
-        #self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
+
+        self.cbo_ref_table.currentIndexChanged[str].connect(self._on_changed)
         self.cbo_referencing_col.currentTextChanged.connect(self._on_changed)
 
         # Tables that will be omitted from the referenced table list
@@ -192,7 +192,6 @@ class ReferencedTableEditor(QWidget):
         QMetaObject.connectSlotsByName(self)
         self.cbo_ref_table.currentIndexChanged[str].connect(self.load_referencing_fields)
 
-        print('reference_table_editor::setupUI >>> ')
 
     def set_layout(self, layout):
         self._layout = layout

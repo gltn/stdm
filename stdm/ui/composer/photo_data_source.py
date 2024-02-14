@@ -74,8 +74,8 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
             self.update_document_types
         )
 
-        self.ref_table._load_source_table_fields(
-                self._item.linked_table())
+        # self.ref_table._load_source_table_fields(
+        #         self._item.linked_table())
 
         self.set_from_item()
 

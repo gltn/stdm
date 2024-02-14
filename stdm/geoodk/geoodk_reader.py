@@ -136,7 +136,6 @@ class GeoODKReader:
         columns = list(self.entity_columns().values())
         for column in columns:
             # Don't include related entity columns and id columns
-            # if column.display_name() == 'Related Entity' or column.name == 'id':
             if column.name == 'id':
                 continue
             self.entity_attributes[column.name] = column.TYPE_INFO
@@ -289,7 +288,7 @@ class GeoODKReader:
             str_lk_values[val.value] = val.code
         return str_lk_values
 
-    def on_column_show_in_parent(self):
+    def on_column_show_in_parent(self) ->bool:
         """
         Check whether the foreign key column has flag show in parent.
         required to enable geoodk subform creation

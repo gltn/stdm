@@ -144,6 +144,11 @@ def _create_primary_entity_view(
             view_name=view_name
         )
 
+        # Add party entity key field, generating a document using this view will crash
+        entity_id_column = '{0}.id AS {1}_id'.format(
+            primary_entity.name, primary_entity.name[primary_entity.name.find('_')+1:])
+        party_columns.insert(1, entity_id_column)
+
         # Set removal of all spatial unit columns apart from the id column
         for spatial_unit in social_tenure.spatial_units:
             omit_view_columns = deepcopy(list(spatial_unit.columns.keys()))
@@ -193,6 +198,11 @@ def _create_primary_entity_view(
             omit_join_statement_columns=omit_join_statement_columns,
             view_name=view_name
         )
+        # Add spatial entity key field, generating a document using this view will crash
+        entity_id_column = '{0}.id AS {1}_id'.format(
+            primary_entity.name, primary_entity.name[primary_entity.name.find('_')+1:])
+        spatial_unit_columns.insert(1, entity_id_column)
+
         custom_tenure_columns = []
         custom_tenure_join = []
         custom_tenure_entity = social_tenure.spu_custom_attribute_entity(
@@ -309,7 +319,6 @@ def _entity_select_column(
                             entity.name, c.name
                         )
                         select_column_name = col_spatial_unit_id
-
                 else:
                     # add party id or spatial unit as id
                     entity_id = '{0}.{1} AS {1}'.format(
@@ -475,7 +484,9 @@ def _entity_select_column(
             if c.name not in omit_view_columns:
                 if select_column_name:
                     column_names.append(select_column_name)
+
             QApplication.processEvents()
+
     return column_names, join_statements
 
 
@@ -505,6 +516,7 @@ def _set_distinct_column(column, column_collection):
             column_collection.remove(c)
             distinct_exp = _insert_distinct_exp(norm_c, c)
             rev.append(distinct_exp)
+            break
 
     rev.extend(column_collection)
 

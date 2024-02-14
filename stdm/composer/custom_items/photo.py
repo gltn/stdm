@@ -139,7 +139,17 @@ class StdmPhotoLayoutItem(QgsLayoutItemPicture):
         self._document_type = element.attribute('documentType') or None
         self._referencing_field = element.attribute('referencing_field') or None
 
-        if element.attribute('documentTypeId') == '':
+        elem = element.attribute('documentTypeId')
+
+        if elem == '' or elem == 'None':
+            self.document_type_id = -1
+            return True
+
+        if element.attribute('documentTypeId') is None:
+            self.document_type_id = -1
+            return True
+
+        if element.attribute('documentTypeId') == '': 
             self._document_type_id = -1
         else:
             self._document_type_id = int(element.attribute('documentTypeId', '-1'))

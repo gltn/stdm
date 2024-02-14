@@ -95,8 +95,9 @@ def load_table_layers(config_collection):
 
     v_layers = []
 
-    for conf in table_configs:
+    for key, conf in table_configs.items():
         layer_name = conf.linked_table()
+
         v_layer = vector_layer(layer_name)
 
         if v_layer is None:
