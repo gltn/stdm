@@ -658,7 +658,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         cu_obj = entity_name
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
 
-                        print(instance_full_filename)
                         entity_add.objects_from_supporting_doc(instance_full_filename)
 
                         ref_id = entity_add.save_parent_to_db()
@@ -676,6 +675,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         self.log_table_entry(log_timestamp)
                         entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
                         entity_add.objects_from_supporting_doc(instance_full_filename)
+
                         child_id = entity_add.save_to_db()
                         cu_obj = entity_name
                         import_status = True
