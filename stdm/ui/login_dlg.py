@@ -89,6 +89,7 @@ class loginDlg(WIDGET, BASE):
         # Configure notification bar
         self.notifBar = NotificationBar(self.vlNotification)
 
+
         if self._test_connect_mode:
             self.txtUserName.setFocus()
 
@@ -130,6 +131,12 @@ class loginDlg(WIDGET, BASE):
 
         else:
             return True
+
+    def test_mode(self) ->int:
+        self.txtUserName.setText('postgres')
+        self.txtPassword.setText('abc123')
+        self.acceptdlg()
+        return 1
 
     def _set_user(self):
         '''

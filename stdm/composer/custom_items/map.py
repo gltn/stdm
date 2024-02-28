@@ -37,6 +37,8 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
     def __init__(self, layout):
         super().__init__(layout)
 
+        print('* MAP::A *')
+
         self._geom_type = None
         self._zoom = 4
         self._zoom_type = None
@@ -97,7 +99,6 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
             context: QgsReadWriteContext) -> bool:
         super().writePropertiesToElement(element, document, context)
 
-
         if self._geom_type:
             element.setAttribute('geomType', self._geom_type)
 
@@ -116,6 +117,12 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
         if self._name:
             element.setAttribute('name', self._name)
 
+        # print('Type: ',self._geom_type)
+        # print('Zomm: ',self._zoom)
+        # print('Type: ',self._zoom_type)
+        # print('SRID: ',self._srid)
+        # print('Label: ',self._label_field)
+
         return True
 
 
@@ -129,6 +136,9 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
         self._srid = element.attribute('srid') or None
         self._label_field = element.attribute('labelField') or None
         self._name = element.attribute('name') or None
+
+        print('Name: ',self._name)
+
 
         return True
 

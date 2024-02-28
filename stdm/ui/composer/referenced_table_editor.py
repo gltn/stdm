@@ -204,8 +204,8 @@ class ReferencedTableEditor(QWidget):
         data_source_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
         self.load_data_source_fields(data_source_name)
 
-        referenced_table_name = LayoutUtils.get_stdm_referenced_table_for_layout(self._layout)
-        self.load_referencing_fields(referenced_table_name)
+        # referenced_table_name = LayoutUtils.get_stdm_referenced_table_for_layout(self._layout)
+        # self.load_referencing_fields(referenced_table_name)
 
     def on_data_source_changed(self, data_source_name):
         """
@@ -326,8 +326,8 @@ class ReferencedTableEditor(QWidget):
 
             for t in ref_tables:
                 # Ensure we are dealing with tables in the current profile
-                if not t in self._current_profile_tables:
-                    continue
+                # if not t in self._current_profile_tables:
+                #     continue
 
                 # Assert if the table is in the list of omitted tables
                 if t in self._omit_ref_tables:

@@ -66,7 +66,9 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
         Load referenced table list and filter so to only load supporting
         doc tables.
         '''
-        self.ref_table.load_link_tables(supporting_doc_tables_regexp())
+        reg_exp = supporting_doc_tables_regexp()
+        self.ref_table.load_link_tables(reg_exp)
+        #self.ref_table.load_link_tables(supporting_doc_tables_regexp())
 
         self.ref_table.set_layout(self._layout)
 

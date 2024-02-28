@@ -252,6 +252,9 @@ class ForeignKeyMapper(QWidget):
             self._onRecordSelectedEntityBrowser
         )
 
+    def test_close_selector(self):
+        self._entitySelector.done(1)
+
     def _init_fk_columns(self):
         """
         Asserts if the entity columns actually do exist in the database. The

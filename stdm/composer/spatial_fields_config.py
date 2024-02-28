@@ -36,6 +36,7 @@ class SpatialFieldsConfiguration:
 
     def __init__(self):
         # Mapping of map item id and list of spatial field configurations
+        print('* SpatialFieldConfiguration *')
         self._sp_fields_mapping_collec = OrderedDict()
 
     def addSpatialFieldMapping(self, spatial_field_mapping):
@@ -76,11 +77,16 @@ class SpatialFieldsConfiguration:
         """
         Helper method that creates a spatial columns DOM element from a composer wrapper instance.
         """
+        print('** domElement **')
+
         spatialColumnsElement = dom_document.createElement("SpatialFields")
 
         # Get the configured composer style editors for spatial columns
         for uuid, symbolEditor in composerWrapper.widgetMappings().items():
             composerItem = composerWrapper.composition().itemByUuid(uuid)
+
+            print('uuid: ', uuid)
+            print('symbolEditor: ', symbolEditor)
 
             if composerItem is not None:
                 if isinstance(symbolEditor, ComposerSymbolEditor):

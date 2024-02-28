@@ -49,6 +49,7 @@ class StdmPhotoLayoutItem(QgsLayoutItemPicture):
     def icon(self):
         return GuiUtils.get_icon('photo_24.png')
 
+    @property
     def linked_table(self) -> str:
         """
         :return: Name of the referenced table.
@@ -64,6 +65,7 @@ class StdmPhotoLayoutItem(QgsLayoutItemPicture):
         """
         self._linked_table = table
 
+    @property
     def source_field(self) -> str:
         """
         :return: Column name in the referenced data source.
@@ -78,6 +80,7 @@ class StdmPhotoLayoutItem(QgsLayoutItemPicture):
         """
         self._source_field = field
 
+    @property
     def linked_field(self) -> str:
         """
         :return: Name of the matching column in the linked table.
@@ -93,12 +96,14 @@ class StdmPhotoLayoutItem(QgsLayoutItemPicture):
         """
         self._linked_field = field
 
+    @property
     def document_type(self):
         return self._document_type
 
     def set_document_type(self, document_type):
         self._document_type = document_type
 
+    @property
     def document_type_id(self):
         return self._document_type_id
 

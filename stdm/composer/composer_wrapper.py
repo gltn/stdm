@@ -108,7 +108,8 @@ def load_table_layers(config_collection):
 
         v_layers.append(v_layer)
 
-    QgsProject.instance().addMapLayers(v_layers, False)
+    #QgsProject.instance().addMapLayers(v_layers, False)
+    QgsProject.instance().addMapLayers(v_layers, True)
 
     return v_layers
 
@@ -562,6 +563,7 @@ class ComposerWrapper(QObject):
 
         xml_doc.appendChild(composer_element)
 
+        print('Saving SpatialFieldsConfiguration ...')
         # Write spatial field configurations
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
         xml_doc.appendChild(spatialColumnsElement)

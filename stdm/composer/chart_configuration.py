@@ -46,6 +46,8 @@ from stdm.composer.configuration_collection_base import (
     col_values
 )
 
+from stdm.composer.custom_items.chart import StdmChartLayoutItem
+
 legend_positions = OrderedDict({
     QApplication.translate("ChartConfiguration", "Automatic"): "best",
     QApplication.translate("ChartConfiguration", "Upper Right"): "upper right",
@@ -372,7 +374,7 @@ class ChartConfiguration:
 
 
     @staticmethod
-    def create(dom_element: QDomElement):
+    def create_from_dom(dom_element: QDomElement, config_item:StdmChartLayoutItem):
         """
         Create a ChartConfiguration object from a QDomElement instance.
         :param dom_element: QDomElement that represents composer configuration.
@@ -389,7 +391,8 @@ class ChartConfiguration:
         if plot_type_config is None:
             return None
 
-        return plot_type_config.create(dom_element)
+        return plot_type_config.create(dom_element, config_item)
+
 
     def create_handler(self, composition, query_handler=None):
         """
@@ -409,6 +412,7 @@ class ChartConfigurationCollection(ConfigurationCollectionBase):
     editor_type = ComposerChartConfigEditor
     config_root = ChartConfiguration.tag_name
     item_config = ChartConfiguration
+    layout_item_type = StdmChartLayoutItem
 
 
 class ChartItemValueHandler(LinkedTableValueHandler):
@@ -534,7 +538,8 @@ class ChartItemValueHandler(LinkedTableValueHandler):
             plt.savefig(tmp_file_name, format="tif", dpi=200)
 
             # Set path of picture item
-            self.composer_item().setPicturePath(tmp_file_name)
+            #self.composer_item().setPicturePath(tmp_file_name)
+            self._config_item.layout_item().setPicturePath(tmp_file_name)
 
         else:
             raise RuntimeError("Chart item could not be rendered")
@@ -546,16 +551,17 @@ class VerticalBarValueHandler(ChartItemValueHandler):
     """
 
     def set_data_source_record(self, record):
-        chart_item = self.composer_item()
 
-        if chart_item is None:
-            return
+        # chart_item = self.composer_item()
+
+        # if chart_item is None:
+        #     return
 
         '''
         If there is no linked table then exit process since it is the primary
         data source.
         '''
-        linked_table = self.config_item().linked_table()
+        linked_table = self.config_item().layout_item().linked_table()
         if not linked_table:
             return
 
@@ -640,6 +646,22 @@ class VerticalBarConfiguration(ChartConfiguration):
     def __init__(self, **kwargs):
         super(VerticalBarConfiguration, self).__init__(**kwargs)
         self._value_cfgs = OrderedDict()
+        self._layout_item = None
+
+    def set_layout_item(self, chart_layout_item: StdmChartLayoutItem):
+        self._layout_item = chart_layout_item
+
+    def layout_item(self):
+        return self._layout_item
+
+    def source_field(self):
+        return self._layout_item.source_field()
+
+    def linked_table(self):
+        return self._layout_item.linked_table()
+
+    def linked_field(self):
+        return self._layout_item.linked_field()
 
     def value_configurations(self):
         """
@@ -691,10 +713,11 @@ class VerticalBarConfiguration(ChartConfiguration):
         return VerticalBarValueHandler(composition, self, query_handler)
 
     @staticmethod
-    def create(dom_element):
+    def create(dom_element, chart_layout_item:StdmChartLayoutItem):
         # Create new instance and extract properties from dom element.
         vbar_config = VerticalBarConfiguration()
         vbar_config._set_base_properties(dom_element)
+        vbar_config.set_layout_item(chart_layout_item)
 
         # Get barconfig elements
         bar_cfg_el_lst = dom_element.elementsByTagName(BarValueConfiguration.tag_name)

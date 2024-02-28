@@ -37,6 +37,8 @@ class StdmTableLayoutItem(QgsLayoutItemAttributeTable):
     def __init__(self, layout):
         super().__init__(layout)
 
+        print('* B *')
+
         self._table = None
         self._datasource_field = None
         self._referencing_field = None
@@ -74,8 +76,8 @@ class StdmTableLayoutItem(QgsLayoutItemAttributeTable):
     def set_referencing_field(self, field: str):
         self._referencing_field = field
 
-    def getTableContents(self, contents):
-        return True
+    # def getTableContents(self, contents):
+    #      return True
 
     def writePropertiesToElement(self, element: QDomElement, document:QDomDocument,
                                  context: QgsReadWriteContext) -> bool:

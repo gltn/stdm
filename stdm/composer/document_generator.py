@@ -29,7 +29,6 @@ from qgis.PyQt.QtCore import (
     QIODevice,
     QFile,
     QFileInfo,
-    QDir
 )
 from qgis.PyQt.QtWidgets import (
     QApplication
@@ -46,7 +45,9 @@ from qgis.core import (
     QgsVectorLayer,
     QgsWkbTypes,
     QgsReadWriteContext,
-    QgsLayoutExporter
+    QgsLayoutExporter,
+    QgsLayoutFrame,
+    QgsLayoutItem
 )
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.schema import (
@@ -62,6 +63,8 @@ from stdm.composer.photo_configuration import PhotoConfigurationCollection
 from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
 from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
 from stdm.composer.table_configuration import TableConfigurationCollection
+from stdm.composer.custom_items.table import StdmTableLayoutItem
+
 from stdm.data.database import STDMDb
 from stdm.data.pg_utils import (
     geometryType,
@@ -229,7 +232,7 @@ class DocumentGenerator(QObject):
 
         return composer_ds, ""
 
-    def run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
+    def ORIG_run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
             dataFields=None, fileExtension=None, data_source=None):
         """
         :param templatePath: The file path to the user-defined template.
@@ -337,13 +340,15 @@ class DocumentGenerator(QObject):
                         if fieldName == '':
                             continue
                         fieldValue = getattr(rec, fieldName)
-                        self._composeritem_value_handler(composerItem, fieldValue)
+
 
                 # Extract photo information
                 self._extract_photo_info(print_layout, ph_config_collection, rec)
 
                 # Set table item values based on configuration information
                 self._set_table_data(print_layout, table_config_collection, rec)
+
+                # table_config_collection.editor_type.composer_item.recalculateFrameSizes()
 
                 # Refresh non-custom map composer items
                 self._refresh_composer_maps(print_layout,
@@ -483,7 +488,286 @@ class DocumentGenerator(QObject):
             return True, "Success"
 
         return False, "Document Print Layout could not be generated"
+    # ---------------------------------------------------------------------------------------------------------------
+    def run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
+            dataFields=None, fileExtension=None, data_source=None):
+        """
+        :param templatePath: The file path to the user-defined template.
+        :param entityFieldName: The name of the column for the specified entity which
+        must exist in the data source view or table.
+        :param entityFieldValue: The value for filtering the records in the data source
+        view or table.
+        :param outputMode: Whether the output composition should be an image or PDF.
+        :param filePath: The output file where the composition will be written to. Applies
+        to single mode output generation.
+        :param dataFields: List containing the field names whose values will be used to name the files.
+        This is used in multiple mode configuration.
+        :param fileExtension: The output file format. Used in multiple mode configuration.
+        :param data_source: Name of the data source table or view whose
+        row values will be used to name output files if the options has been
+        specified by the user.
+        """
+        if dataFields is None:
+            dataFields = []
 
+        if fileExtension is None:
+            fileExtension = ''
+
+        if data_source is None:
+            data_source = ''
+
+
+        templateFile = QFile(templatePath)
+
+        if not templateFile.open(QIODevice.ReadOnly):
+            return False, QApplication.translate("DocumentGenerator",
+                                                 "Cannot read template file.")
+
+        templateDoc = QDomDocument()
+
+        if templateDoc.setContent(templateFile):
+            composerDS = ComposerDataSource.create(templateDoc)
+            spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
+            composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
+
+
+            # Check if data source exists and return if it doesn't
+            if not self.data_source_exists(composerDS):
+                msg = QApplication.translate("DocumentGenerator",
+                                             "'{0}' data source does not exist in the database."
+                                             "\nPlease contact your database "
+                                             "administrator.".format(composerDS.name()))
+                return False, msg
+
+            # Set file name value formatter
+            self._file_name_value_formatter = EntityValueFormatter(
+                name=data_source
+            )
+
+            ######
+
+            # Register field names to be used for file naming
+            # self._file_name_value_formatter.register_columns(dataFields)
+
+            # TODO: Need to automatically register custom configuration collections
+            # Photo config collection
+            # ph_config_collection = PhotoConfigurationCollection.create(templateDoc)
+
+            # # Create chart configuration collection object
+            # chart_config_collection = ChartConfigurationCollection.create(templateDoc)
+
+            # # Create QR code configuration collection object
+            # qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
+
+            # Load the layers required by the table composer items
+            # self._table_mem_layers = load_table_layers(table_config_collection)
+
+            #####
+            entityFieldName = self.format_entity_field_name(composerDS.name(), data_source)
+
+            # Execute query
+            dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
+
+            if records is None or len(records) == 0:
+                return False, QApplication.translate("DocumentGenerator",
+                                                     "No matching records in the database")
+
+
+            """
+            Iterate through records where a single file output will be generated for each matching record.
+            """
+            project = QgsProject().instance()
+
+
+            for rec in records:
+                #composition = QgsPrintLayout(self._map_settings)
+                print_layout = QgsPrintLayout(project)
+                print_layout.initializeDefaults()
+
+                context = QgsReadWriteContext()
+                results = print_layout.loadFromTemplate(templateDoc, context)
+
+                ref_layer = None
+                # Set value of composer items based on the corresponding db values
+
+                for composerId in composerDS.dataFieldMappings().reverse:
+                    # Use composer item id since the uuid is stripped off
+                    composerItem = print_layout.itemById(composerId)
+
+                    if composerItem is not None:
+                        fieldName = composerDS.dataFieldName(composerId)
+                        if fieldName == '':
+                            continue
+                        # fieldValue = getattr(rec, fieldName)
+
+
+                # # Set table item values based on configuration information
+                table_config_collection = TableConfigurationCollection.create(print_layout)
+
+                self._table_mem_layers = load_table_layers(table_config_collection)
+                self._set_table_data(print_layout, table_config_collection, rec)
+
+                layout_items, load_status = results
+                ph_config_collection = PhotoConfigurationCollection.create_layout_item(layout_items)
+                # Extract photo information
+                self._extract_photo_info(print_layout, ph_config_collection, rec)
+
+                print(layout_items)
+                # Create chart configuration collection object
+                chart_config_collection = ChartConfigurationCollection.create_chart_layout(layout_items, templateDoc)
+
+                # Extract chart information and generate chart
+                self._generate_charts(print_layout, chart_config_collection, rec)
+
+                # Refresh non-custom map composer items
+                self._refresh_composer_maps(print_layout,
+                                            list(spatialFieldsConfig.spatialFieldsMapping().keys()))
+
+                # Set use fixed scale to false i.e. relative zoom
+                use_fixed_scale = False
+
+                # Create memory layers for spatial features and add them to the map
+                for mapId, spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
+
+                    map_item = print_layout.itemById(mapId)
+
+                    print('Map Item: ', map_item)
+
+                    if map_item is not None:
+                        # Clear any previous map memory layer
+                        # self.clear_temporary_map_layers()
+                        for spfm in spfmList:
+                            # Use the value of the label field to name the layer
+                            lbl_field = spfm.labelField()
+                            spatial_field = spfm.spatialField()
+
+                            if not spatial_field:
+                                continue
+
+                            if lbl_field:
+                                if hasattr(rec, spfm.labelField()):
+                                    layerName = getattr(rec, spfm.labelField())
+                                else:
+                                    layerName = self._random_feature_layer_name(spatial_field)
+                            else:
+                                layerName = self._random_feature_layer_name(spatial_field)
+
+                            # Extract the geometry using geoalchemy spatial capabilities
+                            geom_value = getattr(rec, spatial_field)
+                            if geom_value is None:
+                                continue
+
+                            geom_func = geom_value.ST_AsText()
+                            geomWKT = self._dbSession.scalar(geom_func)
+
+                            # Get geometry type
+                            geom_type, srid = geometryType(composerDS.name(),
+                                                           spatial_field)
+
+                            # Create reference layer with feature
+                            ref_layer = self._build_vector_layer(layerName, geom_type, srid)
+
+                            if ref_layer is None or not ref_layer.isValid():
+                                continue
+                            # Add feature
+                            bbox = self._add_feature_to_layer(ref_layer, geomWKT)
+
+                            zoom_type = spfm.zoom_type
+                            # Only scale the extents if zoom type is relative
+                            if zoom_type == 'RELATIVE':
+                                bbox.scale(spfm.zoomLevel())
+
+                            # Workaround for zooming to single point extent
+                            if ref_layer.wkbType() == QgsWkbTypes.Point:
+                                canvas_extent = self._iface.mapCanvas().fullExtent()
+                                cnt_pnt = bbox.center()
+                                canvas_extent.scale(1.0 / 32, cnt_pnt)
+                                bbox = canvas_extent
+
+                            # Style layer based on the spatial field mapping symbol layer
+                            symbol_layer = spfm.symbolLayer()
+                            if symbol_layer is not None:
+                                ref_layer.renderer().symbols()[0].changeSymbolLayer(0, spfm.symbolLayer())
+                            '''
+                            Add layer to map and ensure its always added at the top
+                            '''
+                            self.map_registry.addMapLayer(ref_layer)
+                            self._iface.mapCanvas().setExtent(bbox)
+
+                            # Set scale if type is FIXED
+                            if zoom_type == 'FIXED':
+                                self._iface.mapCanvas().zoomScale(spfm.zoomLevel())
+                                use_fixed_scale = True
+
+                            self._iface.mapCanvas().refresh()
+                            # Add layer to map memory layer list
+                            self._map_memory_layers.append(ref_layer.id())
+                            self._hide_layer(ref_layer)
+                        '''
+                        Use root layer tree to get the correct ordering of layers
+                        in the legend
+                        '''
+                        self._refresh_map_item(map_item, use_fixed_scale)
+
+
+                # # Extract QR code information in order to generate QR codes
+                # self._generate_qr_codes(print_layout, qrc_config_collection, rec)
+
+                #######
+
+                # Build output path and generate print_layout
+                if filePath is not None and len(dataFields) == 0:
+                    self._write_output(print_layout, outputMode, filePath)
+
+                elif filePath is None and len(dataFields) > 0:
+                    entityFieldName = 'id'
+                    docFileName = self._build_file_name(data_source, entityFieldName,
+                                                        entityFieldValue, dataFields, fileExtension)
+
+                    # Replace unsupported characters in Windows file naming
+                    docFileName = docFileName.replace('/', '_').replace('\\', '_').replace(':', '_').strip('*?"<>|')
+
+                    if not docFileName:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "File name could not be generated from the data fields."))
+
+                    outputDir = self._composer_output_path()
+                    if outputDir is None:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "System could not read the location of the output directory in the registry."))
+
+                    qDir = QDir()
+                    if not qDir.exists(outputDir):
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "Output directory does not exist"))
+
+                    absDocPath = "{0}/{1}".format(outputDir, docFileName)
+
+                    write_result = self._write_output(print_layout, outputMode, absDocPath)
+
+                    if write_result == QgsLayoutExporter.Canceled:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "Document generation canceled"))
+
+                    if write_result == QgsLayoutExporter.MemoryError:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "Unable to allocate memory required to export"))
+
+                    if write_result == QgsLayoutExporter.FileError:
+                        return (False, QApplication.translate("DocumentGenerator",
+                                                                "Could not write to destination file, likely due to a lock held by anther application"))
+
+            #TableConfigurationCollection.recalc(print_layout)
+            return True, "Success"
+
+        return False, "Document Print Layout could not be generated"
+    
+
+
+
+
+
+    # ----------------------------------------------------------------------------------------------------------------
     def format_entity_field_name(self, composer_datasource, entity):
         if '_vw_' in composer_datasource:
             return composer_datasource + '.' + entity[entity.find('_') + 1:] + '_id'
@@ -619,9 +903,10 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
-        table_configs = list(config_collection.items().values())
+        if config_collection is None:
+            return
 
-        for conf in table_configs:
+        for conf in config_collection.items().values():
             table_handler = conf.create_handler(composition, self._exec_query)
             table_handler.set_data_source_record(record)
 
@@ -638,10 +923,13 @@ class DocumentGenerator(QObject):
         :type record: object
         """
 
-        chart_configs = list(config_collection.items().values())
+        if config_collection is None:
+            return
+
+        chart_configs = list(config_collection.values())
 
         for cc in chart_configs:
-            chart_handler = cc.create_handler(composition, self._exec_query)
+            chart_handler = cc.create_handler(composition,  self._exec_query)
             chart_handler.set_data_source_record(record)
 
     def _generate_qr_codes(self, composition, config_collection, record):
@@ -656,6 +944,9 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
+
+        if config_collection is None:
+            return
 
         qrc_configs = list(config_collection.items().values())
 
@@ -676,6 +967,9 @@ class DocumentGenerator(QObject):
         :param record: Matching record from the result set.
         :type record: object
         """
+        if config_collection is None:
+            return
+
         ph_configs = list(config_collection.items().values())
 
         for conf in ph_configs:
@@ -684,6 +978,8 @@ class DocumentGenerator(QObject):
             referencing_column = conf.linked_field()
             document_type = conf.document_type.replace(' ', '_').lower()
             document_type_id = int(conf.document_type_id)
+
+            photo_layout_item = conf.layout_item()
 
             # Get name of base supporting documents table
             supporting_doc_base = self._current_profile.supporting_document.name
@@ -739,7 +1035,8 @@ class DocumentGenerator(QObject):
                         document_parent_table,
                         document_type,
                         dr.document_identifier,
-                        dr.filename
+                        dr.filename,
+                        photo_layout_item
                     )
 
                 # TODO: Only interested in one photograph, should support more?
@@ -752,9 +1049,12 @@ class DocumentGenerator(QObject):
             document_parent_table,
             document_type,
             doc_id,
-            doc_name
+            doc_name,
+            photo_layout_item: QgsLayoutItem
     ):
-        pic_item = composition.itemById(composer_id)
+
+        #pic_item = composition.itemById(composer_id)
+        pic_item = photo_layout_item
 
         if pic_item is None:
             return

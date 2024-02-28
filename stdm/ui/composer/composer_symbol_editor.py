@@ -17,6 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import typing
+
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
@@ -143,6 +145,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
         super().__init__(parent)
         self.setupUi(self)
 
+        print('* Map::C *')
+
         self._item = item
         self._layout = item.layout()
 
@@ -153,6 +157,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
 
         # Load fields if the data source has been specified
         self._ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
+
+        print('AAA: ',self._ds_name)
 
         if self._ds_name is not None:
             self._load_fields()
@@ -188,6 +194,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
         When the user changes the data source then update the fields.
         """
         self._ds_name = data_source_name
+        print('on_data_source_changed: ', self._ds_name)
+
         self._load_fields()
 
     def on_clear_tabs(self):
@@ -238,6 +246,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
         """
         spColumnName = self.cboSpatialFields.currentText()
 
+        self._item.set_name(spColumnName)
+
         if not spColumnName:
             return
 
@@ -255,8 +265,15 @@ class ComposerSymbolEditor(WIDGET, BASE):
                                                         "not be created.\nPlease"
                                                         " check the geometry type"
                                                         " of the spatial column."))
+            return
 
-    def add_styling_widget(self, sp_field_mapping):
+        self._add_editor(spColumnName, style_editor)
+            
+
+    def _add_editor(self, col_name: str, editor: ComposerSpatialColumnEditor):
+        self._editorMappings[col_name] = editor
+
+    def add_styling_widget(self, sp_field_mapping:typing.Union[str, SpatialFieldMapping]):
         """
         Add a styling widget to the field tab widget.
         """
@@ -264,7 +281,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
             sp_column_name = sp_field_mapping
             apply_mapping = False
         else:
-            sp_column_name = sp_field_mapping.spatialField()
+            sp_column_name = sp_field_mapping.spatialField()  # SpatialFieldMapping
             apply_mapping = True
 
         if not self._build_symbol_widget(sp_field_mapping) is None:
@@ -297,7 +314,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
 
             return styleEditor
 
-    def _build_symbol_widget(self, sp_field_mapping):
+    def _build_symbol_widget(self, sp_field_mapping: typing.Union[str, SpatialFieldMapping]):
         """
         Build symbol widget based on geometry type.
         """
@@ -349,6 +366,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
             self.cboSpatialFields.clear()
             return
 
+        prev_text = self.cboSpatialFields.currentText()
+
         spatialColumns = table_column_names(self._ds_name, True)
 
         if len(spatialColumns) == 0:
@@ -358,3 +377,8 @@ class ComposerSymbolEditor(WIDGET, BASE):
         self.cboSpatialFields.addItem("")
 
         self.cboSpatialFields.addItems(spatialColumns)
+
+        idx = self.cboSpatialFields.findText(prev_text)
+        self.cboSpatialFields.setCurrentIndex(idx)
+
+

@@ -193,7 +193,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         self.setupUi(self)
 
         self._layout = layout_item.layout()
-        self._item = layout_item
+        self._map_item = layout_item
 
         self._spColumnName = spColumnName
 
@@ -220,6 +220,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         self.sb_zoom.valueChanged.connect(self.on_zoom_level_changed)
         self.sb_fixed_zoom.valueChanged.connect(self.on_zoom_fixed_scale_changed)
         self.rb_relative_zoom.toggled.connect(self.on_relative_zoom_checked)
+        self.cboLabelField.currentTextChanged.connect(self.on_label_field_changed)
 
         # Set relative zoom level as the default selected option for the radio buttons
         self.rb_relative_zoom.setChecked(True)
@@ -246,10 +247,25 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         else:
             self.sb_zoom.setEnabled(False)
             self.sb_fixed_zoom.setEnabled(True)
+        self._map_item.set_zoom_type('RELATIVE')
 
     def on_fixed_scale_zoom_checked(self, state):
         # Slot riased when the radio button for fixed scale zoom is selected.
+        self._map_item.set_zoom_type('FIXED')
         pass
+
+    def on_zoom_level_changed(self, value):
+        """
+        Slot raised when the spin box value, representing the zoom level,
+        changes.
+        """
+        if self._zoom_out_level != value:
+            self._zoom_out_level = value
+
+        self._map_item.set_zoom(value)
+
+    def on_label_field_changed(self, text: str):
+        self._map_item.set_label_field(text)
 
     def setSymbolEditor(self, editor):
         """
@@ -275,6 +291,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         Set the geometry type of the specified spatial unit.
         """
         self._geomType = geomType
+        self._map_item.set_geom_type(geomType)
 
     def geomType(self):
         """
@@ -287,6 +304,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         Set the SRID of the specified spatial unit.
         """
         self._srid = srid
+        self._map_item.set_srid(srid)
 
     def srid(self):
         """
@@ -342,13 +360,6 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         if fieldIndex != -1:
             self.cboLabelField.setCurrentIndex(fieldIndex)
 
-    def on_zoom_level_changed(self, value):
-        """
-        Slot raised when the spin box value, representing the zoom level,
-        changes.
-        """
-        if self._zoom_out_level != value:
-            self._zoom_out_level = value
 
     def _loadFields(self):
         """

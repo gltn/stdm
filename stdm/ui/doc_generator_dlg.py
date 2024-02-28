@@ -163,6 +163,7 @@ class DocumentGeneratorDialogWrapper(object):
 
     def __init__(self, iface, access_templates, parent=None, plugin=None):
         self._iface = iface
+        self._plugin = plugin
 
         self._doc_gen_dlg = DocumentGeneratorDialog(self._iface, access_templates, parent, plugin=plugin)
         self._notif_bar = self._doc_gen_dlg.notification_bar()
@@ -194,6 +195,27 @@ class DocumentGeneratorDialogWrapper(object):
                 if entity_cfg is not None:
                     self._doc_gen_dlg.add_entity_config(entity_cfg, i)
             self._doc_gen_dlg.progress.hide()
+
+            ########
+            # TEST
+            #######
+            # self._doc_gen_dlg.tabWidget.setCurrentIndex(1)
+            # fk_mapper = self._doc_gen_dlg.tabWidget.widget(1)
+            # fk_mapper.onAddEntity()
+            # fk_mapper._onRecordSelectedEntityBrowser(2, -1)
+            # fk_mapper.entitySelector().onAccept()
+            # fk_mapper.test_close_selector()
+            # doc_name = 'household'
+            # doc_path = 'C:/Users/Administrator/.stdm/reports/templates/Chart01.sdt'
+            # self._docTemplatePath = doc_path
+            # self._plugin.action_cache['prev_document_template_name'] = doc_name
+            # self._plugin.action_cache['prev_document_template_path'] = doc_path
+            # self._doc_gen_dlg.onGenerate()
+            # fk_mapper.entitySelector().done(1)
+            ########
+            # TEST
+            #######
+
         except DummyException as pe:
             self._notif_bar.clear()
             self._notif_bar.insertErrorNotification(str(pe))

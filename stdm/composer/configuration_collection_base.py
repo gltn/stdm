@@ -20,6 +20,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 from collections import OrderedDict
+import typing
 
 from qgis.PyQt.QtWidgets import (
     QWidget
@@ -30,7 +31,8 @@ from qgis.PyQt.QtXml import (
 )
 from qgis.core import (
     QgsLayoutItem,
-    QgsLayout
+    QgsLayout,
+    QgsLayoutMultiFrame
 )
 
 
@@ -89,9 +91,11 @@ class ItemConfigBase:
         raise NotImplementedError
 
     @staticmethod
-    def create(dom_element):
+    def create(layout_item):
         """
-        Create a configuration object from a QDomDocument instance.
+        #TODO: Refactor the comments
+
+        Create a configuration object from a QLayout or Multiframe instance.
         :param dom_element: QDomElement that represents item configuration.
         :type dom_element: QDomElement
         :return: Configuration instance whose properties have been
@@ -108,13 +112,15 @@ class LinkedTableItemConfiguration(ItemConfigBase):
     class.
     """
 
-    def __init__(self, item_id=None, linked_table=None, source_field=None, linked_field=None, **kwargs):
+    def __init__(self, item_id=None, linked_table=None, source_field=None, 
+                 linked_field=None, table_layout_item=None, **kwargs):
         item_id = item_id or ""
         super().__init__(item_id)
 
         self._linked_table = linked_table or ""
         self._source_field = source_field or ""
         self._linked_field = linked_field or ""
+        self._table_layout_item = table_layout_item or None
 
     def linked_table(self) -> str:
         """
@@ -159,6 +165,9 @@ class LinkedTableItemConfiguration(ItemConfigBase):
         :type field: str
         """
         self._linked_field = field
+
+    def table_layout_item(self):
+        return self._table_layout_item
 
     def extract_from_linked_table_properties(self, ltic):
         """
@@ -338,6 +347,8 @@ class ConfigurationCollectionBase:
     editor_type = None
     config_root = ""
     item_config = None
+    layout_item_type = None
+    is_multi_frame = False
 
     def __init__(self):
         self._config_collec = OrderedDict()
@@ -363,8 +374,9 @@ class ConfigurationCollectionBase:
 
         self._config_collec[item_id] = item_config
 
-    def add_item_from_element(self, item_el: QDomElement):
+    def add_from_layout_item(self, layout_item: typing.Union[QgsLayoutItem, QgsLayoutMultiFrame]):
         """
+        #TODO: Refactor comments
         Creates an item configuration from a Dom element and adds it to the collection.
         :param item_el: Dom element.
         :type item_el: QDomElement
@@ -374,7 +386,7 @@ class ConfigurationCollectionBase:
         if self.item_config is None:
             raise AttributeError("Item configuration class cannot be None.")
 
-        item_conf = self.item_config.create(item_el)
+        item_conf = self.item_config.create(layout_item)
 
         if item_conf is None:
             return None
@@ -438,6 +450,7 @@ class ConfigurationCollectionBase:
         # Get configuration items
         for uuid, item_editor in composer_wrapper.widgetMappings().items():
             composerItem = composer_wrapper.composition().itemByUuid(uuid)
+
             if composerItem is not None:
                 if isinstance(item_editor, cls.editor_type):
                     item_config = item_editor.configuration()
@@ -449,31 +462,55 @@ class ConfigurationCollectionBase:
         return collection_element
 
     @classmethod
-    def create(cls, dom_document: QDomDocument):
+    def create(cls, layout: QgsLayout):
         """
         Returns an instance of a ConfigurationCollectionBase subclass containing
         item configurations.
         :param dom_document: Dom document representing composer configuration.
-        :type dom_document: QDomDocument
+        :type dom_document: QDomocument
         :return: An instance of a ConfigurationCollectionBase subclass containing
         item configurations.
         :rtype: ConfigurationCollectionBase
         """
-        data_source_el = dom_document.documentElement().firstChildElement("DataSource")
-
-        if data_source_el is None:
-            return None
-
         config_collection = cls()
-        config_collec_el = data_source_el.firstChildElement(cls.collection_root)
 
-        # Get config elements
-        conf_el_list = config_collec_el.elementsByTagName(cls.config_root)
-        num_items = conf_el_list.length()
-
-        for i in range(num_items):
-            conf_el = conf_el_list.item(i).toElement()
-
-            config_collection.add_item_from_element(conf_el)
+        if cls.is_multi_frame:
+            multi_frames = layout.multiFrames()
+            for multi_frame in multi_frames:
+                if isinstance(multi_frame, cls.layout_item_type):
+                    config_collection.add_from_layout_item(multi_frame)
 
         return config_collection
+
+    @classmethod
+    def create_layout_item(cls, layout_items:list[QgsLayoutItem]):
+        config_collection = cls()
+        for layout_item in layout_items:
+            if isinstance(layout_item, cls.layout_item_type):
+                config_collection.add_from_layout_item(layout_item)
+        return config_collection
+
+    @classmethod
+    def create_chart_layout(cls, layout_items:list['QgsLayoutItem'], dom_doc: QDomDocument=None):
+        # config_collection = cls()
+        from stdm.composer.chart_configuration import ChartConfiguration
+
+        node_list = dom_doc.elementsByTagName('Plot')
+        dom_element = node_list.at(0).toElement()
+
+        chart_configs = {}
+
+        for layout_item in layout_items:
+            plot_type = dom_element.attribute("type")
+            if not plot_type:
+                return None
+
+            plot_type_config = ChartConfiguration.types.get(plot_type, None)
+            if plot_type_config is None:
+                return None
+
+            if isinstance(layout_item, cls.layout_item_type):
+                config_collection = plot_type_config.create(dom_element, layout_item)
+                chart_configs[plot_type] = config_collection
+
+        return chart_configs

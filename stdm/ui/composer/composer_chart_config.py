@@ -29,6 +29,7 @@ from stdm.composer.layout_utils import LayoutUtils
 from stdm.ui.composer.chart_type_editors import DataSourceNotifier
 from stdm.ui.composer.chart_type_register import ChartTypeUISettings
 from stdm.ui.composer.referenced_table_editor import LinkedTableProps
+from stdm.composer.chart_configuration import ChartConfiguration
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import (
     NotificationBar
@@ -79,6 +80,7 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         self.ref_table.referenced_table_changed.connect(self.on_referenced_table_changed)
 
         self.ref_table.changed.connect(self._item_changed)
+
         self.cbo_chart_type.currentIndexChanged.connect(self._item_changed)
         self.txt_plot_title.textChanged.connect(self._item_changed)
         self.gb_legend.toggled.connect(self._item_changed)
@@ -151,12 +153,12 @@ class ComposerChartConfigEditor(WIDGET, BASE):
         :param table: Current table name.
         :type table: str
         """
-        print('on_referenced_table_changed->', table)
-
         curr_editor = self.series_type_container.currentWidget()
         if curr_editor is not None:
             if isinstance(curr_editor, DataSourceNotifier):
                 curr_editor.on_table_name_changed(table)
+
+        self._item.set_linked_table(table)
 
     def _item_changed(self):
 
@@ -200,6 +202,9 @@ class ComposerChartConfigEditor(WIDGET, BASE):
 
     def set_from_item(self):
         configuration = self._item.chart_configuration()
+
+        if configuration is None:
+            configuration = ChartConfiguration()
 
         short_name = configuration.plot_type
 

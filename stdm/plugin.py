@@ -152,6 +152,7 @@ from stdm.composer.template_converter import (
 
 LOGGER = logging.getLogger('stdm')
 
+TEST = True
 
 class STDMQGISLoader:
     viewSTRWin = None
@@ -208,6 +209,7 @@ class STDMQGISLoader:
         self.config_serializer = ConfigurationFileSerializer(self.config_path)
         self.configuration_file_updater = ConfigurationFileUpdater(self.iface)
         copy_startup()
+
 
     def initGui(self):
         # Initial actions on starting up the application
@@ -367,9 +369,15 @@ class STDMQGISLoader:
         Show login dialog
         """
         frmLogin = loginDlg(self.iface.mainWindow())
-        retstatus = frmLogin.exec_()
 
-        if retstatus == QDialog.Accepted:
+        login_status = 0
+
+        if TEST:
+            login_status = frmLogin.test_mode()
+        else:
+            login_status = frmLogin.exec_()
+
+        if login_status == QDialog.Accepted:
 
             # Assign the connection object
             globals.APP_DBCONN = frmLogin.dbConn
@@ -1112,10 +1120,12 @@ class STDMQGISLoader:
         self.docDesignerAct = QAction(GuiUtils.get_icon("cert_designer.png"),
                                       QApplication.translate("DocumentDesignerAction", "Document Designer"),
                                       self.iface.mainWindow())
+        self.docDesignerAct.setShortcut(QKeySequence(Qt.Key_F3))
 
         self.docGeneratorAct = QAction(GuiUtils.get_icon("generate_document.png"),
                                        QApplication.translate("DocumentGeneratorAction", "Document Generator"),
                                        self.iface.mainWindow())
+        self.docGeneratorAct.setShortcut(QKeySequence(Qt.Key_F4))
 
         # Spatial Layer Manager
         self.spatialLayerManager = QAction(GuiUtils.get_icon("spatial_unit_manager.png"),
@@ -1881,6 +1891,7 @@ class STDMQGISLoader:
         if self.current_profile is None:
             self.default_profile()
             return
+
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return

@@ -46,7 +46,7 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
 
         self._referencing_field = None
 
-        # self._chart_configuration = ChartConfiguration()
+        self._chart_configuration = None  
 
     def type(self):
         return STDM_CHART_ITEM_TYPE
@@ -104,11 +104,11 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
     def set_referencing_field(self, value: str):
         self._referencing_field = value
 
-    # def chart_configuration(self) -> ChartConfiguration:
-    #     return self._chart_configuration
+    def chart_configuration(self) -> 'ChartConfiguration':
+        return self._chart_configuration
 
-    # def set_chart_configuration(self, configuration: ChartConfiguration):
-    #     self._chart_configuration = configuration
+    def set_chart_configuration(self, configuration: 'ChartConfiguration'):
+        self._chart_configuration = configuration
 
     def writePropertiesToElement(self, element: QDomElement, document: QDomDocument,
                                  context: QgsReadWriteContext) -> bool:
@@ -123,22 +123,25 @@ class StdmChartLayoutItem(QgsLayoutItemPicture):
         if self._referencing_field:
             element.setAttribute('referencing_field', self._referencing_field)
 
-        # config_element = self._chart_configuration.to_dom_element(document)
-        # element.appendChild(config_element)
+        if self._chart_configuration is not None:
+
+            config_element = self._chart_configuration.to_dom_element(document)
+            element.appendChild(config_element)
 
         return True
 
     def readPropertiesFromElement(self, element: QDomElement, document: QDomDocument,
                                   context: QgsReadWriteContext) -> bool:
+
+        from stdm.composer.chart_configuration import ChartConfiguration
+
         super().readPropertiesFromElement(element, document, context)
         self._linked_field = element.attribute('linked_field') or None
         self._source_field = element.attribute('source_field') or None
         self._linked_table = element.attribute('linked_table') or None
-        self._referencing_field = element.attribute('referencing_field') or None
+        self._referencing_field = element.attribute('linked_field') or None
 
-
-        #self._chart_configuration = VerticalBarConfiguration.create(element.firstChildElement('Plot'))
-        # self._chart_configuration = ChartConfiguration.create(element.firstChildElement('Plot'))
+        self._chart_configuration = ChartConfiguration.create_from_dom(element.firstChildElement('Plot'), self)
 
         return True
 

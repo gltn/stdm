@@ -187,6 +187,7 @@ class LayerSelectionHandler(QWidget):
         :return: Table name.
         :rtype: str
         """
+
         if layer is None:
             return ''
 
@@ -195,20 +196,39 @@ class LayerSelectionHandler(QWidget):
         if source is None:
             return ''
 
-        vals = dict(re.findall(r'(\S+)="?(.*?)"? ', source))
+        p_str = str(source)
+        src1 = p_str.replace('"',"'")
+        src3 = src1.replace("'public'.", '')
 
-        table_name = ''
-        try:
-            table = vals['table'].split('.')
+        # vals = dict(re.findall(r'(\S+)="?(.*?)"? ', src3))
+        # table_name = ''
+        # try:
+        #     table = vals['table'].split('.')
 
-            table_name = table[1].strip('"')
-        except KeyError:
-            table_name = ''
+        #     table_name = table[1].strip('"')
+        # except KeyError:
+        #     table_name = ''
+
+        pattern = r"(\b[^=]+?)=('[^']*'|\d+)"
+        result = dict()
+        for match in re.findall(pattern, src3):
+            key, value = match  # Now unpacking only two elements
+            # If value is enclosed in quotes, remove them
+            if value[0] == "'" and value[-1] == "'":
+                value = value[1:-1]
+            # Try converting to integer, otherwise keep as string
+            try:
+                result[key] = int(value)
+            except ValueError:
+                result[key] = value
+
+        table_name = result['table']
 
         if table_name in pg_views():
             return table_name
 
         entity_table = self.current_profile.entity_by_name(table_name)
+
         return table_name
 
     def active_layer_check(self):

@@ -120,6 +120,10 @@ class TemplateDocumentSelector(WIDGET, BASE):
                 self._docItemModel.appendRow([doc_name_item, file_path_item])
 
         self.lstDocs.setModel(self._docItemModel)
+        self.lstDocs.doubleClicked.connect(self.select_template)
+
+    def select_template(self, model_index):
+        self.onAccept()
 
     def _load_current_profile_templates(self):
         # Loads only those templates that refer to tables in the current

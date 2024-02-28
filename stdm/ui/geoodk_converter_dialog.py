@@ -50,13 +50,11 @@ from stdm.exceptions import DummyException
 
 # from stdm.geoodk import  FormUploader
 
-
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui_geoodk_converter.ui'))
 
 HOME = QDir.home().path()
 FORM_HOME = HOME + '/.stdm/geoodk/forms'
-
 
 class GeoODKConverter(QDialog, FORM_CLASS):
     def __init__(self, parent=None):
@@ -229,11 +227,13 @@ class GeoODKConverter(QDialog, FORM_CLASS):
             geoodk_writer = GeoodkWriter(profile_entities, self.str_supported)
 
             created, create_msg = geoodk_writer.create_xml_file()
+
             if not created:
                 self._notify_bar_str.insertErrorNotification(create_msg)
                 return
 
             data_written, write_msg = geoodk_writer.write_data_to_xform()
+
             if not data_written:
                 self._notify_bar_str.insertErrorNotification(write_msg)
                 return

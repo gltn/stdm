@@ -27,7 +27,10 @@ from qgis.PyQt.QtXml import (
 from qgis.core import (
     QgsProject,
     QgsVectorLayer,
-    QgsLayoutFrame
+    QgsLayoutFrame,
+    QgsLayoutItemAttributeTable,
+    QgsLayoutTableColumn,
+    QgsReadWriteContext
 )
 
 from stdm.composer.configuration_collection_base import (
@@ -35,6 +38,9 @@ from stdm.composer.configuration_collection_base import (
     ItemConfigValueHandler
 )
 from stdm.composer.photo_configuration import PhotoConfiguration
+from stdm.composer.custom_items.table import StdmTableLayoutItem
+
+from stdm.data.pg_utils import vector_layer as vec_layer
 
 
 class TableConfiguration(PhotoConfiguration):
@@ -47,15 +53,16 @@ class TableConfiguration(PhotoConfiguration):
         """
         layers = QgsProject.instance().mapLayersByName(self.linked_table())
 
-        # Return first matching layer
+        #Return first matching layer
         if layers:
             return layers[0]
-
         return None
 
     @staticmethod
-    def create(dom_element: QDomElement):
+    def create(stdm_table_item: StdmTableLayoutItem):
         """
+        #TODO: Refactor comments
+
         Create a TableConfiguration object from a QDomElement instance.
         :param dom_element: QDomDocument that represents composer configuration.
         :type dom_element: QDomElement
@@ -63,20 +70,14 @@ class TableConfiguration(PhotoConfiguration):
         extracted from the composer document instance.
         :rtype: TableConfiguration
         """
-        linked_table_props = TableConfiguration.linked_table_properties(dom_element)
 
-        item_id = dom_element.attribute("itemid")
+        print("* D *")
 
-        link_table = linked_table_props.linked_table
-        source_col = linked_table_props.source_field
-        ref_col = linked_table_props.linked_field
-
-        print('TableConfiguration - Linked: ', link_table)
-
-        return TableConfiguration(linked_table=link_table,
-                                  source_field=source_col,
-                                  linked_field=ref_col,
-                                  item_id=item_id)
+        return TableConfiguration(linked_table=stdm_table_item.table,
+                                  source_field=stdm_table_item.datasource_field,
+                                  linked_field=stdm_table_item.referencing_field,
+                                  item_id=stdm_table_item.uuid(),
+                                  table_layout_item=stdm_table_item)
 
     def create_handler(self, composition, query_handler=None):
         """
@@ -97,6 +98,8 @@ class TableConfigurationCollection(ConfigurationCollectionBase):
     config_root = TableConfiguration.tag_name
     item_config = TableConfiguration
 
+    layout_item_type = StdmTableLayoutItem
+    is_multi_frame = True
 
 class TableItemValueHandler(ItemConfigValueHandler):
     """
@@ -104,39 +107,52 @@ class TableItemValueHandler(ItemConfigValueHandler):
     to fetch the corresponding rows from the linked table in the database.
     """
 
-    def set_data_source_record(self, record):
+    print('* E *')
 
-        table_item = self.composer_item()
+    def set_data_source_record(self, record):
+        # # table_item = self.composer_item()
+        table_item = self._config_item.table_layout_item()
+
+        if table_item is None:
+            return
+
         try:
             cols = table_item.columns()
         except AttributeError:
             cols = table_item.multiFrame().columns()
-        if table_item is None:
-            return
-        if isinstance(table_item, QgsLayoutFrame):
-            table_item = table_item.multiFrame()
 
-        '''
-        Capture saved column settings since we are about to reset the vector
-        layer
-        '''
+        # if isinstance(table_item, QgsLayoutFrame):
+        #     table_item = table_item.multiFrame()
+
+        # '''
+        # Capture saved column settings since we are about to reset the vector
+        # layer
+        # '''
         display_attrs_cols = []
 
         cols = table_item.columns()
 
+        print('Cols: ', cols)
+
         for col in cols:
             display_attrs_cols.append(col.clone())
 
+        print('Display Attrib: ', display_attrs_cols)
         vl = self._config_item.vector_layer()
-        if vl is not None:
-            table_item.setVectorLayer(vl)
-
-            # Restore column settings
-            table_item.setColumns(display_attrs_cols)
-
-        else:
+        if vl is None:
             return
 
+        #TODO: Create logs for document generation process
+        if not vl.isValid():
+            return
+
+        table_item.setVectorLayer(vl)
+        
+        table_item.recalculateTableSize()
+
+        # Restore column settings
+        table_item.setColumns(display_attrs_cols)
+       
         if not self._config_item.source_field():
             return
 
@@ -156,4 +172,6 @@ class TableItemValueHandler(ItemConfigValueHandler):
             return
 
         exp = "{0} = {1}".format(linked_field, source_col_value)
+
         table_item.setFeatureFilter(exp)
+
