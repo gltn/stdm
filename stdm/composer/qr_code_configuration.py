@@ -39,13 +39,15 @@ from stdm.utils.util import (
     is_ascii
 )
 
+from stdm.composer.custom_items.qrcode import StdmQrCodeLayoutItem
 
 class QRCodeConfiguration(ItemConfigBase):
     """Configuration item for specifying QRCode properties."""
     tag_name = "Code"
 
-    def __init__(self, data_source_field: str = None, **kwargs):
+    def __init__(self, data_source_field: str = None, qrc_config_item: StdmQrCodeLayoutItem=None, **kwargs):
         self._ds_field = data_source_field or ''
+        self._qrc_config_item = qrc_config_item
         super(QRCodeConfiguration, self).__init__(**kwargs)
 
     @property
@@ -81,6 +83,9 @@ class QRCodeConfiguration(ItemConfigBase):
 
         return qrc_element
 
+    def qrc_config_item(self) -> StdmQrCodeLayoutItem:
+        return self._qrc_config_item
+
     def create_handler(self, composition: QgsLayout, query_handler=None):
         """
         Override for returning object that will be responsible for creating
@@ -89,7 +94,7 @@ class QRCodeConfiguration(ItemConfigBase):
         return QRCodeConfigValueHandler(composition, self, query_handler)
 
     @staticmethod
-    def create(dom_element: QDomElement):
+    def createXX(dom_element: QDomElement):
         """
         Create a QRCodeConfiguration object from a QDomElement instance.
         :param dom_element: QDomDocument that represents composer configuration.
@@ -104,6 +109,14 @@ class QRCodeConfiguration(ItemConfigBase):
         return QRCodeConfiguration(
             item_id=item_id,
             data_source_field=ds_field
+        )
+
+    @staticmethod
+    def create(qrcode_item: StdmQrCodeLayoutItem):
+        return QRCodeConfiguration(
+            qrcode_item.linked_field(),
+            qrcode_item,
+            item_id=qrcode_item.uuid(),
         )
 
 
@@ -131,7 +144,6 @@ class QRCodeConfigValueHandler(ItemConfigValueHandler):
     Generates the QR code base on the value of the data source field in the
     referenced record.
     """
-
     def _ds_field(self):
         # Return the name of data source field in the configuration
         return self.config_item().data_source_field
@@ -155,7 +167,7 @@ class QRCodeConfigValueHandler(ItemConfigValueHandler):
         # Generate QR code and set file path of composer item
         qrc_tmpf = generate_qr_code(field_value)
         if qrc_tmpf.fileName():
-            self.composer_item().setPictureFile(qrc_tmpf.fileName())
+            self.config_item().qrc_config_item().setPicturePath(qrc_tmpf.fileName())
 
 
 class QRCodeConfigurationCollection(ConfigurationCollectionBase):
@@ -168,3 +180,4 @@ class QRCodeConfigurationCollection(ConfigurationCollectionBase):
     editor_type = ComposerQREditor
     config_root = QRCodeConfiguration.tag_name
     item_config = QRCodeConfiguration
+    layout_item_type = StdmQrCodeLayoutItem

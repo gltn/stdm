@@ -322,7 +322,6 @@ class DocumentGenerator(QObject):
 
 
             for rec in records:
-                #composition = QgsPrintLayout(self._map_settings)
                 print_layout = QgsPrintLayout(project)
                 print_layout.initializeDefaults()
 
@@ -556,8 +555,6 @@ class DocumentGenerator(QObject):
             # # Create chart configuration collection object
             # chart_config_collection = ChartConfigurationCollection.create(templateDoc)
 
-            # # Create QR code configuration collection object
-            # qrc_config_collection = QRCodeConfigurationCollection.create(templateDoc)
 
             # Load the layers required by the table composer items
             # self._table_mem_layers = load_table_layers(table_config_collection)
@@ -612,7 +609,12 @@ class DocumentGenerator(QObject):
                 # Extract photo information
                 self._extract_photo_info(print_layout, ph_config_collection, rec)
 
-                print(layout_items)
+                # Create QR code configuration collection object
+                qrc_config_collection = QRCodeConfigurationCollection.create_layout_item(layout_items)
+
+                # Extract QR code information in order to generate QR codes
+                self._generate_qr_codes(print_layout, qrc_config_collection, rec)
+
                 # Create chart configuration collection object
                 chart_config_collection = ChartConfigurationCollection.create_chart_layout(layout_items, templateDoc)
 
@@ -709,12 +711,6 @@ class DocumentGenerator(QObject):
                         '''
                         self._refresh_map_item(map_item, use_fixed_scale)
 
-
-                # # Extract QR code information in order to generate QR codes
-                # self._generate_qr_codes(print_layout, qrc_config_collection, rec)
-
-                #######
-
                 # Build output path and generate print_layout
                 if filePath is not None and len(dataFields) == 0:
                     self._write_output(print_layout, outputMode, filePath)
@@ -757,7 +753,6 @@ class DocumentGenerator(QObject):
                         return (False, QApplication.translate("DocumentGenerator",
                                                                 "Could not write to destination file, likely due to a lock held by anther application"))
 
-            #TableConfigurationCollection.recalc(print_layout)
             return True, "Success"
 
         return False, "Document Print Layout could not be generated"
