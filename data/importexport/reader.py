@@ -448,6 +448,7 @@ class OGRReader(object):
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore')
 
                 if a_field_name in acols:
+
                     dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
@@ -487,6 +488,7 @@ class OGRReader(object):
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
+
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -498,20 +500,20 @@ class OGRReader(object):
 
                         c_name = source_columns[0]
 
-                        c_name = unicode(c_name, 'utf-8').encode('ascii', 'ignore')
+                        c_name = c_name.encode('utf-8').decode('ascii', 'ignore')
 
+                        #c_name = unicode(c_name, 'utf-8').encode('ascii', 'ignore')
                         # print('c_name: ', c_name)
                         # print('TYPE-INFO: ',value_translator.TYPE_INFO)
+                        #source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
 
-                        source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
+                        source_col_names = [src_field for src_field, dest_field in acols.items() if src_field == c_name]
 
                         if value_translator.TYPE_INFO == "RELATED_TABLE_TRANSLATOR":
                             source_col_names = acols.keys()
 
                         if value_translator.TYPE_INFO == "SOURCE_DOC_TRANSLATOR":
                             source_col_names = acols.keys()
-
-                        #print('Source Col:', source_col_names)
 
                         field_value_mappings = self._map_column_values(feat,
                                                                        feat_defn,
@@ -546,7 +548,8 @@ class OGRReader(object):
                             field_value_mappings = temp_d
                             temp_d = {}
 
-                        if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
+                        #if isinstance(value_translator, RelatedTableTranslator) and field_value !='':
+                        if type(value_translator) == RelatedTableTranslator and field_value !='':
                             if not isinstance(field_value, IgnoreType):
                                 field_value = int(field_value)
 
@@ -651,8 +654,6 @@ class OGRReader(object):
 
         if len(source_cols) == 0:
             return col_values
-
-        #print('source_cols: ', source_cols)
 
         for f in range(feature_defn.GetFieldCount()):
             field_defn = feature_defn.GetFieldDefn(f)

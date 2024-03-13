@@ -756,7 +756,12 @@ class ImportData(QWizard, Ui_frmImport):
         #Initiate the import process
         success = False
         matchCols = self.getSrcDestPairs()
-        
+
+
+        print('XXXXXXX')
+        print(matchCols)
+        print('XXXXXXX')
+
         #Specify geometry column
         geom_column=None
         
