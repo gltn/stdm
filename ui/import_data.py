@@ -291,6 +291,12 @@ class ImportData(QWizard, Ui_frmImport):
 
                 self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
 
+        
+        if self.lstSrcFields.count() > 0:
+            item = self.lstSrcFields.item(0)
+            self.lstSrcFields.setCurrentItem(item)
+        self._enable_disable_trans_tools()
+
 
     def _get_src_column(self, value, srclookups):
         column = None
@@ -427,7 +433,6 @@ class ImportData(QWizard, Ui_frmImport):
         column.
         """
         dest_column = self._selected_destination_column()
-
         if dest_column:
             #Check if there is an existing dialog in the manager
             trans_dlg = self._trans_widget_mgr.translator_widget(dest_column)
@@ -756,11 +761,6 @@ class ImportData(QWizard, Ui_frmImport):
         #Initiate the import process
         success = False
         matchCols = self.getSrcDestPairs()
-
-
-        print('XXXXXXX')
-        print(matchCols)
-        print('XXXXXXX')
 
         #Specify geometry column
         geom_column=None

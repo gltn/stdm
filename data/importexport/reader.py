@@ -488,7 +488,6 @@ class OGRReader(object):
                     Check if there is a value translator defined for the
                     specified destination column.
                     '''
-
                     value_translator = translator_manager.translator(
                         dest_column)
 
@@ -503,11 +502,9 @@ class OGRReader(object):
                         c_name = c_name.encode('utf-8').decode('ascii', 'ignore')
 
                         #c_name = unicode(c_name, 'utf-8').encode('ascii', 'ignore')
-                        # print('c_name: ', c_name)
-                        # print('TYPE-INFO: ',value_translator.TYPE_INFO)
                         #source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
 
-                        source_col_names = [src_field for src_field, dest_field in acols.items() if src_field == c_name]
+                        source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
 
                         if value_translator.TYPE_INFO == "RELATED_TABLE_TRANSLATOR":
                             source_col_names = acols.keys()
