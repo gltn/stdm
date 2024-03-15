@@ -29,7 +29,8 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import (
     QgsVectorLayer,
     QgsSimpleMarkerSymbolLayer,
-    QgsSimpleFillSymbolLayer
+    QgsSimpleFillSymbolLayer,
+    QgsProject
 )
 from qgis.gui import (
     QgsSimpleMarkerSymbolLayerWidget,
@@ -145,23 +146,29 @@ class ComposerSymbolEditor(WIDGET, BASE):
         super().__init__(parent)
         self.setupUi(self)
 
-        print('* Map::C *')
-
         self._item = item
         self._layout = item.layout()
-
         self.btnAddField.setIcon(GuiUtils.get_icon('add.png'))
         self.btnClear.setIcon(GuiUtils.get_icon('reset.png'))
 
         self._editorMappings = {}
 
+
         # Load fields if the data source has been specified
         self._ds_name = LayoutUtils.get_stdm_data_source_for_layout(self._layout)
 
-        print('AAA: ',self._ds_name)
 
         if self._ds_name is not None:
             self._load_fields()
+
+        # layout_man = QgsProject.instance().layoutManager()
+        # layouts = layout_man.layouts()
+        # for layout in layouts:
+        #     for layout_item in layout.items():
+        #         if isinstance(layout_item, StdmMapLayoutItem):
+        #             print('** LABEL FIELD = ', layout_item.label_field)
+        #             print('** SRID  = ', layout_item.srid)
+
 
         # Connect signals
         self._layout.variablesChanged.connect(self.layout_variables_changed)
@@ -194,7 +201,6 @@ class ComposerSymbolEditor(WIDGET, BASE):
         When the user changes the data source then update the fields.
         """
         self._ds_name = data_source_name
-        print('on_data_source_changed: ', self._ds_name)
 
         self._load_fields()
 
@@ -246,6 +252,7 @@ class ComposerSymbolEditor(WIDGET, BASE):
         """
         spColumnName = self.cboSpatialFields.currentText()
 
+        # Map item
         self._item.set_name(spColumnName)
 
         if not spColumnName:
@@ -296,9 +303,12 @@ class ComposerSymbolEditor(WIDGET, BASE):
                 sp_column_name,
                 self._item
             )
+
             styleEditor.setSymbolEditor(symbolEditor)
             styleEditor.setGeomType(geomType)
             styleEditor.setSrid(srid)
+
+            styleEditor.setLabelField(self._item.label_field)
 
             # Apply spatial field mapping
             if apply_mapping:

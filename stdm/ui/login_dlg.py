@@ -24,6 +24,7 @@ from qgis.PyQt.QtWidgets import (
     QDialogButtonBox,
     QMessageBox
 )
+from qgis.PyQt.QtCore import QDir
 
 from qgis.gui import QgsGui
 
@@ -63,6 +64,8 @@ class loginDlg(WIDGET, BASE):
         # class properties
         self.user = None
         self.dbConn = None
+
+        self.setting_data = self.reg_setting()
 
     def initGui(self):
         '''
@@ -150,22 +153,46 @@ class loginDlg(WIDGET, BASE):
         '''
         In case the user clicks reset button to change the settings
         '''
-        setting_data = self.reg_setting()
-        dbDlg = dbconnDlg(self)
+        #setting_data = self.reg_setting()
 
-        if 'Database' in setting_data.keys():
-            dbDlg.txtDatabase.setText(str(setting_data['Database']))
-        if 'Host' in setting_data.keys():
-            dbDlg.txtHost.setText(str(setting_data['Host']))
-        if 'Port' in setting_data.keys():
-            dbDlg.txtPort.setText(str(setting_data['Port']))
-        dbDlg.exec_()
+        dbDlg = dbconnDlg(self, self.setting_data)
 
-    def reg_setting(self):
+        if 'Database' in self.setting_data.keys():
+            dbDlg.txtDatabase.setText(str(self.setting_data['Database']))
+        if 'Host' in self.setting_data.keys():
+            dbDlg.txtHost.setText(str(self.setting_data['Host']))
+        if 'Port' in self.setting_data.keys():
+            dbDlg.txtPort.setText(str(self.setting_data['Port']))
+
+        if dbDlg.exec_() == QDialog.Accepted:
+            self.setting_data['Host'] = dbDlg.txtHost.text()
+            self.setting_data['Port'] = dbDlg.txtPort.text()
+            self.setting_data['Database'] = dbDlg.txtDatabase.text()
+
+    def reg_setting(self) ->dict:
         connSettings = ['Host', 'Database', 'Port']
         set_conn = RegistryConfig()
         settings = set_conn.read(connSettings)
 
+        if len(settings) == 0:
+            settings = self.read_local_cache()
+
+        return settings
+
+    def read_local_cache(self) -> dict:
+        db_cache_file = QDir.home().path() + '/.stdm/db_settings.ini'
+
+        settings = {}
+        key=0
+        value=1
+
+        try:
+            with open(db_cache_file) as f:
+                for line in f:
+                    data = line.split('=')
+                    settings[data[key]] = data[value].replace('\n','')
+        except:
+            return {}
         return settings
 
     def acceptdlg(self):
@@ -181,7 +208,7 @@ class loginDlg(WIDGET, BASE):
             # Get mode and corresponding database connection object
             if not self._test_connect_mode:
                 # Get DB connection
-                dbconfig = DatabaseConfig()
+                dbconfig = DatabaseConfig(self.setting_data)
                 dbconn = dbconfig.read()
                 if dbconn is None:
                     msg = QApplication.translate("loginDlg", "The STDM database "
@@ -198,7 +225,7 @@ class loginDlg(WIDGET, BASE):
                                                    QMessageBox.Yes | QMessageBox.No,
                                                    QMessageBox.Yes)
                     if response == QMessageBox.Yes:
-                        dbDlg = dbconnDlg(self)
+                        dbDlg = dbconnDlg(self, self.setting_data)
                         if dbDlg.exec_() == QDialog.Accepted:
                             # set the partial database connection properties
                             dbconn = dbDlg.dbconn

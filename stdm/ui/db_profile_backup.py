@@ -56,6 +56,8 @@ from stdm.composer.document_template import DocumentTemplate
 
 from stdm.ui.config_backup_handler import ConfigBackupHandler
 
+from stdm.settings.registryconfig import RegistryConfig
+
 WIDGET, BASE = uic.loadUiType(
         GuiUtils.get_ui_file_path('ui_db_profile_backup.ui'))
 
@@ -68,7 +70,10 @@ class DBProfileBackupDialog(WIDGET, BASE):
         self.setupUi(self)
         self.iface = iface
 
-        self.db_config      = DatabaseConfig()
+        reg_config = RegistryConfig()
+        settings = reg_config.read(['Host', 'Database', 'Port'])
+        self.db_config      = DatabaseConfig(settings)
+
         self.backup_handler = ConfigBackupHandler()
 
         self.tbBackupFolder.clicked.connect(self.backup_folder_clicked)
@@ -159,7 +164,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
     def do_backup(self):
         if self.edtAdminPassword.text() == '':
-            msg = self.tr('Please enter password for user `{PG_ADMIN}`')
+            msg = f"Please enter password for user `{PG_ADMIN}`"
             self.show_message(msg, QMessageBox.Critical)
             return False
 

@@ -40,6 +40,8 @@ class PhotoConfiguration(LinkedTableItemConfiguration):
         self._layout_item = layout_item or None
         LinkedTableItemConfiguration.__init__(self, **kwargs)
 
+        print('PhotoConfig::C')
+
     def to_dom_element(self, dom_document: QDomDocument):
         """
         :param dom_document: Root composer element.

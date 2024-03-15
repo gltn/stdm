@@ -42,9 +42,10 @@ class dbconnDlg(WIDGET, BASE):
     This dialog captures the database connection properties
     '''
 
-    def __init__(self, parent):
+    def __init__(self, parent, setting_data: dict):
         QDialog.__init__(self, parent)
         self.setupUi(self)
+        self.setting_data = setting_data
 
         # gui initialization
         self.initGui()
@@ -98,11 +99,15 @@ class dbconnDlg(WIDGET, BASE):
             host = self.txtHost.text()
             port = self.txtPort.text()
             database = self.txtDatabase.text()
-            dbconfig = DatabaseConfig()
+            dbconfig = DatabaseConfig(self.setting_data)
             try:
                 self.dbconn = DatabaseConnection(host, port, database)
                 # Write DB conn object to the registry
                 dbconfig.write(self.dbconn)
+
+                self.setting_data['Host'] = host
+                self.setting_data['Port'] = port
+                self.setting_data['Database'] = database
             except DummyException as ex:
                 QMessageBox.critical(self, QApplication.translate("DbConnectionDialog", "Error saving settings"),
                                      QApplication.translate("DbConnectionDialog", str(ex)))

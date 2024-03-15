@@ -17,6 +17,8 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import typing 
+
 from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QColor
 
@@ -45,7 +47,7 @@ ENTITY_SORT_ORDER = 'EntitySortOrder'
 RUN_TEMPLATE_CONVERTER = 'RunTemplateConverter'
 
 
-def registry_value(key_name):
+def registry_value(key_name: str):
     """
     Util method for reading the value for the given key.
     :param key_name: Name of the registry key.
@@ -63,7 +65,7 @@ def registry_value(key_name):
         return key_value[key_name]
 
 
-def set_registry_value(key, value):
+def set_registry_value(key: str, value: typing.Any):
     """
     Sets the registry key with the specified value. A new key will be created
     if it does not exist.
@@ -121,7 +123,7 @@ def debug_logging():
     return True
 
 
-def set_debug_logging(state):
+def set_debug_logging(state: bool):
     """
     Enable or disable debug logging.
     :param state: True to enable, False to disable.
@@ -271,7 +273,7 @@ class RegistryConfig:
 
         return group_children
 
-    def write(self, settings):
+    def write(self, settings: dict):
         """
         Write items in settings dictionary to the STDM registry
         """
@@ -297,7 +299,7 @@ class RegistryConfig:
         settings.endGroup()
         return keys
 
-    def add_value(self, group_name, vals):
+    def add_value(self, group_name: str, vals: dict):
         """
         Writes values to registry.
         :param group_name: Name of the sorting group in the regristry.
@@ -319,7 +321,7 @@ class RegistryConfig:
         settings.setValue(entity_name, value)
         settings.endGroup()
 
-    def remove_key(self, group_name, key):
+    def remove_key(self, group_name: str, key: typing.Any):
         settings = QSettings()
         settings.beginGroup(self.groupPath+'/'+group_name)
         settings.remove(key)
@@ -345,7 +347,6 @@ class QGISRegistryConfig(RegistryConfig):
     Class for reading and writing QGIS-wide registry settings.
     The user has to specify the group path which contains the keys.
     """
-
     def __init__(self, path):
         RegistryConfig.__init__(self)
 

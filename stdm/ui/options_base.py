@@ -121,14 +121,12 @@ class OptionsDialog(WIDGET, BASE):
 
         self.notif_bar = NotificationBar(self.vlNotification, 6000)
         self._apply_btn = self.buttonBox.button(QDialogButtonBox.Apply)
+
         self._reg_config = RegistryConfig()
-        self._db_config = DatabaseConfig()
+        settings = self._reg_config.read(['Host', 'Database', 'Port'])
+        self._db_config = DatabaseConfig(settings)
 
         version = value_from_metadata('version')
-        #upgrade_label_text = self.label_9.text().replace(
-            #'1.4', version.strip()
-        #)
-        #self.label_9.setText(upgrade_label_text)
 
         # Connect signals
         self._apply_btn.clicked.connect(self.apply_settings)

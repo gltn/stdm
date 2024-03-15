@@ -65,7 +65,7 @@ class LayoutUtils:
         return LayoutUtils.path
 
     @staticmethod
-    def load_template_into_layout(layout: QgsLayout, file_path: str):
+    def load_template_into_layout(layout: QgsLayout, file_path: str) ->list['QgsLayoutItem']:
         """
         Loads a document template into the view and updates the necessary STDM-related composer items.
         """
@@ -99,13 +99,15 @@ class LayoutUtils:
             # Load items into the composition and configure STDM data controls
             context = QgsReadWriteContext()
             try:
-                layout.loadFromTemplate(template_doc, context)
+                layout_items = layout.loadFromTemplate(template_doc, context)
             except:
                 pass
 
             LayoutUtils.sync_ids_with_uuids(layout)
 
         template_file.close()
+
+        return layout_items
 
 
     @staticmethod

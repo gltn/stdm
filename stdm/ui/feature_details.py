@@ -200,6 +200,7 @@ class LayerSelectionHandler(QWidget):
         src1 = p_str.replace('"',"'")
         src3 = src1.replace("'public'.", '')
 
+
         # vals = dict(re.findall(r'(\S+)="?(.*?)"? ', src3))
         # table_name = ''
         # try:
@@ -211,6 +212,7 @@ class LayerSelectionHandler(QWidget):
 
         pattern = r"(\b[^=]+?)=('[^']*'|\d+)"
         result = dict()
+
         for match in re.findall(pattern, src3):
             key, value = match  # Now unpacking only two elements
             # If value is enclosed in quotes, remove them
@@ -222,7 +224,10 @@ class LayerSelectionHandler(QWidget):
             except ValueError:
                 result[key] = value
 
-        table_name = result['table']
+        if len(result) > 0:
+            table_name = result['table']
+        else:
+            return ""
 
         if table_name in pg_views():
             return table_name
@@ -433,10 +438,15 @@ class DetailsDBHandler(LayerSelectionHandler):
         if len(result) == 0:
             return None
 
-        for r in result:
-            if int(r.id) == int(id):
-                return r
-        return result[0]
+        try:
+            for r in result:
+                if int(r.id) == int(id):
+                    return r
+
+            return result[0]
+        except:
+            return None
+
 
     def feature_str_link(self, feature_id: int, entity=None) -> list:
         """

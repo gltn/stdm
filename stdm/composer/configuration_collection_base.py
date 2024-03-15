@@ -491,8 +491,7 @@ class ConfigurationCollectionBase:
         return config_collection
 
     @classmethod
-    def create_chart_layout(cls, layout_items:list['QgsLayoutItem'], dom_doc: QDomDocument=None):
-        # config_collection = cls()
+    def create_chart_layout(cls, layout_items:list[QgsLayoutItem], dom_doc: QDomDocument=None):
         from stdm.composer.chart_configuration import ChartConfiguration
 
         node_list = dom_doc.elementsByTagName('Plot')

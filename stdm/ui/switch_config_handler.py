@@ -25,6 +25,8 @@ from stdm.data.configuration.profile import Profile
 from stdm.data.configuration.entity import Entity
 from stdm.composer.document_template import DocumentTemplate
 
+from stdm.settings.registryconfig import RegistryConfig
+
 from stdm.utils.util import(
     documentTemplates,
     user_non_profile_views
@@ -42,7 +44,9 @@ class SwitchConfigHandler():
         self._db_backup_file = ""
         self.logger = MessageLogger()
 
-        self.db_config = DatabaseConfig()
+        reg_config = RegistryConfig()
+        settings = reg_config.read(['Host', 'Database', 'Port'])
+        self.db_config      = DatabaseConfig(settings)
         self.db_param = self.db_config.read()
 
         self._active_config_name = self.db_param.Database 

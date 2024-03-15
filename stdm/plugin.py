@@ -152,7 +152,7 @@ from stdm.composer.template_converter import (
 
 LOGGER = logging.getLogger('stdm')
 
-TEST = True
+TEST = False
 
 class STDMQGISLoader:
     viewSTRWin = None
@@ -250,6 +250,9 @@ class STDMQGISLoader:
         self.helpAct.triggered.connect(self.help_contents)
 
         self.iface.layoutDesignerOpened.connect(self.on_designer_opened)
+        self.iface.layoutDesignerWillBeClosed.connect(self.on_designer_closed)
+        self.iface.currentLayerChanged.connect(self.on_layer_changed)
+
         self.initToolbar()
         self.initMenuItems()
 
@@ -1860,21 +1863,32 @@ class STDMQGISLoader:
         composer with additional tools for designing
         map-based documents.
         """
+
+        print('>> current Profile: ', self.current_profile)
+
         if self.current_profile is None:
             self.default_profile()
             return
+        
+        print('LEN: ',len(db_user_tables(self.current_profile)))
+
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
             return
 
         layout = LayoutGuiUtils.create_unique_named_layout()
         layout.initializeDefaults()
+
         self.iface.openLayoutDesigner(layout)
+
 
     def on_designer_opened(self, designer_interface: QgsLayoutDesignerInterface):
         """
         Triggered when a layout designer window is opened
         """
+        print('Current Profile: ', current_profile())
+        print('APP_DBCONN: ', globals.APP_DBCONN)
+
         if current_profile() is None or globals.APP_DBCONN is None:
             ComposerWrapper.disable_stdm_items(designer_interface)
             return
@@ -1883,7 +1897,15 @@ class STDMQGISLoader:
         composer_wrapper = ComposerWrapper(
             designer_interface, self.iface
         )
+
         composer_wrapper.configure()
+
+    def on_designer_closed(self, designer: QgsLayoutDesignerInterface):
+        composer_wrapper = ComposerWrapper(designer, self.iface)
+        composer_wrapper.close_designer()
+
+    def on_layer_changed(self, layer:QgsMapLayer):
+        print('* Layer changed *')
 
     def onDocumentGenerator(self):
         """

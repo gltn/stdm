@@ -52,6 +52,8 @@ from stdm.utils.util import (
     user_non_profile_views
 )
 
+from stdm.settings.registryconfig import RegistryConfig
+
 PG_ADMIN = 'postgres'
 
 class ConfigBackupHandler(QObject):
@@ -94,8 +96,9 @@ class ConfigBackupHandler(QObject):
                              backup_folder: str, backup_mode:str) -> tuple[bool, str]:
         
         # Validate user authentication
-
-        db_config =  DatabaseConfig()
+        reg_config = RegistryConfig()
+        settings = reg_config.read(['Host', 'Database', 'Port'])
+        db_config =  DatabaseConfig(settings)
         db_params = db_config.read()
 
         db_con = DatabaseConnection(db_params.Host, db_params.Port, db_params.Database)

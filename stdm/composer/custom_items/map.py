@@ -19,7 +19,8 @@ from qgis.core import (
     QgsLayoutItemRegistry,
     QgsLayoutItemAbstractMetadata,
     QgsLayoutItemMap,
-    QgsReadWriteContext
+    QgsReadWriteContext,
+    QgsRectangle
 )
 
 from qgis.PyQt.QtXml import (
@@ -28,6 +29,7 @@ from qgis.PyQt.QtXml import (
 )
 
 from stdm.ui.gui_utils import GuiUtils
+from stdm.composer.map_extent import MapExtent
 
 STDM_MAP_ITEM_TYPE = QgsLayoutItemRegistry.PluginItem + 2337 + 3
 
@@ -36,15 +38,14 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
 
     def __init__(self, layout):
         super().__init__(layout)
-
-        print('* MAP::A *')
-
+        
         self._geom_type = None
         self._zoom = 4
         self._zoom_type = None
         self._srid = None
         self._label_field = None
         self._name = None
+        self._map_extent = None
 
     def type(self):
         return STDM_MAP_ITEM_TYPE
@@ -94,6 +95,13 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
     def set_name(self, n):
         self._name = n
 
+    def map_extent(self) ->MapExtent:
+        return self._map_extent
+
+    def set_map_extent(self, map_ext):
+        self._map_extent = map_ext
+ 
+
 
     def writePropertiesToElement(self, element: QDomElement, document: QDomDocument,
             context: QgsReadWriteContext) -> bool:
@@ -117,11 +125,9 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
         if self._name:
             element.setAttribute('name', self._name)
 
-        # print('Type: ',self._geom_type)
-        # print('Zomm: ',self._zoom)
-        # print('Type: ',self._zoom_type)
-        # print('SRID: ',self._srid)
-        # print('Label: ',self._label_field)
+        if self._map_extent is not None:
+            extent_element = self._map_extent.to_dom_element(document)
+            element.appendChild(extent_element)
 
         return True
 
@@ -130,6 +136,7 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
             context: QgsReadWriteContext) -> bool:
         super().readPropertiesFromElement(element, document, context)
 
+
         self._geom_type = element.attribute('geomType') or None
         self._zoom = element.attribute('zoom') or None
         self._zoom_type = element.attribute('zoomType') or None
@@ -137,8 +144,11 @@ class StdmMapLayoutItem(QgsLayoutItemMap):
         self._label_field = element.attribute('labelField') or None
         self._name = element.attribute('name') or None
 
-        print('Name: ',self._name)
+        self._map_extent = MapExtent.create_from_dom(element.firstChildElement("Extent"))
 
+        if self._map_extent is not None:
+            self.setExtent(self._map_extent.extent())
+            #self.zoomToExtent(self._map_extent.extent())
 
         return True
 

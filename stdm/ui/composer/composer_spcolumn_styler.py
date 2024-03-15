@@ -35,6 +35,9 @@ class SpatialFieldMapping(object):
     """
 
     def __init__(self, spatialField="", labelField=""):
+
+        print('SpatialFieldMapping ...')
+
         self._spatialField = spatialField
         self._labelField = labelField
         self._symbol = None
@@ -192,6 +195,8 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         super().__init__(parent)
         self.setupUi(self)
 
+        print('class ComposerSpatialColumnEditor ...')
+
         self._layout = layout_item.layout()
         self._map_item = layout_item
 
@@ -316,22 +321,25 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         """
         Returns a SpatialFieldMapping object instance configured to the current settings.
         """
-        sp_field_mapping = SpatialFieldMapping(self._spColumnName, self.cboLabelField.currentText())
+        try:
+            sp_field_mapping = SpatialFieldMapping(self._spColumnName, self.cboLabelField.currentText())
 
-        sp_field_mapping.setSymbolLayer(self.symbolLayer())
-        sp_field_mapping.setSRID(self._srid)
-        sp_field_mapping.setGeometryType(self._geomType)
-        if self.rb_relative_zoom.isChecked():
-            zm_type = 'RELATIVE'
-            zoom = self.sb_zoom.value()
-        elif self.rb_fixed_scale.isChecked():
-            zm_type = 'FIXED'
-            zoom = self.sb_fixed_zoom.value()
+            sp_field_mapping.setSymbolLayer(self.symbolLayer())
+            sp_field_mapping.setSRID(self._srid)
+            sp_field_mapping.setGeometryType(self._geomType)
+            if self.rb_relative_zoom.isChecked():
+                zm_type = 'RELATIVE'
+                zoom = self.sb_zoom.value()
+            elif self.rb_fixed_scale.isChecked():
+                zm_type = 'FIXED'
+                zoom = self.sb_fixed_zoom.value()
 
-        sp_field_mapping.zoom_type = zm_type
-        sp_field_mapping.setZoomLevel(zoom)
+            sp_field_mapping.zoom_type = zm_type
+            sp_field_mapping.setZoomLevel(zoom)
 
-        return sp_field_mapping
+            return sp_field_mapping
+        except:
+            return None
 
     def applyMapping(self, spatialFieldMapping):
         """
@@ -346,10 +354,10 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
         zoom_type = spatialFieldMapping.zoom_type
         if zoom_type == 'RELATIVE':
             self.rb_relative_zoom.setChecked(True)
-            self.sb_zoom.setValue(zoom_level)
+            self.sb_zoom.setValue(float(zoom_level))
         elif zoom_type == 'FIXED':
             self.rb_fixed_scale.setChecked(True)
-            self.sb_fixed_zoom.setValue(zoom_level)
+            self.sb_fixed_zoom.setValue(float(zoom_level))
 
     def setLabelField(self, labelField):
         """
@@ -370,6 +378,7 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
             return
 
         cols = table_column_names(self._dsName)
+
         spatialCols = table_column_names(self._dsName, True)
 
         spSet = set(spatialCols)
@@ -380,7 +389,6 @@ class ComposerSpatialColumnEditor(WIDGET, BASE):
 
         self.cboLabelField.clear()
         self.cboLabelField.addItem("")
-
         self.cboLabelField.addItems(nonSpatialCols)
 
     def on_zoom_fixed_scale_changed(self, value):

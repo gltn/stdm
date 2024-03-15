@@ -22,7 +22,8 @@ from qgis.PyQt.QtCore import (
     QObject,
     QFile,
     QFileInfo,
-    QIODevice
+    QIODevice,
+    QEvent
 )
 from qgis.PyQt.QtWidgets import (
     QToolBar,
@@ -75,6 +76,8 @@ from stdm.ui.composer.table_data_source import (
 from stdm.utils.case_insensitive_dict import CaseInsensitiveDict
 from stdm.utils.util import documentTemplates
 
+from stdm.composer.custom_items.map import StdmMapLayoutItem
+
 
 def load_table_layers(config_collection):
     """
@@ -119,6 +122,7 @@ class ComposerWrapper(QObject):
     Embeds custom STDM tools in a QgsComposer instance for managing map-based
     STDM document templates.
     """
+    _widgetMappings = {}
 
     @staticmethod
     def disable_stdm_items(layout_interface):
@@ -140,7 +144,7 @@ class ComposerWrapper(QObject):
         self.variable_template_path = None
 
         # Container for custom editor widgets
-        self._widgetMappings = {}
+        # self._widgetMappings = {}
 
         # Hide default dock widgets
         if self.itemDock() is not None:
@@ -201,6 +205,10 @@ class ComposerWrapper(QObject):
         self._configure_data_controls(composer_data_source)
 
 
+    def close_designer(self):
+        # Implement events before closing
+        pass
+
     def _remove_composer_toolbar(self, object_name):
         """
         Removes toolbars from composer window.
@@ -241,19 +249,19 @@ class ComposerWrapper(QObject):
         """
         Add custom STDM editor widget based on the unique identifier of the composer item
         """
-        self._widgetMappings[uniqueIdentifier] = widget
+        ComposerWrapper._widgetMappings[uniqueIdentifier] = widget
 
     def widgetMappings(self):
         """
         Returns a dictionary containing uuid values of composer items linked to STDM widgets.
         """
-        return self._widgetMappings
+        return ComposerWrapper._widgetMappings
 
     def clearWidgetMappings(self):
         """
         Resets the widget mappings collection.
         """
-        self._widgetMappings = {}
+        ComposerWrapper._widgetMappings = {}
 
     def mainWindow(self):
         """
@@ -328,13 +336,19 @@ class ComposerWrapper(QObject):
             self.composition().setCustomProperty('variable_template_path', file_path)
             self.variable_template_path = file_path
             LayoutUtils.set_variable_template_path(layout, file_path)
-            LayoutUtils.load_template_into_layout(layout, file_path)
+            layout_items, status = LayoutUtils.load_template_into_layout(layout, file_path)
+
+
+            #SpatialConfig
+            spatial_configs = SpatialFieldsConfiguration.create(layout_items)
+            for spatial_config in spatial_configs:
+                self._configureSpatialSymbolEditor(spatial_config)
+
 
             # template_doc = QDomDocument()
             # template_doc.setContent(file_path)
             # collection_elements = template_doc.createElement(TableConfigurationCollection.collection_root)
 
-            # print(collection_elements)
 
 
         except IOError as e:
@@ -347,7 +361,7 @@ class ComposerWrapper(QObject):
                                      str(e)
                                  ))
 
-        self._iface.openLayoutDesigner(layout)
+        designer = self._iface.openLayoutDesigner(layout)
 
 
     def xxxloadTemplate(self, filePath):
@@ -563,8 +577,8 @@ class ComposerWrapper(QObject):
 
         xml_doc.appendChild(composer_element)
 
-        print('Saving SpatialFieldsConfiguration ...')
         # Write spatial field configurations
+
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
         xml_doc.appendChild(spatialColumnsElement)
 
@@ -610,14 +624,16 @@ class ComposerWrapper(QObject):
         """
         if self._dataSourceWidget is not None:
             for item_id, spFieldsMappings in spatial_field_config.spatialFieldsMapping().items():
-                mapItem = self.composition().itemById(item_id)
 
-                if mapItem is not None:
-                    composerSymbolEditor = ComposerSymbolEditor(mapItem, self.mainWindow())
+                #mapItem = self.composition().itemById(item_id)
+                map_item = spatial_field_config.map_item()
+
+                if map_item is not None:
+                    composerSymbolEditor = ComposerSymbolEditor(map_item, self.mainWindow())
                     composerSymbolEditor.add_spatial_field_mappings(spFieldsMappings)
 
                     # Add widget to the collection but now use the current uuid of the composer map
-                    self.addWidgetMapping(mapItem.uuid(), composerSymbolEditor)
+                    self.addWidgetMapping(map_item.uuid(), composerSymbolEditor)
 
     def _configure_table_editors(self, table_config_collection):
         """

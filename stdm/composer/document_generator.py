@@ -30,10 +30,17 @@ from qgis.PyQt.QtCore import (
     QFile,
     QFileInfo,
 )
+
+from qgis.PyQt.QtGui import (
+    QColor
+)
+
 from qgis.PyQt.QtWidgets import (
     QApplication
 )
+
 from qgis.PyQt.QtXml import QDomDocument
+
 from qgis.core import (
     QgsLayoutItemLabel,
     QgsLayoutItemMap,
@@ -49,6 +56,11 @@ from qgis.core import (
     QgsLayoutFrame,
     QgsLayoutItem
 )
+
+from qgis.gui import(
+    QgsHighlight,
+)
+
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.schema import (
     Table,
@@ -64,6 +76,7 @@ from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
 from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
 from stdm.composer.table_configuration import TableConfigurationCollection
 from stdm.composer.custom_items.table import StdmTableLayoutItem
+from stdm.composer.custom_items.label import StdmDataLabelLayoutItem
 
 from stdm.data.database import STDMDb
 from stdm.data.pg_utils import (
@@ -75,7 +88,12 @@ from stdm.exceptions import DummyException
 from stdm.settings import (
     current_profile
 )
-from stdm.settings.registryconfig import RegistryConfig
+
+from stdm.settings.registryconfig import (
+     RegistryConfig,
+     selection_color
+)
+
 from stdm.ui.forms.widgets import EntityValueFormatter
 from stdm.ui.sourcedocument import (
     network_document_path
@@ -488,6 +506,8 @@ class DocumentGenerator(QObject):
 
         return False, "Document Print Layout could not be generated"
     # ---------------------------------------------------------------------------------------------------------------
+
+
     def run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
             dataFields=None, fileExtension=None, data_source=None):
         """
@@ -515,7 +535,6 @@ class DocumentGenerator(QObject):
         if data_source is None:
             data_source = ''
 
-
         templateFile = QFile(templatePath)
 
         if not templateFile.open(QIODevice.ReadOnly):
@@ -526,9 +545,9 @@ class DocumentGenerator(QObject):
 
         if templateDoc.setContent(templateFile):
             composerDS = ComposerDataSource.create(templateDoc)
-            spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
-            composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
 
+            # spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
+            #composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
 
             # Check if data source exists and return if it doesn't
             if not self.data_source_exists(composerDS):
@@ -548,14 +567,6 @@ class DocumentGenerator(QObject):
             # Register field names to be used for file naming
             # self._file_name_value_formatter.register_columns(dataFields)
 
-            # TODO: Need to automatically register custom configuration collections
-            # Photo config collection
-            # ph_config_collection = PhotoConfigurationCollection.create(templateDoc)
-
-            # # Create chart configuration collection object
-            # chart_config_collection = ChartConfigurationCollection.create(templateDoc)
-
-
             # Load the layers required by the table composer items
             # self._table_mem_layers = load_table_layers(table_config_collection)
 
@@ -567,7 +578,8 @@ class DocumentGenerator(QObject):
 
             if records is None or len(records) == 0:
                 return False, QApplication.translate("DocumentGenerator",
-                                                     "No matching records in the database")
+                                                     "No matching records in the database \n " \
+                                                     "Confirm STR is created for the selected record.")
 
 
             """
@@ -595,7 +607,11 @@ class DocumentGenerator(QObject):
                         fieldName = composerDS.dataFieldName(composerId)
                         if fieldName == '':
                             continue
-                        # fieldValue = getattr(rec, fieldName)
+                        fieldValue = getattr(rec, fieldName)
+
+                        # StdmDataLabel
+                        if isinstance(composerItem, StdmDataLabelLayoutItem):
+                            self._composeritem_value_handler(composerItem, fieldValue)
 
 
                 # # Set table item values based on configuration information
@@ -621,21 +637,25 @@ class DocumentGenerator(QObject):
                 # Extract chart information and generate chart
                 self._generate_charts(print_layout, chart_config_collection, rec)
 
-                # Refresh non-custom map composer items
-                self._refresh_composer_maps(print_layout,
-                                            list(spatialFieldsConfig.spatialFieldsMapping().keys()))
-
                 # Set use fixed scale to false i.e. relative zoom
                 use_fixed_scale = False
 
-                # Create memory layers for spatial features and add them to the map
-                for mapId, spfmList in spatialFieldsConfig.spatialFieldsMapping().items():
+                spatial_field_configs = SpatialFieldsConfiguration.create(layout_items)
 
-                    map_item = print_layout.itemById(mapId)
+                for spatial_field_config in spatial_field_configs:
 
-                    print('Map Item: ', map_item)
+                    map_item = spatial_field_config.map_item()
 
-                    if map_item is not None:
+                    # Refresh non-custom map composer items
+                    self._refresh_composer_maps(print_layout,
+                                                list(spatial_field_config.spatialFieldsMapping().keys()))
+
+                    # Create memory layers for spatial features and add them to the map
+                    for mapId, spfmList in spatial_field_config.spatialFieldsMapping().items():
+
+                        #map_item = print_layout.itemById(mapId)
+                        #if map_item is not None:
+
                         # Clear any previous map memory layer
                         # self.clear_temporary_map_layers()
                         for spfm in spfmList:
@@ -664,20 +684,22 @@ class DocumentGenerator(QObject):
 
                             # Get geometry type
                             geom_type, srid = geometryType(composerDS.name(),
-                                                           spatial_field)
+                                                            spatial_field)
 
                             # Create reference layer with feature
                             ref_layer = self._build_vector_layer(layerName, geom_type, srid)
 
                             if ref_layer is None or not ref_layer.isValid():
                                 continue
+
                             # Add feature
                             bbox = self._add_feature_to_layer(ref_layer, geomWKT)
 
                             zoom_type = spfm.zoom_type
+
                             # Only scale the extents if zoom type is relative
                             if zoom_type == 'RELATIVE':
-                                bbox.scale(spfm.zoomLevel())
+                                bbox.scale(int(spfm.zoomLevel()))
 
                             # Workaround for zooming to single point extent
                             if ref_layer.wkbType() == QgsWkbTypes.Point:
@@ -698,7 +720,7 @@ class DocumentGenerator(QObject):
 
                             # Set scale if type is FIXED
                             if zoom_type == 'FIXED':
-                                self._iface.mapCanvas().zoomScale(spfm.zoomLevel())
+                                self._iface.mapCanvas().zoomScale(int(spfm.zoomLevel()))
                                 use_fixed_scale = True
 
                             self._iface.mapCanvas().refresh()
@@ -772,14 +794,17 @@ class DocumentGenerator(QObject):
     def _random_feature_layer_name(self, sp_field):
         return "{0}-{1}".format(sp_field, str(uuid.uuid4())[0:8])
 
-    def _refresh_map_item(self, map_item, use__fixed_scale=False):
+    def _refresh_map_item(self, map_item: QgsLayoutItemMap, use__fixed_scale=False):
         """
         Updates the map item with the current extents and layer set in the
         map canvas.
         """
-        tree_layers = QgsProject.instance().layerTreeRoot().findLayers()
+        tree_layers = QgsProject.instance().layerTreeRoot().findLayers() # QList<QgsLayerTreeLayer>
         if len(tree_layers) > 0:
-            map_item.setLayers(tree_layers[0].layer())
+            layers = [tree_layers[0].layer()]
+            print('LAYER: ', tree_layers[0].layer())
+            #map_item.setLayers(tree_layers[0].layer())
+            map_item.setLayers(layers)
             map_item.zoomToExtent(self._iface.mapCanvas().extent())
 
         # If use_scale is True then set NewScale based on that of the
@@ -1076,7 +1101,7 @@ class DocumentGenerator(QObject):
         if QFile.exists(abs_path):
             self._composeritem_value_handler(pic_item, abs_path)
 
-    def _add_feature_to_layer(self, vlayer, geom_wkb):
+    def _add_feature_to_layer(self, vlayer, geom_wkb) ->'QgsRectangle':
         """
         Create feature and add it to the vector layer.
         Return the extents of the geometry.
@@ -1086,14 +1111,20 @@ class DocumentGenerator(QObject):
         dp = vlayer.dataProvider()
 
         feat = QgsFeature()
-        g = QgsGeometry.fromWkt(geom_wkb)
-        feat.setGeometry(g)
+        geom = QgsGeometry.fromWkt(geom_wkb)
+        feat.setGeometry(geom)
 
         dp.addFeatures([feat])
         self._feature_ids.append(feat.id())
         vlayer.updateExtents()
 
-        return g.boundingBox()
+        highlight = QgsHighlight(self._iface.mapCanvas(), geom, vlayer)
+        highlight.setFillColor(selection_color())
+        highlight.setWidth(4)
+        highlight.setColor(QColor(212, 95, 0, 255))
+        highlight.show()
+
+        return geom.boundingBox()
 
     def _write_output(self, print_layout: QgsPrintLayout, output_mode:int, file_path:str) -> LayoutExportResult:
         """

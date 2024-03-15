@@ -631,6 +631,7 @@ class GPSToolDialog(WIDGET, BASE):
             model = self.entity_editor.model()
             setattr(model, self.sp_col, 'SRID={};{}'.format(srid, geometry_wkb))
             self.geometry_added = True
+
         # validate empty GPS field
         if not self.geometry_added and self.model is None:
             QMessageBox.critical(
@@ -643,9 +644,11 @@ class GPSToolDialog(WIDGET, BASE):
                 )
             )
             return
+
         # prevents duplicate entry
         self.load_bt.setDisabled(True)
         self.entity_editor.save_parent_editor()
+
         if self.reload:
             self._reload_entity_editor()
             self.load_bt.setDisabled(False)

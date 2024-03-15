@@ -1045,4 +1045,7 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         :type QCloseEvent
         :return: None
         """
+        if self._plugin is None:
+            return True
+
         self._plugin.spatialLayerManager.setChecked(False)

@@ -45,8 +45,12 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
         QWidget.__init__(self, parent)
         self.setupUi(self)
 
+        print('Photo::DS')
+
         self._layout = item.layout()
         self._item = item
+
+        print('Layout ITEM: ', item.linked_table)
 
         self._notif_bar = NotificationBar(self.vl_notification)
 
@@ -127,26 +131,30 @@ class ComposerPhotoDataSourceEditor(WIDGET, BASE):
 
     def set_from_item(self):
         # Load referenced table editor with item configuration settings.
-        photo_props = LinkedTableProps(linked_table=self._item.linked_table(),
-                                       source_field=self._item.source_field(),
-                                       linked_field=self._item.linked_field())
+        try:
 
-        self.ref_table.set_properties(photo_props)
-
-        GuiUtils.set_combo_current_index_by_text(
-            self.cbo_document_type,
-            self._item.document_type()
-        )
-
-        GuiUtils.set_combo_current_index_by_text(
-                self.ref_table.cbo_ref_table,
-                self._item.linked_table()
-                )
+            photo_props = LinkedTableProps(linked_table=self._item.linked_table,
+                                        source_field=self._item.source_field,
+                                        linked_field=self._item.linked_field)
 
 
-        GuiUtils.set_combo_current_index_by_text(
-                self.ref_table.cbo_referencing_col,
-                self._item.referencing_field()
-                )
+            self.ref_table.set_properties(photo_props)
+
+            GuiUtils.set_combo_current_index_by_text(
+                self.cbo_document_type,
+                self._item.document_type()
+            )
+
+            GuiUtils.set_combo_current_index_by_text(
+                    self.ref_table.cbo_ref_table,
+                    self._item.linked_table()
+                    )
+
+            GuiUtils.set_combo_current_index_by_text(
+                    self.ref_table.cbo_referencing_col,
+                    self._item.referencing_field()
+                    )
+        except:
+            pass
 
 

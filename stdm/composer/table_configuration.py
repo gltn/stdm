@@ -107,8 +107,6 @@ class TableItemValueHandler(ItemConfigValueHandler):
     to fetch the corresponding rows from the linked table in the database.
     """
 
-    print('* E *')
-
     def set_data_source_record(self, record):
         # # table_item = self.composer_item()
         table_item = self._config_item.table_layout_item()
@@ -132,12 +130,9 @@ class TableItemValueHandler(ItemConfigValueHandler):
 
         cols = table_item.columns()
 
-        print('Cols: ', cols)
-
         for col in cols:
             display_attrs_cols.append(col.clone())
 
-        print('Display Attrib: ', display_attrs_cols)
         vl = self._config_item.vector_layer()
         if vl is None:
             return

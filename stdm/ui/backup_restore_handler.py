@@ -1,4 +1,5 @@
 import os
+import winreg
 import json
 import subprocess
 from subprocess import Popen
@@ -41,6 +42,7 @@ from stdm.settings.registryconfig import (
 from stdm.utils.util import (
     PLUGIN_DIR
 )
+
 
 backup_type = {True: 'COMPRESSED', False: 'FLAT_FILE'}
 
@@ -314,7 +316,10 @@ class BackupRestoreHandler(QObject):
         msg = f'Authenticating user `{user_name}`...'
         self.logger.log_info(msg)
 
-        db_config = DatabaseConfig()
+        reg_config = RegistryConfig()
+        settings = reg_config.read(['Host', 'Database', 'Port'])
+        db_config =  DatabaseConfig(settings)
+
         db_param = db_config.read()
         db_conn = DatabaseConnection(db_param.Host, db_param.Port, db_param.Database)
 
@@ -328,7 +333,7 @@ class BackupRestoreHandler(QObject):
     def _restore_database(self, db_conn_params: DatabaseConnection, user: str,
                          password: str, db_name: str, backup_filepath: str) -> bool:
 
-        base_folder = _get_pg_base_folder()
+        base_folder = self._get_pg_base_folder()
         if base_folder == "":
             return False
 
@@ -370,7 +375,7 @@ class BackupRestoreHandler(QObject):
         msg = f'Creating database `{db_name}`...'
         self.logger.log_info(msg)
 
-        base_pg_folder =  _get_pg_base_folder()
+        base_pg_folder =  self._get_pg_base_folder()
         if base_pg_folder == "":
             return False
         
@@ -407,3 +412,28 @@ class BackupRestoreHandler(QObject):
         self.update_status.emit(msg, self._restore_steps)
         self._restore_steps = self._restore_steps + 1
         QApplication.processEvents()
+
+    def _get_pg_base_folder(self) ->str:
+            """
+            PostgrSQL base folder
+            """
+            reg_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\PostgreSQL\\Installations\\")
+            pg_base_value = ""
+            for i in range(winreg.QueryInfoKey(reg_key)[0]):
+                try:
+                    subkey_name = winreg.EnumKey(reg_key, i)
+                    subkey = winreg.OpenKey(reg_key, subkey_name)
+
+                    for j in range(winreg.QueryInfoKey(subkey)[1]):
+                        name, value,_ = winreg.EnumValue(subkey, j)
+                        if name == "Base Directory":
+                            pg_base_value = value
+                            break
+                    if not pg_base_value == "":
+                        break
+                    winreg.CloseKey(subkey)
+                except OSError:
+                    pass
+            winreg.CloseKey(reg_key)
+
+            return pg_base_value

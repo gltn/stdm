@@ -610,9 +610,11 @@ class STDMFieldWidget:
         """
         ent_model = entity_model(self.entity)
         entity_obj = ent_model()
+
         entity_obj.saveMany(
             list(self.feature_models.values())
         )
+
         for model in self.feature_models.values():
             STDMDb.instance().session.flush()
 
@@ -621,11 +623,13 @@ class STDMFieldWidget:
                 if isinstance(control, ExpressionLineEdit):
                     value = control.on_expression_triggered(model)
                     setattr(model, attrMapper._attrName, value)
+
             model.update()
 
         # Save child models
         if self.editor is not None:
             self.editor.save_children()
+
         # undo each feature created so that qgis
         # don't try to save the same feature again.
         # It will also clear all the models from

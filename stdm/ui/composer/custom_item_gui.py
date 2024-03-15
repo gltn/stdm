@@ -150,8 +150,6 @@ class TableConfigWidget(QgsLayoutItemBaseWidget):
     def __init__(self, parent, layout_object):
         super().__init__(parent, layout_object)
 
-        print('* A *')
-
         label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
 
         vl = QVBoxLayout()
@@ -224,13 +222,14 @@ class MapConfigWidget(QgsLayoutItemBaseWidget):
     def __init__(self, parent, layout_object):
         super().__init__(parent, layout_object)
 
-        print('* MAP::B *')
-
         label = LayoutGuiUtils.create_heading_label(QCoreApplication.translate('StdmItems', 'STDM Item Properties'))
 
         vl = QVBoxLayout()
         vl.setContentsMargins(0, 0, 0, 0)
         vl.addWidget(label)
+
+        print('MapConfigWdget...')
+        print('ITEMS: ',layout_object.label_field)
 
         self.symbol_editor = ComposerSymbolEditor(layout_object)
         vl.addWidget(self.symbol_editor)

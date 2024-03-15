@@ -1953,9 +1953,12 @@ class ConfigWizard(WIDGET, BASE):
 
             if result == 1:
                 model_index_name = model_item.index(row_id, 0)
-                model_index_desc = model_item.index(row_id, 1)
+                model_index_sd = model_item.index(row_id, 1)
+                model_index_desc = model_item.index(row_id, 2)
 
                 model_item.setData(model_index_name, editor.entity.short_name)
+                model_item.setData(model_index_sd, 
+                                   self._bool_to_yesno(editor.entity.supports_documents))
                 model_item.setData(model_index_desc, editor.entity.description)
 
                 model_item.edit_entity(tmp_short_name, editor.entity)
@@ -3010,6 +3013,10 @@ class ConfigWizard(WIDGET, BASE):
 
                 config_file.close()
 
+    def _bool_to_yesno(self, state: bool) -> str:
+        CHECK_STATE = {True: 'Yes', False: 'No'}
+        return CHECK_STATE[state]
+
 
 class ConfigurationDomDocument(QDomDocument):
     def __init__(self, dom_file_name):
@@ -3038,3 +3045,4 @@ class ConfigurationDomDocument(QDomDocument):
 
     def rename_element(self, dom_elem, new_name):
         dom_elem.setAttribute('name', new_name)
+

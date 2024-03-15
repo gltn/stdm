@@ -31,21 +31,21 @@ class DatabaseConfig:
     PORT = "Port"
     DB_NAME = "Database"
 
-    def __init__(self):
+    def __init__(self, setting_data: dict):
         self.reg_config = RegistryConfig()
+        self.setting_data = setting_data
 
     def read(self) -> Optional[DatabaseConnection]:
         """
         Get the database connection properties
         """
-        db_props = self.reg_config.read([DatabaseConfig.HOST, DatabaseConfig.PORT, DatabaseConfig.DB_NAME])
-
-        if len(db_props) < 3:
+        if len(self.setting_data) < 3:
             return None
         else:
-            return DatabaseConnection(db_props[DatabaseConfig.HOST],
-                                      db_props[DatabaseConfig.PORT],
-                                      db_props[DatabaseConfig.DB_NAME])
+            return DatabaseConnection(self.setting_data[DatabaseConfig.HOST],
+                                      self.setting_data[DatabaseConfig.PORT],
+                                      self.setting_data[DatabaseConfig.DB_NAME])
+
 
     def write(self, db_connection):
         """

@@ -243,6 +243,7 @@ class ReferencedTableEditor(QWidget):
         :type table_props: LinkedTableProps
         """
         self._block_changed = True
+        print('>> SET_PROPERTIES >> ', table_props.linked_table, '<<<< ')
         GuiUtils.set_combo_current_index_by_text(self.cbo_ref_table, table_props.linked_table)
         GuiUtils.set_combo_current_index_by_text(self.cbo_source_field, table_props.source_field)
         GuiUtils.set_combo_current_index_by_text(self.cbo_referencing_col, table_props.linked_field)
