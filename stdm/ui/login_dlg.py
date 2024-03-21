@@ -64,6 +64,7 @@ class loginDlg(WIDGET, BASE):
         # class properties
         self.user = None
         self.dbConn = None
+        self.found_db_settings = True
 
         self.setting_data = self.reg_setting()
 
@@ -175,6 +176,7 @@ class loginDlg(WIDGET, BASE):
         settings = set_conn.read(connSettings)
 
         if len(settings) == 0:
+            self.found_db_settings = False
             settings = self.read_local_cache()
 
         return settings
@@ -244,6 +246,13 @@ class loginDlg(WIDGET, BASE):
 
             if success:
                 self.dbConn = dbconn
+                if not self.found_db_settings:
+                    db_config = DatabaseConfig(self.setting_data)
+                    db_conn = DatabaseConnection(self.setting_data['Host'],
+                                                 self.setting_data['Port'],
+                                                 self.setting_data['Database'])
+                    db_config.write(db_conn)
+                
                 self.accept()
 
             else:

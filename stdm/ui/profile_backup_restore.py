@@ -68,7 +68,11 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
         self.setWindowTitle("Restore Backup")
         self.iface = iface
         self.backup_info_file = ""
-        self.backup_restore_handler = BackupRestoreHandler()
+
+        reg_config = RegistryConfig()
+        l_mode = reg_config.read(['LogMode'])
+        self.backup_restore_handler = BackupRestoreHandler(log_mode=l_mode['LogMode'])
+
         self.connect_signals()
         self.initialize_ui_controls()
 

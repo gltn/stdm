@@ -18,6 +18,9 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import (
+    QDir
+)
 
 class StreamHandler:
     def log(self, msg: str):
@@ -28,10 +31,19 @@ class StdOutHandler(StreamHandler):
         print(msg)
 
 class FileHandler(StreamHandler):
-    def __init__(self, msg: str):
-        dtime = QDateTime.currentDataTime().toString('ddMMyyyy_HH.mm')
-        filename ='/.stdm/logs/profile_backup{}.log'.format(dtime)
-        self.log_file = '{}{}'.format(QDir.home().path(),  filename)
+    _log_file = ''
+    def __init__(self, filepath: str=''):
+        # dtime = QDateTime.currentDataTime().toString('ddMMyyyy_HH.mm')
+        # filename ='/.stdm/logs/profile_backup{}.log'.format(dtime)
+        print('* FileHandler::log_file:> ', FileHandler._log_file)
+        if FileHandler._log_file =='':
+            self.log_file = '{}{}'.format(QDir.home().path(),  filepath)
+        else:
+            self.log_file = FileHandler._log_file
+
+    @staticmethod
+    def set_filepath(filepath: str):
+        FileHandler._log_file = '{}{}'.format(QDir.home().path(),  filepath)
 
     def log(self, msg: str):
         with open(self.log_file, 'a') as lf:

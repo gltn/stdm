@@ -55,12 +55,14 @@ from stdm.settings import (
     save_current_profile,
     get_entity_browser_record_limit,
     save_entity_browser_record_limit,
+    save_log_mode,
     get_entity_sort_details
 )
 from stdm.settings.registryconfig import (
     composer_output_path,
     composer_template_path,
     debug_logging,
+    logging_mode,
     set_debug_logging,
     source_documents_path,
     QGISRegistryConfig,
@@ -69,6 +71,7 @@ from stdm.settings.registryconfig import (
     COMPOSER_TEMPLATE,
     NETWORK_DOC_RESOURCE,
     CONFIG_UPDATED,
+    LOG_MODE,
     set_run_template_converter_on_startup,
     run_template_converter_on_startup
 )
@@ -149,6 +152,8 @@ class OptionsDialog(WIDGET, BASE):
         self._config = StdmConfiguration.instance()
         self._default_style_sheet = self.txtRepoLocation.styleSheet()
 
+        self._add_logging_modes()
+
         self.init_gui()
 
         self.profile_entity_widget = None
@@ -202,6 +207,15 @@ class OptionsDialog(WIDGET, BASE):
             self.cbTempConv.setCheckState(Qt.Checked)
         else:
             self.cbTempConv.setCheckState(Qt.Unchecked)
+
+        # Logging Mode
+        log_mode =  logging_mode()
+        index = self.cbLogMode.findText(log_mode)
+        self.cbLogMode.setCurrentIndex(index)
+
+    def _add_logging_modes(self):
+        self.cbLogMode.addItem('STDOUT')
+        self.cbLogMode.addItem('FILE')
 
     def profile_changed(self):
         self.init_sorting_widgets(self.cbo_profiles.currentText())
@@ -489,6 +503,9 @@ class OptionsDialog(WIDGET, BASE):
 
         return True
 
+    def _save_log_mode(self, log_mode: str):
+        self._reg_config.write({LOG_MODE: log_mode})
+
     def _check_path_exists(self, path, text_box):
         # Validates if the specified folder exists
         dir = QDir()
@@ -575,6 +592,8 @@ class OptionsDialog(WIDGET, BASE):
 
         # Set Entity browser record limit
         save_entity_browser_record_limit(self.edtEntityRecords.value())
+
+        save_log_mode(self.cbLogMode.currentText())
 
         self.cache.save()
 

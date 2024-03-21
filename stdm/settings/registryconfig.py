@@ -45,7 +45,7 @@ STDM_VERSION = 'STDMVersion'
 ENTITY_BROWSER_RECORD_LIMIT = 'EntityBrowserRecordLimit'
 ENTITY_SORT_ORDER = 'EntitySortOrder'
 RUN_TEMPLATE_CONVERTER = 'RunTemplateConverter'
-
+LOG_MODE = 'LogMode'
 
 def registry_value(key_name: str):
     """
@@ -121,6 +121,12 @@ def debug_logging():
         return False
 
     return True
+
+def logging_mode():
+    log_mode = registry_value(LOG_MODE)
+    if log_mode is None:
+        return "STDOUT"
+    return log_mode
 
 
 def set_debug_logging(state: bool):

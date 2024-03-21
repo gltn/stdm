@@ -72,9 +72,10 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
         reg_config = RegistryConfig()
         settings = reg_config.read(['Host', 'Database', 'Port'])
-        self.db_config      = DatabaseConfig(settings)
+        self.db_config  = DatabaseConfig(settings)
 
-        self.backup_handler = ConfigBackupHandler()
+        l_mode = reg_config.read(['LogMode'])
+        self.backup_handler = ConfigBackupHandler(log_mode=l_mode['LogMode'])
 
         self.tbBackupFolder.clicked.connect(self.backup_folder_clicked)
         self.btnBackup.clicked.connect(self.do_backup)
@@ -111,7 +112,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
             template_node.setText(0, "Templates")
             profile_item.addChild(template_node)
             
-            profile_templates = self.backup_handler.profile_templates(profile)
+            profile_templates, count = self.backup_handler.profile_templates(profile)
 
             if len(profile_templates) > 0:
                 templates = self._template_items(list(profile_templates.values())[0])
@@ -179,7 +180,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
         self.btnBackup.setEnabled(False)
 
-        result, msg = self.backup_handler.backup_configuration(
+        backup_result, msg = self.backup_handler.do_configuration_backup(
             PG_ADMIN,
             self.edtAdminPassword.text(),
             self.edtBackupFolder.text(),
@@ -187,7 +188,7 @@ class DBProfileBackupDialog(WIDGET, BASE):
 
         self.btnBackup.setEnabled(True)
 
-        if not result:
+        if not backup_result:
             self.show_message(msg, QMessageBox.Critical)
             return False
 

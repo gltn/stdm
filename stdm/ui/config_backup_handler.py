@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import errno
 import shutil
 import winreg
 import json
@@ -31,7 +32,8 @@ from qgis.PyQt.QtCore import (
     pyqtSignal,
     QDateTime,
     QDir,
-    QCoreApplication
+    QCoreApplication,
+    QFile
 )
 
 from stdm.utils.logging_handlers import (
@@ -46,6 +48,12 @@ from stdm.data.configuration.entity import Entity
 from stdm.data.configuration.profile import Profile
 from stdm.composer.document_template import DocumentTemplate
 
+from stdm.utils.logging_handlers import (
+    StdOutHandler,
+    FileHandler,
+    MessageLogger
+)
+
 from stdm.utils.util import (
     PLUGIN_DIR,
     documentTemplates,
@@ -59,40 +67,73 @@ PG_ADMIN = 'postgres'
 class ConfigBackupHandler(QObject):
     update_status = pyqtSignal(str, int)
 
-    def __init__(self):
+    def __init__(self, log_mode: str='STDOUT'):
         QObject.__init__(self, None)
+        self._log_mode = log_mode
         self._backup_step = 1
         self._stdm_config = StdmConfiguration.instance()
+
+        self._logger = self._make_logger()
+
+    def _make_logger(self)->MessageLogger:
+        if self._log_mode == 'FILE':
+            dtime = QDateTime.currentDateTime().toString('ddMMyyyy_HH.mm')
+            backup_log_file = '/.stdm/logs/config_backup_{}.log'.format(dtime)
+            FileHandler.set_filepath(backup_log_file)
+            return MessageLogger(handler=FileHandler)
+
+        if self._log_mode == 'STDOUT':
+            return MessageLogger(handler=StdOutHandler)
+
+
 
     def profiles(self) ->list:
         return self._stdm_config.profiles.values()
 
     def profile_templates(self, profile: Profile) ->dict:
+        """
+        Configuration *can* contain multiple profiles, so for
+        each profile we get templates related to it.
+        """
         templates = documentTemplates()
         profile_tables = profile.table_names()
         p_templates = {}
+        template_count = 0
         for name, filepath in templates.items():
             doc_temp = DocumentTemplate.build_from_path(name, filepath)
             if doc_temp.data_source is None:
                 continue
             if doc_temp.data_source.referenced_table_name in profile_tables or \
                  doc_temp.data_source.name() in user_non_profile_views():
+
+                template_count += 1
+
                 if profile.name in p_templates:
                     p_templates[profile.name].append((doc_temp.name, filepath))
                 else:
                     p_templates[profile.name] = []
                     p_templates[profile.name].append((doc_temp.name, filepath))
-        return p_templates
+        return p_templates, template_count
 
-    def _config_templates(self) ->list:
+    def _config_templates(self) ->tuple[list, int]:
         config_templates = []
+        count = 0
         for profile in self.profiles():
-            templates = self.profile_templates(profile)
+            templates, template_count = self.profile_templates(profile)
+            count += template_count
             config_templates.append(templates)
-        return config_templates
+        return config_templates, count
+
+    def _log_error(self, msg: str):
+        self._logger.log_error(msg)
+        self._show_progress(msg)
+
+    def _log_info(self, msg: str):
+        self._logger.log_info(msg)
+        self._show_progress(msg)
 
 
-    def backup_configuration(self, user: str, password: str, 
+    def do_configuration_backup(self, user: str, password: str, 
                              backup_folder: str, backup_mode:str) -> tuple[bool, str]:
         
         # Validate user authentication
@@ -104,25 +145,45 @@ class ConfigBackupHandler(QObject):
         db_con = DatabaseConnection(db_params.Host, db_params.Port, db_params.Database)
         db_con.User = User(user, password)
 
+        self._log_info("Verifying DB connection...")
+
         valid, msg = db_con.validateConnection()
 
         if not valid:
-            error = f'Authenticaion Failed!'
+            error = f'DB authenticaion Failed!'
+            self._log_error(error)
             return False, error
+
+        self._log_info('Authentication successful.')
 
         db_backup_filename = self._make_db_backup_filename(db_con.Database)
 
-        self._send_message('Backup process started, please wait...')
+        self._log_info('Backup process started...')
 
         db_backup_filepath = f'{backup_folder}/{db_backup_filename}'
-        if not os.path.exists(backup_folder):
-            os.makedirs(backup_folder)
+        try:
+            if not os.path.exists(backup_folder):
+                self._log_info('Creating backup folder...')
+                os.makedirs(backup_folder)
+                self._log_info('Backup folder created.')
+        except OSError as e:
+            create_msg = f'Failed to create backup folder: `{db_backup_filepath}`'
+            self._log_error(create_msg)
+            return False, "Error creating backup folder."
 
-        self._send_message('Backing database...')
+        backup_name = f'Backing database: `{db_backup_filename}`.'
+        backup_path = f'Backup path: {db_backup_filepath}'
+        self._log_info(backup_name)
+        self._log_info(backup_path)
+
         status, msg = self._backup_database(db_con, PG_ADMIN, password, db_backup_filepath,
                                             backup_folder)
         if not status:
+            backup_msg = f'Failed to to backup database: {msg}'
+            self._log_error(backup_msg)
             return False, msg
+
+        self._log_info('Database backup... Done.')
 
         stdm_folder = '.stdm'
         config_file = 'configuration.stc'
@@ -130,12 +191,33 @@ class ConfigBackupHandler(QObject):
         config_filepath = f'{home_folder}/{stdm_folder}/{config_file}'
         config_backup_filepath = f'{backup_folder}/{config_file}'
 
-        self._send_message('Backing configuration file...')
-        self._backup_config_file(config_filepath, config_backup_filepath)
+        config_msg = f'Backing configuration file: `{config_backup_filepath}`'
+        self._log_info(config_msg)
 
-        self._send_message('Backing templates...')
-        config_templates = self._config_templates()
-        self._backup_templates(config_templates, backup_folder)
+        config_backed, msg = self._backup_config_file(config_filepath, config_backup_filepath)
+
+        if not config_backed:
+            config_msg = f'Failed backing configuration file: error: {msg}' 
+            self._log_error(config_msg)
+            return False, config_msg
+
+        self._log_info('Cofiguration file backup... Done.')
+
+
+        self._log_info('Fetching profile templates...')
+        config_templates, count = self._config_templates()
+
+        templates_msg = f'[{count}]- templates found.'
+        self._log_info(templates_msg)
+
+        if len(config_templates) > 0:
+            template_backed, msg = self._backup_templates(config_templates, backup_folder)
+            if not template_backed:
+                temp_msg = f'Failed to backup all template files: {msg}'
+                self._log_error(temp_msg)
+                return False, temp_msg
+
+            self._log_info('Template files backup... Done.')
 
         log_dtime = self._dtime_str()
         log_filename = f'backuplog_{log_dtime}.json'
@@ -163,8 +245,10 @@ class ConfigBackupHandler(QObject):
         backup_log = self._make_log(profiles, db_con.Database,
                                      db_backup_filename, log_dtime, backup_is_compressed)
 
-        self._send_message('Creating backup log file...')
+        log_file_msg = f'Creating backup log file: `{log_filepath}'
+        self._log_info(log_file_msg)
         self._create_backup_log(backup_log, log_filepath)
+        self._log_info('Log file created.')
 
         if backup_is_compressed:
             compressed_files = []
@@ -174,10 +258,14 @@ class ConfigBackupHandler(QObject):
             backed_templates = self._backed_template_files(all_templates, backup_folder)
             compressed_files += backed_templates
 
+            self._log_info('Compressing backup files...')
             if self._compress_backup(db_con.Database, backup_folder, compressed_files):
+                self._log_info('Backup files compressed.')
                 self._remove_compressed_files(compressed_files)
+            else:
+                self._log_error('Failed to compress backup files')
                 
-        self._send_message('Backup process completed successfully.')
+        self._log_info('Backup process completed successfully.')
         return True, ''
 
     def _profile_entities(self, profile: Profile) ->list[Entity]:
@@ -188,32 +276,68 @@ class ConfigBackupHandler(QObject):
             entities.append(entity)
         return entities
 
-    def _backup_config_file(self, src_config: str, dest_config: str):
-        shutil.copyfile(src_config, dest_config)
+    def _backup_config_file(self, src_config: str, dest_config: str)->tuple[bool, str]:
+        try:
+            shutil.copyfile(src_config, dest_config)
+            return True, 'OK'
+        except OSError as e:
+            return False, e
 
     def _backup_templates(self, templates: list[dict[str, list[tuple[str, str]]]],
-                           backup_folder: str):
-        for profile_templates in templates:
-            if len(profile_templates) == 0:
-                return
-            for template in list(profile_templates.values())[0]:
-                template_filepath = template[1]
-                filename = os.path.basename(template_filepath)
-                backup_filepath = f'{backup_folder}/{filename}'
-                shutil.copyfile(template_filepath, backup_filepath)
+                           backup_folder: str)->tuple[bool, str]:
+        try:
+            for profile_templates in templates:
+                if len(profile_templates) == 0:
+                    return False, 'EMPTY'
+
+                for template in list(profile_templates.values())[0]:
+                    template_filepath = template[1]
+                    filename = os.path.basename(template_filepath)
+                    backup_filepath = f'{backup_folder}/{filename}'
+                    tmp_copy = f'Backing template: `{template_filepath}`'
+                    self._log_info(tmp_copy)
+                    shutil.copyfile(template_filepath, backup_filepath)
+        except OSError as e:
+            return False, e
+
+        return True, 'OK'
+    
 
     def _backup_database(self, db_con: DatabaseConnection, user: str, password: str,
                          backup_filepath: str, backup_folder:str) ->tuple[bool, str]:
 
         base_folder = self._get_pg_base_folder()
         if base_folder == "":
-            return False
+            pg_folder = f'PostgreSQL folder: {base_folder} ... NOT found.'
+            self._log_error(pg_folder)
+            return False, pg_folder
+
+        pg_folder = f'PostgreSQL folder: {base_folder} ... Found.'
+        self._log_info(pg_folder)
 
         dump_tool = "\\bin\\pg_dump.exe"
         backup_util = f"{base_folder}{dump_tool}"
 
+        if not os.path.exists(backup_util):
+            util_msg = f'Backup utility: `{backup_util}` ... NOT found.'
+            self._log_error(util_msg)
+            return False, util_msg
+
+        util_msg = f'Backup utility: `{backup_util}` ... Found.'
+        self._log_info(util_msg)
+
         script_file = "/scripts/dbbackup.bat"
         script_filepath = f"{PLUGIN_DIR}{script_file}"
+
+        if not os.path.exists(script_filepath):
+            script_msg = f'Backup script: `{script_filepath}` ... NOT found. '
+            self._log_error(script_msg)
+            return False, script_msg
+
+        script_msg = f'Backup script: `{script_filepath}` ... Found.'
+        self._log_info(script_msg)
+
+        self._log_info('Launching backup script in a subprocess.')
 
         startup_info = subprocess.STARTUPINFO()
         startup_info.dwFlags |=subprocess.STARTF_USESHOWWINDOW
@@ -245,10 +369,12 @@ class ConfigBackupHandler(QObject):
         dtime = self._dtime_str()
         zip_filepath = f"{backup_folder}/{compressed_filename}_{dtime}.zip"
 
+        zip_msg = f'Zip filename: `{zip_filepath}`'
+        self._log_info(zip_msg)
+        
         try:
             self._write_zip_file(files, zip_filepath)
         except BadZipfile:
-            self.log_error('Failed to compress backup!')
             return False
 
         return True
@@ -288,7 +414,7 @@ class ConfigBackupHandler(QObject):
     def _dtime_str(self) ->str:
         return QDateTime.currentDateTime().toString('ddMMyyyyHHmm')
 
-    def _send_message(self, msg):
+    def _show_progress(self, msg):
         self.update_status.emit(msg, self._backup_step)
         QCoreApplication.processEvents()
         self._backup_step = self._backup_step + 1

@@ -6,7 +6,9 @@ from stdm.settings.registryconfig import (
     CURRENT_PROFILE,
     RegistryConfig,
     ENTITY_BROWSER_RECORD_LIMIT,
-    ENTITY_SORT_ORDER
+    ENTITY_SORT_ORDER,
+    LOG_MODE
+
 )
 
 
@@ -69,6 +71,10 @@ def save_entity_browser_record_limit(limit: int):
     """
     reg_config = RegistryConfig()
     reg_config.write({ENTITY_BROWSER_RECORD_LIMIT: limit})
+
+def save_log_mode(log_mode: str):
+    reg_config = RegistryConfig()
+    reg_config.write({LOG_MODE: log_mode})
 
 
 def get_entity_sort_details(group_name: str, entity_name: str) -> str:
