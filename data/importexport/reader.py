@@ -499,7 +499,8 @@ class OGRReader(object):
 
                         c_name = source_columns[0]
 
-                        c_name = c_name.encode('utf-8').decode('ascii', 'ignore')
+                        #c_name = c_name.encode('utf-8').decode('ascii', 'ignore') => Compensation Profile
+                        c_name = c_name.decode('utf-8')   
 
                         #c_name = unicode(c_name, 'utf-8').encode('ascii', 'ignore')
                         #source_col_names = [src_field for src_field, dest_field in acols.items() if dest_field == c_name]
@@ -622,8 +623,7 @@ class OGRReader(object):
             enum_obj = enum_col_type.enum
 
             try:
-                if not isinstance(value, str) or not isinstance(value,
-                                                                unicode):
+                if not isinstance(value, str) or not isinstance(value, unicode):
                     value = unicode(value)
 
                 enum_symbol = enum_obj.from_string(value.strip())
