@@ -79,7 +79,7 @@ class SpatialFieldsConfiguration:
             return []
 
     @staticmethod
-    def domElement(composerWrapper, dom_document: QDomDocument):
+    def domElement(composerWrapper, dom_document: QDomDocument)->"QDomElement":
         """
         Helper method that creates a spatial columns DOM element from a composer wrapper instance.
         """
@@ -188,7 +188,6 @@ class SpatialFieldsConfiguration:
                 sp_field_config.set_map_item(layout_item)
 
                 label_field = layout_item.label_field
-                print('CREATE > ', label_field)
 
                 spatial_field = layout_item.name
                 item_id = layout_item.uuid()

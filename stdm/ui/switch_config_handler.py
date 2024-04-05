@@ -16,7 +16,7 @@ from qgis.PyQt.QtCore import (
 )
 
 from stdm.utils.logging_handlers import (
-    MessageLogger
+    EventLogger
 )
 from stdm.data.config import DatabaseConfig
 from stdm.data.connection import DatabaseConnection
@@ -42,7 +42,7 @@ class SwitchConfigHandler():
         self._db_name = ""
         self._backup_date = ""
         self._db_backup_file = ""
-        self.logger = MessageLogger()
+        self.logger = EventLogger()
 
         reg_config = RegistryConfig()
         settings = reg_config.read(['Host', 'Database', 'Port'])

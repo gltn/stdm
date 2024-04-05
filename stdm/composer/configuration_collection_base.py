@@ -434,7 +434,7 @@ class ConfigurationCollectionBase:
         return self._config_collec.get(item_id, None)
 
     @classmethod
-    def dom_element(cls, composer_wrapper, dom_document: QDomElement):
+    def dom_element(cls, composer_wrapper, dom_document: QDomElement) ->QDomElement:
         """
         Returns a DOM element with sub-elements where each corresponds to the
         serializable properties of a configuration object.

@@ -1395,7 +1395,7 @@ class STDMQGISLoader:
                 if not self._doc_temp_exist(doc_temp, self.profile_templates):
                     self.profile_templates.append(doc_temp)
 
-            if doc_temp.data_source._dataSourceName in user_non_profile_views():
+            if doc_temp.data_source._datasource_name in user_non_profile_views():
                 if not self._doc_temp_exist(doc_temp, self.profile_templates):
                     self.profile_templates.append(doc_temp)
 

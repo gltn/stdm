@@ -37,7 +37,7 @@ from qgis.PyQt.QtCore import (
 )
 
 from stdm.utils.logging_handlers import (
-    MessageLogger
+    EventLogger
 )
 
 from stdm.data.config import DatabaseConfig
@@ -51,7 +51,7 @@ from stdm.composer.document_template import DocumentTemplate
 from stdm.utils.logging_handlers import (
     StdOutHandler,
     FileHandler,
-    MessageLogger
+    EventLogger
 )
 
 from stdm.utils.util import (
@@ -75,15 +75,15 @@ class ConfigBackupHandler(QObject):
 
         self._logger = self._make_logger()
 
-    def _make_logger(self)->MessageLogger:
+    def _make_logger(self)->EventLogger:
         if self._log_mode == 'FILE':
             dtime = QDateTime.currentDateTime().toString('ddMMyyyy_HH.mm')
             backup_log_file = '/.stdm/logs/config_backup_{}.log'.format(dtime)
             FileHandler.set_filepath(backup_log_file)
-            return MessageLogger(handler=FileHandler)
+            return EventLogger(handler=FileHandler)
 
         if self._log_mode == 'STDOUT':
-            return MessageLogger(handler=StdOutHandler)
+            return EventLogger(handler=StdOutHandler)
 
 
 

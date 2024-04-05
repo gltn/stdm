@@ -164,7 +164,7 @@ class TemplateDocumentSelector(WIDGET, BASE):
 
         # If no filter data source defined then always return True
 
-        if document_template.data_source._dataSourceName in user_non_profile_views():
+        if document_template.data_source.name() in user_non_profile_views():
             return True
 
         if not self._filter_data_source:

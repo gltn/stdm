@@ -15,7 +15,7 @@ from PyQt5.QtCore import (
 TMPL_DIR = "D:/Home/Lab/Python/tempconvert/templates/"
 
 class TemplateConverter:
-    def __init__(self, templates: list[str]):
+    def __init__(self, templates: List[str]):
         self.templates = templates
         self.dom_documents = self.make_dom_documents(self.templates)
         self.dom_docs_v2 = self.find_dom_docs_v2(self.dom_documents)
@@ -23,7 +23,7 @@ class TemplateConverter:
     def print_elements(self):
         print('print_elements...')
         doc_elem = self.dom_docs_v2[0].documentElement()
-        node = doc_elem.firstChild();
+        node = doc_elem.firstChild()
         while not node.isNull():
             dom_elem = node.toElement()
             print('Dom Elem: ',dom_elem)
@@ -31,7 +31,7 @@ class TemplateConverter:
                 print(dom_elem.tagName())
             node = node.nextSibling()
                 
-    def make_dom_documents(self, templates: list[str]) -> List[QDomDocument]:
+    def make_dom_documents(self, templates: List[str]) -> List[QDomDocument]:
         print('make_dom_document ...')
         dom_docs = []  #type: List[QDomDocument]
         for template in templates:
@@ -50,7 +50,7 @@ class TemplateConverter:
         dom_doc.setContent(xmlfile)
         return dom_doc
 
-    def find_dom_docs_v2(self, dom_docs: list[QDomDocument]) -> List[QDomDocument]:
+    def find_dom_docs_v2(self, dom_docs: List[QDomDocument]) -> List[QDomDocument]:
         print('filter_dom_docs_v2 ...')
         dom_docs_v2 = [] # type: List[QDomDocument]
         for dom_doc in dom_docs:
@@ -62,7 +62,7 @@ class TemplateConverter:
                 print('Empty dom list')
         return dom_docs_v2
 
-def get_templates(tmpl_folder: str) -> list[str]:
+def get_templates(tmpl_folder: str) -> List[str]:
     print("Read templates in folder......")
     files = os.listdir(tmpl_folder)
     templates = []

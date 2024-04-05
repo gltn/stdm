@@ -102,6 +102,12 @@ from stdm.utils.util import PLUGIN_DIR
 
 LOGGER = logging.getLogger('stdm')
 
+from stdm.utils.logging_handlers import (
+    StdOutHandler,
+    FileHandler,
+    EventLogger
+)
+
 class LayoutExportResult(Enum):
     Success = 0
     Canceled = 1
@@ -143,6 +149,24 @@ class DocumentGenerator(QObject):
 
         # Value formatter for output files
         self._file_name_value_formatter = None
+
+        self._logger = self._make_event_logger()
+
+    def _make_event_logger(self) -> EventLogger:
+        reg_config = RegistryConfig()
+        log_mode = reg_config.read(['LogMode'])['LogMode']
+
+        if log_mode == 'STDOUT':
+            return EventLogger(handler=StdOutHandler)
+        
+        if log_mode == 'FILE':
+            return EventLogger(handler=FileHandler.init_logger('docgenerator'))
+
+    def _log_info(self, msg: str):
+        self._logger.log_info(msg)
+
+    def _log_error(self, msg: str):
+        self._logger.log_error(msg)
 
     def link_field(self) -> str:
         """
@@ -508,7 +532,7 @@ class DocumentGenerator(QObject):
     # ---------------------------------------------------------------------------------------------------------------
 
 
-    def run(self, templatePath, entityFieldName, entityFieldValue, outputMode, filePath=None,
+    def run(self, templatePath, entity_field_name, entity_field_value, outputMode, filePath=None,
             dataFields=None, fileExtension=None, data_source=None):
         """
         :param templatePath: The file path to the user-defined template.
@@ -538,23 +562,22 @@ class DocumentGenerator(QObject):
         templateFile = QFile(templatePath)
 
         if not templateFile.open(QIODevice.ReadOnly):
+            error_msg = "Cannot read template file! Document generation aborted."
+            self._log_errorr(error_msg)
             return False, QApplication.translate("DocumentGenerator",
-                                                 "Cannot read template file.")
+                                                 error_msg)
 
         templateDoc = QDomDocument()
 
         if templateDoc.setContent(templateFile):
             composerDS = ComposerDataSource.create(templateDoc)
 
-            # spatialFieldsConfig = SpatialFieldsConfiguration.create(templateDoc)
-            #composerDS.setSpatialFieldsConfig(spatialFieldsConfig)
-
             # Check if data source exists and return if it doesn't
             if not self.data_source_exists(composerDS):
-                msg = QApplication.translate("DocumentGenerator",
-                                             "'{0}' data source does not exist in the database."
-                                             "\nPlease contact your database "
-                                             "administrator.".format(composerDS.name()))
+                error_msg = (f"`{composerDS.name()}` data source does not exist in the database! "
+                             "\nPlease contact your database administrator")
+                msg = QApplication.translate("DocumentGenerator", error_msg)
+                self._log_error(error_msg)
                 return False, msg
 
             # Set file name value formatter
@@ -562,31 +585,32 @@ class DocumentGenerator(QObject):
                 name=data_source
             )
 
-            ######
+            msg = f"Composer Datasource... `{composerDS.name()}`"
+            self._log_info(msg)
 
-            # Register field names to be used for file naming
-            # self._file_name_value_formatter.register_columns(dataFields)
+            entity_field_name = self.format_entity_field_name(composerDS.name(), data_source)
 
-            # Load the layers required by the table composer items
-            # self._table_mem_layers = load_table_layers(table_config_collection)
+            msg = f"Entity field name/value... {entity_field_name}={entity_field_value}"
+            self._log_info(msg)
 
-            #####
-            entityFieldName = self.format_entity_field_name(composerDS.name(), data_source)
+            # Execute query - records = List[tuple]
+            dsTable, records = self._exec_query(composerDS.name(), entity_field_name, entity_field_value)
 
-            # Execute query
-            dsTable, records = self._exec_query(composerDS.name(), entityFieldName, entityFieldValue)
+            msg = f"Query results count... {len(records)}"
+            self._log_info(msg)
 
             if records is None or len(records) == 0:
-                return False, QApplication.translate("DocumentGenerator",
-                                                     "No matching records in the database \n " \
-                                                     "Confirm STR is created for the selected record.")
-
+                error_msg = (f"No matching records in the database! \n"
+                             "Confirm the STR link is created for the selected record.")
+                self._log_error(error_msg)
+                return False, QApplication.translate("DocumentGenerator", error_msg)
 
             """
             Iterate through records where a single file output will be generated for each matching record.
             """
             project = QgsProject().instance()
 
+            self._log_info("Generating document...")
 
             for rec in records:
                 #composition = QgsPrintLayout(self._map_settings)
@@ -601,38 +625,65 @@ class DocumentGenerator(QObject):
 
                 for composerId in composerDS.dataFieldMappings().reverse:
                     # Use composer item id since the uuid is stripped off
+                    self._log_info(f"Composer ID... {composerId}")
                     composerItem = print_layout.itemById(composerId)
 
                     if composerItem is not None:
+                        self._log_info(f"Composer Item... Found.")
                         fieldName = composerDS.dataFieldName(composerId)
                         if fieldName == '':
+                            self._log_error(f"Field name for composer Id: {composerId}... Not Found.")
                             continue
                         fieldValue = getattr(rec, fieldName)
 
+                        msg = f"Field Name/Value... {fieldName}={fieldValue}"
+                        self._log_info(msg)
+
                         # StdmDataLabel
                         if isinstance(composerItem, StdmDataLabelLayoutItem):
+                            self._log_info(f"Setting value for Stdm DataLabel...")
                             self._composeritem_value_handler(composerItem, fieldValue)
 
 
                 # # Set table item values based on configuration information
+                self._log_info("Setting Table Items ...")
                 table_config_collection = TableConfigurationCollection.create(print_layout)
+
+                msg = f"[{len(table_config_collection.items())}] Table items found."
+                self._log_info(msg)
 
                 self._table_mem_layers = load_table_layers(table_config_collection)
                 self._set_table_data(print_layout, table_config_collection, rec)
 
+                self._log_info("Setting Photo items...")
                 layout_items, load_status = results
                 ph_config_collection = PhotoConfigurationCollection.create_layout_item(layout_items)
+
+                msg = f"[{len(ph_config_collection.items())}] Photo items found."
+                self._log_info(msg)
+
                 # Extract photo information
                 self._extract_photo_info(print_layout, ph_config_collection, rec)
 
+                self._log_info(f"Setting QRcode Items...")
                 # Create QR code configuration collection object
                 qrc_config_collection = QRCodeConfigurationCollection.create_layout_item(layout_items)
+
+                msg = f"[{len(qrc_config_collection.items())}] QRCode items found."
+                self._log_info(msg)
 
                 # Extract QR code information in order to generate QR codes
                 self._generate_qr_codes(print_layout, qrc_config_collection, rec)
 
+                self._log_info("Setting Chart Items...")
                 # Create chart configuration collection object
                 chart_config_collection = ChartConfigurationCollection.create_chart_layout(layout_items, templateDoc)
+
+                if chart_config_collection is not None:
+                    msg = f"[{len(chart_config_collection.items())}] Chart items found."
+                else:
+                    msg = f"[0] Chart items found."
+                self._log_info(msg)
 
                 # Extract chart information and generate chart
                 self._generate_charts(print_layout, chart_config_collection, rec)
@@ -640,7 +691,11 @@ class DocumentGenerator(QObject):
                 # Set use fixed scale to false i.e. relative zoom
                 use_fixed_scale = False
 
+                self._log_info("Creating Map Items...")
                 spatial_field_configs = SpatialFieldsConfiguration.create(layout_items)
+
+                msg = f"[{len(spatial_field_configs)}] Map items found."
+                self._log_info(msg)
 
                 for spatial_field_config in spatial_field_configs:
 
@@ -737,15 +792,18 @@ class DocumentGenerator(QObject):
                 if filePath is not None and len(dataFields) == 0:
                     self._write_output(print_layout, outputMode, filePath)
 
+                    self._log_info("Generating document... done.")
+
+
                 elif filePath is None and len(dataFields) > 0:
-                    entityFieldName = 'id'
-                    docFileName = self._build_file_name(data_source, entityFieldName,
-                                                        entityFieldValue, dataFields, fileExtension)
+                    entity_field_name = 'id'
+                    doc_filename = self._build_file_name(data_source, entity_field_name,
+                                                        entity_field_value, dataFields, fileExtension)
 
                     # Replace unsupported characters in Windows file naming
-                    docFileName = docFileName.replace('/', '_').replace('\\', '_').replace(':', '_').strip('*?"<>|')
+                    doc_filename = doc_filename.replace('/', '_').replace('\\', '_').replace(':', '_').strip('*?"<>|')
 
-                    if not docFileName:
+                    if not doc_filename:
                         return (False, QApplication.translate("DocumentGenerator",
                                                                 "File name could not be generated from the data fields."))
 
@@ -759,7 +817,7 @@ class DocumentGenerator(QObject):
                         return (False, QApplication.translate("DocumentGenerator",
                                                                 "Output directory does not exist"))
 
-                    absDocPath = "{0}/{1}".format(outputDir, docFileName)
+                    absDocPath = "{0}/{1}".format(outputDir, doc_filename)
 
                     write_result = self._write_output(print_layout, outputMode, absDocPath)
 
@@ -851,7 +909,7 @@ class DocumentGenerator(QObject):
                 layers.remove(lyr_id)
 
         except DummyException as ex:
-            LOGGER.debug(
+            self._log_error(
                 'Could not delete temporary designer layer. {}'.format(ex)
             )
 
@@ -910,7 +968,8 @@ class DocumentGenerator(QObject):
 
         self.map_registry.addMapLayers(v_layers, False)
 
-    def _set_table_data(self, composition, config_collection, record):
+    def _set_table_data(self, composition: QgsPrintLayout, 
+                        config_collection: TableConfigurationCollection, record):
         # TODO: Clean up code to adopt this design.
         """
         Set table data by applying appropriate filter using information
@@ -1185,7 +1244,7 @@ class DocumentGenerator(QObject):
 
         return ""
 
-    def _exec_query(self, dataSourceName, queryField, queryValue):
+    def _exec_query(self, dataSourceName, query_field: str, query_value):
         """
         Reflects the data source then execute the query using the specified
         query parameters.
@@ -1194,16 +1253,16 @@ class DocumentGenerator(QObject):
         meta = MetaData(bind=STDMDb.instance().engine)
         dsTable = Table(dataSourceName, meta, autoload=True)
         try:
-            if not queryField and not queryValue:
+            if not query_field and not query_value:
                 # Return all the rows; this is currently limited to 100 rows
                 results = self._dbSession.query(dsTable).limit(100).all()
 
             else:
-                if isinstance(queryValue, str):
-                    queryValue = "'{0}'".format(queryValue)
-                sql = "{0} = :qvalue".format(queryField)
+                if isinstance(query_value, str):
+                    query_value = "'{0}'".format(query_value)
+                sql = "{0} = :qvalue".format(query_field)
 
-                results = self._dbSession.query(dsTable).filter(text(sql)).params(qvalue=queryValue).all()
+                results = self._dbSession.query(dsTable).filter(text(sql)).params(qvalue=query_value).all()
 
             return dsTable, results
         except SQLAlchemyError as ex:
@@ -1224,7 +1283,7 @@ class DocumentGenerator(QObject):
         else:
             return valueCollection[keyName]
 
-    def _composeritem_value_handler(self, composer_item, value):
+    def _composeritem_value_handler(self, composer_item: QgsLayoutItem, value):
         """
         Factory for setting values based on the composer item type and value.
         """

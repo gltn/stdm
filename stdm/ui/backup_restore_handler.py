@@ -22,7 +22,7 @@ from stdm.utils.logging_handlers import (
     StreamHandler,
     FileHandler,
     StdOutHandler,
-    MessageLogger
+    EventLogger
 )
 
 from stdm.settings.config_serializer import ConfigurationFileSerializer
@@ -79,15 +79,15 @@ class BackupRestoreHandler(QObject):
         self._backup_type = backup_type[self.configuration['compressed']]
         self._backup_folder = os.path.dirname(self._backup_info_file)
 
-    def _make_logger(self) ->MessageLogger:
+    def _make_logger(self) ->EventLogger:
         if self._log_mode == 'FILE':
             dtime = QDateTime.currentDateTime().toString('ddMMyyyy_HH.mm')
             restore_log_file ='/.stdm/logs/config_restore_{}.log'.format(dtime)
             FileHandler.set_filepath(restore_log_file)
-            return MessageLogger(handler=FileHandler)
+            return EventLogger(handler=FileHandler)
 
         if self._log_mode == 'STDOUT':
-            return MessageLogger(handler=StdOutHandler)
+            return EventLogger(handler=StdOutHandler)
 
     @property
     def backup_info_file(self):

@@ -17,6 +17,8 @@ email                : gkahiu@gmail.com
  ***************************************************************************/
 """
 
+from typing import List
+
 from qgis.PyQt.QtCore import (
     Qt,
     QObject,
@@ -25,6 +27,7 @@ from qgis.PyQt.QtCore import (
     QIODevice,
     QEvent
 )
+
 from qgis.PyQt.QtWidgets import (
     QToolBar,
     QDockWidget,
@@ -33,7 +36,9 @@ from qgis.PyQt.QtWidgets import (
     QInputDialog,
     QAction
 )
+
 from qgis.PyQt.QtXml import QDomDocument
+
 from qgis.core import (
     QgsLayoutItem,
     QgsProject,
@@ -41,6 +46,7 @@ from qgis.core import (
     QgsLayoutItemPage,
     QgsReadWriteContext
 )
+
 from qgis.gui import (
     QgsLayoutView,
     QgisInterface,
@@ -55,11 +61,11 @@ from stdm.composer.photo_configuration import PhotoConfigurationCollection
 from stdm.composer.qr_code_configuration import QRCodeConfigurationCollection
 from stdm.composer.spatial_fields_config import SpatialFieldsConfiguration
 from stdm.composer.table_configuration import TableConfigurationCollection
-from stdm.data.pg_utils import (
-    vector_layer
-)
+from stdm.data.pg_utils import vector_layer
 from stdm.exceptions import DummyException
+
 from stdm.settings.registryconfig import RegistryConfig
+
 from stdm.ui.composer.composer_data_source import (
     ComposerDataSourceSelector
 )
@@ -78,8 +84,14 @@ from stdm.utils.util import documentTemplates
 
 from stdm.composer.custom_items.map import StdmMapLayoutItem
 
+from stdm.utils.logging_handlers import(
+    StdOutHandler,
+    FileHandler,
+    EventLogger
+)
 
-def load_table_layers(config_collection):
+
+def load_table_layers(config_collection)->List['QgsVectorLayer']:
     """
     In order to be able to use attribute tables in the composition, the
     corresponding vector layers need to be added to the layer
@@ -143,6 +155,8 @@ class ComposerWrapper(QObject):
 
         self.variable_template_path = None
 
+        self._logger = self._make_event_logger()
+
         # Container for custom editor widgets
         # self._widgetMappings = {}
 
@@ -204,10 +218,28 @@ class ComposerWrapper(QObject):
         composer_data_source = ComposerDataSource.from_layout(self.composition())
         self._configure_data_controls(composer_data_source)
 
+        self._log_info("Document designer constructor... done.")
+
+
+    def _make_event_logger(self) ->EventLogger:
+        reg_config = RegistryConfig()
+        log_mode = reg_config.read(['LogMode'])['LogMode']
+
+        if log_mode == 'STDOUT':
+            return EventLogger(handler=StdOutHandler)
+        
+        if log_mode == 'FILE':
+            return EventLogger(handler=FileHandler.init_logger('docdesigner'))
+
+    def _log_info(self, msg: str):
+        self._logger.log_info(msg)
+
+    def _log_error(self, msg: str):
+        self._logger.log_error(msg)
 
     def close_designer(self):
         # Implement events before closing
-        pass
+        self._log_info('Document Designer... Closed.')
 
     def _remove_composer_toolbar(self, object_name):
         """
@@ -225,8 +257,9 @@ class ComposerWrapper(QObject):
         """
         Remove inapplicable actions and their corresponding toolbars and menus.
         """
-        removeActions = ["mActionSaveProject", "mActionNewComposer", "mActionDuplicateComposer"]
+        # TODO: Add logging.
 
+        removeActions = ["mActionSaveProject", "mActionNewComposer", "mActionDuplicateComposer"]
         composerToolbar = self.composerMainToolBar()
         if composerToolbar is not None:
             saveProjectAction = None
@@ -241,6 +274,9 @@ class ComposerWrapper(QObject):
 
     def configure(self):
         # Create instances of custom STDM composer item configurations
+
+        # TODO: Add logging.
+
         for ciConfig in ComposerItemConfig.itemConfigurations:
             self._config_items.append(ciConfig(self))
         self.composerView().zoomActual()
@@ -322,6 +358,7 @@ class ComposerWrapper(QObject):
                                                         "Open Template Error"),
                                  QApplication.translate("OpenTemplateConfig",
                                                         "The specified template does not exist."))
+            self._log_error("Specified template does not exist! Failed to open Designer.")
             return
 
         if not [i for i in self.composition().items() if
@@ -360,7 +397,9 @@ class ComposerWrapper(QObject):
                                      "Cannot read template file."),
                                      str(e)
                                  ))
+            self._log_err('Internal error occured while reading template. Failed to load template.')
 
+        self._log_info('Opening designer...')
         designer = self._iface.openLayoutDesigner(layout)
 
 
@@ -466,6 +505,7 @@ class ComposerWrapper(QObject):
                                                )
 
             if not ok:
+                self._log_error('Template name not provided. Save aborted.')
                 return
 
             if ok and not docName:
@@ -476,17 +516,19 @@ class ComposerWrapper(QObject):
                 self.saveTemplate()
 
             if ok and docName:
-                templateDir = self._composerTemplatesPath()
+                template_path = self._composerTemplatesPath()
 
-                if templateDir is None:
+                if not template_path:
                     QMessageBox.critical(self.mainWindow(),
                                          QApplication.translate("ComposerWrapper", "Error"),
                                          QApplication.translate("ComposerWrapper",
                                                                 "Directory for document templates cannot not be found."))
 
+
+                    self._log_error("Template path not found. Saving aborted.")
                     return
 
-                absPath = templateDir + "/" + docName + ".sdt"
+                absPath = f"{template_path}/{docName}.sdt"
 
                 # Check if there is an existing document with the same name
                 caseInsenDic = CaseInsensitiveDict(documentTemplates())
@@ -498,6 +540,7 @@ class ComposerWrapper(QObject):
                                                                         "Existing Template"), msg,
                                                                           QMessageBox.Yes | QMessageBox.No)
                     if result != QMessageBox.Yes:
+                        self._log_info("Template with the same name found. Saving aborted.")
                         return
                     else:
                         # Delete the existing template
@@ -512,6 +555,7 @@ class ComposerWrapper(QObject):
                                                  QApplication.translate("ComposerWrapper", 
                                                                         "Delete Error"), msg)
 
+                            self._log_error("Unable to replace template file. Saving aborted.")
                             return
 
                 docFile = QFile(absPath)
@@ -531,15 +575,19 @@ class ComposerWrapper(QObject):
                                                    docFile.errorString()
                                                    ))
 
+            self._log_error("Save operation error! Saving aborted.")
             return
 
 
         templateDoc = QDomDocument()
         template_name = docFileInfo.completeBaseName()
 
+        self._log_info("Template file ready for writing XML")
+
         # Catch exception raised when writing items' elements
         try:
             self._writeXML(templateDoc, template_name)
+            self._log_info("WriteXML done. Template saved successfully.")
         except DummyException as exc:
             msg = str(exc)
             QMessageBox.critical(
@@ -547,6 +595,7 @@ class ComposerWrapper(QObject):
                 QApplication.translate("ComposerWrapper", "Save Error"),
                 msg
             )
+            self._log_error("Error writing XML file! Saving aborted.")
             docFile.close()
             docFile.remove()
 
@@ -577,26 +626,37 @@ class ComposerWrapper(QObject):
 
         xml_doc.appendChild(composer_element)
 
-        # Write spatial field configurations
+        self._log_info("WriteXML: Appended default composer configuration... ")
 
+        # Write spatial field configurations
         spatialColumnsElement = SpatialFieldsConfiguration.domElement(self, xml_doc)
         xml_doc.appendChild(spatialColumnsElement)
 
+        self._log_info("WriteXML: Appended `Spatial Field Configuration`...")
+
         # Write photo configuration
-        photos_element = PhotoConfigurationCollection.dom_element(self, xml_doc)
-        xml_doc.appendChild(photos_element)
+        photo_element = PhotoConfigurationCollection.dom_element(self, xml_doc)
+        xml_doc.appendChild(photo_element)
+
+        self._log_info("WriteXML: Appended `Photo Element` ...")
 
         # Write table configuration
-        tables_element = TableConfigurationCollection.dom_element(self, xml_doc)
-        xml_doc.appendChild(tables_element)
+        table_element = TableConfigurationCollection.dom_element(self, xml_doc)
+        xml_doc.appendChild(table_element)
+
+        self._log_info("WriteXML: Appended `Table Element` ...")
 
         # Write chart configuration
-        charts_element = ChartConfigurationCollection.dom_element(self, xml_doc)
-        xml_doc.appendChild(charts_element)
+        chart_element = ChartConfigurationCollection.dom_element(self, xml_doc)
+        xml_doc.appendChild(chart_element)
+
+        self._log_info("WriteXML: Appended `Chart Element` ...")
 
         # Write QRCode configuration
         qr_codes_element = QRCodeConfigurationCollection.dom_element(self, xml_doc)
         xml_doc.appendChild(qr_codes_element)
+
+        self._log_info("WriteXML: Appended `QRCode Element` ...")
 
     def _configure_data_controls(self, composer_data_source):
         """
@@ -656,7 +716,7 @@ class ComposerWrapper(QObject):
 
                 self.addWidgetMapping(table_item.uuid(), table_editor)
 
-    def _composerTemplatesPath(self):
+    def _composerTemplatesPath(self) ->str:
         """
         Reads the path of composer templates in the registry.
         """
@@ -666,7 +726,6 @@ class ComposerWrapper(QObject):
         valueCollection = regConfig.read([keyName])
 
         if len(valueCollection) == 0:
-            return None
-
+            return ""
         else:
             return valueCollection[keyName]

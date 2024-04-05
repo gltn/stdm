@@ -38,8 +38,8 @@ class ComposerDataSource:
     Container for data source settings.
     """
 
-    def __init__(self, dataSourceName="", category: str = "", referenced_table_name: str = ''):
-        self._dataSourceName = dataSourceName
+    def __init__(self, datasource_name:str="", category: str = "", referenced_table_name: str = ''):
+        self._datasource_name = datasource_name
         self._dataSourceCategory = category
         self.referenced_table_name = referenced_table_name
         self._dataFieldmappings = ReverseDict()
@@ -49,13 +49,13 @@ class ComposerDataSource:
         """
         Sets the data source name.
         """
-        self._dataSourceName = dataSourceName
+        self._datasource_name = dataSourceName
 
     def name(self):
         """
         Returns the data source name.
         """
-        return self._dataSourceName
+        return self._datasource_name
 
     def category(self) -> str:
         """
@@ -91,7 +91,7 @@ class ComposerDataSource:
         """
         Clears the data source name and removes all data field mappings.
         """
-        self._dataSourceName = ""
+        self._datasource_name = ""
         self._dataFieldmappings = ReverseDict()
 
     def dataFieldName(self, composerItemId):
@@ -140,7 +140,7 @@ class ComposerDataSource:
 
         dtFieldsStr = ",".join(dataFieldsSet)
 
-        return "SELECT {0} FROM {1}".format(dtFieldsStr, self._dataSourceName)
+        return "SELECT {0} FROM {1}".format(dtFieldsStr, self._datasource_name)
 
     @staticmethod
     def from_layout(layout: QgsLayout) -> 'ComposerDataSource':
