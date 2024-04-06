@@ -222,8 +222,13 @@ class ComposerWrapper(QObject):
 
 
     def _make_event_logger(self) ->EventLogger:
+        log_mode = 'FILE'
+
         reg_config = RegistryConfig()
-        log_mode = reg_config.read(['LogMode'])['LogMode']
+        mode = reg_config.read(['LogMode'])
+
+        if len(mode) > 0:
+            log_mode = mode['LogMode']
 
         if log_mode == 'STDOUT':
             return EventLogger(handler=StdOutHandler)
@@ -275,9 +280,11 @@ class ComposerWrapper(QObject):
     def configure(self):
         # Create instances of custom STDM composer item configurations
 
-        # TODO: Add logging.
+        self._log_info("Configure: STDM composer item configurations...")
 
         for ciConfig in ComposerItemConfig.itemConfigurations:
+            msg = f"Configuring item.... {ciConfig.CONFIG_ITEM}"
+            self._log_info(msg)
             self._config_items.append(ciConfig(self))
         self.composerView().zoomActual()
 

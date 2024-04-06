@@ -153,8 +153,13 @@ class DocumentGenerator(QObject):
         self._logger = self._make_event_logger()
 
     def _make_event_logger(self) -> EventLogger:
+        log_mode = 'FILE'
+
         reg_config = RegistryConfig()
-        log_mode = reg_config.read(['LogMode'])['LogMode']
+        mode = reg_config.read(['LogMode'])
+
+        if len(mode) > 0:
+            log_mode = mode['LogMode']
 
         if log_mode == 'STDOUT':
             return EventLogger(handler=StdOutHandler)

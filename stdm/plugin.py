@@ -1863,14 +1863,9 @@ class STDMQGISLoader:
         composer with additional tools for designing
         map-based documents.
         """
-
-        print('>> current Profile: ', self.current_profile)
-
         if self.current_profile is None:
             self.default_profile()
             return
-        
-        print('LEN: ',len(db_user_tables(self.current_profile)))
 
         if len(db_user_tables(self.current_profile)) < 1:
             self.minimum_table_checker()
@@ -1886,9 +1881,6 @@ class STDMQGISLoader:
         """
         Triggered when a layout designer window is opened
         """
-        print('Current Profile: ', current_profile())
-        print('APP_DBCONN: ', globals.APP_DBCONN)
-
         if current_profile() is None or globals.APP_DBCONN is None:
             ComposerWrapper.disable_stdm_items(designer_interface)
             return

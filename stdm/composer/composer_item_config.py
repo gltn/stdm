@@ -84,6 +84,8 @@ class SaveTemplateConfig(ComposerItemConfig):
     For saving user templates.
     """
 
+    CONFIG_ITEM = "SaveTemplate"
+
     def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
         self.itemAction.setCheckable(False)
@@ -110,6 +112,7 @@ class OpenTemplateConfig(SaveTemplateConfig):
     """
     Opens user templates.
     """
+    CONFIG_ITEM = "OpenTemplate"
 
     def action(self):
         openTemplateAct = QAction(GuiUtils.get_icon("open_file.png"),
@@ -137,6 +140,7 @@ class ManageTemplatesConfig(ComposerItemConfig):
     """
     Action that loads dialog for managing user document templates.
     """
+    CONFIG_ITEM = "ManageTemplate"
 
     def __init__(self, composerWrapper):
         ComposerItemConfig.__init__(self, composerWrapper)
