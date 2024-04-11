@@ -496,17 +496,22 @@ class EntityEditorDialog(MapperMixin):
             'scrollAreaWidgetContents'
         )
         for c in self._entity.columns.values():
+
             if c.name in self.exclude_columns:
                 continue
+
             if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
+
             # Get widget factory
             column_widget = ColumnWidgetRegistry.create(
                 c,
                 self.scroll_widget_contents,
                 host=self
             )
+
             self.columns[c.name] = c
+
             self.column_widgets[c.name] = column_widget
 
     def _setup_columns_content_area(self):
@@ -530,8 +535,10 @@ class EntityEditorDialog(MapperMixin):
         row_id = 0
         for column_name, column_widget in self.column_widgets.items():
             c = self.columns[column_name]
+
             if c.name in self.exclude_columns:
                 continue
+
             if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
 

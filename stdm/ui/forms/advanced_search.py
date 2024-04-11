@@ -61,7 +61,9 @@ class AdvancedSearch(EntityEditorDialog):
         self.gridLayout.addLayout(
             self.vlNotification, 0, 0, 1, 1
         )
+
         column_widget_area = self._setup_columns_content_area()
+
         self.gridLayout.addWidget(
             column_widget_area, 1, 0, 1, 1
         )
@@ -110,10 +112,16 @@ class AdvancedSearch(EntityEditorDialog):
         """
         for column in self._entity.columns.values():
             if column.name in entity_display_columns(self._entity):
+
                 if column.name == 'id':
                     continue
+
+                if not column.name in self.attribute_mappers:
+                    continue
+
                 handler = self.attribute_mappers[
                     column.name].valueHandler()
+
                 handler.setValue(handler.default())
 
     def on_search(self):
@@ -129,13 +137,21 @@ class AdvancedSearch(EntityEditorDialog):
         search_data = {}
         for column in self._entity.columns.values():
             if column.name in entity_display_columns(self._entity):
+
                 if column.name == 'id':
                     continue
+
+                if not column.name in self.attribute_mappers:
+                    continue
+
                 handler = self.attribute_mappers[
                     column.name].valueHandler()
+
                 value = handler.value()
+
                 if value != handler.default() and bool(value):
                     search_data[column.name] = value
+
         return search_data
 
     def _setup_columns_content_area(self):
@@ -155,6 +171,7 @@ class AdvancedSearch(EntityEditorDialog):
         # Append column labels and widgets
         table_name = self._entity.name
         columns = table_column_names(table_name)
+
         # Iterate entity column and assert if they exist
         row_id = 0
         for column_name, column_widget in self.column_widgets.items():
@@ -162,8 +179,10 @@ class AdvancedSearch(EntityEditorDialog):
 
             if c.name in self.exclude_columns:
                 continue
+
             if isinstance(c, MultipleSelectColumn):
                 continue
+
             if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue
 
@@ -177,6 +196,7 @@ class AdvancedSearch(EntityEditorDialog):
                 if c.TYPE_INFO == 'AUTO_GENERATED':
                     column_widget.setReadOnly(False)
                     column_widget.btn_load.hide()
+
                 self.gl.addWidget(column_widget, row_id, 1, 1, 1)
 
                 col_name = c.name
@@ -192,18 +212,23 @@ class AdvancedSearch(EntityEditorDialog):
                 # Bump up row_id
                 row_id += 1
 
+
         self.entity_scroll_area.setWidget(self.scroll_widget_contents)
+
         if self.entity_tab_widget is None:
             self.entity_tab_widget = QTabWidget(self)
+
         # Check if there are children and add foreign key browsers
 
         # Add primary tab if necessary
         self._add_primary_attr_widget()
+
         # self.entity_tab_widget.setTabEnabled(0, False)  # enable/disable the tab
         # set the style sheet
         self.setStyleSheet(
             "QTabBar::tab::selected {width: 0; height: 0; margin: 0; "
             "padding: 0; border: none;} ")
+
         # Return the correct widget
         if self.entity_tab_widget is not None:
             return self.entity_tab_widget
