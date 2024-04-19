@@ -6,11 +6,14 @@ qgisversion=3.34
 build_number=0254806
 description=A pro-poor land information tool that offers a complimentary land administration system that is pro-poor, gender-sensitive, affordable and sustainable for the promotion of secure land and property rights for all.
 
+changelog=1.8.3 - Fix document designer
+
 tags=land administration, tenure security, continuum of land rights, fit for purpose land administration, gltn, stdm, cadastre
 
-homepage=http://www.stdm.gltn.net/
+homepage=https://github.com/gltn/stdm
 tracker=https://github.com/gltn/stdm/issues
 repository=https://github.com/gltn/stdm
+
 icon=images/icons/stdm.png
 
 experimental=False
