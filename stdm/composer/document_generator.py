@@ -29,6 +29,7 @@ from qgis.PyQt.QtCore import (
     QIODevice,
     QFile,
     QFileInfo,
+    QDir
 )
 
 from qgis.PyQt.QtGui import (

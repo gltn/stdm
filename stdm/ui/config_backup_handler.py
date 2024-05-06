@@ -81,10 +81,10 @@ class ConfigBackupHandler(QObject):
             backup_log_file = '/.stdm/logs/config_backup_{}.log'.format(dtime)
             FileHandler.set_filepath(backup_log_file)
             return EventLogger(handler=FileHandler)
-
-        if self._log_mode == 'STDOUT':
+        elif self._log_mode == 'STDOUT':
             return EventLogger(handler=StdOutHandler)
-
+        else:
+            return EventLogger(handler=StdOutHandler)
 
 
     def profiles(self) ->list:
@@ -213,11 +213,10 @@ class ConfigBackupHandler(QObject):
         if len(config_templates) > 0:
             template_backed, msg = self._backup_templates(config_templates, backup_folder)
             if not template_backed:
-                temp_msg = f'Failed to backup all template files: {msg}'
+                temp_msg = f'Failed to backup template files: {msg}'
                 self._log_error(temp_msg)
-                return False, temp_msg
-
-            self._log_info('Template files backup... Done.')
+            else:
+                 self._log_info('Template files backup... Done.')
 
         log_dtime = self._dtime_str()
         log_filename = f'backuplog_{log_dtime}.json'
@@ -288,7 +287,7 @@ class ConfigBackupHandler(QObject):
         try:
             for profile_templates in templates:
                 if len(profile_templates) == 0:
-                    return False, 'EMPTY'
+                    return False, 'NO-TEMPLATES'
 
                 for template in list(profile_templates.values())[0]:
                     template_filepath = template[1]

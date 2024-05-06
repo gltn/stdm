@@ -70,8 +70,11 @@ class ProfileBackupRestoreDialog(WIDGET, BASE):
         self.backup_info_file = ""
 
         reg_config = RegistryConfig()
+        lm = "FILE"
         l_mode = reg_config.read(['LogMode'])
-        self.backup_restore_handler = BackupRestoreHandler(log_mode=l_mode['LogMode'])
+        if len(l_mode) > 0:
+            lm = l_mode['LogMode']
+        self.backup_restore_handler = BackupRestoreHandler(log_mode=lm)
 
         self.connect_signals()
         self.initialize_ui_controls()

@@ -232,9 +232,11 @@ class ComposerWrapper(QObject):
 
         if log_mode == 'STDOUT':
             return EventLogger(handler=StdOutHandler)
-        
-        if log_mode == 'FILE':
+        elif log_mode == 'FILE':
             return EventLogger(handler=FileHandler.init_logger('docdesigner'))
+        else:
+            return EventLogger(handler=StdOutHandler)
+        
 
     def _log_info(self, msg: str):
         self._logger.log_info(msg)

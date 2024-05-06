@@ -306,7 +306,10 @@ class Save2DB():
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
                     party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, party_ref_column, self.parent_data.get(full_party_ref_column)[0])
+
+                party_id = self.parent_data.get(full_party_ref_column)
+                if party_id:
+                    setattr(self.model, party_ref_column, party_id)
 
                 if 'spatial_unit' in list_val.keys():
                     full_spatial_ref_ = list_val.get('spatial_unit')
@@ -316,7 +319,9 @@ class Save2DB():
                     full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
                     spatial_ref_column = full_spatial_ref_column.replace(prefix, '') + '_id'
 
-                setattr(self.model, spatial_ref_column, self.parent_data.get(full_spatial_ref_column)[0])
+                spatial_id = self.parent_data.get(full_spatial_ref_column)[0]
+                if spatial_id:
+                    setattr(self.model, spatial_ref_column, spatial_id)
 
                 attributes = self.entity_data['social_tenure']
 

@@ -74,8 +74,12 @@ class DBProfileBackupDialog(WIDGET, BASE):
         settings = reg_config.read(['Host', 'Database', 'Port'])
         self.db_config  = DatabaseConfig(settings)
 
+        lm = "FILE"
         l_mode = reg_config.read(['LogMode'])
-        self.backup_handler = ConfigBackupHandler(log_mode=l_mode['LogMode'])
+        if len(l_mode) > 0:
+            lm = l_mode['LogMode']
+
+        self.backup_handler = ConfigBackupHandler(log_mode=lm)
 
         self.tbBackupFolder.clicked.connect(self.backup_folder_clicked)
         self.btnBackup.clicked.connect(self.do_backup)
