@@ -798,12 +798,7 @@ class EntityEditorDialog(MapperMixin):
             if ch.TYPE_INFO == Entity.TYPE_INFO:
                 for col in ch.columns.values():
                     if hasattr(col, 'entity_relation'):
-                        print('ENTITY: ', self._entity.name)
-                        print('COL   : ', col)
-                        print('PARENT: ', col.parent)
-
                         if col.parent is not None:
-                            print('PARENT NAME: ', col.parent.name)
                             if col.parent.name == self._entity.name:
                                 child_columns.append((col, ch))
         return child_columns
