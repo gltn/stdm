@@ -507,7 +507,7 @@ class OGRReader(object):
                     # Check if the value already exists for unique columns
                     if dest_column in unique_data:
                         if field_value in unique_data[dest_column]:
-                            print "Record with same unique value already exists - ",field_value
+                            #print "Record with same unique value already exists - ",field_value
                             continue
                         else:
                             unique_data[dest_column].append(field_value)

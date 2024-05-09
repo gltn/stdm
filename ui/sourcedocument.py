@@ -792,18 +792,25 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         extension = self._displayName[self._displayName.rfind('.'):]
 
-        QApplication.processEvents()
-        doc_path = u'{}/{}/{}/{}/{}{}'.format(
-            source_document_location(),
-            unicode(self.curr_profile.name),
-            unicode(self._source_entity),
-            unicode(self.doc_type_value()).replace(' ', '_'),
-            unicode(self.fileUUID),
-            unicode(extension)
-        ).lower()
+        if extension in ['.mp4', 'mp4a', '.mp3']:
+            ph_image = QImage(":/plugins/stdm/images/icons/mediaplayer_bg.png")
+        elif extension == '.pdf':
+            ph_image = QImage(":/plugins/stdm/images/icons/pdfimage_bg.png")
+        else:
+            QApplication.processEvents()
+            doc_path = u'{}/{}/{}/{}/{}{}'.format(
+                source_document_location(),
+                unicode(self.curr_profile.name),
+                unicode(self._source_entity),
+                unicode(self.doc_type_value()).replace(' ', '_'),
+                unicode(self.fileUUID),
+                unicode(extension)
+            ).lower()
 
-        ph_image = QImage(doc_path)
+            ph_image = QImage(doc_path)
+
         ph_pixmap = QPixmap.fromImage(ph_image)
+
         # If width is larger than height, use height as width and height
         if ph_pixmap.width() > ph_pixmap.height():
             rectangle = QRect(0, 0, ph_pixmap.height(), ph_pixmap.height())

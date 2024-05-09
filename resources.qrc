@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/plugins/stdm">
+    <file>images/icons/pdfimage_bg.png</file>
+    <file>images/icons/mediaplayer_bg.png</file>
     <file>images/icons/docdownload.png</file>
     <file>images/icons/docupload.png</file>
     <file>images/icons/mobile_collect.png</file>

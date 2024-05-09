@@ -254,7 +254,7 @@ class SupportingDocumentsWidget(QWidget):
             supporting_docs_str
         )
 
-        filter_str = u'{0} (*.jpg *.jpeg *.png *.bmp *.tiff *.svg *.pdf)'.format(
+        filter_str = u'{0} (*.jpg *.jpeg *.png *.bmp *.tiff *.svg *.pdf *.mp4 *.mp4a *.mp3)'.format(
             supporting_docs_str
         )
 

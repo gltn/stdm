@@ -54,13 +54,16 @@ from PyQt4.QtCore import (
     QSignalMapper,
     QFile,
     QFileInfo,
-    QSize
+    QSize,
+    QSettings
 )
 
 from stdm.utils.util import (
     guess_extension
 )
+
 from stdm.settings import current_profile
+
 LOGGER = logging.getLogger('stdm')
 
 class PhotoViewer(QScrollArea):
@@ -546,8 +549,6 @@ class DocumentViewManager(QMainWindow):
         """
         doc_identifier = document_widget.file_identifier()
 
-        print(doc_identifier)
-
         if doc_identifier in self._doc_viewers:
 
             doc_sw = self._doc_viewers[doc_identifier]
@@ -579,6 +580,20 @@ class DocumentViewManager(QMainWindow):
             ext = file_info.suffix().lower()
             if ext == 'pdf':
                 os.startfile(abs_doc_path)
+                return True
+
+            if ext in ['mp4', 'mp4a', 'mp3']:
+                reg_entry = QSettings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components",
+                                QSettings.NativeFormat)
+                reg_entry.beginGroup("{22d6f312-b0f6-11d0-94ab-0080c74c7e95}") 
+                is_installed = reg_entry.value("IsInstalled")
+                reg_entry.endGroup()
+
+                if is_installed == 1:
+                    media = "mediaplayer "+abs_doc_path
+                    os.system(media)
+
+
                 return True
 
             doc_viewer = self._create_viewer(document_widget)
