@@ -17,10 +17,11 @@ jobs:
       - name: Install qgis-plugin-ci
         run: pip3 install qgis-plugin-ci
 
+      #release ${GITHUB_REF/refs\/tags\//}
       - name: Deploy plugin
         run: >-
           qgis-plugin-ci
-          release ${GITHUB_REF/refs\/tags\//}
+          release 1.8.3
           --github-token ${{ secrets.GITHUB_TOKEN }}
           --osgeo-username ${{ secrets.OSGEO_USER }}
           --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
