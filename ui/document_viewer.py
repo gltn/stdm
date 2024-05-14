@@ -590,11 +590,8 @@ class DocumentViewManager(QMainWindow):
                 reg_entry.endGroup()
 
                 if is_installed == 1:
-                    media = "mediaplayer "+abs_doc_path
-                    os.system(media)
-
-
-                return True
+                    os.startfile(abs_doc_path)
+                    return True
 
             doc_viewer = self._create_viewer(document_widget)
 
@@ -642,7 +639,7 @@ class DocumentViewManager(QMainWindow):
                 document_widget.displayName()
             )
 
-            abs_path = network_repository + "/" +profile_name + '/' +\
+            abs_path = network_repository + profile_name + '/' +\
                        unicode(source_entity) + "/" + unicode(doc_type) + "/" +\
                        unicode(file_id) + unicode(file_extension)
 
