@@ -256,7 +256,6 @@ class SupportDocManager(QObject):
                     self.DNLD_FILEEXISTS
                 )
             else:
-                print(src_url)
                 download_result = kobo_downloader.kobo_download(
                   src_url,
                   dest_filename
