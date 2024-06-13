@@ -650,6 +650,9 @@ class GeometryColumn(BaseColumn):
 
         return '{0}'.format(self.entity.short_name)
 
+    def get_srid(self) -> int:
+        return self.srid
+
     def geometry_type(self):
         """
         :returns: Returns the specified geometry type as a string.

@@ -181,30 +181,32 @@ class ColumnEntitiesModel(QStandardItemModel):
 
         self.setHorizontalHeaderLabels(ColumnEntitiesModel.headers_labels)
 
-    def _add_row(self, entity):
-        name_column = ColumnEntityModelItem(entity.name)
+    def _add_row(self, column: 'Column'):
+        name_column = ColumnEntityModelItem(column.name)
 
-        data_type_name = entity.display_name()
+        data_type_name = column.display_name()
 
-        if entity.TYPE_INFO == 'VARCHAR':
-            data_type_name = f'{data_type_name} ({entity.maximum})'
+        if column.TYPE_INFO == 'VARCHAR':
+            data_type_name = f'{data_type_name} ({column.maximum})'
+
+        if column.TYPE_INFO == 'GEOMETRY':
+            data_type_name = f"{data_type_name} ({column.geometry_type()} - EPSG: {column.get_srid()})"
 
         data_type_column = ColumnEntityModelItem(data_type_name)
 
         mandt_column = ColumnEntityModelItem(
-            self.bool_to_yesno(entity.mandatory))
+            self.bool_to_yesno(column.mandatory))
         mandt_column.setTextAlignment(Qt.AlignHCenter| Qt.AlignVCenter)
-        if entity.mandatory:
+        if column.mandatory:
             brush = QBrush(Qt.red)
             mandt_column.setForeground(brush)
 
         unique_column = ColumnEntityModelItem(
-            self.bool_to_yesno(entity.unique)
+            self.bool_to_yesno(column.unique)
         )
         unique_column.setTextAlignment(Qt.AlignHCenter|Qt.AlignVCenter)
 
-        description_column = ColumnEntityModelItem(entity.description)
-
+        description_column = ColumnEntityModelItem(column.description)
 
         self.appendRow([name_column, data_type_column, 
                      mandt_column, unique_column, description_column])

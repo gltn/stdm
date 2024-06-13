@@ -2413,6 +2413,7 @@ class ConfigWizard(WIDGET, BASE):
         rid, column, model_item = self.get_selected_item_data(self.tbvColumns)
         if rid == -1:
             return
+
         if column and column.action == DbItem.CREATE:
             _, entity = self._get_entity(self.lvEntities)
 
@@ -2558,7 +2559,7 @@ class ConfigWizard(WIDGET, BASE):
         if entity:
             return row_id, entity
 
-    def get_selected_item_data(self, view):
+    def get_selected_item_data(self, view: QTableView) -> tuple[int, 'Column', 'QAbstractItemModel']:
         if len(view.selectedIndexes()) == 0:
             return -1, None, None
         model_item = view.model()
