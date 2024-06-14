@@ -559,6 +559,8 @@ class DocumentViewManager(QMainWindow):
         else:
             abs_doc_path = self.absolute_document_path(document_widget)
 
+            print(abs_doc_path)
+
             if not QFile.exists(abs_doc_path):
                 msg = QApplication.translate(
                     "DocumentViewManager",
