@@ -559,8 +559,6 @@ class DocumentViewManager(QMainWindow):
         else:
             abs_doc_path = self.absolute_document_path(document_widget)
 
-            print(abs_doc_path)
-
             if not QFile.exists(abs_doc_path):
                 msg = QApplication.translate(
                     "DocumentViewManager",
@@ -641,7 +639,7 @@ class DocumentViewManager(QMainWindow):
                 document_widget.displayName()
             )
 
-            abs_path = network_repository + profile_name + '/' +\
+            abs_path = network_repository + '/' + profile_name + '/' +\
                        unicode(source_entity) + "/" + unicode(doc_type) + "/" +\
                        unicode(file_id) + unicode(file_extension)
 
