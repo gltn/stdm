@@ -490,7 +490,7 @@ class DetailsDBHandler(LayerSelectionHandler):
         model_obj = str_model()
         party_name = party_entity.name
 
-        party_entity_id = '{}_id'.format(party_entity.short_name.lower())
+        party_entity_id = f"{(party_entity.short_name.lower().replace(' ','_'))}_id"
 
         party_col_obj = getattr(str_model, party_entity_id)
 

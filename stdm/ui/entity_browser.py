@@ -92,6 +92,7 @@ from stdm.ui.gps_tool import GPSToolDialog
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.helpers.datamanagemixin import SupportsManageMixin
 from stdm.ui.notification import NotificationBar
+from stdm.ui.csv_export import CSVExportDialog
 from stdm.ui.sourcedocument import (
     DocumentWidget,
     network_document_path,
@@ -241,6 +242,8 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             viewer_title
         )
 
+        self._csv_export_act = None
+
         self._doc_viewer = _EntityDocumentViewerHandler(
             self.doc_viewer_title,
             self
@@ -286,6 +289,9 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._search_act = None
         self._clear_search_action = None
         self._add_advanced_search_btn()
+
+        self._csv_export_act = None
+        self._add_csv_export_btn()
 
         # Connect signals
         self.buttonBox.accepted.connect(self.onAccept)
@@ -397,6 +403,20 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
         self._clear_search_action.setEnabled(False)
         self._clear_search_action.triggered.connect(self.clear_advanced_search)
         self.tbActions.addAction(self._clear_search_action)
+
+    def _add_csv_export_btn(self):
+        csv_doc_str = QApplication.translate(
+            'EntityBrowser',
+            'Export Data as CSV'
+        )
+        self._csv_export_act = QAction(
+            GuiUtils.get_icon('csv03_sm.png'),
+            csv_doc_str,
+            self
+        )
+        self._csv_export_act.triggered.connect(self.on_csv_export)
+        self.tbActions.addAction(self._csv_export_act)
+
 
     def dateFormatter(self):
         """
@@ -691,6 +711,21 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
                     continue
 
                 self._doc_viewer.load(docs)
+    
+    def on_csv_export(self):
+        data = self._tableModel._initData
+        headers = self._tableModel._headerdata if len(data) > 0 else []
+
+        export_entity = {
+            "entity_name": self._entity.short_name,
+            "columns": self._entity_attrs,
+            "formatters":self._cell_formatters,
+            "headers": headers,
+            "data":data
+        }
+
+        csv_export_dlg = CSVExportDialog(iface, export_entity)
+        csv_export_dlg.exec_()
 
     def _initializeData(self, filtered_records=None):
         """
