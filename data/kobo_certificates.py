@@ -1071,10 +1071,14 @@ def get_kobo_certificate_logoimage():
     return logo_image
 
 def get_param_index(lines, prm):
-    txt = '<p id=p_value>${}</p>'.format(prm)           
-    print('PRM:  ', prm)
-    print(lines)
-    return lines.index(txt)
+    """
+    returns: int
+    """
+    try:
+        txt = '<p id=p_value>${}</p>'.format(prm)           
+        return lines.index(txt)
+    except:
+        return -1
 
 def get_image_index(lines, img):
     txt = '<img id=p_value src=${}>'.format(img)           
@@ -1148,6 +1152,10 @@ def update_param(lines, prm, val):
     if len(lines) == 0:
         return
     indx = get_param_index(lines, prm)
+
+    if indx == -1:
+        return
+
     #ErrMessage(lines[indx])
     if val is None:
         val = 'None'
