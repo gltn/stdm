@@ -152,7 +152,7 @@ class KoboCertificatesGenerator(QDialog, Ui_KoboCertificatesGenerator):
 
         self.cancelled = False
         #if 0 == enum_enumerators(' Where hl_enumeration.kobo_id in (select kobo_id from enumeration_filter)', self):
-        if 0 == enum_enumerators('', self):
+        if 0 == enum_enumerators(' ', self):
             set_kobo_outpath(self.output)
 
         self.btnGenerate.setEnabled(True)
