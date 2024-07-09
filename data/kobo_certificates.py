@@ -1072,6 +1072,8 @@ def get_kobo_certificate_logoimage():
 
 def get_param_index(lines, prm):
     txt = '<p id=p_value>${}</p>'.format(prm)           
+    print('PRM:  ', prm)
+    print(lines)
     return lines.index(txt)
 
 def get_image_index(lines, img):
