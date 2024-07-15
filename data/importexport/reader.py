@@ -421,7 +421,14 @@ class OGRReader(object):
         for k,v in columnmatch.iteritems():
             acols[k.encode('ascii', 'ignore')]= v
 
+        data_start_at_row = 2
+        row_count = 1
+
         for feat in lyr:
+            if row_count < data_start_at_row:
+                row_count += 1
+                continue
+
             column_value_mapping = {}
             column_count = 0
             progress.setValue(init_val)

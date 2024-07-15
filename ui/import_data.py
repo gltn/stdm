@@ -831,6 +831,7 @@ class ImportData(QWizard, Ui_frmImport):
                 self.targetTab, matchCols, True, self, geom_column,
                 update_geom_column_only=update_geom_column, translator_manager=value_translator_manager
             )
+
             self.InfoMessage(
                 "All features have been imported successfully!"
             )
