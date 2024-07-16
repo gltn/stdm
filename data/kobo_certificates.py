@@ -1404,15 +1404,13 @@ def enum_enumerators(whereclause, form):
     enums = find_enumerator(whereclause)
     count = 0
 
-    lines, lang = kobo_certificate_read_from_template() 
-    print('Loaded HTML file: ', len(lines))
-
     for enum in enums:
         #ErrMessage('enum: {}'.format(enum['enumerator_id']))
         count = count + 1
         form.update_progress.emit(0, u'{}.Printing...{}'.format(str(count), enum['kobo_id']))
+        QApplication.processEvents()
         
-        #lines, lang = kobo_certificate_read_from_template() # Move this outside the current loop
+        lines, lang = kobo_certificate_read_from_template() 
 
         if lang == 'EN':
             footer_align = 'right'
@@ -2007,14 +2005,14 @@ def enum_enumerators(whereclause, form):
                         print('Claim File Name: ', claim_fname)
                         print('PDF: ', claim_pdfname)
 
-                        # process = subprocess.Popen(
-                        #     'C:/wkhtmltopdf/bin/wkhtmltopdf --enable-external-links --enable-local-file-access --footer-{} [page]/[topage] {} {}'.format(footer_align, claim_fname, claim_pdfname),
-                        #     stdout=subprocess.PIPE,
-                        #     shell=False,
-                        #     creationflags = CREATE_NO_WINDOW
-                        # )
-                        # process.wait()
-                        # process = None
+                        process = subprocess.Popen(
+                            'C:/wkhtmltopdf/bin/wkhtmltopdf --enable-external-links --enable-local-file-access --footer-{} [page]/[topage] {} {}'.format(footer_align, claim_fname, claim_pdfname),
+                            stdout=subprocess.PIPE,
+                            shell=False,
+                            creationflags = CREATE_NO_WINDOW
+                        )
+                        process.wait()
+                        process = None
                         dst_file = claim_pdfname.replace(cert_path, output_claims)
                         if os.path.exists(dst_file):
                             os.remove(dst_file)
