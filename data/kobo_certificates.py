@@ -381,11 +381,11 @@ def find_enumerator(whereclause):
                         ' LEFT JOIN hl_check_gender ON hl_enumeration.respondent_gender = hl_check_gender.id',
                         wrclause
                     )
-    result_as_array = []
+    results = []
     result_dataset = fetch_with_filter(sql_command)
     if not result_dataset is None:
         for rec in result_dataset:
-            result_as_array.append(
+            results.append(
                 {
                     'kobo_id':u'{}'.format(rec['kobo_id']),
                     'enumerator_id':u'{}'.format(rec['enumerator_id']),
@@ -402,7 +402,7 @@ def find_enumerator(whereclause):
                     'respondent_gender':u'{}'.format(rec['respondent_gender'])
                 }
             )
-    return result_as_array
+    return results
 
 def find_respondent(whereclause):
     wrclause = ' {};'.format(whereclause)
@@ -450,11 +450,11 @@ def find_respondent(whereclause):
                         ' LEFT JOIN hl_check_education_level_respondent ON hl_respondent.education_level_respondent = hl_check_education_level_respondent.id',
                         wrclause
                     )
-    result_as_array = []
+    results = []
     result_dataset = fetch_with_filter(sql_command)
     if not result_dataset is None:
         for rec in result_dataset:
-            result_as_array.append(
+            results.append(
                 {
                     'kobo_id':u'{}'.format(rec['kobo_id']),
                     'respondent_id':u'{}'.format(rec['respondent_id']),
@@ -476,7 +476,7 @@ def find_respondent(whereclause):
                     'enumerator_id':u'{}'.format(rec['enumerator_id'])
                 }
             )
-    return result_as_array
+    return results
 
 def find_household_member(whereclause):
     wrclause = ' {};'.format(whereclause)
@@ -1085,16 +1085,28 @@ def get_image_index(lines, img):
     return lines.index(txt)
 
 def get_loop_start_index(lines,loopname):
-    txt = '<p id=loop>[{}_start]</p>'.format(loopname)
-    return lines.index(txt)
+    try:
+        txt = '<p id=loop>[{}_start]</p>'.format(loopname)
+        return lines.index(txt)
+    except:
+        return -1
 
 def get_loop_end_index(lines,loopname):
-    txt = '<p id=loop>[{}_end]</p>'.format(loopname)
-    return lines.index(txt)
+    try:
+        txt = '<p id=loop>[{}_end]</p>'.format(loopname)
+        return lines.index(txt)
+    except:
+        return -1
 
 def get_looplines(lines, loopname):
     loop_start = get_loop_start_index(lines,loopname)
+    if loop_start == -1:
+        return ""
+
     loop_end = get_loop_end_index(lines, loopname)
+    if loop_end == -1:
+        return ""
+
     return lines[loop_start + 1:loop_end]
 
 def replace_loop_slice(lines, loopname, looplines):
@@ -1124,6 +1136,9 @@ def kobo_certificate_setlanguage(cert_lang):
     return False
 
 def kobo_certificate_read_from_template():
+    """
+    Returns a tuple of <list, str>
+    """
     lines = []
     lang = 'EN'
     with io.open(get_kobo_certificate_filename(),'r',encoding='utf-8') as f:
@@ -1265,11 +1280,20 @@ def get_filename_from_stdm(entity, type, name, ext):
     return result
 
 def add_enumeration_supporting_document(enum_id, file_fullname):
+
+    print('Func: add_enumeration_supporting_document...')
+
+    print("Fix auto sequences [hl_enumeration_supporting_document]...")
     fix_auto_sequences('hl_enumeration_supporting_document', 'id')
+
+    print("Fix auto sequences [hl_supporting_document]...")
     fix_auto_sequences('hl_supporting_document', 'id')
 
+    print('Make supporting doc...')
     entity_name = 'hl_enumeration'
     support_doc = make_supporting_doc(file_fullname, entity_name)
+
+    print('Create supporting document (DB)...')
     result = pg_create_supporting_document(support_doc)
     if result is None:
         return
@@ -1351,6 +1375,8 @@ def add_calim_supporting_document(property_id, file_fullname):
     return
 
 def enum_enumerators(whereclause, form):
+    print('Func: enum_enumerators...')
+
     cert_path = form.output
 
     cert_lang = 'EN'
@@ -1370,22 +1396,29 @@ def enum_enumerators(whereclause, form):
 
     if not os.path.exists(output_koboprofiles):
         os.makedirs(output_koboprofiles)
+
     logo_image = get_kobo_certificate_logoimage()
     if os.path.exists(logo_image):
         shutil.copy(logo_image, cert_path + '\\logo.png')
 
     enums = find_enumerator(whereclause)
     count = 0
+
+    lines, lang = kobo_certificate_read_from_template() 
+    print('Loaded HTML file: ', len(lines))
+
     for enum in enums:
         #ErrMessage('enum: {}'.format(enum['enumerator_id']))
         count = count + 1
         form.update_progress.emit(0, u'{}.Printing...{}'.format(str(count), enum['kobo_id']))
         
-        lines, lang = kobo_certificate_read_from_template()
+        #lines, lang = kobo_certificate_read_from_template() # Move this outside the current loop
+
         if lang == 'EN':
             footer_align = 'right'
         else:
             footer_align = 'left'
+
         claim_ref_number_title_index = get_param_index(lines, 'CLAIM_REF_NUMBER_TITLE')
         #claim_qrcode_title_index = get_param_index(lines, 'CLAIM_QRCODE')
         claim_qrcode_image_index = get_param_index(lines, 'CLAIM_QRCODE_IMAGE')
@@ -1406,6 +1439,8 @@ def enum_enumerators(whereclause, form):
             os.makedirs(enum_path)
         
         if togenerate_certificate:
+            print('Updating Enumerator section..')
+
             update_param(lines,'enumerator_name', enum['enumerator_name'])
             update_param(lines,'enumeration_date', enum['enumeration_date'])
             update_param(lines,'enumeration_location', enum['enumeration_location'])
@@ -1426,7 +1461,12 @@ def enum_enumerators(whereclause, form):
             else:
                 update_line(lines,get_param_index(lines, 'enumeration_map_latlon'),map_location)
             
+            print('Finding respondents... Enumerator ID: ', enum['enumerator_id'])
+
             resps = find_respondent(' WHERE hl_respondent.enumeration = {}'.format(enum['enumerator_id']))
+
+            print('Respondents...', len(resps))
+
             for resp in resps:
                 #ErrMessage(u'respondent: {}'.format(resp['respondent_first_name']))
                 update_param(lines,'respondent_first_name', resp['respondent_first_name'])
@@ -1444,6 +1484,8 @@ def enum_enumerators(whereclause, form):
                 update_param(lines,'respondent_yearofleave', resp['respondent_yearofleave'])
                 update_param(lines,'respondent_numberofdisplacements', resp['respondent_numberofdisplacements'])
                 
+                print('Finding respondent id doc... Respondent ID: ', resp['respondent_id'])
+
                 resps_id_docs = find_respondent_id_doc(' WHERE hl_respondent_document.respondent = {}'.format(resp['respondent_id']))
                 loop1_lines = []
                 
@@ -1464,6 +1506,10 @@ def enum_enumerators(whereclause, form):
                     #ErrMessage(u'respondent id doc of type: {}'.format(resps_id_doc['respondent_id_doc_type']))
                     loop1_lines_org = get_looplines(lines,'loop1')
 
+                    if loop1_lines_org == "":
+                        continue
+
+
                     update_param(loop1_lines_org,'respondent_id_doc_type', resps_id_doc['respondent_id_doc_type'])
                     update_param(loop1_lines_org,'respondent_id_doc_type_other', resps_id_doc['respondent_id_doc_type_other'])
                     update_param(loop1_lines_org,'respondent_id_doc_number', resps_id_doc['respondent_id_doc_number'])
@@ -1473,7 +1519,10 @@ def enum_enumerators(whereclause, form):
                     update_image(loop1_lines_org,'respondent_id_doc_front_img', u'{}{}'.format(id_doc_image_path, resps_id_doc['respondent_id_doc_front']), resps_id_doc['respondent_id_doc_front'])
                     update_image(loop1_lines_org,'respondent_id_doc_back_img', u'{}{}'.format(id_doc_image_path, resps_id_doc['respondent_id_doc_back']), resps_id_doc['respondent_id_doc_back'])
 
+                    print('Find respondent ID doc file...')
                     resp_id_doc_files = find_respondent_id_doc_file(' WHERE hl_respondent_document_supporting_document.respondent_document_id = {}'.format(resps_id_doc['id_doc_id']))
+                    print('Respondent ID doc files: ', len(resp_id_doc_files))
+
                     for resp_id_doc_file in resp_id_doc_files:
                         if not os.path.exists(id_doc_path):
                             os.makedirs(id_doc_path)
@@ -1498,7 +1547,9 @@ def enum_enumerators(whereclause, form):
 
                 #resp_sdoc_path = '{}\\resp_sdoc'.format(enum_path)
                 #resp_sdoc_image_path = './{}/resp_sdoc/'.format(enum['kobo_id'])
+                print('Find Respondent SDocs...')
                 resp_sdocs = find_respondent_sdocs(' WHERE hl_respondent_supporting_document.respondent_id = {}'.format(resp['respondent_id']))
+                print('Respondent SDocs...: ', len(resp_sdocs))
 
                 loop9_lines = []
                 loop10_lines = []
@@ -1508,6 +1559,7 @@ def enum_enumerators(whereclause, form):
 
                 for resp_sdoc in resp_sdocs:
                     #ErrMessage(u'respondent sdoc file: {} >> {}'.format(resp_sdoc['respondent_sdoc_type'], resp_sdoc['sdoc_filename']))    
+                    print('* AAA *')
                     if not os.path.exists(resp_sdoc_path):
                         os.makedirs(resp_sdoc_path)
                     src_file = get_filename_from_stdm(
@@ -1561,13 +1613,18 @@ def enum_enumerators(whereclause, form):
                         hh_group_photo_desc = u'{} {}'.format(resp_photo_count, unicode('صورة لأفراد الأسرة', 'utf-8')) 
 
                     
+                print('* BBB *')
 
                 update_param(lines, 'respondent_photo_count', resp_photo_desc)
                 update_param(lines, 'household_group_photo_count', hh_group_photo_desc)
                 lines = replace_loop_slice(lines, 'loop9', loop9_lines)
                 lines = replace_loop_slice(lines, 'loop10', loop10_lines)
 
+                print('* CCC *')
+                
                 household_members = find_household_member(' WHERE hl_household_member.respondent = {}'.format(resp['respondent_id']))
+
+                print('* DDD *')
 
                 loop2_lines = []
                 hhm_count = len(household_members)
@@ -1576,6 +1633,8 @@ def enum_enumerators(whereclause, form):
                     hhm_desc += 's'
                 hhm_localnum = 1
 
+                print('* EEE *')
+
                 if hhm_count > 0:
                     update_param(lines,'household_member_count', None)
                 else:
@@ -1583,6 +1642,8 @@ def enum_enumerators(whereclause, form):
                         update_param(lines,'household_member_count', 'No household memenbers')
                     else:
                         update_param(lines,'household_member_count', u'{}'.format(unicode('لا يوجد أفراد أسرة','utf-8')))
+
+                print('* FFF *')
 
                 for hhm in household_members:
                     #ErrMessage(u'household member: {}>>{}>>{}'.format(hhm['household_member_relation'], hhm['household_member_first_name'], hhm['household_member_right_type']))
@@ -1599,6 +1660,8 @@ def enum_enumerators(whereclause, form):
                     update_param(loop2_lines_org,'household_member_gender', hhm['household_member_gender'])
                     update_param(loop2_lines_org,'household_member_right_type', hhm['household_member_right_type'])
                     update_param(loop2_lines_org,'household_member_right_type_other', hhm['household_member_right_type_other'])
+
+                    print('* GGG *')
 
                     household_member_id_docs = find_household_member_id_doc(' where hl_household_member_document.household_member = {} and hl_household_member_document.kobo_parent_index = {}'.format(hhm['household_member_id'], hhm['household_member_kobo_index']))
                     
@@ -1619,6 +1682,7 @@ def enum_enumerators(whereclause, form):
                     hhm_id_doc_path = '{}\\hhm_id_doc'.format(enum_path)
                     hhm_id_doc_image_path = './{}/hhm_id_doc/'.format(enum['kobo_id'])
 
+                    print('* HHH *')
                     for hhm_id_doc in household_member_id_docs:
                         #ErrMessage(u'household member id doc of type: {}'.format(hhm_id_doc['household_member_id_doc_type']))
 
@@ -1628,6 +1692,7 @@ def enum_enumerators(whereclause, form):
                         update_param(loop3_lines_org,'household_member_id_doc_type_other', hhm_id_doc['household_member_id_doc_type_other'])
                         update_param(loop3_lines_org,'household_member_id_doc_number', hhm_id_doc['household_member_id_doc_number'])
                         
+                        print('* JJJ *')
                         hhm_id_doc_files = find_household_member_id_doc_file(' where hl_household_member_document_supporting_document.household_member_document_id = {}'.format(hhm_id_doc['household_member_id_doc_id']))
                         for hhm_id_doc_file in hhm_id_doc_files:
                             #ErrMessage(u'household member id doc file: {} >> {}'.format(hhm_id_doc_file['household_member_doc_type'], hhm_id_doc_file['sdoc_filename']))            
@@ -1642,6 +1707,7 @@ def enum_enumerators(whereclause, form):
                             if src_file != '':
                                 shutil.copy(src_file, u'{}/{}'.format(hhm_id_doc_path, hhm_id_doc_file['sdoc_filename']))
 
+                        print('* KKK *')
                         if hhm_id_doc_count > 1:
                             if lang == "EN":
                                 loop3_lines.append('<p id=q_subtitle1><strong>Respondent Personal id ({})</strong></p>'.format(hhm_id_doc_localnum))
@@ -1660,6 +1726,7 @@ def enum_enumerators(whereclause, form):
                     loop2_lines += loop2_lines_org
                 lines = replace_loop_slice(lines, 'loop2', loop2_lines)
                     
+                print('* LLL *')
                 claims = find_claim(' WHERE hl_property.respondent = {}'.format(resp['respondent_id']))
 
                 loop4_lines = []
@@ -1675,6 +1742,7 @@ def enum_enumerators(whereclause, form):
 
                 #update_param(lines,'property_count', claim_desc)
 
+                print('* MMM *')
                 for claim in claims:
                     #ErrMessage(u'claim: {} >> {}'.format(claim['property_type'], claim['claim_ref_number']))
                     if lang == 'EN':
@@ -1685,6 +1753,7 @@ def enum_enumerators(whereclause, form):
                             claim['claim_ref_number'])
                         )
                     
+                    print('* NNN *')
                     #qrcode generator
                     if not os.path.exists(claim_doc_path):
                         os.makedirs(claim_doc_path)
@@ -1702,6 +1771,8 @@ def enum_enumerators(whereclause, form):
                     #update_line(lines, claim_qrcode_title_index, '<p>{}</p>'.format(claim['property_qrcode']))
                     update_line(lines, claim_qrcode_image_index, qr_html_image)
 
+
+                    print('* MMM *')
 
                     loop4_lines_org = get_looplines(lines,'loop4')
                     update_param(loop4_lines_org,'claim_ref_number', claim['claim_ref_number'])
@@ -1729,6 +1800,7 @@ def enum_enumerators(whereclause, form):
                     claim_map_location += 'src="https://maps.googleapis.com/maps/api/staticmap?center={}&zoom=17&size=540x400&maptype=satellite'.format(claim_map_coords)
                     claim_map_location += '&scale=2&markers=color:red|{}&key=AIzaSyC45nWjy5Cafe53JBv6n34fsTHFFqiydh4">'.format(claim_map_coords)
 
+                    print('* OOOO *')
 
                     stdm_mapname_public = u'{}\\maps\\{}.jpg'.format(cert_path, claim['claim_ref_number'] )
                     if os.path.exists(stdm_mapname_public):
@@ -1770,6 +1842,8 @@ def enum_enumerators(whereclause, form):
                     update_param(loop4_lines_org,'signature', claim['signature'])
                     update_image(loop4_lines_org,'signature_img', '{}{}'.format(claim_doc_image_path, claim['signature']), claim['signature'])
         
+                    print('* QQQQ *')
+
                     claim_sdocs = find_claim_sdocs(' WHERE hl_property_supporting_document.property_id = {}'.format(claim['property_id']))
                     stdm_certificate = ''
                     for claim_sdoc in claim_sdocs:
@@ -1787,6 +1861,8 @@ def enum_enumerators(whereclause, form):
                             if 'Scanned certificate' == claim_sdoc['property_sdoc_type']:
                                 stdm_certificate = u'{}/{}'.format(output_claims, claim_sdoc['sdoc_filename'])
                                 shutil.copy(src_file, stdm_certificate)
+
+                    print('* RRR *')
 
                     lostdocs = find_lostdoc(' WHERE hl_lost_documents.hl_property_id = {}'.format(claim['property_id']))
 
@@ -1808,6 +1884,7 @@ def enum_enumerators(whereclause, form):
                         loop6_lines += loop6_lines_org
                     loop4_lines_org = replace_loop_slice(loop4_lines_org, 'loop6', loop6_lines)
 
+                    print('* sSS *')
                     evidences = find_evidence(' WHERE hl_evidence.kobo_parent_index = {} and hl_evidence.respondent = {}'.format(claim['kobo_index'], resp['respondent_id']))
 
                     loop5_lines = []
@@ -1825,6 +1902,9 @@ def enum_enumerators(whereclause, form):
                     evd_doc_image_path = './{}/evd_doc/'.format(enum['kobo_id'])
 
                     update_param(loop4_lines_org, 'evidence_count', evd_doc_desc)
+
+                    print('* TTT *')
+
                     for evd in evidences:
                         #ErrMessage(u'evidence: {} >> {}'.format(evd['evidence_type'], evd['evidence_number']))
                         loop5_lines_org = get_looplines(loop4_lines_org,'loop5')
@@ -1843,6 +1923,7 @@ def enum_enumerators(whereclause, form):
                         audio_evd_count = 0
                         video_evd_count = 0
 
+                        print('* UUU *')
                         evd_files = find_evidence_file(' WHERE hl_evidence_supporting_document.evidence_id = {}'.format(evd['evidence_id']))
                         for evd_file in evd_files:
                             #ErrMessage(u'evidence sdoc file: {} >> {}'.format(evd_file['evidence_sdoc_type'], evd_file['sdoc_filename']))                
@@ -1868,6 +1949,7 @@ def enum_enumerators(whereclause, form):
                                 update_param(loop8_lines_org,'evidence_video', evd_file['sdoc_filename'])
                                 loop8_lines += loop8_lines_org
                     
+                        print('* VVVV *')
                         if evd_doc_count > 1:
                             if lang == "EN":
                                 loop5_lines.append('<p id=q_subtitle1><strong>Evidence ({})</strong></p>'.format(evd_doc_localnum))
@@ -1915,26 +1997,37 @@ def enum_enumerators(whereclause, form):
                         #claim_pdfname = '{}_{}.pdf'.format(claim_path, enum['kobo_id'])
                         claim_pdfname = '{}_{}.pdf'.format(claim_path, 'ClaimProfile')
                         claim_pdfname_merged = '{}_{}.pdf'.format(claim_path, 'ClaimProfile').replace(cert_path, output_claims_merged)
+
+                        print('* WWW *')
+
                         kobo_certificate_save_to_file(claims_lines, claim_fname) 
                         CREATE_NO_WINDOW = 0x08000000
                         
-                        process = subprocess.Popen(
-                            'C:/wkhtmltopdf/bin/wkhtmltopdf --enable-external-links --enable-local-file-access --footer-{} [page]/[topage] {} {}'.format(footer_align, claim_fname, claim_pdfname),
-                            stdout=subprocess.PIPE,
-                            shell=False,
-                            creationflags = CREATE_NO_WINDOW
-                        )
-                        process.wait()
-                        process = None
+                        print('* XXX *')
+                        print('Claim File Name: ', claim_fname)
+                        print('PDF: ', claim_pdfname)
+
+                        # process = subprocess.Popen(
+                        #     'C:/wkhtmltopdf/bin/wkhtmltopdf --enable-external-links --enable-local-file-access --footer-{} [page]/[topage] {} {}'.format(footer_align, claim_fname, claim_pdfname),
+                        #     stdout=subprocess.PIPE,
+                        #     shell=False,
+                        #     creationflags = CREATE_NO_WINDOW
+                        # )
+                        # process.wait()
+                        # process = None
                         dst_file = claim_pdfname.replace(cert_path, output_claims)
                         if os.path.exists(dst_file):
                             os.remove(dst_file)
                             
+                        print('XX- 01')
                         if not os.path.exists(claim_pdfname):
                             continue
 
+                        print('XX- 02')
                         shutil.move(claim_pdfname, output_claims)
 
+
+                        print('XX- 03')
                         if stdm_certificate != '':
                             CREATE_NO_WINDOW = 0x08000000
                             process = subprocess.Popen(
@@ -1949,12 +2042,19 @@ def enum_enumerators(whereclause, form):
                             if os.path.exists(dst_file):
                                 shutil.copy(dst_file, claim_pdfname_merged)
                                 
+                        print('XX- 04')
                         add_calim_supporting_document(claim['property_id'], dst_file)
 
+                print('* YYYY *')
                 lines = replace_loop_slice(lines, 'loop4', loop4_lines)
+
+            print('* ZZZ *')
 
             kobo_certificate_save_to_file(lines, fname) 
             #os.system('C:/wkhtmltopdf/bin/wkhtmltopdf {} {}'.format(fname, pdfname))
+
+
+            print('* 2222 *')
             CREATE_NO_WINDOW = 0x08000000
             process = subprocess.Popen(
                 'C:/wkhtmltopdf/bin/wkhtmltopdf --enable-external-links --enable-local-file-access --footer-{} [page]/[topage] {} {}'.format(footer_align, fname, pdfname),
@@ -1965,6 +2065,7 @@ def enum_enumerators(whereclause, form):
             process.wait()
             process = None
 
+        print('* 3333 *')
         if os.path.exists(pdfname):
             if togenerate_certificate:
                 msg = '...added...({}) claim (s)...Success'.format(claim_count)
@@ -1981,6 +2082,7 @@ def enum_enumerators(whereclause, form):
             shutil.copy(pdfname, output_koboprofiles)
             #pdftk C:\k_cert_en\calims\SY-cd-01_ClaimProfile.pdf C:\k_cert_en\calims\SY-cd-01.pdf output C:\k_cert_en\calims\_result.pdf
 
+        print('* 4444 *')
         QApplication.processEvents()
         if form.cancelled:
             return
