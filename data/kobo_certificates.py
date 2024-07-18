@@ -381,6 +381,7 @@ def find_enumerator(whereclause):
                         ' LEFT JOIN hl_check_gender ON hl_enumeration.respondent_gender = hl_check_gender.id',
                         wrclause
                     )
+    print(sql_command)
     results = []
     result_dataset = fetch_with_filter(sql_command)
     if not result_dataset is None:
@@ -1383,6 +1384,7 @@ def enum_enumerators(whereclause, form):
     if not form.Certificate_Language is None:
         if form.Certificate_Language:
             cert_lang = 'AR'
+
     kobo_certificate_setlanguage(cert_lang)
     
     output_claims = '{}\\calims_{}'.format(cert_path, cert_lang.lower())
@@ -1424,7 +1426,6 @@ def enum_enumerators(whereclause, form):
         enum_path = '{}\\{}'.format(cert_path, enum['kobo_id'])
         fname = '{}.htm'.format(enum_path)
         pdfname = '{}.pdf'.format(enum_path)
-        
 
         id_doc_path = '{}\\id_doc'.format(enum_path)
         id_doc_image_path = './{}/id_doc/'.format(enum['kobo_id'])
@@ -1461,7 +1462,8 @@ def enum_enumerators(whereclause, form):
             
             print('Finding respondents... Enumerator ID: ', enum['enumerator_id'])
 
-            resps = find_respondent(' WHERE hl_respondent.enumeration = {}'.format(enum['enumerator_id']))
+            #resps = find_respondent(' WHERE hl_respondent.enumeration = {}'.format(enum['enumerator_id']))
+            resps = find_respondent(' WHERE hl_respondent.enumeration = {} and hl_respondent.id = {}'.format(enum['enumerator_id'], 5917))
 
             print('Respondents...', len(resps))
 
