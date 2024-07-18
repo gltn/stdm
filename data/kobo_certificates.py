@@ -2066,11 +2066,16 @@ def enum_enumerators(whereclause, form):
             process = None
 
         print('* 3333 *')
+
+        # TODO: place this in correct location
+        claim_count = 0
+
         if os.path.exists(pdfname):
             if togenerate_certificate:
                 msg = '...added...({}) claim (s)...Success'.format(claim_count)
             else:
                 msg = '...Already Printed' 
+
             form.update_progress.emit(1, msg)
             if form.UploadCertificate:
                 add_enumeration_supporting_document(enum['enumerator_id'], pdfname)
