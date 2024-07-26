@@ -192,18 +192,24 @@ class ConfigWizard(WIDGET, BASE):
         self.btnCopy.setIcon(GuiUtils.get_icon('composer_table.png'))
         self.btnPDelete.setIcon(GuiUtils.get_icon('remove.png'))
         self.btnNewP.setIcon(GuiUtils.get_icon('add.png'))
+
         self.btnNewEntity.setIcon(GuiUtils.get_icon('add.png'))
         self.btnEditEntity.setIcon(GuiUtils.get_icon('edit.png'))
         self.btnDeleteEntity.setIcon(GuiUtils.get_icon('delete.png'))
+
         self.btnAddColumn.setIcon(GuiUtils.get_icon('add.png'))
         self.btnEditColumn.setIcon(GuiUtils.get_icon('edit.png'))
         self.btnDeleteColumn.setIcon(GuiUtils.get_icon('delete.png'))
+        self.btnExport.setIcon(GuiUtils.get_icon('export.png'))
+
         self.btnAddLookup.setIcon(GuiUtils.get_icon('add.png'))
         self.btnEditLookup.setIcon(GuiUtils.get_icon('edit.png'))
         self.btnDeleteLookup.setIcon(GuiUtils.get_icon('delete.png'))
+
         self.btnAddLkupValue.setIcon(GuiUtils.get_icon('add.png'))
         self.btnEditLkupValue.setIcon(GuiUtils.get_icon('edit.png'))
         self.btnDeleteLkupValue.setIcon(GuiUtils.get_icon('delete.png'))
+
         self.btn_sp_units_tenure.setIcon(GuiUtils.get_icon('social_tenure.png'))
         self.btn_custom_attrs.setIcon(GuiUtils.get_icon('column.png'))
 
@@ -602,6 +608,7 @@ class ConfigWizard(WIDGET, BASE):
         self.btnAddColumn.clicked.connect(self.new_column)
         self.btnEditColumn.clicked.connect(self.edit_column)
         self.btnDeleteColumn.clicked.connect(self.delete_column)
+        self.btnExport.clicked.connect(self.export_columns)
 
     def init_lookup_ctrls_event_handlers(self):
         """
@@ -2598,6 +2605,36 @@ class ConfigWizard(WIDGET, BASE):
 
         if self.column_has_entity_relation(column):
             self.delete_privilege_cache(entity.short_name, column.name)
+
+    def export_columns(self):
+        if len(self.lvEntities.selectedIndexes()) == 0:
+            self.show_message(QApplication.translate("Configuration Wizard", \
+                                                     "No entity selected to export columns!"))
+            return
+        model_item, entity, row_id = self.get_model_entity(self.lvEntities)
+        entity_item_model = self.lvEntities.selectionModel()
+        view_model = entity_item_model.currentIndex().model()
+        ent_name = view_model.data(view_model.index(row_id, 0))
+        columns = list(view_model.entity(ent_name).columns.values())
+        if len(columns) == 0:
+            return
+        
+        dest_path, _ = QFileDialog.getSaveFileName(self, self.tr("Configuration"),
+                                                   ent_name,
+                                                   "{0} (*.csv)".format(self.tr('Export files')))
+                                                
+        if not dest_path:
+            return
+        
+        with open(dest_path, 'w') as f:
+            for column in columns:
+                if column.user_editable():
+                    data_type_name = column.TYPE_INFO
+                    if column.TYPE_INFO == 'VARCHAR':
+                        data_type_name = f'{data_type_name} ({column.maximum})'
+                    row = f"{column.name},{data_type_name}\n"
+                    f.write(row)
+        self.show_message("Export done.")
 
     def check_column_dependencies(self, column):
         """
