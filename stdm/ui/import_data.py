@@ -451,8 +451,16 @@ class ImportData(WIDGET, BASE):
         self._add_target_table_columns(matched_target_columns + unmatched_target_columns)
 
     def _add_target_table_columns(self, items, style=False):
+        entity = self.curr_profile.entity_by_name(self.targetTab)
         for item in items:
             list_item = QListWidgetItem(item)
+
+            # Show lookup columns in a different color
+            column = entity.column(item)
+            if column: 
+                if column.TYPE_INFO == "LOOKUP":
+                    color = QColor(255, 85, 0)
+                    list_item.setForeground(color)
 
             if style:
                 color = QColor(0, 128, 255)

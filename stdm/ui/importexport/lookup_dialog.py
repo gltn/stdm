@@ -63,6 +63,10 @@ class LookupDialog(TranslatorDialogBase, WIDGET, BASE):
             self._on_lookup_table_name_changed
         )
 
+        curr_title = self.windowTitle()
+        title = f"{curr_title}- {dest_col}"
+        self.setWindowTitle(title)
+
     def _load_lookup_tables(self):
         # Load lookup table names
         c_profile = self._current_profile
