@@ -673,7 +673,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.kobo_downloader.start_upload()
 
     def fix_auto_sequence(self):
-        pg_fix_auto_sequence('oc_household_supporting_document', 'oc_household_supporting_document_id_seq')
+        pg_fix_auto_sequence('hl_household_supporting_document', 'hl_household_supporting_document_id_seq')
 
     def download_media(self):
         self.fix_auto_sequence()
@@ -858,7 +858,9 @@ class KoboDownloader(QObject):
 
     def start_download(self):
         self.download_started.emit('Download')
+
         downloaded_files = self.run()
+
         if self.upload_after:
             self.upload_downloaded_files(downloaded_files)
         self.download_completed.emit('Download')
@@ -1028,7 +1030,14 @@ class KoboDownloader(QObject):
             self.credentials[0],
             self.credentials[1]
         )
+
+        data_start_at_row = 2
+        row_count = 1
+
         for index, feat in enumerate(lyr):
+            if row_count < data_start_at_row:
+                row_count += 1
+                continue
 
             msg = 'Record: {} of {}...'.format(str(index+1), str(feat_len))
             self.download_progress.emit(KoboDownloader.INFORMATION, msg)
@@ -1038,6 +1047,8 @@ class KoboDownloader(QObject):
                 field_defn = feat_defn.GetFieldDefn(f)
                 field_name = field_defn.GetNameRef()
                 a_field_name = unicode(field_name, 'utf-8').encode('ascii', 'ignore').lower()
+
+                print('a_field_name: ', a_field_name)
 
                 # Get the Key Field value for later use
                 if a_field_name == self.key_field:
@@ -1065,6 +1076,10 @@ class KoboDownloader(QObject):
                     ).encode('ascii', 'ignore') #to fix arabic filename issue
                     src_url = self.kobo_url + asc_field_value
 
+
+                print('Dest Folder: ', dest_folder)
+                print('asc_field_value: ', asc_field_value)
+                print('Field Value: ', field_value)
 
                 dest_url = dest_folder + '\\' + asc_field_value                               
                 #for my own test src_url = self.kobo_url+'1669887425606.jpg'
