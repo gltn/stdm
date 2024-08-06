@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>690</width>
-    <height>638</height>
+    <height>761</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
        <attribute name="title">
         <string>Download</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -149,15 +149,15 @@
              <item row="0" column="0">
               <widget class="QLabel" name="label_7">
                <property name="text">
-                <string>Family Photos:</string>
+                <string>Person Signature:</string>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="edtFamilyFolder"/>
+              <widget class="QLineEdit" name="edtPersonSignatureFolder"/>
              </item>
              <item row="0" column="2">
-              <widget class="QCheckBox" name="cbFamilyPhoto">
+              <widget class="QCheckBox" name="cbPersonSignature">
                <property name="text">
                 <string>Download</string>
                </property>
@@ -167,14 +167,14 @@
               </widget>
              </item>
              <item row="0" column="3">
-              <widget class="QToolButton" name="tbFamilyFolder">
+              <widget class="QToolButton" name="tbPersonSignature">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
              <item row="0" column="4">
-              <widget class="QPushButton" name="btnFamilyBrowse">
+              <widget class="QPushButton" name="btnPersonSignature">
                <property name="text">
                 <string>Browse ...</string>
                </property>
@@ -183,7 +183,7 @@
              <item row="1" column="0">
               <widget class="QLabel" name="label_8">
                <property name="text">
-                <string>Signatures:</string>
+                <string>H/Hold Signatures:</string>
                </property>
               </widget>
              </item>
@@ -191,21 +191,21 @@
               <widget class="QLineEdit" name="edtSignFolder"/>
              </item>
              <item row="1" column="2">
-              <widget class="QCheckBox" name="cbSign">
+              <widget class="QCheckBox" name="cbHHoldSignature">
                <property name="text">
                 <string>Download</string>
                </property>
               </widget>
              </item>
              <item row="1" column="3">
-              <widget class="QToolButton" name="tbSignFolder">
+              <widget class="QToolButton" name="tbHHoldSignature">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
              <item row="1" column="4">
-              <widget class="QPushButton" name="btnSignFolder">
+              <widget class="QPushButton" name="btnHHoldSignatureFolder">
                <property name="text">
                 <string>Browse ...</string>
                </property>
@@ -214,29 +214,29 @@
              <item row="2" column="0">
               <widget class="QLabel" name="label_9">
                <property name="text">
-                <string>House Map:</string>
+                <string>H/Hold Finger Prints:</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QLineEdit" name="edtHouseFolder"/>
+              <widget class="QLineEdit" name="edtFingerPrintFolder"/>
              </item>
              <item row="2" column="2">
-              <widget class="QCheckBox" name="cbHousePhoto">
+              <widget class="QCheckBox" name="cbFingerPrint">
                <property name="text">
                 <string>Download</string>
                </property>
               </widget>
              </item>
              <item row="2" column="3">
-              <widget class="QToolButton" name="tbHouseFolder">
+              <widget class="QToolButton" name="tbFingerPrint">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
              <item row="2" column="4">
-              <widget class="QPushButton" name="btnHouseFolder">
+              <widget class="QPushButton" name="btnFingerPrint">
                <property name="text">
                 <string>Browse ...</string>
                </property>
@@ -245,29 +245,29 @@
              <item row="3" column="0">
               <widget class="QLabel" name="label_11">
                <property name="text">
-                <string>House Picture:</string>
+                <string>H/Hold Photo:</string>
                </property>
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QLineEdit" name="edtHousePic"/>
+              <widget class="QLineEdit" name="edtHHoldPhotoFolder"/>
              </item>
              <item row="3" column="2">
-              <widget class="QCheckBox" name="cbHousePic">
+              <widget class="QCheckBox" name="cbHHoldPhoto">
                <property name="text">
                 <string>Download</string>
                </property>
               </widget>
              </item>
              <item row="3" column="3">
-              <widget class="QToolButton" name="tbHousePic">
+              <widget class="QToolButton" name="tbHHoldPhoto">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
              <item row="3" column="4">
-              <widget class="QPushButton" name="btnHousePic">
+              <widget class="QPushButton" name="btnHHoldPhotoFolder">
                <property name="text">
                 <string>Browse ...</string>
                </property>
@@ -276,29 +276,29 @@
              <item row="4" column="0">
               <widget class="QLabel" name="label_12">
                <property name="text">
-                <string>ID Picture:</string>
+                <string>Family Photo:</string>
                </property>
               </widget>
              </item>
              <item row="4" column="1">
-              <widget class="QLineEdit" name="edtIdPic"/>
+              <widget class="QLineEdit" name="edtFamilyPhoto"/>
              </item>
              <item row="4" column="2">
-              <widget class="QCheckBox" name="cbIdPic">
+              <widget class="QCheckBox" name="cbFamilyPhoto">
                <property name="text">
                 <string>Download</string>
                </property>
               </widget>
              </item>
              <item row="4" column="3">
-              <widget class="QToolButton" name="tbIdPic">
+              <widget class="QToolButton" name="tbFamilyPhoto">
                <property name="text">
                 <string>...</string>
                </property>
               </widget>
              </item>
              <item row="4" column="4">
-              <widget class="QPushButton" name="btnIdPic">
+              <widget class="QPushButton" name="btnFamilyPhotoFolder">
                <property name="text">
                 <string>Browse ...</string>
                </property>
@@ -308,6 +308,49 @@
            </item>
           </layout>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnDownload">
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Download</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -578,6 +621,43 @@
              </item>
             </layout>
            </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="btnUpload">
+               <property name="text">
+                <string>Upload</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
           </layout>
          </widget>
         </item>
@@ -597,49 +677,6 @@
        </layout>
       </widget>
      </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_4">
-      <item>
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btnDownload">
-        <property name="minimumSize">
-         <size>
-          <width>200</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Download</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
     </item>
     <item>
      <widget class="QGroupBox" name="gbProgress">

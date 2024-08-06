@@ -120,6 +120,31 @@ def pg_fix_auto_sequence(table, seq_table):
     sql_text = text(sql)
     _execute(sql_text)
 
+def get_household_data(hhold_id = -1):
+    filter = ""
+    if hhold_id > -1:
+        filter = " Where id = {}".format(hhold_id)
+    sql = " SELECT id, person_signature, hhold_head_signature, hhold_head_fingerprint," \
+                   "household_photo, family_photo, kobo_index " \
+            " FROM hl_household {} " \
+           " ORDER by kobo_index ".format(filter)
+    results = _execute(sql)
+    print(sql)
+    data = []
+    for r in results:
+        record = {
+            'id':r['id'],
+            'person_signature':r['person_signature'],
+            'hhold_head_signature': r['hhold_head_signature'],
+            'hhold_head_fingerprint': r['hhold_head_fingerprint'],
+            'household_photo':r['household_photo'],
+            'family_photo': r['family_photo'],
+            'kobo_index': r['kobo_index']
+        }
+        data.append(record)
+    return data
+
+
 def execute_query(query):
     conn = STDMDb.instance().engine.connect()
     trans = conn.begin()

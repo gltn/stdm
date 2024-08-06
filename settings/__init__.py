@@ -9,11 +9,19 @@ from stdm.settings.registryconfig import (
     MEDIA_URL,
     KOBO_USER,
     KOBO_PASS,
+
     FAMILY_PHOTO,
     SIGN_PHOTO,
     HOUSE_PHOTO,
     HOUSE_PICTURE,
     ID_PICTURE,
+    
+    PER_SIGNATURE,
+    HHOLD_SIGNATURE,
+    FINGER_PRINT,
+    HHOLD_PHOTO,
+    HHOLD_FAMILY_PHOTO,
+
     SCANNED_DOC,
     SCANNED_HSE_MAP,
     SCANNED_HSE_PIC,
@@ -122,6 +130,7 @@ def get_kobo_user():
 def get_kobo_pass():
     return get_key_value(KOBO_PASS)
 
+# ********* IRAQ *******************
 def get_family_photo():
     return get_key_value(FAMILY_PHOTO)
 
@@ -136,6 +145,27 @@ def get_house_pic():
 
 def get_id_pic():
     return get_key_value(ID_PICTURE)
+
+# ************************************
+
+# ----- YEMEN -------------------------
+
+def get_person_signature():
+    return get_key_value(PER_SIGNATURE)
+
+def get_hhold_signature():
+    return get_key_value(HHOLD_SIGNATURE)
+
+def get_finger_print():
+    return get_key_value(FINGER_PRINT)
+
+def get_hhold_photo():
+    return get_key_value(HHOLD_PHOTO)
+
+def get_hhold_family_photo():
+    return get_key_value(HHOLD_FAMILY_PHOTO)
+
+# -----------------------------------------
 
 def get_scanned_doc():
     return get_key_value(SCANNED_DOC)
@@ -164,6 +194,8 @@ def save_kobo_user(value):
 def save_kobo_pass(value):
     save_key_value(KOBO_PASS, value)
 
+# ----- IRAQ ------------------------
+
 def save_family_photo(value):
     save_key_value(FAMILY_PHOTO, value)
 
@@ -178,6 +210,28 @@ def save_house_pic(value):
 
 def save_id_pic(value):
     save_key_value(ID_PICTURE, value)
+
+# ---------------------------------
+
+# -----  YEMEN -----------------------
+
+def save_person_signature(value):
+    save_key_value(PER_SIGNATURE, value)
+
+def save_hhold_signature(value):
+    save_key_value(HHOLD_SIGNATURE, value)
+
+def save_finger_print(value):
+    save_key_value(FINGER_PRINT, value)
+
+def save_hhold_photo(value):
+    save_key_value(HHOLD_PHOTO, value)
+
+def save_hhold_family_photo(value):
+    save_key_value(HHOLD_FAMILY_PHOTO, value)
+    
+# --------------------------------------
+
 
 def save_scanned_doc(value):
     save_key_value(SCANNED_DOC, value)

@@ -424,6 +424,8 @@ class OGRReader(object):
         data_start_at_row = 2
         row_count = 1
 
+        import_log = {}
+
         for feat in lyr:
             if row_count < data_start_at_row:
                 row_count += 1
@@ -459,6 +461,8 @@ class OGRReader(object):
                     dest_column = acols[a_field_name]
 
                     field_value = feat.GetField(f)
+
+                    import_log[a_field_name] = (field_value, len(field_value))
 
                     # Create mapped class only once
                     if self._mapped_cls is None:
@@ -601,6 +605,7 @@ class OGRReader(object):
                     self._insertRow(targettable, column_value_mapping)
             except:
                 progress.close()
+                print(import_log)
                 raise
 
             init_val += 1
