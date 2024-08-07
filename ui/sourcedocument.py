@@ -792,7 +792,7 @@ class DocumentWidget(QWidget, Ui_frmDocumentItem):
         """
         extension = self._displayName[self._displayName.rfind('.'):]
 
-        if extension in ['.mp4', 'mp4a', '.mp3']:
+        if extension in ['.mp4', '.m4a', '.mp4a', '.mp3']:
             ph_image = QImage(":/plugins/stdm/images/icons/mediaplayer_bg.png")
         elif extension == '.pdf':
             ph_image = QImage(":/plugins/stdm/images/icons/pdfimage_bg.png")

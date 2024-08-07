@@ -582,7 +582,7 @@ class DocumentViewManager(QMainWindow):
                 os.startfile(abs_doc_path)
                 return True
 
-            if ext in ['mp4', 'mp4a', 'mp3']:
+            if ext in ['mp4', 'mp4a', 'm4a', 'mp3']:
                 reg_entry = QSettings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components",
                                 QSettings.NativeFormat)
                 reg_entry.beginGroup("{22d6f312-b0f6-11d0-94ab-0080c74c7e95}") 
