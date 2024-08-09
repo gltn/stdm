@@ -228,11 +228,15 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.read_kobo_defaults()
         self.check_download_all()
 
-        self.rbKoboMedia.setChecked(True)
-        self.toggleSupportDoc(False)
+        self.rbSupportDoc.setChecked(True)
+        self.toggleSupportDoc(True)
         self.toggleScannedDoc(False)
 
         self.downloader_mode = DOWNLOAD_DOCS
+
+        self.groupBox_4.setHidden(True)
+        self.groupBox_5.setHidden(True)
+        self.btnUpload.setStyleSheet("QPushButton{ background-color: rgb(170,255,127) }")
 
     def hideWindow(self):
         self.hide()
@@ -257,7 +261,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             self.rbKoboMedia.setChecked(False)
             self.toggleSupportDoc(True)
             self.toggleKoboSettings(True)
-            self.toggleMediaFolders(False)
+            #self.toggleMediaFolders(False)
             self.toggleScannedDoc(False)
             self.btnDownload.setEnabled(True)
             self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(85,255,127) }")
@@ -342,16 +346,16 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.toggleMediaFolders(mode)
 
     def toggleSupportDoc(self, mode):
-        pass
+        self.edtPersonSignatureFolder.setEnabled(mode)
+        self.edtSignFolder.setEnabled(mode)
+        self.edtFingerPrintFolder.setEnabled(mode)
+        self.edtHHoldPhotoFolder.setEnabled(mode)
+        self.edtFamilyPhoto.setEnabled(mode)
+
         # self.edtHousePic.setEnabled(mode)
         # self.cbHousePic.setEnabled(mode)
         # self.tbHousePic.setEnabled(mode)
         # self.btnHousePic.setEnabled(mode)
-
-        # self.edtIdPic.setEnabled(mode)
-        # self.cbIdPic.setEnabled(mode)
-        # self.tbIdPic.setEnabled(mode)
-        # self.btnIdPic.setEnabled(mode)
 
     def toggleMediaFolders(self, mode):
         self.edtPersonSignatureFolder.setEnabled(mode)
@@ -401,6 +405,12 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbFingerPrint.setChecked(Qt.Checked)
         self.cbHHoldPhoto.setChecked(Qt.Checked)
         self.cbFamilyPhoto.setChecked(Qt.Checked)
+
+        self.edtPersonSignatureFolder.setEnabled(self.cbPersonSignature.isChecked())
+        self.edtSignFolder.setEnabled(self.cbHHoldSignature.isChecked())
+        self.edtFingerPrintFolder.setEnabled(self.cbFingerPrint.isChecked())
+        self.edtHHoldPhotoFolder.setEnabled(self.cbHHoldPhoto.isChecked())
+        self.edtFamilyPhoto.setEnabled(self.cbFamilyPhoto.isChecked())
 
     def set_source_file(self):
         #Set the file path to the source file
@@ -766,13 +776,14 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
 
         if self.rbSupportDoc.isChecked():
             save_location = 'support-doc-column'
-            upload_after = True
+            upload_after = False
 
         src_cols = mapfile_section(save_location)
         doc_types = mapfile_section('doc-types')
         media_columns = mapfile_section(save_location)
         doc_cols =self.fetch_doc_cols(media_columns)
         sel_cols = self.fetch_selected_cols(doc_cols)
+        print(sel_cols)
         key_field = self.get_key_field(doc_cols)
 
         if not self.valid_credentials():
@@ -890,7 +901,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 '', 
                 support_doc_map,
                 self.curr_profile,
-                True,
+                False,
                 parent_ref_column,
                 ref_type='str')
 
@@ -911,23 +922,23 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.btnDownload.setStyleSheet("")
 
     def page_changed(self, page_index):
-        self.disable_download_button()
+        #self.disable_download_button()
         if page_index == 0:
             self.downloader_mode = DOWNLOAD_DOCS
             self.btnDownload.setText('Download')
             self.gbProgress.setTitle("Download Progress:")
 
-            if self.rbKoboMedia.isChecked():
-                self.kobo_media_clicked()
+            # if self.rbKoboMedia.isChecked():
+            #     self.kobo_media_clicked()
 
-            if self.rbSupportDoc.isChecked():
-                self.support_doc_clicked()
+            # if self.rbSupportDoc.isChecked():
+            #     self.support_doc_clicked()
 
         if page_index == 1:
             self.downloader_mode = UPLOAD_DOCS
             self.btnDownload.setText('Upload')
             self.gbProgress.setTitle("Upload Progress:")
-            self.csv_clicked()
+            #self.csv_clicked()
             #self.scanned_doc_clicked()
         
 
