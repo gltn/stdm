@@ -327,8 +327,6 @@ class EntityEditorDialog(MapperMixin):
         self.submit()
         self.save_children()
 
-        self.accept()
-
     def set_parent_values(self):
         """
         Sets the parent display column for the child.
@@ -448,11 +446,15 @@ class EntityEditorDialog(MapperMixin):
 
         self.submit(True)
 
+        if not self.is_valid:
+            return
+
         insert_pos = self._parent.tbEntity.model().rowCount() + 1
         # Save to parent editor so that it is persistent.
         self._parent._parent.child_models[insert_pos, self._entity.name] = \
             (self._entity, self.model())
         self.addedModel.emit(self.model())
+
         if not save_and_new:
             self.accept()
 
