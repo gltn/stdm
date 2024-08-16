@@ -231,6 +231,7 @@ class ImportData(QWizard, Ui_frmImport):
                 config_key ="Related table"
                 dest_table = rel_values['dest_table']
                 dest_column = rel_values['dest_column']
+                src_column = rel_values['src_table_field']
 
                 ref_table = rel_values['reftable']
                 ref_output_column = rel_values['ref_output_col']

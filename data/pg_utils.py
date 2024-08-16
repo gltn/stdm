@@ -109,9 +109,10 @@ def pg_create_supporting_document(document):
     return _execute(sql_text)
 
 
-def pg_create_parent_supporting_document(table_name, doc_id, household_id, doc_type_id):
-    sql = "INSERT INTO {} (supporting_doc_id, household_id, document_type) "\
-             "VALUES ({},{},{}) ".format(table_name, doc_id, household_id, doc_type_id)
+def pg_create_parent_supporting_document(table_name, parent_table, doc_id, household_id, doc_type_id):
+    parent_table_column = "{}_id".format(parent_table[3:])
+    sql = "INSERT INTO {} (supporting_doc_id, {}, document_type) "\
+             "VALUES ({},{},{}) ".format(table_name, parent_table_column, doc_id, household_id, doc_type_id)
     sql_text = text(sql)
     _execute(sql_text)
 
@@ -129,7 +130,6 @@ def get_household_data(hhold_id = -1):
             " FROM hl_household {} " \
            " ORDER by kobo_index ".format(filter)
     results = _execute(sql)
-    print(sql)
     data = []
     for r in results:
         record = {
@@ -140,6 +140,27 @@ def get_household_data(hhold_id = -1):
             'household_photo':r['household_photo'],
             'family_photo': r['family_photo'],
             'kobo_index': r['kobo_index']
+        }
+        data.append(record)
+    return data
+
+
+def get_household_document_data(hdoc_id=-1):
+    filter = ""
+    if hdoc_id > -1:
+        filter = " Where id = {}".format(hdoc_id)
+    sql = " SELECT id, household, property_document, id_document, kobo_submission_id " \
+          " FROM hl_household_document {} "\
+          " ORDER by kobo_submission_id ".format(filter)
+    results = _execute(sql)
+    data = []
+    for r in results:
+        record = {
+            'id':r['id'],
+            'household_id':r['household'],
+            'property_document':r['property_document'],
+            'id_document':r['id_document'],
+            'kobo_id':r['kobo_submission_id']
         }
         data.append(record)
     return data

@@ -65,6 +65,9 @@ from stdm.settings import (
         get_hhold_photo,
         get_hhold_family_photo,
 
+        get_property_doc,
+        get_id_doc,
+
         get_scanned_doc,
         get_scanned_hse_map,
         get_scanned_hse_pic,
@@ -87,6 +90,9 @@ from stdm.settings import (
         save_hhold_photo,
         save_hhold_family_photo,
 
+        save_property_doc,
+        save_id_doc,
+
         save_scanned_doc,
         save_scanned_hse_map,
         save_scanned_hse_pic,
@@ -108,7 +114,8 @@ from stdm.data.pg_utils import (
     pg_create_supporting_document,
     pg_create_parent_supporting_document,
     pg_fix_auto_sequence,
-    get_household_data
+    get_household_data,
+    get_household_document_data
 )
 
 from stdm.data.importexport.reader import OGRReader
@@ -169,6 +176,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.rbKoboMedia.clicked.connect(self.kobo_media_clicked)
         self.rbSupportDoc.clicked.connect(self.support_doc_clicked)
         self.rbScannedDoc.clicked.connect(self.scanned_doc_clicked)
+        self.rbHHoldDoc.clicked.connect(self.household_document_clicked)
         self.rbCSV.clicked.connect(self.csv_clicked)
 
         self.tbPersonSignature.clicked.connect(self.person_signature_folder)
@@ -176,6 +184,9 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.tbFingerPrint.clicked.connect(self.finger_print_folder)
         self.tbHHoldPhoto.clicked.connect(self.hhold_photo_folder)
         self.tbFamilyPhoto.clicked.connect(self.family_photo_folder)
+        
+        self.tbPropertyDoc.clicked.connect(self.property_doc_folder)
+        self.tbIDDoc.clicked.connect(self.id_doc_folder)
 
         self.tbScannedDoc.clicked.connect(self.scanned_doc_folder)
         self.tbScannedHseMap.clicked.connect(self.scanned_hse_map_folder)
@@ -195,6 +206,9 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.btnHHoldPhotoFolder.clicked.connect(self.show_hhold_photo_folder)
         self.btnFamilyPhotoFolder.clicked.connect(self.show_family_photo_folder)
 
+        self.btnPropertyDoc.clicked.connect(self.show_property_doc_folder)
+        self.btnIDDoc.clicked.connect(self.show_id_doc_folder)
+
         self.btnScannedDoc.clicked.connect(self.show_scanned_doc_folder)
         self.btnScannedHseMap.clicked.connect(self.show_scanned_hse_map_folder)
         self.btnScannedHsePic.clicked.connect(self.show_scanned_hse_pic_folder)
@@ -207,7 +221,6 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.cbFingerPrint.toggled.connect(self.enable_finger_print)
         self.cbHHoldPhoto.toggled.connect(self.enable_hhold_photo)
         self.cbFamilyPhoto.toggled.connect(self.enable_hhold_family_photo)
-
 
         self.cbScannedDoc.toggled.connect(self.enable_scanned_doc)
         self.cbScannedHseMap.toggled.connect(self.enable_scanned_hse_map)
@@ -236,7 +249,12 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
 
         self.groupBox_4.setHidden(True)
         self.groupBox_5.setHidden(True)
+
+        self.groupBox_4.setHidden(True)
+
         self.btnUpload.setStyleSheet("QPushButton{ background-color: rgb(170,255,127) }")
+
+        self.rbUpSupportDoc.setChecked(True)
 
     def hideWindow(self):
         self.hide()
@@ -244,7 +262,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def kobo_media_clicked(self):
         if self.rbKoboMedia.isChecked():
             self.rbScannedDoc.setChecked(False)
-            self.rbSupportDoc.setChecked(False)
+            #self.rbSupportDoc.setChecked(False)
             self.toggleKoboOptions(True)
             self.toggleSupportDoc(False)
             self.toggleScannedDoc(False)
@@ -258,11 +276,12 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.btnDownload.setText('Download')
         if self.rbSupportDoc.isChecked():
             self.rbScannedDoc.setChecked(False)
-            self.rbKoboMedia.setChecked(False)
+            #self.rbKoboMedia.setChecked(False)
             self.toggleSupportDoc(True)
             self.toggleKoboSettings(True)
             #self.toggleMediaFolders(False)
             self.toggleScannedDoc(False)
+            self.toggleHHoldDoc(False)
             self.btnDownload.setEnabled(True)
             self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(85,255,127) }")
         else:
@@ -272,8 +291,8 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
 
     def scanned_doc_clicked(self):
         self.rbScannedDoc.setChecked(True)
-        self.rbKoboMedia.setChecked(False)
-        self.rbSupportDoc.setChecked(False)
+        #self.rbKoboMedia.setChecked(False)
+        #self.rbSupportDoc.setChecked(False)
         self.toggleSupportDoc(False)
         self.toggleKoboSettings(False)
         self.toggleMediaFolders(False)
@@ -282,10 +301,25 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.btnDownload.setEnabled(True)
         self.btnDownload.setStyleSheet("QPushButton{ background-color: rgb(255,85,0) }")
 
+    def household_document_clicked(self):
+        self.toggleHHoldDoc(True)
+        self.toggleSupportDoc(False)
+
+    def toggleHHoldDoc(self, mode):
+        self.edtPropertyDoc.setEnabled(mode)
+        self.cbPropertyDoc.setChecked(mode)
+        self.tbPropertyDoc.setChecked(mode)
+        self.btnPropertyDoc.setEnabled(mode)
+
+        self.edtIDDoc.setEnabled(mode)
+        self.cbIDDoc.setChecked(mode)
+        self.tbIDDoc.setChecked(mode)
+        self.btnIDDoc.setEnabled(mode)
+
     def csv_clicked(self):
         self.rbScannedDoc.setChecked(False)
-        self.rbKoboMedia.setChecked(False)
-        self.rbSupportDoc.setChecked(False)
+        #self.rbKoboMedia.setChecked(False)
+        #self.rbSupportDoc.setChecked(False)
         self.toggleSupportDoc(False)
         self.toggleKoboSettings(False)
         self.toggleMediaFolders(False)
@@ -352,10 +386,6 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.edtHHoldPhotoFolder.setEnabled(mode)
         self.edtFamilyPhoto.setEnabled(mode)
 
-        # self.edtHousePic.setEnabled(mode)
-        # self.cbHousePic.setEnabled(mode)
-        # self.tbHousePic.setEnabled(mode)
-        # self.btnHousePic.setEnabled(mode)
 
     def toggleMediaFolders(self, mode):
         self.edtPersonSignatureFolder.setEnabled(mode)
@@ -391,6 +421,9 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         self.edtFingerPrintFolder.setText(get_finger_print())
         self.edtHHoldPhotoFolder.setText(get_hhold_photo())
         self.edtFamilyPhoto.setText(get_hhold_family_photo())
+
+        self.edtPropertyDoc.setText(get_property_doc())
+        self.edtIDDoc.setText(get_id_doc())
 
         self.edtScannedDoc.setText(get_scanned_doc())
         self.edtScannedHseMap.setText(get_scanned_hse_map())
@@ -460,6 +493,21 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             self.edtFamilyPhoto.setText(folder)
             save_hhold_family_photo(folder)
 
+    def property_doc_folder(self):
+        dflt_folder = self.edtPropertyDoc.text()
+        folder = self.select_media_folder(dflt_folder)
+        if folder != '':
+            self.edtPropertyDoc.setText(folder)
+            save_property_doc(folder)
+
+    def id_doc_folder(self):
+        dflt_folder = self.edtIDDoc.text()
+        folder = self.select_media_folder(dflt_folder)
+        if folder != '':
+            self.edtIDDoc.setText(folder)
+            save_id_doc(folder)
+
+        
     def scanned_doc_folder(self):
         dflt_folder = self.edtScannedDoc.text()
         folder = self.select_media_folder(dflt_folder)
@@ -537,6 +585,11 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def show_family_photo_folder(self):
         self.browse_folder(self.edtFamilyPhoto.text()) 
 
+    def show_property_doc_folder(self):
+        self.browse_folder(self.edtPropertyDoc.text()) 
+
+    def show_id_doc_folder(self):
+        self.browse_folder(self.edtIDDoc.text()) 
 
     def show_scanned_doc_folder(self):
         self.browse_folder(self.edtScannedDoc.text()) 
@@ -701,7 +754,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             self.edtProgress.append(msg)
 
     def update_progress_status(self, DNLD_Status_id):
-        if DNLD_Status_id == 3: # Success
+        if DNLD_Status_id == 4: # Success
             self.edt_progress_update(
                 QColor(51, 182, 45),
                 None,
@@ -709,7 +762,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 False
             )
 
-        if DNLD_Status_id == 4: # Failed
+        if DNLD_Status_id == 5: # Failed
             self.edt_progress_update(
                 QColor('red'),
                 None,
@@ -717,7 +770,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 False
             )
 
-        if DNLD_Status_id == 5: # File Already Exists
+        if DNLD_Status_id == 6: # File Already Exists
             self.edt_progress_update(
                 QColor(255,170,0),
                 None,
@@ -760,22 +813,31 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 self.process_scanned_docs('csv')
                 return
 
-        if self.txtDataSource.text() == "":
-            self.ErrorInfoMessage("Please select a source file.")
-            return
+        if self.rbKoboMedia.isChecked() or self.rbSupportDoc.isChecked():
+            if self.txtDataSource.text() == "":
+                self.ErrorInfoMessage("Please select a source file.")
+                return
 
-        if not QFile.exists(unicode(self.txtDataSource.text())):
-            self.ErrorInfoMessage("The specified source file does not exist.")
-            return
+            if not QFile.exists(unicode(self.txtDataSource.text())):
+                self.ErrorInfoMessage("The specified source file does not exist.")
+                return
 
         save_location = 'support-doc-column'
+        download_type='support_doc'
 
         if self.rbKoboMedia.isChecked():
             save_location = 'media-column'
+            download_type='media_doc'
             upload_after = False
 
         if self.rbSupportDoc.isChecked():
             save_location = 'support-doc-column'
+            download_type='support_doc'
+            upload_after = False
+
+        if self.rbHHoldDoc.isChecked():
+            save_location =  'household-doc-column'
+            download_type='household_doc'
             upload_after = False
 
         src_cols = mapfile_section(save_location)
@@ -783,7 +845,6 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
         media_columns = mapfile_section(save_location)
         doc_cols =self.fetch_doc_cols(media_columns)
         sel_cols = self.fetch_selected_cols(doc_cols)
-        print(sel_cols)
         key_field = self.get_key_field(doc_cols)
 
         if not self.valid_credentials():
@@ -803,7 +864,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 self,
                 OGRReader(unicode(self.txtDataSource.text())),
                 sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map,
-                self.curr_profile, upload_after, parent_ref_column)
+                self.curr_profile, upload_after, parent_ref_column, download_type=download_type)
 
         self.downloader_thread = QThread(self)
         self.kobo_downloader.moveToThread(self.downloader_thread)
@@ -820,13 +881,11 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
     def upload_media(self):
         save_location = 'support-doc-column'
 
-        # if self.rbKoboMedia.isChecked():
-        #     save_location = 'media-column'
-        #     upload_after = False
+        if self.rbUpSupportDoc.isChecked():
+            upload_type = "sdoc"
 
-        # if self.rbSupportDoc.isChecked():
-        #     save_location = 'support-doc-column'
-        #     upload_after = True
+        if self.rbUpHHold.isChecked():
+            upload_type = "hdoc"
 
         src_cols = mapfile_section(save_location)
         doc_types = mapfile_section('doc-types')
@@ -851,7 +910,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
                 self,
                 OGRReader(unicode(self.txtDataSource.text())),
                 sel_cols, key_field, doc_types, credentials, kobo_url, support_doc_map,
-                self.curr_profile, upload_after, parent_ref_column)
+                self.curr_profile, upload_after, parent_ref_column, upload_type=upload_type)
 
         self.downloader_thread = QThread(self)
         self.kobo_downloader.moveToThread(self.downloader_thread)
@@ -949,11 +1008,12 @@ class KoboDownloader(QObject):
     #Signal indicates True if the update succeeded, else False.
     download_completed = pyqtSignal(unicode)
 
-    INFORMATION, WARNING, ERROR, SUCCESS, FAILED, EXISTS = range(0, 6)
+    OK,INFORMATION, WARNING, ERROR, SUCCESS, FAILED, EXISTS = range(0, 7)
     
     def __init__(self, ui, data_reader, sel_cols, key_field, 
             doc_types, credentials, kobo_url, support_doc_map, 
-            curr_profile, upload_after, parent_ref_column, ref_type='int', parent=None):
+            curr_profile, upload_after, parent_ref_column, upload_type='sdoc',
+            download_type='support_doc', ref_type='int', parent=None):
 
         QObject.__init__(self, parent)
 
@@ -972,6 +1032,9 @@ class KoboDownloader(QObject):
         self.ref_type = ref_type
         self.net_requests = []
         self.net_access_managers = []
+
+        self.download_type = download_type
+        self.upload_type = upload_type
 
     def start_download(self):
         self.download_started.emit('Download')
@@ -1023,10 +1086,14 @@ class KoboDownloader(QObject):
 
     def start_upload(self):
         self.download_started.emit('Upload')
-        #test_data = self.test_upload_files()
-        #self.upload_downloaded_files(test_data)
         print("uploading supporting documents...")
-        self.upload_supporting_documents()
+
+        if self.upload_type == 'sdoc':
+            self.upload_supporting_documents()
+
+        if self.upload_type == 'hdoc':
+            self.upload_household_supporting_documents()
+
         self.download_completed.emit('Upload')
         return
 
@@ -1108,14 +1175,6 @@ class KoboDownloader(QObject):
         self.upload_downloaded_files(self.downloaded_files)
         self.download_completed.emit('Upload')
 
-    def test_upload_files(self):
-        test_data = {'1': [{'doc_type_id': '2', 'key_field_value': '1', 'filename': u'D:\\Home\\Clients\\GLTN\\Missions\\Yemen\\2024\\Amanj\\SupportDoc\\Signature\\1715679208653.jpg'}],
-        '3': [{'doc_type_id': '2', 'key_field_value': '2', 'filename': u'D:\\Home\\Clients\\GLTN\\Missions\\Yemen\\2024\\Amanj\\SupportDoc\\Signature\\1685954133846.jpg'}],
-        '2': [{'doc_type_id': '2', 'key_field_value': '3', 'filename': u'D:\\Home\\Clients\\GLTN\\Missions\\Yemen\\2024\\Amanj\\SupportDoc\\Signature\\1685956424654.jpg'}],
-        '4': [{'doc_type_id': '2', 'key_field_value': '4', 'filename': u'D:\\Home\\Clients\\GLTN\\Missions\\Yemen\\2024\\Amanj\\SupportDoc\\Signature\\1686048281838.jpg'}]
-            } 
-        return test_data
-
     def make_upload_files(self, field_name, field_value, key_field_value):
         file_names = []
         fname_type = self.check_iscustomfield(field_name)
@@ -1161,6 +1220,15 @@ class KoboDownloader(QObject):
         return False
 
     def run(self):
+        self.kobo_downloader_ex = KB_DocumentDownloader(
+            self.credentials[0],
+            self.credentials[1]
+        )
+
+        if self.download_type:
+            self.download_household_documents()
+            return
+
         file_names = []
         key_field_value = 0
         src_cols = self.data_reader.getFields()
@@ -1170,10 +1238,6 @@ class KoboDownloader(QObject):
         numFeat = lyr.GetFeatureCount()
 
         feat_len = len(lyr)
-        self.kobo_downloader_ex = KB_DocumentDownloader(
-            self.credentials[0],
-            self.credentials[1]
-        )
 
         data_start_at_row = 2
         row_count = 1
@@ -1220,24 +1284,25 @@ class KoboDownloader(QObject):
 
 
                 dest_url = dest_folder + '\\' + asc_field_value                               
-                #for my own test src_url = self.kobo_url+'1669887425606.jpg'
+                #for my own test src_url = self.kobo_url+'1669887425606.jpg''
 
                 dest_url = dest_folder + '\\'+field_value
                 src_url = self.kobo_url.strip('\n')+field_value.strip('\n')
 
                 msg = 'Preparing File: {} '.format(field_value)
-
-
                 msg = u'Downloading File: {}... '.format(asc_field_value)
                 status_code = -1
+
                 if not path.exists(dest_url):
                     self.download_progress.emit(KoboDownloader.INFORMATION, msg)
                     # download file
+                    username = self.credentials[0]
+                    password = self.credentials[1]
                     if self.download(
                             src_url,
                             dest_url,
-                            self.credentials[0],
-                            self.credentials[1]
+                            username,
+                            password
                         ): status_code = KoboDownloader.SUCCESS
                     else: status_code = KoboDownloader.FAILED
                 else: status_code = KoboDownloader.EXISTS
@@ -1326,6 +1391,50 @@ class KoboDownloader(QObject):
                 dfiles[orig_name]=doc_src
         return dfiles
 
+    def download_household_documents(self):
+        msg = "Downloading household documents..."
+        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+        
+        columns = [
+            'property_document',
+            'id_document'
+            ]
+
+        support_doc_types = mapfile_section('household-support-doc-types')
+        support_doc_fields = mapfile_section('household-support-doc-fields')
+        support_doc_dest = mapfile_section('support_docs-defaults')
+
+        data = get_household_document_data()
+
+        if len(data) == 0:
+            msg = "No household document data found!"
+            self.download_progress.emit(KoboDownloader.ERROR, msg)
+            return
+
+        hdocs = []
+        username = self.credentials[0]
+        password = self.credentials[1]
+
+        for record in data:
+            for col in columns:
+                doc_name = record[col]
+                if doc_name =="": continue
+                dest_filename = "{}\\{}".format(support_doc_dest[col], doc_name)
+                src_filename = self.kobo_url + doc_name
+
+                msg = 'Downloading file: {}...'.format(doc_name)
+                download_status = -1
+
+                if not path.exists(dest_filename):
+                    self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
+                    if self.download(src_filename, dest_filename, username, password):
+                        download_status = KoboDownloader.SUCCESS
+
+                    else: download_status = KoboDownloader.FAILED
+                else: download_status = KoboDownloader.EXISTS
+
+                self.download_progress.emit(download_status, '')
 
     def upload_supporting_documents(self):
         msg = "Uploading files to STDM started ..."
@@ -1343,6 +1452,8 @@ class KoboDownloader(QObject):
         support_doc_source = mapfile_section('support_docs-defaults')
 
         data = get_household_data()
+
+        print('XXXXX')
 
         if len(data) == 0:
             msg = "No household data found!"
@@ -1366,10 +1477,12 @@ class KoboDownloader(QObject):
                 sdocs.append(sdoc)
 
         for sdocument in sdocs:
+
             filename = sdocument['filename']
             doc_type_id = sdocument['doc_type_id']
             parent_id = sdocument['parent_id']
             column_name = sdocument['column_name']
+
             if not os.path.isfile(filename):
                 msg = "ERROR: File `{}` does not exist!".format(filename)
                 self.download_progress.emit(KoboDownloader.ERROR, msg)
@@ -1386,7 +1499,6 @@ class KoboDownloader(QObject):
             try:
                 result_obj = pg_create_supporting_document(support_doc)
                 next_support_doc_id = result_obj.fetchone()[0]
-                support_doc_table = support_doc_map['parent_support_table']
                 msg = "SUCCESS: Created record in supporting document table...[{}]".format(
                     str(next_support_doc_id)
                 )
@@ -1401,7 +1513,9 @@ class KoboDownloader(QObject):
             # Create a record in the parent table supporting document table
             # `hl_household_supporting_document`
             try:
-                self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id,
+                support_doc_table = support_doc_map['parent_support_table']
+                parent_table = support_doc_map['parent_table']
+                self.create_supporting_doc(support_doc_table, parent_table,  next_support_doc_id, parent_id,
                                            int(doc_type_id))
                 msg = "SUCCESS: Created record in parent table supporting document table"
                 self.download_progress.emit(KoboDownloader.INFORMATION, msg)
@@ -1427,6 +1541,109 @@ class KoboDownloader(QObject):
                 self.download_progress.emit(KoboDownloader.ERROR, msg)
             
         msg = "Upload done."
+        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
+
+    def upload_household_supporting_documents(self):
+        msg = "Uploading household supporting documetns..."
+        self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
+        columns = [
+            'property_document',
+            'id_document'
+        ]
+
+        support_doc_types = mapfile_section('household_document-support-doc-types')
+        support_doc_fields = mapfile_section('household-support-doc-fields')
+        support_doc_source = mapfile_section('support_docs-defaults')
+
+        data = get_household_document_data()
+
+        if len(data) == 0:
+            msg = "No household document data found!"
+            self.download_progress.emit(KoboDownloader.ERROR, msg)
+            return
+
+        hdocs = []
+        for record in data:
+            key_field = record['kobo_id']
+            parent_id = record['id']
+
+            if parent_id is None:
+                continue
+
+            for col in columns:
+                fullname = "{}\\{}".format(support_doc_source[col], record[col])
+                hdoc = {
+                    'doc_type_id':support_doc_types[col],
+                    'key_field_value':key_field,
+                    'filename': fullname,
+                    'parent_id': parent_id,
+                    'column_name': col
+                }
+                hdocs.append(hdoc)
+
+        for sdocument in hdocs:
+            filename = sdocument['filename']
+            doc_type_id = sdocument['doc_type_id']
+            parent_id = sdocument['parent_id']
+            column_name = sdocument['column_name']
+            if not os.path.isfile(filename):
+                msg = "ERROR: File `{}` does not exist!".format(filename)
+                self.download_progress.emit(KoboDownloader.ERROR, msg)
+                continue
+
+            msg = "Uploading file: {}...".format(filename)
+            self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
+            support_doc_map = mapfile_section('household_document_support-doc-map')
+            support_doc = self.make_supporting_doc_dict(filename, support_doc_map)
+
+            # Overall supporting document table
+            try:
+                result_obj = pg_create_supporting_document(support_doc)
+                next_support_doc_id = result_obj.fetchone()[0]
+                msg = "SUCCESS: Created record in supporting document table...[{}]".format(
+                    str(next_support_doc_id)
+                )
+                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+            except:
+                msg = "ERROR: pg_create_supporting_document: {}".format(
+                    filename
+                )
+                self.download_progress.emit(KoboDownloader.ERROR, msg)
+                continue
+
+            # Entity supporting document table
+            try:
+                support_doc_table = support_doc_map['parent_support_table']
+                parent_table = support_doc_map['parent_table']
+
+                self.create_supporting_doc(support_doc_table, parent_table, next_support_doc_id,
+                                           parent_id, int(doc_type_id))
+
+                msg = "SUCCESS: Created record in parent table supporting table"
+                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+            except:
+                msg = "ERROR: create_supporting_doc: {}".format(str(parent_id))
+                self.download_progress.emit(KoboDownloader.ERROR, msg)
+                continue
+
+            try:
+                doc_type = support_doc_fields[column_name]
+                new_filename = support_doc['doc_identifier']
+
+                self.create_new_support_doc_file(sdocument, new_filename,
+                                                 doc_type, support_doc_map)
+                msg = "SUCCESS: Created supporting doc files. "
+                self.download_progress(KoboDownloader.INFORMATION, msg)
+            except:
+                msg = "ERROR: Failed to copy filename: {}".format(
+                    filename
+                )
+                self.download_progress.emit(KoboDownloader.INFORMATION, msg)
+
+        msg = "Uploading household supporting documents... Done"
         self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
 
@@ -1479,6 +1696,7 @@ class KoboDownloader(QObject):
                     result_obj = pg_create_supporting_document(support_doc)
                     next_support_doc_id = result_obj.fetchone()[0]
                     support_doc_table = self.support_doc_map['parent_support_table']
+                    parent_table = self.support_doc_map['parent_table']
                     print('Parent supporting table...', support_doc_table)
                 except:
                     msg = "ERROR: pg_create_supporting_document: "+support_doc['doc_filename']
@@ -1490,7 +1708,7 @@ class KoboDownloader(QObject):
                 try:
                     # Create a record in the parent table supporting document table (oc_household_supporting_document)
                     # parent table is "oc_household"
-                    self.create_supporting_doc(support_doc_table, next_support_doc_id, parent_id, int(src_doc_type))
+                    self.create_supporting_doc(support_doc_table, parent_table, next_support_doc_id, parent_id, int(src_doc_type))
                 except:
                     msg = "ERROR: create_supporting_doc: "+str(parent_id)
                     self.download_progress.emit(KoboDownloader.ERROR, msg)
@@ -1551,8 +1769,8 @@ class KoboDownloader(QObject):
         # write to db
         #pg_create_supporting_document(document)
 
-    def create_supporting_doc(self, table_name, next_doc_id, household_id, doc_type_id):
-        pg_create_parent_supporting_document(table_name, next_doc_id, household_id, doc_type_id)
+    def create_supporting_doc(self, table_name, parent_table, next_doc_id, household_id, doc_type_id):
+        pg_create_parent_supporting_document(table_name, parent_table, next_doc_id, household_id, doc_type_id)
 
     def create_new_support_doc_file(self, old_file, new_filename, dtype, support_doc_map):
         self.reg_config = RegistryConfig()
@@ -1575,9 +1793,7 @@ class KoboDownloader(QObject):
         shutil.copy(old_filename, dest_filename)
 
     def download(self, src_url, dest_url, username, password):
-
         """
-
         self.dest_url = dest_url
 
         net_request = DownloadRequest(src_url, dest_url, self)
@@ -1592,24 +1808,11 @@ class KoboDownloader(QObject):
 
         self.net_access_managers.append(net_access_manager)
 
-
-    def download_request(self, src_url, dest_url, username, password):
-
-
-        req = requests.get(src_url, auth=(username,password))
-        with open(dest_url, 'wb') as f:
-            f.write(req.content)
-        return req.status_code == 200
         """
         if self.kobo_downloader_ex is None:
-            self.kobo_downloader_ex = KB_DocumentDownloader(
-                username,
-                password  
-            )
-        return self.kobo_downloader_ex.kobo_download(
-            src_url,
-            dest_url
-        ) 
+            self.kobo_downloader_ex = KB_DocumentDownloader( username, password  )
+
+        return self.kobo_downloader_ex.kobo_download( src_url, dest_url) 
 
 
     def fake_download(self, src_url, dest_url, username, password):

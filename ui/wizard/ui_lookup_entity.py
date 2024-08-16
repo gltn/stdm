@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'ui_lookup_entity.ui'
 #
-# Created: Sun Mar 12 17:35:32 2017
-#      by: PyQt4 UI code generator 4.11.3
+# Created: Wed Aug 14 12:49:50 2024
+#      by: PyQt4 UI code generator 4.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -56,6 +56,14 @@ class Ui_dlgLookup(object):
         self.label_2.setMaximumSize(QtCore.QSize(777, 16777215))
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.gridLayout.addWidget(self.label_2, 0, 0, 1, 2)
+        self.label_3 = QtGui.QLabel(dlgLookup)
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.gridLayout.addWidget(self.label_3, 2, 0, 1, 1)
+        self.edtValueMaxLen = QtGui.QSpinBox(dlgLookup)
+        self.edtValueMaxLen.setMinimum(50)
+        self.edtValueMaxLen.setMaximum(999)
+        self.edtValueMaxLen.setObjectName(_fromUtf8("edtValueMaxLen"))
+        self.gridLayout.addWidget(self.edtValueMaxLen, 2, 1, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
         self.verticalLayout_2.addLayout(self.verticalLayout)
         self.buttonBox = QtGui.QDialogButtonBox(dlgLookup)
@@ -74,4 +82,5 @@ class Ui_dlgLookup(object):
         self.label.setText(_translate("dlgLookup", "Lookup Name", None))
         self.edtName.setPlaceholderText(_translate("dlgLookup", "Enter lookup name", None))
         self.label_2.setText(_translate("dlgLookup", "`check_` prefix will be appended on the lookup name", None))
+        self.label_3.setText(_translate("dlgLookup", "Value Max Len", None))
 

@@ -140,7 +140,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         formatted_name = formatted_name.replace(' ', "_")
         return formatted_name.lower()
     
-    def create_lookup(self, name):
+    def create_lookup(self, name, max_len):
         """
         Creates a lookup entity and add it to a profile.
         If this is an edit, first the previous lookup is removed before
@@ -149,7 +149,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
         :type name: Unicode
         """
         name = self.format_lookup_name(name)
-        new_lookup = self.profile.create_entity(name, value_list_factory)
+        new_lookup = self.profile.create_entity(name, value_list_factory, value_max_len=max_len)
         return new_lookup
 	    
     def accept(self):
@@ -179,7 +179,7 @@ class LookupEditor(QDialog, Ui_dlgLookup):
                 )
                 return
             else:
-                new_lookup = self.create_lookup(short_name)
+                new_lookup = self.create_lookup(short_name, self.edtValueMaxLen.value())
                 self.profile.add_entity(new_lookup)
                 self.lookup = new_lookup
         else:

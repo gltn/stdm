@@ -38,8 +38,10 @@ class KB_DocumentDownloader(object):
             pass
         
         self.loop = None
+
         if self.download_result is None:
             return False
+
         return self.download_result
             
     def handle_download(self, reply):

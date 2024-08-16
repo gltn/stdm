@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>690</width>
-    <height>761</height>
+    <height>828</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
               <string>Claims File Documents</string>
              </property>
              <property name="autoExclusive">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -50,7 +50,14 @@
               <string>Supporting Documents</string>
              </property>
              <property name="autoExclusive">
-              <bool>false</bool>
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbHHoldDoc">
+             <property name="text">
+              <string>Household Documents</string>
              </property>
             </widget>
            </item>
@@ -146,16 +153,6 @@
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <layout class="QGridLayout" name="gridLayout_2">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Person Signature:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="edtPersonSignatureFolder"/>
-             </item>
              <item row="0" column="2">
               <widget class="QCheckBox" name="cbPersonSignature">
                <property name="text">
@@ -166,17 +163,27 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QToolButton" name="tbPersonSignature">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_7">
                <property name="text">
-                <string>...</string>
+                <string>Person Signature:</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="4">
-              <widget class="QPushButton" name="btnPersonSignature">
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="edtPersonSignatureFolder"/>
+             </item>
+             <item row="1" column="4">
+              <widget class="QPushButton" name="btnHHoldSignatureFolder">
                <property name="text">
                 <string>Browse ...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QCheckBox" name="cbHHoldSignature">
+               <property name="text">
+                <string>Download</string>
                </property>
               </widget>
              </item>
@@ -187,27 +194,17 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="edtSignFolder"/>
-             </item>
-             <item row="1" column="2">
-              <widget class="QCheckBox" name="cbHHoldSignature">
+             <item row="2" column="2">
+              <widget class="QCheckBox" name="cbFingerPrint">
                <property name="text">
                 <string>Download</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="3">
-              <widget class="QToolButton" name="tbHHoldSignature">
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_12">
                <property name="text">
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="4">
-              <widget class="QPushButton" name="btnHHoldSignatureFolder">
-               <property name="text">
-                <string>Browse ...</string>
+                <string>Family Photo:</string>
                </property>
               </widget>
              </item>
@@ -218,15 +215,8 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="edtFingerPrintFolder"/>
-             </item>
-             <item row="2" column="2">
-              <widget class="QCheckBox" name="cbFingerPrint">
-               <property name="text">
-                <string>Download</string>
-               </property>
-              </widget>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="edtHHoldPhotoFolder"/>
              </item>
              <item row="2" column="3">
               <widget class="QToolButton" name="tbFingerPrint">
@@ -235,48 +225,10 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="4">
-              <widget class="QPushButton" name="btnFingerPrint">
+             <item row="4" column="4">
+              <widget class="QPushButton" name="btnFamilyPhotoFolder">
                <property name="text">
                 <string>Browse ...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>H/Hold Photo:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="edtHHoldPhotoFolder"/>
-             </item>
-             <item row="3" column="2">
-              <widget class="QCheckBox" name="cbHHoldPhoto">
-               <property name="text">
-                <string>Download</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="3">
-              <widget class="QToolButton" name="tbHHoldPhoto">
-               <property name="text">
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="4">
-              <widget class="QPushButton" name="btnHHoldPhotoFolder">
-               <property name="text">
-                <string>Browse ...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_12">
-               <property name="text">
-                <string>Family Photo:</string>
                </property>
               </widget>
              </item>
@@ -297,10 +249,127 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="4">
-              <widget class="QPushButton" name="btnFamilyPhotoFolder">
+             <item row="3" column="2">
+              <widget class="QCheckBox" name="cbHHoldPhoto">
+               <property name="text">
+                <string>Download</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QToolButton" name="tbHHoldSignature">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="4">
+              <widget class="QPushButton" name="btnHHoldPhotoFolder">
                <property name="text">
                 <string>Browse ...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3">
+              <widget class="QToolButton" name="tbHHoldPhoto">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="edtSignFolder"/>
+             </item>
+             <item row="0" column="3">
+              <widget class="QToolButton" name="tbPersonSignature">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>H/Hold Photo:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="edtFingerPrintFolder"/>
+             </item>
+             <item row="2" column="4">
+              <widget class="QPushButton" name="btnFingerPrint">
+               <property name="text">
+                <string>Browse ...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4">
+              <widget class="QPushButton" name="btnPersonSignature">
+               <property name="text">
+                <string>Browse ...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label_17">
+               <property name="text">
+                <string>Property Document:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="3">
+              <widget class="QToolButton" name="tbPropertyDoc">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="4">
+              <widget class="QPushButton" name="btnPropertyDoc">
+               <property name="text">
+                <string>Browse...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="edtPropertyDoc"/>
+             </item>
+             <item row="5" column="2">
+              <widget class="QCheckBox" name="cbPropertyDoc">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_18">
+               <property name="text">
+                <string>ID Document:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QLineEdit" name="edtIDDoc"/>
+             </item>
+             <item row="6" column="2">
+              <widget class="QCheckBox" name="cbIDDoc">
+               <property name="text">
+                <string>CheckBox</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="3">
+              <widget class="QToolButton" name="tbIDDoc">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="4">
+              <widget class="QPushButton" name="btnIDDoc">
+               <property name="text">
+                <string>Browse...</string>
                </property>
               </widget>
              </item>
@@ -379,6 +448,35 @@
          </spacer>
         </item>
         <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>60</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Support Doc:</string>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QRadioButton" name="rbUpSupportDoc">
+             <property name="text">
+              <string>Support Document</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbUpHHold">
+             <property name="text">
+              <string>Household Document</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
            <spacer name="horizontalSpacer_4">
@@ -414,6 +512,19 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_5">

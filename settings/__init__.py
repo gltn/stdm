@@ -22,6 +22,9 @@ from stdm.settings.registryconfig import (
     HHOLD_PHOTO,
     HHOLD_FAMILY_PHOTO,
 
+    PROPERTY_DOC,
+    ID_DOC,
+
     SCANNED_DOC,
     SCANNED_HSE_MAP,
     SCANNED_HSE_PIC,
@@ -165,6 +168,12 @@ def get_hhold_photo():
 def get_hhold_family_photo():
     return get_key_value(HHOLD_FAMILY_PHOTO)
 
+def get_property_doc():
+    return get_key_value(PROPERTY_DOC)
+
+def get_id_doc():
+    return get_key_value(ID_DOC)
+
 # -----------------------------------------
 
 def get_scanned_doc():
@@ -229,6 +238,12 @@ def save_hhold_photo(value):
 
 def save_hhold_family_photo(value):
     save_key_value(HHOLD_FAMILY_PHOTO, value)
+
+def save_property_doc(value):
+    save_key_value(PROPERTY_DOC, value)
+
+def save_id_doc(value):
+    save_key_value(ID_DOC, value)
     
 # --------------------------------------
 

@@ -66,6 +66,9 @@ FINGER_PRINT='FingerPrint'
 HHOLD_PHOTO='HHoldPhoto'
 HHOLD_FAMILY_PHOTO='HHoldFamilyPhoto'
 
+PROPERTY_DOC='PropertyDoc'
+ID_DOC='IDDoc'
+
 SCANNED_DOC='ScannedDoc'
 SCANNED_HSE_MAP='ScannedHseMap'
 SCANNED_HSE_PIC='ScannedHsePic'

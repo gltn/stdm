@@ -41,7 +41,7 @@ def value_list_factory(name, profile, **kwargs):
     :returns: Instance of a ValueList object.
     :rtype: ValueList
     """
-    return ValueList(name, profile)
+    return ValueList(name, profile, **kwargs)
 
 
 class CodeValue(object):
@@ -66,16 +66,17 @@ class ValueList(Entity):
     PREFIX = 'check'
     sql_updater = value_list_updater
 
-    def __init__(self, name, profile):
+    def __init__(self, name, profile, **kwargs):
         # Assert if 'check' prefix has been appended.
         name = self._append_check(name)
+        max_len = kwargs.get("value_max_len", 50)
 
         Entity.__init__(self, name, profile, supports_documents=False)
 
         self.user_editable = False
 
         self.code_column = VarCharColumn('code', self, minimum=0, maximum=5)
-        self.value_column = VarCharColumn('value', self, minimum=2, maximum=50)
+        self.value_column = VarCharColumn('value', self, minimum=2, maximum=max_len)
         self.values = OrderedDict()
         self._hash = hashlib
 
