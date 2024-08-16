@@ -831,7 +831,7 @@ class DocumentDownloader(QMainWindow, Ui_DocumentDownloader):
             upload_after = False
 
         if self.rbSupportDoc.isChecked():
-            save_location = 'support-doc-column'
+            save_location = 'media-column'
             download_type='support_doc'
             upload_after = False
 
@@ -1086,7 +1086,6 @@ class KoboDownloader(QObject):
 
     def start_upload(self):
         self.download_started.emit('Upload')
-        print("uploading supporting documents...")
 
         if self.upload_type == 'sdoc':
             self.upload_supporting_documents()
@@ -1225,9 +1224,10 @@ class KoboDownloader(QObject):
             self.credentials[1]
         )
 
-        if self.download_type:
+        if self.download_type == 'household_doc':
             self.download_household_documents()
             return
+
 
         file_names = []
         key_field_value = 0
@@ -1452,8 +1452,6 @@ class KoboDownloader(QObject):
         support_doc_source = mapfile_section('support_docs-defaults')
 
         data = get_household_data()
-
-        print('XXXXX')
 
         if len(data) == 0:
             msg = "No household data found!"
