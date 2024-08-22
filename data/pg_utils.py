@@ -105,6 +105,7 @@ def pg_create_supporting_document(document):
                     document['source_entity'],
                     document['document_size'],
                     document['doc_filename'])
+    print(sql)
     sql_text = text(sql)
     return _execute(sql_text)
 
@@ -126,7 +127,7 @@ def get_household_data(hhold_id = -1):
     if hhold_id > -1:
         filter = " Where id = {}".format(hhold_id)
     sql = " SELECT id, person_signature, hhold_head_signature, hhold_head_fingerprint," \
-                   "household_photo, family_photo, kobo_index " \
+                   "household_photo, family_photo, kobo_index, kobo_id" \
             " FROM hl_household {} " \
            " ORDER by kobo_index ".format(filter)
     results = _execute(sql)
@@ -139,7 +140,8 @@ def get_household_data(hhold_id = -1):
             'hhold_head_fingerprint': r['hhold_head_fingerprint'],
             'household_photo':r['household_photo'],
             'family_photo': r['family_photo'],
-            'kobo_index': r['kobo_index']
+            'kobo_index': r['kobo_index'],
+            'kobo_id': r['kobo_id']
         }
         data.append(record)
     return data

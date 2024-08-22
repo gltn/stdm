@@ -1270,6 +1270,8 @@ class KoboDownloader(QObject):
                 field_value = feat.GetField(f)
 
                 if field_value == '': continue
+
+
                 if self.check_field_is_fullurl(field_name):
                     #src_url = u'{}'.format(field_value).replace('%2F','/')
                     src_url = field_value.replace('%2F','/')
@@ -1460,7 +1462,7 @@ class KoboDownloader(QObject):
 
         sdocs = []
         for record in data:
-            Key_field = record['kobo_index']
+            Key_field = record['kobo_id']
             parent_id = record['id']
 
             for col in columns:
@@ -1528,6 +1530,7 @@ class KoboDownloader(QObject):
             new_filename = support_doc['doc_identifier']
 
             try:
+
                 self.create_new_support_doc_file(sdocument, new_filename,
                                                  doc_type, support_doc_map)
                 msg = "SUCCESS: Created supporting doc file. "
