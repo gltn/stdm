@@ -686,6 +686,7 @@ class KoboDownloader(QObject):
     def start_download(self):
         self.download_started.emit('Download')
         downloaded_files = self.run()
+        print(downloaded_files)
         if self.upload_after:
             self.upload_downloaded_files(downloaded_files)
         self.download_completed.emit('Download')
@@ -878,6 +879,11 @@ class KoboDownloader(QObject):
                     self.download_progress.emit(KoboDownloader.INFORMATION, msg)
 
                     support_doc = self.make_supporting_doc_dict(full_filename, self.support_doc_map)
+                    if support_doc is None:
+                        msg = "ERROR: Unable to create supporting document for file: {}".format(full_filename)
+                        self.download_progress.emit(KoboDownloader.ERROR, msg)
+                        continue
+
                     # Create a record in the supporting document table (oc_supporting_document)
                     #pg_create_supporting_document(support_doc)
                     #next_support_doc_id = get_last_id(self.support_doc_map['main_table'])
@@ -895,7 +901,10 @@ class KoboDownloader(QObject):
                         doc_type = doc_type_cache[src_doc_type]
                     else:
                         doc_type = get_value_by_column(
-                                self.support_doc_map['doc_type_table'], 'value', 'id', src_doc_type)
+                                table_name=self.support_doc_map['doc_type_table'],
+                                target_col='value', 
+                                where_col='id', 
+                                value=src_doc_type)
                         doc_type_cache[src_doc_type] = doc_type
 
                     new_filename = support_doc['doc_identifier']
@@ -904,35 +913,50 @@ class KoboDownloader(QObject):
                     msg = "ERROR Uploading. File not found!: "+full_filename
                     self.download_progress.emit(KoboDownloader.ERROR, msg)
 
-
+        
     def get_parent_id(self, parent_table, value, parent_ref_column):
         """
-         Given a unique reference, return a record "id" of the parent table ("oc_household")
-        :param parent_table: Table where to get the ID.
-        :param value : search value
-        :param parent_ref_column: Column to find the value from
-        :rtype : int
+        Retrieve the parent record ID based on a unique reference.
+
+        :param parent_table: Name of the parent table
+        :param value: Search value for the reference column
+        :param parent_ref_column: Name of the reference column
+        :return: Parent record ID or None if not found
+        :rtype: int or None
         """
-        table_name = parent_table
-        target_col = 'id'
-        where_col = parent_ref_column
-        if self.ref_type <> 'int':
-            value = "'"+value+"'"
-        id = get_value_by_column(table_name, target_col, where_col, value)
-        return id
+        if self.ref_type != 'int':
+            value = "'{}'".format(value)
+        
+        parent_id = get_value_by_column(
+            table_name=parent_table,
+            target_col='id',
+            where_col=parent_ref_column,
+            value=value
+        )
+        
+        return parent_id
+
 
     def make_supporting_doc_dict(self, doc_name, doc_map):
-        doc_size = os.path.getsize(doc_name)
-        path, filename = os.path.split(doc_name)
-        ht = hashlib.sha1(filename.encode('utf-8'))
-        document = {}
-        document['support_doc_table'] = doc_map['main_table']
-        document['creation_date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        document['doc_identifier'] = ht.hexdigest()
-        document['source_entity'] = doc_map['parent_table']
-        document['doc_filename'] = filename
-        document['document_size'] = doc_size
-        return document
+        try:
+            doc_size = os.path.getsize(doc_name)
+            path, filename = os.path.split(doc_name)
+            ht = hashlib.sha1(filename.encode('utf-8'))
+            document = {
+                'support_doc_table': doc_map['main_table'],
+                'creation_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'doc_identifier': ht.hexdigest(),
+                'source_entity': doc_map['parent_table'],
+                'doc_filename': filename,
+                'document_size': doc_size
+            }
+            return document
+        except FileNotFoundError:
+            self.download_progress.emit(KoboDownloader.ERROR, "File not found: {}".format(doc_name))
+            return None
+        except Exception as e:
+            self.download_progress.emit(KoboDownloader.ERROR, "Error processing file {}: {}".format(doc_name, str(e)))
+            return None
 
         # write to db
         #pg_create_supporting_document(document)

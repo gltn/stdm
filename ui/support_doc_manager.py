@@ -303,11 +303,16 @@ class SupportDocManager(QObject):
 
             doc_type_id = doc['doc_type_id']
             doc_path = self.get_doc_path()
-            full_filepath = doc_path[doc['doc_column']]+'\\'+short_filename
+            full_filepath = os.path.join(doc_path[doc['doc_column']], short_filename)
             parent_id = doc['parent_id']
             doc_type_name = doc['type_name']
 
             support_doc = self.make_supporting_doc_dict(full_filepath)
+
+            if not support_doc:
+                self.upload_progress.emit(SupportDocManager.ERROR,
+                    u'Error: uploading...{}'.format(full_filepath))
+                continue
 
             result_obj = self.pg_create_supporting_doc(support_doc)
             new_doc_id = result_obj.fetchone()[0]
@@ -329,6 +334,7 @@ class SupportDocManager(QObject):
                     'filename':unicode(short_filename)
                 }
             )
+
         self.write_log(self.upload_cache, self.upload_log_file)
 
     def create_new_support_doc_file(self, doc_type_id, doc_type_name, doc_filename,
@@ -388,7 +394,14 @@ class SupportDocManager(QObject):
         return logs
 
     def make_supporting_doc_dict(self, doc_name):
-        doc_size = os.path.getsize(doc_name)
+        try:
+            doc_size = os.path.getsize(doc_name)
+        except FileNotFoundError:
+            return None
+
+        if doc_size == 0:
+            return None
+
         path, filename = os.path.split(doc_name)
         ht = hashlib.sha1(filename.encode('utf-8'))
         document = {}
@@ -398,6 +411,7 @@ class SupportDocManager(QObject):
         document['source_entity'] = self.parent_table
         document['doc_filename'] = filename
         document['document_size'] = doc_size
+
         return document
 
     def pg_create_supporting_doc(self, support_doc):
@@ -418,13 +432,20 @@ class SupportDocManager(QObject):
 
 class ImportLogger(QObject):
     def __init__(self, logfile, entity_name):
-        self.log_file = logfile
-        self.logs = self.read_log(logfile)
-        self.batch_id = self.get_batch_id(self.logs);
-        self.dtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-        self.entity = entity_name
-        self.min_row_id = -1
-        self.max_row_id = -1
+        try:
+            self.log_file = logfile
+            self.logs = self.read_log(logfile)
+            self.batch_id = self.get_batch_id(self.logs)
+            self.dtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            self.entity = entity_name
+            self.min_row_id = -1
+            self.max_row_id = -1
+        except FileNotFoundError:
+            ErrMessage("Log file not found.")
+        except json.JSONDecodeError:
+            ErrMessage("Invalid JSON format in log file.")
+        except Exception as e:
+            ErrMessage("An unexpected error occurred: {}".format(str(e)))
 
     def get_batch_id(self, logs):
         batch_ids = []

@@ -154,6 +154,7 @@ class SupportDocDownloader(QDialog, Ui_SupportDocDownloader):
         )
         QApplication.processEvents()
 
+
     def update_upload_counter(self, count):
         self.lblUcount.setText('{} of {}'.format(count, self.sdoc_manager.size()))
 

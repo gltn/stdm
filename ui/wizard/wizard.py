@@ -695,7 +695,6 @@ class ConfigWizard(QWizard, Ui_STDMWizard):
         """
         self._notif_bar_str.clear()
 
-
         p = self.current_profile()
         can_edit = not p.str_table_exists
         sp_unit_tenure_dlg = SpatialUnitTenureTypeDialog(
