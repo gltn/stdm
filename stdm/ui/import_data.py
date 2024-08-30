@@ -238,6 +238,7 @@ class ImportData(WIDGET, BASE):
                         dest_column,
                         src_column
                     )
+                    trans_dlg.set_config_key(config_key)
 
                 except RuntimeError as re:
                     QMessageBox.critical(
@@ -842,7 +843,8 @@ class ImportData(WIDGET, BASE):
             'is_spatial': bool(self.field("typeSpatial")),
             'geom_column': self.field("geomCol") or None,
             'overwrite': bool(self.field("optOverwrite")),
-            'dest_table': self.targetTab or ''
+            'dest_table': self.targetTab or '',
+            'translators': self._get_value_translators()
         }
 
     def _load_column_mapping(self):
@@ -892,3 +894,164 @@ class ImportData(WIDGET, BASE):
                 return
 
         self.set_source_dest_pairs(column_mapping)
+
+        # Restore translators
+        self._trans_widget_mgr.clear()
+        translators = config.get('translators', {})
+        self._restore_translators(translators)
+
+    def _restore_translators(self, value_translators: dict[str, list]):
+        """
+        Restores the translators from a previously saved configuration.
+
+        Args:
+            value_translators (dict[str, list]): A dictionary containing translator configurations.
+                The keys are translator names, and the values are lists of translator settings.
+        """
+        for translator_name, translators in value_translators.items():
+            if len(translators) == 0:
+                continue
+
+            trans_config = ValueTranslatorConfig.translators.get(translator_name, None)
+
+            if translator_name == "Lookup values":
+
+                for translator in translators:
+                    dest_table = translator["dest_table"]
+                    dest_column= translator["dest_column"]
+                    src_column = translator["src_column"]
+                    reftable   = translator["referenced_table"]
+                    default_value = translator["default_value"]
+                    trans_type = translator["translator_type"]
+
+                    trans_dlg = trans_config.create(
+                        self,
+                        self._source_columns(),
+                        dest_table,
+                        dest_column,
+                        src_column
+                    )
+                    trans_dlg.set_config_key(translator_name)
+                    trans_dlg.cbo_lookup.setCurrentIndex(trans_dlg.cbo_lookup.findText(reftable))
+                    trans_dlg.cbo_default.setCurrentIndex(trans_dlg.cbo_default.findText(default_value))
+
+                    self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+            if translator_name == "Related table":
+                for vt in translators:
+                    dest_table = vt["dest_table"] 
+                    dest_column = vt["dest_column"] 
+                    src_column = vt["src_column"]
+                    referenced_table = vt["referenced_table"] 
+                    output_ref_column = vt["output_ref_column"] 
+                    input_ref_columns = vt["input_ref_columns"] 
+
+                    trans_dlg = trans_config.create(
+                        self,
+                        self._source_columns(),
+                        dest_table,
+                        dest_column,
+                        src_column
+                    )
+                    trans_dlg.txt_table_name.setText(dest_table)
+                    trans_dlg.txt_column_name.setText(dest_column)
+                    trans_dlg.cbo_source_tables.setCurrentIndex(trans_dlg.cbo_source_tables.findText(referenced_table))
+                    trans_dlg.cbo_output_column.setCurrentIndex(trans_dlg.cbo_output_column.findText(output_ref_column))
+                    trans_dlg.tb_source_trans_cols.clear_all()
+
+                    for src_col, dest_col in input_ref_columns.items():
+                        trans_dlg.tb_source_trans_cols.append_data_row(
+                            src_col,
+                            dest_col
+                        )
+                    self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+            if translator_name == "Supporting documents":
+                for vt in translators:
+                    dest_table = vt["dest_table"] 
+                    dest_column = vt["dest_column"] 
+                    src_column = vt["src_column"]
+                    referenced_table = vt["referenced_table"] 
+                    doc_type_id = vt["document_type_id"]
+                    doc_type = vt["document_type"]
+                    doc_source_dir = vt["source_directory"]
+
+                    trans_dlg = trans_config.create(
+                        self,
+                        self._source_columns(),
+                        dest_table,
+                        dest_column,
+                        src_column
+                    )
+
+                    trans_dlg._dest_table = dest_table
+                    trans_dlg._dest_col = dest_column
+                    trans_dlg._document_type_id = doc_type_id
+                    trans_dlg._document_type_name = doc_type
+                    trans_dlg.document_directory = doc_source_dir
+                    trans_dlg.txtRootFolder.setText(doc_source_dir)
+
+                    self._trans_widget_mgr.add_widget(dest_column, trans_dlg)
+
+                    
+
+    def _get_value_translators(self) -> dict[str, list]:
+        trans_widgets = self._trans_widget_mgr.widgets()
+        translators = {}
+        for name, widget in trans_widgets.items():
+            conf_key = widget.config_key()
+
+            if conf_key not in translators:
+                translators[conf_key] = []
+
+            vt = widget.value_translator()
+
+            translator = {}
+
+            if conf_key == "Lookup values":
+                src_col = ""
+                ref_cols = vt.input_referenced_columns()
+                if len(ref_cols.keys()) > 0:
+                    src_col = list(ref_cols.keys())[0]
+
+                translator = {"name": name,
+                    "dest_table": vt.referencing_table(),
+                    "dest_column":vt.referencing_column(),
+                    "referenced_table": vt.referenced_table(),
+                    "default_value": vt.default_value(),
+                    "src_column" :src_col,
+                    "translator_type": conf_key
+                    }
+
+            if conf_key == "Related table":
+                translator = {
+                    "name": name,
+                    "dest_table": vt.referencing_table(),
+                    "dest_column": vt.referencing_column(),
+                    "referenced_table": vt.referenced_table(),
+                    "output_ref_column": vt.output_referenced_column(),
+                    "input_ref_columns": vt.input_referenced_columns(),
+                    "src_column":widget.selected_source_column()
+                }
+
+            if conf_key == "Supporting documents":
+                src_col = ""
+                ref_cols = vt.input_referenced_columns()
+                if len(ref_cols.keys()) > 0:
+                    src_col = list(ref_cols.keys())[0]
+                translator =  {
+                    "name": name,
+                    "dest_table": vt.referencing_table(),
+                    "dest_column": vt.referencing_column(),
+                    "referenced_table": vt.referenced_table(),
+                    "document_type_id": vt.document_type_id(),
+                    "document_type": vt.document_type(),
+                    "source_directory": vt.source_directory(),
+                    "src_column": src_col
+                }
+
+            if len(translator) > 0:
+                translators[conf_key].append(translator)
+
+        return translators
+

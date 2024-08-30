@@ -43,10 +43,15 @@ class MultipleEnumerationDialog(TranslatorDialogBase, WIDGET, BASE):
     class implementation.
     """
 
-    def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
+    def __init__(self, parent, source_cols, dest_table, 
+                 dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
-        TranslatorDialogBase.__init__(self, source_cols, dest_table, dest_col, src_col)
+        TranslatorDialogBase.__init__(self, 
+                                      source_cols, 
+                                      dest_table, 
+                                      dest_col, 
+                                      src_col)
 
         self._notif_bar = NotificationBar(self.vl_notification)
 

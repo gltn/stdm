@@ -47,7 +47,8 @@ class SourceDocumentTranslatorDialog(TranslatorDialogBase, WIDGET, BASE):
     SourceDocumentTranslator implementation.
     """
 
-    def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
+    def __init__(self, parent, source_cols, dest_table, 
+                 dest_col, src_col):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
@@ -58,8 +59,8 @@ class SourceDocumentTranslatorDialog(TranslatorDialogBase, WIDGET, BASE):
             source_cols,
             dest_table,
             dest_col,
-            src_col
-        )
+            src_col)
+        
 
         self._notif_bar = NotificationBar(self.vlNotification)
 
@@ -182,9 +183,9 @@ class SourceDocumentTranslatorDialog(TranslatorDialogBase, WIDGET, BASE):
             self._dest_col
         )
         source_doc_translator.entity = self.entity()
-        source_doc_translator.document_type_id = self._document_type_id
-        source_doc_translator.document_type = self._document_type_name
-        source_doc_translator.source_directory = self.documents_directory
+        source_doc_translator._document_type_id = self._document_type_id
+        source_doc_translator._document_type = self._document_type_name
+        source_doc_translator._source_directory = self.documents_directory
 
         return source_doc_translator
 

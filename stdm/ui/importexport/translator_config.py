@@ -51,7 +51,8 @@ class ValueTranslatorConfig(object):
             ValueTranslatorConfig.translators[cls.key] = cls
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, dest_table, 
+               dest_col, src_col):
         """
         :param parent: Parent widget.
         :type parent: QWidget
@@ -77,9 +78,10 @@ class RelatedTableTranslatorConfig(ValueTranslatorConfig):
                                  "Related table")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
-        return RelatedTableDialog(parent, source_cols, dest_table, dest_col,
-                                  src_col)
+    def create(parent, source_cols, dest_table, 
+               dest_col, src_col):
+        return RelatedTableDialog(parent, source_cols, dest_table,
+                                   dest_col, src_col)
 
 
 RelatedTableTranslatorConfig.register()
@@ -93,7 +95,8 @@ class SourceDocumentTranslatorConfig(ValueTranslatorConfig):
                                  "Supporting documents")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, dest_table, 
+               dest_col, src_col):
         return SourceDocumentTranslatorDialog(
             parent,
             source_cols,
@@ -114,7 +117,8 @@ class LookupTranslatorConfig(ValueTranslatorConfig):
                                  "Lookup values")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, 
+               dest_table, dest_col, src_col):
         return LookupDialog(
             parent,
             source_cols,
@@ -135,7 +139,8 @@ class MultipleEnumerationTranslatorConfig(ValueTranslatorConfig):
                                  "Multiple select")
 
     @staticmethod
-    def create(parent, source_cols, dest_table, dest_col, src_col):
+    def create(parent, source_cols, dest_table, 
+               dest_col, src_col):
         return MultipleEnumerationDialog(parent, source_cols, dest_table,
                                          dest_col, src_col)
 

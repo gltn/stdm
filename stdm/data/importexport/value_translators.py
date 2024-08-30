@@ -338,6 +338,9 @@ class ValueTranslatorManager:
         """
         return self._translators.get(name, None)
 
+    def translators(self) -> dict:
+        return self._translators
+
     def clear(self):
         """
         Removes all translators from the collection.
@@ -414,12 +417,17 @@ class LookupValueTranslator(RelatedTableTranslator):
     """
     Translator for lookup values.
     """
-
     def __init__(self, **kwargs):
         super(LookupValueTranslator, self).__init__()
 
-        self.default_value = kwargs.get('default', '')
+        self._default_value = kwargs.get('default', '')
         self._lk_value_column = 'value'
+
+    def set_default_value(self, deflt_value):
+        self._default_value = deflt_value
+
+    def default_value(self):
+        return self._default_value
 
     def referencing_column_value(self, field_values):
         """
@@ -462,9 +470,9 @@ class LookupValueTranslator(RelatedTableTranslator):
         ).first()
 
         # Use default value if record is empty
-        if lookup_rec is None and self.default_value:
+        if lookup_rec is None and self._default_value:
             lookup_rec = self._db_session.query(lookup_table).filter(
-                lk_value_column_obj == self.default_value
+                lk_value_column_obj == self._default_value
             ).first()
 
         if lookup_rec is None:
@@ -577,20 +585,29 @@ class SourceDocumentTranslator(SourceValueTranslator):
         self.source_document_manager = None
 
         # Source directory
-        self.source_directory = None
+        self._source_directory = None
 
         # Document type id
-        self.document_type_id = None
+        self._document_type_id = None
 
         # Document type name
-        self.document_type = None
+        self._document_type = None
 
     def requires_source_document_manager(self):
         return True
 
+    def document_type_id(self):
+        return self._document_type_id
+
+    def document_type(self):
+        return self._document_type
+
+    def source_directory(self):
+        return self._source_directory
+
     def _create_uploaded_docs_dir(self):
         # Creates an 'uploaded' directory where uploaded documents are moved to.
-        uploaded_dir = QDir(self.source_directory)
+        uploaded_dir = QDir(self._source_directory)
         uploaded_dir.mkdir('uploaded')
 
     def referencing_column_value(self, field_values):
@@ -607,7 +624,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         if self.source_document_manager is None or self.entity is None:
             return IgnoreType
 
-        if self.document_type_id is None:
+        if self._document_type_id is None:
             msg = QApplication.translate(
                 'SourceDocumentTranslator',
                 'Document type has not been set for the source document '
@@ -615,21 +632,21 @@ class SourceDocumentTranslator(SourceValueTranslator):
             )
             raise RuntimeError(msg)
 
-        if self.source_directory is None:
+        if self._source_directory is None:
             msg = QApplication.translate(
                 'SourceDocumentTranslator',
                 'Source directory for {0} has not been set.'.format(
-                    self.document_type
+                    self._document_type
                 )
             )
             raise RuntimeError(msg)
 
         source_dir = QDir()
-        if not source_dir.exists(self.source_directory):
+        if not source_dir.exists(self._source_directory):
             msg = QApplication.translate(
                 'SourceDocumentTranslator',
                 'Source directory for {0} does not exist.'.format(
-                    self.document_type
+                    self._document_type
                 )
             )
             raise IOError(msg)
@@ -658,7 +675,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
         # Register container
         self.source_document_manager.registerContainer(
             doc_container,
-            self.document_type_id
+            self._document_type_id
         )
 
         for d in docs:
@@ -669,7 +686,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
             d_name = d.replace('\\', '/').strip()
 
             # Build absolute document path
-            abs_doc_path = '{0}/{1}'.format(self.source_directory, d_name)
+            abs_doc_path = '{0}/{1}'.format(self._source_directory, d_name)
 
             if not QFile.exists(abs_doc_path):
                 msg = QApplication.translate(
@@ -684,7 +701,7 @@ class SourceDocumentTranslator(SourceValueTranslator):
             # Upload supporting document
             self.source_document_manager.insertDocumentFromFile(
                 abs_doc_path,
-                self.document_type_id,
+                self._document_type_id,
                 self.entity
             )
 

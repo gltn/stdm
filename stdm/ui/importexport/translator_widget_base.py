@@ -35,12 +35,14 @@ class TranslatorDialogBase(object):
     that an instance of a source value translator is returned.
     """
 
-    def __init__(self,source_cols, dest_table, dest_col, src_col):
+    def __init__(self,source_cols, dest_table, 
+                 dest_col, src_col):
         self._source_cols = source_cols
         self._dest_table = dest_table
         self._dest_col = dest_col
         self._src_col = src_col
         self._current_profile = current_profile()
+        self._config_key = ""
 
     def source_columns(self):
         """
@@ -82,6 +84,9 @@ class TranslatorDialogBase(object):
         """
         return self._dest_col
 
+    def config_key(self) -> str:
+        return self._config_key
+
     def value_translator(self):
         """
         :return: Instance of a source value translator object.
@@ -102,6 +107,12 @@ class TranslatorDialogBase(object):
         ).keys())
 
         return tables
+
+    def set_config_key(self, config_key: str):
+        self._config_key = config_key
+
+    def config_key(self) -> str:
+        return self._config_key
 
 
 class TranslatorWidgetManager(object):
@@ -152,6 +163,9 @@ class TranslatorWidgetManager(object):
         Removes all translator widgets from the collection.
         """
         self._widgets = {}
+
+    def widgets(self) -> dict:
+        return self._widgets
 
     def remove_translator_widget(self, name):
         """

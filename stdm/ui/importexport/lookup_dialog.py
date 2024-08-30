@@ -40,7 +40,8 @@ class LookupDialog(TranslatorDialogBase, WIDGET, BASE):
     Dialog for defining configuration settings for the lookup translation
     implementation.
     """
-    def __init__(self, parent, source_cols, dest_table, dest_col, src_col):
+    def __init__(self, parent, source_cols, dest_table, 
+                 dest_col, src_col):
         QDialog.__init__(self, parent)
 
         self.setupUi(self)
@@ -66,6 +67,7 @@ class LookupDialog(TranslatorDialogBase, WIDGET, BASE):
         curr_title = self.windowTitle()
         title = f"{curr_title}- {dest_col}"
         self.setWindowTitle(title)
+
 
     def _load_lookup_tables(self):
         # Load lookup table names
@@ -145,7 +147,7 @@ class LookupDialog(TranslatorDialogBase, WIDGET, BASE):
             self._src_col,
             self._dest_col
         )
-        lookup_translator.default_value = self.cbo_default.currentText()
+        lookup_translator.set_default_value(self.cbo_default.currentText())
 
         return lookup_translator
 

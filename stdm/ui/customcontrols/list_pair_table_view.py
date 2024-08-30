@@ -241,6 +241,10 @@ class ListPairTableView(QTableView):
         if self._add_empty_last_row:
             self.append_row()
 
+    def clear_all(self):
+        rows = self._pair_model.rowCount()
+        self._pair_model.removeRows(0, rows)
+
     def append_row(self):
         """
         Add a blank row after the last item in the view.
