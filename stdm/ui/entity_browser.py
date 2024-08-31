@@ -1730,5 +1730,6 @@ class ForeignKeyBrowser(EntityBrowser):
         EntityBrowser.__init__(self, parent, model, state)
 
     def title(self):
+        entity_name = self._data_source_name.replace("_", " ").capitalize()
         return QApplication.translate("EnumeratorEntityBrowser",
-                                      "%s Entity Records") % self._data_source_name.replace("_", " ").capitalize()
+                                      f"{entity_name} Entity Records")

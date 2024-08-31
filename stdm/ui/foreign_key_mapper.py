@@ -46,7 +46,8 @@ from qgis.gui import QgsExpressionBuilderDialog
 from stdm.data.configuration import entity_model
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
-    VirtualColumn
+    VirtualColumn,
+    GeometryColumn
 )
 from stdm.data.pg_utils import table_column_names
 from stdm.data.qtmodels import BaseSTDMTableModel
@@ -291,6 +292,11 @@ class ForeignKeyMapper(QWidget):
 
         # Iterate entity column and assert if they exist
         for c in self._entity.columns.values():
+
+            # Hide geometry columns
+            if isinstance(c, GeometryColumn):
+                continue
+
             # Do not include virtual columns in list of missing columns
             if not c.name in columns and not isinstance(c, VirtualColumn):
                 missing_columns.append(c.name)

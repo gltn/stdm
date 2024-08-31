@@ -71,6 +71,7 @@ from stdm.utils.util import (
     format_name,
     entity_display_columns
 )
+from stdm.data.configuration.columns import  GeometryColumn
 
 
 class ComponentUtility(QObject):
@@ -87,12 +88,15 @@ class ComponentUtility(QObject):
         self.social_tenure = self.current_profile.social_tenure
         self.parties = self.social_tenure.parties
         self.spatial_units = self.social_tenure.spatial_units
+
         self.str_model = None
         self.str_doc_model = None
         if len(self.parties) > 0:
             self.party_1 = self.parties[0]
+
         if len(self.spatial_units) > 0:
             self.spatial_unit_1 = self.spatial_units[0]
+
         try:
             self.str_model, self.str_doc_model = entity_model(
                 self.social_tenure, False, True
@@ -114,7 +118,7 @@ class ComponentUtility(QObject):
         return self.str_model, self.str_doc_model
 
     def _create_fk_mapper(
-            self, config, parent, notif_bar, multi_row=True,
+            self, config: EntityConfig, parent: QWidget, notif_bar: 'NotificationBar', multi_row: bool = True,
             is_party=False, is_spatial_unit=False
     ) -> ForeignKeyMapper:
         """
@@ -153,6 +157,7 @@ class ComponentUtility(QObject):
         :type entity: Entity
         """
         table_display_name = format_name(entity.short_name)
+
         table_name = entity.name
         try:
             model = entity_model(entity)
@@ -393,26 +398,15 @@ class SpatialUnit(ComponentUtility):
             self.notification_bar,
             False, False, True
         )
+
         if self.spatial_unit_fk_mapper is None:
             return
+
         vertical_layout = QVBoxLayout()
 
         vertical_layout.addWidget(self.spatial_unit_fk_mapper)
         self.container_box.setLayout(vertical_layout)
 
-        #
-        #
-        #
-        #
-        #
-        # entity_config = self._load_entity_config(self.spatial_unit)
-        # self.spatial_unit_fk_mapper = self._create_fk_mapper(
-        #     entity_config, self.container_box, self.notification_bar,
-        #     False, False, True
-        # )
-        # vertical_layout = QVBoxLayout()
-        # vertical_layout.addWidget(self.spatial_unit_fk_mapper)
-        # self.container_box.setLayout(vertical_layout)
 
     def notify_no_base_layers(self):
         """
@@ -517,8 +511,10 @@ class STRType(ComponentUtility):
             headers.append(str_type_header)
             headers.append(share_header)
             display_columns = entity_display_columns(self.party_1, True)
+
             for col in display_columns.values():
                 headers.append(col)
+
             return headers
 
     def create_str_type_table(self):
