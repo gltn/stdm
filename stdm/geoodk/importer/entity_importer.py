@@ -306,8 +306,7 @@ class Save2DB():
                     full_party_ref_column = current_profile().social_tenure.parties[0].name
                     party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
 
-
-                party_id = self.parent_data.get(full_party_ref_column)
+                party_id = self.parent_data.get(full_party_ref_column)[0]
                 if party_id:
                     setattr(self.model, party_ref_column, party_id)
 
@@ -397,8 +396,6 @@ class Save2DB():
 
     def column_info(self):
         """
-
-        :return:
         """
         self.entity_mapping = {}
         cols = list(self.entity.columns.values())
