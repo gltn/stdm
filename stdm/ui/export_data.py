@@ -18,11 +18,16 @@ email                : gkahiu@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+import os
+import subprocess
+import sys
 
 import sqlalchemy
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    Qt
+    Qt,
+    QUrl,
+    QFileInfo
 )
 from qgis.PyQt.QtGui import (
     QTextOption
@@ -35,6 +40,7 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QComboBox
 )
+from qgis.utils import QDesktopServices
 
 from stdm.exceptions import DummyException
 from stdm.data.importexport import (
@@ -293,10 +299,26 @@ class ExportData(WIDGET, BASE):
                 self, self.srcTab, resultSet, self.selectedColumns(),
                 self.geomColumn
             )
+
             ft = QApplication.translate('ExportData', 'Features in ')
+
             succ = QApplication.translate(
-                'ExportData', 'have been successfully exported!')
-            self.InfoMessage('{}{} {}'.format(ft, self.srcTab, succ))
+                'ExportData', ' have been successfully exported!')
+
+            msg_box = QMessageBox()
+            msg_box.setIcon(QMessageBox.Information)
+            msg_box.setText(self.tr("{} `{}` {}".format(ft, self.srcTab, succ)))
+            msg_box.setInformativeText(
+                self.tr('Would you like to open the exported file?')
+            ) 
+            msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msg_box.setDefaultButton(QMessageBox.No)
+            ret = msg_box.exec_()
+
+            if ret == QMessageBox.Yes:
+                self.open_export_folder(targetFile)
+
+            # self.InfoMessage('{}{} {}'.format(ft, self.srcTab, succ))
 
             # Update directory info in the registry
             setVectorFileDir(targetFile)
@@ -307,6 +329,22 @@ class ExportData(WIDGET, BASE):
             self.ErrorInfoMessage(ex)
 
         return succeed
+
+    def open_export_folder(self, targetFile: str):
+        """
+        Open the folder where the exported file is located
+        :rtype: None
+        """
+        folder = QFileInfo(targetFile).path()
+
+        if sys.platform.startswith('win32'):
+            os.startfile(folder)
+
+        if sys.platform.startswith('linux'):
+            subprocess.Popen(['xdg-open', folder])
+
+        if sys.platform.startswith('darwin'):
+            subprocess.Popen(['open', folder])
 
     def filter_clearQuery(self):
         # Deletes all the text in the SQL text editor

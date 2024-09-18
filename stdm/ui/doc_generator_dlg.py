@@ -115,7 +115,7 @@ class EntityConfig(object):
     def model(self):
         return self._base_model
 
-    def data_source(self):
+    def data_source(self) -> str:
         return self._data_source
 
     def data_source_columns(self):
@@ -243,14 +243,14 @@ class DocumentGeneratorDialogWrapper(object):
         else:
             return None
 
-    def dialog(self):
+    def dialog(self) -> 'DocumentGeneratorDialog':
         """
         :return: Returns an instance of the DocumentGeneratorDialog.
         :rtype: DocumentGeneratorDialog
         """
         return self._doc_gen_dlg
 
-    def exec_(self):
+    def exec_(self) -> int:
         """
         Show the dialog as a modal dialog.
         :return: DialogCode result
@@ -737,7 +737,6 @@ class DocumentGeneratorDialog(WIDGET, BASE):
                                     QApplication.translate("DocumentGeneratorDialog",
                                                            "Document generation has successfully completed.")
                                     )
-
 
         except SQLAlchemyError as sqlerr:
             LOGGER.debug(str(sqlerr))

@@ -199,7 +199,7 @@ class DocumentGenerator(QObject):
         """
         self._attr_value_formatters = formattermapping
 
-    def add_attr_value_formatter(self, attributeName, formatterFunc):
+    def add_attr_value_formatter(self, attributeName: str, formatterFunc: EntityValueFormatter):
         """
         Add a new attribute value formatter configuration to the collection.
         """
@@ -217,7 +217,7 @@ class DocumentGenerator(QObject):
         """
         return self._attr_value_formatters
 
-    def data_source_exists(self, data_source):
+    def data_source_exists(self, data_source: ComposerDataSource):
         """
         :param data_source: Data source object containing table/view name and
         corresponding columns.

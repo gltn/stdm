@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  *                                                                         *
  ***************************************************************************/
 """
+import logging
 import re
 from collections import OrderedDict
 from typing import Optional
@@ -90,11 +91,14 @@ from stdm.utils.util import (
 # TODO: the base class here shouldn't really be QWidget, but
 # the levels of inheritance here prohibit us to make the subclass
 # a QObject subclass without causing diamond inheritance issues
+
+LOGGER = logging.getLogger("stdm")
+LOGGER.setLevel(logging.DEBUG)
+
 class LayerSelectionHandler(QWidget):
     """
      Handles all tasks related to the layer.
     """
-
     def __init__(self, parent, plugin):
         super().__init__(parent)
         """
@@ -1022,8 +1026,11 @@ class DetailsTreeView(DetailsDBHandler):
             self.add_root_children(db_model, root, str_records)
 
         if select_matching_features:
-            #self.layer.selectByIds( list(self.feature_models.keys()))
-            self.layer.selectByIds([spu_id])
+            #self.layer.selectByIds(list(self.feature_models.keys()))
+            try:
+                self.layer.selectByIds([spu_id])
+            except DummyException:
+                LOGGER.debug('No features selected')
 
         # self.zoom_to_selected(self.layer)
 
