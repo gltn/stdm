@@ -972,7 +972,7 @@ class BaseTenureItem(QGraphicsItem):
         if not self.icon_renderer is None:
             init_width = header_rect.width()
             adj_width = init_width - (self.icon_renderer.width + 6)
-            header_rect.setWidth(adj_width)
+            header_rect.setWidth(int(adj_width))
 
         # Draw header icon if renderer is available
         if not self.icon_renderer is None:
