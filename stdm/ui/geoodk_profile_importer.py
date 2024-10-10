@@ -730,7 +730,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
                 self.txt_feedback.append('saving record "{0}" to database'.format(counter))
                 self.pgbar.setValue(counter)
-                #self.log_instance(filename)
+                self.log_instance(filename)
                 QCoreApplication.processEvents()
 
             self.txt_feedback.append('Number of records successfully imported:  {}'
