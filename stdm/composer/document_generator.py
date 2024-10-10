@@ -689,6 +689,7 @@ class DocumentGenerator(QObject):
                     msg = f"[{len(chart_config_collection.items())}] Chart items found."
                 else:
                     msg = f"[0] Chart items found."
+
                 self._log_info(msg)
 
                 # Extract chart information and generate chart
@@ -805,6 +806,11 @@ class DocumentGenerator(QObject):
                     entity_field_name = 'id'
                     doc_filename = self._build_file_name(data_source, entity_field_name,
                                                         entity_field_value, dataFields, fileExtension)
+
+                    # If doc_filname is empty - Log the incident and move on
+                    if doc_filename == "":
+                        self._log_error(f"Failed to generate document for record with column: `{fieldName}` value: {fieldValue}")
+                        continue
 
                     # Replace unsupported characters in Windows file naming
                     doc_filename = doc_filename.replace('/', '_').replace('\\', '_').replace(':', '_').strip('*?"<>|')
@@ -1224,10 +1230,11 @@ class DocumentGenerator(QObject):
         return  export_result
 
     def _build_file_name(self, data_source, fieldName, fieldValue, data_fields,
-                         fileExtension):
+                         fileExtension) -> str:
         """
         Build a file name based on the values of the specified data fields.
         """
+
         table, results = self._exec_query(data_source, fieldName, fieldValue)
 
         if len(results) > 0:
@@ -1245,6 +1252,10 @@ class DocumentGenerator(QObject):
                         f_value
                     )
                 ds_values.append(display_value)
+
+            none_values = [v for v in ds_values if v is None]
+            if len(none_values) > 0:
+                return ""
 
             return "_".join(ds_values) + "." + fileExtension
 
