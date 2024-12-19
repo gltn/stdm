@@ -2,11 +2,11 @@
 name=Social Tenure Domain Model
 qgisMinimumVersion=3.14
 qgisMaximumversion=3.34
-version=1.8.3
+version=1.8.4
 description=A pro-poor land information tool that offers a complimentary land administration system that is pro-poor, gender-sensitive, affordable and sustainable for the promotion of secure land and property rights for all.
 about=A pro-poor land information tool.
 
-changelog=1.8.3 - Fix document designer
+changelog=1.8.4 - Fix document designer
 
 tags=land administration, tenure security, continuum of land rights, fit for purpose land administration, gltn, stdm, cadastre
 

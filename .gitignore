@@ -37,3 +37,6 @@ ui.make.bat
 
 #sample form extension file
 stdm/ui/forms/ext/sample_extensions.py
+
+# ExcaliDraw files
+*.excalidraw
