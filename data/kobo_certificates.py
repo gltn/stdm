@@ -1462,14 +1462,18 @@ def enum_enumerators(whereclause, form):
             update_param(lines,'respondent_gender', enum['respondent_gender'])
             map_location = '<img id=img_map '
             map_location += 'src="https://maps.googleapis.com/maps/api/staticmap?center={},{}&zoom=10&size=540x400'.format(enum['enumeration_location_lat'], enum['enumeration_location_long'])
-            map_location += '&scale=2&markers=color:red|{},{}&key=AIzaSyC45nWjy5Cafe53JBv6n34fsTHFFqiydh4">'.format(enum['enumeration_location_lat'], enum['enumeration_location_long'])
+            map_location += '&scale=2&markers=color:red|{},{}&key=AIzaSyDoxWZKFhV_BzaxBrwj2MUIp6BbcRxp9R8">'.format(enum['enumeration_location_lat'], enum['enumeration_location_long'])
+
+            #map_location += '&scale=2&markers=color:red|{},{}&key=AIzaSyC45nWjy5Cafe53JBv6n34fsTHFFqiydh4">'.format(enum['enumeration_location_lat'], enum['enumeration_location_long'])
                
             if ('' == str(enum['enumeration_location_lat'])) or ('' == str(enum['enumeration_location_long'])):
                 update_param(lines, 'enumeration_map_latlon', 'None')
             else:
                 update_line(lines,get_param_index(lines, 'enumeration_map_latlon'),map_location)
             
-            resps = find_respondent(' WHERE hl_respondent.enumeration = {}'.format(enum['enumerator_id']))
+            #resps = find_respondent(' WHERE hl_respondent.enumeration = {}'.format(enum['enumerator_id']))
+            resps = find_respondent(' WHERE hl_respondent.enumeration = {} and kobo_id = {}'.format(enum['enumerator_id'], enum['kobo_id']))
+
             for resp in resps:
                 #ErrMessage(u'respondent: {}'.format(resp['respondent_first_name']))
                 update_param(lines,'respondent_first_name', resp['respondent_first_name'])
@@ -1710,6 +1714,7 @@ def enum_enumerators(whereclause, form):
                 loop4_lines = []
 
                 claim_count = len(claims)
+
                 claim_desc = '{} Claim'.format(claim_count)
                 if claim_count > 1:
                     claim_desc += 's'
@@ -1771,7 +1776,8 @@ def enum_enumerators(whereclause, form):
 
                     claim_map_location = '<img id=img_map '
                     claim_map_location += 'src="https://maps.googleapis.com/maps/api/staticmap?center={}&zoom=17&size=540x400&maptype=satellite'.format(claim_map_coords)
-                    claim_map_location += '&scale=2&markers=color:red|{}&key=AIzaSyC45nWjy5Cafe53JBv6n34fsTHFFqiydh4">'.format(claim_map_coords)
+                    claim_map_location += '&scale=2&markers=color:red|{}&key=AIzaSyDoxWZKFhV_BzaxBrwj2MUIp6BbcRxp9R8">'.format(claim_map_coords)
+                    #claim_map_location += '&scale=2&markers=color:red|{}&key=AIzaSyC45nWjy5Cafe53JBv6n34fsTHFFqiydh4">'.format(claim_map_coords)
 
                     stdm_mapname_public = u'{}\\maps\\{}.jpg'.format(cert_path, claim['claim_ref_number'] )
                     if os.path.exists(stdm_mapname_public):
@@ -1892,8 +1898,7 @@ def enum_enumerators(whereclause, form):
                             #ErrMessage(u'evidence sdoc file: {} >> {}'.format(evd_file['evidence_sdoc_type'], evd_file['sdoc_filename']))                
                             if not os.path.exists(evd_doc_path):
                                 os.makedirs(evd_doc_path)
-                            src_file = get_filename_from_stdm(
-                                'hl_evidence',
+                            src_file = get_filename_from_stdm('hl_evidence',
                                 evd_file['evidence_doc_type'],
                                 evd_file['sdoc_hname'],
                                 evd_file['sdoc_fileext'],
@@ -1972,6 +1977,7 @@ def enum_enumerators(whereclause, form):
                         process.wait()
                         process = None
                         dst_file = claim_pdfname.replace(cert_path, output_claims)
+
                         if os.path.exists(dst_file):
                             os.remove(dst_file)
                             
