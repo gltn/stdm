@@ -2421,8 +2421,10 @@ class ConfigWizard(WIDGET, BASE):
         if rid == -1:
             return
 
+
         if column and column.action == DbItem.CREATE:
             _, entity = self._get_entity(self.lvEntities)
+
 
             profile = self.current_profile()
             params = {}
@@ -2441,6 +2443,9 @@ class ConfigWizard(WIDGET, BASE):
             result = editor.exec_()
 
             if result == 1:
+
+                editor.column.action = DbItem.ALTER
+                entity.action = DbItem.ALTER
 
                 model_index_name = model_item.index(rid, 0)
                 model_index_dtype = model_item.index(rid, 1)
@@ -2462,6 +2467,8 @@ class ConfigWizard(WIDGET, BASE):
 
                 entity.columns[original_column.name] = editor.column
                 entity.rename_column(original_column.name, editor.column.name)
+
+                StdmConfiguration.instance().profile(profile.name).entities[entity.short_name].append_updated_column(editor.column)
 
                 self.populate_spunit_model(profile)
 

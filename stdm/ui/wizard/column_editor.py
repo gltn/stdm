@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 /***************************************************************************
 Name                 : column_editor
@@ -147,6 +146,7 @@ class ColumnEditor(WIDGET, BASE):
         self.edtColName.textChanged.connect(self.validate_text)
 
         self.notice_bar = NotificationBar(self.notif_bar)
+
         self.init_controls()
 
     def exclude_column_types(self, type_info):
@@ -381,6 +381,8 @@ class ColumnEditor(WIDGET, BASE):
         self.form_fields['srid'] = self.type_attribs.get('srid', "")
         self.form_fields['geom_type'] = self.type_attribs.get('geom_type', 0)
         self.form_fields['in_db'] = self.in_db
+        self.form_fields['entity_has_records'] = self.entity_has_records
+
         self.form_fields['prefix_source'] = self.type_attribs.get(
             'prefix_source', none
         )
@@ -777,7 +779,7 @@ class ColumnEditor(WIDGET, BASE):
                              proj_wkt=srid)
         return layer
 
-    def create_column(self):
+    def create_column(self) -> BaseColumn:
         """
         Creates a new BaseColumn.
         """
@@ -791,8 +793,8 @@ class ColumnEditor(WIDGET, BASE):
                 return column
 
             if self.is_property_set(self.type_info):
-                column = BaseColumn.registered_types[self.type_info] \
-                    (self.form_fields['colname'], self.entity,
+                column = BaseColumn.registered_types[self.type_info](
+                     self.form_fields['colname'], self.entity,
                      self.form_fields['geom_type'],
                      self.entity, **self.form_fields)
             else:
@@ -807,7 +809,7 @@ class ColumnEditor(WIDGET, BASE):
         self.prop_set = True
         self.type_attribs[self.current_type_info()]['prop_set'] = True
 
-    def is_property_set(self, ti):
+    def is_property_set(self, ti: 'TYPE_INFO')->bool:
         """
         Checks if column property is set by reading the value of
         attribute 'prop_set'
@@ -837,7 +839,7 @@ class ColumnEditor(WIDGET, BASE):
         if self.cboDataType.count() > 0:
             self.cboDataType.setCurrentIndex(0)
 
-    def change_data_type(self, index):
+    def change_data_type(self, index: int):
         """
         Called by type combobox when you select a different data type.
         """
@@ -859,7 +861,7 @@ class ColumnEditor(WIDGET, BASE):
         self.set_optionals(opts)
         self.set_min_max_defaults(ti)
 
-    def set_optionals(self, opts):
+    def set_optionals(self, opts: dict):
         """
         Enable/disables form controls based on selected
         column data type attributes
@@ -876,7 +878,7 @@ class ColumnEditor(WIDGET, BASE):
         self.cbUnique.setCheckState(self.bool_to_check(opts['unique']['check_state']))
         self.cbIndex.setCheckState(self.bool_to_check(opts['index']['check_state']))
 
-    def set_min_max_defaults(self, type_info):
+    def set_min_max_defaults(self, type_info: str):
         """
         sets the work area 'form_fields' default values (minimum/maximum)
         from the column's type attribute dictionary
@@ -942,7 +944,7 @@ class ColumnEditor(WIDGET, BASE):
             return False
 
         if self.column is None:  # new column
-            if self.duplicate_check(col_name):
+            if self.column_exists(col_name):
                 self.show_message(self.tr("Column with the same name already "
                                           "exist in this entity!"))
                 return False
@@ -962,7 +964,7 @@ class ColumnEditor(WIDGET, BASE):
     def cancel(self):
         self.done(0)
 
-    def make_column(self):
+    def make_column(self)->BaseColumn:
         """
         Returns a newly created column
         :rtype: BaseColumn
@@ -971,7 +973,7 @@ class ColumnEditor(WIDGET, BASE):
         col = self.create_column()
         return col
 
-    def duplicate_check(self, name):
+    def column_exists(self, name: str) ->bool:
         """
         Return True if we have a column in the current entity with same name
         as our new column
@@ -979,10 +981,7 @@ class ColumnEditor(WIDGET, BASE):
         :type col_name: str
         """
         # check if another column with the same name exist in the current entity
-        if name in self.entity.columns:
-            return True
-        else:
-            return False
+        return True if name in self.entity.columns.keys() else False
 
     def rejectAct(self):
         self.done(0)

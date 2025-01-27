@@ -43,7 +43,8 @@ from stdm.data.database import (
     metadata
 )
 from stdm.data.pg_utils import (
-    drop_cascade_column
+    drop_cascade_column,
+    run_query
 )
 from . import _bind_metadata
 
@@ -131,6 +132,7 @@ def _update_col(column, table, data_type, columns):
     idx_name = None
     if column.index:
         idx_name = 'idx_{0}_{1}'.format(column.entity.name, column.name)
+
     unique_name = None
     if column.unique:
         unique_name = 'unq_{0}_{1}'.format(column.entity.name, column.name)
@@ -138,6 +140,9 @@ def _update_col(column, table, data_type, columns):
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
         if column.name not in columns:
+
+            print(f"* NEW COL: {column.name}")
+
             alchemy_column.create(
                 table=table,
                 unique_name=unique_name
@@ -157,7 +162,9 @@ def _update_col(column, table, data_type, columns):
         # Ensure the column exists before altering
         if column.name in columns:
             col_attrs = _base_col_attrs(column)
+
             col_attrs['table'] = table
+
             alchemy_column.alter(**col_attrs)
 
     elif column.action == DbItem.DROP:
@@ -189,6 +196,7 @@ def _update_col(column, table, data_type, columns):
                     idx.create()
         except DummyException:
             pass
+
 
     return alchemy_column
 
@@ -239,7 +247,7 @@ def serial_updater(column, table, columns):
     return col
 
 
-def varchar_updater(column, table, columns):
+def varchar_updater(column, table: str, columns: list):
     """
     Updater for a character varying column.
     :param varchar_column: Character varying column.
@@ -247,6 +255,12 @@ def varchar_updater(column, table, columns):
     :param columns: Existing column names in the database for the given table.
     :type columns: list
     """
+
+    if column.action == DbItem.ALTER:
+        alter = f"ALTER TABLE {table} ALTER COLUMN {column.name} TYPE varchar({column.maximum});"
+        run_query(alter)
+        return
+
     return _update_col(column, table, String(column.maximum), columns)
 
 

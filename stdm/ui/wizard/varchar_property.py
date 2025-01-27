@@ -38,7 +38,7 @@ class VarcharProperty(WIDGET, BASE):
     Editor to create/edit varchar max len property
     """
 
-    def __init__(self, parent, form_fields):
+    def __init__(self, parent, form_fields:dict):
         """
         :param parent: Owner of the form
         :type parent: QWidget
@@ -50,6 +50,7 @@ class VarcharProperty(WIDGET, BASE):
 
         self._max_len = form_fields['maximum']
         self.in_db = form_fields['in_db']
+        self.entity_has_records = form_fields['entity_has_records']
 
         self.init_gui()
 
@@ -57,20 +58,15 @@ class VarcharProperty(WIDGET, BASE):
         """
         Initializes form widgets
         """
-        charlen_regex = QRegExp('^[0-9]{1,3}$')
-        charlen_validator = QRegExpValidator(charlen_regex)
-        self.edtCharLen.setValidator(charlen_validator)
-
-        self.edtCharLen.setText(str(self._max_len))
+        self.edtCharLen.setRange(1, 999)
+        self.edtCharLen.setValue(self._max_len)
         self.edtCharLen.setFocus()
-
-        self.edtCharLen.setEnabled(not self.in_db)
 
     def add_len(self):
         """
         Sets the max_len property from the form widget.
         """
-        self._max_len = int(self.edtCharLen.text())
+        self._max_len = self.edtCharLen.value()
 
     def max_len(self):
         """
@@ -83,6 +79,11 @@ class VarcharProperty(WIDGET, BASE):
         if self.edtCharLen.text() == '':
             self.show_message(QApplication.translate("VarcharPropetyEditor",
                                                      "Please enter length for the column."))
+            return
+
+        if self.entity_has_records and self.edtCharLen.value() < self._max_len:
+            msg = f"Size is less than existing column size, data will be truncated! Operation aborted."
+            self.show_message(QApplication.translate("VarcharProperty", msg))
             return
 
         self.add_len()

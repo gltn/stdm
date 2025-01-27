@@ -194,3 +194,14 @@ class StdmConfiguration(QObject):
         """
         self.profiles = OrderedDict()
         self.is_null = True
+
+
+    def print_profile_entities_columns(self):
+        print("-------------------------------------------")
+        for profile in self.profiles.values():
+            print(f'Profile: {profile.name}')
+            for entity in profile.entities.values():
+                if entity.short_name == 'Enumeration':
+                    print(entity.short_name)
+                    for column in entity.columns.values():
+                        print(f'\t{column.name} : Action - {column.action}')

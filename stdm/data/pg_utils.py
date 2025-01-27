@@ -815,7 +815,7 @@ def drop_cascade_table(table_name):
         return False
 
 
-def drop_cascade_column(table_name, column):
+def drop_cascade_column(table_name: str, column_name: str) ->bool:
     """
     Safely deletes the column contained in the given table using the CASCADE option.
     :param table_name: Name of the database table.
@@ -827,7 +827,7 @@ def drop_cascade_column(table_name, column):
     """
     del_com = 'ALTER TABLE {0} DROP COLUMN IF EXISTS {1} CASCADE;'.format(
         table_name,
-        column
+        column_name
     )
     t = text(del_com)
 

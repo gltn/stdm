@@ -93,6 +93,7 @@ class ConfigurationSchemaUpdater(QObject):
             for rp in self.config.removed_profiles:
                 self.remove_profile(rp)
 
+
             # Iterate through profiles
             for p in self.config.profiles.values():
                 self.update_profile(p)

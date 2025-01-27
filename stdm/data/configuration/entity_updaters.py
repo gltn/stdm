@@ -155,7 +155,7 @@ def update_entity_columns(entity, table, columns):
         if c.name != 'id':
             LOGGER.debug('Updating %s column.', c.name)
 
-            c.update(table, col_names)
+            updater = c.update(table, col_names)
 
             LOGGER.debug('Finished updating %s column.', c.name)
 
