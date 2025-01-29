@@ -31,7 +31,7 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.data.pg_utils import (
     drop_cascade_table,
     drop_view,
-    table_column_names
+    table_column_names,
 )
 
 LOGGER = logging.getLogger('stdm')
@@ -149,6 +149,7 @@ def update_entity_columns(entity, table, columns):
     :param columns: List of column objects to be updated.
     :type columns: list
     """
+
     col_names = _table_column_names(entity.name)
 
     for c in columns:

@@ -42,10 +42,12 @@ from stdm.data.configuration.db_items import DbItem
 from stdm.data.database import (
     metadata
 )
+
 from stdm.data.pg_utils import (
     drop_cascade_column,
     run_query
 )
+
 from . import _bind_metadata
 
 LOGGER = logging.getLogger('stdm')
@@ -115,6 +117,23 @@ def check_constraint(column, sa_column, table):
     return None
 
 
+def _constraint_exists(constraint_name, table_name):
+    """
+    Check if a constraint exists in the database.
+    :param constraint_name: Name of the constraint.
+    :type constraint_name: str
+    :param table_name: Name of the table.
+    :type table_name: str
+    :returns: True if the constraint exists, False otherwise.
+    :rtype: bool
+    """
+    _bind_metadata(metadata)
+    inspector = reflection.Inspector.from_engine(metadata.bind)
+    constraints = inspector.get_check_constraints(table_name)
+
+    return constraint_name in constraints
+
+
 def _update_col(column, table, data_type, columns):
     """
     Update the column based on the database operation.
@@ -140,8 +159,6 @@ def _update_col(column, table, data_type, columns):
     if column.action == DbItem.CREATE:
         # Ensure the column does not exist otherwise an exception will be thrown
         if column.name not in columns:
-
-            print(f"* NEW COL: {column.name}")
 
             alchemy_column.create(
                 table=table,
@@ -247,7 +264,7 @@ def serial_updater(column, table, columns):
     return col
 
 
-def varchar_updater(column, table: str, columns: list):
+def varchar_updater(column: 'Column', table: str, columns: list):
     """
     Updater for a character varying column.
     :param varchar_column: Character varying column.

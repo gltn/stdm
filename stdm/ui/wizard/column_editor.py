@@ -43,7 +43,12 @@ from stdm.exceptions import DummyException
 from stdm.data.configuration.columns import BaseColumn
 from stdm.data.configuration.columns import ForeignKeyColumn
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.pg_utils import vector_layer
+
+from stdm.data.pg_utils import (
+    vector_layer,
+    run_query
+)
+
 from stdm.ui.gui_utils import GuiUtils
 from stdm.ui.notification import NotificationBar
 from stdm.ui.wizard.bigint_property import BigintProperty
@@ -217,14 +222,14 @@ class ColumnEditor(WIDGET, BASE):
             self.cbMandt.setEnabled(opts['mandt']['enabled_state'])
             self.cbUnique.setEnabled(opts['unique']['enabled_state'])
             self.cbIndex.setEnabled(opts['index']['enabled_state'])
-        else:
-            self.cbMandt.setEnabled(not self.in_db)
-            self.cbUnique.setEnabled(not self.in_db)
-            self.cbIndex.setEnabled(not self.in_db)
+        # else:
+        #     self.cbMandt.setEnabled(not self.in_db)
+        #     self.cbUnique.setEnabled(not self.in_db)
+        #     self.cbIndex.setEnabled(not self.in_db)
 
         # Dont allow mandatory fields if an entity already has records.
-        if self.entity_has_records:
-            self.cbMandt.setEnabled(False)
+        # if self.entity_has_records:
+        #     self.cbMandt.setEnabled(False)
 
         self.cbIndex.setVisible(False)
 
@@ -943,23 +948,53 @@ class ColumnEditor(WIDGET, BASE):
             self.show_message('Unable to create column!')
             return False
 
+        if self.cbMandt.isChecked():
+            if self.entity_has_null_values():
+                self.show_message(self.tr("Cannot set column as mandatory. "
+                                            "Entity has null values!"))
+                return False
+
+        if self.cbUnique.isChecked():
+            if self.column_has_no_unique_values():
+                self.show_message(self.tr("Cannot set column as unique. "
+                                          "Entity has non-unique values!"))
+                return False
+
         if self.column is None:  # new column
             if self.column_exists(col_name):
                 self.show_message(self.tr("Column with the same name already "
                                           "exist in this entity!"))
                 return False
+
             if self.auto_entity_add:
                 self.entity.add_column(new_column)
 
             self.column = new_column
-            self.done(1)
+
         else:  # editing a column
             if isinstance(self.prev_column, ForeignKeyColumn):
                 if self.prev_column.display_name() != new_column.display_name():
                     self.entity.remove_column(self.prev_column.name)
                     self.entity.add_column(new_column)
             self.column = new_column
-            self.done(1)
+
+        self.done(1)
+
+    def entity_has_null_values(self)->bool:
+        sql_stmt = f'Select count(*) cnt from {self.column.entity.name} where {self.column.name} is null'  
+        results = run_query(sql_stmt)
+        cnt = 0
+        for result in results:
+            cnt = result['cnt']
+        return True if cnt> 0 else False
+
+    def column_has_no_unique_values(self)->bool:
+        sql_stmt = f'Select count(*) cnt from {self.column.entity.name} group by {self.column.name} having count(*) > 1'
+        results = run_query(sql_stmt)
+        cnt = 0
+        for result in results:
+            cnt = result['cnt']
+        return True if cnt > 0 else False
 
     def cancel(self):
         self.done(0)

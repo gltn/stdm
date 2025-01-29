@@ -83,7 +83,9 @@ from stdm.data.license_doc import LicenseDocument
 from stdm.data.pg_utils import (
     pg_table_exists,
     table_column_names,
-    pg_table_record_count
+    pg_table_record_count,
+    mandatory_columns,
+    unique_columns
 )
 
 from stdm.security.privilege_provider import MultiPrivilegeProvider
@@ -321,6 +323,20 @@ class ConfigWizard(WIDGET, BASE):
 
         self.selected_index = None
 
+        tables = self.get_tables(current_profile())
+        self.mandt_cols =  mandatory_columns(tables)
+        self.unique_cols  =  unique_columns(tables)
+
+
+
+    def get_tables(self, profile: Profile):
+        """
+        Get the tables of the profile
+        """
+        tables = []
+        for entity in profile.entities.values():
+            tables.append(entity.name)
+        return tables
 
     def set_window_title(self):
         if self.draft_config:
@@ -2413,6 +2429,7 @@ class ConfigWizard(WIDGET, BASE):
         Event handler for editing a column.
         """
         CHECK_STATE = {True: 'Yes', False: 'No'}
+
         if len(self.tbvColumns.selectedIndexes()) == 0:
             self.show_message(self.tr("Please select a column to edit"))
             return
@@ -2422,61 +2439,66 @@ class ConfigWizard(WIDGET, BASE):
             return
 
 
-        if column and column.action == DbItem.CREATE:
-            _, entity = self._get_entity(self.lvEntities)
+        #if column and column.action == DbItem.CREATE:
 
+        _, entity = self._get_entity(self.lvEntities)
 
-            profile = self.current_profile()
-            params = {}
-            params['parent'] = self
-            params['column'] = column
-            params['entity'] = entity
-            params['profile'] = profile
-            params['in_db'] = self.column_exist_in_entity(entity, column)
-            params['entity_has_records'] = self.entity_has_records(entity)
+        profile = self.current_profile()
+        params = {}
+        params['parent'] = self
+        params['column'] = column
+        params['entity'] = entity
+        params['profile'] = profile
+        params['in_db'] = self.column_exist_in_entity(entity, column)
+        params['entity_has_records'] = self.entity_has_records(entity)
 
-            params['is_new'] = False
+        params['is_new'] = False
 
-            original_column = column  # model_item.entity(column.name)
+        original_column = column  # model_item.entity(column.name)
 
-            editor = ColumnEditor(**params)
-            result = editor.exec_()
+        editor = ColumnEditor(**params)
+        result = editor.exec_()
 
-            if result == 1:
+        if result == 1:
 
-                editor.column.action = DbItem.ALTER
-                entity.action = DbItem.ALTER
+            editor.column.action = DbItem.ALTER
+            entity.action = DbItem.ALTER
 
-                model_index_name = model_item.index(rid, 0)
-                model_index_dtype = model_item.index(rid, 1)
-                model_index_mandt = model_item.index(rid, 2)
-                model_index_unique = model_item.index(rid, 3)
-                model_index_desc = model_item.index(rid, 4)
+            model_index_name = model_item.index(rid, 0)
+            model_index_dtype = model_item.index(rid, 1)
+            model_index_mandt = model_item.index(rid, 2)
+            model_index_unique = model_item.index(rid, 3)
+            model_index_desc = model_item.index(rid, 4)
 
-                data_type_name = editor.column.display_name()
-                if editor.column.TYPE_INFO == 'VARCHAR':
-                    data_type_name = f'{data_type_name} ({editor.column.maximum})'
+            data_type_name = editor.column.display_name()
+            if editor.column.TYPE_INFO == 'VARCHAR':
+                data_type_name = f'{data_type_name} ({editor.column.maximum})'
 
-                model_item.setData(model_index_name, editor.column.name)
-                model_item.setData(model_index_dtype, data_type_name)
-                model_item.setData(model_index_mandt, CHECK_STATE[editor.column.mandatory] )
-                model_item.setData(model_index_unique, CHECK_STATE[editor.column.unique])
-                model_item.setData(model_index_desc, editor.column.description)
+            model_item.setData(model_index_name, editor.column.name)
+            model_item.setData(model_index_dtype, data_type_name)
+            model_item.setData(model_index_mandt, CHECK_STATE[editor.column.mandatory] )
+            model_item.setData(model_index_unique, CHECK_STATE[editor.column.unique])
+            model_item.setData(model_index_desc, editor.column.description)
 
-                model_item.edit_entity(original_column, editor.column)
+            model_item.edit_entity(original_column, editor.column)
 
-                entity.columns[original_column.name] = editor.column
-                entity.rename_column(original_column.name, editor.column.name)
+            entity.columns[original_column.name] = editor.column
+            entity.rename_column(original_column.name, editor.column.name)
 
-                StdmConfiguration.instance().profile(profile.name).entities[entity.short_name].append_updated_column(editor.column)
+            editor.column.mandatory_in_db = editor.column.name in self.mandt_cols
+            unique_name = f'unq_{editor.column.entity.name}_{editor.column.name}'
+            editor.column.unique_in_db = unique_name in self.unique_cols
 
-                self.populate_spunit_model(profile)
+            StdmConfiguration.instance().profile(profile.name).entities[entity.short_name].append_updated_column(editor.column)
 
-                if pg_table_exists(entity.name):
-                    self.process_privilege(entity, editor.column)
-        else:
-            self.show_message(QApplication.translate("Configuration Wizard", \
-                                                     "No column selected for edit!"))
+            self.populate_spunit_model(profile)
+
+            if pg_table_exists(entity.name):
+                self.process_privilege(entity, editor.column)
+
+        # else:
+        #     self.show_message(QApplication.translate("Configuration Wizard", \
+        #                                              "No column selected for edit!"))
 
     def process_privilege(self, entity, column):
         # if a new column is lookup, then assign privileges to that lookup

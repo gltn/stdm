@@ -48,7 +48,10 @@ from stdm.data.configuration.db_items import (
     DbItem
 )
 from stdm.data.configuration.entity_relation import EntityRelation
-from stdm.data.pg_utils import table_view_dependencies
+from stdm.data.pg_utils import (
+    table_view_dependencies,
+    run_query
+)
 
 LOGGER = logging.getLogger('stdm')
 
@@ -125,6 +128,9 @@ class BaseColumn(ColumnItem):
 
         self.row_index = kwargs.get('row_index', -1)
 
+        self.mandatory_in_db = False
+        self.unique_in_db = False
+
         self.reset_updated_attrs()
 
         LOGGER.debug('%s column initialized in %s entity.', self.name, self.entity.name)
@@ -176,6 +182,37 @@ class BaseColumn(ColumnItem):
         """
         raise NotImplementedError
 
+    def _update_mandt_constraint(self):
+        alter_stmt = ""
+
+        if self.mandatory_in_db:
+            if self.mandatory == False:
+                # Drop "not null" contraints
+                alter_stmt = f'ALTER TABLE {self.entity.name} ALTER COLUMN {self.name} DROP NOT NULL;'
+        else:
+            if self.mandatory == True:
+                # create "not null" contraints
+                alter_stmt = f'ALTER TABLE {self.entity.name} ALTER COLUMN {self.name} SET NOT NULL;'
+
+        if alter_stmt:
+            run_query(alter_stmt)
+
+    def _update_unique_constraint(self):
+        unique_name = f'unq_{self.entity.name}_{self.name}'
+        alter_stmt = ""
+        if self.unique_in_db:
+            # U've choosen to drop existing unique constraint
+            if self.unique == False:
+                alter_stmt = f'ALTER TABLE {self.entity.name} DROP CONSTRAINT {unique_name};'
+        else:
+            # U've choosen to add the unique constraint
+            if self.unique == True:
+                alter_stmt = f"ALTER TABLE {self.entity.name} ADD CONSTRAINT {unique_name} UNIQUE ({self.name});"
+
+        if alter_stmt:
+            run_query(alter_stmt)
+
+
     def update(self, table, column_names):
         """
         Update the column in the database for the given Table using the
@@ -191,6 +228,11 @@ class BaseColumn(ColumnItem):
                          'callable defined.', self.name, self.entity.name)
 
             return
+        
+        if self.action == DbItem.ALTER:
+            # Check and alter not null constraints and unique constraints
+            self._update_mandt_constraint()
+            self._update_unique_constraint()
 
         return self.sql_updater(table, column_names)
 

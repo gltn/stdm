@@ -267,7 +267,7 @@ def export_data(table_name):
 
 def run_query(query: str):
     t = text(query)
-    _execute(t)
+    return _execute(t)
 
 def fetch_with_filter(sql_str):
     sql = str(sql_str)
@@ -371,6 +371,43 @@ def table_column_names(tableName, spatialColumns=False, creation_order=False) ->
         columnNames.append(colName)
 
     return columnNames
+
+
+def mandatory_columns(tables: list)->list:
+    """
+    Returns mandatory columns in the given table.
+    """
+    table_names = ",".join([f"'{t}'" for t in tables])
+    sql = f"SELECT column_name FROM information_schema.columns WHERE table_name in ({table_names}) AND is_nullable = 'NO'"
+    sql_text = text(sql)
+    result = _execute(sql_text)
+
+    mandatory_cols = []
+
+    for r in result:
+        col_name = r["column_name"]
+        if col_name != "id":
+            mandatory_cols.append(col_name)
+
+    return mandatory_cols
+
+def unique_columns(tables: list)-> list:
+    """
+    Returns unique columns in the given table.
+    """
+    table_names = ",".join([f"'{t}'" for t in tables])
+    sql = f"SELECT constraint_name FROM information_schema.table_constraints WHERE table_name in ({table_names}) and constraint_type = 'UNIQUE' "
+    sql_text =  text(sql)
+
+    result = _execute(sql_text)
+
+    unique_cols = []
+
+    for r in result:
+        col_name = r["constraint_name"]
+        unique_cols.append(col_name)
+
+    return unique_cols
 
 
 def non_spatial_table_columns(table):
@@ -496,6 +533,21 @@ def columnType(tableName, columnName):
 
         break
     return dataType
+
+def check_mandatory_exists(table_name, column_name):
+    """
+    Checks if the column is mandatory.
+    """
+    sql = "SELECT is_nullable FROM information_schema.columns WHERE table_name = :tbname AND column_name = :colname"
+    t = text(sql)
+    result = _execute(t, tbname=table_name, colname=column_name)
+
+    for r in result:
+        is_nullable = r["is_nullable"]
+
+        break
+
+    return is_nullable == "NO"
 
 
 def columns_by_type(table, data_types):
