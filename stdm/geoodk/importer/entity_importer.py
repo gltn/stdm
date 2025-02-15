@@ -133,16 +133,17 @@ class EntityImporter():
         :return:
         """
         if attributes and ids:
-            entity_add = Save2DB('social_tenure', attributes, ids)
-            entity_add.objects_from_supporting_doc(self.instance)
-            entity_add.save_to_db()
+            entity_model = EntityModel('social_tenure', attributes, ids)
+            entity_model.objects_from_supporting_doc(self.instance)
+            entity_model.save_to_db(attributes[0])
 
 
-class Save2DB():
+class EntityModel():
     """
     Class to insert entity data into db
     """
-    def __init__(self, entity_name:str, entity_data:DictWithOrder[FieldName, FieldValue], parent_data:ParentEntityData):
+    def __init__(self, entity_name:str, entity_data:DictWithOrder[FieldName, FieldValue],
+                  parent_data:ParentEntityData):
         """
         Initialize class and class variable
         """
@@ -162,21 +163,21 @@ class Save2DB():
 
     def object_from_entity_name(self, entity):
         """
-
         :return:
         """
+
         if entity == 'social_tenure':
             return current_profile().social_tenure
         else:
             user_entity = current_profile().entity_by_name(entity)
             return user_entity
 
-    def entity_has_supporting_docs(self) ->bool:
+    def entity_has_supporting_docs(self, entity) ->bool:
         """
         Check if the entity has supporting document before importing
         :return: Bool
         """
-        return True if self.entity.supports_documents else False
+        return True if entity.supports_documents else False
 
     def entity_supported_document_types(self):
         """
@@ -186,12 +187,40 @@ class Save2DB():
         """
         return self.entity.document_types_non_hex()
 
+    def str_dbmodel_from_entity(self, entity):
+        """
+        Format model attributes from passed entity attributes
+        :return:
+        """
+        if self.entity_has_supporting_docs(self.entity):
+            entity_object, self.doc_model = entity_model(entity, with_supporting_document=True)
+            if entity_object is None:
+                return
+
+            entity_object_model = entity_object()
+
+            if hasattr(entity_object_model, 'documents'):
+                if entity.TYPE_INFO == 'SOCIAL_TENURE':
+                    obj_doc_col = current_profile().social_tenure.supporting_doc
+                else:
+                    obj_doc_col = self.entity.supporting_doc
+
+                self._doc_manager = SourceDocumentManager(
+                    obj_doc_col, self.doc_model
+                )
+        else:
+            entity_object = entity_model(entity)
+            entity_object_model = entity_object()
+        return entity_object_model
+
     def dbmodel_from_entity(self):
         """
         Format model attributes from passed entity attributes
         :return:
         """
-        if self.entity_has_supporting_docs():
+        self.entity.supports_documents = True
+
+        if self.entity_has_supporting_docs(self.entity):
             entity_object, self.doc_model = entity_model(self.entity, with_supporting_document=True)
             if entity_object is None:
                 return
@@ -204,6 +233,7 @@ class Save2DB():
                 else:
                     obj_doc_col = self.entity.supporting_doc
 
+
                 self._doc_manager = SourceDocumentManager(
                     obj_doc_col, self.doc_model
                 )
@@ -212,7 +242,7 @@ class Save2DB():
             entity_object_model = entity_object()
         return entity_object_model
 
-    def objects_from_supporting_doc(self, instance_file=None):
+    def objects_from_supporting_doc(self, xml_file=None):
         """
         Create supporting doc path  instances based on the collected documents
         :return:paths
@@ -220,17 +250,23 @@ class Save2DB():
         """
         entity_supports_docs = False
 
-        if instance_file:
-            f_dir, file_name = os.path.split(instance_file)
-            for document, val in self.entity_data.items():
-                if str(document).endswith('supporting_document'):
-                    if val != '':
-                        doc = self.format_document_name_from_attribute(document)
-                        doc_path = os.path.normpath(f_dir + '/' + val)
-                        abs_path = doc_path.replace('\\', '/').strip()
-                        if QFile.exists(abs_path):
-                            self.supporting_document_model(abs_path, doc)
-                            entity_supports_docs = True
+        #if xml_file:
+        file_path, file_name = os.path.split(xml_file)
+
+        self.entity.supports_documents = True
+
+
+        for column, value in self.entity_data.items():
+            # for column, value in data.items():
+            if str(column).endswith('supporting_document'):
+                if value != '':
+                    doc = self.format_document_name_from_attribute(column)
+                    doc_path = os.path.normpath(file_path + '/' + value)
+                    abs_path = doc_path.replace('\\', '/').strip()
+
+                    if QFile.exists(abs_path):
+                        self.supporting_document_model(abs_path, doc)
+                        entity_supports_docs = True
 
         self.entity.supports_documents = entity_supports_docs
 
@@ -245,12 +281,15 @@ class Save2DB():
         # Create document container
         doc_container = QVBoxLayout()
         supporting_doc_entity = self.entity.supporting_doc.document_type_entity
+
         document_type_id = entity_attr_to_id(supporting_doc_entity, 'value', doc, lower=False)
+
         # Register container
         self._doc_manager.registerContainer(
             doc_container,
             document_type_id
         )
+
         # Copy the document to STDM working directory
         self._doc_manager.insertDocumentFromFile(
             doc_path,
@@ -282,64 +321,79 @@ class Save2DB():
         else:
             return formatted_doc_list[0]
 
-    def save_to_db(self):
+    def save_str(self, party_spunit_entities, str_entity, data=None):
+        """
+        """
+        #list_val = list(data[0].values()) 
+
+        prefix  = current_profile().prefix + '_'
+
+        # full_party_ref_column = current_profile().social_tenure.parties[0].name
+        str_party = str_entity.parties[0].name
+        parties = party_spunit_entities.get(str_party)
+        if not parties:
+            return
+
+        for party in parties:
+
+            model = self.str_dbmodel_from_entity(str_entity)
+
+            party_id = None
+            party_id = party[0]
+            if party_id:
+                party_ref_column = str_party.replace(prefix, '') + '_id'
+                setattr(model, party_ref_column, party_id)
+
+            #full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
+            str_spatial_unit = str_entity.spatial_units[0].name
+            spatial_entity = party_spunit_entities.get(str_spatial_unit)
+            if not spatial_entity:
+                continue
+
+            spatial_id = spatial_entity[0][0]
+            if spatial_id:
+                spatial_unit_column = str_spatial_unit.replace(prefix, '') + '_id'
+                setattr(model, spatial_unit_column, spatial_id)
+
+            entity_mapping = self.column_info(str_entity)
+            for k, v in data.items():
+                if hasattr(model, k):
+                    col_type = entity_mapping.get(k)
+                    col_prop = str_entity.columns[k]
+                    var = self.attribute_formatter(col_type, col_prop, v)
+                    setattr(model, k, var)
+
+            if self.entity_has_supporting_docs(str_entity):
+                if self._doc_manager:
+                    model.documents = self._doc_manager.model_objects()
+
+            model.save()
+
+
+    def save_to_db(self, data=None):
         """
         Format object attribute data from entity and save them into database
         :return:
         """
-        self.column_info()
+        entity_mapping = self.column_info(self.entity)
 
-        attributes = self.entity_data
+        #attributes = self.entity_data
+        #attributes = data
+        #for data in attributes:
 
-        try:
-            if self.entity.short_name == 'social_tenure_relationship':
-                # try
-                list_val = list(self.entity_data.values())[0]
-                prefix  = current_profile().prefix + '_'
-                full_party_ref_column = ''
-                full_spatial_ref_ = ''
-                if 'party' in list_val.keys():
-                    full_party_ref_column = list_val.get('party')
-                    party_ref_column = full_party_ref_column + '_id'
-
-                else:
-                    full_party_ref_column = current_profile().social_tenure.parties[0].name
-                    party_ref_column = full_party_ref_column.replace(prefix, '') + '_id'
-
-                party_id = self.parent_data.get(full_party_ref_column)[0]
-                if party_id:
-                    setattr(self.model, party_ref_column, party_id)
-
-                if 'spatial_unit' in list_val.keys():
-                    full_spatial_ref_ = list_val.get('spatial_unit')
-                    spatial_ref_column = full_spatial_ref_ + '_id'
-
-                else:
-                    full_spatial_ref_column = current_profile().social_tenure.spatial_units[0].name
-                    spatial_ref_column = full_spatial_ref_column.replace(prefix, '') + '_id'
-
-                spatial_id = self.parent_data.get(full_spatial_ref_column)[0]
-                if spatial_id:
-                    setattr(self.model, spatial_ref_column, spatial_id)
-
-                attributes = self.entity_data['social_tenure']
-
-        except DummyException:
-            pass
-
-        for k, v in attributes.items():
+        for k, v in data.items():
             # Check for multiple select column
             if k in self.multiple_select_columns:
                 self.process_multiple_select_columns(k, v)
                 continue
 
             if hasattr(self.model, k):
-                col_type = self.entity_mapping.get(k)
+                col_type = entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
 
-        if self.entity_has_supporting_docs():
+        if self.entity_has_supporting_docs(self.entity):
             if self._doc_manager:
                 self.model.documents = self._doc_manager.model_objects()
 
@@ -357,7 +411,10 @@ class Save2DB():
         attribute
         :return:
         """
-        self.column_info()
+        entity_mapping = self.column_info(self.entity)
+
+        #for data in self.entity_data:
+
         for k, v in self.entity_data.items():
 
             if k in self.multiple_select_columns:
@@ -365,13 +422,17 @@ class Save2DB():
                 continue
 
             if hasattr(self.model, k):
-                col_type = self.entity_mapping.get(k)
+                col_type = entity_mapping.get(k)
                 col_prop = self.entity.columns[k]
                 var = self.attribute_formatter(col_type, col_prop, v)
                 setattr(self.model, k, var)
 
-        if self.entity_has_supporting_docs():
+        self.entity.supports_documents = True
+        if self.entity_has_supporting_docs(self.entity):
             self.model.documents = self._doc_manager.model_objects()
+            print(f'Saving Parent::entity_has_supporing_docs: {self.model.documents}')
+        else:
+            print(f'* Entity does NOT have supporting docs **')
 
         self.model.save()
         self.key = self.model.id
@@ -386,7 +447,8 @@ class Save2DB():
         Get the table with foreign keys only
         :return:
         """
-        for col, type_info in self.column_info().items():
+        entity_mapping = self.column_info(self.entity)
+        for col, type_info in entity_mapping.items():
             col_prop = self.entity.columns[col]
             var = self.attribute_formatter(type_info, col_prop, None)
             setattr(self.model, col, var)
@@ -394,13 +456,12 @@ class Save2DB():
         self.model.save()
         self.cleanup()
 
-    def column_info(self):
-        """
-        """
-        self.entity_mapping = {}
-        cols = list(self.entity.columns.values())
+    def column_info(self, entity) ->Dict:
+        entity_mapping = {}
+        cols = list(entity.columns.values())
         for c in cols:
-            self.entity_mapping[c.name] = c.TYPE_INFO
+            entity_mapping[c.name] = c.TYPE_INFO
+        return entity_mapping
 
     def get_srid(self, srid):
         """
@@ -529,7 +590,7 @@ class Save2DB():
             RECORD_ID = 0
             for code, val in self.parent_data.items():
                 if col_prop.parent.name == code:
-                    ret_val = val[RECORD_ID]
+                    ret_val = val[RECORD_ID][0]
                     break
             return ret_val
 

@@ -19,6 +19,7 @@ email                : stdm@unhabitat.org
  ***************************************************************************/
 """
 import os
+import copy
 
 from typing import (
         Dict,
@@ -60,17 +61,10 @@ class EntityNodeData:
 
 
 class InstanceUUIDExtractor():
-    """
-    Class constructor
-    """
-
-    def __init__(self, path):
-        """
-        Initatlize class variables
-        """
-        self.file_path = path
+    def __init__(self):
+        self.file_path = None
         self.file = None
-        self.new_list = []
+        self.xml_files = []
         self.doc = QDomDocument()
         self.node = QDomNode()
 
@@ -100,29 +94,46 @@ class InstanceUUIDExtractor():
         self.doc.clear()
         self.set_document()
 
-    def on_file_passed(self):
+    def fix_name(self, xml_full_filepath: str) -> str:
         """
         Pass the raw file to an xml document object and format the its filename to GeoODK standards
         :return:
         """
         try:
-            self.set_document()
-            self.read_uuid_element()
-            self.doc.clear()
-            self.file.close()
-            self.rename_file()
+            #self.set_document()
+            dom_document = QDomDocument()
+            file = QFile(xml_full_filepath)
+            if file.open(QIODevice.ReadOnly):
+                dom_document.setContent(file)
+            file.close()
+
+            uuid = self.get_uuid_text(dom_document)
+
+            dir, filename = os.path.split(xml_full_filepath)
+
+            if filename.startswith('uuid'):
+                return xml_full_filepath
+
+            old_filename = f'{dir}\{filename}'
+            new_filename =f'{dir}\{uuid}.xml'
+            os.rename(old_filename, new_filename)
+
+            return new_filename
+
+
         except DummyException:
             pass
 
-    def read_uuid_element(self):
+    def get_uuid_text(self, dom_document: QDomDocument) ->str:
         """
-        get the uuid element and text from the xml document from the mobile divice
+        get the uuid  text from the xml document
         """
-        node = self.doc.elementsByTagName("meta")
+        node = dom_document.elementsByTagName("meta")
+        uuid = ""
         for i in range(node.count()):
             node = node.item(i).firstChild().toElement()
-            self.node = node.text()
-        return self.node
+            uuid = node.text()
+        return uuid.replace(":", "")
 
     def document_entities(self, profile : Profile) ->List[ProfileName]:
         """
@@ -149,56 +160,96 @@ class InstanceUUIDExtractor():
         nodes = self.doc.elementsByTagName(profile)
         return nodes.item(0).childNodes()
 
-    def document_entities_with_data(self, profile : ProfileName, selected_entities: List[EntityName] ) -> List[EntityNodeData]:
+    def _make_dom_document(self, xml_filename: str):
+        xml_file = QFile(xml_filename)
+        dom_doc = QDomDocument()
+        if xml_file.open(QIODevice.ReadOnly):
+            dom_doc.setContent(xml_file)
+        xml_file.close() 
+        return dom_doc
+
+
+    def process_node(self, node):
+        nodes = OrderedDict() 
+        current = node.firstChild()
+        while not current.isNull():
+            if current.isElement():
+                nodes[current.nodeName()] = current.toElement().text()
+                self.process_node(current)
+            current = current.nextSibling()
+        return nodes
+
+    def process_dom_node(self, node):
+        nodes = []
+        current = node.firstChild()
+        while not current.isNull():
+            if current.isElement():
+                nodes.append(current)
+                self.process_node(current)
+            current = current.nextSibling()
+        return nodes
+
+    def extract_entities_data(self, xml_filename:str, profile_name: str,
+                               entities: List[str] ) -> List[EntityNodeData]:
         """
         Get entities in the dom document matching user
         selected entities
         """
-        e_nodes = []
-        self.set_document()
-        nodes = self.doc.elementsByTagName(profile)
-        entity_nodes = nodes.item(0).childNodes()
-        for attrs in range(entity_nodes.count()):
-            if entity_nodes.item(attrs).nodeName() in selected_entities:
+        entities_data = []
+
+        dom_doc = self._make_dom_document(xml_filename)
+
+        dom_nodes = dom_doc.elementsByTagName(profile_name)
+
+        entity_nodes = dom_nodes.item(0).childNodes()   # Dom Nodes
+
+        for i in range(entity_nodes.count()):
+
+            if entity_nodes.item(i).nodeName() in entities:
                 node_data = EntityNodeData()
-                node_data.entity_name = entity_nodes.item(attrs).nodeName()
-                node_data.entity_nodes = self.doc.elementsByTagName(node_data.entity_name)
-                e_nodes.append(node_data)
-        return e_nodes
+
+                node_data.entity_name = entity_nodes.item(i).nodeName()
+
+                dnodes = self.process_dom_node(entity_nodes.item(i))
+
+                node_data.entity_nodes = dnodes  #dom_doc.elementsByTagName(node_data.entity_name)
+
+                entities_data.append(node_data)
+
+        return entities_data
 
 
-    def instance_data_from_nodelist(self, nodes: List[EntityNodeData]) -> Tuple[EntityInstances, RepeatedEntityInstances]:
+    def instance_data_from_nodelist(self, entity_node_data: List[EntityNodeData], 
+                                    fk_relations: dict) -> dict:
         """
         Process nodelist data before importing attribute data into db
         """
         instances = OrderedDict()
-        repeated_instances = OrderedDict()
 
-        for node in nodes:
-            entity_nodes = node.entity_nodes
-            entity_name  = node.entity_name
+        for node_data in entity_node_data:
+            entity_nodes = node_data.entity_nodes
+            entity_name  = node_data.entity_name
 
-            '''The assumption is that there are repeated entities from mobile sub forms. handle them separately'''
-            if entity_nodes.count() > 1:
-                for i in range(entity_nodes.count()):
-                    entity_node = entity_nodes.at(i).childNodes()
-                    fields = OrderedDict()
-                    for j in range(entity_node.count()):
-                        field_name = entity_node.at(j).nodeName()
-                        field_value = entity_node.at(j).toElement().text()
-                        fields[field_name] = field_value
-                    repeated_instances['{}'.format(i) + entity_name] = fields
+            fields = OrderedDict()
+
+            for entity_node in entity_nodes:
+                fields[entity_node.nodeName()] = entity_node.toElement().text()
+
+            parent_name = self.child_parent(entity_name, fk_relations)
+
+            if not parent_name:
+                instances[entity_name] = {'data': fields, 'children': []}
             else:
-                '''Entities must appear onces in the form'''
-                e_nodes = entity_nodes.at(0).childNodes()
-                fields = OrderedDict()
-                for j in range(e_nodes.count()):
-                    field_name = e_nodes.at(j).nodeName()
-                    field_value = e_nodes.at(j).toElement().text()
-                    fields[field_name] = field_value
-                instances[entity_name] = fields
+                child_data ={'child_name': entity_name, 'data': fields}
+                instances[parent_name]['children'].append(child_data)
 
-        return instances, repeated_instances
+        return instances   #, repeated_instances
+
+    def child_parent(self, child_name: str, fk_relations: dict) -> str:
+        for parent_name, child_data in fk_relations.items():
+            if child_name in child_data:
+                return parent_name
+        return None
 
     def read_attribute_data_from_node(self, node, entity_name):
         """Read attribute data from a node item"""
@@ -251,34 +302,38 @@ class InstanceUUIDExtractor():
         """
         return self.node.replace(":", "")
 
-    def rename_file(self):
+    def rename_file(self, xml_full_filepath: str, uuid: str) ->str:
         """
         Remane the existing instance file with Guuid from the mobile divice to conform with GeoODk naming
         convention
         :return:
         """
-        if isinstance(self.file, QFile):
-            dir_n, file_n = os.path.split(self.file_path)
-            os.chdir(dir_n)
-            if not file_n.startswith(UUID):
-                new_file_name = self.uuid_element() + ".xml"
-                isrenamed = self.file.setFileName(new_file_name)
-                os.rename(file_n, new_file_name)
-                self.new_list.append(new_file_name)
-                return isrenamed
-            else:
-                self.new_list.append(self.file.fileName())
-            self.file.close()
-        else:
-            return
+        dir_n, file_n = os.path.split(xml_full_filepath)
 
-    def file_list(self) -> List[str]:
+        if file_n.startswith('uuid'):
+            #self.xml_files.append(xml_full_filepath)
+            return xml_full_filepath
+
+        old_filename = f'{dir_n}\{file_n}'
+        new_filename =f'{dir_n}\{uuid}.xml'
+
+        os.rename(old_filename, new_filename)
+
+        return new_filename
+
+        #self.xml_files.append(new_filename)
+
+
+
+    def get_xml_files(self) -> List[str]:
         """
         Check through the list of document to ensure they are complete file path
         Returns a list of filenames
         """
+        return self.xml_files
+
         complete_file = []
-        for fi in self.new_list:
+        for fi in self.xml_files:
             if os.path.isfile(fi):
                 complete_file.append(fi)
         return complete_file
@@ -287,4 +342,4 @@ class InstanceUUIDExtractor():
         '''Close all the open documents and unset current paths'''
         self.file_path = None
         self.doc.clear()
-        self.new_list = None
+        self.xml_files = None

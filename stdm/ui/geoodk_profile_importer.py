@@ -35,7 +35,7 @@ from stdm.data.configuration.stdm_configuration import StdmConfiguration
 from stdm.exceptions import DummyException
 from stdm.geoodk.importer.entity_importer import (
     EntityImporter, 
-    Save2DB
+    EntityModel
 )
 
 from stdm.geoodk.importer.import_log import ImportLogger
@@ -84,27 +84,27 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     unique GUUID for easier management and future updates.
     """
     def __init__(self, parent=None):
-        """
-        initailize class variables here
-        """
         super(ProfileInstanceRecords, self).__init__(parent)
         self.setupUi(self)
 
-        self.path = None
-        self.instance_list = []
-        self.relations = OrderedDict()
+        self.path = self.geoODK_instance_file_path()
+        self.txt_directory.setText(self.path)
+
+        #self.xml_files = []
         self.parent_ids = {}
         self.importlogger = ImportLogger()
         self._notif_bar_str = NotificationBar(self.vlnotification)
 
         self.chk_all.setCheckState(Qt.Checked)
+
         self.entity_model = EntitiesModel()
-        self.uuid_extractor = InstanceUUIDExtractor(self.path)
+
+        self.uuid_extractor = InstanceUUIDExtractor()
+
         self.btn_chang_dir.setIcon(GuiUtils.get_icon("open_file.png"))
         self.btn_refresh.setIcon(GuiUtils.get_icon("update.png"))
 
         self.chk_all.stateChanged.connect(self.change_check_state)
-        # self.cbo_profile.currentIndexChanged.connect(self.current_profile_changed)
         self.btn_chang_dir.clicked.connect(self.on_directory_search)
         self.lst_widget.itemClicked.connect(self.user_selected_entities)
         self.btn_refresh.clicked.connect(self.update_files_with_custom_filter)
@@ -112,9 +112,15 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.buttonBox.button(QDialogButtonBox.Save).setText('Import')
 
         # self.load_config()
-        self.active_profile()
-        self.init_file_path()
-        #self.current_profile_changed()
+        self.xml_files = []
+        self.profile_name = current_profile().name
+        self.show_instances_count(self.path)
+        self.profile_entities = self.instance_entities()
+        self.show_profile_entities(self.profile_entities)
+
+        self.fk_relations = self.extract_fk_relations(self.profile_entities)
+        #self.read_instances_folder(self.path)
+
         self.change_check_state(self.chk_all.checkState())
         self.change_check_state(Qt.Checked)
         self.set_imported_instance_folder()
@@ -127,33 +133,48 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def showEvent(self, event):
         # Make sure we ONLY have one xml file in the instance folder
         super(ProfileInstanceRecords, self).showEvent(event)
-        instances = self.check_instances_with_bad_count_xml_files()
-        if len(instances) == 0:
-            self.current_profile_changed()
-            return
+        bad_instances = self.verify_required_xml_file_count(self.path)
 
-        self.txt_feedback.append('Errors found in data files, import failed.')
-        self.txt_feedback.append('')
-        for instance, count in instances.items():
-            self.txt_feedback.append(f'{instance}: =>  {count}')
+        for instance_folder, value in bad_instances.items():
+            if value == 0:
+                self.txt_feedback.append(f'No xml files found for instance: {instance_folder}')
 
-        self.txt_feedback.append('')
-        self.txt_feedback.append('Fix the errors then try again.')
-        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(False)
+            elif value > 1:
+                self.txt_feedback.append(f'{value} xml files found for instance: {instance_folder}')
+
+        self.xml_files = self.fetch_xml_files(self.path, list(bad_instances.keys()))
+
+        #if len(bad_instances) == 0:
+        #self.read_instances_folder()
+
+            #return
+
+        # self.txt_feedback.append('Errors found in data files, import failed.')
+        # self.txt_feedback.append('')
+
+        # for instance, count in instances.items():
+        #     self.txt_feedback.append(f'{instance}: =>  {count}')
+
+        #self.txt_feedback.append('')
+        #self.txt_feedback.append('Fix the errors then try again.')
+        self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
 
-    def check_instances_with_bad_count_xml_files(self):
+    def verify_required_xml_file_count(self, instances_parent_folder: str):
         """
         Returns the number of xml files in the instance folder.
         """
         instances = {}
 
-        instance_folders = self.xform_xpaths()
+        instance_folders = self.instances_folders(instances_parent_folder)
+        
         for instance_folder in instance_folders:
             xml_folder = os.path.join(instance_folder, '*.xml')
             xml_files = glob.glob(xml_folder)
+
             if len(xml_files) == 0:
                 instances[instance_folder] = 0
+
             if len(xml_files) > 1:
                 instances[instance_folder] = len(xml_files)
 
@@ -186,23 +207,17 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             #self.lst_widget.item(i).setCheckState(state)
             self.lst_widget.item(i).setFlags(Qt.ItemIsEnabled)
 
-    def current_profile_changed(self):
-        """
-        Get the current profile so that it is the one selected at the combo box
-        """
-        self.instance_list = []
-        #self.active_profile()
-        self.init_file_path()
-        self.available_records()
-        self.on_dir_path()
-        self.populate_entities_widget()
+    # def read_instances_folder(self, instances_folder: str):
+    #     self.show_instances_count(instances_folder)
+        #self.fetch_xml_files(instances_folder)
+        #self.show_profile_entities()
 
-    def active_profile(self) -> str:
-        """
-        Return active profile name
-        """
-        self.profile = current_profile().name
-        return self.profile
+    # def active_profile(self) -> str:
+    #     """
+    #     Return active profile name
+    #     """
+    #     self.profile = current_profile().name
+    #     return self.profile
 
     def set_imported_instance_folder(self):
         """
@@ -218,97 +233,111 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         Initialize GeoODK file path
         """
-        self.path = self.geoODK_file_path(self.txt_directory.text())
+        #self.path = self.geoODK_file_path(self.txt_directory.text())
+        self.path = self.geoODK_instance_file_path()
         self.txt_directory.setText(self.path)
 
-    def geoODK_file_path(self, path: str='') -> str:
+    def geoODK_instance_file_path(self) -> str:
         """
         Check if geoODK file path has been configured, if not configure default
         and return it.
         """
-        if not path.strip():
-            path = self.make_path(GEOODK_FORM_HOME)
-        return path
+        if not os.access(GEOODK_FORM_HOME, os.F_OK):
+            os.makedirs(str(GEOODK_FORM_HOME))
+        return GEOODK_FORM_HOME
 
-    def make_path(self, path: str) -> str:
-        """
-        Create and return a file path if is not available.
-        """
-        if not os.access(path, os.F_OK):
-            os.makedirs(str(path))
-        return path
+        #return self.make_path(GEOODK_FORM_HOME)
+        # if not path.strip():
+        #     path = self.make_path(GEOODK_FORM_HOME)
+        # return path
 
-    def xform_xpaths(self) -> List[str]:
+    # def make_path(self, path: str) -> str:
+    #     """
+    #     Create and return a file path if is not available.
+    #     """
+    #     if not os.access(path, os.F_OK):
+    #         os.makedirs(str(path))
+    #     return path
+
+    def instances_folders(self, parent_path) -> List[str]:
         """
         Return the full path to the default config path and filter geoodk
         instance that matches the current profile path
         :return: directories
         :rtype: list
         """
-        return [os.path.join(self.path, name) for name in os.listdir(self.path)
-                if os.path.isdir(os.path.join(self.path, name))
-                if name.startswith(self.profile_formater())]
+        return [os.path.join(parent_path, name) for name in os.listdir(parent_path)
+                if os.path.isdir(os.path.join(parent_path, name))
+                if name.startswith(self.profile_name)]
 
-    def on_dir_path(self):
-        """
-        Extract the specific folder information and rename the file
-        :return:
-        """
-        self.uuid_extractor.new_list = []
-        if self.record_count() > 0:
-            directories = self.xform_xpaths()
-            for directory in directories:
-                self.extract_guuid_and_rename_file(directory)
+    def fetch_xml_files(self, instances_parent_folder:str, bad_instances:list) -> list:
+
+        instances_folders = self.instances_folders(instances_parent_folder)
+
+        if len(instances_folders) == 0:
+            return
+
+        xml_files = []
+
+        for instance_folder in instances_folders:
+            if instance_folder in bad_instances:
+                continue
+            xml_file = self.extract_xml_file(instance_folder)
+            xml_files.append(xml_file)
+
+        return xml_files
+
+        #return self.uuid_extractor.get_xml_files()
         self.importlogger.start_json_file()
         self.previous_import_instances()
-        self.txt_count.setText(str(len(self.instance_list)))
 
-    def extract_guuid_and_rename_file(self, path: str):
+        #self.txt_count.setValue(len(self.xml_files))
+
+    def extract_xml_file(self, instance_folder: str) -> str:
         """
-        Extract the unique Guuid and rename the file
+        Extract the unique uuid and rename the file
         so that we can uniquely identify each file
         :return:
         """
-        for f in os.listdir(path):
-            if os.path.isfile(os.path.join(path, f)) and f.endswith('.xml'):
-                file_instance = os.path.normcase(os.path.join(path, f))
-                if os.path.isfile(file_instance):
-                    self.rename_file_to_UUID(file_instance)
+        xml_file = ""
 
-    def read_instance_data(self) -> Dict[str, tuple[str, InstanceData]]:
+        for xml_file in os.listdir(instance_folder):
+            if os.path.isfile(os.path.join(instance_folder, xml_file)) and xml_file.endswith('.xml'):
+                xml_full_filepath = os.path.normcase(os.path.join(instance_folder, xml_file))
+                if os.path.isfile(xml_full_filepath):
+                    xml_file = self.uuid_extractor.fix_name(xml_full_filepath)
+                    break
+
+        return xml_file
+
+    def extract_xml_data(self, xml_files:list) -> Dict[str, tuple[str, InstanceData]]:
         """
         Read all instance data once and store them in a dict
-        :str is filename
         """
-        mobile_data = OrderedDict()
-        #social_tenure_info = OrderedDict()
+        xml_data = OrderedDict()
         self.uuid_extractor.unset_path()
 
-        for full_filename in self.instance_list:
-            if os.path.isfile(full_filename):
-                filepath, filename = os.path.split(full_filename)
-                self.uuid_extractor.set_file_path(full_filename)
+        profile_name = self.profile_name.replace(' ', '_')
 
-            mobile_data[filename] = (full_filename, InstanceData(
-                    field_data_nodes=self.uuid_extractor.document_entities_with_data(
-                    self.active_profile().replace(' ', '_'),
-                    self.user_selected_entities()),
-                    str_data_nodes=self.uuid_extractor.document_entities_with_data(
-                    self.active_profile().replace(' ', '_'),
-                    ['social_tenure'])))
+        entities = self.profile_entities
+        entities.append('social_tenure')
+
+        for xml_file in xml_files:
+            if os.path.isfile(xml_file):
+                filepath, filename = os.path.split(xml_file)
+                #self.uuid_extractor.set_file_path(xml_file)
+
+            entities_data = self.uuid_extractor.extract_entities_data(xml_file,
+                                                                      profile_name, entities)
+                                                                    
+            # str_data = self.uuid_extractor.extract_entities_data(xml_file,
+            #                                                      profile_name, ['social_tenure'])
+
+            xml_data[filename] = (xml_file, InstanceData( entities_data, None) )
 
             self.uuid_extractor.close_document()
 
-        return mobile_data
-
-    def rename_file_to_UUID(self, filename: str):
-        """
-        Extract the UUID from each folder and file
-        :return:
-        """
-        self.uuid_extractor.set_file_path(filename)
-        self.uuid_extractor.on_file_passed()
-        self.instance_list = self.uuid_extractor.file_list()
+        return xml_data
 
     def move_imported_file(self, filename: str):
         """
@@ -323,17 +352,18 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         except DummyException as ex:
             return str(ex)
 
-    def populate_entities_widget(self):
+    def show_profile_entities(self, entities: list):
         """
         Add entities in the instance file into a list view widget
         """
         self.lst_widget.clear()
-        entities = self.instance_entities()
+        # entities = self.instance_entities()
+
         if len(entities) > 0:
-            for entity in entities:
-                list_widget = QListWidgetItem(
-                    current_profile().entity_by_name(entity).short_name, self.lst_widget)
+            for entity_name in entities:
+                list_widget = QListWidgetItem( entity_name, self.lst_widget)
                 list_widget.setIcon(GuiUtils.get_icon("table02.png"))
+                #current_profile().entity_by_name(entity).short_name, self.lst_widget)
                 # list_widget.setCheckState(Qt.Checked)
 
     def user_selected_entities(self) -> List[EntityName]:
@@ -351,19 +381,22 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                     entities.append(current_profile().entity(item.text()).name)
         return entities
 
-    def instance_entities(self) -> List[EntityName]:
+    def instance_entities(self) -> List[str]:
         """
         Enumerate the entities that are in the current profile
         and also that are captured in the form so that we are only
         importing relevant entities to database
         :return: List of enitity names
         """
+        # TODO: Refactor this method
         current_entities = []
         instance_collections = self.instance_collection()
         if len(instance_collections) > 0:
             for entity_name in self.profile_entities_names(current_profile()):
                 if current_profile().entity_by_name(entity_name) is not None:
                     current_entities.append(entity_name)
+
+        # Add supporting document entity
         return current_entities
 
     def instance_collection(self) -> List[FileName]:
@@ -371,7 +404,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Enumerate all the instances found in the instance directory
         rtype: list of xml file names
         """
-        dirs = self.xform_xpaths()
+        dirs = self.instances_folders(self.path)
         instance_collections = []
         if len(dirs) > 0:
             for dir_f in dirs:
@@ -396,7 +429,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 if obj.name != current_profile().name:
                     self._notif_bar_str.insertErrorNotification(mismatch_profile)
                     return
-        return self.uuid_extractor.document_entities(self.profile)
+        return self.uuid_extractor.document_entities(self.profile_name)
 
     def profile_entities_names(self, profile: 'Profile') ->List[str]:
         """
@@ -409,42 +442,44 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             entities_names.append(entity.name)
         return entities_names
 
-    def has_foreign_keys_parent(self, select_entities:List[str] ) -> bool:
+    def extract_fk_relations(self, entity_names:List[str] ) -> OrderedDict:
         """
         Ensure we check that the table is not parent else
         import parent table first
         Revised in version 1.7. It explicitly assumes str is captured. before it was optional.
         :return:
         """
-        has_relations = False
+        #has_relations = False
         str_tables = current_profile().social_tenure
         party_tbls = str_tables.parties
         sp_tbls = str_tables.spatial_units
-        self.relations = OrderedDict()
-        if len(self.instance_list) > 0:
-            if self.uuid_extractor.has_str_captured_in_instance(self.instance_list[0]):
-                for party_tbl in party_tbls:
-                    self.relations[party_tbl.name] = ['social_tenure_relationship',
-                                                      party_tbl.short_name.lower() + '_id']
-                for sp_tbl in sp_tbls:
-                    self.relations[sp_tbl.name] = ['social_tenure_relationship',
-                                                   sp_tbl.short_name.lower() + '_id']
 
-        for table in select_entities:
-            table_object = current_profile().entity_by_name(table)
-            cols = list(table_object.columns.values())
+        fk_relations = OrderedDict()
+
+        # if len(self.xml_files) > 0:
+        #     if self.uuid_extractor.has_str_captured_in_instance(self.xml_files[0]):
+
+        for party_tbl in party_tbls:
+            fk_relations[party_tbl.name] = ['social_tenure_relationship',
+                                                party_tbl.short_name.lower() + '_id']
+        for sp_tbl in sp_tbls:
+            fk_relations[sp_tbl.name] = ['social_tenure_relationship',
+                                            sp_tbl.short_name.lower() + '_id']
+
+        for entity_name in entity_names:
+            entity = current_profile().entity_by_name(entity_name)
+            cols = list(entity.columns.values())
+
             for col in cols:
                 if col.TYPE_INFO == 'FOREIGN_KEY':
-                    parent_object = table_object.columns[col.name]
-                    if parent_object.parent:
-                        if parent_object.parent.name in self.relations:
-                            self.relations[parent_object.parent.name].append([table, col.name])
+                    #parent_object = entity.columns[col.name]
+                    if col.parent:
+                        if col.parent.name in fk_relations:
+                            fk_relations[col.parent.name].append([entity_name, col.name])
                         else:
-                            self.relations[parent_object.parent.name] = [table, col.name]
-                    has_relations = True
-                else:
-                    continue
-        return has_relations
+                            fk_relations[col.parent.name] = [entity_name, col.name]
+                    #has_relations = True
+        return fk_relations
 
     def parent_table_isselected(self) -> List[str]:
         """
@@ -458,7 +493,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             # entities = self.user_selected_entities()
             entities = self.instance_entities()
             if len(entities) > 0:
-                for table in self.relations.keys():
+                for table in self.fk_relations.keys():
                     if table not in entities:
                         silent_list.append(table)
                 return silent_list
@@ -499,53 +534,42 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         """
         try:
             self.importlogger.add_log_info()
-            for files in self.instance_list:
+            for files in self.xml_files:
                 current_dir = os.path.basename(files)
                 exist = self.importlogger.check_file_exist(current_dir)
                 if exist:
-                    self.instance_list.remove(files)
-            self.txt_count.setText(str(len(self.instance_list)))
-            if self.record_count() != len(self.instance_list):
+                    self.xml_files.remove(files)
+            self.txt_count.setValue(len(self.xml_files))
+            if len(self.instances_folders(self.path)) != len(self.xml_files):
                 msg = 'Some files have been already imported and therefore ' \
                       'not enumerated'
                 self._notif_bar_str.insertErrorNotification(msg)
         except IOError as io:
             self._notif_bar_str.insertErrorNotification(MSG + ": " + str(io))
 
-    def available_records(self):
-        """
-        Let the user know how many records have been collected and are available
-         for inport process
-        :return:
-        """
-        self.txt_count.setText(str(self.record_count()))
+    def show_instances_count(self, instances_folder):
+        self.txt_count.setValue(
+            len(self.instances_folders(instances_folder))
+        )
 
-    def record_count(self) -> int:
-        """
-        Get the count of instance dir in the selected directory
-        """
-        return len([name for name in os.listdir(self.path)
-                    if os.path.isdir(os.path.join(self.path, name))
-                    if name.startswith(self.profile_formater())])
-
-    def profile_formater(self) -> str:
-        """
-        Format the profile name by removing underscore character
-        """
-        if self.txt_filter.text() != '':
-            filter_text = self.txt_filter.text()
-            return filter_text
-        else:
-            return self.profile
+    # def profile_formater(self) -> str:
+    #     """
+    #     Format the profile name by removing underscore character
+    #     """
+    #     # if self.txt_filter.text() != '':
+    #     #     filter_text = self.txt_filter.text()
+    #     #     return filter_text
+    #     # else:
+    #     return self.profile_name
 
     def update_files_with_custom_filter(self):
         """
         Get the new file count with the user custom filter text
         :return: file count
         """
-        self.available_records()
-        self.on_dir_path()
-        self.populate_entities_widget()
+        self.show_instances_count()
+        self.fetch_xml_files(self.path)
+        self.show_profile_entities()
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
     def projection_settings(self):
@@ -566,12 +590,18 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         if self.txt_directory.text() != '':
             home_path = self.txt_directory.text()
 
-        dir_name = QFileDialog.getExistingDirectory(
+        instances_folder = QFileDialog.getExistingDirectory(
             self, 'Open Directory', home_path, QFileDialog.ShowDirsOnly
         )
-        if dir_name:
-            self.txt_directory.setText(str(dir_name))
-            self.current_profile_changed()
+
+        if instances_folder:
+            self.txt_directory.setText(str(instances_folder))
+            self.show_instances_count(instances_folder)
+            bad_instances = self.verify_required_xml_file_count(instances_folder)
+            self.xml_files = self.fetch_xml_files(instances_folder, 
+                                                        list(bad_instances.keys()))
+            #self.read_instances_folder(instances_folder)
+
         self.change_check_state(self.chk_all.checkState())
 
     def feedback_message(self, msg : str) -> QMessageBox:
@@ -590,13 +620,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.show()
         return msgbox
 
-    def save_instance_data_to_db(self, entities : List[str]):
-        """
-        Get the user selected entities and insert them into database
-        params entities: List of names for the selected entities.
-        """
+    def save_instance_data_to_db(self, entities : List[str], xml_files: List[str]):
         cu_obj = ''
-        import_status = False
 
         self.txt_feedback.clear()
         self.txt_feedback.append("Import started, please wait...\n")
@@ -604,133 +629,83 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         QCoreApplication.processEvents()
         self._notif_bar_str.clear()
 
-        mobile_field_data = self.read_instance_data()
+        print(f'Extract xml data...')
 
-        has_fk = self.has_foreign_keys_parent(entities)  # populates self.relations list
-
-        if len(self.parent_table_isselected()) > 0:
-            if QMessageBox.information(self, QApplication.translate('GeoODKMobileSettings', " Import Warning"),
-                                       QApplication.translate('GeoODKMobileSettings',
-                                                              'Some of dependent tables (entities)'
-                                                              'which may not be part of the selected tables '
-                                                              'I.e: {} will be imported'
-                                                                      .format(self.parent_table_isselected())),
-                                       QMessageBox.Ok | QMessageBox.No) == QMessageBox.No:
-                return
-
-        if not mobile_field_data:
+        xml_data = self.extract_xml_data(xml_files)
+        
+        if not xml_data:
             self.feedback_message('Not matching data in mobile files')
             return 
 
         counter = 0
 
         try:
-            self.pgbar.setRange(counter, len(self.instance_list))
+            self.pgbar.setRange(counter, len(self.xml_files))
             self.pgbar.setValue(0)
             ImportLogger.log_action("Import started ...\n")
 
-            for filename, instance_data in mobile_field_data.items():
+            #xml_data[filename] = (xml_file, InstanceData( entities_data, str_data) )
 
-                instance_full_filename = instance_data[0]
+            for xml_filename, instance_data in xml_data.items():
+
+                xml_file = instance_data[0]
                 instance_obj_data = instance_data[1]
 
-                ImportLogger.log_action("File {} ...\n".format(filename))
+                ImportLogger.log_action("File {} ...\n".format(xml_filename))
+
                 parents_info = []
                 self.parent_ids = {}
-                import_status = False
                 counter = counter + 1
 
-                single_occuring, repeated_entities = self.uuid_extractor.instance_data_from_nodelist(
-                    instance_obj_data.field_data_nodes)
+                instance_nodes = self.uuid_extractor.instance_data_from_nodelist(
+                    instance_obj_data.field_data_nodes, self.fk_relations)
 
-                single_occurring_keys = list(single_occuring.keys())
+                for entity_name, data in instance_nodes.items():
+                    log_timestamp = f'Parent entity import... : {entity_name}'
+                    self.log_table_entry(log_timestamp)
 
-                for entity_name in single_occurring_keys:
-                    entity_data = single_occuring[entity_name]
-                    import_status = False
+                    entity_data = data['data']
 
-                    if entity_name in self.relations:
-                        #if entity_name not in self.parent_ids.keys():
-                        self.count_import_file_step(counter, entity_name)
-                        log_timestamp = '=== parent table import  === : {0}'.format(entity_name)
-                        self.log_table_entry(log_timestamp)
+                    entity_model = EntityModel(entity_name, entity_data, self.parent_ids)
+                    entity_model.objects_from_supporting_doc(xml_file)
 
-                        cu_obj = entity_name
-                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
-
-                        entity_add.objects_from_supporting_doc(instance_full_filename)
-
-                        ref_id = entity_add.save_parent_to_db()
-
-                        import_status = True
-                        self.parent_ids[entity_name] = [ref_id, entity_name]
-                        parents_info.append(entity_name)
-                        single_occuring.pop(entity_name)
-
-                    else: #entity_name not in self.relations:
-                        import_status = False
-                        self.count_import_file_step(counter, entity_name)
-                        log_timestamp = '=== standalone table import  === : {0}'.format(entity_name)
-                        cu_obj = entity_name
-                        self.log_table_entry(log_timestamp)
-                        entity_add = Save2DB(entity_name, entity_data, self.parent_ids)
-                        entity_add.objects_from_supporting_doc(instance_full_filename)
-
-                        child_id = entity_add.save_to_db()
-                        cu_obj = entity_name
-                        import_status = True
-                        parents_info.append(entity_name)
-                        if entity_name not in self.parent_ids.keys():
-                            self.parent_ids[entity_name] = [child_id, entity_name]
-                        entity_add.cleanup()
-
-                if repeated_entities:
-                    # self.log_table_entry(" ========== starting import of repeated tables ============")
-                    import_status = False
-                    for repeated_entity, entity_data in repeated_entities.items():
-                        """We are assuming that the number of repeat table cannot exceed 99"""
-                        enum_index = repeated_entity[:2]
-                        if enum_index.isdigit():
-                            repeat_table = repeated_entity[2:]
-                        else:
-                            enum_index = repeated_entity[:1]
-                            repeat_table = repeated_entity[1:]
-                        log_timestamp = '          child table {0} >> : {1}' \
-                            .format(repeat_table, enum_index)
-                        self.count_import_file_step(counter, repeat_table)
-                        ImportLogger.log_action(log_timestamp)
-                        if repeat_table in self.profile_entities_names(current_profile()):
-                            entity_add = Save2DB(repeat_table, entity_data, self.parent_ids)
-                            entity_add.objects_from_supporting_doc(instance_full_filename)
-                            child_id = entity_add.save_to_db()
-                            self.parent_ids[repeat_table] = [child_id, repeat_table]
-                            cu_obj = repeat_table
-                            import_status = True
-                            self.log_table_entry(" ------ import succeeded:   {0} ".format(import_status))
-                            entity_add.cleanup()
-                            QCoreApplication.processEvents()
-                        else:
+                    if entity_name == 'social_tenure':
+                            entity = current_profile().social_tenure
+                            entity_model.save_str(self.parent_ids, entity, entity_data)
                             continue
 
-                if instance_obj_data.str_data_nodes:
-                    '''We treat social tenure entities separately because of foreign key references'''
-                    entity_relation = EntityImporter(filename)
-                    single_str, multiple_str = self.uuid_extractor.instance_data_from_nodelist(
-                        instance_obj_data.str_data_nodes)
-                    if len(single_str) > 0:
-                        entity_relation.process_social_tenure(single_str, self.parent_ids)
+                    ref_id = entity_model.save_parent_to_db()
 
-                    elif len(multiple_str) > 1:
-                        for repeated_entity, entity_data in multiple_str.items():
-                            """We are assuming that the number of repeat str cannot exceed 10"""
-                            entity_relation.process_social_tenure(entity_data, self.parent_ids)
+                    self.parent_ids[entity_name] = [(ref_id, entity_name)]
+                    parents_info.append(entity_name)
 
-                    self.log_table_entry(" ----- saving social tenure relationship")
-                    # entity_add.cleanup()
+                    for entity_child in data['children']:
 
-                self.txt_feedback.append('saving record "{0}" to database'.format(counter))
+                        child_name = entity_child['child_name']
+
+                        self.count_import_file_step(counter, child_name)
+                        log_timestamp = f"Multiple table import... : {child_name}"
+                        self.log_table_entry(log_timestamp)
+
+                        child_data =  entity_child['data']
+
+                        child_model = EntityModel(child_name, child_data, self.parent_ids)
+
+                        child_model.entity.supports_documents = True
+
+                        child_model.objects_from_supporting_doc(xml_file)
+                        child_id = child_model.save_to_db(child_data)
+
+                        parents_info.append(entity_name)
+                        if child_name in self.parent_ids.keys():
+                            self.parent_ids[child_name].append((child_id, child_name))
+                        else:
+                            self.parent_ids[child_name] = [(child_id, child_name)]
+
+
+                self.txt_feedback.append(f"saving record '{counter}' to database")
                 self.pgbar.setValue(counter)
-                self.log_instance(filename)
+                self.log_instance(xml_filename)
                 QCoreApplication.processEvents()
 
             self.txt_feedback.append('Number of records successfully imported:  {}'
@@ -749,6 +724,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             self.log_table_entry(str(ae))
             return
 
+
     def count_import_file_step(self, count:int=0, table: str=""):
         """
         Tracking method to record the current import activity
@@ -760,6 +736,9 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         Execute the import dialog once the save button has been clicked
         :return:
         """
+        if self.txt_count.value() == 0:
+            return
+
         self.buttonBox.setEnabled(False)
         QApplication.setOverrideCursor(Qt.WaitCursor)
         try:
@@ -771,26 +750,11 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 return
 
             # entities = self.user_selected_entities()
-            entities = self.instance_entities()
+            # entities = self.instance_entities()
+            # entities = self.profile_entities
             
+            self.save_instance_data_to_db(self.profile_entities, self.xml_files)
 
-            # if len(entities) == 0:
-            #     if QMessageBox.information(self,
-            #                                QApplication.translate('MobileForms', 'Import Warning'),
-            #                                QApplication.translate('MobileForms',
-            #                                                       'You have not '
-            #                                                       'selected any entity for import. All entities '
-            #                                                       'will be imported'), QMessageBox.Ok |
-            #                                                                            QMessageBox.No) == QMessageBox.Ok:
-            #         entities = self.instance_entities()
-            #         QApplication.restoreOverrideCursor()
-            #     else:
-            #         self.buttonBox.setEnabled(True)
-            #         QApplication.restoreOverrideCursor()
-            #         return
-            # else:
-
-            self.save_instance_data_to_db(entities)
             self.buttonBox.setEnabled(True)
             QApplication.restoreOverrideCursor()
         except DummyException as ex:
@@ -813,25 +777,25 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         del_list = []
         log_data = self.importlogger.read_log_data()
         if len(log_data) > 0:
-            for instance in self.instance_list:
+            for instance in self.xml_files:
                 # dir_path, file_name = os.path.split(instance)
                 # if log_data.has_key(instance) or log_data.has_key(file_name):
                 try:
                     if os.path.split(instance)[1] in log_data:
                         # del_list. append(instance)
-                        self.instance_list.remove(instance)
+                        self.xml_files.remove(instance)
                     else:
                         continue
                 except DummyException:
                     continue
             # if len(del_list)>0:
-            # [self.instance_list.remove(inst) for inst in del_list]
+            # [self.xml_files.remove(inst) for inst in del_list]
 
     def close(self):
         """
         when the user interrupts data import operations, we should close exit
         """
-        self.instance_list = None
+        self.xml_files = None
         QApplication.restoreOverrideCursor()
         QCoreApplication.processEvents()
         self.close()

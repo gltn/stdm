@@ -191,6 +191,7 @@ class ConfigWizard(WIDGET, BASE):
         self.btnTemplates.setIcon(GuiUtils.get_icon('open_file.png'))
         self.btnDocOutput.setIcon(GuiUtils.get_icon('open_file.png'))
         self.btnDocPath.setIcon(GuiUtils.get_icon('open_file.png'))
+
         self.btnCopy.setIcon(GuiUtils.get_icon('composer_table.png'))
         self.btnPDelete.setIcon(GuiUtils.get_icon('remove.png'))
         self.btnNewP.setIcon(GuiUtils.get_icon('add.png'))
@@ -1701,7 +1702,7 @@ class ConfigWizard(WIDGET, BASE):
         :type message: str
         """
         sel_dir = str(QFileDialog.getExistingDirectory(
-            self, self.tr("Select Folder"), ""))
+            self, self.tr("Select Folder"), dir))
         return sel_dir
 
     def add_entity_item(self, entity):
