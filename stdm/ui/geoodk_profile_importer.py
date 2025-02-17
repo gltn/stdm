@@ -329,9 +329,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
             entities_data = self.uuid_extractor.extract_entities_data(xml_file,
                                                                       profile_name, entities)
-                                                                    
-            # str_data = self.uuid_extractor.extract_entities_data(xml_file,
-            #                                                      profile_name, ['social_tenure'])
 
             xml_data[filename] = (xml_file, InstanceData( entities_data, None) )
 
