@@ -242,7 +242,7 @@ class EntityModel():
             entity_object_model = entity_object()
         return entity_object_model
 
-    def objects_from_supporting_doc(self, xml_file=None):
+    def objects_from_supporting_doc(self, xml_filename: str=""):
         """
         Create supporting doc path  instances based on the collected documents
         :return:paths
@@ -251,10 +251,9 @@ class EntityModel():
         entity_supports_docs = False
 
         #if xml_file:
-        file_path, file_name = os.path.split(xml_file)
+        file_path, file_name = os.path.split(xml_filename)
 
         self.entity.supports_documents = True
-
 
         for column, value in self.entity_data.items():
             # for column, value in data.items():
@@ -322,10 +321,6 @@ class EntityModel():
             return formatted_doc_list[0]
 
     def save_str(self, party_spunit_entities, str_entity, data=None):
-        """
-        """
-        #list_val = list(data[0].values()) 
-
         prefix  = current_profile().prefix + '_'
 
         # full_party_ref_column = current_profile().social_tenure.parties[0].name
@@ -360,6 +355,11 @@ class EntityModel():
                 if hasattr(model, k):
                     col_type = entity_mapping.get(k)
                     col_prop = str_entity.columns[k]
+                    # Check tenure share constraint >= 0 and <= 100
+                    if k == 'tenure_share':
+                        if v.strip() != '':
+                            if int(v) < 0 or int(v) > 100:
+                                v = 100
                     var = self.attribute_formatter(col_type, col_prop, v)
                     setattr(model, k, var)
 
@@ -430,9 +430,6 @@ class EntityModel():
         self.entity.supports_documents = True
         if self.entity_has_supporting_docs(self.entity):
             self.model.documents = self._doc_manager.model_objects()
-            print(f'Saving Parent::entity_has_supporing_docs: {self.model.documents}')
-        else:
-            print(f'* Entity does NOT have supporting docs **')
 
         self.model.save()
         self.key = self.model.id

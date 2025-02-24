@@ -130,6 +130,8 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         self.label_14.setVisible(False)
         self.btn_refresh.setVisible(False)
 
+        self.cbReimport.setCheckState(Qt.Unchecked)
+
     def showEvent(self, event):
         # Make sure we ONLY have one xml file in the instance folder
         super(ProfileInstanceRecords, self).showEvent(event)
@@ -144,19 +146,6 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
 
         self.xml_files = self.fetch_xml_files(self.path, list(bad_instances.keys()))
 
-        #if len(bad_instances) == 0:
-        #self.read_instances_folder()
-
-            #return
-
-        # self.txt_feedback.append('Errors found in data files, import failed.')
-        # self.txt_feedback.append('')
-
-        # for instance, count in instances.items():
-        #     self.txt_feedback.append(f'{instance}: =>  {count}')
-
-        #self.txt_feedback.append('')
-        #self.txt_feedback.append('Fix the errors then try again.')
         self.buttonBox.button(QDialogButtonBox.Save).setEnabled(True)
 
 
@@ -617,8 +606,10 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         msgbox.show()
         return msgbox
 
-    def save_instance_data_to_db(self, entities : List[str], xml_files: List[str]):
+    def save_instance_data_to_db(self, entities : List[str], xml_files: List[str]) -> dict:
         cu_obj = ''
+
+        log_data = self.importlogger.read_log_data()
 
         self.txt_feedback.clear()
         self.txt_feedback.append("Import started, please wait...\n")
@@ -626,52 +617,79 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
         QCoreApplication.processEvents()
         self._notif_bar_str.clear()
 
-        print(f'Extract xml data...')
+        self.importlogger.log_info(f"Ready to extract data from [{len(xml_files)}] XML files")
 
         xml_data = self.extract_xml_data(xml_files)
+
+        self.importlogger.log_info(f"[{len(xml_data)}] data sets extracted from XML files.")
         
         if not xml_data:
             self.feedback_message('Not matching data in mobile files')
             return 
 
+        reimport_data = self.cbReimport.checkState() == Qt.Checked
+
         counter = 0
 
-        try:
-            self.pgbar.setRange(counter, len(self.xml_files))
-            self.pgbar.setValue(0)
-            ImportLogger.log_action("Import started ...\n")
+        instances_imported = 0
+        failed_instances = []
 
-            #xml_data[filename] = (xml_file, InstanceData( entities_data, str_data) )
+        self.pgbar.setRange(counter, len(self.xml_files))
+        self.pgbar.setValue(0)
+        self.importlogger.log_info("Import started...")
 
-            for xml_filename, instance_data in xml_data.items():
+        #xml_data[filename] = (xml_file, InstanceData( entities_data, str_data) )
 
-                xml_file = instance_data[0]
-                instance_obj_data = instance_data[1]
+        for xml_filename, instance_data in xml_data.items():
 
-                ImportLogger.log_action("File {} ...\n".format(xml_filename))
+            xml_file = instance_data[0]
+            instance_obj_data = instance_data[1]
 
-                parents_info = []
-                self.parent_ids = {}
-                counter = counter + 1
+            self.importlogger.log_info(f"Reading File: {xml_filename}...")
 
-                instance_nodes = self.uuid_extractor.instance_data_from_nodelist(
-                    instance_obj_data.field_data_nodes, self.fk_relations)
+            if not reimport_data:
+                # Check if the file exists in the log file
+                if xml_filename in log_data:
+                    msg = f"File `{xml_filename}` already imported. Skipping..."
+                    self.importlogger.log_info(msg)
+                    continue
 
-                for entity_name, data in instance_nodes.items():
-                    log_timestamp = f'Parent entity import... : {entity_name}'
-                    self.log_table_entry(log_timestamp)
+            parents_info = []
+            self.parent_ids = {}
+            counter = counter + 1
 
-                    entity_data = data['data']
+            self.txt_feedback.append(f"Processing instance No.... {counter}")
+            self.pgbar.setValue(counter)
 
-                    entity_model = EntityModel(entity_name, entity_data, self.parent_ids)
-                    entity_model.objects_from_supporting_doc(xml_file)
+            instance_nodes = self.uuid_extractor.instance_data_from_nodelist(
+                instance_obj_data.field_data_nodes, self.fk_relations)
+
+            for entity_name, data in instance_nodes.items():
+                msg = f'Importing data for entity...: {entity_name}'
+                self.importlogger.log_info(msg) 
+                #self.log_table_entry(log_timestamp)
+
+                entity_data = data['data']
+
+                entity_model = EntityModel(entity_name, entity_data, self.parent_ids)
+                entity_model.objects_from_supporting_doc(xml_file)
+
+                try:
 
                     if entity_name == 'social_tenure':
                             entity = current_profile().social_tenure
+                            msg = f'Saving STR data...'
+                            self.importlogger.log_info(msg)
                             entity_model.save_str(self.parent_ids, entity, entity_data)
                             continue
 
+                    msg = f'Saving {entity_name} data...'
+                    self.importlogger.log_info(msg)
+
                     ref_id = entity_model.save_parent_to_db()
+
+                    msg = f'Saved {entity_name} data - ID: {ref_id}'
+                    self.importlogger.log_info(msg)
 
                     self.parent_ids[entity_name] = [(ref_id, entity_name)]
                     parents_info.append(entity_name)
@@ -681,17 +699,19 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         child_name = entity_child['child_name']
 
                         self.count_import_file_step(counter, child_name)
-                        log_timestamp = f"Multiple table import... : {child_name}"
-                        self.log_table_entry(log_timestamp)
 
                         child_data =  entity_child['data']
-
                         child_model = EntityModel(child_name, child_data, self.parent_ids)
-
                         child_model.entity.supports_documents = True
-
                         child_model.objects_from_supporting_doc(xml_file)
+
+                        msg = f"Saving child entity... `{child_name}`"
+                        self.importlogger.log_info(msg)
+
                         child_id = child_model.save_to_db(child_data)
+
+                        msg = f"Saved `{child_name}` data - ID: {child_id}"
+                        self.importlogger.log_info(msg)
 
                         parents_info.append(entity_name)
                         if child_name in self.parent_ids.keys():
@@ -699,27 +719,55 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                         else:
                             self.parent_ids[child_name] = [(child_id, child_name)]
 
+                except DummyException as ex:
+                    self.importlogger.log_error(str(ex))
+                    failed_instances.append(xml_filename)
+                except SQLAlchemyError as ae:
+                    # Display the error
+                    msg = f"current table `{cu_obj}`... import failed!\n"
+                    self.txt_feedback.append(msg)
 
-                self.txt_feedback.append(f"saving record '{counter}' to database")
-                self.pgbar.setValue(counter)
-                self.log_instance(xml_filename)
-                QCoreApplication.processEvents()
+                    self.txt_feedback.append("Error message: \n")
+                    self.txt_feedback.append(str(ae))
+                    self.txt_feedback.append("\n")
 
-            self.txt_feedback.append('Number of records successfully imported:  {}'
-                                     .format(counter))
-        except DummyException as ex:
-            self.feedback_message(str(ex))
+                    # Log the error
+                    msg = f"Error importing file: {xml_filename}"
+                    self.importlogger.log_info(msg)
+
+                    self.importlogger.log_error(str(ae))
+                    failed_instances.append(xml_filename)
+
+            instances_imported += 1
+
+            msg = f"Done importing file."
+            self.importlogger.log_info(msg)
+            self.log_instance(xml_filename)
             QCoreApplication.processEvents()
-            QApplication.restoreOverrideCursor()
-            self.buttonBox.setEnabled(True)
-        except SQLAlchemyError as ae:
-            QCoreApplication.processEvents()
-            QApplication.restoreOverrideCursor()
-            self.feedback_message(str(ae))
-            self.txt_feedback.append("current table {0}import failed...\n".format(cu_obj))
-            self.txt_feedback.append(str(ae))
-            self.log_table_entry(str(ae))
-            return
+
+        QCoreApplication.processEvents()
+        QApplication.restoreOverrideCursor()
+        self.buttonBox.setEnabled(True)
+
+        self.pgbar.setValue(self.txt_count.value())
+
+        self.txt_feedback.append('------------------------------')
+        self.txt_feedback.append('Data import process complete.')
+
+        msg = f"Number of records successfully imported:......  {counter}"
+        self.txt_feedback.append(msg)
+
+        msg = f"Number of failed records:...... {len(failed_instances)}"
+        self.txt_feedback.append(msg)
+
+        msg = f"Check the import log file for more details."
+        self.txt_feedback.append(msg)
+
+        results = {
+            'instances_imported': instances_imported,
+            'failed_instances': failed_instances
+            }
+        return results
 
 
     def count_import_file_step(self, count:int=0, table: str=""):
@@ -750,7 +798,27 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
             # entities = self.instance_entities()
             # entities = self.profile_entities
             
-            self.save_instance_data_to_db(self.profile_entities, self.xml_files)
+            results = self.save_instance_data_to_db(self.profile_entities, self.xml_files)
+
+            instances_imported = results['instances_imported']
+            failed_instances = results['failed_instances']
+
+            if len(failed_instances) > 0:
+                self.importlogger.log_info("Summary: \n")
+                msg = f"Total instances imported: {instances_imported}"
+                self.importlogger.log_error(msg)
+
+                msg = f"Total instances failed: {len(failed_instances)} \n"
+                self.importlogger.log_error(msg)
+                msg = f"Failed instances:"
+                self.importlogger.log_error(msg)
+                msg = "" 
+                for instance in failed_instances:
+                    msg += f"{instance} \n"
+                self.importlogger.log_info(msg)
+
+            self.importlogger.log_info("Data import complete.")
+
 
             self.buttonBox.setEnabled(True)
             QApplication.restoreOverrideCursor()
@@ -766,7 +834,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
     def log_instance(self, instance):
         # instance_short_name = self.importlogger.log_data_name(instance)
         log_data = self.importlogger.read_log_data()
-        log_data[instance] = self.importlogger.log_date()
+        log_data[instance] = self.importlogger.log_date_time()
         self.importlogger.write_log_data(log_data)
 
     def previous_import_instances(self):

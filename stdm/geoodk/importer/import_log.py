@@ -68,6 +68,9 @@ class ImportLogger:
         except IOError as ex:
             raise str(ex)
 
+    def check_if_imported(self, xml_filename: str) ->bool:
+        pass
+
     @staticmethod
     def log_file_path() -> str:
         """
@@ -94,9 +97,28 @@ class ImportLogger:
         Ensure the logger information is written to the file
         """
         log_file = ImportLogger.log_file_path()
+
         with open(log_file, 'a') as f:
             f.write('\n')
             f.write(action)
+            f.close()
+
+    def log_error(self, error) ->str:
+        """
+        Ensure the logger information is written to the file
+        """
+        msg = f"{self.log_date_time()}: ERROR - {error}"
+        self.log_msg(msg)
+
+    def log_info(self, info) ->str:
+        msg = f"{self.log_date_time()}: INFO - {info}"
+        self.log_msg(msg)
+
+    def log_msg(self, msg):
+        log_file = ImportLogger.log_file_path()
+        with open(log_file, 'a') as f:
+            f.write('\n')
+            f.write(msg)
             f.close()
 
     def write_log_data(self, data):
@@ -132,7 +154,7 @@ class ImportLogger:
         short_name = os.path.splitext(base)[0]
         return short_name
 
-    def log_date(self):
+    def log_date_time(self) ->str:
         """
         rtype: str
         """
