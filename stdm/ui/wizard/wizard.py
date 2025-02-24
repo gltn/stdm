@@ -2403,6 +2403,28 @@ class ConfigWizard(WIDGET, BASE):
                 if pg_table_exists(entity.name):
                     self.process_privilege(entity, editor.column)
 
+    def add_new_column(self, new_column: 'Column'):
+        model_item, entity, row_id = self.get_model_entity(self.lvEntities)
+
+        entity.add_column(new_column)
+
+        if new_column.TYPE_INFO == 'LOOKUP':
+            self.clear_lookup_view()
+            self.populate_lookup_view(profile)
+            self.lvLookups.setCurrentIndex(self.lookup_view_model.index(0, 0))
+
+        # add this entity to STR spatial unit list of selection.
+        if new_column.TYPE_INFO == 'GEOMETRY':
+            self.STR_spunit_model.add_entity(entity)
+
+        row = self.tbvColumns.model().rowCount() - 1
+        self.tbvColumns.selectRow(row)
+        self.tbvColumns.scrollToBottom()
+
+        midx = self.tbvColumns.model().index(row, 0)
+        profile = self.current_profile()
+        profile.update_entity_row_index(new_column.name, midx.row())
+
     def clear_previous_selection(self):
         if self.selected_index == None:
             return
