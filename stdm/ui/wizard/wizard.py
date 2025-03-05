@@ -292,6 +292,7 @@ class ConfigWizard(WIDGET, BASE):
         self._sp_t_mapping = {}
         self._custom_attr_entities = {}
         self.orig_assets_count = 0  # count of items in StdmConfiguration instance
+
         config_file = self.get_config_file()
         self.load_stdm_config(config_file)
 
@@ -327,7 +328,6 @@ class ConfigWizard(WIDGET, BASE):
         tables = self.get_tables(current_profile())
         self.mandt_cols =  mandatory_columns(tables)
         self.unique_cols  =  unique_columns(tables)
-
 
 
     def get_tables(self, profile: Profile):
@@ -798,6 +798,7 @@ class ConfigWizard(WIDGET, BASE):
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
+
 
         self.lvLookups.setCurrentIndex(self.lvLookups.model().index(0, 0))
         self.lvEntities.setCurrentIndex(self.lvEntities.model().index(0, 0))
@@ -2150,6 +2151,7 @@ class ConfigWizard(WIDGET, BASE):
         profile = self.stdm_config.profile(str(name))
         if profile is None:
             return
+
         self.edtDesc.setText(profile.description)
         # clear view models
         self.clear_view_model(self.entity_model)
@@ -2188,6 +2190,7 @@ class ConfigWizard(WIDGET, BASE):
         self.pftableView.setDefaultDropAction(Qt.MoveAction)
 
         self._custom_attr_entities = {}
+        save_current_profile(name)
 
     def refresh_entity_view(self):
         self.clear_view_model(self.entity_model)
@@ -2405,7 +2408,9 @@ class ConfigWizard(WIDGET, BASE):
 
     def add_new_column(self, new_column: 'Column'):
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
+        profile = self.current_profile()
 
+        # add column to entity
         entity.add_column(new_column)
 
         if new_column.TYPE_INFO == 'LOOKUP':
@@ -2422,7 +2427,6 @@ class ConfigWizard(WIDGET, BASE):
         self.tbvColumns.scrollToBottom()
 
         midx = self.tbvColumns.model().index(row, 0)
-        profile = self.current_profile()
         profile.update_entity_row_index(new_column.name, midx.row())
 
     def clear_previous_selection(self):

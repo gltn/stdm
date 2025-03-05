@@ -104,6 +104,7 @@ class ColumnEditor(WIDGET, BASE):
         self.auto_entity_add = kwargs.get('auto_add', False)
         self.entity_has_records = kwargs.get('entity_has_records', False)
 
+        
         QDialog.__init__(self, self.form_parent)
 
         self.FK_EXCLUDE = ['supporting_document', 'admin_spatial_unit_set']
@@ -784,27 +785,25 @@ class ColumnEditor(WIDGET, BASE):
         """
         Creates a new BaseColumn.
         """
-        column = None
+        if not self.type_info:
+            raise ValueError(self.tr("No type to create."))
 
-        if self.type_info != "":
-            if self.type_info == 'ADMIN_SPATIAL_UNIT':
-                self.admin_spatial_unit_property()
-                column = BaseColumn.registered_types[self.type_info] \
-                    (self.form_fields['colname'], self.entity, **self.form_fields)
-                return column
+        if self.type_info == 'ADMIN_SPATIAL_UNIT':
+            self.admin_spatial_unit_property()
+            return BaseColumn.registered_types[self.type_info](
+                self.form_fields['colname'], self.entity, **self.form_fields
+            )
 
-            if self.is_property_set(self.type_info):
-                column = BaseColumn.registered_types[self.type_info](
-                     self.form_fields['colname'], self.entity,
-                     self.form_fields['geom_type'],
-                     self.entity, **self.form_fields)
-            else:
-                self.show_message(self.tr('Please set column properties.'))
-                return
-        else:
-            raise self.tr("No type to create.")
+        if not self.is_property_set(self.type_info):
+            self.show_message(self.tr('Please set column properties.'))
+            return None
 
-        return column
+        return BaseColumn.registered_types[self.type_info](
+            self.form_fields['colname'], self.entity,
+            self.form_fields['geom_type'],
+            self.entity, **self.form_fields
+        )
+
 
     def property_set(self):
         self.prop_set = True
@@ -925,6 +924,9 @@ class ColumnEditor(WIDGET, BASE):
 
     def add_new_column(self):
         new_column = self.make_column()
+
+        if new_column is None:
+            return
 
         if not self.column_is_valid(new_column):
             return
