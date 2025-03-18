@@ -67,6 +67,7 @@ from stdm.ui.forms.widgets import (
 from stdm.ui.forms.documents import SupportingDocumentsWidget
 from stdm.ui.notification import NotificationBar
 from stdm.ui.forms import entity_dlg_extension
+from stdm.security.user import User
 
 from stdm.navigation import (
     TableContentGroup
@@ -644,7 +645,12 @@ class EntityEditorDialog(QDialog, MapperMixin):
         if not hasattr(self._model, attr):
             return
 
-        table_content = TableContentGroup(self._parent.entity_browser.current_user.UserName, child_entity.short_name)
+        if isinstance(self._parent, EntityEditorDialog):
+            table_content = TableContentGroup(self._parent.entity_browser.current_user.UserName, child_entity.short_name)
+        else:
+            table_content = TableContentGroup('postgres', child_entity.short_name)
+            self.current_user = User('postgres')
+
 
         if self.edit_model is not None:
             parent_id = self.edit_model.id

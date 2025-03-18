@@ -1245,6 +1245,7 @@ class EntityBrowserWithEditor(EntityBrowser):
             result = gps_tool.exec_()
         else:
             #Load editor dialog
+            print('XXX -->> XXX')
             edit_entity_dlg = self._editor_dlg(self._entity, model=model_obj,
                                              parent=self, parent_entity=self.parent_entity, plugin=self.plugin)
 

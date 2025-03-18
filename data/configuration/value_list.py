@@ -75,7 +75,7 @@ class ValueList(Entity):
         self.user_editable = False
 
         self.code_column = VarCharColumn('code', self, minimum=0, maximum=10)
-        self.value_column = VarCharColumn('value', self, minimum=2, maximum=100)
+        self.value_column = VarCharColumn('value', self, minimum=2, maximum=300)
         self.values = OrderedDict()
         self._hash = hashlib
 
