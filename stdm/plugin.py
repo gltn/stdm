@@ -31,10 +31,12 @@ from qgis.PyQt.QtCore import (
     QCoreApplication,
     Qt,
     QStandardPaths,
+    QUrl,
     QDir
 )
 from qgis.PyQt.QtGui import (
-    QKeySequence
+    QKeySequence,
+    QDesktopServices
 )
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -52,6 +54,7 @@ from qgis.core import (
     QgsApplication,
     QgsTask
 )
+
 from qgis.gui import (
     QgsLayoutDesignerInterface
 )
@@ -1244,7 +1247,10 @@ class STDMQGISLoader:
         username = globals.APP_DBCONN.User.UserName
 
         if username == 'postgres':
-            self.grant_privilege_base_tables(username)
+            if self.grant_privilege_base_tables(username):
+                LOGGER.info('Privileges granted to base tables.')
+            else:
+                LOGGER.error('Failed to grant privilege to base tables.')
 
         self.moduleCntGroup = None
         self.moduleContentGroups = []
@@ -1492,14 +1498,29 @@ class STDMQGISLoader:
                 break
         return doc_exist
 
-    def grant_privilege_base_tables(self, username):
+    def grant_privilege_base_tables(self, username) ->bool:
         roles = []
-        roleProvider = RoleProvider()
-        roles = roleProvider.GetSysRoles()
+        try:
+            roleProvider = RoleProvider()
+            roles = roleProvider.GetSysRoles()
 
-        privilege_provider = SinglePrivilegeProvider('', current_profile())
-        for role in roles:
-            privilege_provider.grant_privilege_base_table(role)
+            privilege_provider = SinglePrivilegeProvider('', current_profile())
+            for role in roles:
+                privilege_provider.grant_privilege_base_table(role)
+        except ConfigurationException as c_ex:
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                QApplication.translate(
+                    'STDM',
+                    'Grant privilege base tables'
+                ),
+                str(c_ex))
+            return False
+
+        return True
+
+
+
 
     def load_profiles_combobox(self):
         """
@@ -2220,8 +2241,10 @@ class STDMQGISLoader:
 
     def help_contents(self):
         """
-        Load and open documentation manual
+        Open documentation manual
         """
+        HELP_URL = "https://www.stdm.gltn.net/docs/1_8/STDM_1.8.1_User_Manual.pdf"
+
         help_manual = '{0}/stdm.chm'.format(self.plugin_dir)
 
         try:
@@ -2229,12 +2252,34 @@ class STDMQGISLoader:
                 help_manual, 'open'
             )
         except FileNotFoundError as ex:
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                QApplication.translate(
-                    "STDMQGISLoader",
-                    'Open File Error'
-                ), str("Error trying to open help file (stdm.chm), file is missing."))
+            if self.view_online_user_manual():
+                ds = QDesktopServices()
+                ds.openUrl(QUrl(HELP_URL))
+
+
+    def view_online_user_manual(self) -> bool:
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Critical)
+        msg_box.setWindowTitle(QApplication.translate(
+            "STDMQGISLoader",
+            "STDM Help File Error"))
+        msg_box.setText(QApplication.translate(
+            "STDMQGISLoader",
+            "Local version of the help file (stdm.chm) file is missing."))
+        msg_box.setInformativeText(QApplication.translate(
+            "STDMQGISLoader",
+            'Would you like to open the online help?'))
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        msg_box.setDefaultButton(QMessageBox.Yes)
+
+        yes_btn = msg_box.button(QMessageBox.Yes)
+
+        msg_box.exec_()
+        if msg_box.clickedButton() == yes_btn:
+            return True
+        else:
+            return False
+
 
     def reset_content_modules_id(self, title, message_text):
         return QMessageBox.critical(

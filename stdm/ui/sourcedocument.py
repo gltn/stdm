@@ -946,7 +946,7 @@ class DocumentWidget(WIDGET, BASE):
         """
         progress = (size * 100) / self._docSize
 
-        self.pgBar.setValue(progress)
+        self.pgBar.setValue(int(progress))
         #QgsApplication.processEvents()
 
     def onCompleteTransfer(self, fileid):

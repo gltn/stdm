@@ -2538,7 +2538,7 @@ class ConfigWizard(WIDGET, BASE):
         if new_content is None: return
         self.update_privilege_cache(entity, column, new_content)
 
-    def column_has_entity_relation(self, column):
+    def column_has_entity_relation(self, column: 'Column') ->bool:
         answer = False
         if (isinstance(column, ForeignKeyColumn) or
                 isinstance(column, AdministrativeSpatialUnitColumn)):
@@ -2810,6 +2810,11 @@ class ConfigWizard(WIDGET, BASE):
         # the current profile
         dependencies = self.all_column_dependencies(profile)
 
+        print('------------------')
+        print(dependencies)
+        print(lookup.name)
+        print('------------------')
+
         if self.find_lookup(lookup.name, dependencies):
             self.show_message(self.tr("Cannot delete '{0}' lookup!\n "
                                       "Lookup is been used by existing columns."
@@ -2829,7 +2834,7 @@ class ConfigWizard(WIDGET, BASE):
             self.lookup_view_model.removeRow(row_id)
             self.refresh_lookup_view()
 
-    def all_column_dependencies(self, profile):
+    def all_column_dependencies(self, profile:Profile) -> list:
         """
         Returns a list of all column dependencies, for all
         enitites in the current profile
@@ -2849,7 +2854,7 @@ class ConfigWizard(WIDGET, BASE):
                     depends.append(column.dependencies())
         return depends
 
-    def find_lookup(self, name, dependencies):
+    def find_lookup(self, name, dependencies:list) -> list:
         """
         Returns True if name is in the list of dependencies
         else False
@@ -2859,6 +2864,7 @@ class ConfigWizard(WIDGET, BASE):
         :type dependencies: list
         :rtype: boolean
         """
+
         for depend in dependencies:
             if name in depend['entities']:
                 return True

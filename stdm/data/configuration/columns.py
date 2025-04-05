@@ -268,7 +268,7 @@ class BaseColumn(ColumnItem):
         """
         pass
 
-    def dependencies(self):
+    def dependencies(self) ->dict:
         """
         Gets the tables and views that are related to this column.
         :return: A dictionary containing a list of related entity names and

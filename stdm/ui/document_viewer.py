@@ -352,7 +352,7 @@ class DocumentViewer(QMdiSubWindow):
         if par_height > doc_height and par_width > doc_width:
             self.resize(doc_width, doc_height)
         else:
-            self.resize(doc_width * ratio, doc_height * ratio)
+            self.resize(doc_width * int(ratio), doc_height * int(ratio))
 
     def closeEvent(self, event):
         """
@@ -416,7 +416,7 @@ class DocumentViewManager(QMainWindow):
         # vertical position
         vpos = (screen.height() - mdi_area_size.height()) / 2
         # repositions the window
-        self.move(hpos, vpos)
+        self.move(int(hpos), int(vpos))
 
     def _create_menu_actions(self):
         self._window_menu = self.menuBar().addMenu(

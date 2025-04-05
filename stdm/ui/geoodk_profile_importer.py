@@ -651,6 +651,7 @@ class ProfileInstanceRecords(QDialog, FORM_CLASS):
                 # Check if the file exists in the log file
                 if xml_filename in log_data:
                     msg = f"File `{xml_filename}` already imported. Skipping..."
+                    self.txt_feedback.append(msg)
                     self.importlogger.log_info(msg)
                     continue
 

@@ -804,7 +804,6 @@ class ColumnEditor(WIDGET, BASE):
             self.entity, **self.form_fields
         )
 
-
     def property_set(self):
         self.prop_set = True
         self.type_attribs[self.current_type_info()]['prop_set'] = True

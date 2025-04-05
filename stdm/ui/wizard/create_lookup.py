@@ -180,7 +180,7 @@ class LookupEditor(WIDGET, BASE):
 
         if self.lookup is None:  # new lookup
             if self.duplicate_check(short_name):
-                self.show_message(
+                self.error_message(
                     self.tr(
                         "Lookup with the same name already "
                         "exist in the current profile!"
