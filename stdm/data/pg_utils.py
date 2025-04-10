@@ -218,6 +218,20 @@ def pg_table_exists(table_name, include_views=True, schema="public"):
         return True
 
 
+def pg_column_exists(table_name:str, column_name: str):
+    sql_str = (f"Select count(*) cnt from information_schema.columns "
+               f" Where table_name = '{table_name}' and column_name = '{column_name}' "
+               )
+    try:
+        results = _execute(sql_str)
+        cnt = 0
+        for result in results:
+            cnt = result['cnt']
+
+        return True if cnt > 0 else False
+    except SQLAlchemyError as db_error:
+        return False
+
 def pg_table_record_count(table_name):
     """
     Returns a count of records in a table

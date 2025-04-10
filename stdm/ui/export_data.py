@@ -325,7 +325,7 @@ class ExportData(WIDGET, BASE):
 
             succeed = True
 
-        except DummyException as ex:
+        except Exception as ex:
             self.ErrorInfoMessage(ex)
 
         return succeed

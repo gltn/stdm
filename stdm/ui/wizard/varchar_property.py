@@ -48,6 +48,7 @@ class VarcharProperty(WIDGET, BASE):
         QDialog.__init__(self, parent)
         self.setupUi(self)
 
+        self._min_len = form_fields['minimum']
         self._max_len = form_fields['maximum']
         self.in_db = form_fields['in_db']
         self.entity_has_records = form_fields['entity_has_records']
@@ -81,7 +82,7 @@ class VarcharProperty(WIDGET, BASE):
                                                      "Please enter length for the column."))
             return
 
-        if self.entity_has_records and self.edtCharLen.value() < self._max_len:
+        if self.edtCharLen.value() < self._min_len:
             msg = f"Size is less than existing column size, data will be truncated! Operation aborted."
             self.show_message(QApplication.translate("VarcharProperty", msg))
             return

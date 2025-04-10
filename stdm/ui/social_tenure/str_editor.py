@@ -279,6 +279,9 @@ class SyncSTREditorData(object):
 
         if previous_item is not None:
             prev_str_number = previous_item.data()
+
+            print(f'Previous Number: {prev_str_number}')
+
             prev_data_store = self.editor.data_store[prev_str_number]
             if previous_item.text() == self.editor.custom_tenure_info_text:
                 self.save_custom_tenure_info(prev_data_store, prev_str_number)
@@ -345,6 +348,10 @@ class SyncSTREditorData(object):
         node.
         :type prev_str_number: Integer
         """
+        print('----')
+        print(self.editor.custom_tenure_info_component.entity_editors)
+        print('----')
+
         for i, party_id in enumerate(prev_data_store.custom_tenure.keys()):
             self.editor.custom_tenure_info_component.entity_editors[
                 (prev_str_number, i)].on_model_added()
@@ -1490,9 +1497,12 @@ class STREditor(WIDGET, BASE):
             return
         store = self.current_data_store()
         QApplication.processEvents()
+
+        str_number = self.current_item().data()
+
         create_result = self.custom_tenure_info_component.add_entity_editor(
             self.party, self.spatial_unit, party_model,
-            self.str_number, row_number, custom_model
+            str_number, row_number, custom_model
         )
 
         if create_result:
@@ -1818,7 +1828,11 @@ class STREditor(WIDGET, BASE):
         """
         current_data_store = self.current_data_store()
         current_data_store.party[model.id] = model
-        item = self.str_item(self.party_text, self.str_number)
+
+        str_number = self.current_item().data()
+
+        item = self.str_item(self.party_text, str_number)
+
         # validate party length to enable the next item
         self.validate.validate_party_length(current_data_store, item)
         current_data_store.current_party = self.party
@@ -1948,12 +1962,16 @@ class STREditor(WIDGET, BASE):
         result = self.validate_str_delete(selected_indexes)
         if not result:
             return
+
         index = selected_indexes[0]
         selected_item = self.tree_view_model.itemFromIndex(index)
+
         str_number = selected_item.data()
+
         self.tree_view_model.removeRows(index.row(), 1)
 
         self.remove_str_node_models(str_number)
+
         self.validate.enable_save_button()
 
     def remove_str_node_models(self, str_number):

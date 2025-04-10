@@ -716,6 +716,7 @@ class DocumentGeneratorDialog(WIDGET, BASE):
 
                     # If its the last record and user has selected to ignore
                     if i + 1 == len(records):
+                        print('XXXXXXXXXX')
                         progressDlg.close()
                         progressDlg.deleteLater()
                         del progressDlg

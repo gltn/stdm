@@ -85,7 +85,9 @@ class OGRWriter():
         # Create data source
         self._ds = drv.CreateDataSource(self._targetFile)
         if self._ds is None:
-            raise Exception("Creation of output file failed.")
+            msg = f"Creation of output file: \n {self._targetFile} failed! \n\n Check if the file is opened."
+            raise Exception(msg)
+
         dest_crs = None
         # Create layer
         if geom != "":

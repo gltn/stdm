@@ -1046,6 +1046,6 @@ class SpatialUnitManagerDockWidget(WIDGET, BASE):
         :return: None
         """
         if self._plugin is None:
-            return True
-
-        self._plugin.spatialLayerManager.setChecked(False)
+            event.accept()
+        else:
+            self._plugin.spatialLayerManager.setChecked(False)

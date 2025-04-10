@@ -46,7 +46,8 @@ from stdm.data.configuration.entity_relation import EntityRelation
 
 from stdm.data.pg_utils import (
     vector_layer,
-    run_query
+    run_query,
+    pg_column_exists
 )
 
 from stdm.ui.gui_utils import GuiUtils
@@ -100,7 +101,7 @@ class ColumnEditor(WIDGET, BASE):
         self.entity = kwargs.get('entity', None)
         self.profile = kwargs.get('profile', None)
         self.in_db = kwargs.get('in_db', False)
-        self.is_new = kwargs.get('is_new', True)
+        self.is_new_column = kwargs.get('is_new', True)
         self.auto_entity_add = kwargs.get('auto_add', False)
         self.entity_has_records = kwargs.get('entity_has_records', False)
 
@@ -132,7 +133,7 @@ class ColumnEditor(WIDGET, BASE):
         # Exclude column type info in the list
         self._exclude_col_type_info = []
 
-        if self.is_new:
+        if self.is_new_column:
             self.prop_set = None  # why not False??
         else:
             self.prop_set = True
@@ -922,16 +923,20 @@ class ColumnEditor(WIDGET, BASE):
         msg.exec_()
 
     def add_new_column(self):
-        new_column = self.make_column()
+        if self.is_new_column:
+            if self.column_create_ready():
+                self.form_parent.add_and_new(self.column)
+                self.clear_form_fields()
+        else:
+            if self.column_update_ready(self.column):
+                self.clear_form_fields()
 
-        if new_column is None:
-            return
-
-        if not self.column_is_valid(new_column):
-            return
-
-        self.form_parent.add_new_column(new_column)
-        self.clear_form_fields()
+            # new_column = self.make_column()
+            # if new_column is None:
+            #     return
+            # if not self.column_is_valid(new_column):
+            #     return
+            # self.form_parent.add_and_new(new_column)
 
     def clear_form_fields(self):
         self.edtColName.setText('')
@@ -964,35 +969,80 @@ class ColumnEditor(WIDGET, BASE):
 
         return True
 
-    def accept(self):
+    def column_create_ready(self) ->bool:
         new_column = self.make_column()
-        self.column = new_column
+        if new_column is None:
+            return False
 
-        if not self.column_is_valid(new_column):
-            return
+        self.column = new_column
 
         if self.auto_entity_add:
             self.entity.add_column(new_column)
+            return
 
-        if not self.is_new:  # editing a column
+        if not self.column_is_valid(new_column):
+            return False
+
+        # Don't make a column mandatory if the entity has records
+        if self.cbMandt.isChecked():
+
+            if self.entity_has_records:
+                self.show_message(self.tr("Cannot set column as mandatory."
+                                            " Entity has existing records"))
+                return False
+
+            self.column.mandatory = True
+        return True
+
+    def column_update_ready(self, column:'Column') ->bool:
+        if pg_column_exists(column.entity.name, column.name):
 
             if self.cbMandt.isChecked():
-                if self.entity_has_null_values(self.column):
+                if self.entity_has_null_values(column):
                     self.show_message(self.tr("Cannot set column as mandatory. "
                                                 "Entity has null values!"))
                     return False
+                column.mandatory = True
 
             if self.cbUnique.isChecked():
-                if self.column_has_no_unique_values():
+                if self.column_has_no_unique_values(column):
                     self.show_message(self.tr("Cannot set column as unique. "
                                             "Entity has non-unique values!"))
                     return False
 
-            if isinstance(self.prev_column, ForeignKeyColumn):
-                if self.prev_column.display_name() != new_column.display_name():
-                    self.entity.remove_column(self.prev_column.name)
-                    self.entity.add_column(new_column)
-            self.column = new_column
+                column.unique = True
+        else: 
+            if self.cbMandt.isChecked():
+                if self.entity_has_records:
+                    self.show_message(self.tr("Cannot set column as mandatory."
+                                            " Entity has existing records"))
+                    return False
+
+                column.mandatory = True
+
+            if self.cbUnique.isChecked():
+                if self.column_has_no_unique_values(column):
+                    self.show_message(self.tr("Cannot set column as unique. "
+                                            "Entity has non-unique values!"))
+                    return False
+                
+                column.unique = True
+
+        return True
+        
+
+                # if isinstance(self.prev_column, ForeignKeyColumn):
+                #     if self.prev_column.display_name() != new_column.display_name():
+                #         self.entity.remove_column(self.prev_column.name)
+                #         self.entity.add_column(new_column)
+
+    def accept(self):
+        if self.is_new_column:
+            if not self.column_create_ready():
+                return
+        else:
+            if not self.column_update_ready(self.column):
+                return
 
         self.done(1)
 
@@ -1005,8 +1055,8 @@ class ColumnEditor(WIDGET, BASE):
 
         return True if cnt> 0 else False
 
-    def column_has_no_unique_values(self)->bool:
-        sql_stmt = f'Select count(*) cnt from {self.column.entity.name} group by {self.column.name} having count(*) > 1'
+    def column_has_no_unique_values(self, column: 'Column')->bool:
+        sql_stmt = f'Select count(*) cnt from {column.entity.name} group by {column.name} having count(*) > 1'
         results = run_query(sql_stmt)
         cnt = 0
         for result in results:

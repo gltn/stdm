@@ -2121,7 +2121,10 @@ class ConfigWizard(WIDGET, BASE):
             col_name = cv.model().data(midx)
             row = midx.row()
             entity.update_column_row_index(col_name, row)
-        entity.sort_columns()
+        try:
+            entity.sort_columns()
+        except Exception as e:
+            LOGGER.debug(f"Error sorting columns: {e}")
         return True
 
     def eventFilter(self, object, event):
@@ -2406,7 +2409,7 @@ class ConfigWizard(WIDGET, BASE):
                 if pg_table_exists(entity.name):
                     self.process_privilege(entity, editor.column)
 
-    def add_new_column(self, new_column: 'Column'):
+    def add_and_new(self, new_column: 'Column'):
         model_item, entity, row_id = self.get_model_entity(self.lvEntities)
         profile = self.current_profile()
 
