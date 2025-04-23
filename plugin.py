@@ -134,7 +134,9 @@ from stdm.security.privilege_provider import SinglePrivilegeProvider
 from stdm.security.roleprovider import RoleProvider
 
 from stdm.data.backup_utils import (
-    perform_autobackup
+    perform_autobackup,
+    backup_config,
+    backup_database
 )
 from stdm.data.stdm_reqs_sy_ir import autochange_profile_configfile
 LOGGER = logging.getLogger('stdm')
@@ -997,6 +999,10 @@ class STDMQGISLoader(object):
         self.options_act = QAction(QIcon(":/plugins/stdm/images/icons/options.png"), \
                            QApplication.translate("OptionsToolbarAction", "Options"),
                            self.iface.mainWindow())
+                           
+        self.backupAct = QAction(QIcon(":/plugins/stdm/images/icons/save.png"), \
+                          QApplication.translate("BackupToolbarAction", "Backup Database"), 
+                          self.iface.mainWindow())
 
         self.manageAdminUnitsAct = QAction(
             QIcon(":/plugins/stdm/images/icons/manage_admin_units.png"),
@@ -1059,6 +1065,7 @@ class STDMQGISLoader(object):
         self.contentAuthAct.triggered.connect(self.contentAuthorization)
         self.usersAct.triggered.connect(self.manageAccounts)
         self.options_act.triggered.connect(self.on_sys_options)
+        self.backupAct.triggered.connect(self.manual_backup)
         self.manageAdminUnitsAct.triggered.connect(self.onManageAdminUnits)
         self.exportAct.triggered.connect(self.onExportData)
         self.downloadAct.triggered.connect(self.onDownload)
@@ -1089,6 +1096,9 @@ class STDMQGISLoader(object):
 
         options_cnt = ContentGroup.contentItemFromQAction(self.options_act)
         options_cnt.code = "1520B989-03BA-4B05-BC50-A4C3EC7D79B6"
+        
+        backup_cnt = ContentGroup.contentItemFromQAction(self.backupAct)
+        backup_cnt.code = "7BF21F68-A77C-4FC1-84F2-77B2DE27ED22"
 
         adminUnitsCnt = ContentGroup.contentItemFromQAction(self.manageAdminUnitsAct)
         adminUnitsCnt.code = "770EAC75-2BEC-492E-8703-34674054C246"
@@ -1181,12 +1191,18 @@ class STDMQGISLoader(object):
         self.options_content_group.addContentItem(options_cnt)
         self.options_content_group.setContainerItem(self.options_act)
         self.options_content_group.register()
+        
+        self.backup_content_group = ContentGroup(username)
+        self.backup_content_group.addContentItem(backup_cnt)
+        self.backup_content_group.setContainerItem(self.backupAct)
+        self.backup_content_group.register()
 
         #Group admin settings content groups
         adminSettingsCntGroups = []
         adminSettingsCntGroups.append(self.contentAuthCntGroup)
         adminSettingsCntGroups.append(self.userRoleCntGroup)
         adminSettingsCntGroups.append(self.options_content_group)
+        adminSettingsCntGroups.append(self.backup_content_group)
 
         self.adminUnitsCntGroup = ContentGroup(username)
         self.adminUnitsCntGroup.addContentItem(adminUnitsCnt)
@@ -1284,8 +1300,8 @@ class STDMQGISLoader(object):
 
         self.toolbarLoader.addContent(self.contentAuthCntGroup, [adminMenu, adminBtn])
         self.toolbarLoader.addContent(self.userRoleCntGroup, [adminMenu, adminBtn])
-        self.toolbarLoader.addContent(self.options_content_group, [adminMenu,
-                                                                   adminBtn])
+        self.toolbarLoader.addContent(self.options_content_group, [adminMenu, adminBtn])
+        self.toolbarLoader.addContent(self.backup_content_group, [adminMenu, adminBtn])
 
         self.menubarLoader.addContents(adminSettingsCntGroups, [stdmAdminMenu, stdmAdminMenu])
 
@@ -2003,6 +2019,7 @@ class STDMQGISLoader(object):
             self.stdmInitToolbar.removeAction(self.contentAuthAct)
             self.stdmInitToolbar.removeAction(self.usersAct)
             self.stdmInitToolbar.removeAction(self.options_act)
+            self.stdmInitToolbar.removeAction(self.backupAct)
             self.stdmInitToolbar.removeAction(self.manageAdminUnitsAct)
             self.stdmInitToolbar.removeAction(self.downloadAct)
             self.stdmInitToolbar.removeAction(self.importAct)
@@ -2125,6 +2142,82 @@ class STDMQGISLoader(object):
                     'Open Error'
                 ),
                 unicode(ex)
+            )
+            
+    def manual_backup(self):
+        """
+        Perform a manual backup of the database and configuration when the backup button is clicked.
+        """
+        try:
+            # Ask for confirmation
+            result = QMessageBox.question(
+                self.iface.mainWindow(),
+                QApplication.translate("STDMQGISLoader", "Database Backup"),
+                QApplication.translate("STDMQGISLoader", "Do you want to backup the database and configuration now?"),
+                QMessageBox.Yes | QMessageBox.No
+            )
+            
+            if result == QMessageBox.No:
+                return
+                
+            # Get required parameters for backup
+            from datetime import datetime
+            from stdm.settings.registryconfig import config_file_name, backup_path, pg_bin_path
+            from stdm.data.config import DatabaseConfig
+            
+            datetime_prfx = datetime.now().strftime('%Y%m%d%H%M%S%f_')
+            config_file = config_file_name()
+            backup_out_path = backup_path()
+            pgbin_path = pg_bin_path()
+            
+            # Get database connection info
+            db_conn = DatabaseConfig().read()
+            if db_conn is None:
+                QMessageBox.critical(
+                    self.iface.mainWindow(),
+                    QApplication.translate("STDMQGISLoader", "Backup Error"),
+                    QApplication.translate("STDMQGISLoader", "Unable to read database connection info.")
+                )
+                return
+                
+            # Perform the backup
+            progress = QProgressDialog(
+                QApplication.translate("STDMQGISLoader", "Backing up database and configuration..."),
+                QApplication.translate("STDMQGISLoader", "Cancel"),
+                0, 0, 
+                self.iface.mainWindow()
+            )
+            progress.setWindowModality(Qt.WindowModal)
+            progress.show()
+            
+            # Backup config file
+            backup_config(datetime_prfx, config_file, backup_out_path)
+            
+            # Backup database
+            backup_database(
+                datetime_prfx,
+                pgbin_path,
+                db_conn.Host,
+                db_conn.Port,
+                db_conn.Database,
+                backup_out_path
+            )
+            
+            progress.close()
+            
+            # Show success message with backup location
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                QApplication.translate("STDMQGISLoader", "Backup Completed"),
+                QApplication.translate("STDMQGISLoader", 
+                    "Database and configuration successfully backed up to:\n{}").format(backup_out_path)
+            )
+            
+        except Exception as ex:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                QApplication.translate("STDMQGISLoader", "Backup Error"),
+                QApplication.translate("STDMQGISLoader", "An error occurred during backup:\n{}").format(str(ex))
             )
 
     def reset_content_modules_id(self, title, message_text):
