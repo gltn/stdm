@@ -47,7 +47,8 @@ from stdm.data.configuration.entity_relation import EntityRelation
 from stdm.data.pg_utils import (
     vector_layer,
     run_query,
-    pg_column_exists
+    pg_column_exists,
+    column_has_no_unique_values
 )
 
 from stdm.ui.gui_utils import GuiUtils
@@ -599,6 +600,8 @@ class ColumnEditor(WIDGET, BASE):
         result = editor.exec_()
         if result == 1:
             self.form_fields['maximum'] = editor.max_len()
+            if self.column is not None:
+                self.column.maximum = editor.max_len()
 
     def bigint_property(self):
         """
@@ -926,9 +929,9 @@ class ColumnEditor(WIDGET, BASE):
         if self.is_new_column:
             if self.column_create_ready():
                 self.form_parent.add_and_new(self.column)
-                self.clear_form_fields()
         else:
             if self.column_update_ready(self.column):
+                self.update_column(self.column, self.form_fields)
                 self.clear_form_fields()
 
             # new_column = self.make_column()
@@ -937,6 +940,64 @@ class ColumnEditor(WIDGET, BASE):
             # if not self.column_is_valid(new_column):
             #     return
             # self.form_parent.add_and_new(new_column)
+
+    def update_column(self, column):
+        column_in_db = self.form_fields['in_db']
+
+        if column_in_db:
+            column.description = self.form_fields['description'] 
+            column.label = self.form_fields['label'] 
+            if hasattr(column, 'minimum'):
+                column.minimum = self.form_fields['minimum'] 
+                column.maximum = self.form_fields['maximum'] 
+        else:
+            column.name = self.form_fields['colname']
+            column.description = self.form_fields['description'] 
+            column.label = self.form_fields['label'] 
+
+            if hasattr(column, 'minimum'):
+                column.minimum = self.form_fields['minimum'] 
+                column.maximum = self.form_fields['maximum'] 
+
+            if hasattr(column, 'srid'):
+                column.srid = self.form_fields['srid']
+                column.geom_type = self.form_fields['geom_type'] 
+
+            if hasattr(column, 'entity_relation'):
+                column.entity_relation = self.form_fields['entity_relation']
+
+            if hasattr(column, 'association'):
+                column.association.first_parent = self.form_fields['first_parent']
+                column.association.second_parent = self.form_fields['second_parent']
+
+            if hasattr(column, 'min_use_current_date'):
+                column.min_use_current_date = self.form_fields['min_use_current_date']
+                column.max_use_current_date = self.form_fields['max_use_current_date']
+
+            if hasattr(column, 'min_use_current_datetime'):
+                    column.min_use_current_datetime = self.form_fields['min_use_current_datetime']
+                    column.max_use_current_datetime = self.form_fields['max_use_current_datetime']
+
+            if hasattr(column, 'prefix_source'):
+                column.prefix_source = self.form_fields['prefix_source'] = column.prefix_source
+                column.columns =  self.form_fields['columns']
+                column.column_separators = self.form_fields['column_separators']
+                column.leading_zero = self.form_fields['leading_zero']
+                column.separator = self.form_fields['separator']
+                column.name = self.form_fields['colname']
+                column.enable_editing = self.form_fields['enable_editing']
+                column.disable_auto_increment = self.form_fields['disable_auto_increment']
+                column.hide_prefix = self.form_fields['hide_prefix']
+
+            # Decimal properties
+            if hasattr(column, 'precision'):
+                column.precision = self.form_fields['precision']
+                column.scale = self.form_fields['scale']
+
+            # Expression column
+            if hasattr(column, 'expression'):
+                 column.expression = self.form_fields['expression']
+                 column.output_data_typ = self.form_fields['output_data_type']
 
     def clear_form_fields(self):
         self.edtColName.setText('')
@@ -995,6 +1056,7 @@ class ColumnEditor(WIDGET, BASE):
         return True
 
     def column_update_ready(self, column:'Column') ->bool:
+        self.fill_work_area()
         if pg_column_exists(column.entity.name, column.name):
 
             if self.cbMandt.isChecked():
@@ -1005,7 +1067,7 @@ class ColumnEditor(WIDGET, BASE):
                 column.mandatory = True
 
             if self.cbUnique.isChecked():
-                if self.column_has_no_unique_values(column):
+                if column_has_no_unique_values(column.entity.name, column.name):
                     self.show_message(self.tr("Cannot set column as unique. "
                                             "Entity has non-unique values!"))
                     return False
@@ -1021,7 +1083,7 @@ class ColumnEditor(WIDGET, BASE):
                 column.mandatory = True
 
             if self.cbUnique.isChecked():
-                if self.column_has_no_unique_values(column):
+                if column_has_no_unique_values(column.entity.name, column.name):
                     self.show_message(self.tr("Cannot set column as unique. "
                                             "Entity has non-unique values!"))
                     return False
@@ -1043,7 +1105,7 @@ class ColumnEditor(WIDGET, BASE):
         else:
             if not self.column_update_ready(self.column):
                 return
-
+            self.update_column(self.column)
         self.done(1)
 
     def entity_has_null_values(self, column: 'Column')->bool:
@@ -1054,14 +1116,6 @@ class ColumnEditor(WIDGET, BASE):
             cnt = result['cnt']
 
         return True if cnt> 0 else False
-
-    def column_has_no_unique_values(self, column: 'Column')->bool:
-        sql_stmt = f'Select count(*) cnt from {column.entity.name} group by {column.name} having count(*) > 1'
-        results = run_query(sql_stmt)
-        cnt = 0
-        for result in results:
-            cnt = result['cnt']
-        return True if cnt > 0 else False
 
     def cancel(self):
         self.done(0)

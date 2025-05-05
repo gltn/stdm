@@ -232,6 +232,17 @@ def pg_column_exists(table_name:str, column_name: str):
     except SQLAlchemyError as db_error:
         return False
 
+def column_has_no_unique_values(table_name: str, column_name: str)->bool:
+    sql_stmt = f'Select count(*) cnt from {table_name} group by {column_name} having count(*) > 1'
+    try:
+        results = run_query(sql_stmt)
+        cnt = 0
+        for result in results:
+            cnt = result['cnt']
+        return True if cnt > 0 else False
+    except SQLAlchemyError as db_error:
+        return False
+
 def pg_table_record_count(table_name):
     """
     Returns a count of records in a table
