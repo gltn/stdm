@@ -314,7 +314,6 @@ class SupportDocManager(QObject):
                     u'Error: uploading...{}'.format(full_filepath))
                 continue
 
-            continue
             result_obj = self.pg_create_supporting_doc(support_doc)
             new_doc_id = result_obj.fetchone()[0]
 

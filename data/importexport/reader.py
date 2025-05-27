@@ -504,8 +504,6 @@ class OGRReader(object):
                         if sdoc_manager.support_doc_column(a_field_name) and field_value != '':
                             sdoc_manager.append_doc(r_count, a_field_name, field_value)
 
-                    continue
-
                     # Check if the value already exists for unique columns
                     if dest_column in unique_data:
                         if field_value in unique_data[dest_column]:
