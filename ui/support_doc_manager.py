@@ -394,6 +394,11 @@ class SupportDocManager(QObject):
         return logs
 
     def make_supporting_doc_dict(self, doc_name):
+        if not os.path.exists(doc_name):
+            msg = "ERROR: File `{}` does not exist!".format(doc_name)
+            self.download_progress.emit(SupportDocManager.ERROR, msg)
+            return None
+
         try:
             doc_size = os.path.getsize(doc_name)
         except IOError as e:

@@ -609,16 +609,17 @@ class OGRReader(object):
                 if update_geom_column_only:
                     self.update_geom_column(targettable, upd_geom_col, column_value_mapping['reference_code'])
                 else:
-                    last_id = self._insertRow(targettable, column_value_mapping)
+                    #last_id = self._insertRow(targettable, column_value_mapping)
+
                     # process multiple selection
                     if len(multiple_selection) > 0:
                         self.create_multiple_select_records(targettable, last_id,
                                 multi_select_dest_table, multiple_selection,
                                 multi_select_lookup_table)
 
-                    row_ids.append(last_id) #
-                    if sdoc_manager.download_docs:
-                        sdoc_manager.update_parent_id(r_count, last_id)
+                    # row_ids.append(last_id) #
+                    # if sdoc_manager.download_docs:
+                    #     sdoc_manager.update_parent_id(r_count, last_id)
             except:
                 progress.close()
                 raise
