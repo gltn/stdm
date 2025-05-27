@@ -396,7 +396,9 @@ class SupportDocManager(QObject):
     def make_supporting_doc_dict(self, doc_name):
         try:
             doc_size = os.path.getsize(doc_name)
-        except FileNotFoundError:
+        except IOError as e:
+            msg = "ERROR: Unable to get size of file `{}`. {}".format(doc_name, str(e))
+            self.download_progress.emit(SupportDocManager.ERROR, msg)
             return None
 
         if doc_size == 0:
