@@ -756,7 +756,7 @@ class UploadWorker(QObject):
         ht = hashlib.sha1(filename.encode('utf-8'))
         document = {}
 
-        document['support_doc_table'] = ''
+        document['support_doc_table'] = 'hl_supporting_document'
         document['creation_date'] = datetime.now().strftime(
             '%Y-%m-%d %H:%M:%S'
         )
