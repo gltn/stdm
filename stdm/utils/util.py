@@ -838,9 +838,11 @@ def enable_drag_sort(mv_widget):
     """
     mv_widget.setDragEnabled(True)
     mv_widget.setAcceptDrops(True)
-    mv_widget.setSelectionMode(
-        QAbstractItemView.SingleSelection
-    )
+
+    # mv_widget.setSelectionMode(
+    #     QAbstractItemView.SingleSelection
+    # )
+
     mv_widget.setDragDropOverwriteMode(False)
     mv_widget.setDropIndicatorShown(True)
 

@@ -216,6 +216,11 @@ class ConfigWizard(WIDGET, BASE):
         self.btn_sp_units_tenure.setIcon(GuiUtils.get_icon('social_tenure.png'))
         self.btn_custom_attrs.setIcon(GuiUtils.get_icon('column.png'))
 
+        self.btnCopyColumn.setIcon(GuiUtils.get_icon('copy_sm.png'))
+        self.btnPasteColumn.setIcon(GuiUtils.get_icon('paste_sm.png'))
+        self.btnCutColumn.setIcon(GuiUtils.get_icon('cut_sm.png'))
+
+
         self.register_fields()
 
         # Add maximize buttons
@@ -224,6 +229,7 @@ class ConfigWizard(WIDGET, BASE):
             Qt.WindowSystemMenuHint |
             Qt.WindowMaximizeButtonHint
         )
+
         # Initialize notification bars
         self._notif_bar_str = NotificationBar(self.vl_notification_str)
 
@@ -328,6 +334,8 @@ class ConfigWizard(WIDGET, BASE):
         tables = self.get_tables(current_profile())
         self.mandt_cols =  mandatory_columns(tables)
         self.unique_cols  =  unique_columns(tables)
+
+        self.column_clipboard = {}
 
 
     def get_tables(self, profile: Profile):
@@ -445,11 +453,43 @@ class ConfigWizard(WIDGET, BASE):
         self.done(0)
 
     def config_is_dirty(self):
-        cnt = len(self.stdm_config)
-        if cnt != self.orig_assets_count:
+        new_items = 0
+        updated_items = 0
+        deleted_items = 0
+
+        for profile in self.stdm_config.profiles.values():
+            for entity in profile.entities.values():
+                if entity.action == DbItem.CREATE:
+                    print(f"NEW Entity: {entity.name}")
+                    new_items += 1
+                if entity.action == DbItem.ALTER:
+                    updated_items += 1
+                if entity.action == DbItem.DROP:
+                    deleted_items += 1
+
+                for column_name, column in entity.columns.items():
+                    if column.action == DbItem.CREATE:
+                        print(f"NEW Column: {column_name}")
+                        new_items += 1
+                    if column.action == DbItem.ALTER:
+                        updated_items += 1
+                    if column.action == DbItem.DROP:
+                        deleted_items += 1
+
+        print(f"New Items: {new_items}")
+        print(f"Updated Items: {updated_items}")
+        print(f"Deleted Items: {deleted_items}")
+
+        if new_items > 0 or updated_items > 0 or deleted_items > 0:
             return True
-        else:
-            return False
+
+        return False
+
+        # cnt = len(self.stdm_config)
+        # if cnt != self.orig_assets_count:
+        #     return True
+        # else:
+        #     return False
 
     def dirty_config_warning(self):
         msg0 = self.tr("You have made some changes to your current "
@@ -626,6 +666,9 @@ class ConfigWizard(WIDGET, BASE):
         self.btnEditColumn.clicked.connect(self.edit_column)
         self.btnDeleteColumn.clicked.connect(self.delete_column)
         self.btnExport.clicked.connect(self.export_columns)
+        self.btnCutColumn.clicked.connect(self.cut_column)
+        self.btnCopyColumn.clicked.connect(self.copy_column)
+        self.btnPasteColumn.clicked.connect(self.paste_column)
 
     def init_lookup_ctrls_event_handlers(self):
         """
@@ -664,6 +707,7 @@ class ConfigWizard(WIDGET, BASE):
         self.tbvColumns.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tbvColumns.doubleClicked.connect(self.edit_column)
         self.tbvColumns.clicked.connect(self.column_clicked)
+
 
         self.columns_proxy_model = QSortFilterProxyModel(self.col_view_model)
         self.columns_proxy_model.setSourceModel(self.col_view_model)
@@ -2446,6 +2490,8 @@ class ConfigWizard(WIDGET, BASE):
     def column_clicked(self, model_index: QModelIndex):
         _ ,column, _ = self.get_selected_item_data(self.tbvColumns)
         lookup_name = ''
+        if column is None:
+            return
         if column.TYPE_INFO == 'LOOKUP': 
             lookup_name = column.parent.short_name
 
@@ -2635,6 +2681,24 @@ class ConfigWizard(WIDGET, BASE):
         column = model_item.entities()[str(col_name)]
         return row_id, column, model_item
 
+    def get_selected_columns(self):
+        columns = []
+        tv = self.tbvColumns
+
+        selection_model = tv.selectionModel()
+        selected_rows = selection_model.selectedRows()
+
+        for row_index in selected_rows:
+            row_num = row_index.row()
+            for column in range(tv.model().columnCount()):
+                col_name = tv.model().data(
+                    tv.model().index(row_num, 0))
+                break
+            column = tv.model().entities()[str(col_name)]
+            columns.append(column)
+
+        return columns
+
     def delete_column(self):
         """
         Delete selected column but show warning dialog if a
@@ -2691,9 +2755,69 @@ class ConfigWizard(WIDGET, BASE):
                     data_type_name = column.TYPE_INFO
                     if column.TYPE_INFO == 'VARCHAR':
                         data_type_name = f'{data_type_name} ({column.maximum})'
-                    row = f"{column.name},{data_type_name}\n"
+                    row = f"{column.name},{data_type_name},mandatory({str(column.mandatory)[0]}),searchable({str(column.searchable)[0]}),unique({str(column.unique)[0]})\n"
                     f.write(row)
         self.show_message("Export done.")
+
+
+    def copy(self, action: str):
+        if len(self.tbvColumns.selectedIndexes()) == 0:
+            self.show_message(self.tr("Please select column to copy"))
+            return
+
+        columns = self.get_selected_columns()
+
+        if len(columns) == 0:
+            return
+
+        _ ,entity, _ = self.get_selected_item_data(self.lvEntities)
+
+        self.column_clipboard.clear()
+        self.column_clipboard[entity.name] = {
+            'action': action,
+            'source_entity': entity,
+            'columns' : columns}
+
+    def copy_column(self):
+        self.copy('copy')
+
+    def cut_column(self):
+        self.copy('cut')
+
+
+    def paste_column(self):
+        if len(self.column_clipboard) == 0:
+            return
+
+        _ ,entity, _ = self.get_selected_item_data(self.lvEntities)
+
+        if entity.name in self.column_clipboard:
+            self.show_message(self.tr("Column exists in the selected entity"))
+            return
+
+        # Entity can only have one Related Entity column
+        has_foreign_key_column = False
+        for column in entity.columns.values():
+            if column.TYPE_INFO == "FOREIGN_KEY":
+                has_foreign_key_column = True
+                break
+
+        selected_entity_columns = [column.name for column in entity.columns.values()]
+
+        for entity_name, copy_action in self.column_clipboard.items():
+            action = copy_action['action']
+            source_entity = copy_action['source_entity']
+            columns = copy_action['columns']
+
+        for column in columns:
+            if column.TYPE_INFO == "FOREIGN_KEY" and has_foreign_key_column:
+                continue
+            if column.name in selected_entity_columns:
+                continue
+            entity.add_column(column)
+
+            if action == 'cut':
+                source_entity.remove_column(column.name)
 
     def check_column_dependencies(self, column):
         """

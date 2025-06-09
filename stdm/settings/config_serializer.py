@@ -283,9 +283,6 @@ class ConfigurationFileSerializer(QObject):
                                          'number from the '
                                          'configuration file.')
 
-        print("Version: ",StdmConfiguration.instance().VERSION)
-        print("Config Version: ", config_version)
-
         if config_version < StdmConfiguration.instance().VERSION:
             # Upgrade configuration
             updated_document = self._update_status(document)
@@ -1445,7 +1442,6 @@ class ValueListSerializer(EntitySerializerCollection):
                         value_list.add_value(value, code)
 
                 # Check if the value list is for tenure types
-
                 if name == 'check_tenure_type':
                     profile.set_social_tenure_attr(SocialTenure.SOCIAL_TENURE_TYPE,
                                                    value_list)

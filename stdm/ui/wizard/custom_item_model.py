@@ -359,8 +359,6 @@ class LookupEntitiesModel(QStandardItemModel):
         return self.item(row)
 
 
-
-
 ################
 # Social Tenure Relationship model item
 class STREntityModelItem(QStandardItem):
