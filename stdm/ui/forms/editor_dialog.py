@@ -82,7 +82,8 @@ class EntityEditorDialog(MapperMixin):
             parent_entity=None,
             exclude_columns=None,
             plugin=None,
-            allow_str_creation=True
+            allow_str_creation=True,
+            advanced_search=False
     ):
         """
         Class constructor.
@@ -150,6 +151,7 @@ class EntityEditorDialog(MapperMixin):
         self.vlNotification.setObjectName('vlNotification')
         self._notifBar = NotificationBar(self.vlNotification)
         self.do_not_check_dirty = False
+        self.advanced_search = advanced_search
 
         # Set manage documents only if the entity supports documents
         if self._entity.supports_documents:
@@ -501,6 +503,10 @@ class EntityEditorDialog(MapperMixin):
 
             if c.name in self.exclude_columns:
                 continue
+            
+            if self.advanced_search:
+                if isinstance(c, MultipleSelectColumn):
+                    continue
 
             if c.name not in columns and not isinstance(c, VirtualColumn):
                 continue

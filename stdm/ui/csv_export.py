@@ -19,11 +19,12 @@ WIDGET, BASE = uic.loadUiType(
 )
 
 class CSVExportDialog(WIDGET, BASE):
-    def __init__(self, iface, export_entity: dict):
+    def __init__(self, iface, export_entity: dict, export_proxy):
         QDialog.__init__(self, iface.mainWindow())
         self.setupUi(self)
         self.iface = iface
         self._export_entity = export_entity
+        self._export_proxy = export_proxy
 
         self.init_ui()
 
@@ -37,7 +38,7 @@ class CSVExportDialog(WIDGET, BASE):
         self.lblEntity.setText(entity_name_long)
 
         self.btnFileBrowse.clicked.connect(self.browse_file)
-        self.btnExport.clicked.connect(self.export_to_csv)
+        self.btnExport.clicked.connect(self.export_proxy_to_csv)
         self.btnClose.clicked.connect(self.close)
 
         csv_file = f"{QDir.homePath()}/Documents/{entity_name_short}.csv" 
@@ -72,50 +73,52 @@ class CSVExportDialog(WIDGET, BASE):
         if file_name:
             self.edtFilename.setText(file_name)
 
-    def export_to_csv(self):
+    def export_proxy_to_csv(self):
         if self.edtFilename.text().strip() == "":
            msg = f"Please enter CSV output file"
            self.show_message(msg, QMessageBox.Critical)
            return
 
-        data = self._export_entity['data']
-        if len(data) == 0:
+        rows = self._export_proxy.rowCount()
+        cols = self._export_proxy.columnCount()
+
+        if rows == 0:
             msg = f"No data in the entity to export!"
             self.show_message(msg)
             return
 
-        export_record = []
+        export_records = []
         headers = []
-        for record in data:
-            row = []
-            for index, field_value in enumerate(record):
-                lw_item = self.lwColumns.item(index)
+        for row in range(rows):
+            fields = []
+            for col in range(cols):
+                index = self._export_proxy.index(row, col)
+                lw_item = self.lwColumns.item(col)
                 if lw_item.checkState() == Qt.Checked:
-                    col_name = lw_item.data(Qt.UserRole)
-                    col_fmt = self._export_entity['formatters'].get(col_name, None)
-                    if isinstance(field_value, int):
-                        col_value = str(field_value)
-                    elif not isinstance(field_value, str):
-                        col_value = str(field_value)
+                    value = self._export_proxy.data(index)
+                    if isinstance(value, int):
+                        col_value = str(value)
+                    elif not isinstance(value, str):
+                        col_value = str(value)
                     else:
-                        col_value = field_value
+                        col_value = value
 
-                    row.append(col_value)
-                    header = self._export_entity['headers'][index]
-                    if header not in headers:
-                        headers.append(header)
+                fields.append(col_value)
+                header = lw_item.text()
+                if header not in headers:
+                    headers.append(header)
+                
+            if len(fields) > 0:
+                export_records.append(fields)
 
-            if len(row) > 0:
-                export_record.append(row)
-        
-        if len(export_record) == 0:
+        if len(export_records) == 0:
             msg = f"Please select columns to export"
             self.show_message(msg, QMessageBox.Critical)
-            return
 
-        result = self.write_to_csv(export_record, headers)
+        result = self.write_to_csv(export_records, headers)
         if result:
             self.show_message("Data exported successfully.")
+
 
     def write_to_csv(self, data: list[list], headers:list ) -> bool:
         try:

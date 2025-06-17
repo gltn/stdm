@@ -724,7 +724,7 @@ class EntityBrowser(SupportsManageMixin, WIDGET, BASE):
             "data":data
         }
 
-        csv_export_dlg = CSVExportDialog(iface, export_entity)
+        csv_export_dlg = CSVExportDialog(iface, export_entity, self._proxyModel)
         csv_export_dlg.exec_()
 
     def _initializeData(self, filtered_records=None):

@@ -29,7 +29,9 @@ from qgis.PyQt.QtWidgets import (
     QScrollArea,
     QTabWidget,
     QApplication,
-    QPushButton)
+    QPushButton,
+    QComboBox
+    )
 
 from stdm.data.configuration.columns import (
     MultipleSelectColumn,
@@ -44,7 +46,7 @@ class AdvancedSearch(EntityEditorDialog):
     search_triggered = pyqtSignal(dict)
 
     def __init__(self, entity, parent, initial_values: dict = None):
-        super().__init__(entity, parent=parent)
+        super().__init__(entity, parent=parent, advanced_search=True)
         self.parent = parent
 
         self.initial_values = initial_values or {}
@@ -62,6 +64,7 @@ class AdvancedSearch(EntityEditorDialog):
             self.vlNotification, 0, 0, 1, 1
         )
 
+        self.filter_operators = {}
         column_widget_area = self._setup_columns_content_area()
 
         self.gridLayout.addWidget(
@@ -149,8 +152,10 @@ class AdvancedSearch(EntityEditorDialog):
 
                 value = handler.value()
 
+                filter_operator = self.filter_operators[column.name].currentText()
+
                 if value != handler.default() and bool(value):
-                    search_data[column.name] = value
+                    search_data[column.name] = (filter_operator, value)
 
         return search_data
 
@@ -180,6 +185,7 @@ class AdvancedSearch(EntityEditorDialog):
             if c.name in self.exclude_columns:
                 continue
 
+
             if isinstance(c, MultipleSelectColumn):
                 continue
 
@@ -193,11 +199,17 @@ class AdvancedSearch(EntityEditorDialog):
                 self.c_label.setText(header)
                 self.gl.addWidget(self.c_label, row_id, 0, 1, 1)
 
+                c_cbox = QComboBox()
+                c_cbox.addItems(["=", ">", "<"])
+                self.filter_operators[c.name] = c_cbox
+                self.gl.addWidget(self.filter_operators[c.name], row_id, 1, 1, 1)
+
+
                 if c.TYPE_INFO == 'AUTO_GENERATED':
                     column_widget.setReadOnly(False)
                     column_widget.btn_load.hide()
 
-                self.gl.addWidget(column_widget, row_id, 1, 1, 1)
+                self.gl.addWidget(column_widget, row_id, 3, 1, 1)
 
                 col_name = c.name
 

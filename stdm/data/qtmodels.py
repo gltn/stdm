@@ -630,11 +630,36 @@ class VerticalHeaderSortFilterProxyModel(QSortFilterProxyModel):
                 row_attribute_value = self.sourceModel().data(self.sourceModel().index(source_row, col, QModelIndex()),
                                                               BaseSTDMTableModel.ROLE_RAW_VALUE)
 
-                if isinstance(row_attribute_value, str):
-                    # For string values we do a case insensitive "contains" search
-                    is_match = str(self.filter_params[attribute_name]).upper() in row_attribute_value.upper()
-                else:
-                    is_match = row_attribute_value == self.filter_params[attribute_name]
+                search_cond = self.filter_params[attribute_name][0]
+                try:
+                    if isinstance(row_attribute_value, str):
+                        # For string values we do a case insensitive "contains" search
+
+                        value = str(self.filter_params[attribute_name][1]).upper()
+
+                        if search_cond == "=":
+                            is_match = value in row_attribute_value.upper()
+
+                        if search_cond == ">":
+                            is_match = value > row_attribute_value.upper()
+
+                        if search_cond == "<":
+                            is_match = value < row_attribute_value.upper()
+
+                        #is_match = str(self.filter_params[attribute_name]).upper() in row_attribute_value.upper()
+                    else:
+                        value = self.filter_params[attribute_name][1]
+                        if search_cond == "=":
+                            is_match = row_attribute_value == value
+
+                        if search_cond == ">":
+                            is_match = row_attribute_value > value
+
+                        if search_cond == "<":
+                            is_match = row_attribute_value < value
+
+                except TypeError as te:
+                    is_match = False
 
                 if not is_match:
                     return False
