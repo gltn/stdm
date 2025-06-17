@@ -22,6 +22,7 @@ import copy
 import os
 from datetime import date
 from datetime import datetime
+import hashlib
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
@@ -293,6 +294,7 @@ class ConfigWizard(WIDGET, BASE):
         self.new_profiles = []
 
         self.privileges = {}
+        self.entity_hashes = {}
 
         # self._str_table_exists = False
         self._sp_t_mapping = {}
@@ -421,16 +423,6 @@ class ConfigWizard(WIDGET, BASE):
             self._notif_bar_str.clear()
             self._notif_bar_str.insertWarningNotification(msg)
 
-    def configuration_is_dirty(self):
-        '''
-        checks if anything has been added to the configuration
-        :rtype:boolean
-        '''
-        config_is_dirty = False
-        cnt = len(self.stdm_config)
-        if cnt != self.orig_assets_count:
-            config_is_dirty = True
-        return config_is_dirty
 
     def reject(self):
         """
@@ -449,47 +441,25 @@ class ConfigWizard(WIDGET, BASE):
                     return
                 if warn_result == QMessageBox.Yes:
                     self.save_current_configuration(DRAFT_CONFIG_FILE)
-
         self.done(0)
 
     def config_is_dirty(self):
-        new_items = 0
-        updated_items = 0
-        deleted_items = 0
+        # Check if items have been deleted
+        cnt = len(self.stdm_config)
+        if cnt != self.orig_assets_count:
+            return True
 
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
-                if entity.action == DbItem.CREATE:
-                    print(f"NEW Entity: {entity.name}")
-                    new_items += 1
-                if entity.action == DbItem.ALTER:
-                    updated_items += 1
-                if entity.action == DbItem.DROP:
-                    deleted_items += 1
-
-                for column_name, column in entity.columns.items():
-                    if column.action == DbItem.CREATE:
-                        print(f"NEW Column: {column_name}")
-                        new_items += 1
-                    if column.action == DbItem.ALTER:
-                        updated_items += 1
-                    if column.action == DbItem.DROP:
-                        deleted_items += 1
-
-        print(f"New Items: {new_items}")
-        print(f"Updated Items: {updated_items}")
-        print(f"Deleted Items: {deleted_items}")
-
-        if new_items > 0 or updated_items > 0 or deleted_items > 0:
-            return True
-
+                if entity.TYPE_INFO not in EXCL_ENTITIES:
+                    if entity.name not in self.entity_hashes:
+                        # Entity is new
+                        return True
+                    entity_hash = self.compute_entity_hash(entity)
+                    if entity_hash[10] != self.entity_hashes[entity.name][10]:
+                        # Entity has been modified
+                        return True
         return False
-
-        # cnt = len(self.stdm_config)
-        # if cnt != self.orig_assets_count:
-        #     return True
-        # else:
-        #     return False
 
     def dirty_config_warning(self):
         msg0 = self.tr("You have made some changes to your current "
@@ -839,6 +809,8 @@ class ConfigWizard(WIDGET, BASE):
         for profile in self.stdm_config.profiles.values():
             for entity in profile.entities.values():
                 self.connect_column_signals(entity)
+                if entity.TYPE_INFO not in EXCL_ENTITIES:
+                    self.entity_hashes[entity.name] = self.compute_entity_hash(entity)
             self.connect_entity_signals(profile)
             profiles.append(profile.name)
         self.cbo_add_profiles(profiles)
@@ -1664,7 +1636,6 @@ class ConfigWizard(WIDGET, BASE):
         self.button(QWizard.CustomButton1).pressed.connect(self.custom_button_clicked)
 
     def custom_button_clicked(self):
-        # self.save_draft_action.setEnabled(self.configuration_is_dirty())
         self.discard_draft_action.setEnabled(self.draft_config)
 
     def save_draft(self):
@@ -3244,6 +3215,25 @@ class ConfigWizard(WIDGET, BASE):
         CHECK_STATE = {True: 'Yes', False: 'No'}
         return CHECK_STATE[state]
 
+    def compute_entity_hash(self, entity: 'Entity')->str:
+        """
+        Computes the hash of the entity based on the columns and their
+        properties.
+        :return: Returns a hash value for the entity.
+        :rtype: str
+        """
+        plain_str = ""
+        for col in entity.columns.values():
+            plain_str += (f"{col.name}{str(col.mandatory)}"
+                        f"{str(col.searchable)}"
+                        f"{str(col.unique)}")
+            if col.TYPE_INFO == "VARCHAR":
+                plain_str += f"{str(col.maximum)}"
+        encoded_str = plain_str.encode('utf-8')
+        shake_hash = hashlib.shake_256()
+        shake_hash.update(encoded_str)
+        hash = shake_hash.hexdigest(16)  # Get a 16-byte hash
+        return hash
 
 class ConfigurationDomDocument(QDomDocument):
     def __init__(self, dom_file_name):
@@ -3272,4 +3262,3 @@ class ConfigurationDomDocument(QDomDocument):
 
     def rename_element(self, dom_elem, new_name):
         dom_elem.setAttribute('name', new_name)
-

@@ -561,7 +561,6 @@ class Entity(QObject, TableItem):
     def sort_columns(self):
         self.columns = RenameableKeyDict(sorted(list(self.columns.items()), key=lambda e: e[1].row_index))
 
-
 class EntitySupportingDocument(Entity):
     """
     An association class that provides the link between a given Entity and
@@ -764,3 +763,5 @@ class EntitySupportingDocument(Entity):
         Check if the entity has an ID column and return it, else returns None.
         """
         return entity.column('id')
+
+        
